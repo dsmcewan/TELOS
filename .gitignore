@@ -1,0 +1,16 @@
+# Runtime artifacts (created in the build tree, never committed)
+.telos/
+
+# Dependencies (this project has none, but guard anyway)
+node_modules/
+
+# Secrets must NEVER be committed — they live in env / OS registry
+*.pem
+.env
+.env.*
+!.env.example
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp

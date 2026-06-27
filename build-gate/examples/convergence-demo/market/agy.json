@@ -1,0 +1,55 @@
+{
+  "build_id": "convergence-demo-prototype-readiness",
+  "idea_id": "idea-convergence-agentic-prototype",
+  "model": "agy",
+  "project_state": "demo",
+  "workstreams_reviewed": [
+    "business-positioning",
+    "scale-operations",
+    "frontend-brand-experience"
+  ],
+  "business_thesis": "Convergence should advance only when the demo proves product value, technical repeatability, and review readiness in the same artifact.",
+  "target_users": [
+    "decision makers reviewing the demo",
+    "operators planning next-phase builds"
+  ],
+  "architecture_findings": [
+    "The gate should remain before market-bound build starts, not after implementation drift accumulates."
+  ],
+  "backend_schema_findings": [],
+  "security_findings": [],
+  "accuracy_eval_findings": [
+    "The test count is visible in the UI and must be refreshed if coverage changes materially."
+  ],
+  "scalability_findings": [
+    "Current scope is demo-grade; production intake, auth, audit trails, and dataset governance remain future gates."
+  ],
+  "frontend_design_findings": [
+    "The proof band supports review discipline by making readiness claims inspectable at the top of the experience."
+  ],
+  "lexi_class_ui_status": "meets",
+  "go_to_market_blockers": [],
+  "breakout": {
+    "workstream": "frontend-brand-experience",
+    "claimedStatus": "meets",
+    "finalStatus": "meets",
+    "converged": true,
+    "surviving_blockers": [],
+    "go_to_market_blockers": [],
+    "checks": [
+      { "type": "file_exists", "path": "docs/verification/s03-dynamics-discriminator.png" },
+      { "type": "file_exists", "path": "docs/verification/s04-scorecard.png" },
+      { "type": "file_contains", "path": "web/site/style.css", "needle": "#69e7ff" }
+    ],
+    "rounds": [
+      {
+        "round": 1,
+        "blockers": ["state.dynamics is fetched but never read — §03 discriminator and §04 scorecard never render"],
+        "resolved": ["state.dynamics is fetched but never read — §03 discriminator and §04 scorecard never render"]
+      },
+      { "round": 2, "blockers": [], "resolved": [] }
+    ]
+  },
+  "recommendation_to_claude": "Approve as professional demo readiness, with productionization held behind the next explicit gate.",
+  "timestamp": "2026-06-26T15:32:00-04:00"
+}

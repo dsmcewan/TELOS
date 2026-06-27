@@ -1,0 +1,23 @@
+{
+  "build_id": "telos-build-gate-self",
+  "use_case": "dogfood-the-gate-on-its-own-build",
+  "objective": "Validate the build-gate's own construction (gate + verifier + connector) through the build-gate itself, so the tool that authorizes builds must pass its own bar.",
+  "affected_directories": ["me/codex/build-gate/"],
+  "write_targets": [
+    "me/codex/build-gate/gate.mjs",
+    "me/codex/build-gate/README.md"
+  ],
+  "protected_paths": [
+    "CHATGPT/",
+    "me/claude-code/",
+    "me/claude-desktop/",
+    "me/gemini/"
+  ],
+  "required_docs": [
+    "me/codex/build-gate/gate.mjs",
+    "me/codex/build-gate/README.md",
+    "me/codex/breakout/verifier.mjs",
+    "shared/Coordination/Multi-Model Agentic Build Gate.md"
+  ],
+  "grok_objections": []
+}

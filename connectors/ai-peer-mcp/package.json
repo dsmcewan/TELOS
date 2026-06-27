@@ -1,0 +1,19 @@
+{
+  "name": "ai-peer-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local MCP connector for Claude, Grok, Codex, and Agy workflow roles.",
+  "bin": {
+    "ai-peer-mcp": "./server.mjs"
+  },
+  "scripts": {
+    "check": "node --check server.mjs && node --check lib.mjs && node --check scripts/smoke-test.mjs && node --check scripts/test-win32-env.mjs && node --check scripts/stress-test-mcp.mjs && node --check scripts/test-provenance.mjs && node scripts/test-win32-env.mjs && node scripts/stress-test-mcp.mjs && node scripts/test-provenance.mjs",
+    "smoke": "node scripts/smoke-test.mjs && node scripts/stress-test-mcp.mjs && node scripts/test-provenance.mjs",
+    "test": "npm run check && node scripts/smoke-test.mjs",
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

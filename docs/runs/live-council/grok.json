@@ -1,0 +1,22 @@
+{
+  "build_id": "live-council-001",
+  "use_case": "telos-self-upgrade",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "me/claude-code/telos-upgrade/specs/2026-06-27-telos-upgrade-design.md"
+  ],
+  "proposal_ref": "live-council-001",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "medium",
+  "timestamp": "2026-06-27T23:36:17.504Z",
+  "rationale": "The change correctly wires distinct provenance mechanisms per seat with explicit fail-closed semantics on missing data.",
+  "provenance": {
+    "model": "grok-4.3",
+    "response_id": "2b3fe941-1856-950c-bf93-93f79e214206",
+    "source": "ai-peer-mcp/grok_ask",
+    "tool": "grok_ask"
+  }
+}

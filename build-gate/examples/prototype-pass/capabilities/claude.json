@@ -1,0 +1,27 @@
+{
+  "build_id": "prototype-demo-pass",
+  "idea_id": "idea-agentic-prototype-loop",
+  "model": "claude",
+  "telos": "Turn a future idea into the strongest feasible prototype by discovering the docs, skills, connectors, and planning helpers each model needs before build.",
+  "docs_needed": [
+    "shared/Documentation/AI Model Documentation Index.md",
+    "shared/Coordination/Claude-Led Multi-Model Prototype Workflow.md"
+  ],
+  "skills_needed": [
+    "prompt chaining",
+    "tool-use planning",
+    "architecture synthesis"
+  ],
+  "connectors_needed": [],
+  "available_now": [
+    "local workflow notes",
+    "project_knowledge.zip source map"
+  ],
+  "missing_capabilities": [],
+  "can_build_during_planning": [],
+  "built_during_planning": [],
+  "must_request_user_or_install": [],
+  "presented_to_claude": true,
+  "recommendation_to_claude": "Use Claude to synthesize all model capability packets into the prototype architecture.",
+  "timestamp": "2026-06-26T13:00:00-04:00"
+}

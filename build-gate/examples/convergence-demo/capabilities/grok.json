@@ -1,0 +1,33 @@
+{
+  "build_id": "convergence-demo-prototype-readiness",
+  "idea_id": "idea-convergence-agentic-prototype",
+  "model": "grok",
+  "telos": "Determine whether the convergence demo is ready for future prototype work by discovering the documentation, skills, connectors, tests, and model roles needed before any build begins.",
+  "docs_needed": [
+    "ENGINEERING.md",
+    "shared/Documentation/Grok Documentation Map.md"
+  ],
+  "skills_needed": [
+    "adversarial assumption review",
+    "optional-backend risk checking",
+    "claims versus eval evidence challenge"
+  ],
+  "connectors_needed": [
+    "xAI API only if live Grok review is required"
+  ],
+  "available_now": [
+    "manual advisory packet",
+    "local Grok documentation map"
+  ],
+  "missing_capabilities": [
+    "live Grok connector may not be exposed in the active session"
+  ],
+  "can_build_during_planning": [
+    "manual challenge checklist"
+  ],
+  "built_during_planning": [],
+  "must_request_user_or_install": [],
+  "presented_to_claude": true,
+  "recommendation_to_claude": "Challenge any plan that moves model output into verdict-making; keep LLMs explanatory or proposal-only.",
+  "timestamp": "2026-06-26T14:03:00-04:00"
+}

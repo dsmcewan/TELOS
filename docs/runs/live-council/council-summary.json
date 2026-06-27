@@ -1,0 +1,106 @@
+{
+  "build_id": "live-council-001",
+  "objective": "Approve, for merge, the TELOS change that wires per-seat provenance backends: codex via OpenAI (own response_id), agy via a local content-addressed attestation, and a liveSeatCaller that fail-closes (response_id:null) when a backend returns no provenance. Reply ONLY with a JSON approval packet.",
+  "models": {
+    "claude": "claude-sonnet-4-6",
+    "grok": "grok-4",
+    "codex": "gpt-4o"
+  },
+  "timestamp": "2026-06-27T23:36:17.504Z",
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "model": "claude-sonnet-4-6",
+        "response_id": "msg_01Mnf1SCNwv9hQD39AQxe6ZT",
+        "source": "ai-peer-mcp/claude_ask",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-adec1f5af09f57316c3c166e2ff1b13f5e463f37",
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "model": "gpt-4o-2024-08-06",
+        "response_id": "chatcmpl-DvWrKsQgNnimMH5FFsSFjuwBQ5rXl",
+        "source": "ai-peer-mcp/codex_ask",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "medium",
+      "provenance": {
+        "model": "grok-4.3",
+        "response_id": "2b3fe941-1856-950c-bf93-93f79e214206",
+        "source": "ai-peer-mcp/grok_ask",
+        "tool": "grok_ask"
+      }
+    }
+  ],
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "gate": {
+    "gate_status": "pass",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [],
+    "warnings": [],
+    "provenance": [
+      {
+        "model": "claude",
+        "has_provenance": true,
+        "response_model": "claude-sonnet-4-6",
+        "response_id": "msg_01Mnf1SCNwv9hQD39AQxe6ZT",
+        "source": "ai-peer-mcp/claude_ask"
+      },
+      {
+        "model": "agy",
+        "has_provenance": true,
+        "response_model": "agy-checkpoint",
+        "response_id": "agy-adec1f5af09f57316c3c166e2ff1b13f5e463f37",
+        "source": "ai-peer-mcp/agy_checkpoint"
+      },
+      {
+        "model": "codex",
+        "has_provenance": true,
+        "response_model": "gpt-4o-2024-08-06",
+        "response_id": "chatcmpl-DvWrKsQgNnimMH5FFsSFjuwBQ5rXl",
+        "source": "ai-peer-mcp/codex_ask"
+      }
+    ]
+  }
+}

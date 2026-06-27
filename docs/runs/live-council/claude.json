@@ -1,0 +1,27 @@
+{
+  "build_id": "live-council-001",
+  "use_case": "telos-self-upgrade",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "me/claude-code/telos-upgrade/specs/2026-06-27-telos-upgrade-design.md"
+  ],
+  "proposal_ref": "live-council-001",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-06-27T23:36:17.504Z",
+  "rationale": "The per-seat provenance wiring is architecturally sound: codex delegates to OpenAI's native response_id, agy uses a local content-addressed attestation for air-gapped integrity, and the fail-closed null sentinel on liveSeatCaller prevents silent provenance loss without breaking the call path.",
+  "provenance": {
+    "model": "claude-sonnet-4-6",
+    "response_id": "msg_01Mnf1SCNwv9hQD39AQxe6ZT",
+    "source": "ai-peer-mcp/claude_ask",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "65e90ecf34957bb43c5f51a5e1c028dbda14101c136d734695f07cd8576296f2",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "build_id": "prototype-demo-pass",
+  "idea_id": "idea-agentic-prototype-loop",
+  "model": "codex",
+  "telos": "Turn a future idea into the strongest feasible prototype by discovering the docs, skills, connectors, and planning helpers each model needs before build.",
+  "docs_needed": [
+    "shared/Documentation/Codex Documentation Map.md"
+  ],
+  "skills_needed": [
+    "plugin validation",
+    "local scripting",
+    "test verification"
+  ],
+  "connectors_needed": [
+    "Context7 when implementation libraries are named"
+  ],
+  "available_now": [
+    "me/codex/build-gate/gate.mjs",
+    "Context7 tool discovery"
+  ],
+  "missing_capabilities": [
+    "ai-peer tools may not be exposed in the active Codex session"
+  ],
+  "can_build_during_planning": [
+    "local validators",
+    "packet templates",
+    "smoke tests"
+  ],
+  "built_during_planning": [
+    "capability-aware build gate validator"
+  ],
+  "must_request_user_or_install": [],
+  "presented_to_claude": true,
+  "recommendation_to_claude": "Plan around manual packets when ai-peer tools are unavailable; use local validators for readiness.",
+  "timestamp": "2026-06-26T13:01:00-04:00"
+}

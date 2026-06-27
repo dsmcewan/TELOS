@@ -1,0 +1,58 @@
+{
+  "build_id": "convergence-demo-prototype-readiness",
+  "idea_id": "idea-convergence-agentic-prototype",
+  "use_case": "test-prototype-workflow-on-convergence-demo",
+  "telos": "Determine whether the convergence demo is ready for future prototype work by discovering the documentation, skills, connectors, tests, and model roles needed before any build begins.",
+  "objective": "Use the Claude-led multi-model prototype workflow against the convergence-demo project and verify it as a market-bound professional demo.",
+  "affected_directories": [
+    "C:/Users/dsmce/OneDrive/Attachments/Desktop/Life collaboration System/convergence-demo/"
+  ],
+  "write_targets": [
+    "C:/Users/dsmce/OneDrive/Attachments/Desktop/Life collaboration System/convergence-demo/docs/prototypes/convergence-agentic-prototype.md"
+  ],
+  "protected_paths": [
+    "CHATGPT/",
+    "me/claude-code/",
+    "me/claude-desktop/",
+    "me/gemini/",
+    "C:/Users/dsmce/OneDrive/Attachments/Desktop/Life collaboration System/convergence-demo/.env"
+  ],
+  "required_docs": [
+    "C:/Users/dsmce/OneDrive/Attachments/Desktop/Life collaboration System/convergence-demo/README.md",
+    "C:/Users/dsmce/OneDrive/Attachments/Desktop/Life collaboration System/convergence-demo/ENGINEERING.md",
+    "C:/Users/dsmce/OneDrive/Attachments/Desktop/Life collaboration System/convergence-demo/requirements.txt",
+    "C:/Users/dsmce/OneDrive/Attachments/Desktop/Life collaboration System/convergence-demo/demo.py",
+    "shared/Coordination/Claude-Led Multi-Model Prototype Workflow.md",
+    "shared/Coordination/Multi-Model Agentic Build Gate.md",
+    "shared/Documentation/AI Model Documentation Index.md",
+    "shared/Documentation/Agy Documentation Map.md",
+    "shared/Documentation/Codex Documentation Map.md",
+    "shared/Documentation/Grok Documentation Map.md"
+  ],
+  "required_capability_models": [
+    "claude",
+    "codex",
+    "agy",
+    "grok"
+  ],
+  "market_bound": true,
+  "user_facing_frontend": true,
+  "required_market_workstreams": [
+    "business-positioning",
+    "product-architecture",
+    "backend-schema",
+    "security-trust",
+    "accuracy-evals",
+    "scale-operations",
+    "frontend-brand-experience"
+  ],
+  "lexi_required": false,
+  "lexi_reference_read": false,
+  "grok_objections": [
+    {
+      "text": "Do not let optional live LLM backends become required for the deterministic prototype path.",
+      "status": "resolved",
+      "resolution": "The gate treats API keys and live adapters as optional connector capabilities; core tests and evals pass without them."
+    }
+  ]
+}

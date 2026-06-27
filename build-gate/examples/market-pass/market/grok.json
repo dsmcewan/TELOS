@@ -1,0 +1,25 @@
+{
+  "build_id": "market-demo-pass",
+  "idea_id": "idea-market-demo-pass",
+  "model": "grok",
+  "project_state": "demo",
+  "workstreams_reviewed": [
+    "security-trust"
+  ],
+  "business_thesis": "The market thesis is plausible after risk review.",
+  "target_users": [
+    "early buyers"
+  ],
+  "architecture_findings": [],
+  "backend_schema_findings": [],
+  "security_findings": [
+    "No unresolved security blockers for the demo scope."
+  ],
+  "accuracy_eval_findings": [],
+  "scalability_findings": [],
+  "frontend_design_findings": [],
+  "lexi_class_ui_status": "not-applicable",
+  "go_to_market_blockers": [],
+  "recommendation_to_claude": "Proceed, while keeping the threat model in the implementation plan.",
+  "timestamp": "2026-06-26T14:02:00-04:00"
+}

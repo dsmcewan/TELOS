@@ -1,0 +1,28 @@
+{
+  "build_id": "prototype-demo-capability-blocked",
+  "idea_id": "idea-needs-external-connector",
+  "use_case": "capability-blocked-negative-test",
+  "telos": "Show that unresolved external setup blocks a prototype build.",
+  "objective": "Validate capability gate failure when a model requires user setup.",
+  "affected_directories": [
+    "shared/Coordination/"
+  ],
+  "write_targets": [
+    "shared/Coordination/Claude-Led Multi-Model Prototype Workflow.md"
+  ],
+  "protected_paths": [
+    "CHATGPT/",
+    "me/claude-code/",
+    "me/claude-desktop/",
+    "me/gemini/"
+  ],
+  "required_docs": [
+    "shared/Documentation/AI Model Documentation Index.md"
+  ],
+  "required_capability_models": [
+    "claude"
+  ],
+  "lexi_required": false,
+  "lexi_reference_read": false,
+  "grok_objections": []
+}

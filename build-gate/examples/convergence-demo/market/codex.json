@@ -1,0 +1,44 @@
+{
+  "build_id": "convergence-demo-prototype-readiness",
+  "idea_id": "idea-convergence-agentic-prototype",
+  "model": "codex",
+  "project_state": "demo",
+  "workstreams_reviewed": [
+    "backend-schema",
+    "accuracy-evals",
+    "scale-operations"
+  ],
+  "business_thesis": "Keep the demo credible by tying every visible claim to deterministic data generation, static artifacts, local API behavior, and repeatable tests.",
+  "target_users": [
+    "technical evaluators",
+    "product reviewers",
+    "implementation partners"
+  ],
+  "architecture_findings": [
+    "The web surface reads prebuilt JSON by default and uses the local API only when present.",
+    "The optional LLM adapter seam does not participate in scoring or finding generation."
+  ],
+  "backend_schema_findings": [
+    "Generated JSON keeps corpora, findings, patterns, dynamics, scorecards, and hard-negative evidence separated enough for focused frontend rendering.",
+    "The standard-library server avoids deployment dependency creep for the demo path."
+  ],
+  "security_findings": [
+    "No API key is required for deterministic analysis or static browsing.",
+    "The protected local .env path remains outside planned write targets."
+  ],
+  "accuracy_eval_findings": [
+    "The deterministic core, web serializer, build process, and server routes are covered by the project test run.",
+    "Model-backed chat is framed as explanatory rather than evidentiary."
+  ],
+  "scalability_findings": [
+    "Static output can be hosted cheaply while heavier model interactions stay behind a local or future service boundary.",
+    "Future market builds should add fixture versioning before accepting uploaded corpora."
+  ],
+  "frontend_design_findings": [
+    "Frontend edits are scoped to the static shell and do not alter analysis semantics."
+  ],
+  "lexi_class_ui_status": "not-applicable",
+  "go_to_market_blockers": [],
+  "recommendation_to_claude": "Approve the professional demo pass after tests and browser checks stay green.",
+  "timestamp": "2026-06-26T15:31:00-04:00"
+}

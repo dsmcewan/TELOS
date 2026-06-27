@@ -1,0 +1,39 @@
+{
+  "build_id": "convergence-demo-prototype-readiness",
+  "idea_id": "idea-convergence-agentic-prototype",
+  "model": "codex",
+  "telos": "Determine whether the convergence demo is ready for future prototype work by discovering the documentation, skills, connectors, tests, and model roles needed before any build begins.",
+  "docs_needed": [
+    "requirements.txt",
+    "demo.py",
+    "tests/"
+  ],
+  "skills_needed": [
+    "pytest verification",
+    "adapter boundary review",
+    "local script validation"
+  ],
+  "connectors_needed": [
+    "Context7 only when a concrete SDK or API change is proposed"
+  ],
+  "available_now": [
+    "Python 3.14.5",
+    "pytest suite",
+    "demo.py --eval"
+  ],
+  "missing_capabilities": [
+    "live external LLM calls depend on provider credentials, but deterministic paths do not"
+  ],
+  "can_build_during_planning": [
+    "gate fixtures",
+    "pytest smoke commands",
+    "prototype readiness report"
+  ],
+  "built_during_planning": [
+    "convergence-demo gate fixture"
+  ],
+  "must_request_user_or_install": [],
+  "presented_to_claude": true,
+  "recommendation_to_claude": "Prototype safely against deterministic tests first; treat provider-backed chat as an optional integration slice.",
+  "timestamp": "2026-06-26T14:01:00-04:00"
+}

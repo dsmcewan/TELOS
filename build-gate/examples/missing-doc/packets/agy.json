@@ -1,0 +1,13 @@
+{
+  "build_id": "build-gate-demo-missing-doc",
+  "use_case": "missing-doc-negative-test",
+  "model": "agy",
+  "role": "checkpoint",
+  "docs_reviewed": [],
+  "proposal_ref": "shared/Coordination/Multi-Model Agentic Build Gate.md",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "medium",
+  "timestamp": "2026-06-26T12:01:00-04:00"
+}

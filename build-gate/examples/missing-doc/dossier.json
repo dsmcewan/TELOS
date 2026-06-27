@@ -1,0 +1,24 @@
+{
+  "build_id": "build-gate-demo-missing-doc",
+  "use_case": "missing-doc-negative-test",
+  "objective": "Show that missing documentation coverage blocks the gate.",
+  "affected_directories": [
+    "shared/Coordination/"
+  ],
+  "write_targets": [
+    "shared/Coordination/Multi-Model Agentic Build Gate.md"
+  ],
+  "protected_paths": [
+    "CHATGPT/",
+    "me/claude-code/",
+    "me/claude-desktop/",
+    "me/gemini/"
+  ],
+  "required_docs": [
+    "shared/Documentation/AI Model Documentation Index.md",
+    "shared/Documentation/Grok Documentation Map.md"
+  ],
+  "lexi_required": false,
+  "lexi_reference_read": false,
+  "grok_objections": []
+}

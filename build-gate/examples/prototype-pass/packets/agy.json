@@ -1,0 +1,16 @@
+{
+  "build_id": "prototype-demo-pass",
+  "use_case": "future-idea-prototype",
+  "model": "agy",
+  "role": "checkpoint",
+  "docs_reviewed": [
+    "shared/Documentation/Agy Documentation Map.md",
+    "shared/Coordination/Claude-Led Multi-Model Prototype Workflow.md"
+  ],
+  "proposal_ref": "shared/Coordination/Claude-Led Multi-Model Prototype Workflow.md",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-06-26T13:01:00-04:00"
+}

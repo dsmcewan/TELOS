@@ -1,0 +1,30 @@
+{
+  "build_id": "convergence-demo-prototype-readiness",
+  "idea_id": "idea-convergence-agentic-prototype",
+  "model": "agy",
+  "telos": "Determine whether the convergence demo is ready for future prototype work by discovering the documentation, skills, connectors, tests, and model roles needed before any build begins.",
+  "docs_needed": [
+    "shared/Documentation/Agy Documentation Map.md",
+    "shared/Coordination/Multi-Model Agentic Build Gate.md"
+  ],
+  "skills_needed": [
+    "phase readiness",
+    "missing capability checks",
+    "approval gate control"
+  ],
+  "connectors_needed": [],
+  "available_now": [
+    "local checkpoint-controller role",
+    "capability-aware gate validator"
+  ],
+  "missing_capabilities": [],
+  "can_build_during_planning": [
+    "phase ledger",
+    "readiness checklist"
+  ],
+  "built_during_planning": [],
+  "must_request_user_or_install": [],
+  "presented_to_claude": true,
+  "recommendation_to_claude": "Allow the prototype gate to pass only for deterministic/core work unless live backend credentials are explicitly added.",
+  "timestamp": "2026-06-26T14:02:00-04:00"
+}

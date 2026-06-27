@@ -1,0 +1,37 @@
+{
+  "build_id": "prototype-demo-pass",
+  "idea_id": "idea-agentic-prototype-loop",
+  "use_case": "future-idea-prototype",
+  "telos": "Turn a future idea into the strongest feasible prototype by discovering the docs, skills, connectors, and planning helpers each model needs before build.",
+  "objective": "Validate the Claude-led multi-model prototype workflow before implementation begins.",
+  "affected_directories": [
+    "shared/Coordination/",
+    "me/codex/build-gate/"
+  ],
+  "write_targets": [
+    "shared/Coordination/Claude-Led Multi-Model Prototype Workflow.md",
+    "me/codex/build-gate/README.md"
+  ],
+  "protected_paths": [
+    "CHATGPT/",
+    "me/claude-code/",
+    "me/claude-desktop/",
+    "me/gemini/"
+  ],
+  "required_docs": [
+    "shared/Documentation/AI Model Documentation Index.md",
+    "shared/Documentation/Agy Documentation Map.md",
+    "shared/Documentation/Codex Documentation Map.md",
+    "shared/Documentation/Grok Documentation Map.md",
+    "shared/Coordination/Claude-Led Multi-Model Prototype Workflow.md"
+  ],
+  "required_capability_models": [
+    "claude",
+    "codex",
+    "agy",
+    "grok"
+  ],
+  "lexi_required": false,
+  "lexi_reference_read": false,
+  "grok_objections": []
+}

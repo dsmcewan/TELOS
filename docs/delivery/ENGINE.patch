@@ -1,0 +1,1614 @@
+diff -ruN pristine/breakout/scripts/test-verifier.mjs working/breakout/scripts/test-verifier.mjs
+--- pristine/breakout/scripts/test-verifier.mjs	2026-06-27 12:41:46.053755200 -0400
++++ working/breakout/scripts/test-verifier.mjs	2026-06-27 13:57:06.820046600 -0400
+@@ -146,4 +146,67 @@
+   assert.equal((await exists.run()).ok, true);
+ }
+ 
++// --- sufficiency signals (TELOS upgrade) ---
++{
++  const { mkdtempSync, writeFileSync } = await import("node:fs");
++  const os = await import("node:os");
++  const path = (await import("node:path")).default;
++  const { reverifyRecord } = await import("../verifier.mjs");
++
++  const dir = mkdtempSync(path.join(os.tmpdir(), "telos-suff-"));
++  writeFileSync(path.join(dir, "full.txt"), "hello #69e7ff world");
++  writeFileSync(path.join(dir, "empty.txt"), "");
++
++  const existsOnly = reverifyRecord({ checks: [{ type: "file_exists", path: "full.txt" }] }, dir);
++  assert.equal(existsOnly.hasFileContains, false, "existence-only must report hasFileContains=false");
++  assert.deepEqual(existsOnly.emptyEvidenceFiles, [], "non-empty file is not empty-evidence");
++
++  const withContains = reverifyRecord({ checks: [{ type: "file_contains", path: "full.txt", needle: "#69e7ff" }] }, dir);
++  assert.equal(withContains.hasFileContains, true, "file_contains must set hasFileContains=true");
++
++  const emptyEvidence = reverifyRecord({ checks: [{ type: "file_exists", path: "empty.txt" }] }, dir);
++  assert.deepEqual(emptyEvidence.emptyEvidenceFiles, ["empty.txt"], "zero-byte file_exists is empty-evidence");
++
++  console.log("test-verifier sufficiency OK");
++}
++
++// 11. Empty-needle bypass is closed: a file_contains spec with needle:"" on a
++//     zero-byte file must NOT satisfy hasFileContains, and the file MUST be
++//     flagged in emptyEvidenceFiles.
++{
++  const { mkdtempSync, writeFileSync } = await import("node:fs");
++  const os = await import("node:os");
++  const path = (await import("node:path")).default;
++  const { reverifyRecord } = await import("../verifier.mjs");
++
++  const dir = mkdtempSync(path.join(os.tmpdir(), "telos-bypass-"));
++  writeFileSync(path.join(dir, "empty.txt"), "");
++  writeFileSync(path.join(dir, "real.txt"), "actual-content-marker");
++
++  // Empty needle on zero-byte file: must NOT count as hasFileContains, must flag emptyEvidenceFiles.
++  const emptyNeedle = reverifyRecord(
++    { checks: [{ type: "file_contains", path: "empty.txt", needle: "" }] },
++    dir
++  );
++  assert.equal(emptyNeedle.hasFileContains, false, "empty needle must not satisfy hasFileContains");
++  assert.ok(emptyNeedle.emptyEvidenceFiles.includes("empty.txt"), "zero-byte file_contains target must appear in emptyEvidenceFiles");
++
++  // Whitespace-only needle should also not satisfy hasFileContains.
++  const wsNeedle = reverifyRecord(
++    { checks: [{ type: "file_contains", path: "empty.txt", needle: "   " }] },
++    dir
++  );
++  assert.equal(wsNeedle.hasFileContains, false, "whitespace-only needle must not satisfy hasFileContains");
++
++  // Non-empty needle on non-empty file: must set hasFileContains=true and must NOT flag as empty.
++  const realContains = reverifyRecord(
++    { checks: [{ type: "file_contains", path: "real.txt", needle: "actual-content-marker" }] },
++    dir
++  );
++  assert.equal(realContains.hasFileContains, true, "real needle on real file must set hasFileContains=true");
++  assert.ok(!realContains.emptyEvidenceFiles.includes("real.txt"), "non-empty file must not appear in emptyEvidenceFiles");
++
++  console.log("test-verifier empty-needle bypass OK");
++}
++
+ console.log("verifier: all tests passed");
+diff -ruN pristine/breakout/verifier.mjs working/breakout/verifier.mjs
+--- pristine/breakout/verifier.mjs	2026-06-27 12:41:46.084507000 -0400
++++ working/breakout/verifier.mjs	2026-06-27 13:56:53.130406100 -0400
+@@ -9,7 +9,7 @@
+ //
+ // A check is { id, description, run: () => {ok, detail} | Promise<...> }.
+ 
+-import { existsSync, readFileSync } from "node:fs";
++import { existsSync, readFileSync, statSync } from "node:fs";
+ import { spawnSync } from "node:child_process";
+ import path from "node:path";
+ 
+@@ -122,10 +122,14 @@
+   const facts = [];
+   let reverifiable = 0;
+   let skipped = 0;
++  let hasFileContains = false;
++  const emptyEvidenceFiles = [];
+   for (const spec of specs) {
+     const check = safeCheckFromSpec(spec, baseDir);
+     if (!check || check.skip) { skipped++; continue; }
+     reverifiable++;
++    const realNeedle = typeof spec.needle === "string" && spec.needle.trim().length > 0;
++    if (spec.type === "file_contains" && realNeedle) hasFileContains = true;
+     let ok = false;
+     let detail = "";
+     try {
+@@ -136,10 +140,26 @@
+       ok = false;
+       detail = `check threw: ${error?.message || String(error)}`;
+     }
++    if (spec.type === "file_exists" && ok) {
++      const resolved = resolveUnder(baseDir, spec.path);
++      try {
++        if (resolved && statSync(resolved).size === 0) emptyEvidenceFiles.push(spec.path);
++      } catch {
++        // stat failure is not "empty"; leave it to the ok/detail above
++      }
++    }
++    if (spec.type === "file_contains" && ok) {
++      const resolved = resolveUnder(baseDir, spec.path);
++      try {
++        if (resolved && statSync(resolved).size === 0) emptyEvidenceFiles.push(spec.path);
++      } catch {
++        // stat failure is not "empty"; leave it to the ok/detail above
++      }
++    }
+     facts.push({ id: check.id, description: check.description, ok, detail });
+   }
+   const failing = facts.filter((f) => !f.ok);
+-  return { facts, failing, allPass: failing.length === 0, reverifiable, skipped };
++  return { facts, failing, allPass: failing.length === 0, reverifiable, skipped, hasFileContains, emptyEvidenceFiles };
+ }
+ 
+ // ---- check builders --------------------------------------------------------
+diff -ruN pristine/build-gate/council.mjs working/build-gate/council.mjs
+--- pristine/build-gate/council.mjs	1969-12-31 19:00:00.000000000 -0500
++++ working/build-gate/council.mjs	2026-06-27 19:15:40.843855000 -0400
+@@ -0,0 +1,166 @@
++// council.mjs — dynamic-workflow council orchestrator for TELOS.
++//
++// The council is a FAN-OUT: each model "seat" independently produces its packet,
++// and every packet is HMAC-signed + stamped with provenance from the response
++// that produced it. This is the dynamic-workflow layer the gate then validates —
++// packets are GENERATED, not hand-authored. The seat caller is injected
++// (keyless/testable); liveSeatCaller wires it to ai-peer-mcp.
++//
++// DYNAMIC SIZING — how TELOS decides how many agents to run per job:
++//   - planSeats(dossier) computes the roster FROM the job: required approval
++//     seats always; a market-bound job adds one market-lens seat per required
++//     workstream; grok rides as advisory. Bigger / market-bound jobs => more
++//     seats. So the agent count is a function of the dossier, not a fixed roster.
++//   - runCouncil runs the seats through a CPU-aware BOUNDED POOL (never more than
++//     min(requested, cores-2) at once), mirroring the workflow engine's cap, so a
++//     large fan-out cannot thrash the host.
++//
++// The convergence step (loop-until-converged + adversarial verify) is the
++// existing engine: ../breakout/breakout.mjs (runBreakout / makeCouncilBreakout),
++// decided by ../breakout/verifier.mjs.
++
++import os from "node:os";
++import { signPacket, secretFor } from "./sign.mjs";
++
++const REQUIRED_SEATS = ["claude", "agy", "codex"];
++
++/**
++ * Resource-aware concurrency cap: never run more seats at once than the host can
++ * bear. `requested` is clamped to [1, cores-2]; absent/non-positive => host cap.
++ */
++export function maxConcurrency(requested) {
++  const hostCap = Math.max(1, os.cpus().length - 2);
++  const want = Number.isInteger(requested) && requested > 0 ? requested : hostCap;
++  return Math.min(want, hostCap);
++}
++
++/**
++ * Decide the council roster for a job FROM the dossier — this is how TELOS sizes
++ * the council per job. Required approval seats always; market-bound jobs add one
++ * market-lens seat per required workstream; grok is advisory.
++ */
++export function planSeats(dossier) {
++  const seats = REQUIRED_SEATS.map((model) => ({ model, role: "approver" }));
++  seats.push({ model: "grok", role: "advisory" });
++  if (dossier && dossier.market_bound === true) {
++    const workstreams = Array.isArray(dossier.required_market_workstreams) ? dossier.required_market_workstreams : [];
++    for (const ws of workstreams) seats.push({ model: "claude", role: "market-lens", workstream: ws });
++  }
++  return seats;
++}
++
++// One seat: call it, sign + provenance-stamp the packet, never throw.
++async function runSeat(seat, callSeat, dossier) {
++  try {
++    const out = (await callSeat({ model: seat.model, role: seat.role, workstream: seat.workstream, dossier })) || {};
++    if (!out.packet || typeof out.packet !== "object") {
++      return { model: seat.model, role: seat.role, ok: false, reason: "seat returned no packet" };
++    }
++    const stamped = { ...out.packet, provenance: out.provenance || out.packet.provenance };
++    const secret = secretFor(seat.model);
++    const packet = secret ? signPacket(stamped, secret) : stamped;
++    return { model: seat.model, role: seat.role, ok: true, signed: !!secret, packet };
++  } catch (error) {
++    return { model: seat.model, role: seat.role, ok: false, reason: error?.message || String(error) };
++  }
++}
++
++/**
++ * Fan out the council through a CPU-aware bounded pool. Results preserve seat
++ * order. A thrown/empty seat becomes { ok:false, reason } (never a rejection).
++ * Pass `seats` explicitly, or omit to derive them from the dossier via planSeats.
++ */
++export async function runCouncil({ seats, callSeat, dossier, maxConcurrency: requested } = {}) {
++  const list = Array.isArray(seats) ? seats : planSeats(dossier);
++  const limit = maxConcurrency(requested);
++  const results = new Array(list.length);
++  let next = 0;
++  async function worker() {
++    while (next < list.length) {
++      const i = next++;
++      results[i] = await runSeat(list[i], callSeat, dossier);
++    }
++  }
++  const poolSize = Math.min(limit, list.length);
++  await Promise.all(Array.from({ length: poolSize > 0 ? poolSize : 0 }, () => worker()));
++  return results;
++}
++
++/**
++ * Build a seat caller backed by an MCP client (LIVE transport). Each seat binds
++ * its packet to its OWN real provenance — no seat borrows another model's id:
++ *   - chat seats (claude/grok/codex) call `<model>_ask` with
++ *     `include_provenance: true`, so the server returns a {text, provenance}
++ *     envelope carrying the real server-issued model + response_id.
++ *   - structured seats (agy) call `agy_checkpoint`; the checkpoint already
++ *     embeds a local-deterministic attestation as its provenance.
++ * If the response carries NO structured provenance (e.g. a tool that does not
++ * honor include_provenance), `response_id` is set to null and the gate blocks.
++ * We deliberately do NOT scrape an id out of the model's own prose: a
++ * model-authored token is not authentication, so honest-null (fail-closed) is
++ * the only safe fallback — never a fabricated/self-asserted id.
++ *
++ *   client     { callTool(name, args) -> Promise<string> }  (see ../breakout/mcp_client.mjs)
++ *   promptFor  (model, role, dossier, workstream) -> { tool, prompt?, system?, model?, args? }
++ *              chat seats return prompt/system (and optionally a per-seat model);
++ *              structured seats return args.
++ *   parsePacket(text) -> packet object  (for agy, compose with agyApprovalPacket)
++ */
++export function liveSeatCaller({ client, promptFor, parsePacket }) {
++  return async ({ model, role, workstream, dossier }) => {
++    const spec = promptFor(model, role, dossier, workstream) || {};
++    const tool = spec.tool;
++    // Structured seats pass explicit args; chat seats pass prompt/system (+ an
++    // optional per-seat model override) AND ask for the provenance envelope so
++    // the packet binds to the real response.
++    const callArgs = spec.args
++      ? spec.args
++      : { prompt: spec.prompt, system: spec.system, model: spec.model, include_provenance: true };
++    const text = await client.callTool(tool, callArgs);
++    const parsed = tryParseJson(text);
++
++    // Provenance: ONLY trust what the server attested/returned. No structured
++    // provenance => response_id:null => the gate blocks. Never fabricated.
++    const provenance = parsed && parsed.provenance && typeof parsed.provenance === "object"
++      ? { ...parsed.provenance, tool }
++      : { model, source: "ai-peer-mcp", response_id: null, tool };
++
++    // The ask envelope carries the packet body under `.text`; a structured seat's
++    // result IS the packet object itself.
++    const packetText = parsed && typeof parsed.text === "string" ? parsed.text : text;
++    return { packet: parsePacket(packetText), provenance };
++  };
++}
++
++function tryParseJson(text) {
++  if (typeof text !== "string") return null;
++  try { return JSON.parse(text); } catch { return null; }
++}
++
++/**
++ * Adapt an `agy_checkpoint` result (a governance object) into a gate-valid
++ * approval packet. agy is the local governance seat: it APPROVES iff its
++ * checkpoint says `phase_gate_status === "advance"`; otherwise it returns a
++ * `revise` decision carrying the checkpoint's blocked_reasons as hard_stops (so
++ * the gate blocks, as it should). `meta` supplies the dossier-derived fields the
++ * gate requires (build_id, use_case, proposal_ref, timestamp, docs_reviewed) —
++ * the council fills these from the dossier; provenance is stamped separately by
++ * runSeat from the checkpoint's attestation.
++ */
++export function agyApprovalPacket(checkpoint, meta = {}) {
++  const advance = !!checkpoint && checkpoint.phase_gate_status === "advance";
++  const blocked = Array.isArray(checkpoint?.blocked_reasons) ? checkpoint.blocked_reasons : [];
++  return {
++    build_id: meta.build_id,
++    use_case: meta.use_case,
++    model: "agy",
++    role: "approver",
++    docs_reviewed: Array.isArray(meta.docs_reviewed) ? meta.docs_reviewed : [],
++    proposal_ref: meta.proposal_ref,
++    decision: advance ? "approve" : "revise",
++    required_edits: [],
++    hard_stops: advance ? [] : blocked,
++    confidence: "high",
++    timestamp: meta.timestamp
++  };
++}
+diff -ruN pristine/build-gate/gate.mjs working/build-gate/gate.mjs
+--- pristine/build-gate/gate.mjs	2026-06-27 12:41:45.788321400 -0400
++++ working/build-gate/gate.mjs	2026-06-27 13:00:33.513092600 -0400
+@@ -5,6 +5,7 @@
+ import process from "node:process";
+ import { fileURLToPath } from "node:url";
+ import { reverifyRecord } from "../breakout/verifier.mjs";
++import { verifyPacket, secretFor } from "./sign.mjs";
+ 
+ const REQUIRED_MODELS = ["claude", "agy", "codex"];
+ const DEFAULT_CAPABILITY_MODELS = ["claude", "codex", "agy", "grok"];
+@@ -101,6 +102,7 @@
+   const warnings = [];
+ 
+   validateDossierShape(dossier, blockers);
++  const signed = dossier?.trust_mode === "signed";
+ 
+   const packetsByModel = new Map();
+   for (const packet of packets) {
+@@ -137,6 +139,22 @@
+     }
+   }
+ 
++  if (signed) {
++    for (const model of REQUIRED_MODELS) {
++      const packet = packetsByModel.get(model);
++      if (!packet) continue; // already blocked as missing above
++      const secret = secretFor(model);
++      if (!secret) {
++        blockers.push(`trust_mode 'signed' but no secret to verify ${model} packet (set TELOS_SECRET_${model.toUpperCase()}).`);
++        continue;
++      }
++      const result = verifyPacket(packet, secret);
++      if (!result.ok) {
++        blockers.push(`${model} packet signature invalid in signed mode: ${result.reason}.`);
++      }
++    }
++  }
++
+   // Provenance is advisory: the gate CANNOT cryptographically authenticate which
+   // model authored a packet. It surfaces whether each required approval carries a
+   // `provenance` block (ideally captured from the real model response — see
+@@ -145,14 +163,20 @@
+   for (const model of REQUIRED_MODELS) {
+     const packet = packetsByModel.get(model);
+     const prov = packet && packet.provenance && typeof packet.provenance === "object" ? packet.provenance : null;
++    const responseId = prov && typeof prov.response_id === "string" ? prov.response_id : null;
++    const placeholder = !responseId || /^$|_self$|^self$|placeholder/i.test(responseId);
+     provenance.push({
+       model,
+       has_provenance: !!prov,
+       response_model: prov && typeof prov.model === "string" ? prov.model : null,
++      response_id: responseId,
+       source: prov && typeof prov.source === "string" ? prov.source : null
+     });
+-    if (packet && !prov) {
+-      warnings.push(`Approval packet for ${model} carries no provenance; model identity is self-declared, not authenticated.`);
++    if (packet && (!prov || placeholder)) {
++      const msg = !prov
++        ? `Approval packet for ${model} carries no provenance; model identity is self-declared, not authenticated.`
++        : `Approval packet for ${model} has placeholder provenance.response_id '${responseId}'; not bound to a real model response.`;
++      if (signed) blockers.push(msg); else if (!prov) warnings.push(msg);
+     }
+   }
+ 
+@@ -171,7 +195,7 @@
+   validateLexiGate(dossier, packets, blockers);
+   validateGrokResolution(packetsByModel.get("grok"), dossier, blockers, warnings);
+   validateCapabilityPackets(dossier, capabilityPackets, blockers, warnings);
+-  validateMarketReadinessPackets(dossier, marketPackets, blockers, warnings, source);
++  validateMarketReadinessPackets(dossier, marketPackets, blockers, warnings, source, signed);
+ 
+   // Visibility: which optional headline gates actually evaluated anything. A
+   // minimal dossier no longer silently runs only the base checks — the report
+@@ -180,7 +204,9 @@
+     capability_evaluated: requiredCapabilityModels(dossier, capabilityPackets).length > 0,
+     market_evaluated: requiredMarketWorkstreams(dossier, marketPackets).length > 0,
+     lexi_required: dossier.lexi_required === true,
+-    breakout_evaluated: marketPackets.some((packet) => packet && packet.lexi_class_ui_status === "meets")
++    breakout_evaluated: marketPackets.some((packet) => packet && packet.lexi_class_ui_status === "meets"),
++    signing_enforced: signed,
++    provenance_enforced: signed
+   };
+ 
+   const gateStatus = blockers.length === 0 ? "pass" : "blocked";
+@@ -206,7 +232,7 @@
+   };
+ }
+ 
+-function validateMarketReadinessPackets(dossier, marketPackets, blockers, warnings, source = {}) {
++function validateMarketReadinessPackets(dossier, marketPackets, blockers, warnings, source = {}, signed = false) {
+   const requiredWorkstreams = requiredMarketWorkstreams(dossier, marketPackets);
+   if (requiredWorkstreams.length === 0) return;
+ 
+@@ -246,7 +272,7 @@
+     }
+ 
+     if (packet.lexi_class_ui_status === "meets") {
+-      validateBreakoutRecord(packet, blockers, dossier, source);
++      validateBreakoutRecord(packet, blockers, warnings, dossier, source, signed);
+     }
+ 
+     if (
+@@ -274,7 +300,7 @@
+ // rebuilds the record's declarative read-only checks and RE-RUNS them against the
+ // real filesystem. The verdict comes from the gate's own re-run, not from the
+ // packet's `converged` boolean — so fabricated or absent facts cannot pass.
+-function validateBreakoutRecord(packet, blockers, dossier, source) {
++function validateBreakoutRecord(packet, blockers, warnings, dossier, source, signed = false) {
+   const model = packet?.model ?? "unknown";
+   const record = packet?.breakout;
+ 
+@@ -308,6 +334,17 @@
+     const detail = result.failing.map((f) => f.detail || f.id).join("; ");
+     blockers.push(`${model} breakout record FAILED gate re-verification (${result.failing.length}/${result.reverifiable} checks failed): ${detail}.`);
+   }
++
++  // Sufficiency floor (signed mode only — legacy dossiers keep today's behavior).
++  if (signed) {
++    if (result.reverifiable > 0 && !result.hasFileContains) {
++      blockers.push(`${model} 'meets' evidence is existence-only; signed mode requires at least one file_contains check.`);
++    }
++    for (const empty of result.emptyEvidenceFiles) {
++      blockers.push(`${model} 'meets' evidence file is empty (zero-byte): ${empty}.`);
++    }
++    warnings.push(`${model} breakout re-verify root is dossier-chosen (affected_directories[0]); checks prove truth, not sufficiency.`);
++  }
+ }
+ 
+ // Path-insensitive doc identity: separators and case do not change whether a
+diff -ruN pristine/build-gate/package.json working/build-gate/package.json
+--- pristine/build-gate/package.json	2026-06-27 12:41:46.021805000 -0400
++++ working/build-gate/package.json	2026-06-27 13:27:32.347266800 -0400
+@@ -5,8 +5,8 @@
+   "type": "module",
+   "description": "Local Codex validator for multi-model build-gate dossiers and approval packets.",
+   "scripts": {
+-    "check": "node --check gate.mjs && node --check scripts/test-gate.mjs && node --check scripts/stress-test-gate.mjs",
+-    "test": "npm run check && node scripts/test-gate.mjs && node scripts/stress-test-gate.mjs"
++    "check": "node --check gate.mjs && node --check sign.mjs && node --check council.mjs && node --check scripts/test-gate.mjs && node --check scripts/test-sign.mjs && node --check scripts/test-trust.mjs && node --check scripts/test-council-orchestrator.mjs && node --check scripts/stress-test-gate.mjs && node --check scripts/stress-tests.mjs",
++    "test": "npm run check && node scripts/test-gate.mjs && node scripts/test-sign.mjs && node scripts/test-trust.mjs && node scripts/test-council-orchestrator.mjs && node scripts/stress-test-gate.mjs && node scripts/stress-tests.mjs && npm --prefix ../breakout test"
+   },
+   "engines": {
+     "node": ">=18"
+diff -ruN pristine/build-gate/scripts/test-council-orchestrator.mjs working/build-gate/scripts/test-council-orchestrator.mjs
+--- pristine/build-gate/scripts/test-council-orchestrator.mjs	1969-12-31 19:00:00.000000000 -0500
++++ working/build-gate/scripts/test-council-orchestrator.mjs	2026-06-27 19:16:49.724466700 -0400
+@@ -0,0 +1,236 @@
++#!/usr/bin/env node
++import assert from "node:assert/strict";
++import os from "node:os";
++import { runCouncil, planSeats, maxConcurrency, liveSeatCaller, agyApprovalPacket } from "../council.mjs";
++import { verifyPacket } from "../sign.mjs";
++import { validateRecords } from "../gate.mjs";
++// Cross-package (integration): the agy seat consumes the REAL agy_checkpoint
++// output, so the test exercises the actual connector function — no drift.
++import { agyCheckpoint, agyAttestation } from "../../connectors/ai-peer-mcp/lib.mjs";
++
++process.env.TELOS_SECRET_CLAUDE = "cs";
++process.env.TELOS_SECRET_AGY = "as";
++process.env.TELOS_SECRET_CODEX = "ds";
++
++const okSeatCaller = async ({ model }) => ({
++  packet: { build_id: "c1", use_case: "u", model, role: "approver", decision: "approve", docs_reviewed: [], required_edits: [], hard_stops: [], proposal_ref: "r", confidence: "high", timestamp: "2026-06-27T00:00:00Z" },
++  provenance: { model: `real-${model}`, source: "ai-peer-mcp", response_id: `resp_${model}` }
++});
++
++// --- fan-out: signed + provenance-stamped, order preserved ---
++{
++  const seats = [{ model: "claude", role: "approver" }, { model: "agy", role: "approver" }, { model: "codex", role: "approver" }];
++  const results = await runCouncil({ seats, callSeat: okSeatCaller, dossier: { build_id: "c1" } });
++  assert.equal(results.length, 3);
++  assert.deepEqual(results.map((r) => r.model), ["claude", "agy", "codex"], "results preserve seat order");
++  for (const r of results) {
++    assert.equal(r.ok, true, `${r.model} should succeed`);
++    assert.equal(r.signed, true, `${r.model} should be signed`);
++    assert.ok(r.packet.signature, "packet must carry a signature");
++    assert.ok(r.packet.provenance.response_id.startsWith("resp_"), "provenance preserved");
++    const secret = { claude: "cs", agy: "as", codex: "ds" }[r.model];
++    assert.equal(verifyPacket(r.packet, secret).ok, true, "signed packet must verify");
++  }
++}
++
++// --- failure handling: thrown / empty seat -> ok:false (never a rejection) ---
++{
++  const boom = await runCouncil({ seats: [{ model: "claude" }], callSeat: async () => { throw new Error("seat down"); }, dossier: {} });
++  assert.equal(boom[0].ok, false);
++  assert.match(boom[0].reason, /seat down/);
++  const empty = await runCouncil({ seats: [{ model: "claude" }], callSeat: async () => ({}), dossier: {} });
++  assert.equal(empty[0].ok, false);
++  assert.match(empty[0].reason, /no packet/);
++}
++
++// --- planSeats: roster sized FROM the job ---
++{
++  const simple = planSeats({ build_id: "x" });
++  assert.deepEqual(simple.map((s) => s.model), ["claude", "agy", "codex", "grok"], "non-market job = required seats + grok advisory");
++  assert.equal(simple.find((s) => s.model === "grok").role, "advisory");
++
++  const market = planSeats({ build_id: "x", market_bound: true, required_market_workstreams: ["backend-schema", "security-trust"] });
++  assert.equal(market.length, 6, "market-bound job adds one lens seat per workstream");
++  const lenses = market.filter((s) => s.role === "market-lens");
++  assert.deepEqual(lenses.map((s) => s.workstream), ["backend-schema", "security-trust"]);
++}
++
++// --- runCouncil derives seats from the dossier when seats omitted ---
++{
++  const derived = await runCouncil({ callSeat: okSeatCaller, dossier: { build_id: "c1" } });
++  assert.deepEqual(derived.map((r) => r.model), ["claude", "agy", "codex", "grok"], "omitted seats => planSeats(dossier)");
++}
++
++// --- maxConcurrency: clamped to [1, cores-2] ---
++{
++  const hostCap = Math.max(1, os.cpus().length - 2);
++  assert.equal(maxConcurrency(1), Math.min(1, hostCap), "explicit small request honored");
++  assert.equal(maxConcurrency(10_000), hostCap, "huge request clamped to host cap");
++  assert.equal(maxConcurrency(undefined), hostCap, "absent => host cap");
++  assert.equal(maxConcurrency(0), hostCap, "non-positive => host cap");
++}
++
++// --- bounded pool: peak concurrency never exceeds the cap, all seats complete ---
++{
++  let active = 0, peak = 0;
++  const tracking = async ({ model }) => {
++    active++; peak = Math.max(peak, active);
++    await new Promise((r) => setTimeout(r, 5));
++    active--;
++    return okSeatCaller({ model });
++  };
++  const limit = maxConcurrency(2);
++  const seats = Array.from({ length: 6 }, (_, i) => ({ model: ["claude", "agy", "codex"][i % 3], role: "approver" }));
++  const results = await runCouncil({ seats, callSeat: tracking, dossier: {}, maxConcurrency: 2 });
++  assert.equal(results.length, 6, "all seats complete under the cap");
++  assert.ok(peak <= limit, `peak concurrency ${peak} must not exceed cap ${limit}`);
++  assert.ok(peak >= Math.min(2, limit), `pool should parallelize up to the cap (peak=${peak}, limit=${limit})`);
++}
++
++// --- liveSeatCaller: every seat binds to its OWN real provenance (no borrowing) ---
++// codex -> codex_ask (real OpenAI response id), agy -> agy_checkpoint (local
++// attestation). This is the wiring that retires the recursion-run residual where
++// agy/codex shared claude's council response_id.
++{
++  const packetFor = (model) => JSON.stringify({
++    build_id: "live1", use_case: "u", model, role: "approver", decision: "approve",
++    docs_reviewed: [], required_edits: [], hard_stops: [], proposal_ref: "r",
++    confidence: "high", timestamp: "2026-06-27T00:00:00Z"
++  });
++
++  // Fake MCP client returning the exact text shapes the real server returns:
++  // ask tools (with include_provenance) -> {text, provenance} envelope;
++  // agy_checkpoint -> the checkpoint with an embedded local-deterministic attestation.
++  const fakeClient = {
++    async callTool(tool, args) {
++      if (tool === "claude_ask") {
++        assert.equal(args.include_provenance, true, "chat seats must request the provenance envelope");
++        return JSON.stringify({ text: packetFor("claude"), provenance: { model: "claude-sonnet-4-6", response_id: "msg_live_claude", source: "ai-peer-mcp/claude_ask" } });
++      }
++      if (tool === "codex_ask") {
++        assert.equal(args.include_provenance, true, "chat seats must request the provenance envelope");
++        return JSON.stringify({ text: packetFor("codex"), provenance: { model: "gpt-4o-2024-08-06", response_id: "chatcmpl_live_codex", source: "ai-peer-mcp/codex_ask" } });
++      }
++      if (tool === "agy_checkpoint") {
++        return JSON.stringify({
++          build_id: "live1", use_case: "u", model: "agy", role: "approver", decision: "approve",
++          docs_reviewed: [], required_edits: [], hard_stops: [], proposal_ref: "r",
++          confidence: "high", timestamp: "2026-06-27T00:00:00Z",
++          provenance: { model: "agy-checkpoint", response_id: "agy-0123456789abcdef0123456789abcdef01234567", source: "ai-peer-mcp/agy_checkpoint", attestation: "local-deterministic", engine_version: "agy-checkpoint/1" }
++        });
++      }
++      throw new Error(`unexpected tool ${tool}`);
++    }
++  };
++
++  const promptFor = (model) => model === "agy"
++    ? { tool: "agy_checkpoint", args: { phase: "p", scope: "s" } }
++    : { tool: `${model}_ask`, prompt: "objective", system: "sys" };
++
++  const callSeat = liveSeatCaller({ client: fakeClient, promptFor, parsePacket: (t) => JSON.parse(t) });
++  const seats = [{ model: "claude", role: "approver" }, { model: "agy", role: "approver" }, { model: "codex", role: "approver" }];
++  const results = await runCouncil({ seats, callSeat, dossier: { build_id: "live1" } });
++
++  const placeholder = /^$|_self$|^self$|placeholder/i; // the gate's reject filter
++
++  const codex = results.find((r) => r.model === "codex");
++  assert.equal(codex.ok, true, "codex seat should succeed");
++  assert.equal(codex.packet.model, "codex", "codex packet parsed from the envelope text");
++  assert.equal(codex.packet.provenance.response_id, "chatcmpl_live_codex", "codex binds to its OWN OpenAI response id");
++  assert.equal(codex.packet.provenance.model, "gpt-4o-2024-08-06", "codex provenance carries the real OpenAI model");
++  assert.equal(codex.packet.provenance.tool, "codex_ask", "codex provenance records the tool used");
++  assert.ok(!placeholder.test(codex.packet.provenance.response_id), "codex id passes the gate placeholder filter");
++
++  const agy = results.find((r) => r.model === "agy");
++  assert.equal(agy.ok, true, "agy seat should succeed");
++  assert.match(agy.packet.provenance.response_id, /^agy-[0-9a-f]{40}$/, "agy carries its OWN content-addressed attestation id");
++  assert.equal(agy.packet.provenance.attestation, "local-deterministic");
++  assert.ok(!placeholder.test(agy.packet.provenance.response_id), "agy id passes the gate placeholder filter");
++
++  const claude = results.find((r) => r.model === "claude");
++  assert.equal(claude.packet.provenance.response_id, "msg_live_claude", "claude binds to its own response id");
++
++  // The borrowing the residual called out is gone: every seat has a DISTINCT id.
++  const ids = results.map((r) => r.packet.provenance.response_id);
++  assert.equal(new Set(ids).size, ids.length, "every seat has a distinct provenance id (no borrowing)");
++
++  // Seats are still signed + verifiable (provenance wiring didn't break signing).
++  for (const r of results) {
++    const secret = { claude: "cs", agy: "as", codex: "ds" }[r.model];
++    assert.equal(verifyPacket(r.packet, secret).ok, true, `${r.model} signed packet must verify`);
++  }
++}
++
++// --- liveSeatCaller fail-closed: a response with NO structured provenance gets
++// response_id:null, NEVER an id scraped from the model's own prose. A model that
++// emits "response_id: msg_legit_123" must not thereby authenticate itself. ---
++{
++  const proseClient = {
++    async callTool() {
++      // A bare prose response that even *contains* a plausible id token — which
++      // must be ignored (it is model-authored, not server-issued).
++      return 'decision approved. response_id: msg_attacker_chose_this .';
++    }
++  };
++  const callSeat = liveSeatCaller({
++    client: proseClient,
++    promptFor: () => ({ tool: "claude_ask", prompt: "p", system: "s" }),
++    parsePacket: () => ({ build_id: "p1", model: "claude", role: "approver", decision: "approve", docs_reviewed: [], required_edits: [], hard_stops: [], proposal_ref: "r", confidence: "high", timestamp: "2026-06-27T00:00:00Z" })
++  });
++  const [r] = await runCouncil({ seats: [{ model: "claude", role: "approver" }], callSeat, dossier: {} });
++  assert.equal(r.ok, true, "prose seat still yields a packet (no throw)");
++  assert.equal(r.packet.provenance.response_id, null, "no structured provenance => response_id null (gate blocks; never scraped from prose)");
++}
++
++// --- I-2 end-to-end: the REAL agy_checkpoint output becomes a gate-valid
++// approval packet (not just provenance-correct). Proves the agy seat works end
++// to end, using the actual agyCheckpoint function + the agyApprovalPacket adapter
++// + the gate's own validateRecords. ---
++{
++  const meta = {
++    build_id: "e2e1", use_case: "telos-self-upgrade", proposal_ref: "e2e1",
++    timestamp: "2026-06-27T00:00:00Z", docs_reviewed: ["spec.md"]
++  };
++
++  // The exact text the server returns for agy_checkpoint: the real checkpoint
++  // with its embedded local-deterministic attestation.
++  const advanceCheckpoint = agyCheckpoint({ required_packets: ["x"], present_packets: ["x"], protected_path_check: "pass" });
++  assert.equal(advanceCheckpoint.phase_gate_status, "advance", "checkpoint should advance");
++  const serverText = JSON.stringify({ ...advanceCheckpoint, provenance: agyAttestation(advanceCheckpoint) });
++
++  const callSeat = liveSeatCaller({
++    client: { async callTool() { return serverText; } },
++    promptFor: () => ({ tool: "agy_checkpoint", args: { required_packets: ["x"], present_packets: ["x"], protected_path_check: "pass" } }),
++    // production wiring: parse the checkpoint, then adapt it into an approval packet.
++    parsePacket: (t) => agyApprovalPacket(JSON.parse(t), meta)
++  });
++
++  const [agyResult] = await runCouncil({ seats: [{ model: "agy", role: "approver" }], callSeat, dossier: { build_id: "e2e1" } });
++  assert.equal(agyResult.ok, true, "agy seat should succeed");
++  const agyPkt = agyResult.packet;
++
++  // The adapter produced every field validatePacketShape requires.
++  for (const f of ["build_id", "use_case", "model", "role", "docs_reviewed", "proposal_ref", "decision", "required_edits", "hard_stops", "confidence", "timestamp"]) {
++    assert.ok(agyPkt[f] !== undefined, `agy packet missing gate-required field '${f}'`);
++  }
++  assert.equal(agyPkt.decision, "approve", "advance checkpoint => decision approve");
++  assert.equal(agyPkt.provenance.attestation, "local-deterministic", "agy packet carries its own attestation");
++  assert.match(agyPkt.provenance.response_id, /^agy-[0-9a-f]{40}$/);
++
++  // The gate ITSELF accepts the agy packet (no agy shape/decision blockers).
++  const dossier = { build_id: "e2e1", use_case: "telos-self-upgrade", objective: "o", required_docs: ["spec.md"], write_targets: [], protected_paths: [] };
++  const mkApprover = (model) => ({ build_id: "e2e1", use_case: "telos-self-upgrade", model, role: "approver", docs_reviewed: ["spec.md"], proposal_ref: "e2e1", decision: "approve", required_edits: [], hard_stops: [], confidence: "high", timestamp: "2026-06-27T00:00:00Z" });
++  const report = validateRecords(dossier, [agyPkt, mkApprover("claude"), mkApprover("codex")]);
++  const agyBlockers = report.blockers.filter((b) => /agy/i.test(b));
++  assert.deepEqual(agyBlockers, [], `agy packet must raise no gate blockers; got: ${JSON.stringify(agyBlockers)}`);
++
++  // A BLOCKED checkpoint must NOT approve (fail-closed governance).
++  const blockedCheckpoint = agyCheckpoint({ required_packets: ["a", "b"], present_packets: ["a"] });
++  const blockedPkt = agyApprovalPacket(blockedCheckpoint, meta);
++  assert.equal(blockedPkt.decision, "revise", "blocked checkpoint => decision NOT approve");
++  assert.ok(blockedPkt.hard_stops.length > 0, "blocked checkpoint carries hard_stops");
++  const blockedReport = validateRecords(dossier, [blockedPkt, mkApprover("claude"), mkApprover("codex")]);
++  assert.ok(blockedReport.blockers.some((b) => /agy/i.test(b)), "a blocked agy checkpoint must block the gate");
++}
++
++console.log("test-council-orchestrator.mjs OK");
+diff -ruN pristine/build-gate/scripts/test-gate.mjs working/build-gate/scripts/test-gate.mjs
+--- pristine/build-gate/scripts/test-gate.mjs	2026-06-27 12:41:45.767742700 -0400
++++ working/build-gate/scripts/test-gate.mjs	2026-06-27 13:19:30.975771500 -0400
+@@ -3,18 +3,22 @@
+ import assert from "node:assert/strict";
+ import { spawnSync } from "node:child_process";
+ import { validateGate, validateRecords } from "../gate.mjs";
++import path from "node:path";
++import { fileURLToPath } from "node:url";
++const PKG_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
++const ex = (p) => path.join(PKG_ROOT, p);
+ 
+ const passReport = await validateGate(
+-  "examples/pass/dossier.json",
+-  "examples/pass/packets"
++  ex("examples/pass/dossier.json"),
++  ex("examples/pass/packets")
+ );
+ assert.equal(passReport.gate_status, "pass");
+ assert.equal(passReport.safe_next_action, "begin-build");
+ assert.deepEqual(passReport.blockers, []);
+ 
+ const missingDocReport = await validateGate(
+-  "examples/missing-doc/dossier.json",
+-  "examples/missing-doc/packets"
++  ex("examples/missing-doc/dossier.json"),
++  ex("examples/missing-doc/packets")
+ );
+ assert.equal(missingDocReport.gate_status, "blocked");
+ assert.ok(
+@@ -23,8 +27,8 @@
+ );
+ 
+ const protectedPathReport = await validateGate(
+-  "examples/protected-path/dossier.json",
+-  "examples/protected-path/packets"
++  ex("examples/protected-path/dossier.json"),
++  ex("examples/protected-path/packets")
+ );
+ assert.equal(protectedPathReport.gate_status, "blocked");
+ assert.ok(
+@@ -126,9 +130,9 @@
+ assert.match(cliBlocked.stdout, /"gate_status": "blocked"/);
+ 
+ const prototypePassReport = await validateGate(
+-  "examples/prototype-pass/dossier.json",
+-  "examples/prototype-pass/packets",
+-  { capabilityDir: "examples/prototype-pass/capabilities" }
++  ex("examples/prototype-pass/dossier.json"),
++  ex("examples/prototype-pass/packets"),
++  { capabilityDir: ex("examples/prototype-pass/capabilities") }
+ );
+ assert.equal(prototypePassReport.gate_status, "pass");
+ assert.deepEqual(
+@@ -141,9 +145,9 @@
+ );
+ 
+ const capabilityBlockedReport = await validateGate(
+-  "examples/capability-blocked/dossier.json",
+-  "examples/capability-blocked/packets",
+-  { capabilityDir: "examples/capability-blocked/capabilities" }
++  ex("examples/capability-blocked/dossier.json"),
++  ex("examples/capability-blocked/packets"),
++  { capabilityDir: ex("examples/capability-blocked/capabilities") }
+ );
+ assert.equal(capabilityBlockedReport.gate_status, "blocked");
+ assert.ok(
+@@ -152,11 +156,11 @@
+ );
+ 
+ const convergenceDemoReport = await validateGate(
+-  "examples/convergence-demo/dossier.json",
+-  "examples/convergence-demo/packets",
++  ex("examples/convergence-demo/dossier.json"),
++  ex("examples/convergence-demo/packets"),
+   {
+-    capabilityDir: "examples/convergence-demo/capabilities",
+-    marketReadinessDir: "examples/convergence-demo/market"
++    capabilityDir: ex("examples/convergence-demo/capabilities"),
++    marketReadinessDir: ex("examples/convergence-demo/market")
+   }
+ );
+ assert.equal(convergenceDemoReport.gate_status, "pass");
+@@ -609,7 +613,7 @@
+ assert.equal(headlineReport.headline_checks.capability_evaluated, false);
+ 
+ // (#4) Dogfood: the gate must pass its own construction through itself.
+-const selfReport = await validateGate("examples/self/dossier.json", "examples/self/packets");
++const selfReport = await validateGate(ex("examples/self/dossier.json"), ex("examples/self/packets"));
+ assert.equal(
+   selfReport.gate_status,
+   "pass",
+@@ -678,12 +682,11 @@
+     converged: true,
+     surviving_blockers: [],
+     go_to_market_blockers: [],
+-    // Declarative, read-only checks the gate re-runs itself. These resolve under
+-    // the gate's base dir (cwd = build-gate when the suite runs) and genuinely
+-    // pass — the gate confirms real files, it does not trust `converged`.
++    // Declarative, read-only checks the gate re-runs itself. Paths are absolute
++    // so they resolve correctly regardless of the caller's cwd.
+     checks: [
+-      { type: "file_exists", path: "gate.mjs" },
+-      { type: "file_contains", path: "package.json", needle: "v4-build-gate" }
++      { type: "file_exists", path: ex("gate.mjs") },
++      { type: "file_contains", path: ex("package.json"), needle: "v4-build-gate" }
+     ],
+     rounds: [
+       { round: 1, blockers: ["data computed but not rendered"], resolved: ["data computed but not rendered"] },
+diff -ruN pristine/build-gate/scripts/test-sign.mjs working/build-gate/scripts/test-sign.mjs
+--- pristine/build-gate/scripts/test-sign.mjs	1969-12-31 19:00:00.000000000 -0500
++++ working/build-gate/scripts/test-sign.mjs	2026-06-27 12:44:26.041410700 -0400
+@@ -0,0 +1,37 @@
++#!/usr/bin/env node
++import assert from "node:assert/strict";
++import { canonicalize, signPacket, verifyPacket, secretFor } from "../sign.mjs";
++
++const base = { model: "claude", decision: "approve", build_id: "b1", nested: { b: 2, a: 1 } };
++
++// canonical form is key-order independent
++const reordered = { nested: { a: 1, b: 2 }, build_id: "b1", decision: "approve", model: "claude" };
++assert.equal(canonicalize(base), canonicalize(reordered), "canonicalize must be key-order independent");
++
++// sign + verify roundtrip
++const signed = signPacket(base, "s3cr3t");
++assert.equal(signed.signature.alg, "HMAC-SHA256");
++assert.match(signed.signature.value, /^[0-9a-f]{64}$/);
++assert.deepEqual(verifyPacket(signed, "s3cr3t"), { ok: true, reason: "ok" });
++
++// tamper detection
++const tampered = { ...signed, decision: "reject" };
++assert.equal(verifyPacket(tampered, "s3cr3t").ok, false, "mutated field must fail verify");
++
++// wrong secret
++assert.equal(verifyPacket(signed, "wrong").ok, false, "wrong secret must fail verify");
++
++// missing signature / missing secret
++assert.equal(verifyPacket(base, "s3cr3t").ok, false, "no signature must fail");
++assert.equal(verifyPacket(signed, "").ok, false, "empty secret must fail");
++
++// canonicalize excludes the signature field (so verify is stable)
++assert.equal(canonicalize(signed), canonicalize(base), "signature field must be excluded from canonical form");
++
++// secretFor reads env
++process.env.TELOS_SECRET_CLAUDE = "abc";
++assert.equal(secretFor("claude"), "abc");
++delete process.env.TELOS_SECRET_CLAUDE;
++assert.equal(secretFor("claude"), null);
++
++console.log("test-sign.mjs OK");
+diff -ruN pristine/build-gate/scripts/test-trust.mjs working/build-gate/scripts/test-trust.mjs
+--- pristine/build-gate/scripts/test-trust.mjs	1969-12-31 19:00:00.000000000 -0500
++++ working/build-gate/scripts/test-trust.mjs	2026-06-27 13:57:22.209774500 -0400
+@@ -0,0 +1,155 @@
++#!/usr/bin/env node
++import assert from "node:assert/strict";
++import { mkdtempSync, writeFileSync } from "node:fs";
++import os from "node:os";
++import path from "node:path";
++import { validateRecords } from "../gate.mjs";
++import { signPacket } from "../sign.mjs";
++
++// Local test secrets (HMAC floor is keyless — no API keys involved).
++process.env.TELOS_SECRET_CLAUDE = "claude-secret";
++process.env.TELOS_SECRET_AGY = "agy-secret";
++process.env.TELOS_SECRET_CODEX = "codex-secret";
++const SECRET = { claude: "claude-secret", agy: "agy-secret", codex: "codex-secret" };
++
++function approval(model, docs = []) {
++  return {
++    build_id: "trust-demo", use_case: "telos-trust", model, role: "approver",
++    docs_reviewed: docs, proposal_ref: "ref", decision: "approve",
++    required_edits: [], hard_stops: [], confidence: "high", timestamp: "2026-06-27T00:00:00Z",
++    provenance: { model: `real-${model}`, source: "ai-peer-mcp", response_id: `resp_${model}_123` }
++  };
++}
++function signedTrio() {
++  return ["claude", "agy", "codex"].map((m) => signPacket(approval(m, ["doc-a"]), SECRET[m]));
++}
++const dossier = {
++  build_id: "trust-demo", use_case: "telos-trust", objective: "Prove signed mode.",
++  required_docs: ["doc-a"], write_targets: ["shared/Coordination/x.md"], protected_paths: [],
++  trust_mode: "signed"
++};
++
++// 1. Happy path: signed trio with real provenance -> pass.
++assert.equal(validateRecords(dossier, signedTrio()).gate_status, "pass", "valid signed trio should pass");
++
++// 2. Tampered signature -> blocked.
++{
++  const trio = signedTrio();
++  trio[0] = { ...trio[0], decision: "approve", confidence: "low" }; // mutate after signing
++  const r = validateRecords(dossier, trio);
++  assert.equal(r.gate_status, "blocked");
++  assert.ok(r.blockers.some((b) => b.includes("signature invalid")), "tampered packet must block on signature");
++}
++
++// 3. Missing provenance -> blocked.
++{
++  const trio = signedTrio().map((p) => ({ ...p }));
++  delete trio[1].provenance;
++  const resigned = [signPacket(trio[1], SECRET.agy)]; // re-sign so signature is valid but provenance absent
++  const r = validateRecords(dossier, [trio[0], resigned[0], trio[2]]);
++  assert.equal(r.gate_status, "blocked");
++  assert.ok(r.blockers.some((b) => b.includes("carries no provenance")), "absent provenance must block in signed mode");
++}
++
++// 4. Placeholder response_id -> blocked.
++{
++  const p = approval("codex", ["doc-a"]);
++  p.provenance.response_id = "codex_self";
++  const trio = [signPacket(approval("claude", ["doc-a"]), SECRET.claude), signPacket(approval("agy", ["doc-a"]), SECRET.agy), signPacket(p, SECRET.codex)];
++  const r = validateRecords(dossier, trio);
++  assert.equal(r.gate_status, "blocked");
++  assert.ok(r.blockers.some((b) => b.includes("placeholder provenance")), "placeholder response_id must block");
++}
++
++// 5. Missing secret -> blocked.
++{
++  delete process.env.TELOS_SECRET_AGY;
++  const r = validateRecords(dossier, signedTrio());
++  assert.equal(r.gate_status, "blocked");
++  assert.ok(r.blockers.some((b) => b.includes("no secret to verify agy")), "missing secret must block");
++  process.env.TELOS_SECRET_AGY = "agy-secret";
++}
++
++// 6. Legacy mode (no trust_mode) ignores signatures/provenance entirely.
++{
++  const legacy = { ...dossier }; delete legacy.trust_mode;
++  const plain = ["claude", "agy", "codex"].map((m) => approval(m, ["doc-a"])); // unsigned, real-ish provenance
++  const r = validateRecords(legacy, plain);
++  assert.equal(r.gate_status, "pass", "legacy mode must ignore signatures");
++}
++
++// 7. Sufficiency: signed-mode meets with existence-only checks -> blocked; with file_contains on non-empty -> pass that aspect.
++{
++  const dir = mkdtempSync(path.join(os.tmpdir(), "telos-meets-"));
++  writeFileSync(path.join(dir, "art.txt"), "marker-TELOS-OK");
++  writeFileSync(path.join(dir, "empty.txt"), "");
++
++  const marketDossier = {
++    ...dossier, idea_id: "telos-upgrade", market_bound: true, user_facing_frontend: false,
++    affected_directories: [dir],
++    required_market_workstreams: ["frontend-brand-experience"]
++  };
++  function marketPacket(checks) {
++    return {
++      build_id: "trust-demo", idea_id: "telos-upgrade", model: "claude", project_state: "prototype",
++      workstreams_reviewed: ["frontend-brand-experience"], business_thesis: "t", target_users: ["u"],
++      architecture_findings: [], backend_schema_findings: [], security_findings: [], accuracy_eval_findings: [],
++      scalability_findings: [], frontend_design_findings: [], lexi_class_ui_status: "meets",
++      go_to_market_blockers: [], recommendation_to_claude: "ship", timestamp: "2026-06-27T00:00:00Z",
++      breakout: {
++        workstream: "frontend-brand-experience", converged: true, finalStatus: "meets",
++        surviving_blockers: [], rounds: [{ round: 1 }], checks
++      }
++    };
++  }
++  const market = (checks) => [signPacket(marketPacket(checks), SECRET.claude)];
++
++  const existenceOnly = validateRecords(marketDossier, signedTrio(), {}, [], market([{ type: "file_exists", path: "art.txt" }]));
++  assert.ok(existenceOnly.blockers.some((b) => b.includes("existence-only")), "existence-only meets must block in signed mode");
++
++  const emptyEvidence = validateRecords(marketDossier, signedTrio(), {}, [], market([{ type: "file_contains", path: "empty.txt", needle: "" }, { type: "file_exists", path: "empty.txt" }]));
++  assert.ok(emptyEvidence.blockers.some((b) => b.includes("zero-byte")), "zero-byte evidence must block in signed mode");
++
++  const good = validateRecords(marketDossier, signedTrio(), {}, [], market([{ type: "file_contains", path: "art.txt", needle: "marker-TELOS-OK" }]));
++  assert.equal(good.gate_status, "pass", "real file_contains on non-empty artifact should pass");
++}
++
++// 8. Empty-needle bypass is closed in signed mode: a meets packet whose ONLY
++//    evidence is file_contains with needle:"" on a zero-byte file must be
++//    blocked — the gate must report "existence-only" or "zero-byte".
++{
++  const dir = mkdtempSync(path.join(os.tmpdir(), "telos-bypass-gate-"));
++  writeFileSync(path.join(dir, "empty.txt"), "");
++
++  const bypassDossier = {
++    ...dossier, idea_id: "telos-upgrade", market_bound: true, user_facing_frontend: false,
++    affected_directories: [dir],
++    required_market_workstreams: ["frontend-brand-experience"]
++  };
++  function bypassMarketPacket(checks) {
++    return {
++      build_id: "trust-demo", idea_id: "telos-upgrade", model: "claude", project_state: "prototype",
++      workstreams_reviewed: ["frontend-brand-experience"], business_thesis: "t", target_users: ["u"],
++      architecture_findings: [], backend_schema_findings: [], security_findings: [], accuracy_eval_findings: [],
++      scalability_findings: [], frontend_design_findings: [], lexi_class_ui_status: "meets",
++      go_to_market_blockers: [], recommendation_to_claude: "ship", timestamp: "2026-06-27T00:00:00Z",
++      breakout: {
++        workstream: "frontend-brand-experience", converged: true, finalStatus: "meets",
++        surviving_blockers: [], rounds: [{ round: 1 }], checks
++      }
++    };
++  }
++  const bypassMarket = (checks) => [signPacket(bypassMarketPacket(checks), SECRET.claude)];
++
++  const emptyNeedleBypass = validateRecords(
++    bypassDossier, signedTrio(), {}, [],
++    bypassMarket([{ type: "file_contains", path: "empty.txt", needle: "" }])
++  );
++  assert.equal(emptyNeedleBypass.gate_status, "blocked", "empty-needle file_contains on zero-byte must be blocked");
++  assert.ok(
++    emptyNeedleBypass.blockers.some((b) => b.includes("existence-only") || b.includes("zero-byte")),
++    "blocker must mention existence-only or zero-byte; got: " + JSON.stringify(emptyNeedleBypass.blockers)
++  );
++}
++
++console.log("test-trust.mjs OK");
+diff -ruN pristine/build-gate/sign.mjs working/build-gate/sign.mjs
+--- pristine/build-gate/sign.mjs	1969-12-31 19:00:00.000000000 -0500
++++ working/build-gate/sign.mjs	2026-06-27 12:44:39.273044200 -0400
+@@ -0,0 +1,49 @@
++// sign.mjs — per-model HMAC packet signing (identity floor for trust_mode "signed").
++//
++// HONEST RESIDUAL: a determined single owner holding every TELOS_SECRET_* can
++// still forge all packets. This defeats CARELESS cross-signing and accidental
++// rubber-stamping, not a malicious owner — the chosen (honest-but-careless)
++// threat model. Identity here is integrity + binding, not non-repudiation.
++
++import { createHmac, timingSafeEqual } from "node:crypto";
++
++function stripSignature(obj) {
++  if (!obj || typeof obj !== "object" || Array.isArray(obj)) return obj;
++  const { signature, ...rest } = obj;
++  return rest;
++}
++
++function sortValue(value) {
++  if (Array.isArray(value)) return value.map(sortValue);
++  if (value && typeof value === "object") {
++    return Object.keys(value).sort().reduce((acc, k) => { acc[k] = sortValue(value[k]); return acc; }, {});
++  }
++  return value;
++}
++
++export function canonicalize(packet) {
++  return JSON.stringify(sortValue(stripSignature(packet)));
++}
++
++export function signPacket(packet, secret) {
++  const value = createHmac("sha256", String(secret)).update(canonicalize(packet)).digest("hex");
++  return { ...packet, signature: { alg: "HMAC-SHA256", value, signed_fields: "canonical-minus-signature" } };
++}
++
++export function verifyPacket(packet, secret) {
++  if (!packet || typeof packet !== "object") return { ok: false, reason: "packet not an object" };
++  const sig = packet.signature;
++  if (!sig || typeof sig !== "object" || typeof sig.value !== "string") return { ok: false, reason: "missing signature" };
++  if (sig.alg !== "HMAC-SHA256") return { ok: false, reason: `unsupported alg '${sig.alg}'` };
++  if (typeof secret !== "string" || secret.length === 0) return { ok: false, reason: "no secret to verify against" };
++  const expected = createHmac("sha256", secret).update(canonicalize(packet)).digest("hex");
++  const a = Buffer.from(expected, "hex");
++  const b = Buffer.from(sig.value, "hex");
++  if (a.length !== b.length) return { ok: false, reason: "signature length mismatch" };
++  return timingSafeEqual(a, b) ? { ok: true, reason: "ok" } : { ok: false, reason: "signature mismatch" };
++}
++
++export function secretFor(model) {
++  if (typeof model !== "string" || !model) return null;
++  return process.env["TELOS_SECRET_" + model.toUpperCase()] || null;
++}
+diff -ruN pristine/connectors/ai-peer-mcp/README.md working/connectors/ai-peer-mcp/README.md
+--- pristine/connectors/ai-peer-mcp/README.md	2026-06-27 13:10:42.114582200 -0400
++++ working/connectors/ai-peer-mcp/README.md	2026-06-27 19:07:03.087869000 -0400
+@@ -2,13 +2,23 @@
+ 
+ Local MCP server for the V4 multi-model workflow.
+ 
+-It exposes four tools:
++It exposes five tools:
+ 
+ - `claude_ask`: calls Claude through the Anthropic Messages API.
+ - `grok_ask`: calls Grok through xAI's OpenAI-compatible chat completions API.
++- `codex_ask`: calls Codex through OpenAI's chat completions API.
+ - `agy_checkpoint`: local phase/queue governance, no external key required.
+ - `council_review`: asks Claude for a proposal and Grok for adversarial review.
+ 
++**Provenance.** Each model tool surfaces *real* provenance so a downstream gate
++can bind a packet to the response that produced it (never a self-declared id):
++- `claude_ask` / `grok_ask` / `codex_ask` return raw prose by default; pass
++  `include_provenance: true` to get a `{ text, provenance: { model, response_id,
++  source } }` envelope where `model`/`response_id` come from the API response body.
++- `agy_checkpoint` is a local deterministic tool with no server-issued id, so it
++  embeds a content-addressed **attestation** (`response_id = "agy-" +
++  sha256(checkpoint)`) as its `provenance` — reproducible and verifiable by anyone.
++
+ This is a scaffold. It does not include API keys.
+ 
+ It is wired into `C:\Users\dsmce\.codex\config.toml` as `mcp_servers.ai_peer`. Restart Codex after changing environment variables so the app can launch the MCP server with the right credentials.
+@@ -18,7 +28,9 @@
+ - Node.js 18 or newer.
+ - `ANTHROPIC_API_KEY` for Claude tools.
+ - `XAI_API_KEY` for Grok tools.
+-- `ANTHROPIC_MODEL` and `XAI_MODEL`, or pass `model` in each tool call.
++- `OPENAI_API_KEY` for Codex tools (optional `OPENAI_BASE_URL` to override the endpoint).
++- `ANTHROPIC_MODEL`, `XAI_MODEL`, and `OPENAI_MODEL`, or pass `model` in each tool call.
++- `agy_checkpoint` requires no key.
+ 
+ ## Quick Check
+ 
+@@ -128,6 +140,21 @@
+ }
+ ```
+ 
++### `codex_ask`
++
++Arguments:
++
++```json
++{
++  "prompt": "Stress-test this plan for execution risk.",
++  "system": "You are Codex, implementation reviewer.",
++  "model": "optional override (else OPENAI_MODEL; bare 'codex' -> gpt-4o)",
++  "max_tokens": 2000,
++  "temperature": 0,
++  "include_provenance": false
++}
++```
++
+ ### `agy_checkpoint`
+ 
+ Arguments:
+diff -ruN pristine/connectors/ai-peer-mcp/lib.mjs working/connectors/ai-peer-mcp/lib.mjs
+--- pristine/connectors/ai-peer-mcp/lib.mjs	2026-06-27 13:10:42.125660200 -0400
++++ working/connectors/ai-peer-mcp/lib.mjs	2026-06-27 19:14:41.793003100 -0400
+@@ -1,10 +1,24 @@
+-// lib.mjs — pure response parsers, extracted so provenance capture is unit-
+-// testable without network or a running server.
++// lib.mjs — pure response parsers + the local agy attestation, extracted so
++// provenance capture is unit-testable without network or a running server.
+ //
+ // Provenance matters: a packet that self-declares `"model": "claude"` proves
+ // nothing. The model the API *actually answered with* (json.model) and the
+ // response id are real, server-issued provenance — surface them so "which model
+ // produced this" is captured from the response, not asserted by the caller.
++//
++// Two flavours of real provenance live here:
++//   - REMOTE (claude/grok/codex): the server-issued model + response id, read
++//     straight off the API response body.
++//   - LOCAL (agy): agy is a deterministic local tool with no server id, so its
++//     honest provenance is a content-addressed attestation — a hash over the
++//     checkpoint it produced. Same inputs => same id, and it is reproducible by
++//     anyone, which is exactly what makes it verifiable rather than self-declared.
++
++import { createHash } from "node:crypto";
++
++// Bump when the attestation payload shape or hashing changes (it is part of the
++// provenance record so consumers can tell which scheme produced an id).
++export const AGY_ENGINE_VERSION = "agy-checkpoint/1";
+ 
+ export function extractAnthropicText(json) {
+   if (!Array.isArray(json?.content)) {
+@@ -24,10 +38,108 @@
+   };
+ }
+ 
+-export function extractGrokResult(json) {
++// Shared parser for OpenAI-compatible chat-completion responses. xAI (Grok) and
++// OpenAI (Codex) return the same shape, so both Grok and Codex delegate here —
++// one place to keep the provenance extraction correct.
++export function extractChatCompletionResult(json) {
+   return {
+     text: json?.choices?.[0]?.message?.content ?? JSON.stringify(json, null, 2),
+     model: typeof json?.model === "string" ? json.model : null,
+     id: typeof json?.id === "string" ? json.id : null
+   };
+ }
++
++export function extractGrokResult(json) {
++  return extractChatCompletionResult(json);
++}
++
++// Codex is reached through OpenAI's chat-completions API (OpenAI-compatible),
++// so the response carries a real server-issued model + id just like Grok.
++export function extractOpenAIResult(json) {
++  return extractChatCompletionResult(json);
++}
++
++// Recursive, key-sorted JSON serialization so a hash over an object is
++// independent of key insertion order. Arrays keep their order (order is
++// meaningful); object keys are sorted. Mirrors the build-gate canonicalization
++// intent without pulling in that module (keeps lib.mjs dependency-light).
++export function stableStringify(value) {
++  // Normalize undefined to null so it always serializes to valid, deterministic
++  // JSON (mirrors JSON.stringify's treatment of undefined array elements).
++  if (value === undefined) return "null";
++  if (value === null || typeof value !== "object") return JSON.stringify(value);
++  if (Array.isArray(value)) return "[" + value.map(stableStringify).join(",") + "]";
++  const keys = Object.keys(value).sort();
++  return "{" + keys.map((k) => JSON.stringify(k) + ":" + stableStringify(value[k])).join(",") + "}";
++}
++
++// Local-deterministic provenance for the agy seat. agy has no remote model, so
++// instead of borrowing another model's response id we attest to exactly what agy
++// produced: response_id = "agy-" + sha256(canonical checkpoint). Reproducible,
++// non-placeholder, and bound to the checkpoint content.
++export function agyAttestation(checkpoint) {
++  const digest = createHash("sha256").update(stableStringify(checkpoint ?? null)).digest("hex");
++  return {
++    model: "agy-checkpoint",
++    source: "ai-peer-mcp/agy_checkpoint",
++    response_id: `agy-${digest.slice(0, 40)}`,
++    attestation: "local-deterministic",
++    engine_version: AGY_ENGINE_VERSION
++  };
++}
++
++// Local, deterministic phase/queue governance. Pure (no network, no server) so
++// it is directly unit-testable and reusable by the council's agy seat — lives
++// here rather than in server.mjs for exactly that reason.
++export function agyCheckpoint(args) {
++  const requiredPackets = Array.isArray(args.required_packets) ? args.required_packets : [];
++  const presentPackets = new Set(Array.isArray(args.present_packets) ? args.present_packets : []);
++  const missingPackets = requiredPackets.filter((packet) => !presentPackets.has(packet));
++  const blockedReasons = Array.isArray(args.blocked_reasons) ? [...args.blocked_reasons] : [];
++
++  if (missingPackets.length > 0) {
++    blockedReasons.push(`Missing packets: ${missingPackets.join(", ")}`);
++  }
++  if (args.lexi_required && !args.lexi_reference_read) {
++    blockedReasons.push("LEXI is required, but LEXI_DB_REFERENCE.md has not been read.");
++  }
++  if (args.broad_patch_requested && !args.user_approved_patch) {
++    blockedReasons.push("Broad patch requested without explicit user approval.");
++  }
++  if (args.protected_path_check && !/^pass(ed)?$/i.test(args.protected_path_check.trim())) {
++    blockedReasons.push(`Protected path check is not pass: ${args.protected_path_check}`);
++  }
++
++  const phaseGateStatus = blockedReasons.length === 0 ? "advance" : "blocked";
++  const nextOwner = phaseGateStatus === "advance" ? "codex" : chooseOwner(blockedReasons);
++
++  return {
++    packet_type: "agy-checkpoint",
++    phase: args.phase ?? "unspecified",
++    scope: args.scope ?? "unspecified",
++    current_owner: args.current_owner ?? "unspecified",
++    queue_counts: args.queue_counts ?? {},
++    phase_gate_status: phaseGateStatus,
++    next_owner: nextOwner,
++    missing_packets: missingPackets,
++    blocked_reasons: blockedReasons,
++    safe_next_action: phaseGateStatus === "advance"
++      ? "Proceed to the next queued execution or review step."
++      : "Resolve blocked reasons before advancing the phase.",
++    do_not_proceed_if: [
++      "required packets are missing",
++      "LEXI is required but the reference has not been read",
++      "broad patching lacks explicit user approval",
++      "protected path check is not pass"
++    ]
++  };
++}
++
++export function chooseOwner(blockedReasons) {
++  const text = blockedReasons.join(" ").toLowerCase();
++  if (text.includes("lexi")) return "forensic-agent";
++  if (text.includes("approval") || text.includes("user")) return "user";
++  if (text.includes("packet")) return "agy";
++  if (text.includes("protected")) return "codex";
++  return "agy";
++}
+diff -ruN pristine/connectors/ai-peer-mcp/package.json working/connectors/ai-peer-mcp/package.json
+--- pristine/connectors/ai-peer-mcp/package.json	2026-06-27 13:10:42.118659300 -0400
++++ working/connectors/ai-peer-mcp/package.json	2026-06-27 18:58:34.040426800 -0400
+@@ -3,13 +3,14 @@
+   "version": "0.1.0",
+   "private": true,
+   "type": "module",
+-  "description": "Local MCP connector for Claude, Grok, and Agy workflow roles.",
++  "description": "Local MCP connector for Claude, Grok, Codex, and Agy workflow roles.",
+   "bin": {
+     "ai-peer-mcp": "./server.mjs"
+   },
+   "scripts": {
+     "check": "node --check server.mjs && node --check lib.mjs && node --check scripts/smoke-test.mjs && node --check scripts/test-win32-env.mjs && node --check scripts/stress-test-mcp.mjs && node --check scripts/test-provenance.mjs && node scripts/test-win32-env.mjs && node scripts/stress-test-mcp.mjs && node scripts/test-provenance.mjs",
+     "smoke": "node scripts/smoke-test.mjs && node scripts/stress-test-mcp.mjs && node scripts/test-provenance.mjs",
++    "test": "npm run check && node scripts/smoke-test.mjs",
+     "start": "node server.mjs"
+   },
+   "engines": {
+diff -ruN pristine/connectors/ai-peer-mcp/scripts/smoke-test.mjs working/connectors/ai-peer-mcp/scripts/smoke-test.mjs
+--- pristine/connectors/ai-peer-mcp/scripts/smoke-test.mjs	2026-06-27 13:10:42.085746500 -0400
++++ working/connectors/ai-peer-mcp/scripts/smoke-test.mjs	2026-06-27 18:58:18.079909800 -0400
+@@ -60,7 +60,7 @@
+ const listed = await request("tools/list");
+ assert(!listed.error, `tools/list failed: ${JSON.stringify(listed.error)}`);
+ const names = listed.result.tools.map((tool) => tool.name);
+-for (const required of ["claude_ask", "grok_ask", "agy_checkpoint", "council_review"]) {
++for (const required of ["claude_ask", "grok_ask", "codex_ask", "agy_checkpoint", "council_review"]) {
+   assert(names.includes(required), `missing tool ${required}`);
+ }
+ 
+@@ -89,6 +89,12 @@
+ assert(!checkpoint.error, `agy_checkpoint failed: ${JSON.stringify(checkpoint.error)}`);
+ const text = checkpoint.result.content[0].text;
+ assert(text.includes("Missing packets: grok-review"), "checkpoint did not report missing packet");
++// agy now carries its own local-deterministic provenance (content-addressed).
++const checkpointObj = JSON.parse(text);
++assert(checkpointObj.provenance && checkpointObj.provenance.attestation === "local-deterministic",
++  "agy_checkpoint did not carry local-deterministic provenance");
++assert(/^agy-[0-9a-f]{40}$/.test(checkpointObj.provenance.response_id || ""),
++  "agy_checkpoint provenance.response_id is not a content-addressed attestation");
+ 
+ child.stdin.end();
+ child.kill();
+diff -ruN pristine/connectors/ai-peer-mcp/scripts/test-provenance.mjs working/connectors/ai-peer-mcp/scripts/test-provenance.mjs
+--- pristine/connectors/ai-peer-mcp/scripts/test-provenance.mjs	2026-06-27 13:10:42.094351700 -0400
++++ working/connectors/ai-peer-mcp/scripts/test-provenance.mjs	2026-06-27 19:16:00.690719500 -0400
+@@ -4,7 +4,14 @@
+ // JSON, not the requested model string. Pure, keyless.
+ 
+ import assert from "node:assert/strict";
+-import { extractAnthropicResult, extractGrokResult, extractAnthropicText } from "../lib.mjs";
++import {
++  extractAnthropicResult,
++  extractGrokResult,
++  extractAnthropicText,
++  extractOpenAIResult,
++  agyAttestation,
++  agyCheckpoint
++} from "../lib.mjs";
+ 
+ // Anthropic: model + id come from the response body, not the request.
+ {
+@@ -45,4 +52,75 @@
+   assert.equal(typeof extractAnthropicText({ error: "boom" }), "string");
+ }
+ 
++// OpenAI / codex shape: model + id come from the response body, not the request.
++// (xAI is OpenAI-compatible, so this mirrors the Grok shape.)
++{
++  const json = {
++    id: "chatcmpl_01ABC",
++    model: "gpt-4o-2024-08-06",
++    choices: [{ message: { content: "codex says hi" } }]
++  };
++  const r = extractOpenAIResult(json);
++  assert.equal(r.text, "codex says hi");
++  assert.equal(r.model, "gpt-4o-2024-08-06");
++  assert.equal(r.id, "chatcmpl_01ABC");
++}
++
++// Missing OpenAI provenance fields degrade to null, never throw.
++{
++  const r = extractOpenAIResult({ choices: [{ message: { content: "z" } }] });
++  assert.equal(r.text, "z");
++  assert.equal(r.model, null);
++  assert.equal(r.id, null);
++}
++
++// agy attestation: deterministic, content-addressed, never a placeholder.
++// agy is a LOCAL deterministic tool — it has no server-issued model id, so its
++// honest provenance is a reproducible hash over the checkpoint it produced.
++{
++  const checkpoint = {
++    packet_type: "agy-checkpoint",
++    phase: "phase-1",
++    phase_gate_status: "advance",
++    next_owner: "codex",
++    blocked_reasons: []
++  };
++  const a1 = agyAttestation(checkpoint);
++  const a2 = agyAttestation(checkpoint);
++
++  assert.equal(a1.response_id, a2.response_id, "same checkpoint -> same attestation id (deterministic)");
++  assert.match(a1.response_id, /^agy-[0-9a-f]{40}$/, "attestation id is agy-<sha256 prefix>");
++  assert.equal(a1.source, "ai-peer-mcp/agy_checkpoint");
++  assert.equal(a1.model, "agy-checkpoint");
++  assert.equal(a1.attestation, "local-deterministic");
++  assert.ok(typeof a1.engine_version === "string" && a1.engine_version.length > 0, "carries an engine_version");
++
++  // The gate blocks placeholder response_ids via /^$|_self$|^self$|placeholder/i.
++  // A real attestation id must survive that filter.
++  assert.ok(!/^$|_self$|^self$|placeholder/i.test(a1.response_id), "attestation id is not a placeholder");
++
++  // Different checkpoint content => different attestation (it is genuinely bound).
++  const blocked = agyAttestation({ ...checkpoint, phase_gate_status: "blocked" });
++  assert.notEqual(a1.response_id, blocked.response_id, "different checkpoint -> different attestation id");
++
++  // Key ORDER must not change the hash (canonical / stable stringify).
++  const reordered = { blocked_reasons: [], next_owner: "codex", phase_gate_status: "advance", phase: "phase-1", packet_type: "agy-checkpoint" };
++  assert.equal(agyAttestation(reordered).response_id, a1.response_id, "attestation is key-order independent");
++}
++
++// agyCheckpoint (now a pure lib function): advance vs blocked, and the
++// attestation is bound to that exact checkpoint.
++{
++  const advance = agyCheckpoint({ required_packets: ["a"], present_packets: ["a"], protected_path_check: "pass" });
++  assert.equal(advance.phase_gate_status, "advance");
++  assert.deepEqual(advance.blocked_reasons, []);
++
++  const blocked = agyCheckpoint({ required_packets: ["a", "b"], present_packets: ["a"] });
++  assert.equal(blocked.phase_gate_status, "blocked");
++  assert.ok(blocked.blocked_reasons.some((r) => r.includes("Missing packets: b")));
++
++  // Different governance outcome => different attestation id.
++  assert.notEqual(agyAttestation(advance).response_id, agyAttestation(blocked).response_id);
++}
++
+ console.log("provenance: all tests passed");
+diff -ruN pristine/connectors/ai-peer-mcp/server.mjs working/connectors/ai-peer-mcp/server.mjs
+--- pristine/connectors/ai-peer-mcp/server.mjs	2026-06-27 13:10:42.126661000 -0400
++++ working/connectors/ai-peer-mcp/server.mjs	2026-06-27 19:15:03.473102700 -0400
+@@ -1,7 +1,7 @@
+ #!/usr/bin/env node
+ 
+ import { execSync } from "node:child_process";
+-import { extractAnthropicResult, extractGrokResult } from "./lib.mjs";
++import { extractAnthropicResult, extractGrokResult, extractOpenAIResult, agyAttestation, agyCheckpoint } from "./lib.mjs";
+ 
+ function loadWin32Env() {
+   if (process.platform !== "win32") return;
+@@ -55,6 +55,11 @@
+   if (lower === "grok") {
+     return "grok-4.3";
+   }
++  // Codex is served by OpenAI; a bare "codex" resolves to a broadly-available
++  // chat model so `model: "codex"` works the way `model: "grok"` does.
++  if (lower === "codex" || lower === "gpt") {
++    return "gpt-4o";
++  }
+   return model;
+ }
+ 
+@@ -65,6 +70,7 @@
+ 
+ const DEFAULT_ANTHROPIC_VERSION = "2023-06-01";
+ const DEFAULT_XAI_BASE_URL = "https://api.x.ai/v1";
++const DEFAULT_OPENAI_BASE_URL = "https://api.openai.com/v1";
+ const DEBUG = process.env.AI_PEER_DEBUG === "1";
+ 
+ let inputBuffer = Buffer.alloc(0);
+@@ -179,7 +185,7 @@
+   return [
+     {
+       name: "claude_ask",
+-      description: "Ask Claude through the Anthropic Messages API. Requires ANTHROPIC_API_KEY and a model via input or ANTHROPIC_MODEL.",
++      description: "Ask Claude through the Anthropic Messages API. Requires ANTHROPIC_API_KEY and a model via input or ANTHROPIC_MODEL. Set include_provenance to return a JSON envelope {text, provenance:{model,response_id,source}} instead of raw text.",
+       inputSchema: {
+         type: "object",
+         properties: {
+@@ -187,14 +193,31 @@
+           system: { type: "string" },
+           model: { type: "string" },
+           max_tokens: { type: "integer", minimum: 1, maximum: 8192 },
+-          temperature: { type: "number", minimum: 0, maximum: 1 }
++          temperature: { type: "number", minimum: 0, maximum: 1 },
++          include_provenance: { type: "boolean" }
+         },
+         required: ["prompt"]
+       }
+     },
+     {
+       name: "grok_ask",
+-      description: "Ask Grok through xAI's OpenAI-compatible chat completions API. Requires XAI_API_KEY and a model via input or XAI_MODEL.",
++      description: "Ask Grok through xAI's OpenAI-compatible chat completions API. Requires XAI_API_KEY and a model via input or XAI_MODEL. Set include_provenance to return a JSON envelope {text, provenance:{model,response_id,source}} instead of raw text.",
++      inputSchema: {
++        type: "object",
++        properties: {
++          prompt: { type: "string" },
++          system: { type: "string" },
++          model: { type: "string" },
++          max_tokens: { type: "integer", minimum: 1, maximum: 8192 },
++          temperature: { type: "number", minimum: 0, maximum: 1 },
++          include_provenance: { type: "boolean" }
++        },
++        required: ["prompt"]
++      }
++    },
++    {
++      name: "codex_ask",
++      description: "Ask Codex through OpenAI's chat completions API. Requires OPENAI_API_KEY and a model via input or OPENAI_MODEL (OPENAI_BASE_URL overrides the endpoint). Set include_provenance to return a JSON envelope {text, provenance:{model,response_id,source}} instead of raw text.",
+       inputSchema: {
+         type: "object",
+         properties: {
+@@ -202,7 +225,8 @@
+           system: { type: "string" },
+           model: { type: "string" },
+           max_tokens: { type: "integer", minimum: 1, maximum: 8192 },
+-          temperature: { type: "number", minimum: 0, maximum: 1 }
++          temperature: { type: "number", minimum: 0, maximum: 1 },
++          include_provenance: { type: "boolean" }
+         },
+         required: ["prompt"]
+       }
+@@ -254,11 +278,18 @@
+ 
+   switch (name) {
+     case "claude_ask":
+-      return textResult((await askClaude(args)).text);
++      return askResult(await askClaude(args), "ai-peer-mcp/claude_ask", args.include_provenance);
+     case "grok_ask":
+-      return textResult((await askGrok(args)).text);
+-    case "agy_checkpoint":
+-      return textResult(JSON.stringify(agyCheckpoint(args), null, 2));
++      return askResult(await askGrok(args), "ai-peer-mcp/grok_ask", args.include_provenance);
++    case "codex_ask":
++      return askResult(await askCodex(args), "ai-peer-mcp/codex_ask", args.include_provenance);
++    case "agy_checkpoint": {
++      // agy is local + deterministic: stamp the checkpoint with a content-addressed
++      // attestation so it carries its OWN provenance (not a borrowed model id).
++      const checkpoint = agyCheckpoint(args);
++      const stamped = { ...checkpoint, provenance: agyAttestation(checkpoint) };
++      return textResult(JSON.stringify(stamped, null, 2));
++    }
+     case "council_review":
+       return textResult(JSON.stringify(await councilReview(args), null, 2));
+     default:
+@@ -266,6 +297,18 @@
+   }
+ }
+ 
++// Shape an ask-tool result. Default: raw prose (back-compat — breakout/live.mjs
++// feeds this straight into the next model). With include_provenance: a JSON
++// envelope {text, provenance:{model,response_id,source}} so the council can bind
++// the packet to the model's REAL response.
++function askResult(result, source, includeProvenance) {
++  if (!includeProvenance) return textResult(result.text);
++  return textResult(JSON.stringify({
++    text: result.text,
++    provenance: { model: result.model, response_id: result.id, source }
++  }));
++}
++
+ async function askClaude(args) {
+   requireString(args.prompt, "prompt");
+   const apiKey = requireEnv("ANTHROPIC_API_KEY");
+@@ -338,6 +381,44 @@
+   return extractGrokResult(json);
+ }
+ 
++async function askCodex(args) {
++  requireString(args.prompt, "prompt");
++  const apiKey = requireEnv("OPENAI_API_KEY");
++  const rawModel = args.model || process.env.OPENAI_MODEL;
++  if (!rawModel) {
++    throw new Error("Missing Codex model. Pass model or set OPENAI_MODEL.");
++  }
++  const model = mapModelName(rawModel);
++
++  const messages = [];
++  if (args.system) {
++    messages.push({ role: "system", content: args.system });
++  }
++  messages.push({ role: "user", content: args.prompt });
++
++  const baseUrl = (process.env.OPENAI_BASE_URL || DEFAULT_OPENAI_BASE_URL).replace(/\/$/, "");
++  const response = await fetch(`${baseUrl}/chat/completions`, {
++    method: "POST",
++    headers: {
++      "authorization": `Bearer ${apiKey}`,
++      "content-type": "application/json"
++    },
++    body: JSON.stringify({
++      model,
++      messages,
++      max_tokens: args.max_tokens ?? 2000,
++      // Only send temperature when explicitly requested; some OpenAI models
++      // reject a non-default temperature.
++      temperature: typeof args.temperature === "number" ? args.temperature : undefined
++    })
++  });
++
++  const json = await parseApiResponse(response, "OpenAI");
++  // Returns { text, model, id } — model/id are the API's real response
++  // provenance, not the requested model string.
++  return extractOpenAIResult(json);
++}
++
+ async function councilReview(args) {
+   requireString(args.objective, "objective");
+   const maxTokens = args.max_tokens ?? 2000;
+@@ -371,59 +452,6 @@
+   };
+ }
+ 
+-function agyCheckpoint(args) {
+-  const requiredPackets = Array.isArray(args.required_packets) ? args.required_packets : [];
+-  const presentPackets = new Set(Array.isArray(args.present_packets) ? args.present_packets : []);
+-  const missingPackets = requiredPackets.filter((packet) => !presentPackets.has(packet));
+-  const blockedReasons = Array.isArray(args.blocked_reasons) ? [...args.blocked_reasons] : [];
+-
+-  if (missingPackets.length > 0) {
+-    blockedReasons.push(`Missing packets: ${missingPackets.join(", ")}`);
+-  }
+-  if (args.lexi_required && !args.lexi_reference_read) {
+-    blockedReasons.push("LEXI is required, but LEXI_DB_REFERENCE.md has not been read.");
+-  }
+-  if (args.broad_patch_requested && !args.user_approved_patch) {
+-    blockedReasons.push("Broad patch requested without explicit user approval.");
+-  }
+-  if (args.protected_path_check && !/^pass(ed)?$/i.test(args.protected_path_check.trim())) {
+-    blockedReasons.push(`Protected path check is not pass: ${args.protected_path_check}`);
+-  }
+-
+-  const phaseGateStatus = blockedReasons.length === 0 ? "advance" : "blocked";
+-  const nextOwner = phaseGateStatus === "advance" ? "codex" : chooseOwner(blockedReasons);
+-
+-  return {
+-    packet_type: "agy-checkpoint",
+-    phase: args.phase ?? "unspecified",
+-    scope: args.scope ?? "unspecified",
+-    current_owner: args.current_owner ?? "unspecified",
+-    queue_counts: args.queue_counts ?? {},
+-    phase_gate_status: phaseGateStatus,
+-    next_owner: nextOwner,
+-    missing_packets: missingPackets,
+-    blocked_reasons: blockedReasons,
+-    safe_next_action: phaseGateStatus === "advance"
+-      ? "Proceed to the next queued execution or review step."
+-      : "Resolve blocked reasons before advancing the phase.",
+-    do_not_proceed_if: [
+-      "required packets are missing",
+-      "LEXI is required but the reference has not been read",
+-      "broad patching lacks explicit user approval",
+-      "protected path check is not pass"
+-    ]
+-  };
+-}
+-
+-function chooseOwner(blockedReasons) {
+-  const text = blockedReasons.join(" ").toLowerCase();
+-  if (text.includes("lexi")) return "forensic-agent";
+-  if (text.includes("approval") || text.includes("user")) return "user";
+-  if (text.includes("packet")) return "agy";
+-  if (text.includes("protected")) return "codex";
+-  return "agy";
+-}
+-
+ async function parseApiResponse(response, provider) {
+   const text = await response.text();
+   let json;

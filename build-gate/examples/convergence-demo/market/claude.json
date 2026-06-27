@@ -1,0 +1,64 @@
+{
+  "build_id": "convergence-demo-prototype-readiness",
+  "idea_id": "idea-convergence-agentic-prototype",
+  "model": "claude",
+  "project_state": "demo",
+  "workstreams_reviewed": [
+    "business-positioning",
+    "product-architecture",
+    "frontend-brand-experience"
+  ],
+  "business_thesis": "Position Convergence as a deterministic communication-forensics demo where model chat explains fixed findings instead of authoring verdicts.",
+  "target_users": [
+    "investigators evaluating communication dynamics",
+    "legal and compliance teams needing explainable signal layering",
+    "builders assessing deterministic-plus-LLM product patterns"
+  ],
+  "architecture_findings": [
+    "Static-first delivery preserves a low-friction public demo path.",
+    "Local model-backed chat remains an optional explanation layer over fixed findings."
+  ],
+  "backend_schema_findings": [],
+  "security_findings": [],
+  "accuracy_eval_findings": [],
+  "scalability_findings": [],
+  "frontend_design_findings": [
+    "The product proof band now exposes the core contract, delivery shape, test posture, and TELOS gate before users inspect findings.",
+    "The UI keeps the LEXI-class standard by making backend guarantees visible in the first screen without turning the page into a landing page."
+  ],
+  "lexi_class_ui_status": "meets",
+  "go_to_market_blockers": [],
+  "breakout": {
+    "workstream": "frontend-brand-experience",
+    "claimedStatus": "meets",
+    "finalStatus": "meets",
+    "converged": true,
+    "surviving_blockers": [],
+    "go_to_market_blockers": [],
+    "verified_facts": [
+      { "id": "s03-screenshot", "ok": true, "detail": "found docs/verification/s03-dynamics-discriminator.png" },
+      { "id": "s04-screenshot", "ok": true, "detail": "found docs/verification/s04-scorecard.png" },
+      { "id": "verification-doc", "ok": true, "detail": "found web/VERIFICATION.md" },
+      { "id": "cyan-token", "ok": true, "detail": "found \"#69e7ff\" in web/site/style.css" }
+    ],
+    "checks": [
+      { "type": "file_exists", "path": "docs/verification/s03-dynamics-discriminator.png" },
+      { "type": "file_exists", "path": "docs/verification/s04-scorecard.png" },
+      { "type": "file_exists", "path": "web/VERIFICATION.md" },
+      { "type": "file_contains", "path": "web/site/style.css", "needle": "#69e7ff" }
+    ],
+    "rounds": [
+      {
+        "round": 1,
+        "checks": [
+          { "id": "s03-screenshot", "ok": true },
+          { "id": "s04-screenshot", "ok": true },
+          { "id": "verification-doc", "ok": true },
+          { "id": "cyan-token", "ok": true }
+        ]
+      }
+    ]
+  },
+  "recommendation_to_claude": "Proceed with demo hardening while preserving deterministic verdict ownership.",
+  "timestamp": "2026-06-26T15:30:00-04:00"
+}

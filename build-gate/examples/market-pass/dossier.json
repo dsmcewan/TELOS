@@ -1,0 +1,30 @@
+{
+  "build_id": "market-demo-pass",
+  "idea_id": "idea-market-demo-pass",
+  "use_case": "market-readiness-pass",
+  "objective": "Validate a market-bound TELOS readiness pass.",
+  "required_docs": [
+    "shared/Coordination/Claude-Led Multi-Model Prototype Workflow.md",
+    "shared/Coordination/Multi-Model Agentic Build Gate.md"
+  ],
+  "write_targets": [
+    "shared/Coordination/example-market-ready.md"
+  ],
+  "protected_paths": [
+    "CHATGPT/",
+    "me/claude-code/",
+    "me/claude-desktop/",
+    "me/gemini/"
+  ],
+  "market_bound": true,
+  "user_facing_frontend": true,
+  "required_market_workstreams": [
+    "business-positioning",
+    "product-architecture",
+    "backend-schema",
+    "security-trust",
+    "accuracy-evals",
+    "scale-operations",
+    "frontend-brand-experience"
+  ]
+}

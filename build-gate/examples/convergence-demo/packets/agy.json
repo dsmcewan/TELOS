@@ -1,0 +1,18 @@
+{
+  "build_id": "convergence-demo-prototype-readiness",
+  "use_case": "test-prototype-workflow-on-convergence-demo",
+  "model": "agy",
+  "role": "checkpoint",
+  "docs_reviewed": [
+    "shared/Documentation/Agy Documentation Map.md",
+    "shared/Coordination/Multi-Model Agentic Build Gate.md",
+    "shared/Coordination/Claude-Led Multi-Model Prototype Workflow.md"
+  ],
+  "proposal_ref": "me/codex/build-gate/examples/convergence-demo/dossier.json",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-06-26T14:01:00-04:00",
+  "provenance": { "model": "agy-checkpoint-local", "source": "ai-peer-mcp", "response_id": "agy_convergence" }
+}

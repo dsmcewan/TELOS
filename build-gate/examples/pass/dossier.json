@@ -1,0 +1,34 @@
+{
+  "build_id": "build-gate-demo-pass",
+  "use_case": "orchestration-layer-smoke-test",
+  "objective": "Validate the multi-model build gate before any vault mapping pass begins.",
+  "affected_directories": [
+    "shared/Coordination/",
+    "me/codex/build-gate/"
+  ],
+  "write_targets": [
+    "shared/Coordination/Multi-Model Agentic Build Gate.md",
+    "me/codex/build-gate/README.md"
+  ],
+  "protected_paths": [
+    "CHATGPT/",
+    "me/claude-code/",
+    "me/claude-desktop/",
+    "me/gemini/"
+  ],
+  "required_docs": [
+    "shared/Documentation/AI Model Documentation Index.md",
+    "shared/Documentation/Agy Documentation Map.md",
+    "shared/Documentation/Codex Documentation Map.md",
+    "shared/Coordination/Multi-Model Vault Mapping Workflow.md"
+  ],
+  "lexi_required": false,
+  "lexi_reference_read": false,
+  "grok_objections": [
+    {
+      "text": "Make sure protected peer and archive folders are blocked before build start.",
+      "status": "resolved",
+      "resolution": "The validator rejects CHATGPT and peer scratch write targets."
+    }
+  ]
+}

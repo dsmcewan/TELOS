@@ -1,0 +1,23 @@
+{
+  "build_id": "build-gate-demo-protected-path",
+  "use_case": "protected-path-negative-test",
+  "objective": "Show that protected write targets block the gate.",
+  "affected_directories": [
+    "CHATGPT/"
+  ],
+  "write_targets": [
+    "CHATGPT/Vault4/Do Not Edit.md"
+  ],
+  "protected_paths": [
+    "CHATGPT/",
+    "me/claude-code/",
+    "me/claude-desktop/",
+    "me/gemini/"
+  ],
+  "required_docs": [
+    "shared/Documentation/AI Model Documentation Index.md"
+  ],
+  "lexi_required": false,
+  "lexi_reference_read": false,
+  "grok_objections": []
+}

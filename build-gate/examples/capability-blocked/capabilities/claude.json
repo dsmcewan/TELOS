@@ -1,0 +1,29 @@
+{
+  "build_id": "prototype-demo-capability-blocked",
+  "idea_id": "idea-needs-external-connector",
+  "model": "claude",
+  "telos": "Show that unresolved external setup blocks a prototype build.",
+  "docs_needed": [
+    "shared/Documentation/AI Model Documentation Index.md"
+  ],
+  "skills_needed": [
+    "architecture synthesis"
+  ],
+  "connectors_needed": [
+    "external paid API connector"
+  ],
+  "available_now": [
+    "local workflow docs"
+  ],
+  "missing_capabilities": [
+    "external paid API connector"
+  ],
+  "can_build_during_planning": [],
+  "built_during_planning": [],
+  "must_request_user_or_install": [
+    "external paid API connector credentials"
+  ],
+  "presented_to_claude": true,
+  "recommendation_to_claude": "Block the build until the user installs and configures the external connector or chooses a local fallback.",
+  "timestamp": "2026-06-26T13:00:00-04:00"
+}

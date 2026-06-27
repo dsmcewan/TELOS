@@ -1,0 +1,13 @@
+{
+  "build_id": "build-gate-demo-missing-doc",
+  "use_case": "missing-doc-negative-test",
+  "model": "codex",
+  "role": "implementation-review",
+  "docs_reviewed": [],
+  "proposal_ref": "me/codex/build-gate/gate.mjs",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "medium",
+  "timestamp": "2026-06-26T12:02:00-04:00"
+}

@@ -1,0 +1,15 @@
+{
+  "build_id": "prototype-demo-capability-blocked",
+  "use_case": "capability-blocked-negative-test",
+  "model": "agy",
+  "role": "checkpoint",
+  "docs_reviewed": [
+    "shared/Documentation/AI Model Documentation Index.md"
+  ],
+  "proposal_ref": "shared/Coordination/Claude-Led Multi-Model Prototype Workflow.md",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "medium",
+  "timestamp": "2026-06-26T13:01:00-04:00"
+}

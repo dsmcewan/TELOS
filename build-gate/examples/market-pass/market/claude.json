@@ -1,0 +1,46 @@
+{
+  "build_id": "market-demo-pass",
+  "idea_id": "idea-market-demo-pass",
+  "model": "claude",
+  "project_state": "demo",
+  "workstreams_reviewed": [
+    "business-positioning",
+    "product-architecture",
+    "frontend-brand-experience"
+  ],
+  "business_thesis": "A professional demo can convert technical credibility into market trust.",
+  "target_users": [
+    "technical evaluators",
+    "early buyers"
+  ],
+  "architecture_findings": [
+    "The architecture is coherent for a market demo."
+  ],
+  "backend_schema_findings": [],
+  "security_findings": [],
+  "accuracy_eval_findings": [],
+  "scalability_findings": [],
+  "frontend_design_findings": [
+    "Frontend plan meets the LEXI-class standard."
+  ],
+  "lexi_class_ui_status": "meets",
+  "go_to_market_blockers": [],
+  "breakout": {
+    "workstream": "frontend-brand-experience",
+    "claimedStatus": "meets",
+    "finalStatus": "meets",
+    "converged": true,
+    "surviving_blockers": [],
+    "go_to_market_blockers": [],
+    "checks": [
+      { "type": "file_exists", "path": "dossier.json" },
+      { "type": "file_contains", "path": "dossier.json", "needle": "market-demo-pass" }
+    ],
+    "rounds": [
+      { "round": 1, "blockers": ["first-screen value proof not present"], "resolved": ["first-screen value proof not present"] },
+      { "round": 2, "blockers": [], "resolved": [] }
+    ]
+  },
+  "recommendation_to_claude": "Proceed to build.",
+  "timestamp": "2026-06-26T14:00:00-04:00"
+}

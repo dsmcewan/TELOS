@@ -1,0 +1,28 @@
+{
+  "build_id": "live-council-001",
+  "use_case": "telos-self-upgrade",
+  "model": "agy",
+  "role": "approver",
+  "docs_reviewed": [
+    "me/claude-code/telos-upgrade/specs/2026-06-27-telos-upgrade-design.md"
+  ],
+  "proposal_ref": "live-council-001",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-06-27T23:36:17.504Z",
+  "provenance": {
+    "model": "agy-checkpoint",
+    "source": "ai-peer-mcp/agy_checkpoint",
+    "response_id": "agy-adec1f5af09f57316c3c166e2ff1b13f5e463f37",
+    "attestation": "local-deterministic",
+    "engine_version": "agy-checkpoint/1",
+    "tool": "agy_checkpoint"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "11f74352696d8f69f7af49e215b7b8e38124d19fccee74a86e6a4799d932ce01",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "build_id": "convergence-demo-prototype-readiness",
+  "idea_id": "idea-convergence-agentic-prototype",
+  "model": "grok",
+  "project_state": "demo",
+  "workstreams_reviewed": [
+    "security-trust",
+    "accuracy-evals"
+  ],
+  "business_thesis": "The sharpest claim is also the highest-risk claim: the demo must keep proving that model output cannot contaminate deterministic findings.",
+  "target_users": [
+    "skeptical reviewers",
+    "risk owners",
+    "technical buyers"
+  ],
+  "architecture_findings": [
+    "The static-first path keeps the demo honest, but future upload features would change the threat model."
+  ],
+  "backend_schema_findings": [],
+  "security_findings": [
+    "Future public hosting should add explicit secrets handling, rate limits, and prompt-injection boundaries before enabling remote chat.",
+    "The current professional demo does not require those controls because live chat is local and optional."
+  ],
+  "accuracy_eval_findings": [
+    "The UI should keep distinguishing explanation from evidence; the new proof band does this explicitly."
+  ],
+  "scalability_findings": [],
+  "frontend_design_findings": [],
+  "lexi_class_ui_status": "not-applicable",
+  "go_to_market_blockers": [],
+  "recommendation_to_claude": "No hard stop for the demo. Require a new gate before remote chat, uploads, or live customer data.",
+  "timestamp": "2026-06-26T15:33:00-04:00"
+}

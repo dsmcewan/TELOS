@@ -1,0 +1,29 @@
+{
+  "build_id": "prototype-demo-pass",
+  "idea_id": "idea-agentic-prototype-loop",
+  "model": "agy",
+  "telos": "Turn a future idea into the strongest feasible prototype by discovering the docs, skills, connectors, and planning helpers each model needs before build.",
+  "docs_needed": [
+    "shared/Documentation/Agy Documentation Map.md"
+  ],
+  "skills_needed": [
+    "phase gate control",
+    "missing packet detection",
+    "readiness ledger checks"
+  ],
+  "connectors_needed": [],
+  "available_now": [
+    "local Agy checkpoint role",
+    "build gate packet schema"
+  ],
+  "missing_capabilities": [],
+  "can_build_during_planning": [
+    "checkpoint templates",
+    "phase ledgers"
+  ],
+  "built_during_planning": [],
+  "must_request_user_or_install": [],
+  "presented_to_claude": true,
+  "recommendation_to_claude": "Require Agy checkpoint approval after capability packets and before prototype build.",
+  "timestamp": "2026-06-26T13:02:00-04:00"
+}

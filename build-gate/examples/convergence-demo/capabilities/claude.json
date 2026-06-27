@@ -1,0 +1,32 @@
+{
+  "build_id": "convergence-demo-prototype-readiness",
+  "idea_id": "idea-convergence-agentic-prototype",
+  "model": "claude",
+  "telos": "Determine whether the convergence demo is ready for future prototype work by discovering the documentation, skills, connectors, tests, and model roles needed before any build begins.",
+  "docs_needed": [
+    "README.md",
+    "ENGINEERING.md",
+    "shared/Coordination/Claude-Led Multi-Model Prototype Workflow.md"
+  ],
+  "skills_needed": [
+    "architecture synthesis",
+    "deterministic-over-agentic boundary setting",
+    "prototype decomposition"
+  ],
+  "connectors_needed": [],
+  "available_now": [
+    "project README",
+    "engineering principles",
+    "deterministic test/eval evidence"
+  ],
+  "missing_capabilities": [],
+  "can_build_during_planning": [
+    "prototype architecture brief",
+    "model routing plan"
+  ],
+  "built_during_planning": [],
+  "must_request_user_or_install": [],
+  "presented_to_claude": true,
+  "recommendation_to_claude": "Keep deterministic findings as the core and use LLMs only at the grounded conversation/proposal seam.",
+  "timestamp": "2026-06-26T14:00:00-04:00"
+}

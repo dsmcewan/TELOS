@@ -1,0 +1,31 @@
+{
+  "build_id": "market-demo-pass",
+  "idea_id": "idea-market-demo-pass",
+  "model": "codex",
+  "project_state": "demo",
+  "workstreams_reviewed": [
+    "backend-schema",
+    "accuracy-evals",
+    "scale-operations"
+  ],
+  "business_thesis": "Implementation is feasible for a market demo.",
+  "target_users": [
+    "technical evaluators"
+  ],
+  "architecture_findings": [],
+  "backend_schema_findings": [
+    "Schema/API boundaries are defined enough for the demo."
+  ],
+  "security_findings": [],
+  "accuracy_eval_findings": [
+    "Regression checks are identified."
+  ],
+  "scalability_findings": [
+    "The demo can scale through staged deployment."
+  ],
+  "frontend_design_findings": [],
+  "lexi_class_ui_status": "not-applicable",
+  "go_to_market_blockers": [],
+  "recommendation_to_claude": "Proceed with implementation checkpoints.",
+  "timestamp": "2026-06-26T14:01:00-04:00"
+}

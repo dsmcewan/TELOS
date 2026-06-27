@@ -1,0 +1,27 @@
+{
+  "build_id": "live-council-001",
+  "use_case": "telos-self-upgrade",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "me/claude-code/telos-upgrade/specs/2026-06-27-telos-upgrade-design.md"
+  ],
+  "proposal_ref": "live-council-001",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-06-27T23:36:17.504Z",
+  "rationale": "The change effectively integrates the specified provenance backends with appropriate fail-safes.",
+  "provenance": {
+    "model": "gpt-4o-2024-08-06",
+    "response_id": "chatcmpl-DvWrKsQgNnimMH5FFsSFjuwBQ5rXl",
+    "source": "ai-peer-mcp/codex_ask",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "313e84a2887eb36215cbe6e115caef09cee8aec2a377152c148ecea9c8ae5391",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "build_id": "prototype-demo-pass",
+  "idea_id": "idea-agentic-prototype-loop",
+  "model": "grok",
+  "telos": "Turn a future idea into the strongest feasible prototype by discovering the docs, skills, connectors, and planning helpers each model needs before build.",
+  "docs_needed": [
+    "shared/Documentation/Grok Documentation Map.md"
+  ],
+  "skills_needed": [
+    "adversarial review",
+    "assumption attack",
+    "external-doc risk checking"
+  ],
+  "connectors_needed": [
+    "xAI API when live Grok review is required"
+  ],
+  "available_now": [
+    "local Grok documentation map",
+    "manual advisory packet fallback"
+  ],
+  "missing_capabilities": [
+    "live Grok API review depends on xAI credentials and exposed ai-peer tools"
+  ],
+  "can_build_during_planning": [
+    "manual Grok challenge checklist"
+  ],
+  "built_during_planning": [],
+  "must_request_user_or_install": [],
+  "presented_to_claude": true,
+  "recommendation_to_claude": "Use Grok advisory review when available; otherwise require a manual challenge packet before high-risk builds.",
+  "timestamp": "2026-06-26T13:03:00-04:00"
+}
