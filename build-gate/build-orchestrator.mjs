@@ -17,6 +17,8 @@ import { runCouncil } from "./council.mjs";
 import { validateRecords } from "./gate.mjs";
 import { planTeams, teamForNode, authorizedSignersFor } from "./teams.mjs";
 import { decompose } from "./decompose.mjs";
+import { senseProject, detectConventions } from "./situation.mjs";
+import { runNodeTest } from "./test-runner.mjs";
 import { compileAndHashPlan } from "../merkle-dag/planner.mjs";
 import { runBuild, defaultVerifyNode } from "../merkle-dag/orchestrate.mjs";
 import { writePlan } from "../merkle-dag/merkle.mjs";
@@ -33,34 +35,57 @@ import { resolveUnder } from "../merkle-dag/vendor.mjs";
  * drops the task's `workstream` field, so the owning team is decided BEFORE the
  * build (from the original tasks) and looked up here via routeFor(id).
  *   routeFor (id) -> team object   (precomputed in buildProject from the task list)
- *   callTeam ({ team, node, dossier }) -> { files:[{path,content}] }
+ *   callTeam ({ team, node, dossier, attempt, priorFailure }) -> { files:[{path,content}] }
  *            | { ok:false, reason, respec? }
  *            the team's seats produce the artifacts; for live wiring this is built
  *            over ai-peer-mcp + teamPrompts, for tests it is a deterministic mock.
+ *
+ * RUNTIME ADAPTATION (inner loop): after the team writes its files, the dispatch
+ * runs the node's OWN test (capturing stdio) and, on failure, RE-CALLS the team
+ * with that failure detail so it can self-correct — up to `maxAttempts`. The team
+ * only ever learns about its own node's own prior failure (Rule 1 intact). This is
+ * advisory pre-flight: verification stays in verifyNode (Rule 3), so the team can
+ * never self-certify. If the inner loop exhausts, the dispatch hands a `respec`
+ * UP so runBuild's existing halt->mutate->re-dispatch gives a second outer level.
  */
-export function makeTeamDispatch({ routeFor, callTeam, baseDir, dossier }) {
+export function makeTeamDispatch({ routeFor, callTeam, baseDir, dossier, maxAttempts = 2 }) {
   return async (injected) => {
     const team = routeFor(injected.id);
-    let out;
-    try {
-      out = await callTeam({ team, node: injected, dossier });
-    } catch (e) {
-      return { ok: false, reason: `team ${team?.id} threw: ${e?.message || String(e)}` };
+    let priorFailure = null;
+    let lastDetail = "";
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      let out;
+      try {
+        out = await callTeam({ team, node: injected, dossier, attempt, priorFailure });
+      } catch (e) {
+        return { ok: false, reason: `team ${team?.id} threw: ${e?.message || String(e)}` };
+      }
+      if (!out || out.ok === false) {
+        return { ok: false, reason: out?.reason || `team ${team?.id} declined`, respec: out?.respec };
+      }
+      const files = Array.isArray(out.files) ? out.files : [];
+      for (const f of files) {
+        if (!f || typeof f.path !== "string") return { ok: false, reason: `team ${team.id} returned a malformed file` };
+        const resolved = resolveUnder(baseDir, f.path);
+        if (resolved === null) return { ok: false, reason: `team ${team.id} path escapes baseDir: ${f.path}` };
+        mkdirSync(path.dirname(resolved), { recursive: true });
+        writeFileSync(resolved, typeof f.content === "string" ? f.content : String(f.content ?? ""));
+      }
+      // The team checks its OWN work before submitting. On pass, settle (the signer
+      // key_id MUST be in plan.authorized_signers or the ledger gate rejects it).
+      const res = await runNodeTest(injected, baseDir);
+      if (res.ok) return { ok: true, signer: team.signer || team.id };
+      priorFailure = { detail: res.detail, stdout: res.stdout, stderr: res.stderr, status: res.status };
+      lastDetail = res.detail;
     }
-    if (!out || out.ok === false) {
-      return { ok: false, reason: out?.reason || `team ${team?.id} declined`, respec: out?.respec };
-    }
-    const files = Array.isArray(out.files) ? out.files : [];
-    for (const f of files) {
-      if (!f || typeof f.path !== "string") return { ok: false, reason: `team ${team.id} returned a malformed file` };
-      const resolved = resolveUnder(baseDir, f.path);
-      if (resolved === null) return { ok: false, reason: `team ${team.id} path escapes baseDir: ${f.path}` };
-      mkdirSync(path.dirname(resolved), { recursive: true });
-      writeFileSync(resolved, typeof f.content === "string" ? f.content : String(f.content ?? ""));
-    }
-    // The signer key_id MUST be in plan.authorized_signers or the ledger gate
-    // rejects the settlement — registering a team means registering its key.
-    return { ok: true, signer: team.signer || team.id };
+    // Inner loop exhausted -> hand a respec up. Mutating `requirements` re-derives
+    // the node's effective_hash so the substrate re-dispatches it next round, with
+    // the failure embedded — a second, outer adaptation level. Still own-node-only.
+    return {
+      ok: false,
+      reason: `team ${team.id} failed its node test after ${maxAttempts} attempt(s): ${lastDetail}`,
+      respec: { requirements: `${injected.requirements}\n\n[adaptation] prior test failure: ${lastDetail}` }
+    };
   };
 }
 
@@ -100,15 +125,28 @@ export function makeTeamKeyring(teams) {
  * to execution unless the council approval gate passed (fail-closed sequencing).
  *   { phase: "decompose"|"approval"|"plan"|"build", ok, ... }
  */
-export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, keyring, signerFor, baseDir, telosDir, marketPackets = [], source, maxRepairRounds = 8, concurrency }) {
+export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, keyring, signerFor, baseDir, telosDir, marketPackets = [], source, maxRepairRounds = 8, adaptAttempts = 2, concurrency }) {
   const teams = planTeams(dossier);
+
+  // PROJECT SENSE (conventions): read the real project BEFORE decompose so the
+  // Planning team can prefer the project's actual test command. Pure/read-only.
+  const conventions = detectConventions({ baseDir });
 
   // 1. Tasks: hand-authored, or proposed by the Planning team (data only).
   let taskList;
   try {
-    taskList = Array.isArray(tasks) ? tasks : await decompose({ dossier, telos, callSeat, teams });
+    taskList = Array.isArray(tasks) ? tasks : await decompose({ dossier, telos, callSeat, teams, conventions });
   } catch (e) {
-    return { phase: "decompose", ok: false, blocked: [e?.message || String(e)], teams };
+    return { phase: "decompose", ok: false, blocked: [e?.message || String(e)], teams, situation: senseProject({ baseDir, dossier, tasks: [] }) };
+  }
+
+  // Full situational report now that the task list (hence write targets) is known.
+  // Collisions/protected-on-disk are ADVISORY (Rule 3 still re-derives every
+  // artifact; the gate's validateProtectedPaths is the authority on protected
+  // writes). Opt-in greenfield-only enforcement via dossier.block_on_collision.
+  const situation = senseProject({ baseDir, dossier, tasks: taskList });
+  if (dossier?.block_on_collision === true && situation.collisions.length > 0) {
+    return { phase: "situation", ok: false, blocked: situation.collisions.map((c) => `write target already exists (block_on_collision): ${c.path}`), situation, teams };
   }
 
   // 2. COUNCIL APPROVAL GATE — must pass BEFORE any plan is written or executed.
@@ -120,14 +158,14 @@ export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, 
   // against the build workspace rather than process.cwd().
   const report = validateRecords(dossier, packets, source || {}, [], marketPackets);
   if (report.blockers.length > 0) {
-    return { phase: "approval", ok: false, blocked: report.blockers, council: report, teams };
+    return { phase: "approval", ok: false, blocked: report.blockers, council: report, teams, situation };
   }
 
   // 3. Compile + persist the content-addressed plan (signers pinned into plan_hash).
   const authorizedSigners = authorizedSignersFor(teams, keyring);
   const compiled = compileAndHashPlan({ tasks: taskList, authorizedSigners, repoRoot: baseDir });
   if (compiled.errors) {
-    return { phase: "plan", ok: false, blocked: compiled.errors, advisories: compiled.advisories, teams };
+    return { phase: "plan", ok: false, blocked: compiled.errors, advisories: compiled.advisories, teams, situation };
   }
   writePlan(telosDir, compiled.plan);
 
@@ -140,7 +178,7 @@ export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, 
   const build = await runBuild({
     telosDir,
     baseDir,
-    dispatch: makeTeamDispatch({ routeFor, callTeam, baseDir, dossier }),
+    dispatch: makeTeamDispatch({ routeFor, callTeam, baseDir, dossier, maxAttempts: adaptAttempts }),
     verifyNode: defaultVerifyNode,
     signerFor,
     maxRounds: maxRepairRounds,
@@ -155,6 +193,7 @@ export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, 
     council: report,
     plan: compiled.plan,
     advisories: compiled.advisories,
+    situation,
     teams
   };
 }

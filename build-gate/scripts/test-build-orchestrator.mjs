@@ -286,4 +286,43 @@ function fixture() {
   console.log("OK: market-bound fail-closed on missing workstream");
 }
 
+// --- project sense: a brownfield collision is ADVISORY, build still reaches ready ---
+{
+  const { baseDir, telosDir, keyring, signerFor } = fixture();
+  // Pre-create one of the write targets => a collision the situation report flags.
+  mkdirSync(path.join(baseDir, "out"), { recursive: true });
+  writeFileSync(path.join(baseDir, "out", "core.txt"), "pre-existing content");
+
+  const result = await buildProject({
+    dossier: makeDossier(), telos: "x", tasks,
+    callSeat: makeCallSeat(), callTeam: buildTeam,
+    keyring, signerFor, baseDir, telosDir, maxRepairRounds: 20
+  });
+
+  assert.ok(result.situation, "buildProject returns a situation report");
+  assert.equal(result.situation.mode, "brownfield", "pre-existing write target => brownfield");
+  assert.ok(result.situation.collisions.some((c) => c.path === "out/core.txt"), "collision is reported");
+  assert.equal(result.ok, true, "collision is advisory — build still reaches ready");
+  assert.equal(result.report.merge_status, "ready");
+  console.log("OK: project sense — brownfield collision is advisory, still ready");
+}
+
+// --- block_on_collision opt-in: greenfield-only enforcement blocks fail-closed ---
+{
+  const { baseDir, telosDir, keyring, signerFor } = fixture();
+  mkdirSync(path.join(baseDir, "out"), { recursive: true });
+  writeFileSync(path.join(baseDir, "out", "core.txt"), "pre-existing");
+  const dossier = { ...makeDossier(), block_on_collision: true };
+
+  const result = await buildProject({
+    dossier, telos: "x", tasks,
+    callSeat: makeCallSeat(), callTeam: buildTeam,
+    keyring, signerFor, baseDir, telosDir
+  });
+  assert.equal(result.phase, "situation", "block_on_collision stops at the situation phase");
+  assert.equal(result.ok, false, "fail-closed when greenfield-only is requested");
+  assert.equal(existsSync(path.join(telosDir, "plan.json")), false, "no plan written when collision blocks");
+  console.log("OK: block_on_collision opt-in fails closed on a collision");
+}
+
 console.log("test-build-orchestrator.mjs OK");

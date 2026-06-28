@@ -66,7 +66,30 @@ idea + telos
 
 The orchestrator (`build-gate/build-orchestrator.mjs`, `buildProject`) STOPS at the
 first failing phase and **never advances to execution unless the council approval
-gate passed**. The phases it reports: `decompose | approval | plan | build`.
+gate passed**. The phases it reports: `situation | decompose | approval | plan | build`.
+
+## Situational awareness
+
+The builder senses its context instead of running blind, across two senses
+(`build-gate/situation.mjs`, `build-gate/test-runner.mjs`):
+
+- **Project sense (pre-flight, read-only).** `senseProject({baseDir, dossier, tasks})`
+  reads the real `baseDir`: greenfield vs brownfield, **write-target collisions**
+  (reusing the substrate's `computeDiskTreeHash`), the project's **real test
+  command** (`package.json scripts.test` — threaded into the Planning team's
+  decompose prompt so autonomous tasks prefer it), and which **protected paths**
+  exist on disk. Collisions are **advisory**, not a new blocker: Rule 3 still
+  re-derives every artifact and the gate's `validateProtectedPaths` is still the
+  authority on protected writes. Opt-in `dossier.block_on_collision` gives
+  greenfield-only enforcement.
+- **Runtime adaptation (during the build).** After a team writes its node's files,
+  the dispatch runs the node's **own** test (capturing stdout/stderr) and, on
+  failure, **re-calls the team with that failure detail** so it self-corrects —
+  up to `adaptAttempts` (default 2). If the inner loop exhausts, it returns a
+  `respec` so the substrate's existing `halt → mutateNode → re-dispatch` gives a
+  second, outer adaptation level. The team only ever learns about its **own node's
+  own prior failure** (Rule 1 intact), and `defaultVerifyNode` still independently
+  re-verifies (Rule 3) — a team can never self-certify.
 
 ## Invariants (must not weaken)
 
@@ -114,3 +137,7 @@ gate, real Ed25519 ledger, and real merkle-dag substrate), each reaching
   to distinct teams (backend, frontend, security, ops), each settling under its
   own signer, and the market-readiness gate — including the frontend `meets`
   breakout re-verify against an on-disk evidence file — stays load-bearing.
+- `docs/runs/agentic-teams-situational/` (`run-teams-situational.mjs`) — a
+  **brownfield** build where project sense reports the collision + the real
+  `node --test` command, and a team **self-corrects** after its own node test
+  fails (runtime adaptation), reaching `ready` with the corrected artifact.

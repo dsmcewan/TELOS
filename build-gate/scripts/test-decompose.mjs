@@ -24,6 +24,15 @@ const seatReturning = (payload) => async () => payload;
   assert.deepEqual(tasks[1].baseDependencies, ["a"], "explicit baseDependencies preserved");
 }
 
+// --- conventions (project sense) are forwarded to the seat caller ---
+{
+  let seenArgs = null;
+  const callSeat = async (args) => { seenArgs = args; return { tasks: [{ id: "a", writes: ["a.txt"], requirements: "r", test: { cmd: "node" } }] }; };
+  await decompose({ dossier, telos: "t", callSeat, conventions: { testCmd: "npm test" } });
+  assert.equal(seenArgs.intent, "decompose", "decompose intent set");
+  assert.deepEqual(seenArgs.conventions, { testCmd: "npm test" }, "conventions forwarded to callSeat");
+}
+
 // --- accepts tasks nested under a packet body too ---
 {
   const tasks = await decompose({

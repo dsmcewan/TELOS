@@ -47,13 +47,25 @@ export function promptForTeam(team) {
 }
 
 // Build the per-node user prompt from the injected spec (Rule 1: spec only).
-export function nodeBuildPrompt(node) {
-  return [
+// On a retry, `priorFailure` carries THIS node's OWN previous test failure so the
+// team can self-correct — still own-node-only, no plan/other-node leak.
+export function nodeBuildPrompt(node, priorFailure = null) {
+  const lines = [
     `Task id: ${node.id}`,
     `Requirements: ${node.requirements}`,
-    `Files to write (exactly these): ${JSON.stringify(node.files)}`,
-    "Emit the JSON {files:[...]} now."
-  ].join("\n");
+    `Files to write (exactly these): ${JSON.stringify(node.files)}`
+  ];
+  if (priorFailure) {
+    lines.push(
+      "",
+      `Your previous attempt FAILED its own test (exit ${priorFailure.status}).`,
+      "Test output (truncated):",
+      (priorFailure.stderr || priorFailure.stdout || priorFailure.detail || "").trim(),
+      "Fix the files so the test passes."
+    );
+  }
+  lines.push("Emit the JSON {files:[...]} now.");
+  return lines.join("\n");
 }
 
 // Parse a team's response into a files array, CLAMPED to the node's declared
@@ -82,11 +94,11 @@ function safeJson(text) {
  *   client { callTool(name, args) -> Promise<string> }  (../breakout/mcp_client.mjs)
  */
 export function makeLiveCallTeam({ client }) {
-  return async ({ team, node }) => {
+  return async ({ team, node, priorFailure }) => {
     const model = buildableSeat(team);
     const text = await client.callTool(`${model}_ask`, {
       system: promptForTeam(team),
-      prompt: nodeBuildPrompt(node),
+      prompt: nodeBuildPrompt(node, priorFailure),
       include_provenance: true
     });
     const files = parseTeamFiles(text, node);
@@ -157,7 +169,7 @@ export function parseApprovalPacket(text, model, dossier, meta = {}) {
 
 // The Planning team's decompose prompt: ask for a strict JSON task list whose
 // nodes carry the footprints + test the merkle-dag planner needs.
-export function decomposePrompt(dossier, telos) {
+export function decomposePrompt(dossier, telos, conventions = null) {
   const system = [
     "You are the TELOS Planning team. Decompose the objective into a build plan.",
     'Return ONLY a JSON array of task objects:',
@@ -166,7 +178,11 @@ export function decomposePrompt(dossier, telos) {
     '"workstream":"backend-schema|frontend-brand-experience|security-trust|scale-operations|product-architecture"}].',
     "One writer per file. Declare reads for cross-file dependencies. No prose outside the JSON."
   ].join(" ");
-  const prompt = `Objective:\n${dossier?.objective ?? ""}\n\nTelos statement:\n${telos ?? ""}\n\nEmit the JSON task array now.`;
+  // Project sense: if the real project has a test command, steer node tests toward it.
+  const conventionLine = conventions?.testCmd
+    ? `\n\nThis is an existing project; its real test command is "${conventions.testCmd}". Prefer node tests that invoke it (e.g. {"cmd":"npm","args":["test"]}) over a no-op.`
+    : "";
+  const prompt = `Objective:\n${dossier?.objective ?? ""}\n\nTelos statement:\n${telos ?? ""}${conventionLine}\n\nEmit the JSON task array now.`;
   return { system, prompt };
 }
 
@@ -195,7 +211,7 @@ export function makeLiveCallSeat({ client, liveSeatCaller, dossier, meta = {}, m
 
   return async (args) => {
     if (args && args.intent === "decompose") {
-      const { system, prompt } = decomposePrompt(dossier, args.telos);
+      const { system, prompt } = decomposePrompt(dossier, args.telos, args.conventions);
       const text = await client.callTool(`${planningModel}_ask`, { system, prompt, model: models[planningModel], include_provenance: true });
       const body = (() => { try { return JSON.parse(text); } catch { return null; } })();
       const inner = body && typeof body.text === "string" ? body.text : text;

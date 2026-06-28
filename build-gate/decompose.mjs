@@ -40,12 +40,14 @@ function normalizeTask(t) {
  *             wiring this is built over ai-peer-mcp, for tests it is a deterministic mock.
  * Throws if the team proposes nothing usable (fail-closed: no silent empty plan).
  */
-export async function decompose({ dossier, telos, callSeat, teams }) {
+export async function decompose({ dossier, telos, callSeat, teams, conventions }) {
   const roster = Array.isArray(teams) && teams.length ? teams : planTeams(dossier);
   const planning = roster.find((t) => t.id === "planning") || roster[0];
   const lead = planning && planning.seats[0] ? planning.seats[0].model : "claude";
 
-  const out = (await callSeat({ model: lead, role: "lead", team: "planning", intent: "decompose", dossier, telos })) || {};
+  // `conventions` (project sense) is passed through so the live Planning prompt can
+  // prefer the project's real test command; mocks/tests ignore it.
+  const out = (await callSeat({ model: lead, role: "lead", team: "planning", intent: "decompose", dossier, telos, conventions })) || {};
   const raw = Array.isArray(out.tasks) ? out.tasks
     : (out.packet && Array.isArray(out.packet.tasks) ? out.packet.tasks : []);
 
