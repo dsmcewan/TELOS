@@ -271,7 +271,12 @@ function validateMarketReadinessPackets(dossier, marketPackets, blockers, warnin
       blockers.push(`${packet.model ?? "unknown"} says LEXI-class UI needs-work for a user-facing market-bound build.`);
     }
 
-    if (packet.lexi_class_ui_status === "meets") {
+    // Re-verify a breakout record on ANY market packet that carries one — every
+    // team's claim is checked on facts, not just the UI team's. A lexi 'meets'
+    // packet still REQUIRES a breakout (the missing-record blocker is raised
+    // inside validateBreakoutRecord), preserving prior behavior; packets that
+    // carry no breakout are unaffected (legacy market packets keep passing).
+    if (packet.lexi_class_ui_status === "meets" || (packet.breakout && typeof packet.breakout === "object")) {
       validateBreakoutRecord(packet, blockers, warnings, dossier, source, signed);
     }
 
