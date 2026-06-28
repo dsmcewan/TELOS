@@ -1,0 +1,18 @@
+{
+  "build_id": "agentic-teams-demo",
+  "use_case": "autonomous-build",
+  "objective": "Build a tiny content-addressed greeting library autonomously via agentic teams.",
+  "trust_mode": "advisory",
+  "market_bound": false,
+  "required_docs": [],
+  "write_targets": [
+    "out/greet.mjs",
+    "out/index.mjs"
+  ],
+  "protected_paths": [
+    "CHATGPT/",
+    "me/claude-code/",
+    "me/claude-desktop/",
+    "me/gemini/"
+  ]
+}

@@ -116,3 +116,42 @@ Verification run from the Codex tree:
 
 1. ~~**Codex** applies `ENGINE.patch` to make signed-mode live in `me/codex/` (`patch -p1` dry-run is clean; `ENGINE-APPLY.md` has steps). Verify with `npm test` in both packages after merge.~~ **DONE** (2026-06-28) — applied and verified in `build-gate`, `breakout`, `connectors/ai-peer-mcp`, and `merkle-dag`.
 2. ~~**Optional, for fully-distinct provenance:** wire a codex (OpenAI) and agy backend so agy/codex packets carry their own model `response_id`.~~ **DONE** (2026-06-27) — codex (OpenAI) + agy (local attestation) backends wired into `ai-peer-mcp` and `council.mjs`; bundled in the same `ENGINE.patch`. To exercise codex's live `response_id`, set `OPENAI_API_KEY` before a run; agy is keyless.
+
+## Agentic Teams — Autonomous Builder (2026-06-28)
+
+TELOS now composes its two halves — the approval council (`build-gate`) and the
+execution substrate (`merkle-dag`) — into an **autonomous builder** driven by
+**agentic teams**. A build/verify team is a `runBuild` worker behind `dispatch`
+(Rule 1: spec-only) whose output is re-derived by `defaultVerifyNode` (Rule 3),
+so the teams layer adds **no new trust surface**.
+
+**Added (`build-gate/`, zero new deps):**
+- `teams.mjs` — `TEAMS` roster (data); `planTeams(dossier)` (dossier-sized, mirrors
+  `planSeats`); `teamForNode` (explicit-`workstream` routing); `authorizedSignersFor`.
+- `decompose.mjs` — the Planning team proposes a validated `tasks[]` (data only,
+  fail-closed).
+- `build-orchestrator.mjs` — `buildProject(...)`: decompose → **council approval
+  gate (must pass first)** → `compileAndHashPlan` + `writePlan` → `runBuild` with
+  team dispatch + the unchanged Rule-3 verify → signed Ed25519 ledger → `done()`.
+- `teamPrompts.mjs` — opt-in live wiring over `ai-peer-mcp` (`approvalPromptFor`,
+  `makeLiveCallTeam`, pure prompt/parse helpers).
+
+**Trust preserved:** routing is by node id (Rule 1 strips `workstream`); a failing
+node never settles; the controller is the sole ledger writer and a team's signer
+key_id must be in `plan.authorized_signers`; teams may only write their node's
+declared files under `baseDir`; a fabricated decomposition is re-hashed and must
+still pass the gate + Rule-3 verify. Market-bound builds still demand
+market-readiness packets (passed through to the gate).
+
+**Tests (all green):** `test-teams.mjs`, `test-decompose.mjs`,
+`test-build-orchestrator.mjs` (keyless end-to-end to `merge_status:"ready"`;
+approval `revise` blocks before execution; Rule-3 verify load-bearing),
+`test-team-prompts.mjs`. `build-gate npm test` exit 0 (now incl. these +
+breakout); `merkle-dag npm test` exit 0 (substrate unchanged).
+
+**Evidence:** `runs/agentic-teams/run-teams.mjs` → `run-summary.json` — keyless,
+reproducible, real gate + real Ed25519 ledger + real merkle-dag, reaching
+`merge_status: "ready"`.
+
+**Docs:** `contracts/Agentic Teams Autonomous Builder.md` (protocol),
+`docs/specs/2026-06-28-agentic-teams-design.md` (design).

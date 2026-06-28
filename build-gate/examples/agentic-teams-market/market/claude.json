@@ -1,0 +1,39 @@
+{
+  "build_id": "agentic-teams-market-demo",
+  "idea_id": "idea-agentic-teams-market-demo",
+  "model": "claude",
+  "project_state": "demo",
+  "workstreams_reviewed": [
+    "business-positioning",
+    "product-architecture",
+    "frontend-brand-experience"
+  ],
+  "business_thesis": "An autonomously built, gate-certified micro-app converts trust into adoption.",
+  "target_users": ["technical evaluators", "early buyers"],
+  "architecture_findings": ["Team boundaries map cleanly to the build DAG."],
+  "backend_schema_findings": [],
+  "security_findings": [],
+  "accuracy_eval_findings": [],
+  "scalability_findings": [],
+  "frontend_design_findings": ["Frontend plan meets the LEXI-class standard."],
+  "lexi_class_ui_status": "meets",
+  "go_to_market_blockers": [],
+  "breakout": {
+    "workstream": "frontend-brand-experience",
+    "claimedStatus": "meets",
+    "finalStatus": "meets",
+    "converged": true,
+    "surviving_blockers": [],
+    "go_to_market_blockers": [],
+    "checks": [
+      { "type": "file_exists", "path": "market-evidence/frontend-meets.md" },
+      { "type": "file_contains", "path": "market-evidence/frontend-meets.md", "needle": "agentic-teams-market-demo" }
+    ],
+    "rounds": [
+      { "round": 1, "blockers": ["first-screen value proof not present"], "resolved": ["first-screen value proof not present"] },
+      { "round": 2, "blockers": [], "resolved": [] }
+    ]
+  },
+  "recommendation_to_claude": "Proceed to build.",
+  "timestamp": "2026-06-28T12:00:00-04:00"
+}
