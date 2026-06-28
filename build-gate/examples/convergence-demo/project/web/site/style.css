@@ -1,0 +1,14 @@
+:root {
+  /* Convergence brand cyan — asserted by the breakout file_contains check */
+  --accent-cyan: #69e7ff;
+}
+
+body {
+  background: #0b0f14;
+  color: #e6edf3;
+  font-family: system-ui, sans-serif;
+}
+
+.proof-band {
+  border: 1px solid var(--accent-cyan);
+}
