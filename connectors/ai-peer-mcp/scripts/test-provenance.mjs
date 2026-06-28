@@ -6,12 +6,49 @@
 import assert from "node:assert/strict";
 import {
   extractAnthropicResult,
+  extractAnthropicStructuredResult,
   extractGrokResult,
   extractAnthropicText,
   extractOpenAIResult,
+  extractGeminiResult,
   agyAttestation,
   agyCheckpoint
 } from "../lib.mjs";
+
+// Anthropic STRUCTURED: the JSON is the tool_use block's input, stringified; model
+// + id still come from the response, never the tool input.
+{
+  const json = {
+    id: "msg_struct",
+    model: "claude-x",
+    content: [
+      { type: "text", text: "let me decide" },
+      { type: "tool_use", name: "approval", input: { decision: "approve", confidence: "high" } }
+    ]
+  };
+  const r = extractAnthropicStructuredResult(json);
+  assert.equal(r.text, JSON.stringify({ decision: "approve", confidence: "high" }), "tool input becomes stringified text");
+  assert.equal(r.model, "claude-x");
+  assert.equal(r.id, "msg_struct");
+  // No tool_use block (declined) => degrade to text, never throw.
+  const declined = extractAnthropicStructuredResult({ id: "m", model: "c", content: [{ type: "text", text: "no" }] });
+  assert.equal(declined.text, "no", "falls back to text when no tool_use block");
+}
+
+// Gemini: text from candidates parts; provenance from modelVersion/responseId;
+// honest-null when absent; never throws.
+{
+  const json = { modelVersion: "gemini-x", responseId: "resp_9", candidates: [{ content: { parts: [{ text: '{"ok":true}' }] } }] };
+  const r = extractGeminiResult(json);
+  assert.equal(r.text, '{"ok":true}');
+  assert.equal(r.model, "gemini-x");
+  assert.equal(r.id, "resp_9");
+  const bare = extractGeminiResult({ candidates: [{ content: { parts: [{ text: "hi" }] } }] });
+  assert.equal(bare.text, "hi");
+  assert.equal(bare.model, null, "no modelVersion => honest-null model");
+  assert.equal(bare.id, null, "no responseId => honest-null id");
+  assert.doesNotThrow(() => extractGeminiResult({}), "never throws on a malformed response");
+}
 
 // Anthropic: model + id come from the response body, not the request.
 {

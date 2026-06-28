@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { execSync } from "node:child_process";
-import { extractAnthropicResult, extractGrokResult, extractOpenAIResult, agyAttestation, agyCheckpoint } from "./lib.mjs";
+import { fileURLToPath } from "node:url";
+import { extractAnthropicResult, extractAnthropicStructuredResult, extractGrokResult, extractOpenAIResult, extractGeminiResult, agyAttestation, agyCheckpoint } from "./lib.mjs";
 
 function loadWin32Env() {
   if (process.platform !== "win32") return;
@@ -60,6 +61,11 @@ function mapModelName(model) {
   if (lower === "codex" || lower === "gpt") {
     return "gpt-4o";
   }
+  // Gemini is served by Google; a bare "gemini" resolves to a broadly-available
+  // model. Real selection stays env-overridable via GEMINI_MODEL.
+  if (lower === "gemini" || lower === "gemini pro") {
+    return "gemini-1.5-flash";
+  }
   return model;
 }
 
@@ -71,18 +77,26 @@ const SERVER_INFO = {
 const DEFAULT_ANTHROPIC_VERSION = "2023-06-01";
 const DEFAULT_XAI_BASE_URL = "https://api.x.ai/v1";
 const DEFAULT_OPENAI_BASE_URL = "https://api.openai.com/v1";
+const DEFAULT_GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 const DEBUG = process.env.AI_PEER_DEBUG === "1";
+
+// Only run the stdio server loop when executed directly (node server.mjs). When
+// imported by a unit test, the ask* functions are exercised without starting the
+// reader (which would otherwise hold the process open on stdin).
+const IS_MAIN = !!process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 
 let inputBuffer = Buffer.alloc(0);
 
-process.stdin.on("data", (chunk) => {
-  inputBuffer = Buffer.concat([inputBuffer, chunk]);
-  drainMessages();
-});
+if (IS_MAIN) {
+  process.stdin.on("data", (chunk) => {
+    inputBuffer = Buffer.concat([inputBuffer, chunk]);
+    drainMessages();
+  });
 
-process.stdin.on("end", () => {
-  process.exit(0);
-});
+  process.stdin.on("end", () => {
+    process.exit(0);
+  });
+}
 
 function drainMessages() {
   while (true) {
@@ -194,7 +208,9 @@ function toolDefinitions() {
           model: { type: "string" },
           max_tokens: { type: "integer", minimum: 1, maximum: 8192 },
           temperature: { type: "number", minimum: 0, maximum: 1 },
-          include_provenance: { type: "boolean" }
+          include_provenance: { type: "boolean" },
+          response_schema: { type: "object" },
+          schema_name: { type: "string" }
         },
         required: ["prompt"]
       }
@@ -210,7 +226,9 @@ function toolDefinitions() {
           model: { type: "string" },
           max_tokens: { type: "integer", minimum: 1, maximum: 8192 },
           temperature: { type: "number", minimum: 0, maximum: 1 },
-          include_provenance: { type: "boolean" }
+          include_provenance: { type: "boolean" },
+          response_schema: { type: "object" },
+          schema_name: { type: "string" }
         },
         required: ["prompt"]
       }
@@ -226,7 +244,27 @@ function toolDefinitions() {
           model: { type: "string" },
           max_tokens: { type: "integer", minimum: 1, maximum: 8192 },
           temperature: { type: "number", minimum: 0, maximum: 1 },
-          include_provenance: { type: "boolean" }
+          include_provenance: { type: "boolean" },
+          response_schema: { type: "object" },
+          schema_name: { type: "string" }
+        },
+        required: ["prompt"]
+      }
+    },
+    {
+      name: "gemini_ask",
+      description: "Ask Gemini (the callable Google model behind Antigravity) through the Gemini API. Requires GEMINI_API_KEY and a model via input or GEMINI_MODEL (GEMINI_BASE_URL overrides the endpoint). Pass response_schema for native structured JSON. Set include_provenance to return a JSON envelope {text, provenance:{model,response_id,source}} instead of raw text.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          prompt: { type: "string" },
+          system: { type: "string" },
+          model: { type: "string" },
+          max_tokens: { type: "integer", minimum: 1, maximum: 8192 },
+          temperature: { type: "number", minimum: 0, maximum: 1 },
+          include_provenance: { type: "boolean" },
+          response_schema: { type: "object" },
+          schema_name: { type: "string" }
         },
         required: ["prompt"]
       }
@@ -283,6 +321,8 @@ async function callTool(params) {
       return askResult(await askGrok(args), "ai-peer-mcp/grok_ask", args.include_provenance);
     case "codex_ask":
       return askResult(await askCodex(args), "ai-peer-mcp/codex_ask", args.include_provenance);
+    case "gemini_ask":
+      return askResult(await askGemini(args), "ai-peer-mcp/gemini_ask", args.include_provenance);
     case "agy_checkpoint": {
       // agy is local + deterministic: stamp the checkpoint with a content-addressed
       // attestation so it carries its OWN provenance (not a borrowed model id).
@@ -309,7 +349,7 @@ function askResult(result, source, includeProvenance) {
   }));
 }
 
-async function askClaude(args) {
+export async function askClaude(args) {
   requireString(args.prompt, "prompt");
   const apiKey = requireEnv("ANTHROPIC_API_KEY");
   const rawModel = args.model || process.env.ANTHROPIC_MODEL;
@@ -318,6 +358,31 @@ async function askClaude(args) {
   }
   const model = mapModelName(rawModel);
 
+  // Structured output: Anthropic forces schema-valid JSON via a single tool call.
+  // We force the model to call one tool whose input_schema IS the requested schema;
+  // the JSON is then the tool_use block's `input`.
+  const structured = args.response_schema && typeof args.response_schema === "object";
+  const schemaName = args.schema_name || "telos_output";
+
+  const body = {
+    model,
+    max_tokens: args.max_tokens ?? 2000,
+    // Only send temperature when explicitly requested; newer Claude models
+    // reject it as deprecated. (Forced tools also dislike a sampled temperature.)
+    temperature: typeof args.temperature === "number" ? args.temperature : undefined,
+    system: args.system || undefined,
+    messages: [
+      {
+        role: "user",
+        content: args.prompt
+      }
+    ]
+  };
+  if (structured) {
+    body.tools = [{ name: schemaName, description: "Return the result as structured JSON.", input_schema: args.response_schema }];
+    body.tool_choice = { type: "tool", name: schemaName };
+  }
+
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -325,29 +390,28 @@ async function askClaude(args) {
       "x-api-key": apiKey,
       "anthropic-version": process.env.ANTHROPIC_VERSION || DEFAULT_ANTHROPIC_VERSION
     },
-    body: JSON.stringify({
-      model,
-      max_tokens: args.max_tokens ?? 2000,
-      // Only send temperature when explicitly requested; newer Claude models
-      // reject it as deprecated.
-      temperature: typeof args.temperature === "number" ? args.temperature : undefined,
-      system: args.system || undefined,
-      messages: [
-        {
-          role: "user",
-          content: args.prompt
-        }
-      ]
-    })
+    body: JSON.stringify(body)
   });
 
   const json = await parseApiResponse(response, "Anthropic");
   // Returns { text, model, id } — model/id are the API's actual response
-  // provenance, not the requested model string.
-  return extractAnthropicResult(json);
+  // provenance, not the requested model string. Structured mode reads the JSON
+  // from the tool_use block (and falls back to text if the model declined).
+  return structured ? extractAnthropicStructuredResult(json) : extractAnthropicResult(json);
 }
 
-async function askGrok(args) {
+// OpenAI-compatible structured output (xAI Grok and OpenAI Codex share the shape):
+// response_format json_schema in strict mode forces schema-valid JSON in the
+// message content. No schema => omitted (today's plain-text behavior).
+function jsonSchemaResponseFormat(args) {
+  if (!args.response_schema || typeof args.response_schema !== "object") return undefined;
+  return {
+    type: "json_schema",
+    json_schema: { name: args.schema_name || "telos_output", strict: true, schema: args.response_schema }
+  };
+}
+
+export async function askGrok(args) {
   requireString(args.prompt, "prompt");
   const apiKey = requireEnv("XAI_API_KEY");
   const rawModel = args.model || process.env.XAI_MODEL;
@@ -373,7 +437,8 @@ async function askGrok(args) {
       model,
       messages,
       max_tokens: args.max_tokens ?? 2000,
-      temperature: args.temperature ?? 0
+      temperature: args.temperature ?? 0,
+      response_format: jsonSchemaResponseFormat(args)
     })
   });
 
@@ -381,7 +446,7 @@ async function askGrok(args) {
   return extractGrokResult(json);
 }
 
-async function askCodex(args) {
+export async function askCodex(args) {
   requireString(args.prompt, "prompt");
   const apiKey = requireEnv("OPENAI_API_KEY");
   const rawModel = args.model || process.env.OPENAI_MODEL;
@@ -409,7 +474,8 @@ async function askCodex(args) {
       max_tokens: args.max_tokens ?? 2000,
       // Only send temperature when explicitly requested; some OpenAI models
       // reject a non-default temperature.
-      temperature: typeof args.temperature === "number" ? args.temperature : undefined
+      temperature: typeof args.temperature === "number" ? args.temperature : undefined,
+      response_format: jsonSchemaResponseFormat(args)
     })
   });
 
@@ -417,6 +483,42 @@ async function askCodex(args) {
   // Returns { text, model, id } — model/id are the API's real response
   // provenance, not the requested model string.
   return extractOpenAIResult(json);
+}
+
+export async function askGemini(args) {
+  requireString(args.prompt, "prompt");
+  const apiKey = requireEnv("GEMINI_API_KEY");
+  const rawModel = args.model || process.env.GEMINI_MODEL;
+  if (!rawModel) {
+    throw new Error("Missing Gemini model. Pass model or set GEMINI_MODEL.");
+  }
+  const model = mapModelName(rawModel);
+
+  const structured = args.response_schema && typeof args.response_schema === "object";
+  const baseUrl = (process.env.GEMINI_BASE_URL || DEFAULT_GEMINI_BASE_URL).replace(/\/$/, "");
+  const response = await fetch(`${baseUrl}/models/${model}:generateContent`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-goog-api-key": apiKey
+    },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: args.prompt }] }],
+      // Gemini's system prompt is a separate {parts:[{text}]} field, not a role.
+      systemInstruction: args.system ? { parts: [{ text: args.system }] } : undefined,
+      generationConfig: {
+        maxOutputTokens: args.max_tokens ?? 2000,
+        temperature: typeof args.temperature === "number" ? args.temperature : undefined,
+        responseMimeType: structured ? "application/json" : undefined,
+        responseSchema: structured ? args.response_schema : undefined
+      }
+    })
+  });
+
+  const json = await parseApiResponse(response, "Gemini");
+  // model/id come from the real response (modelVersion/responseId); honest-null
+  // when absent (gemini rides as advisory, so a null id never blocks the gate).
+  return extractGeminiResult(json);
 }
 
 async function councilReview(args) {

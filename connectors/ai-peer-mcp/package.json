@@ -8,8 +8,8 @@
     "ai-peer-mcp": "./server.mjs"
   },
   "scripts": {
-    "check": "node --check server.mjs && node --check lib.mjs && node --check scripts/smoke-test.mjs && node --check scripts/test-win32-env.mjs && node --check scripts/stress-test-mcp.mjs && node --check scripts/test-provenance.mjs && node scripts/test-win32-env.mjs && node scripts/stress-test-mcp.mjs && node scripts/test-provenance.mjs",
-    "smoke": "node scripts/smoke-test.mjs && node scripts/stress-test-mcp.mjs && node scripts/test-provenance.mjs",
+    "check": "node --check server.mjs && node --check lib.mjs && node --check scripts/smoke-test.mjs && node --check scripts/test-win32-env.mjs && node --check scripts/stress-test-mcp.mjs && node --check scripts/test-provenance.mjs && node --check scripts/test-structured-requests.mjs && node scripts/test-win32-env.mjs && node scripts/stress-test-mcp.mjs && node scripts/test-provenance.mjs && node scripts/test-structured-requests.mjs",
+    "smoke": "node scripts/smoke-test.mjs && node scripts/stress-test-mcp.mjs && node scripts/test-provenance.mjs && node scripts/test-structured-requests.mjs",
     "test": "npm run check && node scripts/smoke-test.mjs",
     "start": "node server.mjs"
   },

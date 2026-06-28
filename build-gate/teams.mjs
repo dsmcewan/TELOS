@@ -21,21 +21,35 @@
 //   workstream the gate workstream this team owns (null for meta teams)
 //   lifecycle  "plan" | "build" | "verify" (where it plugs into the flow)
 //   signer     ledger key_id used when this team settles a node (defaults to id)
+// Each lead is its model's strength (see model-profiles.mjs; a test asserts every
+// lead's role is in that model's preferred_roles), paired with a complementary
+// member so the composition itself encodes the collaboration.
 export const TEAMS = [
+  // claude: careful long-horizon design + planning.
   { id: "planning",     mission: "decompose idea+telos into a content-addressed task DAG", seats: [{ model: "claude", role: "lead" }, { model: "codex", role: "member" }, { model: "agy", role: "member" }], workstream: null,                          lifecycle: "plan",   signer: "planning" },
   { id: "architecture", mission: "system shape, module boundaries, file footprints",       seats: [{ model: "claude", role: "lead" }, { model: "codex", role: "member" }],                                    workstream: "product-architecture",        lifecycle: "build",  signer: "architecture" },
+  // codex: precise code-gen; paired with agy's deterministic governance.
   { id: "backend",      mission: "data model, services, migrations",                        seats: [{ model: "codex", role: "lead" }, { model: "agy", role: "member" }],                                       workstream: "backend-schema",              lifecycle: "build",  signer: "backend" },
+  // claude: UX / brand voice.
   { id: "frontend",     mission: "UI and LEXI-class brand experience",                      seats: [{ model: "claude", role: "lead" }, { model: "codex", role: "member" }],                                    workstream: "frontend-brand-experience",   lifecycle: "build",  signer: "frontend" },
-  { id: "evals",        mission: "acceptance tests that decide a node's `meets` verdict",   seats: [{ model: "claude", role: "lead" }, { model: "codex", role: "member" }],                                    workstream: "accuracy-evals",              lifecycle: "verify", signer: "evals" },
+  // codex lead: acceptance tests are a code-gen + strict-output task; claude reviews criteria.
+  { id: "evals",        mission: "acceptance tests that decide a node's `meets` verdict",   seats: [{ model: "codex", role: "lead" }, { model: "claude", role: "member" }],                                    workstream: "accuracy-evals",              lifecycle: "verify", signer: "evals" },
+  // grok lead: adversarial + real-time threat intel.
   { id: "security",     mission: "threat model, secrets hygiene, abuse cases",              seats: [{ model: "grok", role: "lead" }, { model: "codex", role: "member" }],                                      workstream: "security-trust",              lifecycle: "verify", signer: "security" },
+  // agy lead: deterministic deploy/rollback gating.
   { id: "ops",          mission: "deploy, scale, rollback readiness",                       seats: [{ model: "agy", role: "lead" }, { model: "codex", role: "member" }],                                       workstream: "scale-operations",            lifecycle: "verify", signer: "ops" },
-  { id: "business",     mission: "thesis, differentiation, market positioning",             seats: [{ model: "claude", role: "lead" }, { model: "grok", role: "member" }],                                     workstream: "business-positioning",        lifecycle: "plan",   signer: "business" },
-  { id: "breakout",     mission: "adversarial verdict-on-facts; gate of last resort",       seats: [{ model: "grok", role: "lead" }, { model: "claude", role: "member" }],                                     workstream: null,                          lifecycle: "verify", signer: "breakout" }
+  // grok lead: live market/competitive intel; claude shapes the thesis.
+  { id: "business",     mission: "thesis, differentiation, market positioning",             seats: [{ model: "grok", role: "lead" }, { model: "claude", role: "member" }],                                     workstream: "business-positioning",        lifecycle: "plan",   signer: "business" },
+  // grok lead: adversarial verdict-on-facts.
+  { id: "breakout",     mission: "adversarial verdict-on-facts; gate of last resort",       seats: [{ model: "grok", role: "lead" }, { model: "claude", role: "member" }],                                     workstream: null,                          lifecycle: "verify", signer: "breakout" },
+  // gemini lead: large-context, deep-think independent verification; codex cross-checks code.
+  { id: "integrity",    mission: "independent verification: re-derive facts, cross-check claims", seats: [{ model: "gemini", role: "lead" }, { model: "codex", role: "member" }],                              workstream: null,                          lifecycle: "verify", signer: "integrity" }
 ];
 
-// Always-on teams: the meta backbone plus architecture. Architecture is also a
-// workstream team, so dedupe-by-id below prevents a double convene.
-const ALWAYS_ON = ["planning", "architecture", "breakout"];
+// Always-on teams: the meta backbone (planning, architecture, breakout) plus the
+// gemini-led integrity verifier. Architecture is also a workstream team, so
+// dedupe-by-id below prevents a double convene.
+const ALWAYS_ON = ["planning", "architecture", "breakout", "integrity"];
 
 const byId = new Map(TEAMS.map((t) => [t.id, t]));
 const byWorkstream = new Map(TEAMS.filter((t) => t.workstream).map((t) => [t.workstream, t]));

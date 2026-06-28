@@ -215,3 +215,34 @@ extensions to `test-team-prompts`/`test-decompose`/`test-build-orchestrator`.
 
 **Docs:** `docs/specs/2026-06-28-situational-awareness-design.md`; the contract
 `contracts/Agentic Teams Autonomous Builder.md` gained a Situational awareness section.
+
+## Provider-native agentic seats — structured outputs + strengths + Gemini (2026-06-28)
+
+TELOS now uses each provider's bot per its own agentic guidance, and places models
+by strength rather than generically.
+
+- **Structured JSON output** for every live seat: TELOS's three contracts are strict-
+  mode JSON Schemas (`build-gate/schemas.mjs`) passed as data into the `*_ask` call,
+  translated by `ai-peer-mcp` into each provider's native form — OpenAI/xAI
+  `response_format.json_schema` strict; Anthropic a forced tool call (JSON =
+  `tool_use.input`); Gemini `responseSchema`. No schema ⇒ today's plain text (back-
+  compat). Parsers now read clean JSON with the regex retained as fail-closed fallback.
+- **Play to strengths** (`build-gate/model-profiles.mjs`): leads are strength-matched
+  (a test asserts every lead's role is in its `preferred_roles`) — evals→codex,
+  business→grok, security/breakout→grok, planning/architecture/frontend→claude,
+  ops→agy, integrity→gemini; and each prompt profile invokes the model's strength
+  (grok = adversary, gemini = re-derive, claude = architect, codex = implement).
+- **New Gemini seat** (the callable side of Antigravity): `gemini_ask` backend,
+  leads a new `integrity` verification team (always convened) and rides as council
+  **advisory** — never gate-required, so a missing GEMINI key never blocks.
+
+**Trust unchanged:** structured output is reliability, not trust — the gate still
+re-validates shape and injects identity from the dossier (the approval schema omits
+identity); provenance still comes from the real API response; the {text,provenance}
+envelope is byte-stable. Only `gate.mjs` change is exporting nothing new — `sign.mjs`,
+gate logic, and `merkle-dag` are untouched.
+
+**Tests (all green):** `connectors/ai-peer-mcp` `test-structured-requests.mjs` +
+extended `test-provenance.mjs`; `build-gate` `test-schemas.mjs` + extended
+`test-teams`/`test-council-orchestrator`/`test-team-prompts`. All three packages
+`npm test` exit 0. Docs: `docs/specs/2026-06-28-provider-agentic-design.md`.

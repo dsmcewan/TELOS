@@ -46,11 +46,12 @@ const okSeatCaller = async ({ model }) => ({
 // --- planSeats: roster sized FROM the job ---
 {
   const simple = planSeats({ build_id: "x" });
-  assert.deepEqual(simple.map((s) => s.model), ["claude", "agy", "codex", "grok"], "non-market job = required seats + grok advisory");
+  assert.deepEqual(simple.map((s) => s.model), ["claude", "agy", "codex", "grok", "gemini"], "non-market job = required seats + grok & gemini advisory");
   assert.equal(simple.find((s) => s.model === "grok").role, "advisory");
+  assert.equal(simple.find((s) => s.model === "gemini").role, "advisory", "gemini rides as advisory, never gate-required");
 
   const market = planSeats({ build_id: "x", market_bound: true, required_market_workstreams: ["backend-schema", "security-trust"] });
-  assert.equal(market.length, 6, "market-bound job adds one lens seat per workstream");
+  assert.equal(market.length, 7, "market-bound job adds one lens seat per workstream (5 base + 2 lenses)");
   const lenses = market.filter((s) => s.role === "market-lens");
   assert.deepEqual(lenses.map((s) => s.workstream), ["backend-schema", "security-trust"]);
 }
@@ -58,7 +59,7 @@ const okSeatCaller = async ({ model }) => ({
 // --- runCouncil derives seats from the dossier when seats omitted ---
 {
   const derived = await runCouncil({ callSeat: okSeatCaller, dossier: { build_id: "c1" } });
-  assert.deepEqual(derived.map((r) => r.model), ["claude", "agy", "codex", "grok"], "omitted seats => planSeats(dossier)");
+  assert.deepEqual(derived.map((r) => r.model), ["claude", "agy", "codex", "grok", "gemini"], "omitted seats => planSeats(dossier)");
 }
 
 // --- maxConcurrency: clamped to [1, cores-2] ---
