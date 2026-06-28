@@ -20,6 +20,12 @@ import { buildableSeat, promptForTeam, nodeBuildPrompt, parseTeamFiles, makeLive
   const up = nodeBuildPrompt({ id: "n1", requirements: "do x", files: ["a.txt"] });
   assert.match(up, /n1/, "user prompt carries the node id");
   assert.match(up, /a\.txt/, "user prompt lists the declared files");
+  assert.ok(!/previous attempt/i.test(up), "no failure block on the first attempt");
+
+  // on a retry, the node's OWN prior failure is fed back (Rule-1 safe)
+  const retry = nodeBuildPrompt({ id: "n1", requirements: "do x", files: ["a.txt"] }, { status: 1, stderr: "AssertionError: expected FIXED", detail: "n1: test exit 1" });
+  assert.match(retry, /previous attempt FAILED/i, "retry prompt states the prior failure");
+  assert.match(retry, /AssertionError: expected FIXED/, "retry prompt carries the captured test output");
 }
 
 // --- parseTeamFiles: clamps to declared files, drops undeclared/malformed ---
@@ -54,6 +60,12 @@ import { buildableSeat, promptForTeam, nodeBuildPrompt, parseTeamFiles, makeLive
   const emptyClient = { async callTool() { return JSON.stringify({ files: [] }); } };
   const decline = await makeLiveCallTeam({ client: emptyClient })({ team: { id: "backend", seats: [{ model: "codex" }] }, node });
   assert.equal(decline.ok, false, "no usable files -> fail-closed decline");
+
+  // a retry passes priorFailure all the way into the prompt the team sees
+  let seenPrompt = "";
+  const retryClient = { async callTool(_tool, args) { seenPrompt = args.prompt; return JSON.stringify({ files: [{ path: "out.txt", content: "fixed" }] }); } };
+  await makeLiveCallTeam({ client: retryClient })({ team: { id: "backend", seats: [{ model: "codex" }] }, node, attempt: 2, priorFailure: { status: 1, stderr: "boom", detail: "n: test exit 1" } });
+  assert.match(seenPrompt, /previous attempt FAILED/i, "priorFailure reaches the live build prompt on retry");
 }
 
 // --- approvalPromptFor: agy stays structured; chat seats get the decision packet instruction ---
@@ -96,6 +108,11 @@ import { buildableSeat, promptForTeam, nodeBuildPrompt, parseTeamFiles, makeLive
   const { system, prompt } = decomposePrompt({ objective: "build x" }, "telos: do x");
   assert.match(system, /JSON array of task objects/, "decompose system asks for a task array");
   assert.match(prompt, /build x/, "decompose prompt carries the objective");
+  assert.ok(!/test command/.test(prompt), "no convention line when conventions absent");
+
+  // project sense: a detected test command steers node tests toward the real runner
+  const withConv = decomposePrompt({ objective: "build x" }, "t", { testCmd: "vitest run" });
+  assert.match(withConv.prompt, /real test command is "vitest run"/, "decompose prompt names the project's real test command");
 
   const tasks = parseDecomposeTasks('here you go:\n```json\n[{"id":"a","writes":["a.txt"]}]\n```');
   assert.deepEqual(tasks, [{ id: "a", writes: ["a.txt"] }], "parses a fenced JSON task array");

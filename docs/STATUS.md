@@ -177,3 +177,41 @@ server spawned, `agy` (keyless, local) produced a real packet, and `claude` /
 
 New pure helpers are covered (no network) by `test-team-prompts.mjs`; full
 `build-gate npm test` exit 0.
+
+## Situational awareness — project sense + runtime adaptation (2026-06-28)
+
+The autonomous builder is no longer blind. Two senses (both in `build-gate/`, the
+merkle-dag substrate untouched):
+
+- **Project sense** (`situation.mjs`, pure read-only): `senseProject({baseDir,
+  dossier, tasks})` reports greenfield vs brownfield, write-target collisions
+  (reusing `computeDiskTreeHash`), the project's real test command
+  (`package.json scripts.test`, threaded into the Planning team's decompose
+  prompt), and protected paths present on disk. Collisions are **advisory** (Rule
+  3 still re-derives every artifact; the gate's `validateProtectedPaths` is the
+  authority) with opt-in `dossier.block_on_collision` for greenfield-only.
+- **Runtime adaptation** (`test-runner.mjs` + a loop in `makeTeamDispatch`): after
+  a team writes its files, the dispatch runs the node's **own** test capturing
+  stdout/stderr and, on failure, re-calls the team with the failure detail so it
+  self-corrects (`adaptAttempts`, default 2). On exhaustion it returns a `respec`
+  so the substrate's existing `halt → mutate → re-dispatch` gives a second outer
+  level. Rule 1 (team sees only its own node + own prior failure) and Rule 3
+  (`defaultVerifyNode` still independently re-verifies) both hold.
+
+Only `gate.mjs` change: `DEFAULT_PROTECTED_PATHS` is now `export`ed (single source
+of truth). Tradeoff accepted: a successful node's test runs twice (dispatch +
+verify) — the price of keeping the substrate pure.
+
+**Tests (all green):** `test-situation.mjs` (collisions/conventions/protected/
+purity), `test-runtime-adaptation.mjs` (self-correct on attempt 2; exhaustion →
+respec; end-to-end two-level adaptation → ready; Rule-3 still load-bearing), plus
+extensions to `test-team-prompts`/`test-decompose`/`test-build-orchestrator`.
+`build-gate npm test` exit 0; `merkle-dag npm test` exit 0 (substrate unchanged).
+
+**Evidence:** `docs/runs/agentic-teams-situational/run-teams-situational.mjs` →
+`run-summary.json` — a brownfield build where project sense reports the collision
++ real test command and a team self-corrects after its own test fails, reaching
+`merge_status: "ready"`.
+
+**Docs:** `docs/specs/2026-06-28-situational-awareness-design.md`; the contract
+`contracts/Agentic Teams Autonomous Builder.md` gained a Situational awareness section.

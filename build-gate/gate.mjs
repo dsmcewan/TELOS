@@ -18,7 +18,7 @@ const DEFAULT_MARKET_WORKSTREAMS = [
   "scale-operations",
   "frontend-brand-experience"
 ];
-const DEFAULT_PROTECTED_PATHS = [
+export const DEFAULT_PROTECTED_PATHS = [
   "CHATGPT/",
   "me/claude-code/",
   "me/claude-desktop/",

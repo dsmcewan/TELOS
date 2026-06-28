@@ -1,0 +1,51 @@
+{
+  "generated_for": "situational-demo",
+  "keyless": true,
+  "phase": "build",
+  "ok": true,
+  "merge_status": "ready",
+  "situation": {
+    "mode": "brownfield",
+    "collisions": [
+      "src/greet.mjs"
+    ],
+    "detected_test_command": "node --test",
+    "advisories": [
+      "brownfield: 1 of 1 write target(s) already exist on disk",
+      "collision: src/greet.mjs already exists (sha256:052fb8231dd3c312b0112c0137582230df2b2dc74b0e520db32153dc8023ea17)",
+      "detected test command: \"node --test\" (package.json scripts.test)"
+    ]
+  },
+  "adaptation": {
+    "attempts": [
+      {
+        "node": "greet",
+        "attempt": 1,
+        "saw_prior_failure": false,
+        "prior_detail": null
+      },
+      {
+        "node": "greet",
+        "attempt": 2,
+        "saw_prior_failure": true,
+        "prior_detail": "greet: test exit 1"
+      }
+    ],
+    "self_corrected": true
+  },
+  "settled_nodes": [
+    {
+      "id": "greet",
+      "signer": "architecture"
+    }
+  ],
+  "ledger_records": [
+    {
+      "task_id": "greet",
+      "signer": "architecture",
+      "alg": "Ed25519"
+    }
+  ],
+  "final_file": "contains FIXED (corrected)",
+  "note": "Situational awareness: project sense (brownfield + collision + real test command) and runtime adaptation (a team self-corrected after its own test failed). Deterministic mock seats; real gate, real Ed25519 ledger, real merkle-dag."
+}
