@@ -74,3 +74,8 @@ import { runBreakout } from "../breakout.mjs";
 }
 
 console.log("breakout: all tests passed");
+
+// TEMPORARY: deliberate failure to verify branch-protection required checks.
+// This commit lives only on the throwaway claude/verify-branch-protection
+// branch and will be discarded; it must never reach main.
+throw new Error("branch-protection-verification: intentional failing check");
