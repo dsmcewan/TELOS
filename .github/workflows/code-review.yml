@@ -1,0 +1,30 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+# Allow the action to read the code, post review feedback on the PR, and
+# request an OIDC token (required by claude-code-action for authentication).
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Automated Claude review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Install the code-review plugin and run its skill against this PR.
+          plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
+          plugins: "code-review@claude-code-plugins"
+          prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
