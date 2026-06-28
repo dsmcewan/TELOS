@@ -1,14 +1,31 @@
 // teamPrompts.mjs — LIVE wiring for the agentic teams over ai-peer-mcp.
 //
 // The orchestrator (build-orchestrator.mjs) is transport-agnostic: it takes an
-// injected `callSeat` (council approval) and `callTeam` (build execution). This
-// module builds both over a minimal MCP client (../breakout/mcp_client.mjs),
-// giving each team its own system prompt. It is opt-in: nothing here runs without
-// API keys, mirroring the existing `smoke` scripts. The pure prompt/parse helpers
-// are unit-tested without a network.
+// injected `callSeat` (council approval + Planning-team decompose) and `callTeam`
+// (build execution). This module builds all of them over a minimal MCP client
+// (../breakout/mcp_client.mjs), giving each team its own system prompt. It is
+// opt-in: a seat with no API key fail-closes (the server returns no provenance →
+// the gate honest-blocks), mirroring the existing `smoke` scripts. The pure
+// prompt/parse helpers are unit-tested without a network.
+
+import { agyApprovalPacket } from "./council.mjs";
 
 // Chat seats expose an `<model>_ask` tool; agy is structured (no code generation).
 const ASK_MODELS = new Set(["claude", "grok", "codex"]);
+const VALID_DECISIONS = new Set(["approve", "revise", "reject", "advisory-note"]);
+const VALID_CONFIDENCE = new Set(["low", "medium", "high"]);
+
+// Robustly pull the first {...} or [...] JSON value out of a model's answer
+// (handles ```json fences and surrounding prose).
+export function extractJson(text, open = "{", close = "}") {
+  if (typeof text !== "string") return null;
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const body = fenced ? fenced[1] : text;
+  const start = body.indexOf(open);
+  const end = body.lastIndexOf(close);
+  if (start === -1 || end === -1 || end < start) return null;
+  try { return JSON.parse(body.slice(start, end + 1)); } catch { return null; }
+}
 
 // A team's buildable lead: the first seat whose model has an _ask tool (so e.g.
 // the ops team, led by the structured agy seat, still builds via its codex seat).
@@ -80,28 +97,110 @@ export function makeLiveCallTeam({ client }) {
   };
 }
 
+const PACKET_INSTRUCTION =
+  'Return ONLY a JSON object: {"decision":"approve|revise|reject","confidence":"low|medium|high",' +
+  '"required_edits":[],"hard_stops":[],"rationale":"one sentence"}. No prose outside the JSON.';
+
 /**
  * Build a promptFor(model, role, dossier, workstream) for liveSeatCaller
  * (council.mjs) so the approval council emits gate-valid JSON packets. agy stays
- * structured (agy_checkpoint args); chat seats get a packet-emitting instruction.
+ * structured (a real agy_checkpoint); chat seats get a strict decision-packet
+ * instruction. `models` optionally overrides the per-seat model id (else the
+ * server default applies).
  */
-export function approvalPromptFor(dossier) {
+export function approvalPromptFor(dossier, { models = {} } = {}) {
   return (model, role, _dossier, workstream) => {
     if (model === "agy") {
-      return { tool: "agy_checkpoint", args: { phase: "approval", scope: dossier?.use_case ?? "" } };
+      // A real governance checkpoint: required packets present, paths clean.
+      return { tool: "agy_checkpoint", args: { phase: "merge-gate", scope: dossier?.use_case ?? "", required_packets: ["claude", "codex"], present_packets: ["claude", "codex"], protected_path_check: "pass" } };
     }
-    const system = [
-      `You are the ${model} approval seat (role: ${role}${workstream ? `, workstream: ${workstream}` : ""}).`,
-      "Review the build and return ONLY a JSON approval packet with fields:",
-      "build_id, use_case, model, role, docs_reviewed[], proposal_ref, decision",
-      "(approve|revise|reject), required_edits[], hard_stops[], confidence (low|medium|high), timestamp."
-    ].join(" ");
-    const prompt = [
-      `build_id: ${dossier?.build_id}`,
-      `use_case: ${dossier?.use_case}`,
-      `objective: ${dossier?.objective}`,
-      "Emit the JSON approval packet now."
-    ].join("\n");
-    return { tool: `${model}_ask`, system, prompt };
+    const lens = workstream ? `, workstream lens: ${workstream}` : "";
+    return {
+      tool: `${model}_ask`,
+      model: models[model],
+      system: `You are ${model}, a council ${role} for TELOS${lens}. Judge the objective on the merits. ${PACKET_INSTRUCTION}`,
+      prompt: `Objective:\n${dossier?.objective ?? ""}\n\n${PACKET_INSTRUCTION}`
+    };
+  };
+}
+
+/**
+ * Turn a seat's response text into a gate-valid approval packet. agy's checkpoint
+ * is adapted via agyApprovalPacket; a chat seat's JSON contributes ONLY its
+ * judgment (decision/confidence/edits/stops/rationale) while identity fields
+ * (build_id/use_case/proposal_ref/timestamp/docs_reviewed) are injected
+ * authoritatively from the dossier so a sloppy model can't fail the gate's
+ * identity checks. An unparseable answer degrades to a non-approving
+ * 'advisory-note' (fail-closed), never a fabricated approve.
+ */
+export function parseApprovalPacket(text, model, dossier, meta = {}) {
+  const direct = (() => { try { return JSON.parse(text); } catch { return null; } })();
+  if (direct && direct.phase_gate_status) {
+    return agyApprovalPacket(direct, { build_id: dossier?.build_id, use_case: dossier?.use_case, proposal_ref: meta.proposal_ref ?? dossier?.build_id, timestamp: meta.timestamp, docs_reviewed: meta.docs_reviewed ?? [] });
+  }
+  const m = (direct && !direct.phase_gate_status ? direct : extractJson(text)) || {};
+  return {
+    build_id: dossier?.build_id,
+    use_case: dossier?.use_case,
+    model,
+    role: "approver",
+    docs_reviewed: Array.isArray(meta.docs_reviewed) ? meta.docs_reviewed : [],
+    proposal_ref: meta.proposal_ref ?? dossier?.build_id,
+    decision: VALID_DECISIONS.has(m.decision) ? m.decision : "advisory-note",
+    required_edits: Array.isArray(m.required_edits) ? m.required_edits : [],
+    hard_stops: Array.isArray(m.hard_stops) ? m.hard_stops : [],
+    confidence: VALID_CONFIDENCE.has(m.confidence) ? m.confidence : "medium",
+    timestamp: meta.timestamp ?? new Date(0).toISOString(),
+    rationale: typeof m.rationale === "string" ? m.rationale : undefined
+  };
+}
+
+// The Planning team's decompose prompt: ask for a strict JSON task list whose
+// nodes carry the footprints + test the merkle-dag planner needs.
+export function decomposePrompt(dossier, telos) {
+  const system = [
+    "You are the TELOS Planning team. Decompose the objective into a build plan.",
+    'Return ONLY a JSON array of task objects:',
+    '[{"id":"kebab-id","writes":["relative/path"],"reads":["relative/path"],',
+    '"requirements":"what this node must satisfy","test":{"cmd":"node","args":["-e","process.exit(0)"]},',
+    '"workstream":"backend-schema|frontend-brand-experience|security-trust|scale-operations|product-architecture"}].',
+    "One writer per file. Declare reads for cross-file dependencies. No prose outside the JSON."
+  ].join(" ");
+  const prompt = `Objective:\n${dossier?.objective ?? ""}\n\nTelos statement:\n${telos ?? ""}\n\nEmit the JSON task array now.`;
+  return { system, prompt };
+}
+
+// Parse a decompose response into a raw task array (validation/normalization is
+// the job of decompose.mjs, which is fail-closed on anything unusable).
+export function parseDecomposeTasks(text) {
+  const arr = extractJson(text, "[", "]");
+  return Array.isArray(arr) ? arr : [];
+}
+
+/**
+ * Build the full live callSeat for buildProject over an MCP client: it routes
+ * intent==="decompose" to the Planning team's lead and everything else to the
+ * approval council. signing/provenance are handled by runCouncil/liveSeatCaller
+ * downstream for the approval path.
+ *   client      MCP client
+ *   liveSeatCaller  the council.mjs factory (injected to avoid a hard import cycle)
+ *   dossier, meta   identity/context for approval packets
+ *   models      optional per-seat model id overrides
+ *   planningModel  model used for live decomposition (default "claude")
+ */
+export function makeLiveCallSeat({ client, liveSeatCaller, dossier, meta = {}, models = {}, planningModel = "claude" }) {
+  const promptFor = approvalPromptFor(dossier, { models });
+  const approval = (seatArg) =>
+    liveSeatCaller({ client, promptFor, parsePacket: (t) => parseApprovalPacket(t, seatArg.model, dossier, meta) })(seatArg);
+
+  return async (args) => {
+    if (args && args.intent === "decompose") {
+      const { system, prompt } = decomposePrompt(dossier, args.telos);
+      const text = await client.callTool(`${planningModel}_ask`, { system, prompt, model: models[planningModel], include_provenance: true });
+      const body = (() => { try { return JSON.parse(text); } catch { return null; } })();
+      const inner = body && typeof body.text === "string" ? body.text : text;
+      return { tasks: parseDecomposeTasks(inner) };
+    }
+    return approval(args);
   };
 }

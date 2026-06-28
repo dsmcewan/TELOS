@@ -3,7 +3,7 @@
 // buildable-seat selection, prompt construction, response parsing/clamping, and a
 // fake-client callTeam round-trip.
 import assert from "node:assert/strict";
-import { buildableSeat, promptForTeam, nodeBuildPrompt, parseTeamFiles, makeLiveCallTeam, approvalPromptFor } from "../teamPrompts.mjs";
+import { buildableSeat, promptForTeam, nodeBuildPrompt, parseTeamFiles, makeLiveCallTeam, approvalPromptFor, parseApprovalPacket, decomposePrompt, parseDecomposeTasks, extractJson, makeLiveCallSeat } from "../teamPrompts.mjs";
 
 // --- buildableSeat: skip a structured lead (agy) for the first _ask-capable seat ---
 {
@@ -56,15 +56,68 @@ import { buildableSeat, promptForTeam, nodeBuildPrompt, parseTeamFiles, makeLive
   assert.equal(decline.ok, false, "no usable files -> fail-closed decline");
 }
 
-// --- approvalPromptFor: agy stays structured; chat seats emit packet instructions ---
+// --- approvalPromptFor: agy stays structured; chat seats get the decision packet instruction ---
 {
-  const promptFor = approvalPromptFor({ build_id: "b", use_case: "u", objective: "o" });
+  const promptFor = approvalPromptFor({ build_id: "b", use_case: "u", objective: "ship it" }, { models: { claude: "claude-sonnet-4-6" } });
   const agy = promptFor("agy", "approver");
   assert.equal(agy.tool, "agy_checkpoint", "agy uses the structured checkpoint tool");
+  assert.equal(agy.args.protected_path_check, "pass", "agy checkpoint carries governance args");
   const claude = promptFor("claude", "approver");
   assert.equal(claude.tool, "claude_ask", "chat seats use their ask tool");
-  assert.match(claude.system, /approval packet/, "chat seat is told to emit an approval packet");
-  assert.match(claude.prompt, /build_id: b/, "prompt carries dossier context");
+  assert.equal(claude.model, "claude-sonnet-4-6", "per-seat model id is threaded through");
+  assert.match(claude.system, /Return ONLY a JSON object/, "chat seat told to emit a strict JSON decision");
+  assert.match(claude.prompt, /ship it/, "prompt carries the objective");
+}
+
+// --- parseApprovalPacket: identity from dossier, judgment from the model ---
+{
+  const dossier = { build_id: "b1", use_case: "u1" };
+  const meta = { proposal_ref: "b1", timestamp: "2026-06-28T00:00:00Z", docs_reviewed: ["d.md"] };
+  const pkt = parseApprovalPacket('```json\n{"decision":"approve","confidence":"high","hard_stops":[]}\n```', "claude", dossier, meta);
+  assert.equal(pkt.build_id, "b1", "identity injected from dossier (not the model)");
+  assert.equal(pkt.use_case, "u1");
+  assert.equal(pkt.model, "claude");
+  assert.equal(pkt.decision, "approve", "model's decision preserved");
+  assert.equal(pkt.confidence, "high", "model's confidence preserved");
+  assert.equal(pkt.timestamp, "2026-06-28T00:00:00Z");
+
+  // Unparseable answer => non-approving advisory-note (fail-closed, never approve).
+  const junk = parseApprovalPacket("the build looks fine to me", "grok", dossier, meta);
+  assert.equal(junk.decision, "advisory-note", "garbage degrades to advisory-note, never approve");
+
+  // An agy checkpoint is adapted (advance => approve).
+  const agyPkt = parseApprovalPacket(JSON.stringify({ phase_gate_status: "advance", blocked_reasons: [] }), "agy", dossier, meta);
+  assert.equal(agyPkt.model, "agy");
+  assert.equal(agyPkt.decision, "approve", "advance checkpoint => approve");
+}
+
+// --- decompose prompt + parse: strict JSON array, fenced-tolerant ---
+{
+  const { system, prompt } = decomposePrompt({ objective: "build x" }, "telos: do x");
+  assert.match(system, /JSON array of task objects/, "decompose system asks for a task array");
+  assert.match(prompt, /build x/, "decompose prompt carries the objective");
+
+  const tasks = parseDecomposeTasks('here you go:\n```json\n[{"id":"a","writes":["a.txt"]}]\n```');
+  assert.deepEqual(tasks, [{ id: "a", writes: ["a.txt"] }], "parses a fenced JSON task array");
+  assert.deepEqual(parseDecomposeTasks("no array here"), [], "no array => [] (decompose.mjs fail-closes)");
+  assert.deepEqual(extractJson("x [1,2] y", "[", "]"), [1, 2], "extractJson pulls a bracketed array");
+}
+
+// --- makeLiveCallSeat: routes decompose vs approval over a fake client ---
+{
+  const dossier = { build_id: "b", use_case: "u", objective: "o" };
+  const fakeLiveSeatCaller = ({ parsePacket }) => async (seatArg) => ({ packet: parsePacket('{"decision":"approve","confidence":"high"}'), provenance: { model: seatArg.model, response_id: "r" } });
+  const client = { async callTool(tool, args) {
+    assert.equal(tool, "claude_ask", "decompose uses the planning lead's ask tool");
+    assert.match(args.prompt, /Emit the JSON task array/, "decompose prompt sent");
+    return JSON.stringify({ text: JSON.stringify([{ id: "n", writes: ["n.txt"], requirements: "r", test: { cmd: "node" } }]) });
+  } };
+  const callSeat = makeLiveCallSeat({ client, liveSeatCaller: fakeLiveSeatCaller, dossier, meta: { timestamp: "2026-06-28T00:00:00Z" } });
+
+  const dec = await callSeat({ intent: "decompose", telos: "t" });
+  assert.equal(dec.tasks.length, 1, "decompose intent returns parsed tasks");
+  const appr = await callSeat({ model: "claude", role: "approver" });
+  assert.equal(appr.packet.decision, "approve", "non-decompose routes to the approval council");
 }
 
 console.log("test-team-prompts.mjs OK");

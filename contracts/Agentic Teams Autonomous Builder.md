@@ -87,11 +87,19 @@ gate passed**. The phases it reports: `decompose | approval | plan | build`.
 
 ## Live wiring (opt-in)
 
-`build-gate/teamPrompts.mjs` builds the live `callSeat` (approval, via
-`liveSeatCaller` + `approvalPromptFor`) and `callTeam` (execution, via
-`makeLiveCallTeam`) over `ai-peer-mcp`. Each team gets its own system prompt;
-build seats are asked to emit `{files:[...]}` clamped to the node's declared
-files. As with the council, a seat with no API key fail-closes.
+`build-gate/teamPrompts.mjs` builds the full live path over `ai-peer-mcp`:
+`makeLiveCallSeat` (approval via `approvalPromptFor` + `parseApprovalPacket`, and
+live decomposition via `decomposePrompt` + `parseDecomposeTasks`) and
+`makeLiveCallTeam` (execution — each team's lead emits `{files:[...]}` clamped to
+the node's declared files). `parseApprovalPacket` injects identity fields from the
+dossier and keeps only the model's judgment, so a sloppy model can't fail the
+gate's identity checks or fabricate an approve. As with the council, a seat with
+no API key fail-closes — the gate honest-blocks at approval.
+
+A runnable end-to-end entry point lives at
+`docs/runs/agentic-teams-live/run-teams-live.mjs` (see its README): with API keys
+it runs real approvals + real team builds to `merge_status: "ready"`; without
+them it fail-closes, which the committed `run-summary.json` records.
 
 ## Evidence
 
