@@ -8,6 +8,13 @@ on:
 permissions:
   contents: read
 
+# Cancel an in-progress run when a newer commit supersedes it. Grouping by
+# github.ref isolates each PR (refs/pull/N/merge) and the main branch
+# (refs/heads/main), so a push to one never cancels another's run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
