@@ -61,7 +61,30 @@ function marketPacketFromRecord(record, dossierMeta) {
   return packet;
 }
 
-function runMarketGate({ projectRoot, dossierMeta, teamRecords }) {
+// Synthetic council approvals for the keyless/offline path. Marked honestly:
+// proposal_ref says synthetic and there is NO provenance, so the gate surfaces a
+// provenance warning — a demo can never be mistaken for a real signed council
+// pass. Live runs replace these via councilApprovals (real provenance).
+export function syntheticApprovals(dossierMeta) {
+  return ["claude", "agy", "codex"].map((model) => ({
+    build_id: dossierMeta.build_id,
+    use_case: dossierMeta.use_case,
+    model,
+    role: "builder",
+    docs_reviewed: [],
+    proposal_ref: "synthetic-demo-approval",
+    decision: "approve",
+    required_edits: [],
+    hard_stops: [],
+    confidence: "high",
+    timestamp: TS
+  }));
+}
+
+// The REQUIRED-seat approval packets are produced by the seats (or the synthetic
+// fallback) — NEVER fabricated inside the gate call. A dissenting seat
+// (decision != approve) or absent provenance fails the gate closed.
+function runMarketGate({ projectRoot, dossierMeta, teamRecords, approvals }) {
   const dossier = {
     build_id: dossierMeta.build_id,
     idea_id: dossierMeta.idea_id,
@@ -77,23 +100,8 @@ function runMarketGate({ projectRoot, dossierMeta, teamRecords }) {
     required_market_workstreams: dossierMeta.required_market_workstreams
   };
 
-  const approval = (model) => ({
-    build_id: dossierMeta.build_id,
-    use_case: dossierMeta.use_case,
-    model,
-    role: "builder",
-    docs_reviewed: [],
-    proposal_ref: "saas-forge",
-    decision: "approve",
-    required_edits: [],
-    hard_stops: [],
-    confidence: "high",
-    timestamp: TS
-  });
-  const packets = ["claude", "agy", "codex"].map(approval);
   const marketPackets = teamRecords.map((r) => marketPacketFromRecord(r, dossierMeta));
-
-  return validateRecords(dossier, packets, { dossierDir: projectRoot }, [], marketPackets);
+  return validateRecords(dossier, approvals, { dossierDir: projectRoot }, [], marketPackets);
 }
 
 /**
@@ -113,6 +121,7 @@ export async function forge({
   docsFor = offlineDocsFor,
   makeGenerators = makeDemoGenerators,
   makeBreakoutFns,
+  makeApprovals = async ({ dossierMeta: dm }) => syntheticApprovals(dm),
   maxCycles = 3
 }) {
   const telosDir = path.join(projectRoot, ".telos");
@@ -146,7 +155,10 @@ export async function forge({
     teams = built ? await runTeamBreakouts({ baseDir: projectRoot, architecture, makeFns: makeBreakoutFns }) : [];
     const teamsConverged = built && teams.length > 0 && teams.every((t) => t.converged);
 
-    verdict = teamsConverged ? runMarketGate({ projectRoot, dossierMeta, teamRecords: teams }) : null;
+    // Required-seat approvals come from the seats (live) or the synthetic
+    // fallback (offline) — produced here, then handed to the gate.
+    const approvals = teamsConverged ? await makeApprovals({ dossierMeta, architecture }) : [];
+    verdict = teamsConverged ? runMarketGate({ projectRoot, dossierMeta, teamRecords: teams, approvals }) : null;
 
     cycles.push({
       cycle,
