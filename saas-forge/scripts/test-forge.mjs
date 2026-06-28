@@ -47,12 +47,15 @@ const telos = "Make the convergence demo market-ready.";
   // A sampling of generated artifacts on disk (the "drawn product", per team):
   const expect = [
     ["docs/ARCHITECTURE.md", "Vite"],
+    ["docs/ARCHITECTURE.md", "Tailwind CSS"],   // UI design toolchain researched
     ["docs/POSITIONING.md", "Target users"],
     ["db/schema.sql", "create policy"],
     ["web/site/csp.txt", "Content-Security-Policy"],
     ["evals/scorecard.json", "precision"],
     ["docs/OPERATIONS.md", "CloudFront"],
-    ["web/site/style.css", "#69e7ff"]
+    ["web/site/style.css", "#69e7ff"],
+    ["web/site/tokens.css", "--accent-cyan"],   // design tokens
+    ["web/DESIGN.md", "Figma"]                   // design source of truth
   ];
   for (const [rel, needle] of expect) {
     const p = path.join(root, rel);

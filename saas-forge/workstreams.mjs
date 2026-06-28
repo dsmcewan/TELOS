@@ -8,7 +8,7 @@
 
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { renderArchitectureMarkdown, stackLibraries } from "./research.mjs";
+import { renderArchitectureMarkdown, stackLibraries, designTools } from "./research.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const CHECK_NODE = path.join(here, "checks", "check-node.mjs");
@@ -138,12 +138,35 @@ Delivery: static-first SPA (${stackLibraries(arch).join(", ")}).
 
 function renderFrontend(arch) {
   const libs = stackLibraries(arch).join(", ");
+  const tools = designTools(arch);
   return {
+    "web/site/tokens.css": `:root {
+  /* Design tokens (Style Dictionary output; Figma is the source of truth) */
+  --accent-cyan: ${BRAND_CYAN};
+  --bg: #0b0f14;
+  --fg: #e6edf3;
+  --space-1: 4px; --space-2: 8px; --space-3: 16px; --space-4: 24px;
+  --radius: 8px;
+  --font-sans: system-ui, -apple-system, sans-serif;
+}
+`,
+    "web/DESIGN.md": `# Design System
+
+Built with the researched UI design toolchain:
+
+${tools.map((t) => `- **${t}**`).join("\n")}
+
+- Design tokens live in \`web/site/tokens.css\` (Style Dictionary output); **Figma**
+  is the design source of truth.
+- Components: **shadcn/ui** on **Radix UI** primitives; icons via **Lucide**.
+- Brand token: \`${BRAND_CYAN}\`.
+`,
     "web/index.html": `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <title>Convergence — deterministic communication forensics</title>
+  <link rel="stylesheet" href="site/tokens.css" />
   <link rel="stylesheet" href="site/style.css" />
 </head>
 <body>
@@ -268,12 +291,16 @@ export const WORKSTREAMS = [
   {
     id: "frontend-brand-experience", signer: "claude", lens: "claude",
     dependencies: ["product-architecture", "security-trust", "accuracy-evals"],
-    files: ["web/index.html", "web/site/style.css", "web/VERIFICATION.md",
+    files: ["web/index.html", "web/site/style.css", "web/site/tokens.css", "web/DESIGN.md",
+            "web/VERIFICATION.md",
             "docs/verification/s03-dynamics-discriminator.png", "docs/verification/s04-scorecard.png"],
-    requirements: "LEXI-class first screen: contract, delivery, test posture, TELOS gate; brand token #69e7ff; verification screenshots.",
+    requirements: "LEXI-class first screen: contract, delivery, test posture, TELOS gate; brand token #69e7ff; design system (tokens + toolchain) and verification screenshots.",
     render: (arch) => renderFrontend(arch),
     checks: () => [
       { type: "file_contains", path: "web/site/style.css", needle: "#69e7ff" },
+      { type: "file_contains", path: "web/site/tokens.css", needle: "--accent-cyan" },
+      { type: "file_contains", path: "web/DESIGN.md", needle: "shadcn/ui" },
+      { type: "file_contains", path: "web/DESIGN.md", needle: "Figma" },
       { type: "file_exists", path: "web/VERIFICATION.md" },
       { type: "file_exists", path: "docs/verification/s03-dynamics-discriminator.png" },
       { type: "file_exists", path: "docs/verification/s04-scorecard.png" }
