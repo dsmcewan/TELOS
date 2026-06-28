@@ -112,6 +112,7 @@ export async function forge({
   dossierMeta,
   docsFor = offlineDocsFor,
   makeGenerators = makeDemoGenerators,
+  makeBreakoutFns,
   maxCycles = 3
 }) {
   const telosDir = path.join(projectRoot, ".telos");
@@ -142,7 +143,7 @@ export async function forge({
     const built = report.merge_status === "ready";
 
     // Every team is adversarially challenged on its own artifact (verdict-on-facts).
-    teams = built ? await runTeamBreakouts({ baseDir: projectRoot, architecture }) : [];
+    teams = built ? await runTeamBreakouts({ baseDir: projectRoot, architecture, makeFns: makeBreakoutFns }) : [];
     const teamsConverged = built && teams.length > 0 && teams.every((t) => t.converged);
 
     verdict = teamsConverged ? runMarketGate({ projectRoot, dossierMeta, teamRecords: teams }) : null;
