@@ -14,7 +14,7 @@ import { WORKSTREAMS } from "./workstreams.mjs";
 
 // Fact challenger/builder for one team. `repair` (optional) regenerates failing
 // artifacts in live mode; offline it is a no-op, so unmet checks honestly survive.
-function factBreakout({ checks, baseDir, repair }) {
+export function factBreakout({ checks, baseDir, repair }) {
   return {
     challenge: () => {
       const r = reverifyRecord({ checks }, baseDir);
@@ -32,13 +32,17 @@ function factBreakout({ checks, baseDir, repair }) {
 /**
  * Run every team's breakout against the built project. Returns one record per
  * workstream: { workstream, finalStatus, converged, surviving_blockers, rounds,
- * checks }. `repairFor(id)` optionally returns a live repair fn for that team.
+ * checks }.
+ *   makeFns({ workstream, checks, baseDir }) -> { challenge, revise }
+ *     Default = factBreakout (verdict purely on disk). Live = council+fact (a
+ *     grok adversary on top of the fact checks, with a builder-team revise).
  */
-export async function runTeamBreakouts({ baseDir, architecture, maxRounds = 3, repairFor }) {
+export async function runTeamBreakouts({ baseDir, architecture, maxRounds = 3, makeFns }) {
+  const build = makeFns || (({ checks }) => factBreakout({ checks, baseDir }));
   const records = [];
   for (const ws of WORKSTREAMS) {
     const checks = ws.checks(architecture);
-    const fns = factBreakout({ checks, baseDir, repair: repairFor ? repairFor(ws.id) : undefined });
+    const fns = build({ workstream: ws.id, checks, baseDir });
     const record = await runBreakout(
       { workstream: ws.id, claimedStatus: "meets", goalStatus: "meets",
         evidence: `${ws.id} artifacts: ${ws.files.join(", ")}`, maxRounds },
