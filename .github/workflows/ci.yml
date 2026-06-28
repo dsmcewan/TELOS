@@ -27,6 +27,7 @@ jobs:
           - breakout
           - connectors/ai-peer-mcp
           - merkle-dag
+          - saas-forge
     name: ${{ matrix.package }} (node ${{ matrix.node-version }})
     steps:
       - name: Checkout repository
