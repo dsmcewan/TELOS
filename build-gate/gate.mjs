@@ -552,7 +552,16 @@ function validateProtectedPaths(dossier, blockers) {
   
   function safeResolve(root, inputPath) {
     let relativePath = inputPath;
-    if (path.isAbsolute(inputPath)) {
+    // A Windows drive designator ("C:" / "C:\" / "C:/") is absolute on Windows
+    // but POSIX path.isAbsolute() does not recognize it, which would otherwise
+    // leave the drive token as a literal segment and let an attacker-supplied
+    // drive path slip past protected-path checks on a non-Windows runner. Strip
+    // the drive root and treat the remainder as a tail rebased under `root`, so
+    // the flattening below is identical on every platform.
+    const driveRoot = /^[A-Za-z]:[/\\]?/;
+    if (driveRoot.test(inputPath)) {
+      relativePath = inputPath.replace(driveRoot, "");
+    } else if (path.isAbsolute(inputPath)) {
       relativePath = path.relative(root, inputPath);
     }
     const segments = relativePath.split(/[/\\]/);

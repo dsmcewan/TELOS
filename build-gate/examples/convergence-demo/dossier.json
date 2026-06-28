@@ -5,7 +5,7 @@
   "telos": "Determine whether the convergence demo is ready for future prototype work by discovering the documentation, skills, connectors, tests, and model roles needed before any build begins.",
   "objective": "Use the Claude-led multi-model prototype workflow against the convergence-demo project and verify it as a market-bound professional demo.",
   "affected_directories": [
-    "C:/Users/dsmce/OneDrive/Attachments/Desktop/Life collaboration System/convergence-demo/"
+    "project/"
   ],
   "write_targets": [
     "C:/Users/dsmce/OneDrive/Attachments/Desktop/Life collaboration System/convergence-demo/docs/prototypes/convergence-agentic-prototype.md"
