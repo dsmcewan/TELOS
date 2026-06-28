@@ -155,3 +155,25 @@ reproducible, real gate + real Ed25519 ledger + real merkle-dag, reaching
 
 **Docs:** `contracts/Agentic Teams Autonomous Builder.md` (protocol),
 `docs/specs/2026-06-28-agentic-teams-design.md` (design).
+
+## Live MCP path wired (2026-06-28)
+
+The agentic-teams autonomous builder now runs over the **live** `ai-peer-mcp`
+backends, not just keyless mocks. `build-gate/teamPrompts.mjs` gained the full
+live wiring — `makeLiveCallSeat` (approval council via `approvalPromptFor` +
+`parseApprovalPacket`, and live decomposition via `decomposePrompt` +
+`parseDecomposeTasks`) and `makeLiveCallTeam` (each team's lead emits the node's
+files). `parseApprovalPacket` injects identity fields (build_id/use_case/…) from
+the dossier and keeps only the model's judgment, so a model can neither fail the
+gate's identity checks nor fabricate an approve.
+
+Runnable entry point: `docs/runs/agentic-teams-live/run-teams-live.mjs` (with a
+README). With `ANTHROPIC_API_KEY` / `XAI_API_KEY` / `OPENAI_API_KEY` it runs real
+approvals + real team builds to `merge_status: "ready"`. Without keys it
+**fail-closes honestly**, proven by the committed `run-summary.json`: the live
+server spawned, `agy` (keyless, local) produced a real packet, and `claude` /
+`codex` fail-closed for missing keys, so the gate honest-blocked at approval
+("Missing required claude/codex approval packet") — no plan, no ledger.
+
+New pure helpers are covered (no network) by `test-team-prompts.mjs`; full
+`build-gate npm test` exit 0.

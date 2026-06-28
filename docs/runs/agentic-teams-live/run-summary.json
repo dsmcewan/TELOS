@@ -1,0 +1,21 @@
+{
+  "generated_for": "agentic-teams-demo",
+  "live": true,
+  "decompose": "fixture",
+  "phase": "approval",
+  "ok": false,
+  "merge_status": null,
+  "teams_convened": [
+    "planning",
+    "architecture",
+    "breakout"
+  ],
+  "council": {
+    "blockers": [
+      "Missing required claude approval packet.",
+      "Missing required codex approval packet."
+    ]
+  },
+  "settled_nodes": [],
+  "note": "Live ai-peer-mcp backends. Without API keys, required seats fail-closed and the gate honest-blocks at approval (no plan, no ledger) — the correct outcome."
+}

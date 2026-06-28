@@ -39,10 +39,12 @@ module — not a new engine — and a team's self-report cannot satisfy the gate
   fail-closed sequencing (approval gate before execution); `makeTeamDispatch(...)`
   routes by id and lets a team write its node's files (verify stays in
   `verifyNode`); `makeTeamKeyring(teams)` mints per-signer Ed25519 keypairs.
-- **`teamPrompts.mjs`** — opt-in live wiring over `ai-peer-mcp`:
-  `approvalPromptFor` (council packets), `makeLiveCallTeam` (build execution),
-  plus pure prompt/parse helpers (`promptForTeam`, `nodeBuildPrompt`,
-  `parseTeamFiles`, `buildableSeat`).
+- **`teamPrompts.mjs`** — live wiring over `ai-peer-mcp`: `makeLiveCallSeat`
+  (approval council + live decompose) and `makeLiveCallTeam` (build execution),
+  plus pure prompt/parse helpers (`approvalPromptFor`, `parseApprovalPacket`,
+  `decomposePrompt`, `parseDecomposeTasks`, `promptForTeam`, `nodeBuildPrompt`,
+  `parseTeamFiles`, `buildableSeat`, `extractJson`). The runnable entry point is
+  `docs/runs/agentic-teams-live/run-teams-live.mjs`.
 
 Reused unchanged: `council.mjs`, `gate.mjs`, `sign.mjs`, all of `merkle-dag/`,
 `breakout/verifier.mjs`.
