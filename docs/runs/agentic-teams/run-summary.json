@@ -1,0 +1,42 @@
+{
+  "generated_for": "agentic-teams-demo",
+  "keyless": true,
+  "phase": "build",
+  "ok": true,
+  "merge_status": "ready",
+  "teams_convened": [
+    "planning",
+    "architecture",
+    "breakout"
+  ],
+  "plan_hash": "sha256:0b78e6497f45cc8d673795540aac11c80c5bfd0899e2904bceac2f039c363ade",
+  "authorized_signers": [
+    "planning",
+    "architecture",
+    "breakout"
+  ],
+  "settled_nodes": [
+    {
+      "id": "greet",
+      "signer": "architecture"
+    },
+    {
+      "id": "index",
+      "signer": "architecture"
+    }
+  ],
+  "ledger_records": [
+    {
+      "task_id": "greet",
+      "signer": "architecture",
+      "alg": "Ed25519"
+    },
+    {
+      "task_id": "index",
+      "signer": "architecture",
+      "alg": "Ed25519"
+    }
+  ],
+  "council_pass": true,
+  "note": "Deterministic mock seats; real Ed25519 ledger, real gate, real merkle-dag. Build workspace was a throwaway temp dir."
+}

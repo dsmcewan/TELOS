@@ -1,0 +1,18 @@
+[
+  {
+    "id": "greet",
+    "writes": ["out/greet.mjs"],
+    "reads": [],
+    "requirements": "export greet(name) returning a greeting string",
+    "test": { "cmd": "node", "args": ["-e", "process.exit(0)"] },
+    "workstream": "product-architecture"
+  },
+  {
+    "id": "index",
+    "writes": ["out/index.mjs"],
+    "reads": ["out/greet.mjs"],
+    "requirements": "import greet and print greet('TELOS') as the app entry",
+    "test": { "cmd": "node", "args": ["-e", "process.exit(0)"] },
+    "workstream": "product-architecture"
+  }
+]
