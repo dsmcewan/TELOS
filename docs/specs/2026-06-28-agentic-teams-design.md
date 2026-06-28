@@ -76,9 +76,14 @@ Reused unchanged: `council.mjs`, `gate.mjs`, `sign.mjs`, all of `merkle-dag/`,
 
 ## Evidence
 
-`docs/runs/agentic-teams/run-teams.mjs` → `run-summary.json`: keyless reproducible
-run over the real gate + real Ed25519 ledger + real merkle-dag, reaching
-`merge_status: "ready"` with both nodes settled and signed.
+- `docs/runs/agentic-teams/run-teams.mjs` → `run-summary.json`: keyless non-market
+  run reaching `merge_status: "ready"` with both nodes settled and signed.
+- `docs/runs/agentic-teams-market/run-teams-market.mjs` → `run-summary.json`:
+  keyless **market-bound full fan-out** — nine teams convened, nodes routed to
+  distinct teams (backend/frontend/security/ops) each settling under its own
+  signer, market-readiness gate + frontend `meets` breakout re-verify passing,
+  reaching `merge_status: "ready"`. Covered hermetically by two cases in
+  `test-build-orchestrator.mjs` (full fan-out → ready; missing-workstream → blocked).
 
 ## Verification
 

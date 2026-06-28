@@ -95,7 +95,14 @@ files. As with the council, a seat with no API key fail-closes.
 
 ## Evidence
 
-`docs/runs/agentic-teams/` contains a keyless, reproducible end-to-end run
-(`run-teams.mjs` → `run-summary.json`): deterministic mock seats over the real
-gate, real Ed25519 ledger, and real merkle-dag substrate, reaching
-`merge_status: "ready"`.
+Two keyless, reproducible end-to-end runs (deterministic mock seats over the real
+gate, real Ed25519 ledger, and real merkle-dag substrate), each reaching
+`merge_status: "ready"`:
+
+- `docs/runs/agentic-teams/` (`run-teams.mjs`) — a non-market build (the meta
+  backbone convenes; nodes route to the architecture team).
+- `docs/runs/agentic-teams-market/` (`run-teams-market.mjs`) — a **market-bound**
+  build with the **full multi-team fan-out**: all nine teams convene, nodes route
+  to distinct teams (backend, frontend, security, ops), each settling under its
+  own signer, and the market-readiness gate — including the frontend `meets`
+  breakout re-verify against an on-disk evidence file — stays load-bearing.

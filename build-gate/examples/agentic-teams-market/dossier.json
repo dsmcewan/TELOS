@@ -1,0 +1,35 @@
+{
+  "build_id": "agentic-teams-market-demo",
+  "idea_id": "idea-agentic-teams-market-demo",
+  "use_case": "autonomous-market-build",
+  "objective": "Autonomously build a market-ready micro-app via the full agentic-teams fan-out.",
+  "trust_mode": "advisory",
+  "market_bound": true,
+  "user_facing_frontend": true,
+  "required_market_workstreams": [
+    "business-positioning",
+    "product-architecture",
+    "backend-schema",
+    "security-trust",
+    "accuracy-evals",
+    "scale-operations",
+    "frontend-brand-experience"
+  ],
+  "required_docs": [],
+  "write_targets": [
+    "out/schema.mjs",
+    "out/api.mjs",
+    "out/ui.mjs",
+    "out/threat-model.md",
+    "out/runbook.md"
+  ],
+  "affected_directories": [
+    "."
+  ],
+  "protected_paths": [
+    "CHATGPT/",
+    "me/claude-code/",
+    "me/claude-desktop/",
+    "me/gemini/"
+  ]
+}

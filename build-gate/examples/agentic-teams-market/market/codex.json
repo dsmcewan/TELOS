@@ -1,0 +1,23 @@
+{
+  "build_id": "agentic-teams-market-demo",
+  "idea_id": "idea-agentic-teams-market-demo",
+  "model": "codex",
+  "project_state": "demo",
+  "workstreams_reviewed": [
+    "backend-schema",
+    "accuracy-evals",
+    "scale-operations"
+  ],
+  "business_thesis": "The backend and operations posture supports a credible demo launch.",
+  "target_users": ["early buyers"],
+  "architecture_findings": [],
+  "backend_schema_findings": ["Schema is content-addressed and migration-safe."],
+  "security_findings": [],
+  "accuracy_eval_findings": ["Acceptance tests gate every node."],
+  "scalability_findings": ["Deploy + rollback runbook is in scope."],
+  "frontend_design_findings": [],
+  "lexi_class_ui_status": "not-applicable",
+  "go_to_market_blockers": [],
+  "recommendation_to_claude": "Proceed; keep the eval suite in CI.",
+  "timestamp": "2026-06-28T12:02:00-04:00"
+}

@@ -100,7 +100,7 @@ export function makeTeamKeyring(teams) {
  * to execution unless the council approval gate passed (fail-closed sequencing).
  *   { phase: "decompose"|"approval"|"plan"|"build", ok, ... }
  */
-export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, keyring, signerFor, baseDir, telosDir, marketPackets = [], maxRepairRounds = 8, concurrency }) {
+export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, keyring, signerFor, baseDir, telosDir, marketPackets = [], source, maxRepairRounds = 8, concurrency }) {
   const teams = planTeams(dossier);
 
   // 1. Tasks: hand-authored, or proposed by the Planning team (data only).
@@ -115,8 +115,10 @@ export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, 
   const council = await runCouncil({ callSeat, dossier });
   const packets = council.filter((r) => r && r.ok && r.packet).map((r) => r.packet);
   // marketPackets pass straight through to the gate so a market-bound build still
-  // demands real market-readiness evidence (the gate stays load-bearing).
-  const report = validateRecords(dossier, packets, {}, [], marketPackets);
+  // demands real market-readiness evidence (the gate stays load-bearing). `source`
+  // (e.g. { dossierDir: baseDir }) lets the gate re-verify breakout `meets` checks
+  // against the build workspace rather than process.cwd().
+  const report = validateRecords(dossier, packets, source || {}, [], marketPackets);
   if (report.blockers.length > 0) {
     return { phase: "approval", ok: false, blocked: report.blockers, council: report, teams };
   }

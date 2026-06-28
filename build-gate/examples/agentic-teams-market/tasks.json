@@ -1,0 +1,42 @@
+[
+  {
+    "id": "schema",
+    "writes": ["out/schema.mjs"],
+    "reads": [],
+    "requirements": "data model + content-addressed record schema",
+    "test": { "cmd": "node", "args": ["-e", "process.exit(0)"] },
+    "workstream": "backend-schema"
+  },
+  {
+    "id": "api",
+    "writes": ["out/api.mjs"],
+    "reads": ["out/schema.mjs"],
+    "requirements": "service endpoints over the schema",
+    "test": { "cmd": "node", "args": ["-e", "process.exit(0)"] },
+    "workstream": "backend-schema"
+  },
+  {
+    "id": "ui",
+    "writes": ["out/ui.mjs"],
+    "reads": ["out/api.mjs"],
+    "requirements": "LEXI-class UI calling the api",
+    "test": { "cmd": "node", "args": ["-e", "process.exit(0)"] },
+    "workstream": "frontend-brand-experience"
+  },
+  {
+    "id": "threat-model",
+    "writes": ["out/threat-model.md"],
+    "reads": ["out/api.mjs"],
+    "requirements": "threat model + abuse cases for the api surface",
+    "test": { "cmd": "node", "args": ["-e", "process.exit(0)"] },
+    "workstream": "security-trust"
+  },
+  {
+    "id": "runbook",
+    "writes": ["out/runbook.md"],
+    "reads": ["out/ui.mjs"],
+    "requirements": "deploy + rollback runbook",
+    "test": { "cmd": "node", "args": ["-e", "process.exit(0)"] },
+    "workstream": "scale-operations"
+  }
+]

@@ -62,7 +62,8 @@ const summary = {
   ok: result.ok,
   merge_status: result.report ? result.report.merge_status : null,
   teams_convened: teams.map((t) => t.id),
-  plan_hash: result.plan ? result.plan.plan_hash : null,
+  // plan_hash is intentionally omitted: it pins the per-run EPHEMERAL signer
+  // public keys, so it differs every run by design (keeps this evidence stable).
   authorized_signers: result.plan ? Object.keys(result.plan.authorized_signers || {}) : [],
   settled_nodes: result.trace ? result.trace.filter((t) => t.action === "settled").map((t) => ({ id: t.id, signer: t.model })) : [],
   ledger_records: ledger.map((r) => ({ task_id: r.task_id, signer: r.signer, alg: r.sig && r.sig.alg })),

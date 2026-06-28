@@ -1,0 +1,119 @@
+{
+  "generated_for": "agentic-teams-market-demo",
+  "market_bound": true,
+  "keyless": true,
+  "phase": "build",
+  "ok": true,
+  "merge_status": "ready",
+  "teams_convened": [
+    "planning",
+    "architecture",
+    "backend",
+    "frontend",
+    "evals",
+    "security",
+    "ops",
+    "business",
+    "breakout"
+  ],
+  "node_routing": [
+    {
+      "node": "schema",
+      "workstream": "backend-schema",
+      "team": "backend"
+    },
+    {
+      "node": "api",
+      "workstream": "backend-schema",
+      "team": "backend"
+    },
+    {
+      "node": "ui",
+      "workstream": "frontend-brand-experience",
+      "team": "frontend"
+    },
+    {
+      "node": "threat-model",
+      "workstream": "security-trust",
+      "team": "security"
+    },
+    {
+      "node": "runbook",
+      "workstream": "scale-operations",
+      "team": "ops"
+    }
+  ],
+  "distinct_teams_used": [
+    "backend",
+    "frontend",
+    "ops",
+    "security"
+  ],
+  "authorized_signers": [
+    "architecture",
+    "backend",
+    "breakout",
+    "business",
+    "evals",
+    "frontend",
+    "ops",
+    "planning",
+    "security"
+  ],
+  "settled_nodes": [
+    {
+      "id": "api",
+      "signer": "backend"
+    },
+    {
+      "id": "runbook",
+      "signer": "ops"
+    },
+    {
+      "id": "schema",
+      "signer": "backend"
+    },
+    {
+      "id": "threat-model",
+      "signer": "security"
+    },
+    {
+      "id": "ui",
+      "signer": "frontend"
+    }
+  ],
+  "ledger_records": [
+    {
+      "task_id": "api",
+      "signer": "backend",
+      "alg": "Ed25519"
+    },
+    {
+      "task_id": "runbook",
+      "signer": "ops",
+      "alg": "Ed25519"
+    },
+    {
+      "task_id": "schema",
+      "signer": "backend",
+      "alg": "Ed25519"
+    },
+    {
+      "task_id": "threat-model",
+      "signer": "security",
+      "alg": "Ed25519"
+    },
+    {
+      "task_id": "ui",
+      "signer": "frontend",
+      "alg": "Ed25519"
+    }
+  ],
+  "market_packets_seen": [
+    "claude",
+    "codex",
+    "grok"
+  ],
+  "council_pass": true,
+  "note": "Market-bound full fan-out. Deterministic mock seats; real gate (incl. market-readiness + breakout re-verify), real Ed25519 ledger, real merkle-dag. Throwaway temp workspace."
+}
