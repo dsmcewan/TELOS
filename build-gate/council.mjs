@@ -42,6 +42,10 @@ export function maxConcurrency(requested) {
 export function planSeats(dossier) {
   const seats = REQUIRED_SEATS.map((model) => ({ model, role: "approver" }));
   seats.push({ model: "grok", role: "advisory" });
+  // Gemini rides as advisory — a fourth perspective (independent verification), never
+  // gate-required (REQUIRED_SEATS/REQUIRED_MODELS unchanged), so a missing GEMINI key
+  // never blocks the gate.
+  seats.push({ model: "gemini", role: "advisory" });
   if (dossier && dossier.market_bound === true) {
     const workstreams = Array.isArray(dossier.required_market_workstreams) ? dossier.required_market_workstreams : [];
     for (const ws of workstreams) seats.push({ model: "claude", role: "market-lens", workstream: ws });
@@ -115,7 +119,7 @@ export function liveSeatCaller({ client, promptFor, parsePacket }) {
     // the packet binds to the real response.
     const callArgs = spec.args
       ? spec.args
-      : { prompt: spec.prompt, system: spec.system, model: spec.model, include_provenance: true };
+      : { prompt: spec.prompt, system: spec.system, model: spec.model, include_provenance: true, response_schema: spec.response_schema, schema_name: spec.schema_name };
     const text = await client.callTool(tool, callArgs);
     const parsed = tryParseJson(text);
 

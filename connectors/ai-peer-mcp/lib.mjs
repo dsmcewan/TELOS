@@ -38,6 +38,22 @@ export function extractAnthropicResult(json) {
   };
 }
 
+// Structured-output variant: when Claude was forced to call a single tool, the
+// schema-valid JSON is the tool_use block's `input`. We JSON.stringify it so the
+// {text, provenance} envelope's `.text` stays a STRING (keeping the contract
+// liveSeatCaller/parseTeamFiles depend on). Provenance (model/id) still comes from
+// the real response, never the tool input. If no tool_use block (model declined /
+// thinking), degrade to the text path so downstream parsers fail-closed.
+export function extractAnthropicStructuredResult(json) {
+  const blocks = Array.isArray(json?.content) ? json.content : [];
+  const toolUse = blocks.find((part) => part?.type === "tool_use" && part.input && typeof part.input === "object");
+  return {
+    text: toolUse ? JSON.stringify(toolUse.input) : extractAnthropicText(json),
+    model: typeof json?.model === "string" ? json.model : null,
+    id: typeof json?.id === "string" ? json.id : null
+  };
+}
+
 // Shared parser for OpenAI-compatible chat-completion responses. xAI (Grok) and
 // OpenAI (Codex) return the same shape, so both Grok and Codex delegate here —
 // one place to keep the provenance extraction correct.
@@ -57,6 +73,22 @@ export function extractGrokResult(json) {
 // so the response carries a real server-issued model + id just like Grok.
 export function extractOpenAIResult(json) {
   return extractChatCompletionResult(json);
+}
+
+// Gemini (generateContent): the text (JSON when responseSchema was set) is in
+// candidates[0].content.parts[].text. Provenance is the response's modelVersion +
+// responseId — honest-null when absent (gemini is advisory, so a null id never
+// blocks the gate). Never throws.
+export function extractGeminiResult(json) {
+  const parts = json?.candidates?.[0]?.content?.parts;
+  const text = Array.isArray(parts)
+    ? parts.map((p) => (typeof p?.text === "string" ? p.text : "")).join("")
+    : null;
+  return {
+    text: text && text.length > 0 ? text : JSON.stringify(json, null, 2),
+    model: typeof json?.modelVersion === "string" ? json.modelVersion : null,
+    id: typeof json?.responseId === "string" ? json.responseId : null
+  };
 }
 
 // Recursive, key-sorted JSON serialization so a hash over an object is

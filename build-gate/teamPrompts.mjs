@@ -9,10 +9,25 @@
 // prompt/parse helpers are unit-tested without a network.
 
 import { agyApprovalPacket } from "./council.mjs";
+import { SCHEMAS } from "./schemas.mjs";
 
 // Chat seats expose an `<model>_ask` tool; agy is structured (no code generation).
-const ASK_MODELS = new Set(["claude", "grok", "codex"]);
+const ASK_MODELS = new Set(["claude", "grok", "codex", "gemini"]);
 const VALID_DECISIONS = new Set(["approve", "revise", "reject", "advisory-note"]);
+
+// Per-provider prompt framing that LEANS INTO each model's strength (see
+// model-profiles.mjs) — the schema now carries the JSON contract, so the prompt is
+// free to invoke what the model is best at, not just repeat a format instruction.
+const PROVIDER_PROFILES = {
+  claude: { frame: (body) => `<task>\n${body}\n</task>\n<approach>Architect and reason carefully; own the design. Be rigorous and concise.</approach>` },
+  codex: { frame: (body) => `${body}\n\n# Approach\nImplement precisely and correctly. The output schema is enforced.` },
+  grok: { frame: (body) => `${body}\n\nApproach: challenge it — find what's wrong, draw on the live landscape you know, be the adversary.` },
+  gemini: { frame: (body) => `${body}\n\nApproach: independently verify. Cross-check the claim against first principles; don't trust — re-derive.` }
+};
+
+export function profileFor(model) {
+  return PROVIDER_PROFILES[model] || { frame: (b) => b };
+}
 const VALID_CONFIDENCE = new Set(["low", "medium", "high"]);
 
 // Robustly pull the first {...} or [...] JSON value out of a model's answer
@@ -97,9 +112,11 @@ export function makeLiveCallTeam({ client }) {
   return async ({ team, node, priorFailure }) => {
     const model = buildableSeat(team);
     const text = await client.callTool(`${model}_ask`, {
-      system: promptForTeam(team),
+      system: profileFor(model).frame(promptForTeam(team)),
       prompt: nodeBuildPrompt(node, priorFailure),
-      include_provenance: true
+      include_provenance: true,
+      response_schema: SCHEMAS.fileset.schema,
+      schema_name: SCHEMAS.fileset.schema_name
     });
     const files = parseTeamFiles(text, node);
     if (files.length === 0) {
@@ -109,9 +126,10 @@ export function makeLiveCallTeam({ client }) {
   };
 }
 
+// The schema now carries the JSON contract (response_schema), so this is a light
+// hint, not the load-bearing format spec it used to be.
 const PACKET_INSTRUCTION =
-  'Return ONLY a JSON object: {"decision":"approve|revise|reject","confidence":"low|medium|high",' +
-  '"required_edits":[],"hard_stops":[],"rationale":"one sentence"}. No prose outside the JSON.';
+  "Provide your judgment as the structured fields: decision, confidence, required_edits, hard_stops, rationale.";
 
 /**
  * Build a promptFor(model, role, dossier, workstream) for liveSeatCaller
@@ -130,8 +148,11 @@ export function approvalPromptFor(dossier, { models = {} } = {}) {
     return {
       tool: `${model}_ask`,
       model: models[model],
-      system: `You are ${model}, a council ${role} for TELOS${lens}. Judge the objective on the merits. ${PACKET_INSTRUCTION}`,
-      prompt: `Objective:\n${dossier?.objective ?? ""}\n\n${PACKET_INSTRUCTION}`
+      // profileFor leans the framing into the model's strength; the schema enforces shape.
+      system: profileFor(model).frame(`You are ${model}, a council ${role} for TELOS${lens}. Judge the objective on the merits. ${PACKET_INSTRUCTION}`),
+      prompt: `Objective:\n${dossier?.objective ?? ""}\n\n${PACKET_INSTRUCTION}`,
+      response_schema: SCHEMAS.approval.schema,
+      schema_name: SCHEMAS.approval.schema_name
     };
   };
 }
@@ -172,23 +193,26 @@ export function parseApprovalPacket(text, model, dossier, meta = {}) {
 export function decomposePrompt(dossier, telos, conventions = null) {
   const system = [
     "You are the TELOS Planning team. Decompose the objective into a build plan.",
-    'Return ONLY a JSON array of task objects:',
-    '[{"id":"kebab-id","writes":["relative/path"],"reads":["relative/path"],',
-    '"requirements":"what this node must satisfy","test":{"cmd":"node","args":["-e","process.exit(0)"]},',
-    '"workstream":"backend-schema|frontend-brand-experience|security-trust|scale-operations|product-architecture"}].',
-    "One writer per file. Declare reads for cross-file dependencies. No prose outside the JSON."
+    'Return an object {"tasks":[ ... ]} where each task has id, writes[], reads[], requirements,',
+    'test{cmd,args[]}, and workstream (backend-schema|frontend-brand-experience|security-trust|scale-operations|product-architecture).',
+    "One writer per file. Declare reads for cross-file dependencies."
   ].join(" ");
   // Project sense: if the real project has a test command, steer node tests toward it.
   const conventionLine = conventions?.testCmd
     ? `\n\nThis is an existing project; its real test command is "${conventions.testCmd}". Prefer node tests that invoke it (e.g. {"cmd":"npm","args":["test"]}) over a no-op.`
     : "";
-  const prompt = `Objective:\n${dossier?.objective ?? ""}\n\nTelos statement:\n${telos ?? ""}${conventionLine}\n\nEmit the JSON task array now.`;
-  return { system, prompt };
+  const prompt = `Objective:\n${dossier?.objective ?? ""}\n\nTelos statement:\n${telos ?? ""}${conventionLine}\n\nEmit the task plan now.`;
+  return { system, prompt, response_schema: SCHEMAS.decompose.schema, schema_name: SCHEMAS.decompose.schema_name };
 }
 
 // Parse a decompose response into a raw task array (validation/normalization is
-// the job of decompose.mjs, which is fail-closed on anything unusable).
+// the job of decompose.mjs, which is fail-closed on anything unusable). With the
+// schema the model returns {tasks:[...]}; fall back to a legacy bare array or a
+// fenced/prose array so older responses still work.
 export function parseDecomposeTasks(text) {
+  const direct = (() => { try { return JSON.parse(text); } catch { return null; } })();
+  if (direct && Array.isArray(direct.tasks)) return direct.tasks;
+  if (Array.isArray(direct)) return direct;
   const arr = extractJson(text, "[", "]");
   return Array.isArray(arr) ? arr : [];
 }
@@ -211,8 +235,8 @@ export function makeLiveCallSeat({ client, liveSeatCaller, dossier, meta = {}, m
 
   return async (args) => {
     if (args && args.intent === "decompose") {
-      const { system, prompt } = decomposePrompt(dossier, args.telos, args.conventions);
-      const text = await client.callTool(`${planningModel}_ask`, { system, prompt, model: models[planningModel], include_provenance: true });
+      const { system, prompt, response_schema, schema_name } = decomposePrompt(dossier, args.telos, args.conventions);
+      const text = await client.callTool(`${planningModel}_ask`, { system, prompt, model: models[planningModel], include_provenance: true, response_schema, schema_name });
       const body = (() => { try { return JSON.parse(text); } catch { return null; } })();
       const inner = body && typeof body.text === "string" ? body.text : text;
       return { tasks: parseDecomposeTasks(inner) };

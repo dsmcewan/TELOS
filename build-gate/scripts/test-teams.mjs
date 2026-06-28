@@ -3,6 +3,34 @@
 // node->team routing, and the authorized_signers collection that pins teams to the ledger.
 import assert from "node:assert/strict";
 import { TEAMS, planTeams, teamForNode, authorizedSignersFor } from "../teams.mjs";
+import { isPreferredRole } from "../model-profiles.mjs";
+import { buildableSeat } from "../teamPrompts.mjs";
+
+// --- strength-driven roster: every team LEAD is placed at one of its model's
+// preferred roles (the roster cannot silently drift from model-profiles.mjs) ---
+{
+  for (const t of TEAMS) {
+    const lead = t.seats.find((s) => s.role === "lead") || t.seats[0];
+    assert.ok(isPreferredRole(lead.model, t.id), `team '${t.id}' lead is '${lead.model}', which must list '${t.id}' in preferred_roles`);
+  }
+  // the placements the user's "play to strengths" steer changed:
+  const lead = (id) => (TEAMS.find((t) => t.id === id).seats.find((s) => s.role === "lead") || {}).model;
+  assert.equal(lead("evals"), "codex", "evals lead is codex (test authoring = code-gen + strict output)");
+  assert.equal(lead("business"), "grok", "business lead is grok (live market/competitive intel)");
+  assert.equal(lead("breakout"), "grok", "breakout lead is grok (adversary)");
+  assert.equal(lead("integrity"), "gemini", "integrity lead is gemini (independent verification)");
+}
+
+// --- the new gemini-led integrity verification team ---
+{
+  const integrity = TEAMS.find((t) => t.id === "integrity");
+  assert.ok(integrity, "integrity team exists");
+  assert.equal(integrity.lifecycle, "verify");
+  assert.equal(integrity.signer, "integrity");
+  assert.equal(integrity.seats[0].model, "gemini");
+  // its buildable lead resolves to gemini (gemini is in ASK_MODELS now)
+  assert.equal(buildableSeat(integrity), "gemini", "integrity's buildable lead is gemini");
+}
 
 // --- TEAMS shape: every team is well-formed and its signer is usable as a key_id ---
 {
@@ -23,7 +51,7 @@ import { TEAMS, planTeams, teamForNode, authorizedSignersFor } from "../teams.mj
 {
   const roster = planTeams({ build_id: "x" });
   const got = roster.map((t) => t.id).sort();
-  assert.deepEqual(got, ["architecture", "breakout", "planning"], "non-market job = planning + architecture + breakout");
+  assert.deepEqual(got, ["architecture", "breakout", "integrity", "planning"], "non-market job = planning + architecture + breakout + integrity");
 }
 
 // --- planTeams: market-bound job adds one team per required workstream, deduped ---
@@ -35,7 +63,7 @@ import { TEAMS, planTeams, teamForNode, authorizedSignersFor } from "../teams.mj
   });
   const got = roster.map((t) => t.id).sort();
   // architecture owns product-architecture AND is always-on => must appear exactly once.
-  assert.deepEqual(got, ["architecture", "backend", "breakout", "frontend", "planning"], "market job adds workstream teams, architecture not doubled");
+  assert.deepEqual(got, ["architecture", "backend", "breakout", "frontend", "integrity", "planning"], "market job adds workstream teams, architecture not doubled");
   assert.equal(got.filter((id) => id === "architecture").length, 1, "architecture deduped");
 }
 
@@ -43,7 +71,7 @@ import { TEAMS, planTeams, teamForNode, authorizedSignersFor } from "../teams.mj
 {
   const roster = planTeams({ build_id: "x", market_bound: true, required_market_workstreams: ["does-not-exist"] });
   const got = roster.map((t) => t.id).sort();
-  assert.deepEqual(got, ["architecture", "breakout", "planning"], "unknown workstream contributes no team");
+  assert.deepEqual(got, ["architecture", "breakout", "integrity", "planning"], "unknown workstream contributes no team");
 }
 
 // --- teamForNode: explicit workstream routes deterministically ---

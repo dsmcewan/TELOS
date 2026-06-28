@@ -225,7 +225,7 @@ function fixture() {
   const teams = planTeams(marketDossier);
   // The market roster fans out to the build/verify teams, not just the backbone.
   assert.deepEqual(teams.map((t) => t.id).sort(),
-    ["architecture", "backend", "breakout", "business", "evals", "frontend", "ops", "planning", "security"],
+    ["architecture", "backend", "breakout", "business", "evals", "frontend", "integrity", "ops", "planning", "security"],
     "market-bound dossier convenes the full team roster");
 
   const { keyring, signerFor } = makeTeamKeyring(teams);

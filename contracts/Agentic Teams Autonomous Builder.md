@@ -26,17 +26,29 @@ deterministic substrate **disposes**.
 The roster is data (`build-gate/teams.mjs`, `TEAMS`). Adding a model seat or a
 team is a config edit plus a signer keypair + `TELOS_SECRET_*` — no trust bypass.
 
-| Team | Lifecycle | Workstream | Mission |
-|---|---|---|---|
-| planning | plan | — | decompose idea+telos into a content-addressed task DAG |
-| architecture | build | product-architecture | system shape, boundaries, file footprints |
-| backend | build | backend-schema | data model, services, migrations |
-| frontend | build | frontend-brand-experience | UI / LEXI-class brand experience |
-| evals | verify | accuracy-evals | acceptance tests that decide a node's `meets` verdict |
-| security | verify | security-trust | threat model, secrets hygiene, abuse cases |
-| ops | verify | scale-operations | deploy, scale, rollback readiness |
-| business | plan | business-positioning | thesis, differentiation, market positioning |
-| breakout | verify | — | adversarial verdict-on-facts; gate of last resort |
+Each team's **lead is its strongest model** (see `build-gate/model-profiles.mjs`; a
+test asserts every lead's role is in that model's `preferred_roles`), paired with a
+complementary member so the composition itself encodes the collaboration.
+
+| Team | Lead (why) | Lifecycle | Workstream | Mission |
+|---|---|---|---|---|
+| planning | claude (careful long-horizon design) | plan | — | decompose idea+telos into a content-addressed task DAG |
+| architecture | claude | build | product-architecture | system shape, boundaries, file footprints |
+| backend | codex (precise code-gen) | build | backend-schema | data model, services, migrations |
+| frontend | claude (UX / brand voice) | build | frontend-brand-experience | UI / LEXI-class brand experience |
+| evals | codex (tests = code-gen + strict output) | verify | accuracy-evals | acceptance tests that decide a node's `meets` verdict |
+| security | grok (adversarial + threat intel) | verify | security-trust | threat model, secrets hygiene, abuse cases |
+| ops | agy (deterministic gating) | verify | scale-operations | deploy, scale, rollback readiness |
+| business | grok (live market intel) | plan | business-positioning | thesis, differentiation, market positioning |
+| breakout | grok (adversary) | verify | — | adversarial verdict-on-facts; gate of last resort |
+| integrity | gemini (independent verification) | verify | — | re-derive facts, cross-check claims |
+
+Each seat also speaks its provider's **native structured-output** dialect (OpenAI/xAI
+`json_schema`, Anthropic forced tool-use, Gemini `responseSchema`) for the shared JSON
+contracts in `build-gate/schemas.mjs`, and is prompted in the mode it does best
+(`teamPrompts.mjs` `profileFor`). This is reliability, not trust — the gate still
+re-validates shape, injects identity from the dossier, and binds provenance to the
+real API response.
 
 ## Dynamic sizing (from the dossier)
 

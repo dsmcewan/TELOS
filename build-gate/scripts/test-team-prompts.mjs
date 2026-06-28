@@ -77,8 +77,14 @@ import { buildableSeat, promptForTeam, nodeBuildPrompt, parseTeamFiles, makeLive
   const claude = promptFor("claude", "approver");
   assert.equal(claude.tool, "claude_ask", "chat seats use their ask tool");
   assert.equal(claude.model, "claude-sonnet-4-6", "per-seat model id is threaded through");
-  assert.match(claude.system, /Return ONLY a JSON object/, "chat seat told to emit a strict JSON decision");
   assert.match(claude.prompt, /ship it/, "prompt carries the objective");
+  // the JSON contract is now carried by the schema, not prose
+  assert.equal(claude.schema_name, "approval", "approval schema name attached");
+  assert.ok(claude.response_schema && claude.response_schema.properties.decision, "approval response_schema attached");
+  // the prompt profile leans into the model's strength (claude → architect/reason)
+  assert.match(claude.system, /Architect|reason carefully/i, "claude profile invokes its strength");
+  const grok = promptFor("grok", "advisory");
+  assert.match(grok.system, /adversary|challenge it/i, "grok profile invokes its adversarial strength");
 }
 
 // --- parseApprovalPacket: identity from dossier, judgment from the model ---
@@ -105,17 +111,20 @@ import { buildableSeat, promptForTeam, nodeBuildPrompt, parseTeamFiles, makeLive
 
 // --- decompose prompt + parse: strict JSON array, fenced-tolerant ---
 {
-  const { system, prompt } = decomposePrompt({ objective: "build x" }, "telos: do x");
-  assert.match(system, /JSON array of task objects/, "decompose system asks for a task array");
+  const { system, prompt, response_schema, schema_name } = decomposePrompt({ objective: "build x" }, "telos: do x");
+  assert.match(system, /tasks/, "decompose system asks for a task plan");
   assert.match(prompt, /build x/, "decompose prompt carries the objective");
+  assert.equal(schema_name, "decompose", "decompose schema name attached");
+  assert.ok(response_schema && response_schema.properties.tasks, "decompose response_schema attached");
   assert.ok(!/test command/.test(prompt), "no convention line when conventions absent");
 
   // project sense: a detected test command steers node tests toward the real runner
   const withConv = decomposePrompt({ objective: "build x" }, "t", { testCmd: "vitest run" });
   assert.match(withConv.prompt, /real test command is "vitest run"/, "decompose prompt names the project's real test command");
 
-  const tasks = parseDecomposeTasks('here you go:\n```json\n[{"id":"a","writes":["a.txt"]}]\n```');
-  assert.deepEqual(tasks, [{ id: "a", writes: ["a.txt"] }], "parses a fenced JSON task array");
+  // the schema'd response is {tasks:[...]}; legacy bare array / fenced still parse
+  assert.deepEqual(parseDecomposeTasks(JSON.stringify({ tasks: [{ id: "a", writes: ["a.txt"] }] })), [{ id: "a", writes: ["a.txt"] }], "parses {tasks:[...]}");
+  assert.deepEqual(parseDecomposeTasks('here you go:\n```json\n[{"id":"a","writes":["a.txt"]}]\n```'), [{ id: "a", writes: ["a.txt"] }], "parses a legacy fenced array");
   assert.deepEqual(parseDecomposeTasks("no array here"), [], "no array => [] (decompose.mjs fail-closes)");
   assert.deepEqual(extractJson("x [1,2] y", "[", "]"), [1, 2], "extractJson pulls a bracketed array");
 }
@@ -126,8 +135,9 @@ import { buildableSeat, promptForTeam, nodeBuildPrompt, parseTeamFiles, makeLive
   const fakeLiveSeatCaller = ({ parsePacket }) => async (seatArg) => ({ packet: parsePacket('{"decision":"approve","confidence":"high"}'), provenance: { model: seatArg.model, response_id: "r" } });
   const client = { async callTool(tool, args) {
     assert.equal(tool, "claude_ask", "decompose uses the planning lead's ask tool");
-    assert.match(args.prompt, /Emit the JSON task array/, "decompose prompt sent");
-    return JSON.stringify({ text: JSON.stringify([{ id: "n", writes: ["n.txt"], requirements: "r", test: { cmd: "node" } }]) });
+    assert.match(args.prompt, /Emit the task plan/, "decompose prompt sent");
+    assert.equal(args.schema_name, "decompose", "decompose forwards the schema to the MCP call");
+    return JSON.stringify({ text: JSON.stringify({ tasks: [{ id: "n", writes: ["n.txt"], requirements: "r", test: { cmd: "node" } }] }) });
   } };
   const callSeat = makeLiveCallSeat({ client, liveSeatCaller: fakeLiveSeatCaller, dossier, meta: { timestamp: "2026-06-28T00:00:00Z" } });
 
