@@ -1,12 +1,13 @@
 // forge.mjs — the cyclical driver: research -> plan -> generate -> verify ->
-// gate, looping until the market-bound gate certifies the project (or maxCycles).
+// per-team breakout (verdict-on-facts) -> market gate, looping until the
+// market-bound gate certifies the project (or maxCycles).
 //
-// This is the "do what it did, cyclically, before finishing" loop: each cycle
-// researches the architecture, generates every workstream's artifacts through
-// the merkle-dag build (which verifies each by its own test and settles a signed
-// ledger), then runs the TELOS market gate. Convergence = build ready AND gate
-// pass. The generators/docs adapters are injected, so live runs swap in Context7
-// + ai-peer-mcp seats while tests stay keyless.
+// Every SaaS team gets a REAL adversarial breakout against its own artifact
+// (breakouts.mjs): a team converges only if its product evidence survives
+// re-verification on disk. The market packets are GENERATED from those breakout
+// records — never hand-asserted — and the gate independently re-verifies. The
+// generators/docs adapters are injected, so live runs swap in Context7 +
+// ai-peer-mcp seats while tests stay keyless.
 
 import path from "node:path";
 import { mkdir } from "node:fs/promises";
@@ -17,13 +18,50 @@ import { validateRecords } from "../build-gate/gate.mjs";
 import { researchArchitecture, offlineDocsFor } from "./research.mjs";
 import { compileConvergencePlan, signerForTask } from "./plan.mjs";
 import { generatorDispatch, makeDemoGenerators } from "./generator.mjs";
+import { runTeamBreakouts } from "./breakouts.mjs";
 
 const TS = "2026-06-28T00:00:00-04:00";
 
-// Build the market-bound gate inputs and run the TELOS gate. The market packet's
-// breakout `checks` point at the GENERATED frontend artifacts, so the gate
-// re-verifies on disk the very files the build produced — the loop closes here.
-function runMarketGate({ projectRoot, dossierMeta }) {
+// One market-readiness packet per team, generated FROM its breakout record. The
+// breakout's checks point at the team's generated artifacts, so the gate
+// re-verifies on disk the very files the build produced.
+function marketPacketFromRecord(record, dossierMeta) {
+  const packet = {
+    build_id: dossierMeta.build_id,
+    idea_id: dossierMeta.idea_id,
+    model: record.lens,
+    project_state: "demo",
+    workstreams_reviewed: [record.workstream],
+    business_thesis: "Deterministic communication forensics converts technical credibility into market trust.",
+    target_users: ["technical evaluators", "compliance teams", "early buyers"],
+    architecture_findings: [],
+    backend_schema_findings: [],
+    security_findings: [],
+    accuracy_eval_findings: [],
+    scalability_findings: [],
+    frontend_design_findings: [],
+    lexi_class_ui_status: record.isUi ? (record.converged ? "meets" : "needs-work") : "not-applicable",
+    go_to_market_blockers: record.surviving_blockers || [],
+    breakout: {
+      workstream: record.workstream,
+      claimedStatus: "meets",
+      finalStatus: record.finalStatus,
+      converged: record.converged,
+      surviving_blockers: record.surviving_blockers || [],
+      go_to_market_blockers: record.surviving_blockers || [],
+      checks: record.checks,
+      rounds: record.rounds
+    },
+    recommendation_to_claude: record.converged
+      ? "Proceed: claim survived adversarial breakout on facts."
+      : "Block: surviving blockers from breakout.",
+    timestamp: TS
+  };
+  packet[record.findingsKey] = [record.finding];
+  return packet;
+}
+
+function runMarketGate({ projectRoot, dossierMeta, teamRecords }) {
   const dossier = {
     build_id: dossierMeta.build_id,
     idea_id: dossierMeta.idea_id,
@@ -32,8 +70,7 @@ function runMarketGate({ projectRoot, dossierMeta }) {
     required_docs: [],
     write_targets: [],
     protected_paths: [],
-    // Absolute root so the breakout re-verify resolves against the built project.
-    affected_directories: [projectRoot],
+    affected_directories: [projectRoot], // absolute root for breakout re-verify
     market_bound: true,
     user_facing_frontend: true,
     lexi_required: false,
@@ -54,57 +91,20 @@ function runMarketGate({ projectRoot, dossierMeta }) {
     timestamp: TS
   });
   const packets = ["claude", "agy", "codex"].map(approval);
-
-  const marketPackets = [{
-    build_id: dossierMeta.build_id,
-    idea_id: dossierMeta.idea_id,
-    model: "claude",
-    project_state: "demo",
-    workstreams_reviewed: ["frontend-brand-experience"],
-    business_thesis: "A deterministic communication-forensics demo converts technical credibility into market trust.",
-    target_users: ["technical evaluators", "early buyers"],
-    architecture_findings: ["Static-first delivery with an optional LLM explanation layer over fixed findings."],
-    backend_schema_findings: [],
-    security_findings: [],
-    accuracy_eval_findings: [],
-    scalability_findings: [],
-    frontend_design_findings: ["Generated frontend carries the #69e7ff brand token and the LEXI-class first-screen proof band."],
-    lexi_class_ui_status: "meets",
-    go_to_market_blockers: [],
-    breakout: {
-      workstream: "frontend-brand-experience",
-      claimedStatus: "meets",
-      finalStatus: "meets",
-      converged: true,
-      surviving_blockers: [],
-      go_to_market_blockers: [],
-      checks: [
-        { type: "file_contains", path: "web/site/style.css", needle: "#69e7ff" },
-        { type: "file_exists", path: "web/VERIFICATION.md" },
-        { type: "file_exists", path: "docs/verification/s03-dynamics-discriminator.png" },
-        { type: "file_exists", path: "docs/verification/s04-scorecard.png" }
-      ],
-      rounds: [
-        { round: 1, blockers: ["first-screen value proof not present"], resolved: ["first-screen value proof not present"] },
-        { round: 2, blockers: [], resolved: [] }
-      ]
-    },
-    recommendation_to_claude: "Proceed: the generated frontend meets the market-ready bar.",
-    timestamp: TS
-  }];
+  const marketPackets = teamRecords.map((r) => marketPacketFromRecord(r, dossierMeta));
 
   return validateRecords(dossier, packets, { dossierDir: projectRoot }, [], marketPackets);
 }
 
 /**
  * Drive the forge to convergence.
- *   projectRoot   absolute path the build writes into (the target SaaS project)
+ *   projectRoot   absolute path the build writes into
  *   telos         one-line project intent
  *   dossierMeta   { build_id, idea_id, use_case, objective, required_market_workstreams }
  *   docsFor       research adapter (default offline; live = Context7)
- *   makeGenerators(arch) -> generateFiles  (default keyless demo generators)
- *   maxCycles     research->build->gate iterations before giving up
- * Returns { converged, cycles[], architecture, verdict }.
+ *   makeGenerators(arch) -> generateFiles (default keyless demo team renderers)
+ *   maxCycles     research->build->breakout->gate iterations before giving up
+ * Returns { converged, cycles[], teams[], architecture, verdict }.
  */
 export async function forge({
   projectRoot,
@@ -117,7 +117,6 @@ export async function forge({
   const telosDir = path.join(projectRoot, ".telos");
   await mkdir(telosDir, { recursive: true });
 
-  // Per-seat signing keys; both seats authorized in the plan.
   const seats = { claude: generateKeypair(), codex: generateKeypair() };
   const authorizedSigners = { claude: seats.claude.publicJwk, codex: seats.codex.publicJwk };
   const signerForModel = (m) => seats[m]?.privatePem;
@@ -125,6 +124,7 @@ export async function forge({
   const cycles = [];
   let architecture = null;
   let verdict = null;
+  let teams = [];
 
   for (let cycle = 1; cycle <= maxCycles; cycle++) {
     architecture = await researchArchitecture({ telos, workstreams: dossierMeta.required_market_workstreams, docsFor });
@@ -141,19 +141,26 @@ export async function forge({
     const { report } = await runBuild({ telosDir, baseDir: projectRoot, dispatch, signerFor: signerForModel });
     const built = report.merge_status === "ready";
 
-    verdict = built ? runMarketGate({ projectRoot, dossierMeta }) : null;
+    // Every team is adversarially challenged on its own artifact (verdict-on-facts).
+    teams = built ? await runTeamBreakouts({ baseDir: projectRoot, architecture }) : [];
+    const teamsConverged = built && teams.length > 0 && teams.every((t) => t.converged);
+
+    verdict = teamsConverged ? runMarketGate({ projectRoot, dossierMeta, teamRecords: teams }) : null;
+
     cycles.push({
       cycle,
       ledger_status: report.merge_status,
       built,
+      teams_converged: teamsConverged,
+      surviving: teams.filter((t) => !t.converged).map((t) => ({ team: t.workstream, blockers: t.surviving_blockers })),
       gate_status: verdict ? verdict.gate_status : "not-run",
-      blockers: verdict ? verdict.blockers : report.blockers || []
+      blockers: verdict ? verdict.blockers : (report.blockers || [])
     });
 
-    if (built && verdict.gate_status === "pass") {
-      return { converged: true, cycles, architecture, verdict };
+    if (teamsConverged && verdict.gate_status === "pass") {
+      return { converged: true, cycles, teams, architecture, verdict };
     }
   }
 
-  return { converged: false, cycles, architecture, verdict };
+  return { converged: false, cycles, teams, architecture, verdict };
 }

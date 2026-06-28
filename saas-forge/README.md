@@ -1,74 +1,78 @@
 # TELOS SaaS Forge
 
-Point the forge at a project and it drives that project toward **market-ready**
-through TELOS's existing discipline — research, generate, verify, gate — looping
-until the gate certifies it.
+Point the forge at a project and it drives that project to **market-ready** the
+TELOS way — research the capabilities a SaaS needs, generate each team's
+artifacts, put **every team through an adversarial breakout on facts**, settle a
+signed ledger, and gate — looping until certified.
 
-This is the **generator layer wired into `merkle-dag`'s `dispatch`**: the seam the
-engine was always built for. `runBuild` already plans the work, isolates each
-task (Rule 1), verifies every artifact by its own test (Rule 3), settles a
-signed ledger, and forward-invalidates by hash. The forge supplies the missing
-piece — a `dispatch` that *generates real artifacts* — and wraps it in a cycle.
+This is the **generator layer wired into `merkle-dag`'s `dispatch`** plus a
+**breakout per SaaS team**. The engine already plans, isolates (Rule 1), verifies
+by test (Rule 3), settles a signed ledger, and forward-invalidates by hash. The
+forge supplies the generator and the per-team adversarial loop.
 
 ## The loop (`forge.mjs`)
 
 ```
-research ──▶ plan ──▶ generate (dispatch) ──▶ verify (test) ──▶ signed ledger ──▶ market gate
-   ▲                                                                                   │
-   └──────────────────────────── repeat until gate = pass ─────────────────────────────┘
+research ─▶ plan ─▶ generate (dispatch) ─▶ verify ─▶ breakout per team ─▶ signed ledger ─▶ market gate
+   ▲                                                                                          │
+   └───────────────────────────────── repeat until gate = pass ────────────────────────────────┘
 ```
 
-1. **Research breakout** (`research.mjs`) — derive the capability domains a SaaS
-   needs (UI / DB / infra / auth / evals) from the required market workstreams,
-   and resolve each to a concrete library + current guidance via an **injected
-   `docsFor`** adapter. Live = **Context7** (`resolve-library-id` → `query-docs`);
-   offline = a curated fallback so the forge runs keyless. Emits `ARCHITECTURE.md`.
-2. **Plan** (`plan.mjs`) — one merkle-dag node per workstream; each *writes*
-   concrete files and carries a deterministic *test*. Dependencies order the build.
-3. **Generate** (`generator.mjs`) — `generatorDispatch` turns each node spec into
-   real files. Live = model seats via `ai-peer-mcp`; tests = deterministic
-   generators. The seat never says "done" — the node's test does.
-4. **Verify + settle** — `runBuild` runs each node's test and only writes a
-   signed ledger entry if it passes.
-5. **Gate** — the market-bound TELOS gate re-verifies the *generated* artifacts on
-   disk (the market packet's breakout checks point at them). `pass` ⇒ market-ready.
+## The teams (`workstreams.mjs`)
+
+One entry per market workstream; each owns what it writes, its node test, its
+breakout checks, and its generator:
+
+| Team | Artifact | Breakout asserts (on disk) |
+| --- | --- | --- |
+| product-architecture | `docs/ARCHITECTURE.md` | references the researched stack |
+| business-positioning | `docs/POSITIONING.md` | ICP + differentiation present |
+| backend-schema | `db/schema.sql` | tables + RLS `create policy` |
+| security-trust | `web/site/csp.txt` | `Content-Security-Policy` / `default-src` |
+| accuracy-evals | `evals/scorecard.json` + `evals/run.mjs` | precision clears threshold (the test *runs* the eval) |
+| scale-operations | `docs/OPERATIONS.md` | S3 + CloudFront + SLOs |
+| frontend-brand-experience | `web/*` + screenshots | brand token `#69e7ff`, first-screen proof band |
+
+## Breakout on facts, not trivia (`breakouts.mjs`)
+
+Every team runs the real `breakout/` engine (`runBreakout`: challenge → revise →
+loop until it survives). The challenger is **fact-grounded** — it re-verifies the
+team's checks against the *built artifact* and raises a blocker for each one that
+doesn't hold. A team converges only when its product evidence actually survives —
+the "cat is drawn", not "the capital of Kuwait". The **market packets are
+generated from those breakout records**, never hand-asserted, and the gate
+independently re-verifies. Live, the same loop is driven by `makeCouncilBreakout`
+(grok challenges, the builder team revises, a reviewer accepts) — still anchored
+to these checks.
 
 ## Run it
 
 ```bash
-npm test          # keyless end-to-end: converges on the fixture + proves fail-closed
+npm test   # keyless e2e: 7 teams generate + breakout-survive + gate pass; plus fail-closed
 ```
 
-```js
-import { forge } from "./forge.mjs";
-const result = await forge({
-  projectRoot: "/abs/path/to/convergence-demo",
-  telos: "Make the convergence demo market-ready.",
-  dossierMeta: {
-    build_id: "saas-forge-convergence", idea_id: "idea-convergence",
-    use_case: "forge-convergence-demo", objective: "Forge the convergence demo.",
-    required_market_workstreams: ["frontend-brand-experience"]
-  }
-});
-// result.converged === true, result.verdict.gate_status === "pass"
-```
+A real run reports `converged: true | gate: pass`, with a `PASS` breakout for
+each of the 7 teams (each with N fact-checks over its own artifact).
 
-## Going live (wiring the injected boundaries)
+## Going live (the injected boundaries)
 
-- **Context7 research:** pass `docsFor: makeContext7DocsFor({ resolve, queryDocs })`
-  so the architecture is grounded in up-to-date docs instead of the offline KB.
+- **Context7 research:** pass `docsFor: makeContext7DocsFor({ resolve, queryDocs })`.
 - **Model-seat generation:** replace `makeDemoGenerators` with a producer that
-  calls `ai-peer-mcp` seats (`claude_ask` / `codex_ask` / `agy_checkpoint`) to
-  write each workstream's files, so artifacts are model-authored, then
-  test-verified and signed.
-- **Real project root:** point `projectRoot` at the actual convergence-demo tree
-  (where its files live), not the fixture.
+  calls `ai-peer-mcp` seats per team; artifacts become model-authored, then
+  test-verified, breakout-survived, and signed.
+- **Live breakout:** swap `factBreakout` for `makeCouncilBreakout` (grok adversary
+  + builder team + reviewer), still anchored to the on-disk checks.
+- **Real project root:** point `projectRoot` at the actual convergence-demo tree.
 
-## Scope today
+## Honest scope
 
-This slice ships two workstreams end-to-end — `architecture` and
-`frontend-brand-experience` — proving the whole loop on the fixture with a green,
-keyless test (and a fail-closed test: drop the brand token and it never settles).
-The remaining workstreams (`business-positioning`, `backend-schema`,
-`security-trust`, `accuracy-evals`, `scale-operations`) are the *same pattern* —
-add a node with files + a test and a generator, and the loop covers them.
+- All **7 teams** run end-to-end with a real per-team breakout, green keyless test
+  + a fail-closed test (break one team's artifact → that team's breakout does not
+  converge → the forge does not converge).
+- The generators + the fact-challenger are deterministic stand-ins for live
+  `ai-peer-mcp` seat generation and the grok-driven `makeCouncilBreakout`. The
+  injected boundaries (`docsFor`, `makeGenerators`, `repairFor`) are where live
+  calls plug in.
+- The gate re-verifies the UI team's breakout today (its `lexi_class_ui_status`
+  is `meets`); the forge enforces every team's breakout. Extending the gate to
+  re-verify every team's breakout record is a clean follow-up in `build-gate`.

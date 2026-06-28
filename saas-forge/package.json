@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "TELOS SaaS forge: research capabilities (Context7-ready), generate artifacts through merkle-dag dispatch, verify each by test, settle a signed ledger, and gate to market-readiness — cyclically until certified.",
+  "description": "TELOS SaaS forge: research capabilities (Context7-ready), generate artifacts through merkle-dag dispatch, run an adversarial breakout per team (verdict-on-facts), settle a signed ledger, and gate to market-readiness — cyclically until certified.",
   "scripts": {
-    "check": "node --check research.mjs && node --check generator.mjs && node --check plan.mjs && node --check forge.mjs && node --check checks/check-architecture.mjs && node --check checks/check-frontend.mjs && node --check scripts/test-forge.mjs",
+    "check": "node --check research.mjs && node --check workstreams.mjs && node --check generator.mjs && node --check plan.mjs && node --check breakouts.mjs && node --check forge.mjs && node --check checks/check-node.mjs && node --check scripts/test-forge.mjs",
     "test": "npm run check && node scripts/test-forge.mjs"
   },
   "engines": {
