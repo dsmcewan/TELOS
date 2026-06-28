@@ -1,7 +1,7 @@
 ---
 title: "TELOS Upgrade — STATUS (final)"
 author: claude-code
-last-edited-by: claude-code
+last-edited-by: codex
 last-edited-at: 2026-06-27
 type: status
 tags:
@@ -95,14 +95,24 @@ these backends now yields fully-distinct per-seat provenance (codex requires
 | Artifact | Location | Live? |
 |---|---|---|
 | Spec / Plan | `specs/` , `plans/` | ✅ |
-| Engine changes (16 files) | `engine/working/` + `ENGINE.patch` (1614 lines, dry-run applies cleanly; verified the applied tree is byte-identical to the tested tree) | ❌ pending Codex merge |
+| Engine changes (16 files) | Applied into `build-gate`, `breakout`, and `connectors/ai-peer-mcp`; verification green in Codex working tree | ✅ |
 | Apply instructions | `ENGINE-APPLY.md` | ✅ |
 | Contract upgrade | `shared/Coordination/{Multi-Model Agentic Build Gate, Claude-Led Multi-Model Prototype Workflow}.md` | ✅ |
 | Recursion run (PASS) | `runs/upgrade-001/` (dossier, signed packets, market packet, gate-report, ledger) | ✅ |
 | Live-capture evidence | `runs/live-capture/` (real provenance) | ✅ |
 | Progress ledger + findings triage | `.sdd-progress.md` | ✅ |
 
+## Codex merge status (2026-06-28)
+
+Codex applied Claude's `ENGINE.patch` into the TELOS working tree and confirmed the Merkle-DAG package is present.
+
+Verification run from the Codex tree:
+- `build-gate`: `npm test` exit 0
+- `breakout`: `npm test` exit 0
+- `connectors/ai-peer-mcp`: `npm test` exit 0
+- `merkle-dag`: `npm test` exit 0
+
 ## Remaining actions (handoffs, not blockers)
 
-1. **Codex** applies `ENGINE.patch` to make signed-mode live in `me/codex/` (`patch -p1` dry-run is clean; `ENGINE-APPLY.md` has steps). Verify with `npm test` in both packages after merge.
+1. ~~**Codex** applies `ENGINE.patch` to make signed-mode live in `me/codex/` (`patch -p1` dry-run is clean; `ENGINE-APPLY.md` has steps). Verify with `npm test` in both packages after merge.~~ **DONE** (2026-06-28) — applied and verified in `build-gate`, `breakout`, `connectors/ai-peer-mcp`, and `merkle-dag`.
 2. ~~**Optional, for fully-distinct provenance:** wire a codex (OpenAI) and agy backend so agy/codex packets carry their own model `response_id`.~~ **DONE** (2026-06-27) — codex (OpenAI) + agy (local attestation) backends wired into `ai-peer-mcp` and `council.mjs`; bundled in the same `ENGINE.patch`. To exercise codex's live `response_id`, set `OPENAI_API_KEY` before a run; agy is keyless.
