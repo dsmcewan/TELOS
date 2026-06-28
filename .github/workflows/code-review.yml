@@ -4,10 +4,12 @@ on:
   pull_request:
     types: [opened, synchronize]
 
-# Allow the action to read the code and post review feedback on the PR.
+# Allow the action to read the code, post review feedback on the PR, and
+# request an OIDC token (required by claude-code-action for authentication).
 permissions:
   contents: read
   pull-requests: write
+  id-token: write
 
 jobs:
   review:
