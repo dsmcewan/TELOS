@@ -68,7 +68,7 @@ Each phase is an independent spec → plan → build cycle. Build order A → B 
 
 | Phase | State | Spec | Plan | Built | Notes |
 | --- | --- | --- | --- | --- | --- |
-| A — substrate + RAG | ⬜ not started | — | — | — | next: brainstorm Phase A in detail |
+| A — substrate + RAG | 🟡 in progress | [phase-a-design](specs/2026-06-29-ai-forge-phase-a-design.md) | — | — | spec written + approved; next: `writing-plans` |
 | B — design stage | ⬜ not started | — | — | — | after A |
 | C — library breadth | ⬜ not started | — | — | — | after A |
 
@@ -76,8 +76,8 @@ Legend: ⬜ not started · 🟡 in progress · ✅ done
 
 ## Next action
 
-**Brainstorm Phase A** (library substrate + RAG pattern) to a written spec, then
-`writing-plans` → build. (Resume the `superpowers:brainstorming` flow on Phase A.)
+**Phase A spec is written** (`docs/specs/2026-06-29-ai-forge-phase-a-design.md`).
+After user review → `superpowers:writing-plans` → build.
 
 ## Decisions log
 
