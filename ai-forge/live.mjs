@@ -240,7 +240,7 @@ export async function runForgeLive({
       // Council call failed (e.g. keys unavailable); fall back to synthetic.
       approvals = syntheticApprovals(dossierMeta);
     }
-    const makeApprovals = () => approvals;
+    const makeApprovals = (_meta) => approvals; // arg intentionally ignored — approvals were pre-resolved above with this run's dossierMeta
 
     return await forge({
       pattern: resolvedPattern,
