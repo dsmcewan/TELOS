@@ -5,8 +5,8 @@
   "type": "module",
   "description": "TELOS ai-forge: a pattern-library-driven forge for AI architectures. Phase A: library substrate + a production-shaped RAG pattern, driven to merge_status:ready over the real gate + Ed25519 ledger + merkle-dag.",
   "scripts": {
-    "check": "node --check pattern.mjs && node --check generators.mjs && node --check breakouts.mjs && node --check checks/check-node.mjs && node --check scripts/test-pattern.mjs && node --check scripts/test-generators.mjs && node --check scripts/test-breakouts.mjs",
-    "test": "npm run check && node scripts/test-pattern.mjs && node scripts/test-generators.mjs && node scripts/test-breakouts.mjs"
+    "check": "node --check pattern.mjs && node --check generators.mjs && node --check breakouts.mjs && node --check forge.mjs && node --check checks/check-node.mjs && node --check scripts/test-pattern.mjs && node --check scripts/test-generators.mjs && node --check scripts/test-breakouts.mjs && node --check scripts/test-forge.mjs",
+    "test": "npm run check && node scripts/test-pattern.mjs && node scripts/test-generators.mjs && node scripts/test-breakouts.mjs && node scripts/test-forge.mjs"
   },
   "engines": { "node": ">=18" }
 }
