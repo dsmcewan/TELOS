@@ -49,7 +49,7 @@ Each phase is an independent spec → plan → build cycle. Build order A → B 
   fail-closed test (break one artifact → no converge). All packages `npm test` green.
 - **De-risks:** the entire idea — B and C are additive once this exists.
 
-### Phase B — Design stage as a first-class verified artifact  ⬜ not started
+### Phase B — Design stage as a first-class verified artifact  🟡 in progress
 - **Objective:** emit the **architecture design/spec** (component boundaries, data
   flow, model/infra choices, eval plan, risks) as a council-approved artifact
   *before* build, with its own fact-checks (completeness/consistency, not "it runs").
@@ -69,15 +69,16 @@ Each phase is an independent spec → plan → build cycle. Build order A → B 
 | Phase | State | Spec | Plan | Built | Notes |
 | --- | --- | --- | --- | --- | --- |
 | A — substrate + RAG | ✅ done | [phase-a-design](specs/2026-06-29-ai-forge-phase-a-design.md) | — | [ai-forge-rag](runs/ai-forge-rag/) | all 7 workstreams converged; PRs #21–28 |
-| B — design stage | ⬜ not started | — | — | — | after A |
+| B — design stage | 🟡 in progress | [phase-b-design](specs/2026-06-29-ai-forge-phase-b-design.md) | — | — | spec written + approved; next: `writing-plans` |
 | C — library breadth | ⬜ not started | — | — | — | after A |
 
 Legend: ⬜ not started · 🟡 in progress · ✅ done
 
 ## Next action
 
-**Phase A is built.** Evidence run at `docs/runs/ai-forge-rag/` confirms `converged: true`.
-Phase B (design stage as a first-class verified artifact) is next.
+**Phase B spec is written + approved** (`docs/specs/2026-06-29-ai-forge-phase-b-design.md`):
+a generic `design` workstream that authors `DESIGN.md` and verifies it against the
+plan + ledger + built artifacts (fail-closed). After user review → `superpowers:writing-plans` → build.
 
 ## Decisions log
 
