@@ -1,5 +1,7 @@
 # TELOS
 
+[![CI](https://github.com/dsmcewan/TELOS/actions/workflows/ci.yml/badge.svg)](https://github.com/dsmcewan/TELOS/actions/workflows/ci.yml)
+
 A multi-model build-gate. Independent AI model **seats** (claude / grok / codex / agy)
 each produce an approval packet; a deterministic **gate** certifies merge-readiness
 from disk + signatures + provenance — never from a model's self-report.
