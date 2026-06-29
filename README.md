@@ -9,6 +9,53 @@ merge-readiness from disk + signatures + provenance — never from a model's
 self-report. The same trust spine then drives software from idea to merged,
 verified artifacts.
 
+## How it works
+
+```mermaid
+flowchart TD
+    IN["idea + telos<br/>(goal / contract to satisfy)"]
+    PLAN["Planning team — decompose()<br/>idea → validated task DAG"]
+    HASH["compileAndHashPlan()<br/>immutable plan.json (Merkle DAG)<br/>spec-hash → effective-hash"]
+
+    subgraph SEATS["model seats"]
+        direction LR
+        C["claude<br/>architect"]
+        X["codex<br/>implement"]
+        A["agy<br/>govern"]
+        G["grok<br/>adversary · advisory"]
+        M["gemini<br/>verify · advisory"]
+    end
+
+    GATE{"COUNCIL APPROVAL GATE<br/>each packet HMAC-signed + provenance-bound<br/>checks: shape · signature · provenance · disk"}
+    BLOCK["BLOCKED<br/>no build · no ledger"]
+    BUILD["runBuild() — each node → its owning TEAM<br/>Rule 1: a team sees only its own node<br/>writes files · runs own test · self-corrects"]
+    VERIFY["Rule 3 — the gate independently re-derives the<br/>artifact tree-hash from disk + re-runs the test<br/>(a team can never self-certify)"]
+    SETTLE["controller (sole writer) signs an<br/>append-only Ed25519 ledger line"]
+    DONE["ledger-gate.verify() — pure done()<br/>lineage ✓ signature ✓ disk ✓ test ✓<br/>merge_status: ready"]
+
+    IN --> PLAN --> HASH --> GATE
+    SEATS --> GATE
+    GATE -->|FAIL| BLOCK
+    GATE -->|PASS| BUILD --> VERIFY --> SETTLE --> DONE
+
+    SPINE["TRUST SPINE — disk is ground truth · no model self-report decides ·<br/>a changed spec re-hashes so stale ledger lines fall invalid · fail-closed"]
+    SPINE -.-> GATE
+    SPINE -.-> VERIFY
+    SPINE -.-> DONE
+
+    classDef block fill:#fee,stroke:#c33;
+    classDef done fill:#efe,stroke:#3a3;
+    classDef spine fill:#eef,stroke:#669,font-style:italic;
+    class BLOCK block;
+    class DONE done;
+    class SPINE spine;
+```
+
+Read it two ways: the top half (seats → approval gate) is TELOS deciding
+*whether* work is merge-ready; the whole pipeline is the **autonomous builder**
+taking an idea to verified, merged artifacts. The thing that *builds* is never the
+thing that *certifies* — a team's claim is data; the disk is truth.
+
 ## Components
 
 **The substrate (engine):**
