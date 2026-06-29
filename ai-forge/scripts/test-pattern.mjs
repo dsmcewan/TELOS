@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { validatePattern, patternTaskDefs, signerForTask, workstreamById, nodeTestFor } from "../pattern.mjs";
+import { ragPattern } from "../patterns/rag.mjs";
 
 const ctx = { telos: "t" };
 const ws = (over = {}) => ({
@@ -47,5 +48,13 @@ const ws = (over = {}) => ({
 {
   const w = ws({ nodeTest: { cmd: "node", args: ["-e", "process.exit(0)"] } });
   assert.deepEqual(nodeTestFor(w, ctx), { cmd: "node", args: ["-e", "process.exit(0)"] });
+}
+// the production-shaped RAG pattern is valid and has its 7 workstreams
+{
+  const r = validatePattern(ragPattern);
+  assert.equal(r.ok, true, JSON.stringify(r));
+  assert.equal(ragPattern.workstreams.length, 7);
+  assert.deepEqual(ragPattern.workstreams.map((w) => w.id).sort(),
+    ["embed-index", "eval-harness", "generation", "guardrails", "ingestion", "ops", "retrieval"]);
 }
 console.log("test-pattern.mjs OK");
