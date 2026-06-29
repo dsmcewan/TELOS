@@ -1,0 +1,43 @@
+{
+  "converged": true,
+  "merge_status": "ready",
+  "gate_status": "pass",
+  "workstreams": [
+    {
+      "id": "ingestion",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "embed-index",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "retrieval",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "generation",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "eval-harness",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "guardrails",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "ops",
+      "converged": true,
+      "finalStatus": "meets"
+    }
+  ],
+  "generated_at_note": "deterministic; no timestamps"
+}

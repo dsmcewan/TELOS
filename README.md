@@ -84,6 +84,8 @@ thing that *certifies* — a team's claim is data; the disk is truth.
   self-correction).
 - **`saas-forge/`** — a 7-team SaaS generator that drives a project to
   market-ready, each team put through an adversarial breakout-on-facts.
+- **`ai-forge/`** — pattern-library-driven forge for AI architectures; Phase A: the
+  RAG pattern (7 workstreams, fully converged over the real gate + Ed25519 ledger).
 
 ## Autonomous builder (agentic-teams)
 
@@ -116,6 +118,12 @@ idea + telos
   its own node test runs; on failure the team is re-called with the failure detail
   to self-correct (bounded), then the substrate's halt → mutate → re-dispatch gives
   a second, outer adaptation level.
+
+## AI Forge (`ai-forge/`)
+
+Pattern-library-driven forge for AI architectures on the unchanged TELOS trust spine.
+Phase A is complete: `forge({ pattern: ragPattern, ctx: ragContext(), ... })` returns
+`converged: true` over the real gate + Ed25519 ledger + merkle-dag (see `docs/runs/ai-forge-rag/`).
 
 ## SaaS Forge (`saas-forge/`)
 

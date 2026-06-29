@@ -35,7 +35,7 @@ the thing that certifies.* A team's claim is data; the disk is truth; fail-close
 
 Each phase is an independent spec → plan → build cycle. Build order A → B → C.
 
-### Phase A — Library substrate + one pattern end-to-end (MVP)  ⬜ not started
+### Phase A — Library substrate + one pattern end-to-end (MVP)  ✅ done
 - **Objective:** make the workstream set data-driven; prove it with ONE concrete
   pattern driven to `merge_status: "ready"`.
 - **Deliverable:** `ai-forge/` consuming a **pattern** (data), + the **RAG** pattern
@@ -68,7 +68,7 @@ Each phase is an independent spec → plan → build cycle. Build order A → B 
 
 | Phase | State | Spec | Plan | Built | Notes |
 | --- | --- | --- | --- | --- | --- |
-| A — substrate + RAG | 🟡 in progress | [phase-a-design](specs/2026-06-29-ai-forge-phase-a-design.md) | — | — | spec written + approved; next: `writing-plans` |
+| A — substrate + RAG | ✅ done | [phase-a-design](specs/2026-06-29-ai-forge-phase-a-design.md) | — | [ai-forge-rag](runs/ai-forge-rag/) | all 7 workstreams converged; PRs #21–28 |
 | B — design stage | ⬜ not started | — | — | — | after A |
 | C — library breadth | ⬜ not started | — | — | — | after A |
 
@@ -76,8 +76,8 @@ Legend: ⬜ not started · 🟡 in progress · ✅ done
 
 ## Next action
 
-**Phase A spec is written** (`docs/specs/2026-06-29-ai-forge-phase-a-design.md`).
-After user review → `superpowers:writing-plans` → build.
+**Phase A is built.** Evidence run at `docs/runs/ai-forge-rag/` confirms `converged: true`.
+Phase B (design stage as a first-class verified artifact) is next.
 
 ## Decisions log
 
@@ -90,6 +90,8 @@ After user review → `superpowers:writing-plans` → build.
   end-to-end) is the MVP and de-risks the rest; B and C are additive.
 - **2026-06-29 — First pattern = RAG.** Concrete, well-understood, exercises both a
   design and a runnable system; chosen to prove the seam.
+- **2026-06-29 — Phase A built.** RAG pattern → `converged: true`; all 7 workstreams
+  survive adversarial breakout; gate passes; Ed25519 ledger settles. PRs #21–28.
 
 ## Out of scope (YAGNI — revisit only if needed)
 
