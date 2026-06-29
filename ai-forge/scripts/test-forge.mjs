@@ -1,140 +1,42 @@
-// test-forge.mjs — TEMPORARY integration test for forge.mjs (Task 5).
-// Task 7 replaces this with a real RAG pattern fixture. For now: a 2-workstream
-// fixture pattern (each render writes the exact token its check asserts) drives
-// forge() through os.tmpdir(), asserting converged===true / gate passes.
-// Fail-closed: a second fixture with a workstream that writes the WRONG token
-// asserts converged===false.
+// test-forge.mjs — Real RAG end-to-end + fail-closed test (Task 7).
+// Replaces the Task 5 fixture-based temporary test with the actual ragPattern.
 
 import assert from "node:assert/strict";
+import { mkdtempSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { mkdtempSync } from "node:fs";
 import { forge } from "../forge.mjs";
+import { ragPattern, ragContext } from "../patterns/rag.mjs";
 
-// ─── shared dossier metadata ──────────────────────────────────────────────────
+const dossierMeta = { build_id: "rag-e2e", idea_id: "rag", use_case: "ai-architecture", objective: "Forge a RAG architecture" };
 
-const BASE_DOSSIER = {
-  build_id: "forge-test-01",
-  idea_id: "idea-forge-01",
-  use_case: "forge-fixture",
-  objective: "Integration test for the ai-forge driver."
-};
-
-// ─── Test 1: 2 converging workstreams → converged === true ───────────────────
-// Each render() writes its file with the exact token the check asserts, so the
-// node test (check-node.mjs) passes, the breakout converges, and the market gate
-// certifies the project.
+// ─── Happy path: all 7 workstreams generate, breakout-survive, gate passes ───
 {
-  const projectRoot = mkdtempSync(path.join(os.tmpdir(), "aiforge-pass-"));
-
-  const pattern = {
-    id: "fixture-pass",
-    workstreams: [
-      {
-        id: "ws-alpha",
-        signer: "claude",
-        lens: "claude",
-        files: ["artifacts/alpha.txt"],
-        requirements: "produce alpha artifact",
-        render: () => ({ "artifacts/alpha.txt": "ALPHA_TOKEN_OK" }),
-        checks: () => [{ type: "file_contains", path: "artifacts/alpha.txt", needle: "ALPHA_TOKEN_OK" }],
-        isUi: false,
-        findingsKey: "architecture_findings",
-        finding: "Alpha RAG stage generates deterministic artifacts."
-      },
-      {
-        id: "ws-beta",
-        signer: "codex",
-        lens: "codex",
-        files: ["artifacts/beta.txt"],
-        requirements: "produce beta artifact",
-        render: () => ({ "artifacts/beta.txt": "BETA_TOKEN_OK" }),
-        checks: () => [{ type: "file_contains", path: "artifacts/beta.txt", needle: "BETA_TOKEN_OK" }],
-        isUi: false,
-        findingsKey: "backend_schema_findings",
-        finding: "Beta RAG stage generates deterministic artifacts."
-      }
-    ]
-  };
-
-  const result = await forge({ pattern, ctx: {}, projectRoot, dossierMeta: BASE_DOSSIER });
-
-  assert.equal(
-    result.converged,
-    true,
-    `Expected converged=true; cycle info: ${JSON.stringify(result.cycles)}`
-  );
-  assert.equal(
-    result.verdict?.gate_status,
-    "pass",
-    `Expected gate_status=pass; blockers: ${JSON.stringify(result.verdict?.blockers)}`
-  );
-  assert.ok(
-    Array.isArray(result.records) && result.records.length === 2,
-    "Expected 2 breakout records"
-  );
-  assert.ok(
-    result.records.every((r) => r.converged),
-    "Every breakout record must be converged"
-  );
-
-  console.log("Test 1 PASS: 2-workstream fixture → converged=true, gate_status=pass");
+  const root = mkdtempSync(path.join(os.tmpdir(), "aiforge-rag-"));
+  const result = await forge({ pattern: ragPattern, ctx: ragContext(), projectRoot: root, dossierMeta, maxCycles: 2 });
+  assert.equal(result.converged, true, JSON.stringify(result.cycles, null, 2));
+  assert.equal(result.verdict.gate_status, "pass");
+  assert.equal(result.records.length, 7);
+  assert.ok(result.records.every(r => r.converged));
+  console.log("Happy path PASS: converged=true, gate_status=pass, 7 records all converged");
 }
 
-// ─── Test 2: workstream writes WRONG token → converged === false (fail-closed) ──
-// ws-gamma renders correctly; ws-delta renders "WRONG_TOKEN" but its check
-// asserts "DELTA_TOKEN_OK". The node test (check-node.mjs) exits non-zero;
-// runBuild does not settle that node; merge_status !== "ready"; forge returns
-// converged=false after exhausting maxCycles=1 (short for the test).
+// ─── Fail-closed: inject a broken generator for guardrails so its artifact
+// lacks the required rule → its node test (Rule 3) and breakout fail → forge does not converge.
 {
-  const projectRoot = mkdtempSync(path.join(os.tmpdir(), "aiforge-fail-"));
-
-  const pattern = {
-    id: "fixture-fail",
-    workstreams: [
-      {
-        id: "ws-gamma",
-        signer: "claude",
-        lens: "claude",
-        files: ["artifacts/gamma.txt"],
-        requirements: "produce gamma artifact",
-        render: () => ({ "artifacts/gamma.txt": "GAMMA_TOKEN_OK" }),
-        checks: () => [{ type: "file_contains", path: "artifacts/gamma.txt", needle: "GAMMA_TOKEN_OK" }],
-        isUi: false,
-        findingsKey: "architecture_findings",
-        finding: "Gamma workstream."
-      },
-      {
-        id: "ws-delta",
-        signer: "codex",
-        lens: "codex",
-        files: ["artifacts/delta.txt"],
-        requirements: "produce delta artifact",
-        // Deliberately writes the wrong token so the check fails.
-        render: () => ({ "artifacts/delta.txt": "WRONG_TOKEN" }),
-        checks: () => [{ type: "file_contains", path: "artifacts/delta.txt", needle: "DELTA_TOKEN_OK" }],
-        isUi: false,
-        findingsKey: "backend_schema_findings",
-        finding: "Delta workstream."
-      }
-    ]
-  };
-
-  const result = await forge({
-    pattern,
-    ctx: {},
-    projectRoot,
-    dossierMeta: { ...BASE_DOSSIER, build_id: "forge-test-02", idea_id: "idea-forge-02" },
-    maxCycles: 1
-  });
-
-  assert.equal(
-    result.converged,
-    false,
-    "Expected converged=false when a workstream writes the wrong token"
+  const root = mkdtempSync(path.join(os.tmpdir(), "aiforge-rag-fc-"));
+  const broken = { ...ragPattern, workstreams: ragPattern.workstreams.map(w =>
+    w.id === "guardrails" ? { ...w, render: () => ({ "rag/serve.config.json": "{}", "rag/guardrails.mjs": "// empty — no rule" }) } : w) };
+  const result = await forge({ pattern: broken, ctx: ragContext(), projectRoot: root, dossierMeta, maxCycles: 1 });
+  assert.equal(result.converged, false, "a guardrails artifact missing its rule must not converge");
+  // Carry-forward: assert the MECHANISM — the build did not reach ready because
+  // the guardrails node test (file_contains checks) failed, preventing ledger from settling.
+  assert.notEqual(
+    result.cycles[0].ledger_status,
+    "ready",
+    `Expected ledger_status !== "ready" when guardrails checks fail; got: ${result.cycles[0].ledger_status}`
   );
-
-  console.log("Test 2 PASS: fail-closed — wrong render token → converged=false");
+  console.log("Fail-closed PASS: converged=false, ledger_status=" + result.cycles[0].ledger_status + " (not ready)");
 }
 
 console.log("test-forge.mjs OK");
