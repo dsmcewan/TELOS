@@ -42,7 +42,14 @@ function requireBlockedPatterns(value, name) {
     } catch (error) {
       throw new Error(`${name}[${index}] is not a valid regular expression: ${String(error && error.message)}`);
     }
-    return { source, flags };
+    const sample = pattern.sample == null ? undefined : requireString(pattern.sample, `${name}[${index}].sample`);
+    if (sample != null) {
+      const sampleRegex = new RegExp(source, flags);
+      if (!sampleRegex.test(sample)) {
+        throw new Error(`${name}[${index}].sample must match ${name}[${index}].source`);
+      }
+    }
+    return sample == null ? { source, flags } : { source, flags, sample };
   });
 }
 
@@ -370,6 +377,53 @@ const safeSetPrototypeFunctionKeys = new Set([
 const safeSetPrototypeAccessorKeys = new Set(["size"]);
 const safeSetPrototypeDataKeys = new Set([Symbol.toStringTag]);
 
+function descriptorHasValue(descriptor) {
+  return Object.prototype.hasOwnProperty.call(descriptor, "value");
+}
+
+function capturePrototypeDescriptors(prototype) {
+  const descriptors = new Map();
+  for (const key of Reflect.ownKeys(prototype)) {
+    descriptors.set(key, Object.getOwnPropertyDescriptor(prototype, key));
+  }
+  return descriptors;
+}
+
+const objectPrototypeDescriptorBaseline = capturePrototypeDescriptors(Object.prototype);
+const arrayPrototypeDescriptorBaseline = capturePrototypeDescriptors(Array.prototype);
+const mapPrototypeDescriptorBaseline = capturePrototypeDescriptors(Map.prototype);
+const setPrototypeDescriptorBaseline = capturePrototypeDescriptors(Set.prototype);
+
+function samePrototypeDescriptor(actual, expected) {
+  if (!actual || !expected) return false;
+  if (actual.configurable !== expected.configurable || actual.enumerable !== expected.enumerable) return false;
+  const actualHasValue = descriptorHasValue(actual);
+  const expectedHasValue = descriptorHasValue(expected);
+  if (actualHasValue !== expectedHasValue) return false;
+  if (actualHasValue) {
+    return actual.writable === expected.writable && actual.value === expected.value;
+  }
+  return actual.get === expected.get && actual.set === expected.set;
+}
+
+function assertUnmodifiedPrototypeDescriptor(prototypeName, key, descriptor, baselineDescriptors) {
+  if (!samePrototypeDescriptor(descriptor, baselineDescriptors.get(key))) {
+    throw new Error(\`modified inherited property on \${prototypeName}: \${String(key)}\`);
+  }
+}
+
+function assertSafeArrayUnscopables(value) {
+  if (!value || typeof value !== "object" || Object.getPrototypeOf(value) !== null) {
+    throw new Error("modified Array.prototype unscopables object");
+  }
+  for (const nestedKey of Reflect.ownKeys(value)) {
+    const nestedDescriptor = Object.getOwnPropertyDescriptor(value, nestedKey);
+    if (!nestedDescriptor || !descriptorHasValue(nestedDescriptor) || typeof nestedDescriptor.value !== "boolean") {
+      throw new Error(\`modified Array.prototype unscopables entry: \${String(nestedKey)}\`);
+    }
+  }
+}
+
 function containsBlockedTerm(value) {
   return [...blockedTermPatterns, ...blockedPatternRegexes].some((pattern) => {
     pattern.lastIndex = 0;
@@ -385,6 +439,7 @@ function makeRedactionMarker() {
 }
 
 const redactionMarker = makeRedactionMarker();
+const selftestBlockedSample = blockedTerms[0] ?? blockedPatterns.find((pattern) => typeof pattern.sample === "string")?.sample;
 
 function redactStringValue(value) {
   let redacted = value;
@@ -427,12 +482,14 @@ function assertSafeBaseObjectPrototype(value) {
         const descriptor = Object.getOwnPropertyDescriptor(Object.prototype, key);
         if (!descriptor) continue;
         if (safeObjectPrototypeFunctionKeys.has(key)) {
-          if (!Object.hasOwn(descriptor, "value") || typeof descriptor.value !== "function") {
+          assertUnmodifiedPrototypeDescriptor("Object.prototype", key, descriptor, objectPrototypeDescriptorBaseline);
+          if (!descriptorHasValue(descriptor) || typeof descriptor.value !== "function") {
             throw new Error(\`unsupported inherited property on Object.prototype: \${String(key)}\`);
           }
           continue;
         }
         if (safeObjectPrototypeAccessorKeys.has(key)) {
+          assertUnmodifiedPrototypeDescriptor("Object.prototype", key, descriptor, objectPrototypeDescriptorBaseline);
           if (typeof descriptor.get !== "function" && typeof descriptor.set !== "function") {
             throw new Error(\`unsupported inherited property on Object.prototype: \${String(key)}\`);
           }
@@ -446,37 +503,32 @@ function assertSafeBaseObjectPrototype(value) {
   }
 }
 
-function assertSafePrototypeSurface(prototype, prototypeName, functionKeys, accessorKeys, dataKeys) {
+function assertSafePrototypeSurface(prototype, prototypeName, functionKeys, accessorKeys, dataKeys, baselineDescriptors) {
   for (const key of Reflect.ownKeys(prototype)) {
     const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
     if (!descriptor) continue;
     if (functionKeys.has(key)) {
-      if (!Object.hasOwn(descriptor, "value") || typeof descriptor.value !== "function") {
+      assertUnmodifiedPrototypeDescriptor(prototypeName, key, descriptor, baselineDescriptors);
+      if (!descriptorHasValue(descriptor) || typeof descriptor.value !== "function") {
         throw new Error(\`unsupported inherited property on \${prototypeName}: \${String(key)}\`);
       }
       continue;
     }
     if (accessorKeys.has(key)) {
-      if (Object.hasOwn(descriptor, "value") || typeof descriptor.get !== "function") {
+      assertUnmodifiedPrototypeDescriptor(prototypeName, key, descriptor, baselineDescriptors);
+      if (descriptorHasValue(descriptor) || typeof descriptor.get !== "function") {
         throw new Error(\`unsupported inherited property on \${prototypeName}: \${String(key)}\`);
       }
       continue;
     }
     if (dataKeys.has(key)) {
-      if (!Object.hasOwn(descriptor, "value")) {
+      assertUnmodifiedPrototypeDescriptor(prototypeName, key, descriptor, baselineDescriptors);
+      if (!descriptorHasValue(descriptor)) {
         throw new Error(\`unsupported inherited property on \${prototypeName}: \${String(key)}\`);
       }
       if (prototypeName === "Array.prototype" && key === "length" && descriptor.value === 0) continue;
-      if (
-        prototypeName === "Array.prototype" &&
-        key === Symbol.unscopables &&
-        descriptor.value &&
-        typeof descriptor.value === "object" &&
-        Reflect.ownKeys(descriptor.value).every((nestedKey) => {
-          const nestedDescriptor = Object.getOwnPropertyDescriptor(descriptor.value, nestedKey);
-          return nestedDescriptor && Object.hasOwn(nestedDescriptor, "value") && typeof nestedDescriptor.value === "boolean";
-        })
-      ) {
+      if (prototypeName === "Array.prototype" && key === Symbol.unscopables) {
+        assertSafeArrayUnscopables(descriptor.value);
         continue;
       }
       if (prototypeName === "Map.prototype" && key === Symbol.toStringTag && descriptor.value === "Map") continue;
@@ -569,7 +621,8 @@ function redactJsonValue(value, seen = new WeakSet()) {
         "Array.prototype",
         safeArrayPrototypeFunctionKeys,
         new Set(),
-        safeArrayPrototypeDataKeys
+        safeArrayPrototypeDataKeys,
+        arrayPrototypeDescriptorBaseline
       );
       assertSafeInheritedPrototypeProperties(value, Array.prototype);
       return cloneRedactedArray(value, seen);
@@ -580,7 +633,8 @@ function redactJsonValue(value, seen = new WeakSet()) {
         "Map.prototype",
         safeMapPrototypeFunctionKeys,
         safeMapPrototypeAccessorKeys,
-        safeMapPrototypeDataKeys
+        safeMapPrototypeDataKeys,
+        mapPrototypeDescriptorBaseline
       );
       assertSafeInheritedPrototypeProperties(value, Map.prototype);
       const mapEntries = getPrototypeMethod(Map.prototype, "entries");
@@ -597,7 +651,8 @@ function redactJsonValue(value, seen = new WeakSet()) {
         "Set.prototype",
         safeSetPrototypeFunctionKeys,
         safeSetPrototypeAccessorKeys,
-        safeSetPrototypeDataKeys
+        safeSetPrototypeDataKeys,
+        setPrototypeDescriptorBaseline
       );
       assertSafeInheritedPrototypeProperties(value, Set.prototype);
       const setValues = getPrototypeMethod(Set.prototype, "values");
@@ -624,50 +679,50 @@ export function redactOutput(output) {
 }
 
 if (process.argv.includes("--selftest")) {
-  const blockedTerm = blockedTerms[0];
+  const blockedSample = selftestBlockedSample;
+  if (typeof blockedSample !== "string") {
+    throw new Error("expected a blocked selftest sample");
+  }
   const cleanText = makeAllowedString();
   const clean = redactOutput({ ok: true, note: cleanText });
   if (typeof clean !== "object" || clean == null || clean.note !== cleanText) {
     throw new Error("expected clean object output to remain an object");
   }
-  const samplePrefix = makeAllowedString();
-  const sampleSuffix = makeAllowedString();
-  const sampleInput = samplePrefix + blockedTerm + sampleSuffix;
-  const sample = redactOutput(sampleInput);
-  if (sample !== samplePrefix + redactionMarker + sampleSuffix) {
+  const sample = redactOutput(blockedSample);
+  if (sample !== redactionMarker) {
     throw new Error("expected secret to be redacted");
   }
   const objectSample = redactOutput({
-    note: samplePrefix + blockedTerm,
-    nested: { value: blockedTerm + sampleSuffix },
+    note: blockedSample,
+    nested: { value: blockedSample },
   });
   if (
     JSON.stringify(objectSample) !== JSON.stringify({
-      note: samplePrefix + redactionMarker,
-      nested: { value: redactionMarker + sampleSuffix },
+      note: redactionMarker,
+      nested: { value: redactionMarker },
     })
   ) {
     throw new Error("expected object output redaction");
   }
-  const keyedSample = redactOutput({ password: undefined, nested: { token: blockedTerm }, list: [blockedTerm] });
+  const keyedSample = redactOutput({ password: undefined, nested: { token: blockedSample }, list: [blockedSample] });
   if (!("password" in keyedSample) || !("nested" in keyedSample) || !("token" in keyedSample.nested)) {
     throw new Error("expected object keys to be preserved during redaction");
   }
   if (keyedSample.password !== undefined || keyedSample.nested.token !== redactionMarker || keyedSample.list[0] !== redactionMarker) {
     throw new Error("expected string leaf values to be redacted without changing container structure");
   }
-  const mapSample = redactOutput(new Map([["note", blockedTerm]]));
+  const mapSample = redactOutput(new Map([["note", blockedSample]]));
   if (!(mapSample instanceof Map) || mapSample.get("note") !== redactionMarker) {
     throw new Error("expected Map output redaction");
   }
-  const mapStringKeySample = redactOutput(new Map([[blockedTerm, cleanText]]));
+  const mapStringKeySample = redactOutput(new Map([[blockedSample, cleanText]]));
   if (
     !(mapStringKeySample instanceof Map) ||
     JSON.stringify(Array.from(mapStringKeySample.entries())) !== JSON.stringify([[redactionMarker, cleanText]])
   ) {
     throw new Error("expected Map string-key redaction");
   }
-  const mapObjectKeyInput = { note: blockedTerm };
+  const mapObjectKeyInput = { note: blockedSample };
   const mapObjectKeySample = redactOutput(new Map([[mapObjectKeyInput, cleanText]]));
   const mapObjectKeyEntries = Array.from(mapObjectKeySample.entries());
   if (
@@ -679,7 +734,7 @@ if (process.argv.includes("--selftest")) {
   ) {
     throw new Error("expected Map object-key redaction");
   }
-  const setSample = redactOutput(new Set([blockedTerm]));
+  const setSample = redactOutput(new Set([blockedSample]));
   if (!(setSample instanceof Set) || JSON.stringify(Array.from(setSample)) !== JSON.stringify([redactionMarker])) {
     throw new Error("expected Set output redaction");
   }
@@ -689,8 +744,8 @@ if (process.argv.includes("--selftest")) {
       this.nested = nested;
     }
   }
-  const instanceSample = redactOutput(new Envelope(samplePrefix + blockedTerm, { token: blockedTerm }));
-  if (!(instanceSample instanceof Envelope) || instanceSample.note !== samplePrefix + redactionMarker || instanceSample.nested.token !== redactionMarker) {
+  const instanceSample = redactOutput(new Envelope(blockedSample, { token: blockedSample }));
+  if (!(instanceSample instanceof Envelope) || instanceSample.note !== redactionMarker || instanceSample.nested.token !== redactionMarker) {
     throw new Error("expected object instances to preserve prototype and redact string leaf values");
   }
   class InheritedAccessorEnvelope {
@@ -699,7 +754,7 @@ if (process.argv.includes("--selftest")) {
     }
 
     get note() {
-      return blockedTerm;
+      return blockedSample;
     }
   }
   let inheritedAccessor = false;
@@ -711,7 +766,7 @@ if (process.argv.includes("--selftest")) {
   if (!inheritedAccessor) throw new Error("expected inherited accessor output rejection");
   let circular = false;
   try {
-    const cycle = { note: blockedTerm };
+    const cycle = { note: blockedSample };
     cycle.self = cycle;
     redactOutput(cycle);
   } catch (error) {
@@ -738,10 +793,10 @@ export function guardrailWorkstream(options) {
   const maxBodyLen = options?.maxBodyLen == null ? 256 : options.maxBodyLen;
   const inputContract = options?.inputContract == null ? "throw" : requireString(options.inputContract, "inputContract");
   const inputScope = options?.inputScope == null ? "input" : requireString(options.inputScope, "inputScope");
-  if (Array.isArray(options?.blockedTerms) && options.blockedTerms.length === 0) {
-    throw new Error("blockedTerms must be an array of non-empty strings");
-  }
   if (mode === "input") {
+    if (blockedTerms.length === 0) {
+      throw new Error("blockedTerms must be an array of non-empty strings");
+    }
     if (blockedPatterns.length > 0) {
       throw new Error('blockedPatterns are only supported for mode "output"');
     }
@@ -770,6 +825,12 @@ export function guardrailWorkstream(options) {
     });
   }
   if (mode === "output") {
+    if (blockedTerms.length === 0 && blockedPatterns.length === 0) {
+      throw new Error("output guardrail requires at least one blocked term or blocked pattern");
+    }
+    if (blockedTerms.length === 0 && !blockedPatterns.some((pattern) => typeof pattern.sample === "string")) {
+      throw new Error("pattern-only output guardrails require a blocked pattern sample");
+    }
     return baseWorkstream({
       id,
       signer,

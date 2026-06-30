@@ -743,6 +743,27 @@ async function main() {
     note: "[REDACTED]",
   });
 
+  const outputGuardPatternOnlyRoot = renderAndRun(
+    guardrailWorkstream({
+      id: "output-guard-pattern-only-contract",
+      signer: "claude",
+      file: "generated/output-guard-pattern-only-contract.mjs",
+      mode: "output",
+      blockedTerms: [],
+      blockedPatterns: [{ source: "\\b\\d{3}-\\d{2}-\\d{4}\\b", sample: "987-65-4321" }],
+      finding: "Output guardrail should support pattern-only redaction.",
+    }),
+    toyContext()
+  );
+  const outputGuardPatternOnlyModule = await importRendered(
+    outputGuardPatternOnlyRoot,
+    "generated/output-guard-pattern-only-contract.mjs"
+  );
+  assert.equal(
+    outputGuardPatternOnlyModule.redactOutput("visible 987-65-4321 visible"),
+    "visible [REDACTED] visible"
+  );
+
   const outputGuardContainerRoot = renderAndRun(
     guardrailWorkstream({
       id: "output-guard-container-contract",
@@ -1154,6 +1175,66 @@ async function main() {
     );
   } finally {
     Object.defineProperty(Array.prototype, "values", arrayValuesPrototypeDescriptor);
+  }
+  const objectToStringPrototypeDescriptor = Object.getOwnPropertyDescriptor(Object.prototype, "toString");
+  let objectPrototypeToStringCalls = 0;
+  try {
+    Object.defineProperty(Object.prototype, "toString", {
+      ...objectToStringPrototypeDescriptor,
+      value() {
+        objectPrototypeToStringCalls += 1;
+        return "[object Object]";
+      },
+    });
+    class ReplacedToStringEnvelope {
+      constructor(note) {
+        this.note = note;
+      }
+    }
+    assert.throws(
+      () => outputGuardAccessorModule.redactOutput(new ReplacedToStringEnvelope("secret")),
+      /toString|prototype|modified|unsupported/i
+    );
+    assert.equal(
+      objectPrototypeToStringCalls,
+      0,
+      "modified Object.prototype.toString must not be invoked during redaction"
+    );
+  } finally {
+    Object.defineProperty(Object.prototype, "toString", objectToStringPrototypeDescriptor);
+  }
+  const mapEntriesFunctionPrototypeDescriptor = Object.getOwnPropertyDescriptor(Map.prototype, "entries");
+  let mapPrototypeEntriesCalls = 0;
+  try {
+    Object.defineProperty(Map.prototype, "entries", {
+      ...mapEntriesFunctionPrototypeDescriptor,
+      value() {
+        mapPrototypeEntriesCalls += 1;
+        return mapEntriesFunctionPrototypeDescriptor.value.call(this);
+      },
+    });
+    assert.throws(
+      () => outputGuardAccessorModule.redactOutput(new Map([["note", "secret"]])),
+      /entries|prototype|modified|unsupported/i
+    );
+    assert.equal(
+      mapPrototypeEntriesCalls,
+      0,
+      "modified Map.prototype.entries must not be invoked during redaction"
+    );
+  } finally {
+    Object.defineProperty(Map.prototype, "entries", mapEntriesFunctionPrototypeDescriptor);
+  }
+  const arrayUnscopablesDescriptor = Object.getOwnPropertyDescriptor(Array.prototype, Symbol.unscopables);
+  const arrayUnscopablesPrototype = Object.getPrototypeOf(arrayUnscopablesDescriptor.value);
+  try {
+    Object.setPrototypeOf(arrayUnscopablesDescriptor.value, { leakedNote: "secret" });
+    assert.throws(
+      () => outputGuardAccessorModule.redactOutput(["visible"]),
+      /unscopables|prototype|modified|unsupported/i
+    );
+  } finally {
+    Object.setPrototypeOf(arrayUnscopablesDescriptor.value, arrayUnscopablesPrototype);
   }
 
   const servingInputGuardWorkstream = servingBuildWorkstreams.find((workstream) => workstream.id === "input-guardrail");
