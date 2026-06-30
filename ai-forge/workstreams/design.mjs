@@ -6,7 +6,6 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-const VERIFY_SRC = readFileSync(fileURLToPath(new URL("./design-verify.mjs", import.meta.url)), "utf8");
 const SECTIONS = ["Component boundaries", "Data flow", "Model/infra choices", "Eval plan", "Risks"];
 
 export function makeDesignWorkstream(buildWorkstreams) {
@@ -18,6 +17,7 @@ export function makeDesignWorkstream(buildWorkstreams) {
   }));
 
   function render() {
+    const verifySrc = readFileSync(fileURLToPath(new URL("./design-verify.mjs", import.meta.url)), "utf8");
     const block = "```json\n" + JSON.stringify(components, null, 2) + "\n```";
     const edges = components.flatMap((c) => c.depends_on.map((d) => `  ${d} --> ${c.workstream}`));
     const mermaid = "```mermaid\nflowchart TD\n" + (edges.length ? edges.join("\n") : components.map((c) => `  ${c.workstream}`).join("\n")) + "\n```";
@@ -30,7 +30,7 @@ export function makeDesignWorkstream(buildWorkstreams) {
     };
     let md = "# Architecture Design\n\n" + block + "\n";
     for (const h of SECTIONS) md += `\n## ${h}\n\n${bodies[h]}\n`;
-    return { "docs/DESIGN.md": md, "docs/design/verify.mjs": VERIFY_SRC };
+    return { "docs/DESIGN.md": md, "docs/design/verify.mjs": verifySrc };
   }
 
   function checks() {
