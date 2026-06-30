@@ -202,7 +202,22 @@ function isOrdinaryObject(value) {
   return Object.prototype.toString.call(value) === "[object Object]";
 }
 
+function assertNoInheritedAccessors(value) {
+  let prototype = Object.getPrototypeOf(value);
+  while (prototype && prototype !== Object.prototype) {
+    for (const key of Reflect.ownKeys(prototype)) {
+      const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
+      if (!descriptor) continue;
+      if (typeof descriptor.get === "function" || typeof descriptor.set === "function") {
+        throw new Error(\`unsupported inherited accessor property on output prototype: \${String(key)}\`);
+      }
+    }
+    prototype = Object.getPrototypeOf(prototype);
+  }
+}
+
 function cloneRedactedObject(value, seen) {
+  assertNoInheritedAccessors(value);
   const clone = Object.create(Object.getPrototypeOf(value));
   for (const key of Reflect.ownKeys(value)) {
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
@@ -332,6 +347,22 @@ if (process.argv.includes("--selftest")) {
   if (!(instanceSample instanceof Envelope) || instanceSample.note !== samplePrefix + redactionMarker || instanceSample.nested.token !== redactionMarker) {
     throw new Error("expected object instances to preserve prototype and redact string leaf values");
   }
+  class InheritedAccessorEnvelope {
+    constructor(payload) {
+      this.payload = payload;
+    }
+
+    get note() {
+      return blockedTerm;
+    }
+  }
+  let inheritedAccessor = false;
+  try {
+    redactOutput(new InheritedAccessorEnvelope(cleanText));
+  } catch (error) {
+    inheritedAccessor = /inherited|prototype|accessor/i.test(String(error && error.message));
+  }
+  if (!inheritedAccessor) throw new Error("expected inherited accessor output rejection");
   let circular = false;
   try {
     const cycle = { note: blockedTerm };

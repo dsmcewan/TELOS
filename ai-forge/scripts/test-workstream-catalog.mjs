@@ -604,6 +604,19 @@ async function main() {
     /accessor|unsupported property/i
   );
   assert.equal(arrayGetterReads, 0, "array accessor getter must not be invoked during redaction");
+  class InheritedAccessorEnvelope {
+    constructor(payload) {
+      this.payload = payload;
+    }
+
+    get note() {
+      return "secret";
+    }
+  }
+  assert.throws(
+    () => outputGuardAccessorModule.redactOutput(new InheritedAccessorEnvelope("visible")),
+    /inherited|prototype|accessor/i
+  );
 
   const ok = await forge({
     pattern: toyPattern(),
