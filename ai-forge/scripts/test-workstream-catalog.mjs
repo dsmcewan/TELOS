@@ -309,6 +309,46 @@ async function main() {
     renderAndRun(workstream, toyContext());
   }
 
+  renderAndRun(
+    guardrailWorkstream({
+      id: "input-guard-short-term-selftest",
+      signer: "grok",
+      file: "generated/input-guard-short-term-selftest.mjs",
+      mode: "input",
+      blockedTerms: ["hello"],
+      finding: "Input guardrail selftest should support short blocked terms.",
+    }),
+    toyContext()
+  );
+
+  const outputGuardShortTermRoot = renderAndRun(
+    guardrailWorkstream({
+      id: "output-guard-short-term-selftest",
+      signer: "claude",
+      file: "generated/output-guard-short-term-selftest.mjs",
+      mode: "output",
+      blockedTerms: ["a"],
+      finding: "Output guardrail selftest should support short blocked terms.",
+    }),
+    toyContext()
+  );
+  const outputGuardShortTermModule = await importRendered(
+    outputGuardShortTermRoot,
+    "generated/output-guard-short-term-selftest.mjs"
+  );
+  assert.deepEqual(
+    outputGuardShortTermModule.redactOutput({
+      note: "a",
+      nested: { value: "A cab" },
+      list: ["alpha", "visible"],
+    }),
+    {
+      note: "[REDACTED]",
+      nested: { value: "[REDACTED] c[REDACTED]b" },
+      list: ["[REDACTED]lph[REDACTED]", "visible"],
+    }
+  );
+
   const scorecardRoot = renderAndRun(
     scorecardWorkstream({
       id: "scorecard-contract",

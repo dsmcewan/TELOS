@@ -88,6 +88,20 @@ function renderInputGuardrailSource(blockedTerms, maxBodyLen) {
   return `const blockedTerms = ${JSON.stringify(blockedTerms)};
 const maxBodyLen = ${JSON.stringify(maxBodyLen)};
 
+function makeAllowedString(maxLen = maxBodyLen) {
+  const blockedCorpus = blockedTerms.join("");
+  for (let codePoint = 0x20; codePoint <= 0x10ffff; codePoint += 1) {
+    if (codePoint >= 0xd800 && codePoint <= 0xdfff) continue;
+    const candidateChar = String.fromCodePoint(codePoint);
+    if (blockedCorpus.includes(candidateChar)) continue;
+    const candidate = candidateChar.repeat(Math.max(1, Math.min(8, maxLen)));
+    if (!blockedTerms.some((term) => candidate.toLowerCase().includes(term.toLowerCase()))) {
+      return candidate;
+    }
+  }
+  throw new Error("unable to generate allowed selftest fixture");
+}
+
 function normalizeInput(input) {
   if (typeof input === "string") return input;
   return JSON.stringify(input);
@@ -111,10 +125,10 @@ export function checkInput(input) {
 }
 
 if (process.argv.includes("--selftest")) {
-  checkInput({ message: "hello world" });
+  checkInput(makeAllowedString());
   let blocked = false;
   try {
-    checkInput({ message: blockedTerms[0] });
+    checkInput(blockedTerms[0]);
   } catch (error) {
     blocked = /blocked term/i.test(String(error && error.message));
   }
@@ -133,6 +147,21 @@ if (process.argv.includes("--selftest")) {
 
 function renderOutputGuardrailSource(blockedTerms) {
   return `const blockedTerms = ${JSON.stringify(blockedTerms)};
+const redactionMarker = "[REDACTED]";
+
+function makeAllowedString() {
+  const blockedCorpus = blockedTerms.join("");
+  for (let codePoint = 0x20; codePoint <= 0x10ffff; codePoint += 1) {
+    if (codePoint >= 0xd800 && codePoint <= 0xdfff) continue;
+    const candidateChar = String.fromCodePoint(codePoint);
+    if (blockedCorpus.includes(candidateChar)) continue;
+    const candidate = candidateChar.repeat(8);
+    if (!blockedTerms.some((term) => candidate.toLowerCase().includes(term.toLowerCase()))) {
+      return candidate;
+    }
+  }
+  throw new Error("unable to generate allowed selftest fixture");
+}
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^$()|[\\]\\\\]/g, "\\\\$&");
@@ -142,7 +171,7 @@ function redactStringValue(value) {
   let redacted = value;
   for (const term of blockedTerms) {
     const pattern = new RegExp(escapeRegExp(term), "gi");
-    redacted = redacted.replace(pattern, "[REDACTED]");
+    redacted = redacted.replace(pattern, redactionMarker);
   }
   return redacted;
 }
@@ -202,24 +231,35 @@ export function redactOutput(output) {
 
 if (process.argv.includes("--selftest")) {
   const blockedTerm = blockedTerms[0];
-  const sample = redactOutput("This " + blockedTerm.toUpperCase() + " should disappear.");
-  if (sample.toLowerCase().includes(blockedTerm.toLowerCase()) || !sample.includes("[REDACTED]")) {
-    throw new Error("expected secret to be redacted");
-  }
-  const clean = redactOutput({ ok: true, note: "visible" });
-  if (typeof clean !== "object" || clean == null || clean.note !== "visible") {
+  const cleanText = makeAllowedString();
+  const clean = redactOutput({ ok: true, note: cleanText });
+  if (typeof clean !== "object" || clean == null || clean.note !== cleanText) {
     throw new Error("expected clean object output to remain an object");
   }
-  const objectSample = redactOutput({ note: "hide " + blockedTerm, nested: { value: blockedTerm.toUpperCase() } });
-  const serialized = JSON.stringify(objectSample);
-  if (/secret/i.test(serialized) || !serialized.includes("[REDACTED]")) {
+  const samplePrefix = makeAllowedString();
+  const sampleSuffix = makeAllowedString();
+  const sampleInput = samplePrefix + blockedTerm.toUpperCase() + sampleSuffix;
+  const sample = redactOutput(sampleInput);
+  if (sample !== samplePrefix + redactionMarker + sampleSuffix) {
+    throw new Error("expected secret to be redacted");
+  }
+  const objectSample = redactOutput({
+    note: samplePrefix + blockedTerm,
+    nested: { value: blockedTerm.toUpperCase() + sampleSuffix },
+  });
+  if (
+    JSON.stringify(objectSample) !== JSON.stringify({
+      note: samplePrefix + redactionMarker,
+      nested: { value: redactionMarker + sampleSuffix },
+    })
+  ) {
     throw new Error("expected object output redaction");
   }
   const keyedSample = redactOutput({ password: undefined, nested: { token: blockedTerm }, list: [blockedTerm] });
   if (!("password" in keyedSample) || !("nested" in keyedSample) || !("token" in keyedSample.nested)) {
     throw new Error("expected object keys to be preserved during redaction");
   }
-  if (keyedSample.password !== undefined || keyedSample.nested.token !== "[REDACTED]" || keyedSample.list[0] !== "[REDACTED]") {
+  if (keyedSample.password !== undefined || keyedSample.nested.token !== redactionMarker || keyedSample.list[0] !== redactionMarker) {
     throw new Error("expected string leaf values to be redacted without changing container structure");
   }
   class Envelope {
@@ -228,8 +268,8 @@ if (process.argv.includes("--selftest")) {
       this.nested = nested;
     }
   }
-  const instanceSample = redactOutput(new Envelope("hide " + blockedTerm, { token: blockedTerm.toUpperCase() }));
-  if (!(instanceSample instanceof Envelope) || instanceSample.note !== "hide [REDACTED]" || instanceSample.nested.token !== "[REDACTED]") {
+  const instanceSample = redactOutput(new Envelope(samplePrefix + blockedTerm, { token: blockedTerm.toUpperCase() }));
+  if (!(instanceSample instanceof Envelope) || instanceSample.note !== samplePrefix + redactionMarker || instanceSample.nested.token !== redactionMarker) {
     throw new Error("expected object instances to preserve prototype and redact string leaf values");
   }
   let circular = false;
