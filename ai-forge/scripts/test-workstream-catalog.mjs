@@ -309,6 +309,24 @@ async function main() {
   const blockedString = "This SECRET and 123-45-6789 must disappear.";
   assert.equal(outputGuardModule.redactOutput(blockedString), "This [REDACTED] and [REDACTED] must disappear.");
 
+  const outputGuardKeyRoot = renderAndRun(
+    guardrailWorkstream({
+      id: "output-guard-key-contract",
+      signer: "claude",
+      file: "generated/output-guard-key-contract.mjs",
+      mode: "output",
+      blockedTerms: ["password", "secret", "token"],
+      finding: "Output guardrail object-key contract regression.",
+    }),
+    toyContext()
+  );
+  const outputGuardKeyModule = await importRendered(outputGuardKeyRoot, "generated/output-guard-key-contract.mjs");
+  const keyedBlockedObject = { password: "secret", nested: { token: "secret" } };
+  assert.deepEqual(outputGuardKeyModule.redactOutput(keyedBlockedObject), {
+    password: "[REDACTED]",
+    nested: { token: "[REDACTED]" },
+  });
+
   const ok = await forge({
     pattern: toyPattern(),
     ctx: toyContext(),

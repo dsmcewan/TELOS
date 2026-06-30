@@ -138,17 +138,35 @@ function escapeRegExp(value) {
   return value.replace(/[.*+?^$()|[\\]\\\\]/g, "\\\\$&");
 }
 
-export function redactOutput(output) {
-  const isString = typeof output === "string";
-  let text = isString ? output : JSON.stringify(output);
-  if (typeof text !== "string") {
-    throw new Error("output must be serializable");
-  }
+function redactStringValue(value) {
+  let redacted = value;
   for (const term of blockedTerms) {
     const pattern = new RegExp(escapeRegExp(term), "gi");
-    text = text.replace(pattern, "[REDACTED]");
+    redacted = redacted.replace(pattern, "[REDACTED]");
   }
-  return isString ? text : JSON.parse(text);
+  return redacted;
+}
+
+function redactJsonValue(value) {
+  if (typeof value === "string") return redactStringValue(value);
+  if (Array.isArray(value)) return value.map((item) => redactJsonValue(item));
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, redactJsonValue(item)])
+    );
+  }
+  return value;
+}
+
+export function redactOutput(output) {
+  if (typeof output === "string") {
+    return redactStringValue(output);
+  }
+  const serialized = JSON.stringify(output);
+  if (typeof serialized !== "string") {
+    throw new Error("output must be serializable");
+  }
+  return redactJsonValue(JSON.parse(serialized));
 }
 
 if (process.argv.includes("--selftest")) {
@@ -165,6 +183,10 @@ if (process.argv.includes("--selftest")) {
   const serialized = JSON.stringify(objectSample);
   if (/secret/i.test(serialized) || !serialized.includes("[REDACTED]")) {
     throw new Error("expected object output redaction");
+  }
+  const keyedSample = redactOutput({ password: "secret", nested: { token: "secret" } });
+  if (!("password" in keyedSample) || !("nested" in keyedSample) || !("token" in keyedSample.nested)) {
+    throw new Error("expected object keys to be preserved during redaction");
   }
 }
 `;
