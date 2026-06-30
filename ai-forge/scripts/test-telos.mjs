@@ -3,7 +3,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
-import { telosContext, signWorkstream } from "../patterns/telos.mjs";
+import { telosContext, signWorkstream, planWorkstream, provenanceWorkstream, gateWorkstream } from "../patterns/telos.mjs";
 
 // Render a component's selftest to a temp file and run it; return exit code (0 = pass).
 function runSelftest(ws) {
@@ -19,5 +19,9 @@ function runSelftest(ws) {
 
 // sign: the selftest genuinely executes build-gate/sign.mjs via the spineRoot file:// import
 assert.equal(runSelftest(signWorkstream), 0, "sign selftest must execute the real spine and pass");
+
+assert.equal(runSelftest(planWorkstream), 0, "plan selftest executes");
+assert.equal(runSelftest(provenanceWorkstream), 0, "provenance selftest executes");
+assert.equal(runSelftest(gateWorkstream), 0, "gate selftest executes");
 
 console.log("test-telos.mjs OK");
