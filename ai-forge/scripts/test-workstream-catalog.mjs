@@ -66,6 +66,43 @@ async function importWithPosixPathSemantics(sourceFile) {
   return import(pathToFileURL(target).href);
 }
 
+function assertNoBlockedTermsInOutputStrings(value, blockedTerms, seen = new WeakSet()) {
+  if (typeof value === "string") {
+    const lower = value.toLowerCase();
+    for (const term of blockedTerms) {
+      assert.equal(
+        lower.includes(term.toLowerCase()),
+        false,
+        `redacted output still contains blocked term ${JSON.stringify(term)} in ${JSON.stringify(value)}`
+      );
+    }
+    return;
+  }
+  if (!value || typeof value !== "object") return;
+  if (seen.has(value)) return;
+  seen.add(value);
+  if (Array.isArray(value)) {
+    for (const entry of value) assertNoBlockedTermsInOutputStrings(entry, blockedTerms, seen);
+    return;
+  }
+  if (value instanceof Map) {
+    for (const [key, entryValue] of value.entries()) {
+      assertNoBlockedTermsInOutputStrings(key, blockedTerms, seen);
+      assertNoBlockedTermsInOutputStrings(entryValue, blockedTerms, seen);
+    }
+    return;
+  }
+  if (value instanceof Set) {
+    for (const entry of value.values()) assertNoBlockedTermsInOutputStrings(entry, blockedTerms, seen);
+    return;
+  }
+  for (const key of Reflect.ownKeys(value)) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !Object.prototype.hasOwnProperty.call(descriptor, "value")) continue;
+    assertNoBlockedTermsInOutputStrings(descriptor.value, blockedTerms, seen);
+  }
+}
+
 function toyContext() {
   return {
     dossier: {
@@ -373,18 +410,18 @@ async function main() {
     outputGuardShortTermRoot,
     "generated/output-guard-short-term-selftest.mjs"
   );
-  assert.deepEqual(
-    outputGuardShortTermModule.redactOutput({
-      note: "a",
-      nested: { value: "A cab" },
-      list: ["alpha", "visible"],
-    }),
-    {
-      note: "[REDACTED]",
-      nested: { value: "[REDACTED] c[REDACTED]b" },
-      list: ["[REDACTED]lph[REDACTED]", "visible"],
-    }
-  );
+  const shortTermMarker = outputGuardShortTermModule.redactOutput("a");
+  const shortTermOutput = outputGuardShortTermModule.redactOutput({
+    note: "a",
+    nested: { value: "A cab" },
+    list: ["alpha", "visible"],
+  });
+  assert.deepEqual(shortTermOutput, {
+    note: shortTermMarker,
+    nested: { value: `${shortTermMarker} c${shortTermMarker}b` },
+    list: [`${shortTermMarker}lph${shortTermMarker}`, "visible"],
+  });
+  assertNoBlockedTermsInOutputStrings(shortTermOutput, ["a"]);
 
   renderAndRun(
     guardrailWorkstream({
@@ -446,6 +483,45 @@ async function main() {
     "generated/output-guard-unicode-case-contract.mjs"
   );
   assert.equal(outputGuardUnicodeCaseModule.redactOutput("ẞ"), "[REDACTED]");
+
+  const outputGuardMarkerWordCollisionRoot = renderAndRun(
+    guardrailWorkstream({
+      id: "output-guard-marker-word-collision",
+      signer: "claude",
+      file: "generated/output-guard-marker-word-collision.mjs",
+      mode: "output",
+      blockedTerms: ["redacted"],
+      finding: "Output guardrail should derive a redaction marker that does not collide with blocked terms.",
+    }),
+    toyContext()
+  );
+  const outputGuardMarkerWordCollisionModule = await importRendered(
+    outputGuardMarkerWordCollisionRoot,
+    "generated/output-guard-marker-word-collision.mjs"
+  );
+  const markerWordCollisionOutput = outputGuardMarkerWordCollisionModule.redactOutput("Already REDACTED and redacted again.");
+  assertNoBlockedTermsInOutputStrings(markerWordCollisionOutput, ["redacted"]);
+
+  const outputGuardMarkerLiteralCollisionRoot = renderAndRun(
+    guardrailWorkstream({
+      id: "output-guard-marker-literal-collision",
+      signer: "claude",
+      file: "generated/output-guard-marker-literal-collision.mjs",
+      mode: "output",
+      blockedTerms: ["[REDACTED]"],
+      finding: "Output guardrail should derive a redaction marker that cannot reintroduce literal blocked markers.",
+    }),
+    toyContext()
+  );
+  const outputGuardMarkerLiteralCollisionModule = await importRendered(
+    outputGuardMarkerLiteralCollisionRoot,
+    "generated/output-guard-marker-literal-collision.mjs"
+  );
+  const markerLiteralCollisionOutput = outputGuardMarkerLiteralCollisionModule.redactOutput({
+    note: "prefix [REDACTED] suffix",
+    nested: { value: "[redacted]" },
+  });
+  assertNoBlockedTermsInOutputStrings(markerLiteralCollisionOutput, ["[REDACTED]"]);
 
   const inputGuardThrowRoot = renderAndRun(
     guardrailWorkstream({

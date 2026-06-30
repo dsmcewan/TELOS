@@ -208,19 +208,17 @@ function renderOutputGuardrailSource(blockedTerms) {
   const thresholdsJsonLiteral = JSON.stringify(JSON.stringify(blockedTerms));
   const escapeRegExpPatternSourceLiteral = JSON.stringify("[.*+?^${}()|[\\]\\\\]");
   return `const blockedTerms = JSON.parse(${thresholdsJsonLiteral});
-const redactionMarker = "[REDACTED]";
+const preferredRedactionMarker = "[REDACTED]";
 const escapeRegExpPattern = new RegExp(${escapeRegExpPatternSourceLiteral}, "g");
 
-function makeAllowedString() {
+function makeAllowedString(minCodePoint = 0x20) {
   const blockedCorpus = blockedTerms.join("");
-  for (let codePoint = 0x20; codePoint <= 0x10ffff; codePoint += 1) {
+  for (let codePoint = minCodePoint; codePoint <= 0x10ffff; codePoint += 1) {
     if (codePoint >= 0xd800 && codePoint <= 0xdfff) continue;
     const candidateChar = String.fromCodePoint(codePoint);
     if (blockedCorpus.includes(candidateChar)) continue;
     const candidate = candidateChar.repeat(8);
-    if (!blockedTerms.some((term) => candidate.toLowerCase().includes(term.toLowerCase()))) {
-      return candidate;
-    }
+    if (!containsBlockedTerm(candidate)) return candidate;
   }
   throw new Error("unable to generate allowed selftest fixture");
 }
@@ -242,6 +240,24 @@ function buildBlockedTermPatterns(term) {
   const source = Array.from(variants, (variant) => escapeRegExp(variant)).sort((a, b) => b.length - a.length).join("|");
   return new RegExp(source, "giu");
 }
+
+const blockedTermPatterns = blockedTerms.map((term) => buildBlockedTermPatterns(term));
+
+function containsBlockedTerm(value) {
+  return blockedTermPatterns.some((pattern) => {
+    pattern.lastIndex = 0;
+    return pattern.test(value);
+  });
+}
+
+function makeRedactionMarker() {
+  if (!containsBlockedTerm(preferredRedactionMarker)) {
+    return preferredRedactionMarker;
+  }
+  return makeAllowedString(0x21);
+}
+
+const redactionMarker = makeRedactionMarker();
 
 function redactStringValue(value) {
   let redacted = value;
