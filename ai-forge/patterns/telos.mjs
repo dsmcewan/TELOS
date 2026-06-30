@@ -163,13 +163,16 @@ function breakoutSelftest(spineRoot) {
 import { mkdtempSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { buildCheck } from "${spineRoot}breakout/verifier.mjs";
+import { reverifyRecord } from "${spineRoot}breakout/verifier.mjs";
 const dir = mkdtempSync(path.join(os.tmpdir(), "telos-verify-"));
 writeFileSync(path.join(dir, "evidence.txt"), "proof");
-const present = await buildCheck({ type: "file_exists", path: "evidence.txt" }, dir).run();
-assert.equal(present.ok, true, "present evidence -> meets");
-const absent = await buildCheck({ type: "file_exists", path: "NOPE.txt" }, dir).run();
-assert.equal(absent.ok, false, "absent evidence -> blocked");
+// Verdict-on-facts: rebuild a record's declarative checks against disk, confined to dir.
+const present = reverifyRecord({ checks: [{ type: "file_exists", path: "evidence.txt" }] }, dir);
+assert.equal(present.reverifiable, 1, "present evidence -> re-verifiable");
+assert.equal(present.allPass, true, "present evidence -> meets");
+const absent = reverifyRecord({ checks: [{ type: "file_exists", path: "NOPE.txt" }] }, dir);
+assert.equal(absent.allPass, false, "absent evidence -> blocked");
+assert.equal(absent.failing.length, 1, "absent evidence -> one failing fact");
 console.log("telos/verify selftest OK");
 `;
 }
