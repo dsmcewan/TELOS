@@ -187,3 +187,8 @@ export const multiagentBuildWorkstreams = [
   rolesWorkstream, protocolWorkstream, routerWorkstream, blackboardWorkstream,
   orchestratorWorkstream, aggregatorWorkstream, terminationWorkstream
 ];
+
+export const multiagentPattern = {
+  id: "multiagent",
+  workstreams: [...multiagentBuildWorkstreams, makeDesignWorkstream(multiagentBuildWorkstreams)]
+};
