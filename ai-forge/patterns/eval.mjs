@@ -117,9 +117,89 @@ if (isMain && process.argv.includes("--selftest")) {
 }
 `;
 
+const SCORECARD_SRC = `import assert from "node:assert/strict";
+import { mkdtempSync, writeFileSync, readFileSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { runTarget } from "./run-target.mjs";
+import { computeMetrics } from "./metrics.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
+const EPS = 1e-9;
+export function writeScorecard(dir) {
+  const preds = runTarget();
+  const metrics = computeMetrics(preds.map((p) => p.predicted), preds.map((p) => p.expected));
+  const card = { dataset: "eval-binary-sentiment-v1", n: preds.length, metrics };
+  writeFileSync(path.join(dir, "scorecard.json"), JSON.stringify(card, null, 2) + "\\n");
+  return card;
+}
+export function verifyScorecard(dir) {
+  const stored = JSON.parse(readFileSync(path.join(dir, "scorecard.json"), "utf8"));
+  const preds = runTarget();
+  const recomputed = computeMetrics(preds.map((p) => p.predicted), preds.map((p) => p.expected));
+  for (const k of Object.keys(recomputed)) {
+    if (Math.abs(stored.metrics[k] - recomputed[k]) > EPS) return { ok: false, error: "stored " + k + " != recomputed" };
+  }
+  return { ok: true };
+}
+if (isMain && process.argv.includes("--selftest")) {
+  const dir = mkdtempSync(path.join(os.tmpdir(), "eval-scorecard-"));
+  writeScorecard(dir);
+  assert.equal(verifyScorecard(dir).ok, true, "stored == recomputed");
+  // tamper a stored metric -> verify must fail (fail-closed)
+  const file = path.join(dir, "scorecard.json");
+  const card = JSON.parse(readFileSync(file, "utf8"));
+  card.metrics.accuracy = card.metrics.accuracy - 0.5;
+  writeFileSync(file, JSON.stringify(card, null, 2) + "\\n");
+  assert.equal(verifyScorecard(dir).ok, false, "tampered scorecard is rejected");
+  console.log("scorecard OK");
+}
+`;
+
+const THRESHOLD_SRC = `import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
+// gate metrics against minimum thresholds.
+export function gate(metrics, thresholds) {
+  const failing = Object.keys(thresholds).filter((k) => metrics[k] < thresholds[k]);
+  return { pass: failing.length === 0, failing };
+}
+if (isMain && process.argv.includes("--selftest")) {
+  assert.equal(gate({ accuracy: 0.9, precision: 0.9 }, { accuracy: 0.8, precision: 0.8 }).pass, true, "above thresholds -> pass");
+  const r = gate({ accuracy: 0.5 }, { accuracy: 0.8 });
+  assert.equal(r.pass, false, "below threshold -> blocked");
+  assert.deepEqual(r.failing, ["accuracy"], "names the failing metric");
+  console.log("threshold OK");
+}
+`;
+
+const REGRESSION_SRC = `import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
+// flag any metric that drops more than tolerance below the baseline.
+export function detectRegression(baseline, current, tolerance = 0.0) {
+  const regressed = Object.keys(baseline).filter((k) => current[k] < baseline[k] - tolerance);
+  return { regressed, ok: regressed.length === 0 };
+}
+if (isMain && process.argv.includes("--selftest")) {
+  const base = { accuracy: 0.9, precision: 0.9 };
+  assert.equal(detectRegression(base, { accuracy: 0.9, precision: 0.95 }).ok, true, "equal/better -> clean");
+  const r = detectRegression(base, { accuracy: 0.7, precision: 0.9 });
+  assert.equal(r.ok, false, "worse than baseline -> flagged");
+  assert.deepEqual(r.regressed, ["accuracy"], "names the regressed metric");
+  console.log("regression OK");
+}
+`;
+
 const datasetWorkstream = mod({ id: "dataset", signer: "codex", dependencies: [], file: "eval/dataset.mjs", source: DATASET_SRC, needle: "export const DATASET", finding: "Eval dataset has >=4 unique, well-formed labelled cases." });
 const targetWorkstream = mod({ id: "target", signer: "claude", dependencies: ["dataset"], file: "eval/target.mjs", source: TARGET_SRC, needle: "export function predict", finding: "Target classifier is total over the dataset and deterministic." });
 const runnerWorkstream = mod({ id: "runner", signer: "codex", dependencies: ["dataset", "target"], file: "eval/run-target.mjs", source: RUNNER_SRC, needle: "export function runTarget", finding: "Runner produces one id-aligned prediction per case." });
 const metricsWorkstream = mod({ id: "metrics", signer: "agy", dependencies: ["runner"], file: "eval/metrics.mjs", source: METRICS_SRC, needle: "export function computeMetrics", finding: "Metrics compute accuracy/precision/recall, proven against a hand-computed fixture." });
+const scorecardWorkstream = mod({ id: "scorecard", signer: "agy", dependencies: ["metrics"], file: "eval/scorecard.mjs", source: SCORECARD_SRC, needle: "stored == recomputed", finding: "Scorecard asserts stored metrics equal recomputed and rejects tampering (fail-closed)." });
+const thresholdWorkstream = mod({ id: "threshold", signer: "grok", dependencies: ["scorecard"], file: "eval/threshold.mjs", source: THRESHOLD_SRC, needle: "export function gate", finding: "Threshold gate passes metrics above bounds and blocks those below." });
+const regressionWorkstream = mod({ id: "regression", signer: "grok", dependencies: ["scorecard"], file: "eval/regression.mjs", source: REGRESSION_SRC, needle: "export function detectRegression", finding: "Regression check flags metrics that drop below a baseline." });
 
-export const evalBuildWorkstreams = [datasetWorkstream, targetWorkstream, runnerWorkstream, metricsWorkstream];
+export const evalBuildWorkstreams = [
+  datasetWorkstream, targetWorkstream, runnerWorkstream, metricsWorkstream,
+  scorecardWorkstream, thresholdWorkstream, regressionWorkstream
+];
