@@ -123,8 +123,3 @@ const runnerWorkstream = mod({ id: "runner", signer: "codex", dependencies: ["da
 const metricsWorkstream = mod({ id: "metrics", signer: "agy", dependencies: ["runner"], file: "eval/metrics.mjs", source: METRICS_SRC, needle: "export function computeMetrics", finding: "Metrics compute accuracy/precision/recall, proven against a hand-computed fixture." });
 
 export const evalBuildWorkstreams = [datasetWorkstream, targetWorkstream, runnerWorkstream, metricsWorkstream];
-
-export const evalPattern = {
-  id: "eval",
-  workstreams: [...evalBuildWorkstreams, makeDesignWorkstream(evalBuildWorkstreams)]
-};
