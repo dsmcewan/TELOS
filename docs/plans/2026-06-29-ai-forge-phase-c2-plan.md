@@ -1,4 +1,4 @@
-﻿# ai-forge Phase C.2 Implementation Plan
+# ai-forge Phase C.2 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -387,7 +387,7 @@ const dossierMeta = { build_id: "multiagent-e2e", idea_id: "multiagent", use_cas
     ...multiagentPattern,
     workstreams: multiagentPattern.workstreams.map((w) => w.id !== "protocol" ? w : {
       ...w,
-      render: () => ({ "agents/protocol.mjs": 'import assert from "node:assert/strict";\nexport function validate(){ return { ok: false }; }\nif (isMain && process.argv.includes("--selftest")) { assert.equal(validate({}).ok, true, "WRONG: malformed should not validate"); }\n' })
+      render: () => ({ "agents/protocol.mjs": 'import assert from "node:assert/strict";\nexport function validate(){ return { ok: false }; }\nif (process.argv.includes("--selftest")) { assert.equal(validate({}).ok, true, "WRONG: malformed should not validate"); }\n' })
     })
   };
   const result = await forge({ pattern: broken, ctx: multiagentContext(), projectRoot: root, dossierMeta, maxCycles: 1 });
@@ -757,7 +757,7 @@ export const evalPattern = {
     ...evalPattern,
     workstreams: evalPattern.workstreams.map((w) => w.id !== "scorecard" ? w : {
       ...w,
-      render: () => ({ "eval/scorecard.mjs": 'import assert from "node:assert/strict";\nexport function verifyScorecard(){ return { ok: false }; }\nif (isMain && process.argv.includes("--selftest")) { assert.equal(verifyScorecard().ok, true, "WRONG: tampered card should not verify"); }\n' })
+      render: () => ({ "eval/scorecard.mjs": 'import assert from "node:assert/strict";\nexport function verifyScorecard(){ return { ok: false }; }\nif (process.argv.includes("--selftest")) { assert.equal(verifyScorecard().ok, true, "WRONG: tampered card should not verify"); }\n' })
     })
   };
   const result = await forge({ pattern: broken, ctx: evalContext(), projectRoot: root, dossierMeta, maxCycles: 1 });
@@ -1032,7 +1032,7 @@ export const servingPattern = {
     ...servingPattern,
     workstreams: servingPattern.workstreams.map((w) => w.id !== "input-guardrail" ? w : {
       ...w,
-      render: () => ({ "serving/guard-in.mjs": 'import assert from "node:assert/strict";\nexport function checkInput(){ return { allow: true }; }\nif (isMain && process.argv.includes("--selftest")) { assert.equal(checkInput({ body: { q: "<script>x" } }).allow, false, "WRONG: denylisted should be rejected"); }\n' })
+      render: () => ({ "serving/guard-in.mjs": 'import assert from "node:assert/strict";\nexport function checkInput(){ return { allow: true }; }\nif (process.argv.includes("--selftest")) { assert.equal(checkInput({ body: { q: "<script>x" } }).allow, false, "WRONG: denylisted should be rejected"); }\n' })
     })
   };
   const result = await forge({ pattern: broken, ctx: servingContext(), projectRoot: root, dossierMeta, maxCycles: 1 });
