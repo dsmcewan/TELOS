@@ -168,11 +168,24 @@ function escapeRegExp(value) {
   return value.replace(/[.*+?^$()|[\\]\\\\]/g, "\\\\$&");
 }
 
+function buildBlockedTermPatterns(term) {
+  const variants = new Set([term]);
+  const lower = term.toLowerCase();
+  const upper = term.toUpperCase();
+  if (lower.length === term.length) variants.add(lower);
+  if (upper.length === term.length) variants.add(upper);
+  if (term.includes("ß") || term.includes("ẞ")) {
+    variants.add(term.replaceAll("ß", "ẞ"));
+    variants.add(term.replaceAll("ẞ", "ß"));
+  }
+  const source = Array.from(variants, (variant) => escapeRegExp(variant)).sort((a, b) => b.length - a.length).join("|");
+  return new RegExp(source, "giu");
+}
+
 function redactStringValue(value) {
   let redacted = value;
   for (const term of blockedTerms) {
-    const pattern = new RegExp(escapeRegExp(term), "gi");
-    redacted = redacted.replace(pattern, redactionMarker);
+    redacted = redacted.replace(buildBlockedTermPatterns(term), redactionMarker);
   }
   return redacted;
 }
@@ -192,6 +205,9 @@ function cloneRedactedObject(value, seen) {
   for (const key of Reflect.ownKeys(value)) {
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
     if (!descriptor) continue;
+    if (typeof descriptor.get === "function" || typeof descriptor.set === "function") {
+      throw new Error(\`unsupported accessor property on output: \${String(key)}\`);
+    }
     if (Object.prototype.hasOwnProperty.call(descriptor, "value")) {
       descriptor.value = redactJsonValue(descriptor.value, seen);
     }
@@ -388,7 +404,7 @@ function validateScores(scores) {
   }
   const providedKeys = Object.keys(scores);
   for (const key of thresholdKeys) {
-    if (!(key in scores)) {
+    if (!Object.hasOwn(scores, key)) {
       throw new Error(\`missing score: \${key}\`);
     }
   }

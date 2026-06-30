@@ -360,6 +360,22 @@ async function main() {
     }),
     toyContext()
   );
+  const outputGuardUnicodeCaseRoot = renderAndRun(
+    guardrailWorkstream({
+      id: "output-guard-unicode-case-contract",
+      signer: "claude",
+      file: "generated/output-guard-unicode-case-contract.mjs",
+      mode: "output",
+      blockedTerms: ["ß"],
+      finding: "Output guardrail should redact uppercase Unicode equivalents of blocked terms.",
+    }),
+    toyContext()
+  );
+  const outputGuardUnicodeCaseModule = await importRendered(
+    outputGuardUnicodeCaseRoot,
+    "generated/output-guard-unicode-case-contract.mjs"
+  );
+  assert.equal(outputGuardUnicodeCaseModule.redactOutput("ẞ"), "[REDACTED]");
 
   const scorecardRoot = renderAndRun(
     scorecardWorkstream({
@@ -402,6 +418,8 @@ async function main() {
     passed: JSON.parse('{"__proto__":true}'),
   });
   assert.equal(protoThresholdModule.assertThresholds(protoThresholdScores), true);
+  assert.throws(() => protoThresholdModule.computeScorecard({}), /missing score: __proto__/i);
+  assert.throws(() => protoThresholdModule.assertThresholds({}), /missing score: __proto__/i);
 
   const outputGuardRoot = renderAndRun(
     guardrailWorkstream({
@@ -507,6 +525,32 @@ async function main() {
     detail: "visible",
     token: "[REDACTED]",
   });
+  const outputGuardAccessorRoot = renderAndRun(
+    guardrailWorkstream({
+      id: "output-guard-accessor-contract",
+      signer: "claude",
+      file: "generated/output-guard-accessor-contract.mjs",
+      mode: "output",
+      blockedTerms: ["secret"],
+      finding: "Output guardrail should reject accessor properties.",
+    }),
+    toyContext()
+  );
+  const outputGuardAccessorModule = await importRendered(
+    outputGuardAccessorRoot,
+    "generated/output-guard-accessor-contract.mjs"
+  );
+  const accessorPayload = {};
+  Object.defineProperty(accessorPayload, "note", {
+    enumerable: true,
+    get() {
+      return "secret";
+    },
+  });
+  assert.throws(
+    () => outputGuardAccessorModule.redactOutput(accessorPayload),
+    /accessor|unsupported property/i
+  );
 
   const ok = await forge({
     pattern: toyPattern(),
