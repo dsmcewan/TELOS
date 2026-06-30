@@ -3,7 +3,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
-import { telosContext, signWorkstream, planWorkstream, provenanceWorkstream, gateWorkstream } from "../patterns/telos.mjs";
+import { telosContext, signWorkstream, planWorkstream, provenanceWorkstream, gateWorkstream, councilWorkstream, ledgerWorkstream, breakoutWorkstream } from "../patterns/telos.mjs";
 
 // Render a component's selftest to a temp file and run it; return exit code (0 = pass).
 function runSelftest(ws) {
@@ -23,5 +23,9 @@ assert.equal(runSelftest(signWorkstream), 0, "sign selftest must execute the rea
 assert.equal(runSelftest(planWorkstream), 0, "plan selftest executes");
 assert.equal(runSelftest(provenanceWorkstream), 0, "provenance selftest executes");
 assert.equal(runSelftest(gateWorkstream), 0, "gate selftest executes");
+
+assert.equal(runSelftest(councilWorkstream), 0, "council selftest executes");
+assert.equal(runSelftest(ledgerWorkstream), 0, "ledger selftest executes");
+assert.equal(runSelftest(breakoutWorkstream), 0, "breakout selftest executes");
 
 console.log("test-telos.mjs OK");
