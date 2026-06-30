@@ -203,3 +203,8 @@ export const evalBuildWorkstreams = [
   datasetWorkstream, targetWorkstream, runnerWorkstream, metricsWorkstream,
   scorecardWorkstream, thresholdWorkstream, regressionWorkstream
 ];
+
+export const evalPattern = {
+  id: "eval",
+  workstreams: [...evalBuildWorkstreams, makeDesignWorkstream(evalBuildWorkstreams)]
+};
