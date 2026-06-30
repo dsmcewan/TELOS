@@ -136,6 +136,7 @@ const inputGuardWorkstream = guardrailWorkstream({
   dependencies: ["schema"],
   file: "serving/guard-in.mjs",
   mode: "input",
+  inputContract: "allow-object",
   blockedTerms: ["<script", "drop table", "ignore previous"],
   maxBodyLen: 256,
   finding: "Input guardrail rejects oversized and denylisted input (fail-closed)."
@@ -174,6 +175,7 @@ const auditWs = auditWorkstream({
   signer: "codex",
   dependencies: ["output-guardrail", "ratelimit", "authz"],
   file: "serving/audit.mjs",
+  auditContract: "directory-log",
   finding: "Audit trail did not persist structured events."
 });
 

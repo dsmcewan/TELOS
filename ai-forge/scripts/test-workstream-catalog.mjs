@@ -8,6 +8,7 @@ import { pathToFileURL } from "node:url";
 
 import { forge } from "../forge.mjs";
 import { validatePattern } from "../pattern.mjs";
+import { servingBuildWorkstreams } from "../patterns/serving.mjs";
 import {
   auditWorkstream,
   designWorkstream,
@@ -410,6 +411,27 @@ async function main() {
   );
   assert.equal(outputGuardUnicodeCaseModule.redactOutput("ẞ"), "[REDACTED]");
 
+  const inputGuardThrowRoot = renderAndRun(
+    guardrailWorkstream({
+      id: "input-guard-throw-contract",
+      signer: "grok",
+      file: "generated/input-guard-throw-contract.mjs",
+      mode: "input",
+      blockedTerms: ["secret"],
+      maxBodyLen: 64,
+      finding: "Input guardrail default contract regression.",
+    }),
+    toyContext()
+  );
+  const inputGuardThrowModule = await importRendered(
+    inputGuardThrowRoot,
+    "generated/input-guard-throw-contract.mjs"
+  );
+  const cleanInput = { body: { ok: true } };
+  assert.equal(inputGuardThrowModule.checkInput(cleanInput), cleanInput);
+  assert.throws(() => inputGuardThrowModule.checkInput({ body: "secret" }), /blocked term/i);
+  assert.throws(() => inputGuardThrowModule.checkInput({ body: "x".repeat(128) }), /maximum length/i);
+
   const scorecardRoot = renderAndRun(
     scorecardWorkstream({
       id: "scorecard-contract",
@@ -497,6 +519,20 @@ async function main() {
   const redactedSet = outputGuardContainerModule.redactOutput(new Set(["secret"]));
   assert.ok(redactedSet instanceof Set, "redacted set preserves Set type");
   assert.deepEqual([...redactedSet], ["[REDACTED]"]);
+  const redactedStringKeyMap = outputGuardContainerModule.redactOutput(new Map([["secret", "visible"]]));
+  assert.ok(redactedStringKeyMap instanceof Map, "string-key map preserves Map type");
+  assert.deepEqual(
+    [...redactedStringKeyMap.entries()],
+    [["[REDACTED]", "visible"]],
+    "string map keys are redacted recursively"
+  );
+  const originalObjectKey = { note: "secret" };
+  const redactedObjectKeyMap = outputGuardContainerModule.redactOutput(new Map([[originalObjectKey, "visible"]]));
+  assert.ok(redactedObjectKeyMap instanceof Map, "object-key map preserves Map type");
+  const [[redactedObjectKey, redactedObjectKeyValue]] = [...redactedObjectKeyMap.entries()];
+  assert.notEqual(redactedObjectKey, originalObjectKey, "object map keys are cloned during redaction");
+  assert.deepEqual(redactedObjectKey, { note: "[REDACTED]" });
+  assert.equal(redactedObjectKeyValue, "visible");
 
   const outputGuardKeyRoot = renderAndRun(
     guardrailWorkstream({
@@ -617,6 +653,44 @@ async function main() {
     () => outputGuardAccessorModule.redactOutput(new InheritedAccessorEnvelope("visible")),
     /inherited|prototype|accessor/i
   );
+
+  const servingInputGuardWorkstream = servingBuildWorkstreams.find((workstream) => workstream.id === "input-guardrail");
+  assert.ok(servingInputGuardWorkstream, "serving input guard workstream exists");
+  const servingInputGuardRoot = renderAndRun(servingInputGuardWorkstream);
+  const servingInputGuardModule = await importRendered(servingInputGuardRoot, "serving/guard-in.mjs");
+  assert.deepEqual(
+    servingInputGuardModule.checkInput({ path: "/echo", method: "POST", body: { ok: true } }),
+    { allow: true }
+  );
+  assert.deepEqual(
+    servingInputGuardModule.checkInput({ path: "/echo", method: "POST", body: { q: "<script>alert(1)</script>" } }),
+    { allow: false, reason: "denylisted" }
+  );
+  assert.deepEqual(
+    servingInputGuardModule.checkInput({ path: "/echo", method: "POST", body: { q: "x".repeat(512) } }),
+    { allow: false, reason: "oversized" }
+  );
+
+  const servingAuditWorkstream = servingBuildWorkstreams.find((workstream) => workstream.id === "audit");
+  assert.ok(servingAuditWorkstream, "serving audit workstream exists");
+  const servingAuditRoot = renderAndRun(servingAuditWorkstream);
+  const servingAuditModule = await importRendered(servingAuditRoot, "serving/audit.mjs");
+  const servingAuditDir = mkdtempSync(path.join(tmpdir(), "ai-forge-serving-audit-contract-"));
+  const servingAuditEntry = { path: "/echo", action: "serve", status: 200, allow: true };
+  servingAuditModule.appendAudit(servingAuditDir, servingAuditEntry);
+  const servingAuditLog = readFileSync(path.join(servingAuditDir, "audit.log"), "utf8").trim().split("\n");
+  assert.equal(servingAuditLog.length, 1, "serving audit appends one line");
+  const servingAuditRecord = JSON.parse(servingAuditLog[0]);
+  assert.deepEqual(
+    {
+      path: servingAuditRecord.path,
+      action: servingAuditRecord.action,
+      status: servingAuditRecord.status,
+      allow: servingAuditRecord.allow,
+    },
+    servingAuditEntry
+  );
+  assert.equal("event" in servingAuditRecord, false, "serving audit record is not wrapped in an event envelope");
 
   const ok = await forge({
     pattern: toyPattern(),

@@ -84,9 +84,11 @@ export function moduleWorkstream(options) {
   });
 }
 
-function renderInputGuardrailSource(blockedTerms, maxBodyLen) {
+function renderInputGuardrailSource(blockedTerms, maxBodyLen, inputContract) {
+  const allowObjectResponses = inputContract === "allow-object";
   return `const blockedTerms = ${JSON.stringify(blockedTerms)};
 const maxBodyLen = ${JSON.stringify(maxBodyLen)};
+const allowObjectResponses = ${JSON.stringify(allowObjectResponses)};
 
 function makeAllowedString(maxLen = maxBodyLen) {
   const blockedCorpus = blockedTerms.join("");
@@ -107,40 +109,72 @@ function normalizeInput(input) {
   return JSON.stringify(input);
 }
 
+function rejectInput(reason, message) {
+  if (allowObjectResponses) {
+    return { allow: false, reason };
+  }
+  throw new Error(message);
+}
+
 export function checkInput(input) {
   const body = normalizeInput(input);
   if (typeof body !== "string") {
-    throw new Error("input must be serializable");
+    return rejectInput("unserializable", "input must be serializable");
   }
   if (body.length > maxBodyLen) {
-    throw new Error("input body exceeds maximum length");
+    return rejectInput("oversized", "input body exceeds maximum length");
   }
   const lower = body.toLowerCase();
   for (const term of blockedTerms) {
     if (lower.includes(term.toLowerCase())) {
-      throw new Error(\`input contains blocked term: \${term}\`);
+      return rejectInput("denylisted", \`input contains blocked term: \${term}\`);
     }
   }
-  return input;
+  return allowObjectResponses ? { allow: true } : input;
 }
 
 if (process.argv.includes("--selftest")) {
-  checkInput(makeAllowedString());
-  let blocked = false;
-  try {
-    checkInput(blockedTerms[0]);
-  } catch (error) {
-    blocked = /blocked term/i.test(String(error && error.message));
+  const cleanInput = { body: makeAllowedString() };
+  const clean = checkInput(cleanInput);
+  if (allowObjectResponses) {
+    if (JSON.stringify(clean) !== JSON.stringify({ allow: true })) {
+      throw new Error("expected allow object contract");
+    }
+  } else if (clean !== cleanInput) {
+    throw new Error("expected clean input passthrough");
   }
-  if (!blocked) throw new Error("expected blocked term rejection");
 
-  let oversized = false;
-  try {
-    checkInput({ body: "x".repeat(maxBodyLen + 1) });
-  } catch (error) {
-    oversized = /maximum length/i.test(String(error && error.message));
+  const blockedInput = blockedTerms[0];
+  if (allowObjectResponses) {
+    const blocked = checkInput(blockedInput);
+    if (JSON.stringify(blocked) !== JSON.stringify({ allow: false, reason: "denylisted" })) {
+      throw new Error("expected denylisted input rejection result");
+    }
+  } else {
+    let blocked = false;
+    try {
+      checkInput(blockedInput);
+    } catch (error) {
+      blocked = /blocked term/i.test(String(error && error.message));
+    }
+    if (!blocked) throw new Error("expected blocked term rejection");
   }
-  if (!oversized) throw new Error("expected oversize rejection");
+
+  const oversizedInput = { body: "x".repeat(maxBodyLen + 1) };
+  if (allowObjectResponses) {
+    const oversized = checkInput(oversizedInput);
+    if (JSON.stringify(oversized) !== JSON.stringify({ allow: false, reason: "oversized" })) {
+      throw new Error("expected oversized input rejection result");
+    }
+  } else {
+    let oversized = false;
+    try {
+      checkInput(oversizedInput);
+    } catch (error) {
+      oversized = /maximum length/i.test(String(error && error.message));
+    }
+    if (!oversized) throw new Error("expected oversize rejection");
+  }
 }
 `;
 }
@@ -270,7 +304,10 @@ function redactJsonValue(value, seen = new WeakSet()) {
     }
     if (value instanceof Map) {
       return new Map(
-        Array.from(value.entries(), ([key, entryValue]) => [key, redactJsonValue(entryValue, seen)])
+        Array.from(value.entries(), ([key, entryValue]) => [
+          redactJsonValue(key, seen),
+          redactJsonValue(entryValue, seen),
+        ])
       );
     }
     if (value instanceof Set) {
@@ -333,6 +370,25 @@ if (process.argv.includes("--selftest")) {
   if (!(mapSample instanceof Map) || mapSample.get("note") !== redactionMarker) {
     throw new Error("expected Map output redaction");
   }
+  const mapStringKeySample = redactOutput(new Map([[blockedTerm, cleanText]]));
+  if (
+    !(mapStringKeySample instanceof Map) ||
+    JSON.stringify(Array.from(mapStringKeySample.entries())) !== JSON.stringify([[redactionMarker, cleanText]])
+  ) {
+    throw new Error("expected Map string-key redaction");
+  }
+  const mapObjectKeyInput = { note: blockedTerm };
+  const mapObjectKeySample = redactOutput(new Map([[mapObjectKeyInput, cleanText]]));
+  const mapObjectKeyEntries = Array.from(mapObjectKeySample.entries());
+  if (
+    !(mapObjectKeySample instanceof Map) ||
+    mapObjectKeyEntries.length !== 1 ||
+    mapObjectKeyEntries[0][0] === mapObjectKeyInput ||
+    JSON.stringify(mapObjectKeyEntries[0][0]) !== JSON.stringify({ note: redactionMarker }) ||
+    mapObjectKeyEntries[0][1] !== cleanText
+  ) {
+    throw new Error("expected Map object-key redaction");
+  }
   const setSample = redactOutput(new Set([blockedTerm]));
   if (!(setSample instanceof Set) || JSON.stringify(Array.from(setSample)) !== JSON.stringify([redactionMarker])) {
     throw new Error("expected Set output redaction");
@@ -387,10 +443,14 @@ export function guardrailWorkstream(options) {
     ? ["password", "secret"]
     : requireStringArray(options.blockedTerms, "blockedTerms");
   const maxBodyLen = options?.maxBodyLen == null ? 256 : options.maxBodyLen;
+  const inputContract = options?.inputContract == null ? "throw" : requireString(options.inputContract, "inputContract");
   if (Array.isArray(options?.blockedTerms) && options.blockedTerms.length === 0) {
     throw new Error("blockedTerms must be an array of non-empty strings");
   }
   if (mode === "input") {
+    if (inputContract !== "throw" && inputContract !== "allow-object") {
+      throw new Error('inputContract must be "throw" or "allow-object"');
+    }
     if (!Number.isInteger(maxBodyLen) || maxBodyLen <= 0) {
       throw new Error("maxBodyLen must be a positive integer");
     }
@@ -398,8 +458,10 @@ export function guardrailWorkstream(options) {
       id,
       signer,
       file,
-      requirements: `Export checkInput(input) that rejects blocked terms and oversized request bodies in ${file}.`,
-      source: renderInputGuardrailSource(blockedTerms, maxBodyLen),
+      requirements: inputContract === "allow-object"
+        ? `Export checkInput(input) that returns { allow: true } for clean input and { allow: false, reason } for blocked or oversized request bodies in ${file}.`
+        : `Export checkInput(input) that returns the original input when clean and throws on blocked terms or oversized request bodies in ${file}.`,
+      source: renderInputGuardrailSource(blockedTerms, maxBodyLen, inputContract),
       finding,
       dependencies,
       findingsKey: options?.findingsKey,
@@ -545,7 +607,34 @@ export function scorecardWorkstream(options) {
   });
 }
 
-function renderAuditSource() {
+function renderAuditSource(auditContract) {
+  if (auditContract === "directory-log") {
+    return `import { mkdirSync, mkdtempSync, readFileSync, appendFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+
+export function appendAudit(dir, entry) {
+  const file = path.join(dir, "audit.log");
+  mkdirSync(dir, { recursive: true });
+  appendFileSync(file, JSON.stringify(entry) + "\\n", "utf8");
+}
+
+if (process.argv.includes("--selftest")) {
+  const root = mkdtempSync(path.join(tmpdir(), "audit-selftest-"));
+  const payload = { path: "/echo", action: "append", status: 200, allow: true };
+  appendAudit(root, payload);
+  const lines = readFileSync(path.join(root, "audit.log"), "utf8").trim().split("\\n");
+  if (lines.length !== 1) throw new Error("expected one audit line");
+  const record = JSON.parse(lines[0]);
+  if (JSON.stringify(record) !== JSON.stringify(payload)) {
+    throw new Error("expected top-level audit payload");
+  }
+  if ("event" in record) {
+    throw new Error("expected audit payload without event wrapper");
+  }
+}
+`;
+  }
   return `import { mkdirSync, mkdtempSync, readFileSync, appendFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -580,13 +669,19 @@ export function auditWorkstream(options) {
   const signer = options?.signer == null ? "codex" : requireString(options.signer, "signer");
   const finding = requireString(options?.finding, "finding");
   const dependencies = options?.dependencies == null ? undefined : requireStringArray(options.dependencies, "dependencies");
+  const auditContract = options?.auditContract == null ? "file-event" : requireString(options.auditContract, "auditContract");
+  if (auditContract !== "file-event" && auditContract !== "directory-log") {
+    throw new Error('auditContract must be "file-event" or "directory-log"');
+  }
 
   return baseWorkstream({
     id,
     signer,
     file,
-    requirements: `Export appendAudit(file, event) that appends JSONL audit records in ${file}.`,
-    source: renderAuditSource(),
+    requirements: auditContract === "directory-log"
+      ? `Export appendAudit(dir, entry) that appends one JSONL audit record to path.join(dir, "audit.log") in ${file}.`
+      : `Export appendAudit(file, event) that appends JSONL audit records in ${file}.`,
+    source: renderAuditSource(auditContract),
     finding,
     dependencies,
     findingsKey: options?.findingsKey,
