@@ -182,3 +182,8 @@ export const servingBuildWorkstreams = [
   schemaWorkstream, handlerWorkstream, inputGuardWorkstream, outputGuardWorkstream,
   ratelimitWorkstream, authzWorkstream, auditWorkstream
 ];
+
+export const servingPattern = {
+  id: "serving",
+  workstreams: [...servingBuildWorkstreams, makeDesignWorkstream(servingBuildWorkstreams)]
+};
