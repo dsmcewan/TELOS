@@ -148,7 +148,8 @@ const outputGuardWorkstream = guardrailWorkstream({
   dependencies: ["handler"],
   file: "serving/guard-out.mjs",
   mode: "output",
-  blockedTerms: ["password", "123-45-6789"],
+  blockedTerms: ["password"],
+  blockedPatterns: [{ source: "\\b\\d{3}-\\d{2}-\\d{4}\\b" }],
   finding: "Output guardrail redacts blocked tokens and passes clean output unchanged."
 });
 const ratelimitWorkstream = localServingWorkstream({

@@ -718,6 +718,31 @@ async function main() {
   const blockedString = "This SECRET and 123-45-6789 must disappear.";
   assert.equal(outputGuardModule.redactOutput(blockedString), "This [REDACTED] and [REDACTED] must disappear.");
 
+  const outputGuardPatternRoot = renderAndRun(
+    guardrailWorkstream({
+      id: "output-guard-pattern-contract",
+      signer: "claude",
+      file: "generated/output-guard-pattern-contract.mjs",
+      mode: "output",
+      blockedTerms: ["secret"],
+      blockedPatterns: [{ source: "\\b\\d{3}-\\d{2}-\\d{4}\\b" }],
+      finding: "Output guardrail should redact SSN-shaped strings via validated regex patterns.",
+    }),
+    toyContext()
+  );
+  const outputGuardPatternModule = await importRendered(
+    outputGuardPatternRoot,
+    "generated/output-guard-pattern-contract.mjs"
+  );
+  assert.equal(
+    outputGuardPatternModule.redactOutput("visible 987-65-4321 visible"),
+    "visible [REDACTED] visible"
+  );
+  assert.deepEqual(outputGuardPatternModule.redactOutput({ ssn: "987-65-4321", note: "secret" }), {
+    ssn: "[REDACTED]",
+    note: "[REDACTED]",
+  });
+
   const outputGuardContainerRoot = renderAndRun(
     guardrailWorkstream({
       id: "output-guard-container-contract",
@@ -801,6 +826,10 @@ async function main() {
       this.note = note;
       this.nested = nested;
     }
+
+    describe() {
+      return `${this.note}:${this.nested.detail}`;
+    }
   }
   const instancePayload = new OutputEnvelope("SECRET token", {
     detail: "visible",
@@ -814,6 +843,35 @@ async function main() {
     detail: "visible",
     token: "[REDACTED]",
   });
+  assert.equal(
+    instanceRedacted.describe(),
+    "[REDACTED] [REDACTED]:visible",
+    "non-sensitive inherited methods remain usable on redacted instances"
+  );
+  class PrototypeDataEnvelope {
+    constructor(payload) {
+      this.payload = payload;
+    }
+  }
+  PrototypeDataEnvelope.prototype.note = "secret";
+  assert.throws(
+    () => outputGuardInstanceModule.redactOutput(new PrototypeDataEnvelope("visible")),
+    /inherited|prototype|unsupported/i
+  );
+  const inheritedDataPrototype = Object.create(Object.prototype, {
+    note: {
+      value: "secret",
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    },
+  });
+  const inheritedDataPayload = Object.create(inheritedDataPrototype);
+  inheritedDataPayload.status = 200;
+  assert.throws(
+    () => outputGuardInstanceModule.redactOutput(inheritedDataPayload),
+    /inherited|prototype|unsupported/i
+  );
   const outputGuardAccessorRoot = renderAndRun(
     guardrailWorkstream({
       id: "output-guard-accessor-contract",
@@ -978,6 +1036,31 @@ async function main() {
   assert.deepEqual(
     servingInputGuardModule.checkInput({ path: "/echo", method: "POST", body: 0n }),
     { allow: false, reason: "unserializable" }
+  );
+
+  const servingOutputGuardWorkstream = servingBuildWorkstreams.find((workstream) => workstream.id === "output-guardrail");
+  assert.ok(servingOutputGuardWorkstream, "serving output guard workstream exists");
+  const servingOutputGuardRoot = renderAndRun(servingOutputGuardWorkstream);
+  const servingOutputGuardModule = await importRendered(servingOutputGuardRoot, "serving/guard-out.mjs");
+  assert.deepEqual(
+    servingOutputGuardModule.redactOutput({
+      status: 200,
+      body: { note: "password", ssn: "987-65-4321" },
+    }),
+    {
+      status: 200,
+      body: { note: "[REDACTED]", ssn: "[REDACTED]" },
+    }
+  );
+  assert.equal(
+    JSON.stringify(
+      servingOutputGuardModule.redactOutput({
+        status: 200,
+        body: { ssn: "987-65-4321" },
+      })
+    ).includes("987-65-4321"),
+    false,
+    "serving output guard must redact arbitrary SSN-shaped values"
   );
 
   const servingAuditWorkstream = servingBuildWorkstreams.find((workstream) => workstream.id === "audit");

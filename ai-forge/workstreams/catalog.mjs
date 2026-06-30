@@ -18,6 +18,34 @@ function requireStringArray(value, name) {
   return value;
 }
 
+function requireBlockedPatterns(value, name) {
+  if (!Array.isArray(value)) {
+    throw new Error(`${name} must be an array of pattern objects`);
+  }
+  return value.map((pattern, index) => {
+    if (!pattern || typeof pattern !== "object" || Array.isArray(pattern)) {
+      throw new Error(`${name}[${index}] must be an object`);
+    }
+    const source = requireString(pattern.source, `${name}[${index}].source`);
+    const flags = pattern.flags == null ? "" : requireString(pattern.flags, `${name}[${index}].flags`);
+    if (!/^[dimsuv]*$/.test(flags)) {
+      throw new Error(`${name}[${index}].flags must contain only d, i, m, s, u, or v`);
+    }
+    if (new Set(flags).size !== flags.length) {
+      throw new Error(`${name}[${index}].flags must not contain duplicate flags`);
+    }
+    if (flags.includes("u") && flags.includes("v")) {
+      throw new Error(`${name}[${index}].flags must not combine u and v`);
+    }
+    try {
+      new RegExp(source, flags);
+    } catch (error) {
+      throw new Error(`${name}[${index}] is not a valid regular expression: ${String(error && error.message)}`);
+    }
+    return { source, flags };
+  });
+}
+
 function normalizeRequirements(value) {
   if (typeof value === "string" && value.trim() !== "") return value;
   if (Array.isArray(value) && value.every((item) => typeof item === "string" && item.trim() !== "")) {
@@ -204,10 +232,12 @@ if (process.argv.includes("--selftest")) {
 `;
 }
 
-function renderOutputGuardrailSource(blockedTerms) {
+function renderOutputGuardrailSource(blockedTerms, blockedPatterns) {
   const thresholdsJsonLiteral = JSON.stringify(JSON.stringify(blockedTerms));
+  const blockedPatternsJsonLiteral = JSON.stringify(JSON.stringify(blockedPatterns));
   const escapeRegExpPatternSourceLiteral = JSON.stringify("[.*+?^${}()|[\\]\\\\]");
   return `const blockedTerms = JSON.parse(${thresholdsJsonLiteral});
+const blockedPatterns = JSON.parse(${blockedPatternsJsonLiteral});
 const preferredRedactionMarker = "[REDACTED]";
 const escapeRegExpPattern = new RegExp(${escapeRegExpPatternSourceLiteral}, "g");
 
@@ -242,9 +272,13 @@ function buildBlockedTermPatterns(term) {
 }
 
 const blockedTermPatterns = blockedTerms.map((term) => buildBlockedTermPatterns(term));
+const blockedPatternRegexes = blockedPatterns.map(({ source, flags = "" }) => {
+  const mergedFlags = Array.from(new Set(\`g\${flags}\`)).join("");
+  return new RegExp(source, mergedFlags);
+});
 
 function containsBlockedTerm(value) {
-  return blockedTermPatterns.some((pattern) => {
+  return [...blockedTermPatterns, ...blockedPatternRegexes].some((pattern) => {
     pattern.lastIndex = 0;
     return pattern.test(value);
   });
@@ -261,8 +295,13 @@ const redactionMarker = makeRedactionMarker();
 
 function redactStringValue(value) {
   let redacted = value;
-  for (const term of blockedTerms) {
-    redacted = redacted.replace(buildBlockedTermPatterns(term), redactionMarker);
+  for (const pattern of blockedTermPatterns) {
+    pattern.lastIndex = 0;
+    redacted = redacted.replace(pattern, redactionMarker);
+  }
+  for (const pattern of blockedPatternRegexes) {
+    pattern.lastIndex = 0;
+    redacted = redacted.replace(pattern, redactionMarker);
   }
   return redacted;
 }
@@ -287,7 +326,7 @@ function assertNoOwnAccessors(value) {
   }
 }
 
-function assertNoInheritedAccessors(value, stopPrototype = Object.prototype) {
+function assertSafeInheritedPrototypeProperties(value, stopPrototype = Object.prototype) {
   let prototype = Object.getPrototypeOf(value);
   while (prototype && prototype !== stopPrototype) {
     for (const key of Reflect.ownKeys(prototype)) {
@@ -296,13 +335,16 @@ function assertNoInheritedAccessors(value, stopPrototype = Object.prototype) {
       if (typeof descriptor.get === "function" || typeof descriptor.set === "function") {
         throw new Error(\`unsupported inherited accessor property on output prototype: \${String(key)}\`);
       }
+      if (Object.prototype.hasOwnProperty.call(descriptor, "value") && typeof descriptor.value !== "function") {
+        throw new Error(\`unsupported inherited data property on output prototype: \${String(key)}\`);
+      }
     }
     prototype = Object.getPrototypeOf(prototype);
   }
 }
 
 function cloneRedactedObject(value, seen) {
-  assertNoInheritedAccessors(value);
+  assertSafeInheritedPrototypeProperties(value);
   const clone = Object.create(Object.getPrototypeOf(value));
   for (const key of Reflect.ownKeys(value)) {
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
@@ -352,11 +394,11 @@ function redactJsonValue(value, seen = new WeakSet()) {
   try {
     assertNoOwnAccessors(value);
     if (Array.isArray(value)) {
-      assertNoInheritedAccessors(value, Array.prototype);
+      assertSafeInheritedPrototypeProperties(value, Array.prototype);
       return cloneRedactedArray(value, seen);
     }
     if (value instanceof Map) {
-      assertNoInheritedAccessors(value, Map.prototype);
+      assertSafeInheritedPrototypeProperties(value, Map.prototype);
       return new Map(
         Array.from(Map.prototype.entries.call(value), ([key, entryValue]) => [
           redactJsonValue(key, seen),
@@ -365,13 +407,13 @@ function redactJsonValue(value, seen = new WeakSet()) {
       );
     }
     if (value instanceof Set) {
-      assertNoInheritedAccessors(value, Set.prototype);
+      assertSafeInheritedPrototypeProperties(value, Set.prototype);
       return new Set(Array.from(Set.prototype.values.call(value), (entryValue) => redactJsonValue(entryValue, seen)));
     }
     if (isPlainObject(value)) {
       return cloneRedactedObject(value, seen);
     }
-    assertNoInheritedAccessors(value);
+    assertSafeInheritedPrototypeProperties(value);
     if (isOrdinaryObject(value)) {
       return cloneRedactedObject(value, seen);
     }
@@ -497,6 +539,9 @@ export function guardrailWorkstream(options) {
   const blockedTerms = options?.blockedTerms == null
     ? ["password", "secret"]
     : requireStringArray(options.blockedTerms, "blockedTerms");
+  const blockedPatterns = options?.blockedPatterns == null
+    ? []
+    : requireBlockedPatterns(options.blockedPatterns, "blockedPatterns");
   const maxBodyLen = options?.maxBodyLen == null ? 256 : options.maxBodyLen;
   const inputContract = options?.inputContract == null ? "throw" : requireString(options.inputContract, "inputContract");
   const inputScope = options?.inputScope == null ? "input" : requireString(options.inputScope, "inputScope");
@@ -504,6 +549,9 @@ export function guardrailWorkstream(options) {
     throw new Error("blockedTerms must be an array of non-empty strings");
   }
   if (mode === "input") {
+    if (blockedPatterns.length > 0) {
+      throw new Error('blockedPatterns are only supported for mode "output"');
+    }
     if (inputContract !== "throw" && inputContract !== "allow-object") {
       throw new Error('inputContract must be "throw" or "allow-object"');
     }
@@ -534,7 +582,7 @@ export function guardrailWorkstream(options) {
       signer,
       file,
       requirements: `Export redactOutput(output) that redacts blocked terms in ${file}.`,
-      source: renderOutputGuardrailSource(blockedTerms),
+      source: renderOutputGuardrailSource(blockedTerms, blockedPatterns),
       finding,
       dependencies,
       findingsKey: options?.findingsKey,
