@@ -1,0 +1,48 @@
+{
+  "converged": true,
+  "merge_status": "ready",
+  "gate_status": "pass",
+  "workstreams": [
+    {
+      "id": "sign",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "plan",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "provenance",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "gate",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "council",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "ledger",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "breakout",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "design",
+      "converged": true,
+      "finalStatus": "meets"
+    }
+  ],
+  "generated_at_note": "deterministic; no timestamps"
+}

@@ -127,6 +127,9 @@ Phase A is complete: `forge({ pattern: ragPattern, ctx: ragContext(), ... })` re
 Phase B is complete: every forge run now also emits a gate-verified `DESIGN.md` via a
 generic `design` workstream — the architecture design is a first-class, fail-closed
 artifact checked against the plan + ledger + built tree (8 workstreams total; all converge).
+Phase C is complete: the catalog now includes the self-similar **TELOS pattern** — ai-forge
+forges a TELOS-like trust system (7 spine-wrapping components + design; 8 workstreams converge;
+see `docs/runs/ai-forge-telos/`).
 
 ## SaaS Forge (`saas-forge/`)
 

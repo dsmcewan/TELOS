@@ -57,7 +57,7 @@ Each phase is an independent spec → plan → build cycle. Build order A → B 
 - **Depends on:** A (the plan stage may already emit a partial design — B makes it
   first-class and independently checkable).
 
-### Phase C — Library breadth (the TELOS pattern)  🟡 in progress
+### Phase C — Library breadth (the TELOS pattern)  ✅ done
 - **Objective:** grow the catalog; each pattern is mostly **data + fact-checks**.
 - **This phase = the TELOS pattern** (self-similar / meta — the original "TELOS-style
   systems" ask): ai-forge forges a working TELOS-like trust system — 7 forged
@@ -74,16 +74,18 @@ Each phase is an independent spec → plan → build cycle. Build order A → B 
 | --- | --- | --- | --- | --- | --- |
 | A — substrate + RAG | ✅ done | [phase-a-design](specs/2026-06-29-ai-forge-phase-a-design.md) | — | [ai-forge-rag](runs/ai-forge-rag/) | all 7 workstreams converged; PRs #21–28 |
 | B — design stage | ✅ done | [phase-b-design](specs/2026-06-29-ai-forge-phase-b-design.md) | — | [ai-forge-rag](runs/ai-forge-rag/) | design workstream → DESIGN.md verified vs plan+ledger+build; PRs #33–35 |
-| C — TELOS pattern | 🟡 in progress | [phase-c-design](specs/2026-06-29-ai-forge-phase-c-design.md) | — | — | spec written + approved; next: `writing-plans` |
+| C — TELOS pattern | ✅ done | [phase-c-design](specs/2026-06-29-ai-forge-phase-c-design.md) | — | [ai-forge-telos](runs/ai-forge-telos/) | 8 workstreams converge (7 spine-wrapping + design); PRs #38–43 |
 
 Legend: ⬜ not started · 🟡 in progress · ✅ done
 
 ## Next action
 
-**Phase C spec is written + approved** (`docs/specs/2026-06-29-ai-forge-phase-c-design.md`):
-the TELOS pattern — ai-forge forges a TELOS-like trust system (7 spine-wrapping
-components + the generic design workstream, each with a genuine executable check).
-After user review → `superpowers:writing-plans` → build.
+**Phase C is complete.** The TELOS pattern (`ai-forge/patterns/telos.mjs`) converges:
+8 workstreams (7 spine-wrapping components + design), all adversarial breakouts pass,
+gate certifies `merge_status: ready`. Run evidence at `docs/runs/ai-forge-telos/`.
+
+Future work (deferred to Phase C.2+): multi-agent pattern, eval-harness pattern,
+serving+guardrails pattern, composable-workstream-library generalization (issues #30/#37).
 
 ## Decisions log
 
@@ -101,6 +103,10 @@ After user review → `superpowers:writing-plans` → build.
 - **2026-06-29 — Phase B built.** Design workstream → `DESIGN.md` verified vs
   plan + ledger + built tree; RAG pattern now has 8 workstreams (7 build + design),
   all converged; PRs #33–35.
+- **2026-06-29 — Phase C built.** The TELOS pattern → ai-forge forges a TELOS-like
+  trust system; 8 workstreams converge (7 spine-wrapping components: sign · plan ·
+  provenance · gate · council · ledger · breakout + the generic design workstream);
+  PRs #38–43.
 
 ## Out of scope (YAGNI — revisit only if needed)
 
