@@ -213,6 +213,42 @@ async function main() {
   assert.throws(
     () =>
       moduleWorkstream({
+        id: "bad-windows-drive-relative-parent",
+        signer: "codex",
+        file: "C:../x.mjs",
+        requirements: "bad",
+        source: "export {};",
+        finding: "bad",
+      }),
+    /relative/
+  );
+  assert.throws(
+    () =>
+      moduleWorkstream({
+        id: "bad-windows-drive-relative-file",
+        signer: "codex",
+        file: "C:foo.mjs",
+        requirements: "bad",
+        source: "export {};",
+        finding: "bad",
+      }),
+    /relative/
+  );
+  assert.throws(
+    () =>
+      moduleWorkstream({
+        id: "bad-drive-qualified-segment",
+        signer: "codex",
+        file: "a:b/c.mjs",
+        requirements: "bad",
+        source: "export {};",
+        finding: "bad",
+      }),
+    /relative/
+  );
+  assert.throws(
+    () =>
+      moduleWorkstream({
         id: "bad-unc-backslash",
         signer: "codex",
         file: "\\\\server\\share\\x.mjs",
@@ -431,6 +467,45 @@ async function main() {
   assert.equal(inputGuardThrowModule.checkInput(cleanInput), cleanInput);
   assert.throws(() => inputGuardThrowModule.checkInput({ body: "secret" }), /blocked term/i);
   assert.throws(() => inputGuardThrowModule.checkInput({ body: "x".repeat(128) }), /maximum length/i);
+  const throwCycle = {};
+  throwCycle.self = throwCycle;
+  assert.throws(
+    () => inputGuardThrowModule.checkInput({ body: throwCycle }),
+    /serializable|circular|bigint/i
+  );
+  assert.throws(
+    () => inputGuardThrowModule.checkInput({ body: { count: 1n } }),
+    /serializable|bigint/i
+  );
+
+  const inputGuardAllowObjectRoot = renderAndRun(
+    guardrailWorkstream({
+      id: "input-guard-allow-object-body-contract",
+      signer: "grok",
+      file: "generated/input-guard-allow-object-body-contract.mjs",
+      mode: "input",
+      inputContract: "allow-object",
+      inputScope: "body",
+      blockedTerms: ["secret"],
+      maxBodyLen: 64,
+      finding: "Input guardrail allow-object contract should fail closed on unserializable bodies.",
+    }),
+    toyContext()
+  );
+  const inputGuardAllowObjectModule = await importRendered(
+    inputGuardAllowObjectRoot,
+    "generated/input-guard-allow-object-body-contract.mjs"
+  );
+  const allowObjectCycle = {};
+  allowObjectCycle.self = allowObjectCycle;
+  assert.deepEqual(
+    inputGuardAllowObjectModule.checkInput({ body: allowObjectCycle }),
+    { allow: false, reason: "unserializable" }
+  );
+  assert.deepEqual(
+    inputGuardAllowObjectModule.checkInput({ body: { count: 1n } }),
+    { allow: false, reason: "unserializable" }
+  );
 
   const scorecardRoot = renderAndRun(
     scorecardWorkstream({
@@ -652,6 +727,55 @@ async function main() {
   assert.throws(
     () => outputGuardAccessorModule.redactOutput(new InheritedAccessorEnvelope("visible")),
     /inherited|prototype|accessor/i
+  );
+  let mapEntriesGetterReads = 0;
+  const mapAccessorPayload = new Map([["note", "secret"]]);
+  Object.defineProperty(mapAccessorPayload, "entries", {
+    configurable: true,
+    get() {
+      mapEntriesGetterReads += 1;
+      return Map.prototype.entries;
+    },
+  });
+  assert.throws(
+    () => outputGuardAccessorModule.redactOutput(mapAccessorPayload),
+    /accessor|unsupported property/i
+  );
+  assert.equal(mapEntriesGetterReads, 0, "Map entries accessor getter must not be invoked during redaction");
+  let setValuesGetterReads = 0;
+  const setAccessorPayload = new Set(["secret"]);
+  Object.defineProperty(setAccessorPayload, "values", {
+    configurable: true,
+    get() {
+      setValuesGetterReads += 1;
+      return Set.prototype.values;
+    },
+  });
+  assert.throws(
+    () => outputGuardAccessorModule.redactOutput(setAccessorPayload),
+    /accessor|unsupported property/i
+  );
+  assert.equal(setValuesGetterReads, 0, "Set values accessor getter must not be invoked during redaction");
+  let toStringTagGetterReads = 0;
+  const inheritedToStringTagPrototype = Object.create(Object.prototype, {
+    [Symbol.toStringTag]: {
+      configurable: true,
+      get() {
+        toStringTagGetterReads += 1;
+        return "Sensitive";
+      },
+    },
+  });
+  const inheritedToStringTagPayload = Object.create(inheritedToStringTagPrototype);
+  inheritedToStringTagPayload.note = "secret";
+  assert.throws(
+    () => outputGuardAccessorModule.redactOutput(inheritedToStringTagPayload),
+    /inherited|prototype|accessor|unsupported/i
+  );
+  assert.equal(
+    toStringTagGetterReads,
+    0,
+    "Inherited Symbol.toStringTag getter must not be invoked during redaction"
   );
 
   const servingInputGuardWorkstream = servingBuildWorkstreams.find((workstream) => workstream.id === "input-guardrail");

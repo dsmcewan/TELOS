@@ -37,7 +37,11 @@ function requireRelativeFile(file) {
     throw new Error("file must be relative to the project root");
   }
   const segments = normalized.split("/");
-  if (normalized === "." || normalized === ".." || segments.some((segment) => segment === "..")) {
+  if (
+    normalized === "." ||
+    normalized === ".." ||
+    segments.some((segment) => segment === ".." || /^[A-Za-z]:/.test(segment))
+  ) {
     throw new Error("file must be relative to the project root");
   }
   return normalized;
@@ -106,14 +110,22 @@ function makeAllowedString(maxLen = maxBodyLen) {
 }
 
 function normalizeInput(input) {
+  function stringifyInput(value) {
+    try {
+      return { ok: true, body: JSON.stringify(value) };
+    } catch {
+      return { ok: false };
+    }
+  }
+
   if (inputScope === "body") {
     const body = input && typeof input === "object" && Object.hasOwn(input, "body")
       ? input.body
       : {};
-    return JSON.stringify(body || {});
+    return stringifyInput(body || {});
   }
-  if (typeof input === "string") return input;
-  return JSON.stringify(input);
+  if (typeof input === "string") return { ok: true, body: input };
+  return stringifyInput(input);
 }
 
 function rejectInput(reason, message) {
@@ -124,10 +136,11 @@ function rejectInput(reason, message) {
 }
 
 export function checkInput(input) {
-  const body = normalizeInput(input);
-  if (typeof body !== "string") {
+  const normalized = normalizeInput(input);
+  if (!normalized.ok) {
     return rejectInput("unserializable", "input must be serializable");
   }
+  const body = normalized.body;
   if (body.length > maxBodyLen) {
     return rejectInput("oversized", "input body exceeds maximum length");
   }
@@ -245,9 +258,19 @@ function isOrdinaryObject(value) {
   return Object.prototype.toString.call(value) === "[object Object]";
 }
 
-function assertNoInheritedAccessors(value) {
+function assertNoOwnAccessors(value) {
+  for (const key of Reflect.ownKeys(value)) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor) continue;
+    if (typeof descriptor.get === "function" || typeof descriptor.set === "function") {
+      throw new Error(\`unsupported accessor property on output: \${String(key)}\`);
+    }
+  }
+}
+
+function assertNoInheritedAccessors(value, stopPrototype = Object.prototype) {
   let prototype = Object.getPrototypeOf(value);
-  while (prototype && prototype !== Object.prototype) {
+  while (prototype && prototype !== stopPrototype) {
     for (const key of Reflect.ownKeys(prototype)) {
       const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
       if (!descriptor) continue;
@@ -308,28 +331,31 @@ function redactJsonValue(value, seen = new WeakSet()) {
   }
   seen.add(value);
   try {
+    assertNoOwnAccessors(value);
     if (Array.isArray(value)) {
       return cloneRedactedArray(value, seen);
     }
     if (value instanceof Map) {
+      assertNoInheritedAccessors(value, Map.prototype);
       return new Map(
-        Array.from(value.entries(), ([key, entryValue]) => [
+        Array.from(Map.prototype.entries.call(value), ([key, entryValue]) => [
           redactJsonValue(key, seen),
           redactJsonValue(entryValue, seen),
         ])
       );
     }
     if (value instanceof Set) {
-      return new Set(Array.from(value.values(), (entryValue) => redactJsonValue(entryValue, seen)));
+      assertNoInheritedAccessors(value, Set.prototype);
+      return new Set(Array.from(Set.prototype.values.call(value), (entryValue) => redactJsonValue(entryValue, seen)));
     }
     if (isPlainObject(value)) {
       return cloneRedactedObject(value, seen);
     }
+    assertNoInheritedAccessors(value);
     if (isOrdinaryObject(value)) {
       return cloneRedactedObject(value, seen);
     }
-    const tag = Object.prototype.toString.call(value);
-    throw new Error(\`unsupported output container type: \${tag}\`);
+    throw new Error("unsupported output container type");
   } finally {
     seen.delete(value);
   }
