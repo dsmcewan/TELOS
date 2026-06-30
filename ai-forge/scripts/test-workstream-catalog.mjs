@@ -349,6 +349,18 @@ async function main() {
     }
   );
 
+  renderAndRun(
+    guardrailWorkstream({
+      id: "output-guard-unicode-case-selftest",
+      signer: "claude",
+      file: "generated/output-guard-unicode-case-selftest.mjs",
+      mode: "output",
+      blockedTerms: ["ß"],
+      finding: "Output guardrail selftest should support Unicode blocked terms safely.",
+    }),
+    toyContext()
+  );
+
   const scorecardRoot = renderAndRun(
     scorecardWorkstream({
       id: "scorecard-contract",
@@ -369,6 +381,27 @@ async function main() {
     },
   });
   assert.throws(() => scorecardModule.assertThresholds(belowThreshold), /below threshold/i);
+
+  const protoThresholdRoot = renderAndRun(
+    scorecardWorkstream({
+      id: "scorecard-proto-threshold-contract",
+      signer: "agy",
+      file: "generated/scorecard-proto-threshold-contract.mjs",
+      thresholds: JSON.parse('{"__proto__":0.5}'),
+      finding: "Scorecard should preserve unsafe-looking threshold keys safely.",
+    }),
+    toyContext()
+  );
+  const protoThresholdModule = await importRendered(
+    protoThresholdRoot,
+    "generated/scorecard-proto-threshold-contract.mjs"
+  );
+  const protoThresholdScores = JSON.parse('{"__proto__":0.75}');
+  assert.deepEqual(protoThresholdModule.computeScorecard(protoThresholdScores), {
+    scores: protoThresholdScores,
+    passed: JSON.parse('{"__proto__":true}'),
+  });
+  assert.equal(protoThresholdModule.assertThresholds(protoThresholdScores), true);
 
   const outputGuardRoot = renderAndRun(
     guardrailWorkstream({
@@ -391,6 +424,28 @@ async function main() {
   });
   const blockedString = "This SECRET and 123-45-6789 must disappear.";
   assert.equal(outputGuardModule.redactOutput(blockedString), "This [REDACTED] and [REDACTED] must disappear.");
+
+  const outputGuardContainerRoot = renderAndRun(
+    guardrailWorkstream({
+      id: "output-guard-container-contract",
+      signer: "claude",
+      file: "generated/output-guard-container-contract.mjs",
+      mode: "output",
+      blockedTerms: ["secret"],
+      finding: "Output guardrail should redact Map and Set containers.",
+    }),
+    toyContext()
+  );
+  const outputGuardContainerModule = await importRendered(
+    outputGuardContainerRoot,
+    "generated/output-guard-container-contract.mjs"
+  );
+  const redactedMap = outputGuardContainerModule.redactOutput(new Map([["k", "secret"]]));
+  assert.ok(redactedMap instanceof Map, "redacted map preserves Map type");
+  assert.equal(redactedMap.get("k"), "[REDACTED]");
+  const redactedSet = outputGuardContainerModule.redactOutput(new Set(["secret"]));
+  assert.ok(redactedSet instanceof Set, "redacted set preserves Set type");
+  assert.deepEqual([...redactedSet], ["[REDACTED]"]);
 
   const outputGuardKeyRoot = renderAndRun(
     guardrailWorkstream({

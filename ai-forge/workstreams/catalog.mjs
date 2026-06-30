@@ -146,7 +146,8 @@ if (process.argv.includes("--selftest")) {
 }
 
 function renderOutputGuardrailSource(blockedTerms) {
-  return `const blockedTerms = ${JSON.stringify(blockedTerms)};
+  const thresholdsJsonLiteral = JSON.stringify(JSON.stringify(blockedTerms));
+  return `const blockedTerms = JSON.parse(${thresholdsJsonLiteral});
 const redactionMarker = "[REDACTED]";
 
 function makeAllowedString() {
@@ -210,13 +211,22 @@ function redactJsonValue(value, seen = new WeakSet()) {
     if (Array.isArray(value)) {
       return value.map((item) => redactJsonValue(item, seen));
     }
+    if (value instanceof Map) {
+      return new Map(
+        Array.from(value.entries(), ([key, entryValue]) => [key, redactJsonValue(entryValue, seen)])
+      );
+    }
+    if (value instanceof Set) {
+      return new Set(Array.from(value.values(), (entryValue) => redactJsonValue(entryValue, seen)));
+    }
     if (isPlainObject(value)) {
       return cloneRedactedObject(value, seen);
     }
     if (isOrdinaryObject(value)) {
       return cloneRedactedObject(value, seen);
     }
-    return value;
+    const tag = Object.prototype.toString.call(value);
+    throw new Error(\`unsupported output container type: \${tag}\`);
   } finally {
     seen.delete(value);
   }
@@ -238,14 +248,14 @@ if (process.argv.includes("--selftest")) {
   }
   const samplePrefix = makeAllowedString();
   const sampleSuffix = makeAllowedString();
-  const sampleInput = samplePrefix + blockedTerm.toUpperCase() + sampleSuffix;
+  const sampleInput = samplePrefix + blockedTerm + sampleSuffix;
   const sample = redactOutput(sampleInput);
   if (sample !== samplePrefix + redactionMarker + sampleSuffix) {
     throw new Error("expected secret to be redacted");
   }
   const objectSample = redactOutput({
     note: samplePrefix + blockedTerm,
-    nested: { value: blockedTerm.toUpperCase() + sampleSuffix },
+    nested: { value: blockedTerm + sampleSuffix },
   });
   if (
     JSON.stringify(objectSample) !== JSON.stringify({
@@ -262,13 +272,21 @@ if (process.argv.includes("--selftest")) {
   if (keyedSample.password !== undefined || keyedSample.nested.token !== redactionMarker || keyedSample.list[0] !== redactionMarker) {
     throw new Error("expected string leaf values to be redacted without changing container structure");
   }
+  const mapSample = redactOutput(new Map([["note", blockedTerm]]));
+  if (!(mapSample instanceof Map) || mapSample.get("note") !== redactionMarker) {
+    throw new Error("expected Map output redaction");
+  }
+  const setSample = redactOutput(new Set([blockedTerm]));
+  if (!(setSample instanceof Set) || JSON.stringify(Array.from(setSample)) !== JSON.stringify([redactionMarker])) {
+    throw new Error("expected Set output redaction");
+  }
   class Envelope {
     constructor(note, nested) {
       this.note = note;
       this.nested = nested;
     }
   }
-  const instanceSample = redactOutput(new Envelope(samplePrefix + blockedTerm, { token: blockedTerm.toUpperCase() }));
+  const instanceSample = redactOutput(new Envelope(samplePrefix + blockedTerm, { token: blockedTerm }));
   if (!(instanceSample instanceof Envelope) || instanceSample.note !== samplePrefix + redactionMarker || instanceSample.nested.token !== redactionMarker) {
     throw new Error("expected object instances to preserve prototype and redact string leaf values");
   }
@@ -352,7 +370,16 @@ function requireThresholds(thresholds) {
 }
 
 function renderScorecardSource(thresholds) {
-  return `const thresholds = ${JSON.stringify(thresholds)};
+  const thresholdsJsonLiteral = JSON.stringify(JSON.stringify(thresholds));
+  const passingScoresJsonLiteral = JSON.stringify(
+    JSON.stringify(
+      Object.fromEntries(
+        Object.entries(thresholds).map(([key, value]) => [key, Math.min(1, value + (1 - value) / 2)])
+      )
+    )
+  );
+
+  return `const thresholds = JSON.parse(${thresholdsJsonLiteral});
 const thresholdKeys = Object.keys(thresholds);
 
 function validateScores(scores) {
@@ -399,7 +426,7 @@ export function assertThresholds(scores) {
 }
 
 if (process.argv.includes("--selftest")) {
-  const passingScores = ${JSON.stringify(Object.fromEntries(Object.entries(thresholds).map(([key, value]) => [key, Math.min(1, value + (1 - value) / 2)])))};
+  const passingScores = JSON.parse(${passingScoresJsonLiteral});
   const result = computeScorecard(passingScores);
   for (const key of thresholdKeys) {
     if (result.passed[key] !== true) {
