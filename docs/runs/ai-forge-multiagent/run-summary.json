@@ -1,0 +1,48 @@
+{
+  "converged": true,
+  "merge_status": "ready",
+  "gate_status": "pass",
+  "workstreams": [
+    {
+      "id": "roles",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "protocol",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "router",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "blackboard",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "orchestrator",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "aggregator",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "termination",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "design",
+      "converged": true,
+      "finalStatus": "meets"
+    }
+  ],
+  "generated_at_note": "deterministic; no timestamps"
+}
