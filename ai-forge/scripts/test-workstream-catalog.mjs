@@ -670,6 +670,16 @@ async function main() {
     servingInputGuardModule.checkInput({ path: "/echo", method: "POST", body: { q: "x".repeat(512) } }),
     { allow: false, reason: "oversized" }
   );
+  assert.deepEqual(
+    servingInputGuardModule.checkInput({ path: "/<script>", method: "POST", body: { ok: true } }),
+    { allow: true },
+    "serving input guard only inspects the request body for denylisted terms"
+  );
+  assert.deepEqual(
+    servingInputGuardModule.checkInput({ path: "/" + "x".repeat(512), method: "POST", body: { ok: true } }),
+    { allow: true },
+    "serving input guard only measures the request body length"
+  );
 
   const servingAuditWorkstream = servingBuildWorkstreams.find((workstream) => workstream.id === "audit");
   assert.ok(servingAuditWorkstream, "serving audit workstream exists");

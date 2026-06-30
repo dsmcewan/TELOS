@@ -84,11 +84,12 @@ export function moduleWorkstream(options) {
   });
 }
 
-function renderInputGuardrailSource(blockedTerms, maxBodyLen, inputContract) {
+function renderInputGuardrailSource(blockedTerms, maxBodyLen, inputContract, inputScope) {
   const allowObjectResponses = inputContract === "allow-object";
   return `const blockedTerms = ${JSON.stringify(blockedTerms)};
 const maxBodyLen = ${JSON.stringify(maxBodyLen)};
 const allowObjectResponses = ${JSON.stringify(allowObjectResponses)};
+const inputScope = ${JSON.stringify(inputScope)};
 
 function makeAllowedString(maxLen = maxBodyLen) {
   const blockedCorpus = blockedTerms.join("");
@@ -105,6 +106,12 @@ function makeAllowedString(maxLen = maxBodyLen) {
 }
 
 function normalizeInput(input) {
+  if (inputScope === "body") {
+    const body = input && typeof input === "object" && Object.hasOwn(input, "body")
+      ? input.body
+      : {};
+    return JSON.stringify(body || {});
+  }
   if (typeof input === "string") return input;
   return JSON.stringify(input);
 }
@@ -144,7 +151,7 @@ if (process.argv.includes("--selftest")) {
     throw new Error("expected clean input passthrough");
   }
 
-  const blockedInput = blockedTerms[0];
+  const blockedInput = inputScope === "body" ? { body: blockedTerms[0] } : blockedTerms[0];
   if (allowObjectResponses) {
     const blocked = checkInput(blockedInput);
     if (JSON.stringify(blocked) !== JSON.stringify({ allow: false, reason: "denylisted" })) {
@@ -160,7 +167,9 @@ if (process.argv.includes("--selftest")) {
     if (!blocked) throw new Error("expected blocked term rejection");
   }
 
-  const oversizedInput = { body: "x".repeat(maxBodyLen + 1) };
+  const oversizedInput = inputScope === "body"
+    ? { body: "x".repeat(maxBodyLen + 1) }
+    : { body: "x".repeat(maxBodyLen + 1) };
   if (allowObjectResponses) {
     const oversized = checkInput(oversizedInput);
     if (JSON.stringify(oversized) !== JSON.stringify({ allow: false, reason: "oversized" })) {
@@ -444,6 +453,7 @@ export function guardrailWorkstream(options) {
     : requireStringArray(options.blockedTerms, "blockedTerms");
   const maxBodyLen = options?.maxBodyLen == null ? 256 : options.maxBodyLen;
   const inputContract = options?.inputContract == null ? "throw" : requireString(options.inputContract, "inputContract");
+  const inputScope = options?.inputScope == null ? "input" : requireString(options.inputScope, "inputScope");
   if (Array.isArray(options?.blockedTerms) && options.blockedTerms.length === 0) {
     throw new Error("blockedTerms must be an array of non-empty strings");
   }
@@ -451,17 +461,21 @@ export function guardrailWorkstream(options) {
     if (inputContract !== "throw" && inputContract !== "allow-object") {
       throw new Error('inputContract must be "throw" or "allow-object"');
     }
+    if (inputScope !== "input" && inputScope !== "body") {
+      throw new Error('inputScope must be "input" or "body"');
+    }
     if (!Number.isInteger(maxBodyLen) || maxBodyLen <= 0) {
       throw new Error("maxBodyLen must be a positive integer");
     }
+    const scopeDescription = inputScope === "body" ? "request body" : "input";
     return baseWorkstream({
       id,
       signer,
       file,
       requirements: inputContract === "allow-object"
-        ? `Export checkInput(input) that returns { allow: true } for clean input and { allow: false, reason } for blocked or oversized request bodies in ${file}.`
-        : `Export checkInput(input) that returns the original input when clean and throws on blocked terms or oversized request bodies in ${file}.`,
-      source: renderInputGuardrailSource(blockedTerms, maxBodyLen, inputContract),
+        ? `Export checkInput(input) that returns { allow: true } for clean ${scopeDescription} and { allow: false, reason } for blocked or oversized ${scopeDescription} in ${file}.`
+        : `Export checkInput(input) that returns the original input when clean and throws on blocked terms or oversized ${scopeDescription} in ${file}.`,
+      source: renderInputGuardrailSource(blockedTerms, maxBodyLen, inputContract, inputScope),
       finding,
       dependencies,
       findingsKey: options?.findingsKey,

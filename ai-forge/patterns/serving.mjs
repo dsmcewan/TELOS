@@ -137,6 +137,7 @@ const inputGuardWorkstream = guardrailWorkstream({
   file: "serving/guard-in.mjs",
   mode: "input",
   inputContract: "allow-object",
+  inputScope: "body",
   blockedTerms: ["<script", "drop table", "ignore previous"],
   maxBodyLen: 256,
   finding: "Input guardrail rejects oversized and denylisted input (fail-closed)."

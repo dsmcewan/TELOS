@@ -472,3 +472,44 @@ npm test exit 0
   - `ai-forge/workstreams/catalog.mjs`
   - `ai-forge/patterns/serving.mjs`
   - `ai-forge/scripts/test-workstream-catalog.mjs`
+
+## 2026-06-30 Follow-up Serving Body Scope Fix
+
+### RED
+
+- Added rendered serving guardrail regressions proving the `allow-object` serving contract still scopes denylist and size checks to `req.body`, matching the pre-catalog serving module.
+- Failing command:
+
+```text
+cd ai-forge
+node scripts/test-workstream-catalog.mjs
+```
+
+- Failing output summary:
+
+```text
+AssertionError [ERR_ASSERTION]: serving input guard only inspects the request body for denylisted terms
+actual: { allow: false, reason: "denylisted" }
+expected: { allow: true }
+```
+
+### GREEN
+
+- Added explicit `inputScope: "body"` support to `guardrailWorkstream({ mode: "input" })`.
+- Updated the serving pattern to opt into `inputScope: "body"` alongside `inputContract: "allow-object"`.
+- Passing commands:
+
+```text
+cd ai-forge
+node scripts/test-workstream-catalog.mjs
+npm test
+```
+
+- Passing output summary:
+
+```text
+test-workstream-catalog: ok
+test-serving.mjs OK
+test-serving-forge.mjs OK
+npm test exit 0
+```
