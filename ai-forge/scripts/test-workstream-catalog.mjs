@@ -740,6 +740,23 @@ async function main() {
     /accessor|unsupported property/i
   );
   assert.equal(arrayGetterReads, 0, "array accessor getter must not be invoked during redaction");
+  let inheritedArrayGetterReads = 0;
+  class AccessorArray extends Array {
+    get note() {
+      inheritedArrayGetterReads += 1;
+      return "secret";
+    }
+  }
+  const inheritedArrayAccessorPayload = new AccessorArray("visible");
+  assert.throws(
+    () => outputGuardAccessorModule.redactOutput(inheritedArrayAccessorPayload),
+    /inherited|prototype|accessor/i
+  );
+  assert.equal(
+    inheritedArrayGetterReads,
+    0,
+    "inherited array accessor getter must not be invoked during redaction"
+  );
   class InheritedAccessorEnvelope {
     constructor(payload) {
       this.payload = payload;

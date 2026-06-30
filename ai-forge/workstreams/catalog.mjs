@@ -336,6 +336,7 @@ function redactJsonValue(value, seen = new WeakSet()) {
   try {
     assertNoOwnAccessors(value);
     if (Array.isArray(value)) {
+      assertNoInheritedAccessors(value, Array.prototype);
       return cloneRedactedArray(value, seen);
     }
     if (value instanceof Map) {
