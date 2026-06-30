@@ -2,15 +2,23 @@
 // 7 build workstreams (schema / handler / input-guardrail / output-guardrail / ratelimit /
 // authz / audit), each a self-contained ESM module with an inline --selftest run as its
 // nodeTest. Keyless, deterministic.
-import { makeDesignWorkstream } from "../workstreams/design.mjs";
+import {
+  auditWorkstream,
+  designWorkstream,
+  guardrailWorkstream,
+  moduleWorkstream,
+} from "../workstreams/catalog.mjs";
 
-function mod({ id, signer, dependencies, file, source, finding, needle }) {
+function localServingWorkstream({ id, signer, dependencies = [], file, requirements, source, needle, finding }) {
   return {
-    id, signer, lens: signer, dependencies,
+    id,
+    signer,
+    lens: signer,
+    dependencies,
     files: [file],
-    requirements: finding,
+    requirements,
     render: () => ({ [file]: source }),
-    checks: (ctx) => [
+    checks: () => [
       { type: "file_exists", path: file },
       ...(needle ? [{ type: "file_contains", path: file, needle }] : [])
     ],
@@ -62,48 +70,6 @@ if (isMain && process.argv.includes("--selftest")) {
 }
 `;
 
-const GUARD_IN_SRC = `import assert from "node:assert/strict";
-import { pathToFileURL } from "node:url";
-const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
-const MAX = 256;
-const DENY = ["<script", "drop table", "ignore previous"];
-// reject oversized or denylisted input.
-export function checkInput(req) {
-  const s = JSON.stringify(req.body || {}).toLowerCase();
-  if (s.length > MAX) return { allow: false, reason: "oversized" };
-  for (const bad of DENY) if (s.includes(bad)) return { allow: false, reason: "denylisted" };
-  return { allow: true };
-}
-if (isMain && process.argv.includes("--selftest")) {
-  assert.equal(checkInput({ body: { q: "hello" } }).allow, true, "clean input passes");
-  assert.equal(checkInput({ body: { q: "<script>x" } }).allow, false, "denylisted input rejected");
-  assert.equal(checkInput({ body: { q: "a".repeat(300) } }).allow, false, "oversized input rejected");
-  console.log("input-guardrail OK");
-}
-`;
-
-const GUARD_OUT_SRC = `import assert from "node:assert/strict";
-import { handle } from "./handler.mjs";
-import { pathToFileURL } from "node:url";
-const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
-const BLOCK = [/password/gi, /\\b\\d{3}-\\d{2}-\\d{4}\\b/g];
-// redact blocked tokens in an outgoing response body.
-export function redactOutput(res) {
-  let s = JSON.stringify(res.body);
-  for (const re of BLOCK) s = s.replace(re, "[redacted]");
-  return { status: res.status, body: JSON.parse(s) };
-}
-if (isMain && process.argv.includes("--selftest")) {
-  const out = redactOutput({ status: 200, body: { echo: { note: "my password is x", ssn: "123-45-6789" } } });
-  const s = JSON.stringify(out.body);
-  assert.ok(!/password/i.test(s), "password redacted");
-  assert.ok(!/123-45-6789/.test(s), "ssn redacted");
-  const clean = redactOutput(handle({ path: "/echo", method: "POST", body: { a: 1 } }));
-  assert.deepEqual(clean.body.echo, { a: 1 }, "clean output unchanged");
-  console.log("output-guardrail OK");
-}
-`;
-
 const RATELIMIT_SRC = `import assert from "node:assert/strict";
 import { pathToFileURL } from "node:url";
 const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
@@ -144,47 +110,79 @@ if (isMain && process.argv.includes("--selftest")) {
 }
 `;
 
-const AUDIT_SRC = `import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, appendFileSync } from "node:fs";
-import os from "node:os";
-import path from "node:path";
-import { handle } from "./handler.mjs";
-import { authorize } from "./authz.mjs";
-import { pathToFileURL } from "node:url";
-const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
-// append-only structured audit line to an injected dir.
-export function appendAudit(dir, entry) {
-  const line = JSON.stringify({ path: entry.path, action: entry.action, status: entry.status, allow: entry.allow }) + "\\n";
-  appendFileSync(path.join(dir, "audit.log"), line);
-}
-if (isMain && process.argv.includes("--selftest")) {
-  const dir = mkdtempSync(path.join(os.tmpdir(), "serving-audit-"));
-  const req = { path: "/echo", method: "POST", body: { a: 1 } };
-  const res = handle(req);
-  const az = authorize("tok-admin", "write");
-  appendAudit(dir, { path: req.path, action: "write", status: res.status, allow: az.allow });
-  const lines = readFileSync(path.join(dir, "audit.log"), "utf8").trim().split("\\n");
-  assert.equal(lines.length, 1, "exactly one line appended");
-  const rec = JSON.parse(lines[0]);
-  for (const f of ["path", "action", "status", "allow"]) assert.ok(f in rec, "audit line has " + f);
-  console.log("audit OK");
-}
-`;
-
-const schemaWorkstream = mod({ id: "schema", signer: "codex", dependencies: [], file: "serving/schema.mjs", source: SCHEMA_SRC, needle: "export function validate", finding: "Request schema accepts conforming requests and rejects malformed ones." });
-const handlerWorkstream = mod({ id: "handler", signer: "claude", dependencies: ["schema"], file: "serving/handler.mjs", source: HANDLER_SRC, needle: "export function handle", finding: "Handler validates then echoes; invalid requests get a 400." });
-const inputGuardWorkstream = mod({ id: "input-guardrail", signer: "grok", dependencies: ["schema"], file: "serving/guard-in.mjs", source: GUARD_IN_SRC, needle: "export function checkInput", finding: "Input guardrail rejects oversized and denylisted input (fail-closed)." });
-const outputGuardWorkstream = mod({ id: "output-guardrail", signer: "grok", dependencies: ["handler"], file: "serving/guard-out.mjs", source: GUARD_OUT_SRC, needle: "export function redactOutput", finding: "Output guardrail redacts blocked tokens and passes clean output unchanged." });
-const ratelimitWorkstream = mod({ id: "ratelimit", signer: "agy", dependencies: ["schema"], file: "serving/ratelimit.mjs", source: RATELIMIT_SRC, needle: "export function createLimiter", finding: "Rate limiter allows N per window and blocks the next, refilling after the window." });
-const authzWorkstream = mod({ id: "authz", signer: "agy", dependencies: ["schema"], file: "serving/authz.mjs", source: AUTHZ_SRC, needle: "export function authorize", finding: "Authz allows capability-matched actions and denies others (keyless fake map)." });
-const auditWorkstream = mod({ id: "audit", signer: "codex", dependencies: ["handler", "authz"], file: "serving/audit.mjs", source: AUDIT_SRC, needle: "export function appendAudit", finding: "Audit appends one structured line per request to an isolated tmpdir log." });
+const schemaWorkstream = moduleWorkstream({
+  id: "schema",
+  signer: "codex",
+  dependencies: [],
+  file: "serving/schema.mjs",
+  requirements: "Request schema accepts conforming requests and rejects malformed ones.",
+  source: SCHEMA_SRC,
+  needle: "export function validate",
+  finding: "Request schema accepts conforming requests and rejects malformed ones."
+});
+const handlerWorkstream = localServingWorkstream({
+  id: "handler",
+  signer: "claude",
+  dependencies: ["schema"],
+  file: "serving/handler.mjs",
+  requirements: "Handler validates then echoes; invalid requests get a 400.",
+  source: HANDLER_SRC,
+  needle: "export function handle",
+  finding: "Handler validates then echoes; invalid requests get a 400."
+});
+const inputGuardWorkstream = guardrailWorkstream({
+  id: "input-guardrail",
+  signer: "grok",
+  dependencies: ["schema"],
+  file: "serving/guard-in.mjs",
+  mode: "input",
+  blockedTerms: ["<script", "drop table", "ignore previous"],
+  maxBodyLen: 256,
+  finding: "Input guardrail rejects oversized and denylisted input (fail-closed)."
+});
+const outputGuardWorkstream = guardrailWorkstream({
+  id: "output-guardrail",
+  signer: "grok",
+  dependencies: ["handler"],
+  file: "serving/guard-out.mjs",
+  mode: "output",
+  blockedTerms: ["password", "123-45-6789"],
+  finding: "Output guardrail redacts blocked tokens and passes clean output unchanged."
+});
+const ratelimitWorkstream = localServingWorkstream({
+  id: "ratelimit",
+  signer: "agy",
+  dependencies: ["schema"],
+  file: "serving/ratelimit.mjs",
+  requirements: "Rate limiter allows N per window and blocks the next, refilling after the window.",
+  source: RATELIMIT_SRC,
+  needle: "export function createLimiter",
+  finding: "Rate limiter allows N per window and blocks the next, refilling after the window."
+});
+const authzWorkstream = localServingWorkstream({
+  id: "authz",
+  signer: "agy",
+  dependencies: ["schema"],
+  file: "serving/authz.mjs",
+  requirements: "Authz allows capability-matched actions and denies others (keyless fake map).",
+  source: AUTHZ_SRC,
+  needle: "export function authorize",
+  finding: "Authz allows capability-matched actions and denies others (keyless fake map)."
+});
+const auditWs = auditWorkstream({
+  id: "audit",
+  signer: "codex",
+  dependencies: ["output-guardrail", "ratelimit", "authz"],
+  file: "serving/audit.mjs",
+  finding: "Audit trail did not persist structured events."
+});
 
 export const servingBuildWorkstreams = [
   schemaWorkstream, handlerWorkstream, inputGuardWorkstream, outputGuardWorkstream,
-  ratelimitWorkstream, authzWorkstream, auditWorkstream
+  ratelimitWorkstream, authzWorkstream, auditWs
 ];
 
 export const servingPattern = {
   id: "serving",
-  workstreams: [...servingBuildWorkstreams, makeDesignWorkstream(servingBuildWorkstreams)]
+  workstreams: [...servingBuildWorkstreams, designWorkstream(servingBuildWorkstreams)]
 };
