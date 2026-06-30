@@ -477,6 +477,10 @@ async function main() {
     () => inputGuardThrowModule.checkInput({ body: { count: 1n } }),
     /serializable|bigint/i
   );
+  assert.throws(
+    () => inputGuardThrowModule.checkInput(undefined),
+    /serializable/i
+  );
 
   const inputGuardAllowObjectRoot = renderAndRun(
     guardrailWorkstream({
@@ -504,6 +508,27 @@ async function main() {
   );
   assert.deepEqual(
     inputGuardAllowObjectModule.checkInput({ body: { count: 1n } }),
+    { allow: false, reason: "unserializable" }
+  );
+  const inputGuardAllowObjectWholeRoot = renderAndRun(
+    guardrailWorkstream({
+      id: "input-guard-allow-object-whole-contract",
+      signer: "grok",
+      file: "generated/input-guard-allow-object-whole-contract.mjs",
+      mode: "input",
+      inputContract: "allow-object",
+      blockedTerms: ["secret"],
+      maxBodyLen: 64,
+      finding: "Input guardrail allow-object contract should reject unserializable input.",
+    }),
+    toyContext()
+  );
+  const inputGuardAllowObjectWholeModule = await importRendered(
+    inputGuardAllowObjectWholeRoot,
+    "generated/input-guard-allow-object-whole-contract.mjs"
+  );
+  assert.deepEqual(
+    inputGuardAllowObjectWholeModule.checkInput(undefined),
     { allow: false, reason: "unserializable" }
   );
 

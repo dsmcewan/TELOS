@@ -141,6 +141,9 @@ export function checkInput(input) {
     return rejectInput("unserializable", "input must be serializable");
   }
   const body = normalized.body;
+  if (typeof body !== "string") {
+    return rejectInput("unserializable", "input must be serializable");
+  }
   if (body.length > maxBodyLen) {
     return rejectInput("oversized", "input body exceeds maximum length");
   }
