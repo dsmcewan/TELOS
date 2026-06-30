@@ -1,6 +1,7 @@
 // patterns/serving.mjs — a serving+guardrails pattern as DATA.
-// 4 build workstreams (schema / handler / input-guardrail / output-guardrail), each a
-// self-contained ESM module with an inline --selftest run as its nodeTest. Keyless, deterministic.
+// 7 build workstreams (schema / handler / input-guardrail / output-guardrail / ratelimit /
+// authz / audit), each a self-contained ESM module with an inline --selftest run as its
+// nodeTest. Keyless, deterministic.
 import { makeDesignWorkstream } from "../workstreams/design.mjs";
 
 function mod({ id, signer, dependencies, file, source, finding, needle }) {
