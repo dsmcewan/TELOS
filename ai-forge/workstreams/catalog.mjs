@@ -220,6 +220,9 @@ function requireThresholds(thresholds) {
       throw new Error("threshold values must be numbers between 0 and 1");
     }
   }
+  if (!entries.some(([, value]) => value > 0)) {
+    throw new Error("thresholds must include at least one threshold greater than 0");
+  }
   return thresholds;
 }
 
@@ -274,8 +277,8 @@ if (process.argv.includes("--selftest")) {
 
   let below = false;
   try {
-    const firstKey = thresholdKeys[0];
-    const failingScores = { ...passingScores, [firstKey]: thresholds[firstKey] - 0.01 };
+    const belowKey = thresholdKeys.find((key) => thresholds[key] > 0);
+    const failingScores = { ...passingScores, [belowKey]: Math.max(0, thresholds[belowKey] - 0.01) };
     assertThresholds(failingScores);
   } catch (error) {
     below = /below threshold/i.test(String(error && error.message));
