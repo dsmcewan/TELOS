@@ -11,11 +11,11 @@
 // stays defaultVerifyNode (Rule 3 — re-derive hash + run test), and the
 // controller remains the sole ledger writer. A team's word is never load-bearing.
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { runCouncil } from "./council.mjs";
 import { validateRecords } from "./gate.mjs";
-import { planTeams, teamForNode, authorizedSignersFor } from "./teams.mjs";
+import { planTeams, teamForNode, verifyTeamForNode, authorizedSignersFor } from "./teams.mjs";
 import { decompose } from "./decompose.mjs";
 import { senseProject, detectConventions } from "./situation.mjs";
 import { runNodeTest } from "./test-runner.mjs";
@@ -24,6 +24,19 @@ import { runBuild, defaultVerifyNode } from "../merkle-dag/orchestrate.mjs";
 import { writePlan } from "../merkle-dag/merkle.mjs";
 import { generateKeypair } from "../merkle-dag/crypto.mjs";
 import { resolveUnder } from "../merkle-dag/vendor.mjs";
+import { reverifyRecord } from "../breakout/verifier.mjs";
+
+// Read a node's declared files from disk (confined under baseDir) so a verify team
+// can review the actual built artifact. Missing/escaping files are skipped.
+function readArtifactFiles(node, baseDir) {
+  const out = [];
+  for (const rel of node.files || []) {
+    const resolved = resolveUnder(baseDir, rel);
+    if (resolved === null || !existsSync(resolved)) continue;
+    try { out.push({ path: rel, content: readFileSync(resolved, "utf8") }); } catch { /* skip unreadable */ }
+  }
+  return out;
+}
 
 /**
  * Build a dispatch(injected) for runBuild that routes each node to its owning
@@ -48,7 +61,7 @@ import { resolveUnder } from "../merkle-dag/vendor.mjs";
  * never self-certify. If the inner loop exhausts, the dispatch hands a `respec`
  * UP so runBuild's existing halt->mutate->re-dispatch gives a second outer level.
  */
-export function makeTeamDispatch({ routeFor, callTeam, baseDir, dossier, maxAttempts = 2 }) {
+export function makeTeamDispatch({ routeFor, callTeam, baseDir, dossier, maxAttempts = 2, verifyTeamFor, callVerify, requireVerify = false }) {
   return async (injected) => {
     const team = routeFor(injected.id);
     let priorFailure = null;
@@ -71,12 +84,32 @@ export function makeTeamDispatch({ routeFor, callTeam, baseDir, dossier, maxAtte
         mkdirSync(path.dirname(resolved), { recursive: true });
         writeFileSync(resolved, typeof f.content === "string" ? f.content : String(f.content ?? ""));
       }
-      // The team checks its OWN work before submitting. On pass, settle (the signer
-      // key_id MUST be in plan.authorized_signers or the ledger gate rejects it).
+      // The team checks its OWN work first. A failing test feeds back as priorFailure.
       const res = await runNodeTest(injected, baseDir);
-      if (res.ok) return { ok: true, signer: team.signer || team.id };
-      priorFailure = { detail: res.detail, stdout: res.stdout, stderr: res.stderr, status: res.status };
-      lastDetail = res.detail;
+      if (!res.ok) {
+        priorFailure = { detail: res.detail, stdout: res.stdout, stderr: res.stderr, status: res.status };
+        lastDetail = res.detail;
+        continue;
+      }
+      // VERIFY STAGE: a verify team adversarially re-checks the built artifact. Its
+      // verdict can only BLOCK (Rule 3 / defaultVerifyNode still independently
+      // settles). It is fact-grounded — the verdict's declarative checks are re-run
+      // against disk via reverifyRecord, so the model can't bluff "ok".
+      if (callVerify && verifyTeamFor) {
+        const verify = await runVerify({ node: injected, baseDir, dossier, verifyTeamFor, callVerify, requireVerify });
+        if (verify.block) {
+          priorFailure = { detail: verify.detail, stdout: "", stderr: verify.detail, status: 1 };
+          lastDetail = verify.detail;
+          continue;
+        }
+        if (verify.error) {
+          // The verify team couldn't run (e.g. no key). Advisory by default —
+          // skip and let Rule 3 settle; opt-in requireVerify hard-fails.
+          if (requireVerify) return { ok: false, reason: `required verify could not run for ${injected.id}: ${verify.detail}` };
+        }
+      }
+      // On pass, settle (the signer key_id MUST be in plan.authorized_signers).
+      return { ok: true, signer: team.signer || team.id };
     }
     // Inner loop exhausted -> hand a respec up. Mutating `requirements` re-derives
     // the node's effective_hash so the substrate re-dispatches it next round, with

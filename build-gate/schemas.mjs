@@ -86,11 +86,41 @@ export const BUILD_FILESET_SCHEMA = {
   additionalProperties: false
 };
 
+// A verify team's verdict on a built node. `ok` is the model's overall call;
+// `blockers` are hard problems that must stop the node; `findings` are non-blocking
+// observations; `checks` are DECLARATIVE evidence the gate re-runs against the
+// artifact (reverifyRecord) so the verdict is grounded in facts, not the model's
+// say-so. `needle` is "" for file_exists checks.
+export const VERDICT_SCHEMA = {
+  type: "object",
+  properties: {
+    ok: { type: "boolean" },
+    blockers: { type: "array", items: { type: "string" } },
+    findings: { type: "array", items: { type: "string" } },
+    checks: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          type: { type: "string", enum: ["file_exists", "file_contains"] },
+          path: { type: "string" },
+          needle: { type: "string" }
+        },
+        required: ["type", "path", "needle"],
+        additionalProperties: false
+      }
+    }
+  },
+  required: ["ok", "blockers", "findings", "checks"],
+  additionalProperties: false
+};
+
 // Select a schema by stable name. `schema_name` matches ^[A-Za-z0-9_-]+$ (the
 // OpenAI/xAI json_schema name constraint). Pass {schema_name, schema} to the
 // MCP `*_ask` call as response_schema + schema_name.
 export const SCHEMAS = {
   approval: { schema_name: "approval", schema: APPROVAL_PACKET_SCHEMA },
   decompose: { schema_name: "decompose", schema: DECOMPOSE_TASKS_SCHEMA },
-  fileset: { schema_name: "fileset", schema: BUILD_FILESET_SCHEMA }
+  fileset: { schema_name: "fileset", schema: BUILD_FILESET_SCHEMA },
+  verdict: { schema_name: "verdict", schema: VERDICT_SCHEMA }
 };
