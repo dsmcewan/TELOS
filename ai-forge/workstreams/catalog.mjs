@@ -153,6 +153,23 @@ function isPlainObject(value) {
   return prototype === Object.prototype || prototype === null;
 }
 
+function isOrdinaryObject(value) {
+  return Object.prototype.toString.call(value) === "[object Object]";
+}
+
+function cloneRedactedObject(value, seen) {
+  const clone = Object.create(Object.getPrototypeOf(value));
+  for (const key of Reflect.ownKeys(value)) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor) continue;
+    if (Object.prototype.hasOwnProperty.call(descriptor, "value")) {
+      descriptor.value = redactJsonValue(descriptor.value, seen);
+    }
+    Object.defineProperty(clone, key, descriptor);
+  }
+  return clone;
+}
+
 function redactJsonValue(value, seen = new WeakSet()) {
   if (typeof value === "string") return redactStringValue(value);
   if (!value || typeof value !== "object") return value;
@@ -165,11 +182,10 @@ function redactJsonValue(value, seen = new WeakSet()) {
       return value.map((item) => redactJsonValue(item, seen));
     }
     if (isPlainObject(value)) {
-      const clone = Object.create(Object.getPrototypeOf(value));
-      for (const key of Reflect.ownKeys(value)) {
-        clone[key] = redactJsonValue(value[key], seen);
-      }
-      return clone;
+      return cloneRedactedObject(value, seen);
+    }
+    if (isOrdinaryObject(value)) {
+      return cloneRedactedObject(value, seen);
     }
     return value;
   } finally {
@@ -205,6 +221,16 @@ if (process.argv.includes("--selftest")) {
   }
   if (keyedSample.password !== undefined || keyedSample.nested.token !== "[REDACTED]" || keyedSample.list[0] !== "[REDACTED]") {
     throw new Error("expected string leaf values to be redacted without changing container structure");
+  }
+  class Envelope {
+    constructor(note, nested) {
+      this.note = note;
+      this.nested = nested;
+    }
+  }
+  const instanceSample = redactOutput(new Envelope("hide " + blockedTerm, { token: blockedTerm.toUpperCase() }));
+  if (!(instanceSample instanceof Envelope) || instanceSample.note !== "hide [REDACTED]" || instanceSample.nested.token !== "[REDACTED]") {
+    throw new Error("expected object instances to preserve prototype and redact string leaf values");
   }
   let circular = false;
   try {

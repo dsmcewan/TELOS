@@ -379,6 +379,40 @@ async function main() {
     list: ["[REDACTED]"],
   });
 
+  const outputGuardInstanceRoot = renderAndRun(
+    guardrailWorkstream({
+      id: "output-guard-instance-contract",
+      signer: "claude",
+      file: "generated/output-guard-instance-contract.mjs",
+      mode: "output",
+      blockedTerms: ["secret", "token"],
+      finding: "Output guardrail instance contract regression.",
+    }),
+    toyContext()
+  );
+  const outputGuardInstanceModule = await importRendered(
+    outputGuardInstanceRoot,
+    "generated/output-guard-instance-contract.mjs"
+  );
+  class OutputEnvelope {
+    constructor(note, nested) {
+      this.note = note;
+      this.nested = nested;
+    }
+  }
+  const instancePayload = new OutputEnvelope("SECRET token", {
+    detail: "visible",
+    token: "secret",
+  });
+  const instanceRedacted = outputGuardInstanceModule.redactOutput(instancePayload);
+  assert.ok(instanceRedacted instanceof OutputEnvelope, "class instance prototype is preserved");
+  assert.notEqual(instanceRedacted, instancePayload, "class instances are cloned during redaction");
+  assert.equal(instanceRedacted.note, "[REDACTED] [REDACTED]");
+  assert.deepEqual(instanceRedacted.nested, {
+    detail: "visible",
+    token: "[REDACTED]",
+  });
+
   const ok = await forge({
     pattern: toyPattern(),
     ctx: toyContext(),
