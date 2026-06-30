@@ -32,12 +32,8 @@ function requireRelativeFile(file) {
     throw new Error("file must be relative to the project root");
   }
   const normalized = file.replaceAll("\\", "/");
-  if (
-    normalized === "." ||
-    normalized === ".." ||
-    normalized.startsWith("../") ||
-    normalized.includes("/../")
-  ) {
+  const segments = normalized.split("/");
+  if (normalized === "." || normalized === ".." || segments.some((segment) => segment === "..")) {
     throw new Error("file must be relative to the project root");
   }
   return normalized;
