@@ -372,6 +372,7 @@ function requireRelativeFile(file) {
 - [ ] Implement `scorecardWorkstream(options)`:
   - Required options: `id`, `file`, `thresholds`, `finding`.
   - Optional options: `signer` defaulting to `"agy"`, `dependencies`, `findingsKey`.
+  - `thresholds` must be a non-empty object with values in `0..1` and at least one threshold greater than `0`, so the generated selftest can exercise a real below-threshold case.
   - Generated module exports `computeScorecard(scores)` and `assertThresholds(scores)`.
   - `computeScorecard` validates score keys against the configured threshold keys and returns `{ scores, passed }`.
   - `assertThresholds` throws on missing scores, unknown score keys, non-numeric scores, scores outside `0..1`, or scores below their threshold.
