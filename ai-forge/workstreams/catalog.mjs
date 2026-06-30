@@ -276,6 +276,20 @@ const blockedPatternRegexes = blockedPatterns.map(({ source, flags = "" }) => {
   const mergedFlags = Array.from(new Set(\`g\${flags}\`)).join("");
   return new RegExp(source, mergedFlags);
 });
+const safeObjectPrototypeFunctionKeys = new Set([
+  "constructor",
+  "__defineGetter__",
+  "__defineSetter__",
+  "hasOwnProperty",
+  "__lookupGetter__",
+  "__lookupSetter__",
+  "isPrototypeOf",
+  "propertyIsEnumerable",
+  "toString",
+  "valueOf",
+  "toLocaleString",
+]);
+const safeObjectPrototypeAccessorKeys = new Set(["__proto__"]);
 
 function containsBlockedTerm(value) {
   return [...blockedTermPatterns, ...blockedPatternRegexes].some((pattern) => {
@@ -326,6 +340,33 @@ function assertNoOwnAccessors(value) {
   }
 }
 
+function assertSafeBaseObjectPrototype(value) {
+  let prototype = Object.getPrototypeOf(value);
+  while (prototype) {
+    if (prototype === Object.prototype) {
+      for (const key of Reflect.ownKeys(Object.prototype)) {
+        const descriptor = Object.getOwnPropertyDescriptor(Object.prototype, key);
+        if (!descriptor) continue;
+        if (safeObjectPrototypeFunctionKeys.has(key)) {
+          if (!Object.hasOwn(descriptor, "value") || typeof descriptor.value !== "function") {
+            throw new Error(\`unsupported inherited property on Object.prototype: \${String(key)}\`);
+          }
+          continue;
+        }
+        if (safeObjectPrototypeAccessorKeys.has(key)) {
+          if (typeof descriptor.get !== "function" && typeof descriptor.set !== "function") {
+            throw new Error(\`unsupported inherited property on Object.prototype: \${String(key)}\`);
+          }
+          continue;
+        }
+        throw new Error(\`unsupported inherited property on Object.prototype: \${String(key)}\`);
+      }
+      return;
+    }
+    prototype = Object.getPrototypeOf(prototype);
+  }
+}
+
 function assertSafeInheritedPrototypeProperties(value, stopPrototype = Object.prototype) {
   let prototype = Object.getPrototypeOf(value);
   while (prototype && prototype !== stopPrototype) {
@@ -341,6 +382,14 @@ function assertSafeInheritedPrototypeProperties(value, stopPrototype = Object.pr
     }
     prototype = Object.getPrototypeOf(prototype);
   }
+}
+
+function getPrototypeMethod(prototype, key) {
+  const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
+  if (!descriptor || !Object.hasOwn(descriptor, "value") || typeof descriptor.value !== "function") {
+    throw new Error(\`unsupported prototype method on output container: \${String(key)}\`);
+  }
+  return descriptor.value;
 }
 
 function cloneRedactedObject(value, seen) {
@@ -393,14 +442,16 @@ function redactJsonValue(value, seen = new WeakSet()) {
   seen.add(value);
   try {
     assertNoOwnAccessors(value);
+    assertSafeBaseObjectPrototype(value);
     if (Array.isArray(value)) {
       assertSafeInheritedPrototypeProperties(value, Array.prototype);
       return cloneRedactedArray(value, seen);
     }
     if (value instanceof Map) {
       assertSafeInheritedPrototypeProperties(value, Map.prototype);
+      const mapEntries = getPrototypeMethod(Map.prototype, "entries");
       return new Map(
-        Array.from(Map.prototype.entries.call(value), ([key, entryValue]) => [
+        Array.from(mapEntries.call(value), ([key, entryValue]) => [
           redactJsonValue(key, seen),
           redactJsonValue(entryValue, seen),
         ])
@@ -408,7 +459,8 @@ function redactJsonValue(value, seen = new WeakSet()) {
     }
     if (value instanceof Set) {
       assertSafeInheritedPrototypeProperties(value, Set.prototype);
-      return new Set(Array.from(Set.prototype.values.call(value), (entryValue) => redactJsonValue(entryValue, seen)));
+      const setValues = getPrototypeMethod(Set.prototype, "values");
+      return new Set(Array.from(setValues.call(value), (entryValue) => redactJsonValue(entryValue, seen)));
     }
     if (isPlainObject(value)) {
       return cloneRedactedObject(value, seen);

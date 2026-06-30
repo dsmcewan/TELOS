@@ -997,6 +997,83 @@ async function main() {
     0,
     "Inherited Symbol.toStringTag getter must not be invoked during redaction"
   );
+  const objectPrototypeLeakDescriptor = Object.getOwnPropertyDescriptor(Object.prototype, "leakedNote");
+  try {
+    Object.defineProperty(Object.prototype, "leakedNote", {
+      value: "secret",
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    });
+    let pollutedObjectOutcome = null;
+    try {
+      pollutedObjectOutcome = outputGuardAccessorModule.redactOutput({ ok: true });
+    } catch (error) {
+      assert.match(String(error && error.message), /inherited|prototype|unsupported/i);
+    }
+    if (pollutedObjectOutcome) {
+      assert.notEqual(
+        pollutedObjectOutcome.leakedNote,
+        "secret",
+        "redacted plain objects must not expose Object.prototype pollution"
+      );
+      assertNoBlockedTermsInOutputStrings(pollutedObjectOutcome, ["secret"]);
+    }
+  } finally {
+    if (objectPrototypeLeakDescriptor) {
+      Object.defineProperty(Object.prototype, "leakedNote", objectPrototypeLeakDescriptor);
+    } else {
+      delete Object.prototype.leakedNote;
+    }
+  }
+  const mapEntriesPrototypeDescriptor = Object.getOwnPropertyDescriptor(Map.prototype, "entries");
+  let mapPrototypeEntriesGetterReads = 0;
+  try {
+    Object.defineProperty(Map.prototype, "entries", {
+      configurable: true,
+      get() {
+        mapPrototypeEntriesGetterReads += 1;
+        return function entriesAccessorSentinel() {
+          throw new Error("entries accessor should not be invoked");
+        };
+      },
+    });
+    assert.throws(
+      () => outputGuardAccessorModule.redactOutput(new Map([["note", "secret"]])),
+      /entries|accessor|unsupported|prototype/i
+    );
+    assert.equal(
+      mapPrototypeEntriesGetterReads,
+      0,
+      "Map.prototype.entries getter must not be invoked during redaction"
+    );
+  } finally {
+    Object.defineProperty(Map.prototype, "entries", mapEntriesPrototypeDescriptor);
+  }
+  const setValuesPrototypeDescriptor = Object.getOwnPropertyDescriptor(Set.prototype, "values");
+  let setPrototypeValuesGetterReads = 0;
+  try {
+    Object.defineProperty(Set.prototype, "values", {
+      configurable: true,
+      get() {
+        setPrototypeValuesGetterReads += 1;
+        return function valuesAccessorSentinel() {
+          throw new Error("values accessor should not be invoked");
+        };
+      },
+    });
+    assert.throws(
+      () => outputGuardAccessorModule.redactOutput(new Set(["secret"])),
+      /values|accessor|unsupported|prototype/i
+    );
+    assert.equal(
+      setPrototypeValuesGetterReads,
+      0,
+      "Set.prototype.values getter must not be invoked during redaction"
+    );
+  } finally {
+    Object.defineProperty(Set.prototype, "values", setValuesPrototypeDescriptor);
+  }
 
   const servingInputGuardWorkstream = servingBuildWorkstreams.find((workstream) => workstream.id === "input-guardrail");
   assert.ok(servingInputGuardWorkstream, "serving input guard workstream exists");
