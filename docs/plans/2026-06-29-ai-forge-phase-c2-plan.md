@@ -1,4 +1,4 @@
-# ai-forge Phase C.2 Implementation Plan
+﻿# ai-forge Phase C.2 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -42,10 +42,12 @@ function mod({ id, signer, dependencies, file, source, finding, needle }) {
 }
 ```
 
-Every forged module ends with a `--selftest` guard so importing it (a sibling module does) never runs its asserts, but `node <file> --selftest` does:
+Every forged module begins with a `pathToFileURL` import and `isMain` line, then uses a hardened `--selftest` guard so importing it (a sibling module does) never runs its asserts, but `node <file> --selftest` does (sibling-import isolation: without `isMain`, importing a sibling with `--selftest` active would also fire that sibling's asserts):
 
 ```js
-if (process.argv.includes("--selftest")) {
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isMain && process.argv.includes("--selftest")) {
   /* assertions; console.log("<id> OK") on success, throw/exit non-zero on failure */
 }
 ```
@@ -125,13 +127,15 @@ export function multiagentContext(params = {}) {
 }
 
 const ROLES_SRC = `import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 export const ROLES = [
   { id: "researcher", capability: "search", lens: "exploration" },
   { id: "coder", capability: "implement", lens: "synthesis" },
   { id: "reviewer", capability: "verify", lens: "adversarial" }
 ];
 export function getRole(id) { return ROLES.find((r) => r.id === id) || null; }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   assert.ok(ROLES.length >= 3, "need >=3 roles");
   const ids = ROLES.map((r) => r.id);
   assert.equal(new Set(ids).size, ids.length, "role ids must be unique");
@@ -142,6 +146,8 @@ if (process.argv.includes("--selftest")) {
 `;
 
 const PROTOCOL_SRC = `import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 const TYPES = new Set(["task", "result", "error"]);
 // message shape: { from, to, type, payload }
 export function validate(msg) {
@@ -151,7 +157,7 @@ export function validate(msg) {
   if (!TYPES.has(msg.type)) return { ok: false, error: "bad type" };
   return { ok: true };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   assert.equal(validate({ from: "a", to: "b", type: "task", payload: {} }).ok, true, "well-formed passes");
   assert.equal(validate({ from: "a", to: "b", type: "task" }).ok, false, "missing payload rejected");
   assert.equal(validate({ from: "a", to: "b", type: "nope", payload: {} }).ok, false, "bad type rejected");
@@ -162,12 +168,14 @@ if (process.argv.includes("--selftest")) {
 
 const ROUTER_SRC = `import assert from "node:assert/strict";
 import { ROLES } from "./roles.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // route a task { capability } to the first role whose capability matches; else null.
 export function route(task, roles = ROLES) {
   const match = roles.find((r) => r.capability === task.capability);
   return match ? match.id : null;
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   assert.equal(route({ capability: "implement" }), "coder", "routes to coder");
   assert.equal(route({ capability: "verify" }), "reviewer", "routes to reviewer");
   assert.equal(route({ capability: "unknown" }), null, "unmatched -> null fallback");
@@ -177,6 +185,8 @@ if (process.argv.includes("--selftest")) {
 
 const BLACKBOARD_SRC = `import assert from "node:assert/strict";
 import { validate } from "./protocol.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // shared store: generic put/get + a protocol-validated post().
 export function createBlackboard() {
   const store = new Map();
@@ -187,7 +197,7 @@ export function createBlackboard() {
     keys() { return [...store.keys()]; }
   };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   const bb = createBlackboard();
   bb.put("x", 1);
   assert.equal(bb.get("x"), 1, "put/get round-trip");
@@ -237,6 +247,8 @@ const ORCHESTRATOR_SRC = `import assert from "node:assert/strict";
 import { ROLES } from "./roles.mjs";
 import { route } from "./router.mjs";
 import { createBlackboard } from "./blackboard.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // runRound: each role acts in order via an injected deterministic callAgent;
 // outputs are recorded on a fresh blackboard and returned in role order.
 export function runRound(task, callAgent, roles = ROLES) {
@@ -246,7 +258,7 @@ export function runRound(task, callAgent, roles = ROLES) {
   for (const role of roles) { const out = callAgent(role, task); bb.put(role.id, out); outputs.push({ role: role.id, out }); }
   return { lead, outputs, blackboard: bb };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   const stub = (role, task) => role.id + ":" + task.goal;
   const { lead, outputs, blackboard } = runRound({ goal: "g" }, stub);
   assert.equal(outputs.length, 3, "one output per role");
@@ -259,6 +271,8 @@ if (process.argv.includes("--selftest")) {
 
 const AGGREGATE_SRC = `import assert from "node:assert/strict";
 import { runRound } from "./orchestrator.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // majority vote over outputs; deterministic tie-break = lexicographically smallest value.
 export function aggregate(outputs) {
   const tally = new Map();
@@ -267,7 +281,7 @@ export function aggregate(outputs) {
   for (const [k, n] of [...tally.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1))) if (n > bestN) { best = k; bestN = n; }
   return { decision: best, votes: bestN };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   assert.deepEqual(aggregate([{ out: "a" }, { out: "a" }, { out: "b" }]), { decision: "a", votes: 2 }, "majority wins");
   assert.equal(aggregate([{ out: "b" }, { out: "a" }]).decision, "a", "tie -> lexicographically smallest");
   const { outputs } = runRound({ goal: "g" }, (role) => (role.id === "reviewer" ? "x" : "y"));
@@ -278,13 +292,15 @@ if (process.argv.includes("--selftest")) {
 
 const TERMINATE_SRC = `import assert from "node:assert/strict";
 import { runRound } from "./orchestrator.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // shouldStop: stop on convergence, else halt at maxRounds (runaway guard).
 export function shouldStop(state, maxRounds) {
   if (state.converged) return { stop: true, reason: "converged" };
   if (state.round >= maxRounds) return { stop: true, reason: "max-rounds" };
   return { stop: false, reason: "continue" };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   assert.deepEqual(shouldStop({ converged: true, round: 1 }, 5), { stop: true, reason: "converged" }, "stops early on convergence");
   assert.deepEqual(shouldStop({ converged: false, round: 5 }, 5), { stop: true, reason: "max-rounds" }, "runaway halts at bound");
   assert.equal(shouldStop({ converged: false, round: 2 }, 5).stop, false, "continues mid-run");
@@ -371,7 +387,7 @@ const dossierMeta = { build_id: "multiagent-e2e", idea_id: "multiagent", use_cas
     ...multiagentPattern,
     workstreams: multiagentPattern.workstreams.map((w) => w.id !== "protocol" ? w : {
       ...w,
-      render: () => ({ "agents/protocol.mjs": 'import assert from "node:assert/strict";\nexport function validate(){ return { ok: false }; }\nif (process.argv.includes("--selftest")) { assert.equal(validate({}).ok, true, "WRONG: malformed should not validate"); }\n' })
+      render: () => ({ "agents/protocol.mjs": 'import assert from "node:assert/strict";\nexport function validate(){ return { ok: false }; }\nif (isMain && process.argv.includes("--selftest")) { assert.equal(validate({}).ok, true, "WRONG: malformed should not validate"); }\n' })
     })
   };
   const result = await forge({ pattern: broken, ctx: multiagentContext(), projectRoot: root, dossierMeta, maxCycles: 1 });
@@ -495,6 +511,8 @@ DAG: root `dataset`; `target←{dataset}`; `runner←{dataset,target}`; `metrics
 
 ```js
 const DATASET_SRC = `import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // fixed labelled eval set (binary sentiment). expected in {positive, negative}.
 export const DATASET = [
   { id: "c1", input: "great product love it", expected: "positive" },
@@ -502,7 +520,7 @@ export const DATASET = [
   { id: "c3", input: "works as described happy", expected: "positive" },
   { id: "c4", input: "awful waste of money", expected: "negative" }
 ];
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   assert.ok(DATASET.length >= 4, "need >=4 cases");
   const ids = DATASET.map((c) => c.id);
   assert.equal(new Set(ids).size, ids.length, "case ids unique");
@@ -513,6 +531,8 @@ if (process.argv.includes("--selftest")) {
 
 const TARGET_SRC = `import assert from "node:assert/strict";
 import { DATASET } from "./dataset.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 const POS = new Set(["great", "love", "works", "happy", "good", "excellent"]);
 const NEG = new Set(["terrible", "broke", "awful", "waste", "bad", "horrible"]);
 // deterministic keyword classifier; ties -> negative.
@@ -522,7 +542,7 @@ export function predict(input) {
   for (const t of toks) { if (POS.has(t)) p++; if (NEG.has(t)) n++; }
   return p > n ? "positive" : "negative";
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   const a = DATASET.map((c) => predict(c.input));
   const b = DATASET.map((c) => predict(c.input));
   assert.deepEqual(a, b, "predict is deterministic");
@@ -535,11 +555,13 @@ if (process.argv.includes("--selftest")) {
 const RUNNER_SRC = `import assert from "node:assert/strict";
 import { DATASET } from "./dataset.mjs";
 import { predict } from "./target.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // run the target over the dataset -> one prediction per case, aligned by id.
 export function runTarget() {
   return DATASET.map((c) => ({ id: c.id, predicted: predict(c.input), expected: c.expected }));
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   const preds = runTarget();
   assert.equal(preds.length, DATASET.length, "one prediction per case");
   assert.deepEqual(preds.map((p) => p.id), DATASET.map((c) => c.id), "aligned by id, in order");
@@ -550,6 +572,8 @@ if (process.argv.includes("--selftest")) {
 
 const METRICS_SRC = `import assert from "node:assert/strict";
 import { runTarget } from "./run-target.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // accuracy + precision/recall for the "positive" class. predictions/expected: label arrays.
 export function computeMetrics(predicted, expected) {
   let correct = 0, tp = 0, fp = 0, fn = 0;
@@ -566,7 +590,7 @@ export function computeMetrics(predicted, expected) {
     recall: tp + fn === 0 ? 1 : tp / (tp + fn)
   };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   // hand-computed fixture: TP=1, FP=1, FN=1, TN=1 -> all 0.5
   const m = computeMetrics(["positive", "negative", "negative", "positive"], ["positive", "positive", "negative", "negative"]);
   assert.equal(m.accuracy, 0.5, "accuracy 0.5");
@@ -615,6 +639,8 @@ import os from "node:os";
 import path from "node:path";
 import { runTarget } from "./run-target.mjs";
 import { computeMetrics } from "./metrics.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 const EPS = 1e-9;
 export function writeScorecard(dir) {
   const preds = runTarget();
@@ -632,7 +658,7 @@ export function verifyScorecard(dir) {
   }
   return { ok: true };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   const dir = mkdtempSync(path.join(os.tmpdir(), "eval-scorecard-"));
   writeScorecard(dir);
   assert.equal(verifyScorecard(dir).ok, true, "stored == recomputed");
@@ -647,12 +673,14 @@ if (process.argv.includes("--selftest")) {
 `;
 
 const THRESHOLD_SRC = `import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // gate metrics against minimum thresholds.
 export function gate(metrics, thresholds) {
   const failing = Object.keys(thresholds).filter((k) => metrics[k] < thresholds[k]);
   return { pass: failing.length === 0, failing };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   assert.equal(gate({ accuracy: 0.9, precision: 0.9 }, { accuracy: 0.8, precision: 0.8 }).pass, true, "above thresholds -> pass");
   const r = gate({ accuracy: 0.5 }, { accuracy: 0.8 });
   assert.equal(r.pass, false, "below threshold -> blocked");
@@ -662,12 +690,14 @@ if (process.argv.includes("--selftest")) {
 `;
 
 const REGRESSION_SRC = `import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // flag any metric that drops more than tolerance below the baseline.
 export function detectRegression(baseline, current, tolerance = 0.0) {
   const regressed = Object.keys(baseline).filter((k) => current[k] < baseline[k] - tolerance);
   return { regressed, ok: regressed.length === 0 };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   const base = { accuracy: 0.9, precision: 0.9 };
   assert.equal(detectRegression(base, { accuracy: 0.9, precision: 0.95 }).ok, true, "equal/better -> clean");
   const r = detectRegression(base, { accuracy: 0.7, precision: 0.9 });
@@ -727,7 +757,7 @@ export const evalPattern = {
     ...evalPattern,
     workstreams: evalPattern.workstreams.map((w) => w.id !== "scorecard" ? w : {
       ...w,
-      render: () => ({ "eval/scorecard.mjs": 'import assert from "node:assert/strict";\nexport function verifyScorecard(){ return { ok: false }; }\nif (process.argv.includes("--selftest")) { assert.equal(verifyScorecard().ok, true, "WRONG: tampered card should not verify"); }\n' })
+      render: () => ({ "eval/scorecard.mjs": 'import assert from "node:assert/strict";\nexport function verifyScorecard(){ return { ok: false }; }\nif (isMain && process.argv.includes("--selftest")) { assert.equal(verifyScorecard().ok, true, "WRONG: tampered card should not verify"); }\n' })
     })
   };
   const result = await forge({ pattern: broken, ctx: evalContext(), projectRoot: root, dossierMeta, maxCycles: 1 });
@@ -779,6 +809,8 @@ DAG: root `schema`; `handler←{schema}`; `input-guardrail←{schema}`; `output-
 
 ```js
 const SCHEMA_SRC = `import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // request: { path:string, method:"GET"|"POST", body:object }
 export function validate(req) {
   if (!req || typeof req !== "object") return { ok: false, error: "not an object" };
@@ -787,7 +819,7 @@ export function validate(req) {
   if (typeof req.body !== "object" || req.body === null) return { ok: false, error: "bad body" };
   return { ok: true };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   assert.equal(validate({ path: "/echo", method: "POST", body: {} }).ok, true, "conforming passes");
   assert.equal(validate({ path: "echo", method: "POST", body: {} }).ok, false, "bad path rejected");
   assert.equal(validate({ path: "/x", method: "PUT", body: {} }).ok, false, "bad method rejected");
@@ -797,13 +829,15 @@ if (process.argv.includes("--selftest")) {
 
 const HANDLER_SRC = `import assert from "node:assert/strict";
 import { validate } from "./schema.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // pure handler: validate then echo the body with a 200; invalid -> 400.
 export function handle(req) {
   const v = validate(req);
   if (!v.ok) return { status: 400, body: { error: v.error } };
   return { status: 200, body: { echo: req.body } };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   const r = handle({ path: "/echo", method: "POST", body: { a: 1 } });
   assert.equal(r.status, 200, "valid -> 200");
   assert.deepEqual(r.body.echo, { a: 1 }, "echoes body");
@@ -813,6 +847,8 @@ if (process.argv.includes("--selftest")) {
 `;
 
 const GUARD_IN_SRC = `import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 const MAX = 256;
 const DENY = ["<script", "drop table", "ignore previous"];
 // reject oversized or denylisted input.
@@ -822,7 +858,7 @@ export function checkInput(req) {
   for (const bad of DENY) if (s.includes(bad)) return { allow: false, reason: "denylisted" };
   return { allow: true };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   assert.equal(checkInput({ body: { q: "hello" } }).allow, true, "clean input passes");
   assert.equal(checkInput({ body: { q: "<script>x" } }).allow, false, "denylisted input rejected");
   assert.equal(checkInput({ body: { q: "a".repeat(300) } }).allow, false, "oversized input rejected");
@@ -832,6 +868,8 @@ if (process.argv.includes("--selftest")) {
 
 const GUARD_OUT_SRC = `import assert from "node:assert/strict";
 import { handle } from "./handler.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 const BLOCK = [/password/gi, /\\b\\d{3}-\\d{2}-\\d{4}\\b/g];
 // redact blocked tokens in an outgoing response body.
 export function redactOutput(res) {
@@ -839,7 +877,7 @@ export function redactOutput(res) {
   for (const re of BLOCK) s = s.replace(re, "[redacted]");
   return { status: res.status, body: JSON.parse(s) };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   const out = redactOutput({ status: 200, body: { echo: { note: "my password is x", ssn: "123-45-6789" } } });
   const s = JSON.stringify(out.body);
   assert.ok(!/password/i.test(s), "password redacted");
@@ -880,6 +918,8 @@ git commit -m "feat(ai-forge): serving scaffold (schema/handler/input+output gua
 
 ```js
 const RATELIMIT_SRC = `import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // deterministic token bucket; 'now' is injected (ms). capacity tokens per windowMs.
 export function createLimiter(capacity, windowMs) {
   const state = new Map();
@@ -890,7 +930,7 @@ export function createLimiter(capacity, windowMs) {
     e.count++; state.set(key, e); return { allow: true };
   };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   const allow = createLimiter(2, 1000);
   assert.equal(allow("k", 0).allow, true, "1st allowed");
   assert.equal(allow("k", 10).allow, true, "2nd allowed");
@@ -901,13 +941,15 @@ if (process.argv.includes("--selftest")) {
 `;
 
 const AUTHZ_SRC = `import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // keyless capability check over a FAKE token->caps map (NOT real secrets/auth).
 const CAPS = { "tok-reader": ["read"], "tok-admin": ["read", "write"] };
 export function authorize(token, action) {
   const caps = CAPS[token] || [];
   return { allow: caps.includes(action) };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   assert.equal(authorize("tok-admin", "write").allow, true, "admin can write");
   assert.equal(authorize("tok-reader", "write").allow, false, "reader cannot write");
   assert.equal(authorize("nope", "read").allow, false, "unknown token denied");
@@ -921,12 +963,14 @@ import os from "node:os";
 import path from "node:path";
 import { handle } from "./handler.mjs";
 import { authorize } from "./authz.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // append-only structured audit line to an injected dir.
 export function appendAudit(dir, entry) {
   const line = JSON.stringify({ path: entry.path, action: entry.action, status: entry.status, allow: entry.allow }) + "\\n";
   appendFileSync(path.join(dir, "audit.log"), line);
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   const dir = mkdtempSync(path.join(os.tmpdir(), "serving-audit-"));
   const req = { path: "/echo", method: "POST", body: { a: 1 } };
   const res = handle(req);
@@ -988,7 +1032,7 @@ export const servingPattern = {
     ...servingPattern,
     workstreams: servingPattern.workstreams.map((w) => w.id !== "input-guardrail" ? w : {
       ...w,
-      render: () => ({ "serving/guard-in.mjs": 'import assert from "node:assert/strict";\nexport function checkInput(){ return { allow: true }; }\nif (process.argv.includes("--selftest")) { assert.equal(checkInput({ body: { q: "<script>x" } }).allow, false, "WRONG: denylisted should be rejected"); }\n' })
+      render: () => ({ "serving/guard-in.mjs": 'import assert from "node:assert/strict";\nexport function checkInput(){ return { allow: true }; }\nif (isMain && process.argv.includes("--selftest")) { assert.equal(checkInput({ body: { q: "<script>x" } }).allow, false, "WRONG: denylisted should be rejected"); }\n' })
     })
   };
   const result = await forge({ pattern: broken, ctx: servingContext(), projectRoot: root, dossierMeta, maxCycles: 1 });

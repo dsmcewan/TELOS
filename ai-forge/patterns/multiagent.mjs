@@ -24,13 +24,15 @@ export function multiagentContext(params = {}) {
 }
 
 const ROLES_SRC = `import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 export const ROLES = [
   { id: "researcher", capability: "search", lens: "exploration" },
   { id: "coder", capability: "implement", lens: "synthesis" },
   { id: "reviewer", capability: "verify", lens: "adversarial" }
 ];
 export function getRole(id) { return ROLES.find((r) => r.id === id) || null; }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   assert.ok(ROLES.length >= 3, "need >=3 roles");
   const ids = ROLES.map((r) => r.id);
   assert.equal(new Set(ids).size, ids.length, "role ids must be unique");
@@ -41,6 +43,8 @@ if (process.argv.includes("--selftest")) {
 `;
 
 const PROTOCOL_SRC = `import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 const TYPES = new Set(["task", "result", "error"]);
 // message shape: { from, to, type, payload }
 export function validate(msg) {
@@ -50,7 +54,7 @@ export function validate(msg) {
   if (!TYPES.has(msg.type)) return { ok: false, error: "bad type" };
   return { ok: true };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   assert.equal(validate({ from: "a", to: "b", type: "task", payload: {} }).ok, true, "well-formed passes");
   assert.equal(validate({ from: "a", to: "b", type: "task" }).ok, false, "missing payload rejected");
   assert.equal(validate({ from: "a", to: "b", type: "nope", payload: {} }).ok, false, "bad type rejected");
@@ -61,12 +65,14 @@ if (process.argv.includes("--selftest")) {
 
 const ROUTER_SRC = `import assert from "node:assert/strict";
 import { ROLES } from "./roles.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // route a task { capability } to the first role whose capability matches; else null.
 export function route(task, roles = ROLES) {
   const match = roles.find((r) => r.capability === task.capability);
   return match ? match.id : null;
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   assert.equal(route({ capability: "implement" }), "coder", "routes to coder");
   assert.equal(route({ capability: "verify" }), "reviewer", "routes to reviewer");
   assert.equal(route({ capability: "unknown" }), null, "unmatched -> null fallback");
@@ -76,6 +82,8 @@ if (process.argv.includes("--selftest")) {
 
 const BLACKBOARD_SRC = `import assert from "node:assert/strict";
 import { validate } from "./protocol.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
 // shared store: generic put/get + a protocol-validated post().
 export function createBlackboard() {
   const store = new Map();
@@ -86,7 +94,7 @@ export function createBlackboard() {
     keys() { return [...store.keys()]; }
   };
 }
-if (process.argv.includes("--selftest")) {
+if (isMain && process.argv.includes("--selftest")) {
   const bb = createBlackboard();
   bb.put("x", 1);
   assert.equal(bb.get("x"), 1, "put/get round-trip");
