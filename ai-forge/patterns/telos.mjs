@@ -18,7 +18,7 @@ function componentWorkstream({ id, signer, dependencies, file, makeSelftest, fin
     files: [file],
     requirements: `Forge the ${id} trust component (wraps the real spine) and prove it executes.`,
     render: (ctx) => ({ [file]: makeSelftest(ctx.spineRoot) }),
-    checks: () => [{ type: "file_exists", path: file }],
+    checks: (ctx) => [{ type: "file_exists", path: file }],
     nodeTest: { cmd: "node", args: [file] },
     findingsKey: "architecture_findings",
     finding
@@ -178,7 +178,12 @@ export const breakoutWorkstream = componentWorkstream({
   makeSelftest: breakoutSelftest, finding: "Verdict-on-facts confirms present evidence and blocks absent."
 });
 
+const buildWorkstreams = [
+  signWorkstream, planWorkstream, provenanceWorkstream,
+  gateWorkstream, councilWorkstream, ledgerWorkstream, breakoutWorkstream
+];
+
 export const telosPattern = {
   id: "telos",
-  workstreams: [signWorkstream, planWorkstream, provenanceWorkstream, gateWorkstream, councilWorkstream, ledgerWorkstream, breakoutWorkstream] // full 8-workstream set assembled in Task 4
+  workstreams: [...buildWorkstreams, makeDesignWorkstream(buildWorkstreams)]
 };
