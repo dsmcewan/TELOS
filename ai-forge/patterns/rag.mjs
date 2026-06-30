@@ -1,4 +1,5 @@
-// patterns/rag.mjs — the production-shaped RAG pattern: 7 workstreams as DATA.
+// patterns/rag.mjs — the production-shaped RAG pattern: 8 workstreams as DATA
+// (7 build + 1 design that depends on all 7 and runs last).
 //
 // One entry per workstream, each carrying everything that workstream owns: the
 // files it WRITES (via a deterministic render(ctx)), the on-disk FACT-CHECKS that
@@ -389,11 +390,11 @@ function renderOps(ctx) {
   return { "rag/OPERATIONS.md": ops };
 }
 
-// ---- the pattern: 7 workstreams as data -----------------------------------
+import { makeDesignWorkstream } from "../workstreams/design.mjs";
 
-export const ragPattern = {
-  id: "rag",
-  workstreams: [
+// ---- the pattern: 8 workstreams as data (7 build + design) ----------------
+
+const buildWorkstreams = [
     {
       id: "ingestion", signer: "codex", lens: "codex", dependencies: [],
       files: ["rag/ingest.mjs", "rag/chunks.jsonl"],
@@ -492,5 +493,9 @@ export const ragPattern = {
       findingsKey: "scalability_findings",
       finding: "Runbook fixes tracing spans, latency/grounding SLOs, and a bounded per-query cost."
     }
-  ]
+];
+
+export const ragPattern = {
+  id: "rag",
+  workstreams: [...buildWorkstreams, makeDesignWorkstream(buildWorkstreams)]
 };

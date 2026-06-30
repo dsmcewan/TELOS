@@ -49,12 +49,12 @@ const ws = (over = {}) => ({
   const w = ws({ nodeTest: { cmd: "node", args: ["-e", "process.exit(0)"] } });
   assert.deepEqual(nodeTestFor(w, ctx), { cmd: "node", args: ["-e", "process.exit(0)"] });
 }
-// the production-shaped RAG pattern is valid and has its 7 workstreams
+// the production-shaped RAG pattern is valid and has its 8 workstreams (7 build + design)
 {
   const r = validatePattern(ragPattern);
   assert.equal(r.ok, true, JSON.stringify(r));
-  assert.equal(ragPattern.workstreams.length, 7);
+  assert.equal(ragPattern.workstreams.length, 8);
   assert.deepEqual(ragPattern.workstreams.map((w) => w.id).sort(),
-    ["embed-index", "eval-harness", "generation", "guardrails", "ingestion", "ops", "retrieval"]);
+    ["design", "embed-index", "eval-harness", "generation", "guardrails", "ingestion", "ops", "retrieval"]);
 }
 console.log("test-pattern.mjs OK");
