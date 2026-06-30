@@ -30,9 +30,9 @@ function requireRelativeFile(file) {
   requireString(file, "file");
   const normalized = file.replaceAll("\\", "/");
   if (
-    path.isAbsolute(file) ||
-    /^[A-Za-z]:\//.test(normalized) ||
-    normalized.startsWith("//")
+    path.win32.isAbsolute(file) ||
+    path.posix.isAbsolute(normalized) ||
+    normalized.startsWith("/")
   ) {
     throw new Error("file must be relative to the project root");
   }
@@ -147,26 +147,41 @@ function redactStringValue(value) {
   return redacted;
 }
 
-function redactJsonValue(value) {
+function isPlainObject(value) {
+  if (!value || typeof value !== "object") return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function redactJsonValue(value, seen = new WeakSet()) {
   if (typeof value === "string") return redactStringValue(value);
-  if (Array.isArray(value)) return value.map((item) => redactJsonValue(item));
-  if (value && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, item]) => [key, redactJsonValue(item)])
-    );
+  if (!value || typeof value !== "object") return value;
+  if (seen.has(value)) {
+    throw new Error("output must not contain circular references");
   }
-  return value;
+  seen.add(value);
+  try {
+    if (Array.isArray(value)) {
+      return value.map((item) => redactJsonValue(item, seen));
+    }
+    if (isPlainObject(value)) {
+      const clone = Object.create(Object.getPrototypeOf(value));
+      for (const key of Reflect.ownKeys(value)) {
+        clone[key] = redactJsonValue(value[key], seen);
+      }
+      return clone;
+    }
+    return value;
+  } finally {
+    seen.delete(value);
+  }
 }
 
 export function redactOutput(output) {
   if (typeof output === "string") {
     return redactStringValue(output);
   }
-  const serialized = JSON.stringify(output);
-  if (typeof serialized !== "string") {
-    throw new Error("output must be serializable");
-  }
-  return redactJsonValue(JSON.parse(serialized));
+  return redactJsonValue(output);
 }
 
 if (process.argv.includes("--selftest")) {
@@ -184,10 +199,22 @@ if (process.argv.includes("--selftest")) {
   if (/secret/i.test(serialized) || !serialized.includes("[REDACTED]")) {
     throw new Error("expected object output redaction");
   }
-  const keyedSample = redactOutput({ password: "secret", nested: { token: "secret" } });
+  const keyedSample = redactOutput({ password: undefined, nested: { token: blockedTerm }, list: [blockedTerm] });
   if (!("password" in keyedSample) || !("nested" in keyedSample) || !("token" in keyedSample.nested)) {
     throw new Error("expected object keys to be preserved during redaction");
   }
+  if (keyedSample.password !== undefined || keyedSample.nested.token !== "[REDACTED]" || keyedSample.list[0] !== "[REDACTED]") {
+    throw new Error("expected string leaf values to be redacted without changing container structure");
+  }
+  let circular = false;
+  try {
+    const cycle = { note: blockedTerm };
+    cycle.self = cycle;
+    redactOutput(cycle);
+  } catch (error) {
+    circular = /circular/i.test(String(error && error.message));
+  }
+  if (!circular) throw new Error("expected circular output rejection");
 }
 `;
 }

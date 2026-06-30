@@ -49,6 +49,22 @@ async function importRendered(root, file) {
   return import(pathToFileURL(path.join(root, file)).href);
 }
 
+async function importWithPosixPathSemantics(sourceFile) {
+  const source = readFileSync(sourceFile, "utf8");
+  const designUrl = pathToFileURL(path.join(path.dirname(sourceFile), "design.mjs")).href;
+  const rewritten = source
+    .replace('import path from "node:path";', 'import path from "node:path/posix";')
+    .replace('import { makeDesignWorkstream } from "./design.mjs";', `import { makeDesignWorkstream } from ${JSON.stringify(designUrl)};`);
+  if (rewritten === source) {
+    throw new Error(`failed to rewrite path import in ${sourceFile}`);
+  }
+
+  const root = mkdtempSync(path.join(tmpdir(), "ai-forge-catalog-posix-"));
+  const target = path.join(root, path.basename(sourceFile));
+  writeFileSync(target, rewritten, "utf8");
+  return import(pathToFileURL(target).href);
+}
+
 function toyContext() {
   return {
     dossier: {
@@ -217,6 +233,33 @@ async function main() {
       }),
     /relative/
   );
+  assert.throws(
+    () =>
+      scorecardWorkstream({
+        id: "bad-zero-thresholds",
+        signer: "agy",
+        file: "scorecard/zero-thresholds.mjs",
+        thresholds: { quality: 0, groundedness: 0 },
+        finding: "bad",
+      }),
+    /greater than 0/
+  );
+
+  const catalogPosixModule = await importWithPosixPathSemantics(
+    path.resolve("workstreams/catalog.mjs")
+  );
+  assert.throws(
+    () =>
+      catalogPosixModule.moduleWorkstream({
+        id: "bad-posix-host-backslash-rooted",
+        signer: "codex",
+        file: "\\tmp\\x.mjs",
+        requirements: "bad",
+        source: "export {};",
+        finding: "bad",
+      }),
+    /relative/
+  );
 
   const generated = [
     moduleWorkstream({
@@ -325,6 +368,15 @@ async function main() {
   assert.deepEqual(outputGuardKeyModule.redactOutput(keyedBlockedObject), {
     password: "[REDACTED]",
     nested: { token: "[REDACTED]" },
+  });
+  const undefinedShape = { password: undefined, nested: { token: "secret" }, list: ["secret"] };
+  const undefinedShapeRedacted = outputGuardKeyModule.redactOutput(undefinedShape);
+  assert.ok(Object.hasOwn(undefinedShapeRedacted, "password"), "undefined-valued keys are preserved");
+  assert.equal(undefinedShapeRedacted.password, undefined);
+  assert.deepEqual(undefinedShapeRedacted, {
+    password: undefined,
+    nested: { token: "[REDACTED]" },
+    list: ["[REDACTED]"],
   });
 
   const ok = await forge({
