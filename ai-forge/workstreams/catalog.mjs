@@ -147,8 +147,10 @@ if (process.argv.includes("--selftest")) {
 
 function renderOutputGuardrailSource(blockedTerms) {
   const thresholdsJsonLiteral = JSON.stringify(JSON.stringify(blockedTerms));
+  const escapeRegExpPatternSourceLiteral = JSON.stringify("[.*+?^${}()|[\\]\\\\]");
   return `const blockedTerms = JSON.parse(${thresholdsJsonLiteral});
 const redactionMarker = "[REDACTED]";
+const escapeRegExpPattern = new RegExp(${escapeRegExpPatternSourceLiteral}, "g");
 
 function makeAllowedString() {
   const blockedCorpus = blockedTerms.join("");
@@ -165,7 +167,7 @@ function makeAllowedString() {
 }
 
 function escapeRegExp(value) {
-  return value.replace(/[.*+?^$()|[\\]\\\\]/g, "\\\\$&");
+  return value.replace(escapeRegExpPattern, "\\\\$&");
 }
 
 function buildBlockedTermPatterns(term) {
@@ -216,6 +218,30 @@ function cloneRedactedObject(value, seen) {
   return clone;
 }
 
+function cloneRedactedArray(value, seen) {
+  const clone = [];
+  const deferredLengthDescriptor = [];
+  for (const key of Reflect.ownKeys(value)) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor) continue;
+    if (typeof descriptor.get === "function" || typeof descriptor.set === "function") {
+      throw new Error(\`unsupported accessor property on output: \${String(key)}\`);
+    }
+    if (Object.prototype.hasOwnProperty.call(descriptor, "value") && key !== "length") {
+      descriptor.value = redactJsonValue(descriptor.value, seen);
+    }
+    if (key === "length") {
+      deferredLengthDescriptor.push(descriptor);
+      continue;
+    }
+    Object.defineProperty(clone, key, descriptor);
+  }
+  for (const descriptor of deferredLengthDescriptor) {
+    Object.defineProperty(clone, "length", descriptor);
+  }
+  return clone;
+}
+
 function redactJsonValue(value, seen = new WeakSet()) {
   if (typeof value === "string") return redactStringValue(value);
   if (!value || typeof value !== "object") return value;
@@ -225,7 +251,7 @@ function redactJsonValue(value, seen = new WeakSet()) {
   seen.add(value);
   try {
     if (Array.isArray(value)) {
-      return value.map((item) => redactJsonValue(item, seen));
+      return cloneRedactedArray(value, seen);
     }
     if (value instanceof Map) {
       return new Map(

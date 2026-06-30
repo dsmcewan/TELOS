@@ -360,6 +360,39 @@ async function main() {
     }),
     toyContext()
   );
+  renderAndRun(
+    guardrailWorkstream({
+      id: "output-guard-brace-open-selftest",
+      signer: "claude",
+      file: "generated/output-guard-brace-open-selftest.mjs",
+      mode: "output",
+      blockedTerms: ["{"],
+      finding: "Output guardrail selftest should support blocked open braces.",
+    }),
+    toyContext()
+  );
+  renderAndRun(
+    guardrailWorkstream({
+      id: "output-guard-brace-close-selftest",
+      signer: "claude",
+      file: "generated/output-guard-brace-close-selftest.mjs",
+      mode: "output",
+      blockedTerms: ["}"],
+      finding: "Output guardrail selftest should support blocked close braces.",
+    }),
+    toyContext()
+  );
+  renderAndRun(
+    guardrailWorkstream({
+      id: "output-guard-brace-mixed-selftest",
+      signer: "claude",
+      file: "generated/output-guard-brace-mixed-selftest.mjs",
+      mode: "output",
+      blockedTerms: ["a{b}"],
+      finding: "Output guardrail selftest should support blocked terms containing braces.",
+    }),
+    toyContext()
+  );
   const outputGuardUnicodeCaseRoot = renderAndRun(
     guardrailWorkstream({
       id: "output-guard-unicode-case-contract",
@@ -551,6 +584,26 @@ async function main() {
     () => outputGuardAccessorModule.redactOutput(accessorPayload),
     /accessor|unsupported property/i
   );
+  let arrayGetterReads = 0;
+  const arrayAccessorPayload = ["visible", "secret"];
+  Object.defineProperty(arrayAccessorPayload, "1", {
+    enumerable: true,
+    get() {
+      arrayGetterReads += 1;
+      return "secret";
+    },
+  });
+  Object.defineProperty(arrayAccessorPayload, "meta", {
+    value: "secret",
+    enumerable: true,
+    writable: true,
+    configurable: true,
+  });
+  assert.throws(
+    () => outputGuardAccessorModule.redactOutput(arrayAccessorPayload),
+    /accessor|unsupported property/i
+  );
+  assert.equal(arrayGetterReads, 0, "array accessor getter must not be invoked during redaction");
 
   const ok = await forge({
     pattern: toyPattern(),
