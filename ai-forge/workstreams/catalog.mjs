@@ -119,10 +119,10 @@ function normalizeInput(input) {
   }
 
   if (inputScope === "body") {
-    const body = input && typeof input === "object" && Object.hasOwn(input, "body")
-      ? input.body
-      : {};
-    return stringifyInput(body || {});
+    if (input && typeof input === "object" && Object.hasOwn(input, "body")) {
+      return stringifyInput(input.body);
+    }
+    return stringifyInput({});
   }
   if (typeof input === "string") return { ok: true, body: input };
   return stringifyInput(input);

@@ -481,6 +481,37 @@ async function main() {
     () => inputGuardThrowModule.checkInput(undefined),
     /serializable/i
   );
+  const inputGuardBodyThrowRoot = renderAndRun(
+    guardrailWorkstream({
+      id: "input-guard-body-throw-contract",
+      signer: "grok",
+      file: "generated/input-guard-body-throw-contract.mjs",
+      mode: "input",
+      inputScope: "body",
+      blockedTerms: ["secret"],
+      maxBodyLen: 64,
+      finding: "Body-scoped input guard default contract should fail closed on explicit unserializable bodies.",
+    }),
+    toyContext()
+  );
+  const inputGuardBodyThrowModule = await importRendered(
+    inputGuardBodyThrowRoot,
+    "generated/input-guard-body-throw-contract.mjs"
+  );
+  const missingBodyThrowInput = { path: "/echo", method: "POST" };
+  assert.equal(
+    inputGuardBodyThrowModule.checkInput(missingBodyThrowInput),
+    missingBodyThrowInput,
+    "missing body stays on the legacy clean-path contract"
+  );
+  assert.throws(
+    () => inputGuardBodyThrowModule.checkInput({ body: undefined }),
+    /serializable|unserializable/i
+  );
+  assert.throws(
+    () => inputGuardBodyThrowModule.checkInput({ body: 0n }),
+    /serializable|unserializable/i
+  );
 
   const inputGuardAllowObjectRoot = renderAndRun(
     guardrailWorkstream({
@@ -499,6 +530,19 @@ async function main() {
   const inputGuardAllowObjectModule = await importRendered(
     inputGuardAllowObjectRoot,
     "generated/input-guard-allow-object-body-contract.mjs"
+  );
+  assert.deepEqual(
+    inputGuardAllowObjectModule.checkInput({ path: "/echo", method: "POST" }),
+    { allow: true },
+    "missing body remains allowed for body-scoped allow-object contracts"
+  );
+  assert.deepEqual(
+    inputGuardAllowObjectModule.checkInput({ body: undefined }),
+    { allow: false, reason: "unserializable" }
+  );
+  assert.deepEqual(
+    inputGuardAllowObjectModule.checkInput({ body: 0n }),
+    { allow: false, reason: "unserializable" }
   );
   const allowObjectCycle = {};
   allowObjectCycle.self = allowObjectCycle;
@@ -845,6 +889,19 @@ async function main() {
     servingInputGuardModule.checkInput({ path: "/" + "x".repeat(512), method: "POST", body: { ok: true } }),
     { allow: true },
     "serving input guard only measures the request body length"
+  );
+  assert.deepEqual(
+    servingInputGuardModule.checkInput({ path: "/echo", method: "POST" }),
+    { allow: true },
+    "serving input guard keeps missing body on the clean-path contract"
+  );
+  assert.deepEqual(
+    servingInputGuardModule.checkInput({ path: "/echo", method: "POST", body: undefined }),
+    { allow: false, reason: "unserializable" }
+  );
+  assert.deepEqual(
+    servingInputGuardModule.checkInput({ path: "/echo", method: "POST", body: 0n }),
+    { allow: false, reason: "unserializable" }
   );
 
   const servingAuditWorkstream = servingBuildWorkstreams.find((workstream) => workstream.id === "audit");
