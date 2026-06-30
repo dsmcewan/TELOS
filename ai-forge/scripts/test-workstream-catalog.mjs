@@ -4,6 +4,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { forge } from "../forge.mjs";
 import { validatePattern } from "../pattern.mjs";
@@ -42,6 +43,10 @@ function renderAndRun(workstream, ctx = {}) {
   }
   runNodeTest(root, workstream);
   return root;
+}
+
+async function importRendered(root, file) {
+  return import(pathToFileURL(path.join(root, file)).href);
 }
 
 function toyContext() {
@@ -152,6 +157,66 @@ async function main() {
       }),
     /relative/
   );
+  assert.throws(
+    () =>
+      moduleWorkstream({
+        id: "bad-posix-absolute",
+        signer: "codex",
+        file: "/tmp/x.mjs",
+        requirements: "bad",
+        source: "export {};",
+        finding: "bad",
+      }),
+    /relative/
+  );
+  assert.throws(
+    () =>
+      moduleWorkstream({
+        id: "bad-windows-absolute",
+        signer: "codex",
+        file: "C:/tmp/x.mjs",
+        requirements: "bad",
+        source: "export {};",
+        finding: "bad",
+      }),
+    /relative/
+  );
+  assert.throws(
+    () =>
+      moduleWorkstream({
+        id: "bad-windows-absolute-backslash",
+        signer: "codex",
+        file: "C:\\tmp\\x.mjs",
+        requirements: "bad",
+        source: "export {};",
+        finding: "bad",
+      }),
+    /relative/
+  );
+  assert.throws(
+    () =>
+      moduleWorkstream({
+        id: "bad-unc-backslash",
+        signer: "codex",
+        file: "\\\\server\\share\\x.mjs",
+        requirements: "bad",
+        source: "export {};",
+        finding: "bad",
+      }),
+    /relative/
+  );
+  assert.throws(
+    () =>
+      moduleWorkstream({
+        id: "bad-unc-slash",
+        signer: "codex",
+        file: "//server/share/x.mjs",
+        requirements: "bad",
+        source: "export {};",
+        finding: "bad",
+      }),
+    /relative/
+  );
 
   const generated = [
     moduleWorkstream({
@@ -200,6 +265,49 @@ async function main() {
     assert.equal(validation.ok, true, JSON.stringify(validation.errors || []));
     renderAndRun(workstream, toyContext());
   }
+
+  const scorecardRoot = renderAndRun(
+    scorecardWorkstream({
+      id: "scorecard-contract",
+      signer: "agy",
+      file: "generated/scorecard-contract.mjs",
+      thresholds: { quality: 0.8, groundedness: 0.6 },
+      finding: "Scorecard contract regression.",
+    }),
+    toyContext()
+  );
+  const scorecardModule = await importRendered(scorecardRoot, "generated/scorecard-contract.mjs");
+  const belowThreshold = { quality: 0.79, groundedness: 0.6 };
+  assert.deepEqual(scorecardModule.computeScorecard(belowThreshold), {
+    scores: belowThreshold,
+    passed: {
+      quality: false,
+      groundedness: true,
+    },
+  });
+  assert.throws(() => scorecardModule.assertThresholds(belowThreshold), /below threshold/i);
+
+  const outputGuardRoot = renderAndRun(
+    guardrailWorkstream({
+      id: "output-guard-contract",
+      signer: "claude",
+      file: "generated/output-guard-contract.mjs",
+      mode: "output",
+      blockedTerms: ["secret", "123-45-6789"],
+      finding: "Output guardrail contract regression.",
+    }),
+    toyContext()
+  );
+  const outputGuardModule = await importRendered(outputGuardRoot, "generated/output-guard-contract.mjs");
+  const cleanObject = { status: 200, body: { echo: { ok: true, note: "visible" } } };
+  assert.deepEqual(outputGuardModule.redactOutput(cleanObject), cleanObject);
+  const blockedObject = { status: 200, body: { note: "my SECRET is here", ssn: "123-45-6789" } };
+  assert.deepEqual(outputGuardModule.redactOutput(blockedObject), {
+    status: 200,
+    body: { note: "my [REDACTED] is here", ssn: "[REDACTED]" },
+  });
+  const blockedString = "This SECRET and 123-45-6789 must disappear.";
+  assert.equal(outputGuardModule.redactOutput(blockedString), "This [REDACTED] and [REDACTED] must disappear.");
 
   const ok = await forge({
     pattern: toyPattern(),

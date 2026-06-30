@@ -28,10 +28,14 @@ function normalizeRequirements(value) {
 
 function requireRelativeFile(file) {
   requireString(file, "file");
-  if (path.isAbsolute(file)) {
+  const normalized = file.replaceAll("\\", "/");
+  if (
+    path.isAbsolute(file) ||
+    /^[A-Za-z]:\//.test(normalized) ||
+    normalized.startsWith("//")
+  ) {
     throw new Error("file must be relative to the project root");
   }
-  const normalized = file.replaceAll("\\", "/");
   const segments = normalized.split("/");
   if (normalized === "." || normalized === ".." || segments.some((segment) => segment === "..")) {
     throw new Error("file must be relative to the project root");
@@ -135,7 +139,8 @@ function escapeRegExp(value) {
 }
 
 export function redactOutput(output) {
-  let text = typeof output === "string" ? output : JSON.stringify(output);
+  const isString = typeof output === "string";
+  let text = isString ? output : JSON.stringify(output);
   if (typeof text !== "string") {
     throw new Error("output must be serializable");
   }
@@ -143,7 +148,7 @@ export function redactOutput(output) {
     const pattern = new RegExp(escapeRegExp(term), "gi");
     text = text.replace(pattern, "[REDACTED]");
   }
-  return text;
+  return isString ? text : JSON.parse(text);
 }
 
 if (process.argv.includes("--selftest")) {
@@ -151,6 +156,15 @@ if (process.argv.includes("--selftest")) {
   const sample = redactOutput("This " + blockedTerm.toUpperCase() + " should disappear.");
   if (sample.toLowerCase().includes(blockedTerm.toLowerCase()) || !sample.includes("[REDACTED]")) {
     throw new Error("expected secret to be redacted");
+  }
+  const clean = redactOutput({ ok: true, note: "visible" });
+  if (typeof clean !== "object" || clean == null || clean.note !== "visible") {
+    throw new Error("expected clean object output to remain an object");
+  }
+  const objectSample = redactOutput({ note: "hide " + blockedTerm, nested: { value: blockedTerm.toUpperCase() } });
+  const serialized = JSON.stringify(objectSample);
+  if (/secret/i.test(serialized) || !serialized.includes("[REDACTED]")) {
+    throw new Error("expected object output redaction");
   }
 }
 `;
@@ -226,15 +240,7 @@ function renderScorecardSource(thresholds) {
   return `const thresholds = ${JSON.stringify(thresholds)};
 const thresholdKeys = Object.keys(thresholds);
 
-export function computeScorecard(scores) {
-  assertThresholds(scores);
-  const passed = Object.fromEntries(
-    thresholdKeys.map((key) => [key, scores[key] >= thresholds[key]])
-  );
-  return { scores, passed };
-}
-
-export function assertThresholds(scores) {
+function validateScores(scores) {
   if (!scores || typeof scores !== "object" || Array.isArray(scores)) {
     throw new Error("scores must be an object");
   }
@@ -255,7 +261,22 @@ export function assertThresholds(scores) {
     if (value < 0 || value > 1) {
       throw new Error(\`score for \${key} must be between 0 and 1\`);
     }
-    if (value < thresholds[key]) {
+  }
+  return scores;
+}
+
+export function computeScorecard(scores) {
+  const validScores = validateScores(scores);
+  const passed = Object.fromEntries(
+    thresholdKeys.map((key) => [key, validScores[key] >= thresholds[key]])
+  );
+  return { scores: validScores, passed };
+}
+
+export function assertThresholds(scores) {
+  const scorecard = computeScorecard(scores);
+  for (const key of thresholdKeys) {
+    if (!scorecard.passed[key]) {
       throw new Error(\`score for \${key} is below threshold\`);
     }
   }
@@ -275,6 +296,10 @@ if (process.argv.includes("--selftest")) {
   try {
     const belowKey = thresholdKeys.find((key) => thresholds[key] > 0);
     const failingScores = { ...passingScores, [belowKey]: Math.max(0, thresholds[belowKey] - 0.01) };
+    const failingResult = computeScorecard(failingScores);
+    if (failingResult.passed[belowKey] !== false) {
+      throw new Error("expected below-threshold scorecard result");
+    }
     assertThresholds(failingScores);
   } catch (error) {
     below = /below threshold/i.test(String(error && error.message));
