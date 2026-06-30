@@ -171,6 +171,9 @@ export function guardrailWorkstream(options) {
     ? ["password", "secret"]
     : requireStringArray(options.blockedTerms, "blockedTerms");
   const maxBodyLen = options?.maxBodyLen == null ? 256 : options.maxBodyLen;
+  if (Array.isArray(options?.blockedTerms) && options.blockedTerms.length === 0) {
+    throw new Error("blockedTerms must be an array of non-empty strings");
+  }
   if (mode === "input") {
     if (!Number.isInteger(maxBodyLen) || maxBodyLen <= 0) {
       throw new Error("maxBodyLen must be a positive integer");
