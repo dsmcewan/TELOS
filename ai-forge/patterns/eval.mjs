@@ -1,6 +1,7 @@
 // patterns/eval.mjs — an eval-harness pattern as DATA.
-// 4 build workstreams (dataset / target / runner / metrics), each a self-contained
-// ESM module with an inline --selftest run as its nodeTest. Keyless, deterministic.
+// 7 build workstreams (dataset / target / runner / metrics / scorecard / threshold /
+// regression), each a self-contained ESM module with an inline --selftest run as its
+// nodeTest. Keyless, deterministic.
 import { makeDesignWorkstream } from "../workstreams/design.mjs";
 
 function mod({ id, signer, dependencies, file, source, finding, needle }) {
