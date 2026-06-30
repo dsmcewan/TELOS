@@ -124,6 +124,9 @@ idea + telos
 Pattern-library-driven forge for AI architectures on the unchanged TELOS trust spine.
 Phase A is complete: `forge({ pattern: ragPattern, ctx: ragContext(), ... })` returns
 `converged: true` over the real gate + Ed25519 ledger + merkle-dag (see `docs/runs/ai-forge-rag/`).
+Phase B is complete: every forge run now also emits a gate-verified `DESIGN.md` via a
+generic `design` workstream — the architecture design is a first-class, fail-closed
+artifact checked against the plan + ledger + built tree (8 workstreams total; all converge).
 
 ## SaaS Forge (`saas-forge/`)
 
