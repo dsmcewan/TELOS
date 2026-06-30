@@ -64,9 +64,21 @@ Each phase is an independent spec → plan → build cycle. Build order A → B 
   components (sign · plan · provenance · gate · council · ledger/done · breakout)
   that **wrap the real spine** via a ctx-injected `spineRoot`, each with a genuine
   executable selftest, + the generic design workstream (8 total).
-- **Deferred (future Phase C.2+):** multi-agent, eval-harness, serving+guardrails
-  patterns, and the composable-workstream-library generalization (issues #30/#37).
 - **Depends on:** A+B (pattern schema + generic design workstream — both settled).
+
+### Phase C.2 — Catalog breadth (multi-agent, eval-harness, serving+guardrails)  ✅ done
+- **Objective:** grow the catalog with three standalone patterns, each an independent
+  8-workstream forge run that converges over the real gate + Ed25519 ledger.
+- **Patterns added:**
+  - **multi-agent** — orchestrator + worker agents, handoff contracts, fan-out/fan-in;
+  - **eval-harness** — scorecard, stored≈recomputed cross-check (makes #30 item-2
+    first-class), judge wiring, threshold gates;
+  - **serving+guardrails** — inference serving, input/output guardrail layers,
+    latency/cost SLOs.
+- **Deliverable:** three patterns each with 8 workstreams (7 domain-specific + design),
+  all adversarial breakouts pass, gates certify `merge_status: ready`; run evidence
+  under `docs/runs/ai-forge-{multiagent,eval,serving}/`.
+- **Depends on:** A+B+C (pattern schema, generic design workstream, TELOS pattern — all settled).
 
 ## Status
 
@@ -75,17 +87,19 @@ Each phase is an independent spec → plan → build cycle. Build order A → B 
 | A — substrate + RAG | ✅ done | [phase-a-design](specs/2026-06-29-ai-forge-phase-a-design.md) | — | [ai-forge-rag](runs/ai-forge-rag/) | all 7 workstreams converged; PRs #21–28 |
 | B — design stage | ✅ done | [phase-b-design](specs/2026-06-29-ai-forge-phase-b-design.md) | — | [ai-forge-rag](runs/ai-forge-rag/) | design workstream → DESIGN.md verified vs plan+ledger+build; PRs #33–35 |
 | C — TELOS pattern | ✅ done | [phase-c-design](specs/2026-06-29-ai-forge-phase-c-design.md) | — | [ai-forge-telos](runs/ai-forge-telos/) | 8 workstreams converge (7 spine-wrapping + design); PRs #38–43 |
+| C.2 — catalog breadth | ✅ done | [phase-c2-design](specs/2026-06-29-ai-forge-phase-c2-design.md) | — | [multiagent](runs/ai-forge-multiagent/) · [eval](runs/ai-forge-eval/) · [serving](runs/ai-forge-serving/) | three 8-workstream patterns converge; PRs #49–60 |
 
 Legend: ⬜ not started · 🟡 in progress · ✅ done
 
 ## Next action
 
-**Phase C is complete.** The TELOS pattern (`ai-forge/patterns/telos.mjs`) converges:
-8 workstreams (7 spine-wrapping components + design), all adversarial breakouts pass,
-gate certifies `merge_status: ready`. Run evidence at `docs/runs/ai-forge-telos/`.
+**Phase C.2 is complete.** The catalog now contains five patterns (RAG, TELOS,
+multi-agent, eval-harness, serving+guardrails). All three new patterns are
+8-workstream runs that converge over the real gate + Ed25519 ledger; run evidence
+at `docs/runs/ai-forge-{multiagent,eval,serving}/`.
 
-Future work (deferred to Phase C.2+): multi-agent pattern, eval-harness pattern,
-serving+guardrails pattern, composable-workstream-library generalization (issues #30/#37).
+Remaining open items (issues #30/#37): composable-workstream-library generalization
+(deferred beyond C.2).
 
 ## Decisions log
 
@@ -107,6 +121,9 @@ serving+guardrails pattern, composable-workstream-library generalization (issues
   trust system; 8 workstreams converge (7 spine-wrapping components: sign · plan ·
   provenance · gate · council · ledger · breakout + the generic design workstream);
   PRs #38–43.
+- **2026-06-29 — Phase C.2 built.** Three standalone patterns (multi-agent,
+  eval-harness, serving+guardrails), ~24 workstreams converge; eval scorecard makes
+  the #30 item-2 stored≈recomputed cross-check first-class; PRs #49–60.
 
 ## Out of scope (YAGNI — revisit only if needed)
 
