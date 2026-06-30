@@ -1,0 +1,48 @@
+{
+  "converged": true,
+  "merge_status": "ready",
+  "gate_status": "pass",
+  "workstreams": [
+    {
+      "id": "schema",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "handler",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "input-guardrail",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "output-guardrail",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "ratelimit",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "authz",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "audit",
+      "converged": true,
+      "finalStatus": "meets"
+    },
+    {
+      "id": "design",
+      "converged": true,
+      "finalStatus": "meets"
+    }
+  ],
+  "generated_at_note": "deterministic; no timestamps"
+}
