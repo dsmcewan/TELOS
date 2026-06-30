@@ -9,15 +9,19 @@ breakout (verdict-on-facts) → market gate — and produces `run-summary.json` 
 
 Concretely it demonstrates:
 
-- **Pattern-library-driven forge works end-to-end.** The RAG pattern (7 workstreams:
+- **Pattern-library-driven forge works end-to-end.** The RAG pattern (8 workstreams:
   `ingestion`, `embed-index`, `retrieval`, `generation`, `eval-harness`, `guardrails`,
-  `ops`) is expressed as data; `ai-forge/forge.mjs` drives it to `merge_status: ready`
-  over the unchanged TELOS trust spine.
+  `ops`, `design`) is expressed as data; `ai-forge/forge.mjs` drives it to
+  `merge_status: ready` over the unchanged TELOS trust spine.
 - **Real gate + real Ed25519 ledger + real merkle-dag.** No mocks in the critical
   path — `validateRecords`, `computePlan`, `runBuild`, and the content-addressed
   ledger all run against the actual implementations.
 - **Every workstream survives adversarial breakout on facts.** Each workstream's
-  breakout checks against its artifact on disk (`finalStatus: "meets"` for all 7).
+  breakout checks against its artifact on disk (`finalStatus: "meets"` for all 8).
+- **Design-as-artifact (Phase B).** The generic `design` workstream authors
+  `docs/DESIGN.md` and gate-verifies it against the plan + ledger + built artifact
+  tree via `docs/design/verify.mjs` — the design is a first-class, fail-closed
+  deliverable, not a by-product.
 - **Keyless and deterministic.** No API keys, no network, no timestamps. The run
   produces identical output on every machine and in CI.
 - **Live boundary available.** Network-dependent operations (real embeddings, vector

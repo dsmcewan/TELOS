@@ -37,6 +37,11 @@
       "id": "ops",
       "converged": true,
       "finalStatus": "meets"
+    },
+    {
+      "id": "design",
+      "converged": true,
+      "finalStatus": "meets"
     }
   ],
   "generated_at_note": "deterministic; no timestamps"

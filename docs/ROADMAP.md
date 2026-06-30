@@ -49,7 +49,7 @@ Each phase is an independent spec → plan → build cycle. Build order A → B 
   fail-closed test (break one artifact → no converge). All packages `npm test` green.
 - **De-risks:** the entire idea — B and C are additive once this exists.
 
-### Phase B — Design stage as a first-class verified artifact  🟡 in progress
+### Phase B — Design stage as a first-class verified artifact  ✅ done
 - **Objective:** emit the **architecture design/spec** (component boundaries, data
   flow, model/infra choices, eval plan, risks) as a council-approved artifact
   *before* build, with its own fact-checks (completeness/consistency, not "it runs").
@@ -69,16 +69,16 @@ Each phase is an independent spec → plan → build cycle. Build order A → B 
 | Phase | State | Spec | Plan | Built | Notes |
 | --- | --- | --- | --- | --- | --- |
 | A — substrate + RAG | ✅ done | [phase-a-design](specs/2026-06-29-ai-forge-phase-a-design.md) | — | [ai-forge-rag](runs/ai-forge-rag/) | all 7 workstreams converged; PRs #21–28 |
-| B — design stage | 🟡 in progress | [phase-b-design](specs/2026-06-29-ai-forge-phase-b-design.md) | — | — | spec written + approved; next: `writing-plans` |
+| B — design stage | ✅ done | [phase-b-design](specs/2026-06-29-ai-forge-phase-b-design.md) | — | [ai-forge-rag](runs/ai-forge-rag/) | design workstream → DESIGN.md verified vs plan+ledger+build; PRs #33–35 |
 | C — library breadth | ⬜ not started | — | — | — | after A |
 
 Legend: ⬜ not started · 🟡 in progress · ✅ done
 
 ## Next action
 
-**Phase B spec is written + approved** (`docs/specs/2026-06-29-ai-forge-phase-b-design.md`):
-a generic `design` workstream that authors `DESIGN.md` and verifies it against the
-plan + ledger + built artifacts (fail-closed). After user review → `superpowers:writing-plans` → build.
+**Phase B is complete.** Next: Phase C — grow the catalog (multi-agent system,
+eval-harness, serving + guardrails, and the TELOS trust-spine pattern). Depends on
+stable Phase A pattern schema (already settled).
 
 ## Decisions log
 
@@ -93,6 +93,9 @@ plan + ledger + built artifacts (fail-closed). After user review → `superpower
   design and a runnable system; chosen to prove the seam.
 - **2026-06-29 — Phase A built.** RAG pattern → `converged: true`; all 7 workstreams
   survive adversarial breakout; gate passes; Ed25519 ledger settles. PRs #21–28.
+- **2026-06-29 — Phase B built.** Design workstream → `DESIGN.md` verified vs
+  plan + ledger + built tree; RAG pattern now has 8 workstreams (7 build + design),
+  all converged; PRs #33–35.
 
 ## Out of scope (YAGNI — revisit only if needed)
 
