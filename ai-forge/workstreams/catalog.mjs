@@ -151,8 +151,9 @@ export function redactOutput(output) {
 }
 
 if (process.argv.includes("--selftest")) {
-  const sample = redactOutput("This SECRET should disappear.");
-  if (sample.includes("SECRET") || !sample.includes("[REDACTED]")) {
+  const blockedTerm = blockedTerms[0];
+  const sample = redactOutput("This " + blockedTerm.toUpperCase() + " should disappear.");
+  if (sample.toLowerCase().includes(blockedTerm.toLowerCase()) || !sample.includes("[REDACTED]")) {
     throw new Error("expected secret to be redacted");
   }
 }
@@ -260,7 +261,8 @@ export function assertThresholds(scores) {
 }
 
 if (process.argv.includes("--selftest")) {
-  const result = computeScorecard(${JSON.stringify(Object.fromEntries(Object.entries(thresholds).map(([key, value]) => [key, value + (1 - value) / 2])))});
+  const passingScores = ${JSON.stringify(Object.fromEntries(Object.entries(thresholds).map(([key, value]) => [key, Math.min(1, value + (1 - value) / 2)])))};
+  const result = computeScorecard(passingScores);
   for (const key of thresholdKeys) {
     if (result.passed[key] !== true) {
       throw new Error(\`expected passing score for \${key}\`);
@@ -270,7 +272,8 @@ if (process.argv.includes("--selftest")) {
   let below = false;
   try {
     const firstKey = thresholdKeys[0];
-    assertThresholds({ [firstKey]: thresholds[firstKey] - 0.01 });
+    const failingScores = { ...passingScores, [firstKey]: thresholds[firstKey] - 0.01 };
+    assertThresholds(failingScores);
   } catch (error) {
     below = /below threshold/i.test(String(error && error.message));
   }
