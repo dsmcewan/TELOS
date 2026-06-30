@@ -57,12 +57,16 @@ Each phase is an independent spec → plan → build cycle. Build order A → B 
 - **Depends on:** A (the plan stage may already emit a partial design — B makes it
   first-class and independently checkable).
 
-### Phase C — Library breadth  ⬜ not started
+### Phase C — Library breadth (the TELOS pattern)  🟡 in progress
 - **Objective:** grow the catalog; each pattern is mostly **data + fact-checks**.
-- **Deliverable (candidate patterns):** multi-agent system, eval-harness,
-  serving + guardrails, and **the TELOS trust-spine pattern itself** (the
-  self-similar / meta entry — satisfies the original "TELOS-style systems" ask).
-- **Depends on:** A (the pattern schema + loader must be stable first).
+- **This phase = the TELOS pattern** (self-similar / meta — the original "TELOS-style
+  systems" ask): ai-forge forges a working TELOS-like trust system — 7 forged
+  components (sign · plan · provenance · gate · council · ledger/done · breakout)
+  that **wrap the real spine** via a ctx-injected `spineRoot`, each with a genuine
+  executable selftest, + the generic design workstream (8 total).
+- **Deferred (future Phase C.2+):** multi-agent, eval-harness, serving+guardrails
+  patterns, and the composable-workstream-library generalization (issues #30/#37).
+- **Depends on:** A+B (pattern schema + generic design workstream — both settled).
 
 ## Status
 
@@ -70,15 +74,16 @@ Each phase is an independent spec → plan → build cycle. Build order A → B 
 | --- | --- | --- | --- | --- | --- |
 | A — substrate + RAG | ✅ done | [phase-a-design](specs/2026-06-29-ai-forge-phase-a-design.md) | — | [ai-forge-rag](runs/ai-forge-rag/) | all 7 workstreams converged; PRs #21–28 |
 | B — design stage | ✅ done | [phase-b-design](specs/2026-06-29-ai-forge-phase-b-design.md) | — | [ai-forge-rag](runs/ai-forge-rag/) | design workstream → DESIGN.md verified vs plan+ledger+build; PRs #33–35 |
-| C — library breadth | ⬜ not started | — | — | — | after A |
+| C — TELOS pattern | 🟡 in progress | [phase-c-design](specs/2026-06-29-ai-forge-phase-c-design.md) | — | — | spec written + approved; next: `writing-plans` |
 
 Legend: ⬜ not started · 🟡 in progress · ✅ done
 
 ## Next action
 
-**Phase B is complete.** Next: Phase C — grow the catalog (multi-agent system,
-eval-harness, serving + guardrails, and the TELOS trust-spine pattern). Depends on
-stable Phase A pattern schema (already settled).
+**Phase C spec is written + approved** (`docs/specs/2026-06-29-ai-forge-phase-c-design.md`):
+the TELOS pattern — ai-forge forges a TELOS-like trust system (7 spine-wrapping
+components + the generic design workstream, each with a genuine executable check).
+After user review → `superpowers:writing-plans` → build.
 
 ## Decisions log
 
