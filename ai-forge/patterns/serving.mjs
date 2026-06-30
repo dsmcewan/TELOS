@@ -103,9 +103,82 @@ if (isMain && process.argv.includes("--selftest")) {
 }
 `;
 
+const RATELIMIT_SRC = `import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
+// deterministic token bucket; 'now' is injected (ms). capacity tokens per windowMs.
+export function createLimiter(capacity, windowMs) {
+  const state = new Map();
+  return function allow(key, now) {
+    const e = state.get(key) || { count: 0, windowStart: now };
+    if (now - e.windowStart >= windowMs) { e.count = 0; e.windowStart = now; }
+    if (e.count >= capacity) { state.set(key, e); return { allow: false }; }
+    e.count++; state.set(key, e); return { allow: true };
+  };
+}
+if (isMain && process.argv.includes("--selftest")) {
+  const allow = createLimiter(2, 1000);
+  assert.equal(allow("k", 0).allow, true, "1st allowed");
+  assert.equal(allow("k", 10).allow, true, "2nd allowed");
+  assert.equal(allow("k", 20).allow, false, "3rd blocked in window");
+  assert.equal(allow("k", 1100).allow, true, "allowed after refill");
+  console.log("ratelimit OK");
+}
+`;
+
+const AUTHZ_SRC = `import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
+// keyless capability check over a FAKE token->caps map (NOT real secrets/auth).
+const CAPS = { "tok-reader": ["read"], "tok-admin": ["read", "write"] };
+export function authorize(token, action) {
+  const caps = CAPS[token] || [];
+  return { allow: caps.includes(action) };
+}
+if (isMain && process.argv.includes("--selftest")) {
+  assert.equal(authorize("tok-admin", "write").allow, true, "admin can write");
+  assert.equal(authorize("tok-reader", "write").allow, false, "reader cannot write");
+  assert.equal(authorize("nope", "read").allow, false, "unknown token denied");
+  console.log("authz OK");
+}
+`;
+
+const AUDIT_SRC = `import assert from "node:assert/strict";
+import { mkdtempSync, readFileSync, appendFileSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { handle } from "./handler.mjs";
+import { authorize } from "./authz.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
+// append-only structured audit line to an injected dir.
+export function appendAudit(dir, entry) {
+  const line = JSON.stringify({ path: entry.path, action: entry.action, status: entry.status, allow: entry.allow }) + "\\n";
+  appendFileSync(path.join(dir, "audit.log"), line);
+}
+if (isMain && process.argv.includes("--selftest")) {
+  const dir = mkdtempSync(path.join(os.tmpdir(), "serving-audit-"));
+  const req = { path: "/echo", method: "POST", body: { a: 1 } };
+  const res = handle(req);
+  const az = authorize("tok-admin", "write");
+  appendAudit(dir, { path: req.path, action: "write", status: res.status, allow: az.allow });
+  const lines = readFileSync(path.join(dir, "audit.log"), "utf8").trim().split("\\n");
+  assert.equal(lines.length, 1, "exactly one line appended");
+  const rec = JSON.parse(lines[0]);
+  for (const f of ["path", "action", "status", "allow"]) assert.ok(f in rec, "audit line has " + f);
+  console.log("audit OK");
+}
+`;
+
 const schemaWorkstream = mod({ id: "schema", signer: "codex", dependencies: [], file: "serving/schema.mjs", source: SCHEMA_SRC, needle: "export function validate", finding: "Request schema accepts conforming requests and rejects malformed ones." });
 const handlerWorkstream = mod({ id: "handler", signer: "claude", dependencies: ["schema"], file: "serving/handler.mjs", source: HANDLER_SRC, needle: "export function handle", finding: "Handler validates then echoes; invalid requests get a 400." });
 const inputGuardWorkstream = mod({ id: "input-guardrail", signer: "grok", dependencies: ["schema"], file: "serving/guard-in.mjs", source: GUARD_IN_SRC, needle: "export function checkInput", finding: "Input guardrail rejects oversized and denylisted input (fail-closed)." });
 const outputGuardWorkstream = mod({ id: "output-guardrail", signer: "grok", dependencies: ["handler"], file: "serving/guard-out.mjs", source: GUARD_OUT_SRC, needle: "export function redactOutput", finding: "Output guardrail redacts blocked tokens and passes clean output unchanged." });
+const ratelimitWorkstream = mod({ id: "ratelimit", signer: "agy", dependencies: ["schema"], file: "serving/ratelimit.mjs", source: RATELIMIT_SRC, needle: "export function createLimiter", finding: "Rate limiter allows N per window and blocks the next, refilling after the window." });
+const authzWorkstream = mod({ id: "authz", signer: "agy", dependencies: ["schema"], file: "serving/authz.mjs", source: AUTHZ_SRC, needle: "export function authorize", finding: "Authz allows capability-matched actions and denies others (keyless fake map)." });
+const auditWorkstream = mod({ id: "audit", signer: "codex", dependencies: ["handler", "authz"], file: "serving/audit.mjs", source: AUDIT_SRC, needle: "export function appendAudit", finding: "Audit appends one structured line per request to an isolated tmpdir log." });
 
-export const servingBuildWorkstreams = [schemaWorkstream, handlerWorkstream, inputGuardWorkstream, outputGuardWorkstream];
+export const servingBuildWorkstreams = [
+  schemaWorkstream, handlerWorkstream, inputGuardWorkstream, outputGuardWorkstream,
+  ratelimitWorkstream, authzWorkstream, auditWorkstream
+];
