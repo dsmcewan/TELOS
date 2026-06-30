@@ -110,5 +110,80 @@ const protocolWorkstream = mod({ id: "protocol", signer: "codex", dependencies: 
 const routerWorkstream = mod({ id: "router", signer: "agy", dependencies: ["roles"], file: "agents/router.mjs", source: ROUTER_SRC, needle: "export function route", finding: "Router maps a task to the capability-matching role; unmatched -> null." });
 const blackboardWorkstream = mod({ id: "blackboard", signer: "codex", dependencies: ["protocol"], file: "agents/blackboard.mjs", source: BLACKBOARD_SRC, needle: "createBlackboard", finding: "Blackboard round-trips values and gates posted messages through the protocol." });
 
-// NOTE (Task 2 appends orchestrator/aggregator/termination, then assembles the arrays/exports).
-export const multiagentBuildWorkstreams = [rolesWorkstream, protocolWorkstream, routerWorkstream, blackboardWorkstream];
+const ORCHESTRATOR_SRC = `import assert from "node:assert/strict";
+import { ROLES } from "./roles.mjs";
+import { route } from "./router.mjs";
+import { createBlackboard } from "./blackboard.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
+// runRound: each role acts in order via an injected deterministic callAgent;
+// outputs are recorded on a fresh blackboard and returned in role order.
+export function runRound(task, callAgent, roles = ROLES) {
+  const bb = createBlackboard();
+  const lead = route({ capability: "implement" }, roles);
+  const outputs = [];
+  for (const role of roles) { const out = callAgent(role, task); bb.put(role.id, out); outputs.push({ role: role.id, out }); }
+  return { lead, outputs, blackboard: bb };
+}
+if (isMain && process.argv.includes("--selftest")) {
+  const stub = (role, task) => role.id + ":" + task.goal;
+  const { lead, outputs, blackboard } = runRound({ goal: "g" }, stub);
+  assert.equal(outputs.length, 3, "one output per role");
+  assert.deepEqual(outputs.map((o) => o.role), ["researcher", "coder", "reviewer"], "role order preserved");
+  assert.equal(blackboard.get("coder"), "coder:g", "output recorded on blackboard");
+  assert.equal(lead, "coder", "lead routed by capability");
+  console.log("orchestrator OK");
+}
+`;
+
+const AGGREGATE_SRC = `import assert from "node:assert/strict";
+import { runRound } from "./orchestrator.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
+// majority vote over outputs; deterministic tie-break = lexicographically smallest value.
+export function aggregate(outputs) {
+  const tally = new Map();
+  for (const o of outputs) { const k = String(o.out); tally.set(k, (tally.get(k) || 0) + 1); }
+  let best = null, bestN = -1;
+  for (const [k, n] of [...tally.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1))) if (n > bestN) { best = k; bestN = n; }
+  return { decision: best, votes: bestN };
+}
+if (isMain && process.argv.includes("--selftest")) {
+  assert.deepEqual(aggregate([{ out: "a" }, { out: "a" }, { out: "b" }]), { decision: "a", votes: 2 }, "majority wins");
+  assert.equal(aggregate([{ out: "b" }, { out: "a" }]).decision, "a", "tie -> lexicographically smallest");
+  const { outputs } = runRound({ goal: "g" }, (role) => (role.id === "reviewer" ? "x" : "y"));
+  assert.equal(aggregate(outputs).decision, "y", "aggregates real orchestrator outputs (2 y vs 1 x)");
+  console.log("aggregate OK");
+}
+`;
+
+const TERMINATE_SRC = `import assert from "node:assert/strict";
+import { runRound } from "./orchestrator.mjs";
+import { pathToFileURL } from "node:url";
+const isMain = import.meta.url === pathToFileURL(process.argv[1]).href;
+// shouldStop: stop on convergence, else halt at maxRounds (runaway guard).
+export function shouldStop(state, maxRounds) {
+  if (state.converged) return { stop: true, reason: "converged" };
+  if (state.round >= maxRounds) return { stop: true, reason: "max-rounds" };
+  return { stop: false, reason: "continue" };
+}
+if (isMain && process.argv.includes("--selftest")) {
+  assert.deepEqual(shouldStop({ converged: true, round: 1 }, 5), { stop: true, reason: "converged" }, "stops early on convergence");
+  assert.deepEqual(shouldStop({ converged: false, round: 5 }, 5), { stop: true, reason: "max-rounds" }, "runaway halts at bound");
+  assert.equal(shouldStop({ converged: false, round: 2 }, 5).stop, false, "continues mid-run");
+  // drive a bounded loop over the real orchestrator: must terminate, never infinite.
+  let round = 0, stop = false;
+  while (!stop) { runRound({ goal: "g" }, (role) => role.id); round++; ({ stop } = shouldStop({ converged: false, round }, 3)); }
+  assert.equal(round, 3, "loop halts at maxRounds=3");
+  console.log("terminate OK");
+}
+`;
+
+const orchestratorWorkstream = mod({ id: "orchestrator", signer: "claude", dependencies: ["roles", "router", "blackboard", "protocol"], file: "agents/orchestrator.mjs", source: ORCHESTRATOR_SRC, needle: "export function runRound", finding: "Orchestrator runs each role once in order and records outputs on the blackboard." });
+const aggregatorWorkstream = mod({ id: "aggregator", signer: "claude", dependencies: ["orchestrator"], file: "agents/aggregate.mjs", source: AGGREGATE_SRC, needle: "export function aggregate", finding: "Aggregator takes a majority vote with a deterministic tie-break." });
+const terminationWorkstream = mod({ id: "termination", signer: "grok", dependencies: ["orchestrator"], file: "agents/terminate.mjs", source: TERMINATE_SRC, needle: "export function shouldStop", finding: "Termination stops on convergence and halts a runaway loop at maxRounds." });
+
+export const multiagentBuildWorkstreams = [
+  rolesWorkstream, protocolWorkstream, routerWorkstream, blackboardWorkstream,
+  orchestratorWorkstream, aggregatorWorkstream, terminationWorkstream
+];
