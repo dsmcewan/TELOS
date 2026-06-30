@@ -101,7 +101,84 @@ export const gateWorkstream = componentWorkstream({
   makeSelftest: gateSelftest, finding: "Approval gate passes a unanimous council and blocks a dissent."
 });
 
+// --- council ---
+function councilSelftest(spineRoot) {
+  return `import assert from "node:assert/strict";
+import { runCouncil } from "${spineRoot}build-gate/council.mjs";
+import { verifyPacket } from "${spineRoot}build-gate/sign.mjs";
+process.env.TELOS_SECRET_CLAUDE = "k"; process.env.TELOS_SECRET_AGY = "k"; process.env.TELOS_SECRET_CODEX = "k";
+const seats = [{ model: "claude", role: "approver" }, { model: "agy", role: "approver" }, { model: "codex", role: "approver" }];
+const callSeat = async ({ model }) => ({
+  packet: { build_id: "t", use_case: "u", model, role: "approver", decision: "approve", docs_reviewed: [], required_edits: [], hard_stops: [], proposal_ref: "r", confidence: "high", timestamp: "2026-06-30T00:00:00Z" },
+  provenance: { model, source: "stub", response_id: "r-" + model }
+});
+const results = await runCouncil({ seats, callSeat, dossier: { build_id: "t" } });
+assert.equal(results.length, 3, "all seats");
+assert.deepEqual(results.map((r) => r.model), ["claude", "agy", "codex"], "order preserved");
+for (const r of results) { assert.equal(r.ok, true, r.model + " ok"); assert.equal(verifyPacket(r.packet, "k").ok, true, r.model + " signed packet verifies"); }
+console.log("telos/council selftest OK");
+`;
+}
+export const councilWorkstream = componentWorkstream({
+  id: "council", signer: "claude", dependencies: ["sign", "provenance"], file: "telos/council.mjs",
+  makeSelftest: councilSelftest, finding: "Council fan-out produces ordered, signed, verifiable packets."
+});
+
+// --- ledger (+ done) --- (ISOLATED tmpdir; never the project .telos)
+function ledgerSelftest(spineRoot) {
+  return `import assert from "node:assert/strict";
+import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { generateKeypair, makeRecord, appendLedger } from "${spineRoot}merkle-dag/crypto.mjs";
+import { computePlan, writePlan } from "${spineRoot}merkle-dag/merkle.mjs";
+import { computeDiskTreeHash } from "${spineRoot}merkle-dag/artifact.mjs";
+import { verify } from "${spineRoot}merkle-dag/ledger-gate.mjs";
+const root = mkdtempSync(path.join(os.tmpdir(), "telos-ledger-"));   // ISOLATED — never the forge's .telos
+const telosDir = path.join(root, ".telos");
+mkdirSync(telosDir, { recursive: true });
+writeFileSync(path.join(root, "a.txt"), "hello");
+const kp = generateKeypair();
+const defs = [{ id: "a", files: ["a.txt"], requirements: "r", test: { cmd: "node", args: ["-e", "process.exit(0)"] }, dependencies: [] }];
+const { plan } = computePlan(defs, { authorizedSigners: { codex: kp.publicJwk } });
+writePlan(telosDir, plan);
+const node = plan.nodes.find((n) => n.id === "a");
+const disk = computeDiskTreeHash(node.files, root);
+const rec = makeRecord({ task_id: "a", effective_hash: node.effective_hash, artifact_tree_hash: disk.tree_hash, artifact_files: disk.files }, "codex", kp.privatePem);
+appendLedger(path.join(telosDir, "ledger.jsonl"), rec);
+assert.equal(verify(telosDir, { baseDir: root }).merge_status, "ready", "settled ledger verifies done()");
+writeFileSync(path.join(root, "a.txt"), "TAMPERED");
+assert.notEqual(verify(telosDir, { baseDir: root }).merge_status, "ready", "tampered artifact blocked");
+console.log("telos/ledger selftest OK");
+`;
+}
+export const ledgerWorkstream = componentWorkstream({
+  id: "ledger", signer: "agy", dependencies: ["sign", "plan"], file: "telos/ledger.mjs",
+  makeSelftest: ledgerSelftest, finding: "Append-only signed ledger settles and a tamper fails done()."
+});
+
+// --- breakout (verdict on facts) ---
+function breakoutSelftest(spineRoot) {
+  return `import assert from "node:assert/strict";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { buildCheck } from "${spineRoot}breakout/verifier.mjs";
+const dir = mkdtempSync(path.join(os.tmpdir(), "telos-verify-"));
+writeFileSync(path.join(dir, "evidence.txt"), "proof");
+const present = await buildCheck({ type: "file_exists", path: "evidence.txt" }, dir).run();
+assert.equal(present.ok, true, "present evidence -> meets");
+const absent = await buildCheck({ type: "file_exists", path: "NOPE.txt" }, dir).run();
+assert.equal(absent.ok, false, "absent evidence -> blocked");
+console.log("telos/verify selftest OK");
+`;
+}
+export const breakoutWorkstream = componentWorkstream({
+  id: "breakout", signer: "grok", dependencies: ["gate"], file: "telos/verify.mjs",
+  makeSelftest: breakoutSelftest, finding: "Verdict-on-facts confirms present evidence and blocks absent."
+});
+
 export const telosPattern = {
   id: "telos",
-  workstreams: [signWorkstream, planWorkstream, provenanceWorkstream, gateWorkstream] // full 8-workstream set assembled in Task 4
+  workstreams: [signWorkstream, planWorkstream, provenanceWorkstream, gateWorkstream, councilWorkstream, ledgerWorkstream, breakoutWorkstream] // full 8-workstream set assembled in Task 4
 };
