@@ -1074,6 +1074,87 @@ async function main() {
   } finally {
     Object.defineProperty(Set.prototype, "values", setValuesPrototypeDescriptor);
   }
+  const arrayPrototypeLeakDescriptor = Object.getOwnPropertyDescriptor(Array.prototype, "leakedNote");
+  try {
+    Object.defineProperty(Array.prototype, "leakedNote", {
+      value: "secret",
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    });
+    assert.throws(
+      () => outputGuardAccessorModule.redactOutput(["visible"]),
+      /array|inherited|prototype|unsupported/i
+    );
+  } finally {
+    if (arrayPrototypeLeakDescriptor) {
+      Object.defineProperty(Array.prototype, "leakedNote", arrayPrototypeLeakDescriptor);
+    } else {
+      delete Array.prototype.leakedNote;
+    }
+  }
+  const mapPrototypeLeakDescriptor = Object.getOwnPropertyDescriptor(Map.prototype, "leakedNote");
+  try {
+    Object.defineProperty(Map.prototype, "leakedNote", {
+      value: "secret",
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    });
+    assert.throws(
+      () => outputGuardAccessorModule.redactOutput(new Map([["note", "visible"]])),
+      /map|inherited|prototype|unsupported/i
+    );
+  } finally {
+    if (mapPrototypeLeakDescriptor) {
+      Object.defineProperty(Map.prototype, "leakedNote", mapPrototypeLeakDescriptor);
+    } else {
+      delete Map.prototype.leakedNote;
+    }
+  }
+  const setPrototypeLeakDescriptor = Object.getOwnPropertyDescriptor(Set.prototype, "leakedNote");
+  try {
+    Object.defineProperty(Set.prototype, "leakedNote", {
+      value: "secret",
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    });
+    assert.throws(
+      () => outputGuardAccessorModule.redactOutput(new Set(["visible"])),
+      /set|inherited|prototype|unsupported/i
+    );
+  } finally {
+    if (setPrototypeLeakDescriptor) {
+      Object.defineProperty(Set.prototype, "leakedNote", setPrototypeLeakDescriptor);
+    } else {
+      delete Set.prototype.leakedNote;
+    }
+  }
+  const arrayValuesPrototypeDescriptor = Object.getOwnPropertyDescriptor(Array.prototype, "values");
+  let arrayPrototypeValuesGetterReads = 0;
+  try {
+    Object.defineProperty(Array.prototype, "values", {
+      configurable: true,
+      get() {
+        arrayPrototypeValuesGetterReads += 1;
+        return function valuesAccessorSentinel() {
+          throw new Error("array values accessor should not be invoked");
+        };
+      },
+    });
+    assert.throws(
+      () => outputGuardAccessorModule.redactOutput(["visible"]),
+      /values|accessor|unsupported|prototype/i
+    );
+    assert.equal(
+      arrayPrototypeValuesGetterReads,
+      0,
+      "Array.prototype.values getter must not be invoked during redaction"
+    );
+  } finally {
+    Object.defineProperty(Array.prototype, "values", arrayValuesPrototypeDescriptor);
+  }
 
   const servingInputGuardWorkstream = servingBuildWorkstreams.find((workstream) => workstream.id === "input-guardrail");
   assert.ok(servingInputGuardWorkstream, "serving input guard workstream exists");

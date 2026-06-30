@@ -290,6 +290,85 @@ const safeObjectPrototypeFunctionKeys = new Set([
   "toLocaleString",
 ]);
 const safeObjectPrototypeAccessorKeys = new Set(["__proto__"]);
+const safeArrayPrototypeFunctionKeys = new Set([
+  "constructor",
+  "at",
+  "concat",
+  "copyWithin",
+  "fill",
+  "find",
+  "findIndex",
+  "findLast",
+  "findLastIndex",
+  "lastIndexOf",
+  "pop",
+  "push",
+  "reverse",
+  "shift",
+  "unshift",
+  "slice",
+  "sort",
+  "splice",
+  "includes",
+  "indexOf",
+  "join",
+  "keys",
+  "entries",
+  "values",
+  "forEach",
+  "filter",
+  "flat",
+  "flatMap",
+  "map",
+  "every",
+  "some",
+  "reduce",
+  "reduceRight",
+  "toReversed",
+  "toSorted",
+  "toSpliced",
+  "with",
+  "toLocaleString",
+  "toString",
+  Symbol.iterator,
+]);
+const safeArrayPrototypeDataKeys = new Set(["length", Symbol.unscopables]);
+const safeMapPrototypeFunctionKeys = new Set([
+  "constructor",
+  "get",
+  "set",
+  "has",
+  "delete",
+  "clear",
+  "entries",
+  "forEach",
+  "keys",
+  "values",
+  Symbol.iterator,
+]);
+const safeMapPrototypeAccessorKeys = new Set(["size"]);
+const safeMapPrototypeDataKeys = new Set([Symbol.toStringTag]);
+const safeSetPrototypeFunctionKeys = new Set([
+  "constructor",
+  "has",
+  "add",
+  "delete",
+  "difference",
+  "clear",
+  "entries",
+  "forEach",
+  "intersection",
+  "isSubsetOf",
+  "isSupersetOf",
+  "isDisjointFrom",
+  "symmetricDifference",
+  "union",
+  "values",
+  "keys",
+  Symbol.iterator,
+]);
+const safeSetPrototypeAccessorKeys = new Set(["size"]);
+const safeSetPrototypeDataKeys = new Set([Symbol.toStringTag]);
 
 function containsBlockedTerm(value) {
   return [...blockedTermPatterns, ...blockedPatternRegexes].some((pattern) => {
@@ -364,6 +443,47 @@ function assertSafeBaseObjectPrototype(value) {
       return;
     }
     prototype = Object.getPrototypeOf(prototype);
+  }
+}
+
+function assertSafePrototypeSurface(prototype, prototypeName, functionKeys, accessorKeys, dataKeys) {
+  for (const key of Reflect.ownKeys(prototype)) {
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
+    if (!descriptor) continue;
+    if (functionKeys.has(key)) {
+      if (!Object.hasOwn(descriptor, "value") || typeof descriptor.value !== "function") {
+        throw new Error(\`unsupported inherited property on \${prototypeName}: \${String(key)}\`);
+      }
+      continue;
+    }
+    if (accessorKeys.has(key)) {
+      if (Object.hasOwn(descriptor, "value") || typeof descriptor.get !== "function") {
+        throw new Error(\`unsupported inherited property on \${prototypeName}: \${String(key)}\`);
+      }
+      continue;
+    }
+    if (dataKeys.has(key)) {
+      if (!Object.hasOwn(descriptor, "value")) {
+        throw new Error(\`unsupported inherited property on \${prototypeName}: \${String(key)}\`);
+      }
+      if (prototypeName === "Array.prototype" && key === "length" && descriptor.value === 0) continue;
+      if (
+        prototypeName === "Array.prototype" &&
+        key === Symbol.unscopables &&
+        descriptor.value &&
+        typeof descriptor.value === "object" &&
+        Reflect.ownKeys(descriptor.value).every((nestedKey) => {
+          const nestedDescriptor = Object.getOwnPropertyDescriptor(descriptor.value, nestedKey);
+          return nestedDescriptor && Object.hasOwn(nestedDescriptor, "value") && typeof nestedDescriptor.value === "boolean";
+        })
+      ) {
+        continue;
+      }
+      if (prototypeName === "Map.prototype" && key === Symbol.toStringTag && descriptor.value === "Map") continue;
+      if (prototypeName === "Set.prototype" && key === Symbol.toStringTag && descriptor.value === "Set") continue;
+      throw new Error(\`unsupported inherited data property on \${prototypeName}: \${String(key)}\`);
+    }
+    throw new Error(\`unsupported inherited property on \${prototypeName}: \${String(key)}\`);
   }
 }
 
@@ -444,10 +564,24 @@ function redactJsonValue(value, seen = new WeakSet()) {
     assertNoOwnAccessors(value);
     assertSafeBaseObjectPrototype(value);
     if (Array.isArray(value)) {
+      assertSafePrototypeSurface(
+        Array.prototype,
+        "Array.prototype",
+        safeArrayPrototypeFunctionKeys,
+        new Set(),
+        safeArrayPrototypeDataKeys
+      );
       assertSafeInheritedPrototypeProperties(value, Array.prototype);
       return cloneRedactedArray(value, seen);
     }
     if (value instanceof Map) {
+      assertSafePrototypeSurface(
+        Map.prototype,
+        "Map.prototype",
+        safeMapPrototypeFunctionKeys,
+        safeMapPrototypeAccessorKeys,
+        safeMapPrototypeDataKeys
+      );
       assertSafeInheritedPrototypeProperties(value, Map.prototype);
       const mapEntries = getPrototypeMethod(Map.prototype, "entries");
       return new Map(
@@ -458,6 +592,13 @@ function redactJsonValue(value, seen = new WeakSet()) {
       );
     }
     if (value instanceof Set) {
+      assertSafePrototypeSurface(
+        Set.prototype,
+        "Set.prototype",
+        safeSetPrototypeFunctionKeys,
+        safeSetPrototypeAccessorKeys,
+        safeSetPrototypeDataKeys
+      );
       assertSafeInheritedPrototypeProperties(value, Set.prototype);
       const setValues = getPrototypeMethod(Set.prototype, "values");
       return new Set(Array.from(setValues.call(value), (entryValue) => redactJsonValue(entryValue, seen)));
