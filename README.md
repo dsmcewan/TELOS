@@ -130,6 +130,9 @@ artifact checked against the plan + ledger + built tree (8 workstreams total; al
 Phase C is complete: the catalog now includes the self-similar **TELOS pattern** — ai-forge
 forges a TELOS-like trust system (7 spine-wrapping components + design; 8 workstreams converge;
 see `docs/runs/ai-forge-telos/`).
+Phase C.2 is complete: the catalog now also includes **multi-agent**, **eval-harness**, and
+**serving+guardrails** patterns — each an independent 8-workstream run converged over the real
+gate + Ed25519 ledger (see `docs/runs/ai-forge-{multiagent,eval,serving}/`; PRs #49–60).
 
 ## SaaS Forge (`saas-forge/`)
 
