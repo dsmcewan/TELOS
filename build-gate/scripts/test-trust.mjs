@@ -221,4 +221,41 @@ assert.equal(validateRecords(dossier, signedTrio()).gate_status, "pass", "valid 
   console.log("test-trust.mjs signed-mode market/capability auth OK");
 }
 
+// 11. required_docs evidence must come from a signature-verified packet in signed
+//     mode: an unsigned extra / non-required-model packet cannot clear a doc blocker.
+{
+  const docDossier = { ...dossier, required_docs: ["doc-a", "secret-doc"] };
+  // The signed trio reviewed only doc-a. An UNSIGNED gemini packet claims secret-doc;
+  // it is never signature-checked, so it must not satisfy the required doc.
+  const geminiClaim = approval("gemini", ["doc-a", "secret-doc"]);
+  const r = validateRecords(docDossier, [...signedTrio(), geminiClaim]);
+  assert.equal(r.gate_status, "blocked");
+  assert.ok(r.blockers.some((b) => b.includes("Required doc was not reviewed by any packet: secret-doc")),
+    "an unsigned extra packet must not satisfy a required doc in signed mode; got: " + JSON.stringify(r.blockers));
+
+  // Sanity: when the signed required packets review the doc, it is satisfied.
+  const withDoc = ["claude", "agy", "codex"].map((m) => signPacket(approval(m, ["doc-a", "secret-doc"]), SECRET[m]));
+  assert.equal(validateRecords(docDossier, withDoc).gate_status, "pass",
+    "signed packets that reviewed the doc should satisfy it");
+}
+
+// 12. LEXI review must likewise come from a signature-verified packet in signed mode.
+{
+  const lexiRef = "shared/Filing_Package_July_2026/LEXI_DB_REFERENCE.md";
+  const lexiDossier = { ...dossier, lexi_required: true, lexi_reference_read: true };
+  // Signed trio did NOT review the LEXI ref; an unsigned gemini packet claims it.
+  const geminiClaim = approval("gemini", ["doc-a", lexiRef]);
+  const r = validateRecords(lexiDossier, [...signedTrio(), geminiClaim]);
+  assert.equal(r.gate_status, "blocked");
+  assert.ok(r.blockers.some((b) => b.includes("LEXI reference document")),
+    "an unsigned packet must not satisfy the LEXI review in signed mode; got: " + JSON.stringify(r.blockers));
+
+  // A signed required packet that reviewed the LEXI ref satisfies it.
+  const withLexi = ["claude", "agy", "codex"].map((m) => signPacket(approval(m, ["doc-a", lexiRef]), SECRET[m]));
+  assert.equal(validateRecords(lexiDossier, withLexi).gate_status, "pass",
+    "signed packets that reviewed the LEXI ref should satisfy it");
+
+  console.log("test-trust.mjs signed-mode docs/LEXI evidence auth OK");
+}
+
 console.log("test-trust.mjs OK");

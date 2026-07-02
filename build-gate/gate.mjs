@@ -139,6 +139,12 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
     }
   }
 
+  // In signed mode, only signature-verified required packets are trusted as
+  // evidence for docs_reviewed / LEXI review below. A duplicate packet (only the
+  // first per model reaches packetsByModel and is verified) or a non-required-model
+  // packet is never signature-checked, so it must not clear a required-doc or LEXI
+  // blocker. Legacy/unsigned mode authenticates nothing, so every packet counts.
+  const trustedPackets = [];
   if (signed) {
     for (const model of REQUIRED_MODELS) {
       const packet = packetsByModel.get(model);
@@ -151,9 +157,12 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
       const result = verifyPacket(packet, secret);
       if (!result.ok) {
         blockers.push(`${model} packet signature invalid in signed mode: ${result.reason}.`);
+      } else {
+        trustedPackets.push(packet);
       }
     }
   }
+  const evidencePackets = signed ? trustedPackets : packets;
 
   // Provenance is advisory: the gate CANNOT cryptographically authenticate which
   // model authored a packet. It surfaces whether each required approval carries a
@@ -181,7 +190,7 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
   }
 
   const requiredDocs = asArray(dossier.required_docs);
-  const docsReviewed = unique(packets.flatMap((packet) => asArray(packet.docs_reviewed)));
+  const docsReviewed = unique(evidencePackets.flatMap((packet) => asArray(packet.docs_reviewed)));
   // Membership is path-normalized: separators (\ vs /) and case do not change
   // whether a required doc counts as reviewed.
   const reviewedNormalized = new Set(docsReviewed.map(normalizeDocPath));
@@ -192,7 +201,7 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
   }
 
   validateProtectedPaths(dossier, blockers);
-  validateLexiGate(dossier, packets, blockers);
+  validateLexiGate(dossier, evidencePackets, blockers);
   validateGrokResolution(packetsByModel.get("grok"), dossier, blockers, warnings);
   validateCapabilityPackets(dossier, capabilityPackets, blockers, warnings, signed);
   validateMarketReadinessPackets(dossier, marketPackets, blockers, warnings, source, signed);
