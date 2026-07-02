@@ -50,10 +50,10 @@ export function secretFor(model) {
 
 // A market-readiness packet is authored by the trusted harness from an on-disk-
 // verified breakout record, so it has no live server response id. In signed mode it
-// is re-attributed to the workstream's SIGNER (a required seat with a secret — never
-// an advisory lens), carries a reproducible content-addressed attestation over the
-// record, and is HMAC-signed. The reviewing `lens` is preserved as `reviewed_by_lens`.
-// Without a secret the packet is returned attested-but-unsigned so the gate blocks it.
+// is re-attributed to the workstream's SIGNER (which must have a TELOS_SECRET_*),
+// carries a reproducible content-addressed attestation over the record, and is
+// HMAC-signed. The reviewing `lens` is preserved as `reviewed_by_lens`. Without a
+// secret the packet is returned attested-but-unsigned so the gate blocks it.
 export function signMarketPacket(packet, record, signer) {
   const digest = createHash("sha256").update(canonicalize(record ?? null)).digest("hex");
   const stamped = {

@@ -114,6 +114,7 @@ function runMarketGate({ projectRoot, dossierMeta, teamRecords, approvals, signe
  *   docsFor       research adapter (default offline; live = Context7)
  *   makeGenerators(arch) -> generateFiles (default keyless demo team renderers)
  *   maxCycles     research->build->breakout->gate iterations before giving up
+ *   signed        default false; when true, gate runs under trust_mode: "signed"
  * Returns { converged, cycles[], teams[], architecture, verdict }.
  */
 export async function forge({

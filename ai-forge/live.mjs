@@ -204,6 +204,7 @@ export function liveBoundaries({ embed, vectorStore, callTool }) {
  *   ctx          override the default ragContext
  *   serverPath   path to ai-peer-mcp server.mjs     (live spawn only)
  *   maxCycles    default 3
+ *   signed       default false; when true, gate runs under trust_mode: "signed"
  */
 export async function runForgeLive({
   projectRoot, telos, dossierMeta,

@@ -105,6 +105,7 @@ export function syntheticApprovals(dossierMeta) {
  *   makeGenerators  (pattern, ctx) -> generateFiles adapter  [default: makePatternGenerators]
  *   makeBreakoutFns optional breakout factory; default = factBreakout (keyless, verdict on disk)
  *   makeApprovals   (dossierMeta) -> packet[]  [default: syntheticApprovals]
+ *   signed          default false; when true, gate runs under trust_mode: "signed"
  *   maxCycles       plan->build->breakout->gate iterations before giving up  [default: 3]
  *
  * Returns { converged, cycles[], records[], verdict }.
