@@ -96,6 +96,7 @@ assert.equal(validateRecords(dossier, signedTrio()).gate_status, "pass", "valid 
       architecture_findings: [], backend_schema_findings: [], security_findings: [], accuracy_eval_findings: [],
       scalability_findings: [], frontend_design_findings: [], lexi_class_ui_status: "meets",
       go_to_market_blockers: [], recommendation_to_claude: "ship", timestamp: "2026-06-27T00:00:00Z",
+      provenance: { model: "real-claude", source: "ai-peer-mcp", response_id: "resp_market_claude_1" },
       breakout: {
         workstream: "frontend-brand-experience", converged: true, finalStatus: "meets",
         surviving_blockers: [], rounds: [{ round: 1 }], checks
@@ -133,6 +134,7 @@ assert.equal(validateRecords(dossier, signedTrio()).gate_status, "pass", "valid 
       architecture_findings: [], backend_schema_findings: [], security_findings: [], accuracy_eval_findings: [],
       scalability_findings: [], frontend_design_findings: [], lexi_class_ui_status: "meets",
       go_to_market_blockers: [], recommendation_to_claude: "ship", timestamp: "2026-06-27T00:00:00Z",
+      provenance: { model: "real-claude", source: "ai-peer-mcp", response_id: "resp_market_claude_1" },
       breakout: {
         workstream: "frontend-brand-experience", converged: true, finalStatus: "meets",
         surviving_blockers: [], rounds: [{ round: 1 }], checks
@@ -150,6 +152,129 @@ assert.equal(validateRecords(dossier, signedTrio()).gate_status, "pass", "valid 
     emptyNeedleBypass.blockers.some((b) => b.includes("existence-only") || b.includes("zero-byte")),
     "blocker must mention existence-only or zero-byte; got: " + JSON.stringify(emptyNeedleBypass.blockers)
   );
+}
+
+// 9. Market packets are authenticated in signed mode: unsigned or no-provenance
+//    market evidence must block even when its on-disk checks would pass.
+{
+  const dir = mkdtempSync(path.join(os.tmpdir(), "telos-market-auth-"));
+  writeFileSync(path.join(dir, "art.txt"), "marker-TELOS-OK");
+  const marketDossier = {
+    ...dossier, idea_id: "telos-upgrade", market_bound: true, user_facing_frontend: false,
+    affected_directories: [dir], required_market_workstreams: ["frontend-brand-experience"]
+  };
+  const mkPacket = () => ({
+    build_id: "trust-demo", idea_id: "telos-upgrade", model: "claude", project_state: "prototype",
+    workstreams_reviewed: ["frontend-brand-experience"], business_thesis: "t", target_users: ["u"],
+    architecture_findings: [], backend_schema_findings: [], security_findings: [], accuracy_eval_findings: [],
+    scalability_findings: [], frontend_design_findings: [], lexi_class_ui_status: "meets",
+    go_to_market_blockers: [], recommendation_to_claude: "ship", timestamp: "2026-06-27T00:00:00Z",
+    provenance: { model: "real-claude", source: "ai-peer-mcp", response_id: "resp_market_claude_1" },
+    breakout: {
+      workstream: "frontend-brand-experience", converged: true, finalStatus: "meets",
+      surviving_blockers: [], rounds: [{ round: 1 }],
+      checks: [{ type: "file_contains", path: "art.txt", needle: "marker-TELOS-OK" }]
+    }
+  });
+
+  const good = validateRecords(marketDossier, signedTrio(), { dossierDir: dir }, [], [signPacket(mkPacket(), SECRET.claude)]);
+  assert.equal(good.gate_status, "pass", "signed market packet with provenance should pass; got: " + JSON.stringify(good.blockers));
+
+  const unsigned = validateRecords(marketDossier, signedTrio(), { dossierDir: dir }, [], [mkPacket()]);
+  assert.equal(unsigned.gate_status, "blocked");
+  assert.ok(unsigned.blockers.some((b) => b.includes("Market readiness packet for claude signature invalid")),
+    "unsigned market packet must block in signed mode; got: " + JSON.stringify(unsigned.blockers));
+
+  const noProv = mkPacket(); delete noProv.provenance;
+  const noProvSigned = validateRecords(marketDossier, signedTrio(), { dossierDir: dir }, [], [signPacket(noProv, SECRET.claude)]);
+  assert.equal(noProvSigned.gate_status, "blocked");
+  assert.ok(noProvSigned.blockers.some((b) => b.includes("Market readiness packet for claude carries no provenance")),
+    "market packet without provenance must block in signed mode; got: " + JSON.stringify(noProvSigned.blockers));
+}
+
+// 10. Capability packets are authenticated in signed mode the same way.
+{
+  const capDossier = {
+    ...dossier, idea_id: "cap-idea", telos: "prove capability signing", required_capability_models: ["claude"]
+  };
+  const capPacket = () => ({
+    build_id: "trust-demo", idea_id: "cap-idea", model: "claude", telos: "prove capability signing",
+    docs_needed: [], skills_needed: [], connectors_needed: [], available_now: [],
+    missing_capabilities: [], can_build_during_planning: [], built_during_planning: [],
+    must_request_user_or_install: [], presented_to_claude: true,
+    recommendation_to_claude: "ready", timestamp: "2026-06-27T00:00:00Z",
+    provenance: { model: "real-claude", source: "ai-peer-mcp", response_id: "resp_cap_claude_1" }
+  });
+
+  const good = validateRecords(capDossier, signedTrio(), {}, [signPacket(capPacket(), SECRET.claude)]);
+  assert.equal(good.gate_status, "pass", "signed capability packet with provenance should pass; got: " + JSON.stringify(good.blockers));
+
+  const unsigned = validateRecords(capDossier, signedTrio(), {}, [capPacket()]);
+  assert.ok(unsigned.blockers.some((b) => b.includes("Capability packet for claude signature invalid")),
+    "unsigned capability packet must block in signed mode; got: " + JSON.stringify(unsigned.blockers));
+
+  const noProv = capPacket(); delete noProv.provenance;
+  const noProvSigned = validateRecords(capDossier, signedTrio(), {}, [signPacket(noProv, SECRET.claude)]);
+  assert.ok(noProvSigned.blockers.some((b) => b.includes("Capability packet for claude carries no provenance")),
+    "capability packet without provenance must block in signed mode; got: " + JSON.stringify(noProvSigned.blockers));
+
+  console.log("test-trust.mjs signed-mode market/capability auth OK");
+}
+
+// 11. required_docs evidence must come from a signature-verified packet in signed
+//     mode: an unsigned extra / non-required-model packet cannot clear a doc blocker.
+{
+  const docDossier = { ...dossier, required_docs: ["doc-a", "secret-doc"] };
+  // The signed trio reviewed only doc-a. An UNSIGNED gemini packet claims secret-doc;
+  // it is never signature-checked, so it must not satisfy the required doc.
+  const geminiClaim = approval("gemini", ["doc-a", "secret-doc"]);
+  const r = validateRecords(docDossier, [...signedTrio(), geminiClaim]);
+  assert.equal(r.gate_status, "blocked");
+  assert.ok(r.blockers.some((b) => b.includes("Required doc was not reviewed by any packet: secret-doc")),
+    "an unsigned extra packet must not satisfy a required doc in signed mode; got: " + JSON.stringify(r.blockers));
+
+  // Sanity: when the signed required packets review the doc, it is satisfied.
+  const withDoc = ["claude", "agy", "codex"].map((m) => signPacket(approval(m, ["doc-a", "secret-doc"]), SECRET[m]));
+  assert.equal(validateRecords(docDossier, withDoc).gate_status, "pass",
+    "signed packets that reviewed the doc should satisfy it");
+}
+
+// 12. LEXI review must likewise come from a signature-verified packet in signed mode.
+{
+  const lexiRef = "shared/Filing_Package_July_2026/LEXI_DB_REFERENCE.md";
+  const lexiDossier = { ...dossier, lexi_required: true, lexi_reference_read: true };
+  // Signed trio did NOT review the LEXI ref; an unsigned gemini packet claims it.
+  const geminiClaim = approval("gemini", ["doc-a", lexiRef]);
+  const r = validateRecords(lexiDossier, [...signedTrio(), geminiClaim]);
+  assert.equal(r.gate_status, "blocked");
+  assert.ok(r.blockers.some((b) => b.includes("LEXI reference document")),
+    "an unsigned packet must not satisfy the LEXI review in signed mode; got: " + JSON.stringify(r.blockers));
+
+  // A signed required packet that reviewed the LEXI ref satisfies it.
+  const withLexi = ["claude", "agy", "codex"].map((m) => signPacket(approval(m, ["doc-a", lexiRef]), SECRET[m]));
+  assert.equal(validateRecords(lexiDossier, withLexi).gate_status, "pass",
+    "signed packets that reviewed the LEXI ref should satisfy it");
+
+  console.log("test-trust.mjs signed-mode docs/LEXI evidence auth OK");
+}
+
+// 13. No seat borrows another's id: two required packets sharing a response_id
+//     block in signed mode (each real id is unique to its producer).
+{
+  const claude = signPacket(approval("claude", ["doc-a"]), SECRET.claude);
+  const agy = signPacket(approval("agy", ["doc-a"]), SECRET.agy);
+  const codexPkt = approval("codex", ["doc-a"]);
+  codexPkt.provenance.response_id = "resp_claude_123"; // borrow claude's real id, then re-sign
+  const codex = signPacket(codexPkt, SECRET.codex);
+  const r = validateRecords(dossier, [claude, agy, codex]);
+  assert.equal(r.gate_status, "blocked");
+  assert.ok(r.blockers.some((b) => b.includes("may not borrow another's id")),
+    "a response_id shared across seats must block in signed mode; got: " + JSON.stringify(r.blockers));
+
+  // Distinct ids (the signed trio) do not trip the uniqueness check.
+  assert.equal(validateRecords(dossier, signedTrio()).gate_status, "pass",
+    "distinct per-seat response_ids must still pass");
+  console.log("test-trust.mjs signed-mode provenance id-uniqueness OK");
 }
 
 console.log("test-trust.mjs OK");

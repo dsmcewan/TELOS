@@ -139,6 +139,12 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
     }
   }
 
+  // In signed mode, only signature-verified required packets are trusted as
+  // evidence for docs_reviewed / LEXI review below. A duplicate packet (only the
+  // first per model reaches packetsByModel and is verified) or a non-required-model
+  // packet is never signature-checked, so it must not clear a required-doc or LEXI
+  // blocker. Legacy/unsigned mode authenticates nothing, so every packet counts.
+  const trustedPackets = [];
   if (signed) {
     for (const model of REQUIRED_MODELS) {
       const packet = packetsByModel.get(model);
@@ -151,15 +157,23 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
       const result = verifyPacket(packet, secret);
       if (!result.ok) {
         blockers.push(`${model} packet signature invalid in signed mode: ${result.reason}.`);
+      } else {
+        trustedPackets.push(packet);
       }
     }
   }
+  const evidencePackets = signed ? trustedPackets : packets;
 
-  // Provenance is advisory: the gate CANNOT cryptographically authenticate which
-  // model authored a packet. It surfaces whether each required approval carries a
-  // `provenance` block (ideally captured from the real model response — see
-  // ai-peer-mcp council_review) and warns when identity is merely self-declared.
+  // Provenance binding. Under signed mode the gate BLOCKS a required approval that
+  // carries no provenance, a placeholder response_id, or a response_id shared with
+  // another seat (no seat borrows another's id — a real server-issued id or agy
+  // attestation is unique to its producer). What it cannot do from disk is prove a
+  // well-formed, UNIQUE id is genuine rather than fabricated — it can't re-contact
+  // the API; that binding to the real response is made by the live council wiring
+  // (ai-peer-mcp) at generation time, with the per-seat HMAC secret as the identity
+  // floor. In unsigned/legacy mode these are advisory (a missing block warns).
   const provenance = [];
+  const seenResponseIds = new Map(); // lowercased response_id -> first seat that carried it
   for (const model of REQUIRED_MODELS) {
     const packet = packetsByModel.get(model);
     const prov = packet && packet.provenance && typeof packet.provenance === "object" ? packet.provenance : null;
@@ -177,11 +191,19 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
         ? `Approval packet for ${model} carries no provenance; model identity is self-declared, not authenticated.`
         : `Approval packet for ${model} has placeholder provenance.response_id '${responseId}'; not bound to a real model response.`;
       if (signed) blockers.push(msg); else if (!prov) warnings.push(msg);
+    } else if (packet && responseId) {
+      const key = responseId.toLowerCase();
+      if (seenResponseIds.has(key)) {
+        const msg = `Approval packets for ${seenResponseIds.get(key)} and ${model} share provenance.response_id '${responseId}'; a seat may not borrow another's id.`;
+        if (signed) blockers.push(msg); else warnings.push(msg);
+      } else {
+        seenResponseIds.set(key, model);
+      }
     }
   }
 
   const requiredDocs = asArray(dossier.required_docs);
-  const docsReviewed = unique(packets.flatMap((packet) => asArray(packet.docs_reviewed)));
+  const docsReviewed = unique(evidencePackets.flatMap((packet) => asArray(packet.docs_reviewed)));
   // Membership is path-normalized: separators (\ vs /) and case do not change
   // whether a required doc counts as reviewed.
   const reviewedNormalized = new Set(docsReviewed.map(normalizeDocPath));
@@ -192,9 +214,9 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
   }
 
   validateProtectedPaths(dossier, blockers);
-  validateLexiGate(dossier, packets, blockers);
+  validateLexiGate(dossier, evidencePackets, blockers);
   validateGrokResolution(packetsByModel.get("grok"), dossier, blockers, warnings);
-  validateCapabilityPackets(dossier, capabilityPackets, blockers, warnings);
+  validateCapabilityPackets(dossier, capabilityPackets, blockers, warnings, signed);
   validateMarketReadinessPackets(dossier, marketPackets, blockers, warnings, source, signed);
 
   // Visibility: which optional headline gates actually evaluated anything. A
@@ -232,6 +254,33 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
   };
 }
 
+// In trust_mode "signed", evidence packets that decide gate outcomes (market
+// readiness, capability acquisition) must be authenticated exactly like the
+// required approval packets: HMAC-verified with the model's secret AND bound to
+// real (non-placeholder) provenance. Unverifiable evidence blocks — a
+// self-asserted market/capability packet must never satisfy the gate under
+// signed mode. Mirrors the required-approval checks in validateRecords.
+function enforceSignedPacketAuth(packet, label, blockers) {
+  const model = typeof packet?.model === "string" ? packet.model : "unknown";
+  const secret = secretFor(model);
+  if (!secret) {
+    blockers.push(`trust_mode 'signed' but no secret to verify ${label} for '${model}' (set TELOS_SECRET_${model.toUpperCase()}).`);
+  } else {
+    const result = verifyPacket(packet, secret);
+    if (!result.ok) {
+      blockers.push(`${label} for ${model} signature invalid in signed mode: ${result.reason}.`);
+    }
+  }
+  const prov = packet && packet.provenance && typeof packet.provenance === "object" ? packet.provenance : null;
+  const responseId = prov && typeof prov.response_id === "string" ? prov.response_id : null;
+  const placeholder = !responseId || /^$|_self$|^self$|placeholder/i.test(responseId);
+  if (!prov) {
+    blockers.push(`${label} for ${model} carries no provenance; model identity is self-declared, not authenticated.`);
+  } else if (placeholder) {
+    blockers.push(`${label} for ${model} has placeholder provenance.response_id '${responseId}'; not bound to a real model response.`);
+  }
+}
+
 function validateMarketReadinessPackets(dossier, marketPackets, blockers, warnings, source = {}, signed = false) {
   const requiredWorkstreams = requiredMarketWorkstreams(dossier, marketPackets);
   if (requiredWorkstreams.length === 0) return;
@@ -254,6 +303,7 @@ function validateMarketReadinessPackets(dossier, marketPackets, blockers, warnin
 
   for (const packet of marketPackets) {
     validateMarketReadinessPacketShape(packet, blockers);
+    if (signed) enforceSignedPacketAuth(packet, "Market readiness packet", blockers);
     if (packet?.build_id !== dossier.build_id) {
       blockers.push(`Market readiness packet for ${packet?.model ?? "unknown"} has build_id '${packet?.build_id}' but dossier requires '${dossier.build_id}'.`);
     }
@@ -449,7 +499,7 @@ function validateDossierShape(dossier, blockers) {
   requireArrayField(dossier, "write_targets", "Dossier", blockers);
 }
 
-function validateCapabilityPackets(dossier, capabilityPackets, blockers, warnings) {
+function validateCapabilityPackets(dossier, capabilityPackets, blockers, warnings, signed = false) {
   const requiredModels = requiredCapabilityModels(dossier, capabilityPackets);
   if (requiredModels.length === 0) return;
 
@@ -463,6 +513,7 @@ function validateCapabilityPackets(dossier, capabilityPackets, blockers, warning
   const packetsByModel = new Map();
   for (const packet of capabilityPackets) {
     validateCapabilityPacketShape(packet, blockers);
+    if (signed) enforceSignedPacketAuth(packet, "Capability packet", blockers);
     if (packet?.build_id !== dossier.build_id) {
       blockers.push(`Capability packet for ${packet?.model ?? "unknown"} has build_id '${packet?.build_id}' but dossier requires '${dossier.build_id}'.`);
     }
