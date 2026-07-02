@@ -4,6 +4,7 @@
 //   resolveUnder  <- me/codex/breakout/verifier.mjs (path confinement)
 //   maxConcurrency <- concurrency governance (relocated from council.mjs)
 import { createHash } from "node:crypto";
+import { existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -49,4 +50,38 @@ export function resolveUnder(baseDir, p) {
   const rel = path.relative(baseDir, resolved);
   if (rel.startsWith("..") || path.isAbsolute(rel)) return null;
   return resolved;
+}
+
+// True when `cmd` resolves to a Windows batch shim (.cmd/.bat — npm, npx, yarn).
+// Node cannot spawn a batch file directly since the CVE-2024-27980 hardening, so
+// such commands must go through cmd.exe; a real executable (.exe/.com, e.g. node)
+// must NOT, so its args pass literally rather than being re-parsed by a shell.
+// Always false off win32 (POSIX spawns npm's shebang script directly).
+function isWin32BatchShim(cmd) {
+  if (process.platform !== "win32" || typeof cmd !== "string" || !cmd) return false;
+  const isBatch = (name) => /\.(cmd|bat)$/i.test(name);
+  if (path.extname(cmd)) return isBatch(cmd);            // explicit extension: trust it
+  if (cmd.includes("/") || cmd.includes("\\")) {          // explicit path, no extension
+    return existsSync(cmd + ".cmd") || existsSync(cmd + ".bat");
+  }
+  const exts = (process.env.PATHEXT || ".COM;.EXE;.BAT;.CMD").split(";").filter(Boolean);
+  for (const dir of (process.env.PATH || "").split(path.delimiter)) {
+    if (!dir) continue;
+    for (const ext of exts) {
+      if (existsSync(path.join(dir, cmd + ext))) return isBatch(ext); // first PATHEXT match wins
+    }
+  }
+  return false;                                           // not found: spawn directly (ENOENT, fail-closed)
+}
+
+// Normalize a { cmd, args } test command into a spawn-ready { command, args } that
+// works cross-platform WITHOUT `shell: true` (which is deprecated and mangles args
+// like `-e "a; b"`). On win32 a batch shim is routed through `cmd.exe /d /s /c`;
+// everything else — and all of POSIX — is passed through unchanged so args stay
+// literal. Use for both spawn and spawnSync.
+export function spawnCommand(cmd, args = []) {
+  if (isWin32BatchShim(cmd)) {
+    return { command: process.env.ComSpec || "cmd.exe", args: ["/d", "/s", "/c", cmd, ...args] };
+  }
+  return { command: cmd, args };
 }

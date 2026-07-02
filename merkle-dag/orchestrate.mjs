@@ -7,7 +7,7 @@ import { recompute, readPlan, writePlan, mutateNode, appendPlanHistory } from ".
 import { computeDiskTreeHash } from "./artifact.mjs";
 import { makeRecord, appendLedger, readLedger } from "./crypto.mjs";
 import { verify } from "./ledger-gate.mjs";
-import { resolveUnder, maxConcurrency } from "./vendor.mjs";
+import { resolveUnder, maxConcurrency, spawnCommand } from "./vendor.mjs";
 
 const TEST_TIMEOUT_MS = 60000;
 
@@ -50,7 +50,8 @@ function criticalWeights(planNodes) {
 function runTest(cmd, args, cwd, timeoutMs) {
   return new Promise((resolve) => {
     let done = false;
-    const child = spawn(cmd, args, { cwd });
+    const spec = spawnCommand(cmd, args);
+    const child = spawn(spec.command, spec.args, { cwd });
     const timer = setTimeout(() => {
       if (!done) { done = true; try { child.kill("SIGTERM"); } catch {} resolve({ status: null, timedOut: true }); }
     }, timeoutMs);

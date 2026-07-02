@@ -724,6 +724,18 @@ function makeDispatch(ws) {
 }
 
 // ---------------------------------------------------------------------------
+// Cross-platform: defaultVerifyNode runs a Windows batch shim (npm) via the
+// cmd.exe wrapper and directly on POSIX — a node with no files whose test is
+// `npm --version` verifies ok on both. Regression guard for the shell-less spawn
+// that could never run npm.cmd on Windows.
+// ---------------------------------------------------------------------------
+{
+  const ws = mkdtempSync(path.join(os.tmpdir(), "telos-orch-npm-"));
+  const v = await defaultVerifyNode({ id: "npm", files: [], test: { cmd: "npm", args: ["--version"] } }, ws);
+  assert.equal(v.ok, true, `defaultVerifyNode must run an npm-based node test cross-platform; got ${JSON.stringify(v)}`);
+}
+
+// ---------------------------------------------------------------------------
 // Terminal marker
 // ---------------------------------------------------------------------------
 console.log("test-orchestrate.mjs OK");

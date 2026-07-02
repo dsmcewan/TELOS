@@ -9,7 +9,7 @@
 // signing), so a team can never self-certify by passing this.
 
 import { spawn } from "node:child_process";
-import { resolveUnder } from "../merkle-dag/vendor.mjs";
+import { resolveUnder, spawnCommand } from "../merkle-dag/vendor.mjs";
 
 const DEFAULT_TIMEOUT_MS = 60000;
 const TAIL = 800; // keep a bounded failure tail so it can flow into a respec/effective_hash
@@ -38,7 +38,8 @@ export function runNodeTest(node, baseDir, { timeoutMs = DEFAULT_TIMEOUT_MS } = 
     let err = "";
     let child;
     try {
-      child = spawn(t.cmd, t.args || [], { cwd });
+      const spec = spawnCommand(t.cmd, t.args || []);
+      child = spawn(spec.command, spec.args, { cwd });
     } catch (e) {
       return resolve({ ok: false, status: null, stdout: "", stderr: "", detail: `${id}: spawn failed: ${e?.message || String(e)}` });
     }
