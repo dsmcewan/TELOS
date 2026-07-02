@@ -15,6 +15,7 @@ import { generateKeypair } from "../merkle-dag/crypto.mjs";
 import { writePlan } from "../merkle-dag/merkle.mjs";
 import { runBuild } from "../merkle-dag/orchestrate.mjs";
 import { validateRecords } from "../build-gate/gate.mjs";
+import { signMarketPacket } from "../build-gate/sign.mjs";
 import { researchArchitecture, offlineDocsFor } from "./research.mjs";
 import { compileConvergencePlan, signerForTask } from "./plan.mjs";
 import { generatorDispatch, makeDemoGenerators } from "./generator.mjs";
@@ -25,7 +26,7 @@ const TS = "2026-06-28T00:00:00-04:00";
 // One market-readiness packet per team, generated FROM its breakout record. The
 // breakout's checks point at the team's generated artifacts, so the gate
 // re-verifies on disk the very files the build produced.
-function marketPacketFromRecord(record, dossierMeta) {
+function marketPacketFromRecord(record, dossierMeta, { signed = false } = {}) {
   const packet = {
     build_id: dossierMeta.build_id,
     idea_id: dossierMeta.idea_id,
@@ -58,7 +59,7 @@ function marketPacketFromRecord(record, dossierMeta) {
     timestamp: TS
   };
   packet[record.findingsKey] = [record.finding];
-  return packet;
+  return signed ? signMarketPacket(packet, record, record.signer) : packet;
 }
 
 // Synthetic council approvals for the keyless/offline path. Marked honestly:
@@ -84,12 +85,13 @@ export function syntheticApprovals(dossierMeta) {
 // The REQUIRED-seat approval packets are produced by the seats (or the synthetic
 // fallback) — NEVER fabricated inside the gate call. A dissenting seat
 // (decision != approve) or absent provenance fails the gate closed.
-function runMarketGate({ projectRoot, dossierMeta, teamRecords, approvals }) {
+function runMarketGate({ projectRoot, dossierMeta, teamRecords, approvals, signed = false }) {
   const dossier = {
     build_id: dossierMeta.build_id,
     idea_id: dossierMeta.idea_id,
     use_case: dossierMeta.use_case,
     objective: dossierMeta.objective,
+    trust_mode: signed ? "signed" : undefined,
     required_docs: [],
     write_targets: [],
     protected_paths: [],
@@ -100,7 +102,7 @@ function runMarketGate({ projectRoot, dossierMeta, teamRecords, approvals }) {
     required_market_workstreams: dossierMeta.required_market_workstreams
   };
 
-  const marketPackets = teamRecords.map((r) => marketPacketFromRecord(r, dossierMeta));
+  const marketPackets = teamRecords.map((r) => marketPacketFromRecord(r, dossierMeta, { signed }));
   return validateRecords(dossier, approvals, { dossierDir: projectRoot }, [], marketPackets);
 }
 
@@ -122,6 +124,7 @@ export async function forge({
   makeGenerators = makeDemoGenerators,
   makeBreakoutFns,
   makeApprovals = async ({ dossierMeta: dm }) => syntheticApprovals(dm),
+  signed = false,
   maxCycles = 3
 }) {
   const telosDir = path.join(projectRoot, ".telos");
@@ -158,7 +161,7 @@ export async function forge({
     // Required-seat approvals come from the seats (live) or the synthetic
     // fallback (offline) — produced here, then handed to the gate.
     const approvals = teamsConverged ? await makeApprovals({ dossierMeta, architecture }) : [];
-    verdict = teamsConverged ? runMarketGate({ projectRoot, dossierMeta, teamRecords: teams, approvals }) : null;
+    verdict = teamsConverged ? runMarketGate({ projectRoot, dossierMeta, teamRecords: teams, approvals, signed }) : null;
 
     cycles.push({
       cycle,

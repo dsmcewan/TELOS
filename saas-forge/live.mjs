@@ -162,7 +162,7 @@ export function makeCouncilFactFns({ callTool, team, reviewer, challengerTool, c
  */
 export async function runForgeLive({
   projectRoot, telos, dossierMeta, serverPath, docsFor,
-  team, reviewer, maxCycles = 3
+  team, reviewer, maxCycles = 3, signed = false
 }) {
   const { client, close } = spawnMcpClient({ serverPath });
   const callTool = (name, args) => client.callTool(name, args);
@@ -172,7 +172,8 @@ export async function runForgeLive({
       makeGenerators: liveGenerators({ callTool }),
       makeBreakoutFns: makeCouncilFactFns({ callTool, team, reviewer }),
       makeApprovals: councilApprovals({ callTool }),
-      maxCycles
+      maxCycles,
+      signed
     });
   } finally {
     close();

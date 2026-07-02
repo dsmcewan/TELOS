@@ -49,7 +49,7 @@ export async function runTeamBreakouts({ baseDir, architecture, maxRounds = 3, m
       fns
     );
     // Attach the deterministic specs so the gate can independently re-verify.
-    records.push({ ...record, checks, lens: ws.lens, isUi: !!ws.isUi, finding: ws.finding, findingsKey: ws.findingsKey });
+    records.push({ ...record, checks, lens: ws.lens, signer: ws.signer, isUi: !!ws.isUi, finding: ws.finding, findingsKey: ws.findingsKey });
   }
   return records;
 }
