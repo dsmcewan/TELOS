@@ -160,9 +160,13 @@ and the gate independently re-verifies every team's record on disk.
 - Each required seat's packet is **HMAC-signed** and carries **real provenance**:
   the server-issued response id for remote models (claude/grok/codex/gemini), or a
   content-addressed **local attestation** (`agy-<sha256>`) for the deterministic
-  agy seat. No structured provenance ⇒ `response_id: null` ⇒ the gate blocks. No
-  seat borrows or fabricates another's id. (grok and gemini ride as **advisory** —
-  a missing key for them never blocks the gate.)
+  agy seat. No structured provenance ⇒ `response_id: null` ⇒ the gate blocks, as
+  does a placeholder id or a `response_id` shared across two seats — **no seat
+  borrows another's id**. What the gate cannot do from disk is prove a well-formed,
+  *unique* id is genuine rather than fabricated (it can't re-contact the API); that
+  binding to the real response is made by the council wiring at generation time,
+  with the per-seat HMAC secret as the identity floor. (grok and gemini ride as
+  **advisory** — a missing key for them never blocks the gate.)
 - **Structured output is reliability, not trust.** The schema carries only
   *judgment* (the approval schema omits identity); the gate re-validates packet
   shape, injects identity from the dossier, and binds provenance to the real API

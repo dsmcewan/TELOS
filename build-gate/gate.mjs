@@ -164,11 +164,16 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
   }
   const evidencePackets = signed ? trustedPackets : packets;
 
-  // Provenance is advisory: the gate CANNOT cryptographically authenticate which
-  // model authored a packet. It surfaces whether each required approval carries a
-  // `provenance` block (ideally captured from the real model response — see
-  // ai-peer-mcp council_review) and warns when identity is merely self-declared.
+  // Provenance binding. Under signed mode the gate BLOCKS a required approval that
+  // carries no provenance, a placeholder response_id, or a response_id shared with
+  // another seat (no seat borrows another's id — a real server-issued id or agy
+  // attestation is unique to its producer). What it cannot do from disk is prove a
+  // well-formed, UNIQUE id is genuine rather than fabricated — it can't re-contact
+  // the API; that binding to the real response is made by the live council wiring
+  // (ai-peer-mcp) at generation time, with the per-seat HMAC secret as the identity
+  // floor. In unsigned/legacy mode these are advisory (a missing block warns).
   const provenance = [];
+  const seenResponseIds = new Map(); // lowercased response_id -> first seat that carried it
   for (const model of REQUIRED_MODELS) {
     const packet = packetsByModel.get(model);
     const prov = packet && packet.provenance && typeof packet.provenance === "object" ? packet.provenance : null;
@@ -186,6 +191,14 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
         ? `Approval packet for ${model} carries no provenance; model identity is self-declared, not authenticated.`
         : `Approval packet for ${model} has placeholder provenance.response_id '${responseId}'; not bound to a real model response.`;
       if (signed) blockers.push(msg); else if (!prov) warnings.push(msg);
+    } else if (packet && responseId) {
+      const key = responseId.toLowerCase();
+      if (seenResponseIds.has(key)) {
+        const msg = `Approval packets for ${seenResponseIds.get(key)} and ${model} share provenance.response_id '${responseId}'; a seat may not borrow another's id.`;
+        if (signed) blockers.push(msg); else warnings.push(msg);
+      } else {
+        seenResponseIds.set(key, model);
+      }
     }
   }
 

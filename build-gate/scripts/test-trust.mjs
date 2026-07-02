@@ -258,4 +258,23 @@ assert.equal(validateRecords(dossier, signedTrio()).gate_status, "pass", "valid 
   console.log("test-trust.mjs signed-mode docs/LEXI evidence auth OK");
 }
 
+// 13. No seat borrows another's id: two required packets sharing a response_id
+//     block in signed mode (each real id is unique to its producer).
+{
+  const claude = signPacket(approval("claude", ["doc-a"]), SECRET.claude);
+  const agy = signPacket(approval("agy", ["doc-a"]), SECRET.agy);
+  const codexPkt = approval("codex", ["doc-a"]);
+  codexPkt.provenance.response_id = "resp_claude_123"; // borrow claude's real id, then re-sign
+  const codex = signPacket(codexPkt, SECRET.codex);
+  const r = validateRecords(dossier, [claude, agy, codex]);
+  assert.equal(r.gate_status, "blocked");
+  assert.ok(r.blockers.some((b) => b.includes("may not borrow another's id")),
+    "a response_id shared across seats must block in signed mode; got: " + JSON.stringify(r.blockers));
+
+  // Distinct ids (the signed trio) do not trip the uniqueness check.
+  assert.equal(validateRecords(dossier, signedTrio()).gate_status, "pass",
+    "distinct per-seat response_ids must still pass");
+  console.log("test-trust.mjs signed-mode provenance id-uniqueness OK");
+}
+
 console.log("test-trust.mjs OK");
