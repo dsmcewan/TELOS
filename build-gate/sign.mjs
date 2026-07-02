@@ -5,7 +5,7 @@
 // rubber-stamping, not a malicious owner — the chosen (honest-but-careless)
 // threat model. Identity here is integrity + binding, not non-repudiation.
 
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, timingSafeEqual, createHash } from "node:crypto";
 
 function stripSignature(obj) {
   if (!obj || typeof obj !== "object" || Array.isArray(obj)) return obj;
@@ -46,4 +46,22 @@ export function verifyPacket(packet, secret) {
 export function secretFor(model) {
   if (typeof model !== "string" || !model) return null;
   return process.env["TELOS_SECRET_" + model.toUpperCase()] || null;
+}
+
+// A market-readiness packet is authored by the trusted harness from an on-disk-
+// verified breakout record, so it has no live server response id. In signed mode it
+// is re-attributed to the workstream's SIGNER (a required seat with a secret — never
+// an advisory lens), carries a reproducible content-addressed attestation over the
+// record, and is HMAC-signed. The reviewing `lens` is preserved as `reviewed_by_lens`.
+// Without a secret the packet is returned attested-but-unsigned so the gate blocks it.
+export function signMarketPacket(packet, record, signer) {
+  const digest = createHash("sha256").update(canonicalize(record ?? null)).digest("hex");
+  const stamped = {
+    ...packet,
+    model: signer,
+    reviewed_by_lens: packet.model,
+    provenance: { model: signer, source: "forge/market-attestation", response_id: `market-${digest}` }
+  };
+  const secret = secretFor(signer);
+  return secret ? signPacket(stamped, secret) : stamped;
 }
