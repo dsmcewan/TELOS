@@ -18,6 +18,7 @@ import { createSeatRouter } from "../breakout/seat_router.mjs";
 import { makeCouncilBreakout, makeGeminiReferee } from "../breakout/breakout.mjs";
 import { createFightMemory } from "../breakout/fight_memory.mjs";
 import { runCouncil, liveSeatCaller, agyApprovalPacket, agyCheckpointArgs } from "../build-gate/council.mjs";
+import { effortForRole } from "../build-gate/model-profiles.mjs";
 import { defaultSeatRegistry } from "../build-gate/seat-registry.mjs";
 import { forge } from "./forge.mjs";
 import { factBreakout } from "./breakouts.mjs";
@@ -235,16 +236,19 @@ export function makeCouncilFactFns({
     "(the requirements shown with the evidence) or a factual defect in the artifact (internal contradiction, " +
     "broken example, claim the artifact itself does not fulfill). Aesthetic preferences, completeness wishes, " +
     "and new demands beyond the contract are NOT blockers — a bout that satisfies its contract ends.";
+  // Seat economics: per-role reasoning-effort tiers (env-overridable) — the
+  // referee needs no xhigh deliberation to spot repetition.
+  const efforts = { challenger: effortForRole("challenger"), builder: effortForRole("builder"), reviewer: effortForRole("reviewer") };
   const council = makeCouncilBreakout({
-    callTool, team, reviewer, challengerTool, challengerModel, memory,
+    callTool, team, reviewer, challengerTool, challengerModel, memory, efforts,
     challengerSystem: SCOPED_CHALLENGER
   });
   const extras = (coChallengers || []).map((c) =>
-    makeCouncilBreakout({ callTool, team, reviewer, challengerTool: c.tool, challengerModel: c.model, challengerSystem: c.system || SCOPED_CHALLENGER, memory }));
+    makeCouncilBreakout({ callTool, team, reviewer, challengerTool: c.tool, challengerModel: c.model, challengerSystem: c.system || SCOPED_CHALLENGER, memory, efforts }));
   // The gemini referee reviews each bout's fight log and ends adversarial
   // loops (recycled solutions/results) — see makeGeminiReferee. Pass
   // referee: null to disable (e.g. on the legacy transport with no gemini_ask).
-  const refereeFn = referee === "gemini" ? makeGeminiReferee({ callTool })
+  const refereeFn = referee === "gemini" ? makeGeminiReferee({ callTool, effort: effortForRole("referee") })
     : (typeof referee === "function" ? referee : undefined);
   return ({ workstream, checks, baseDir, contract }) => {
     const facts = factBreakout({ checks, baseDir });

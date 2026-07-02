@@ -5,9 +5,7 @@
   "transport": "seat-router default (claude/agy_checkpoint via ai-peer-mcp; grok/gemini/codex via claude-plugins seat servers)",
   "build": {
     "merge_status": "ready",
-    "settled_this_invocation": [
-      "frontend-brand-experience"
-    ],
+    "settled_this_invocation": [],
     "halts": []
   },
   "teams": [
@@ -61,26 +59,7 @@
       "referee": null
     }
   ],
-  "trust_mode": "signed",
-  "gate_status": "pass",
-  "approvals_provenance": [
-    {
-      "model": "claude",
-      "has_provenance": true,
-      "response_id": "msg_01PA3LkTnn9hSgMAzp9fS1eT"
-    },
-    {
-      "model": "agy",
-      "has_provenance": true,
-      "response_id": "agy-44cb01da259b0c0515414fce882aa88f8e3827be"
-    },
-    {
-      "model": "codex",
-      "has_provenance": true,
-      "response_id": "chatcmpl-DxHnwkZVEUJs53q0ob9S3V35hR7wP"
-    }
-  ],
-  "blockers": [],
-  "result": "PASS",
-  "seat_calls": 6
+  "result": "ALL-CONVERGED (gate skipped by TELOS_SKIP_GATE)",
+  "seat_calls": 0,
+  "seat_call_breakdown": {}
 }

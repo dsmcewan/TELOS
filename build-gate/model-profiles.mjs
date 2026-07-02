@@ -73,3 +73,24 @@ export function isPreferredRole(model, role) {
   const p = MODEL_PROFILES[model];
   return !!p && Array.isArray(p.preferred_roles) && p.preferred_roles.includes(role);
 }
+
+// SEAT ECONOMICS — reasoning-effort tier per BOUT ROLE, not per model. The
+// builder authors artifacts (worth maximum thought — omitted here so each
+// seat's own max-effort default applies); adversaries hunt real defects
+// (high); the reviewer judges proposals against blockers (high); the referee
+// judges only exchange DYNAMICS — repetition detection needs no xhigh
+// deliberation (medium). Seats that ignore the arg (ai-peer claude_ask) are
+// unaffected. Env-overridable per role: TELOS_EFFORT_<ROLE>.
+export const EFFORT_TIERS = {
+  builder: null,        // seat default (max) — artifacts deserve the full budget
+  challenger: "high",
+  reviewer: "high",
+  referee: "medium",
+  approver: null        // approvals gate merges — seat default (max)
+};
+
+export function effortForRole(role) {
+  const env = process.env[`TELOS_EFFORT_${String(role).toUpperCase()}`];
+  if (env) return env;
+  return EFFORT_TIERS[role] ?? null;
+}
