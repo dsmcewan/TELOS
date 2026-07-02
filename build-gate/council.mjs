@@ -151,6 +151,45 @@ function tryParseJson(text) {
  * the council fills these from the dossier; provenance is stamped separately by
  * runSeat from the checkpoint's attestation.
  */
+// Protected-path prefixes the gate treats as off-limits (mirror of gate.mjs's
+// DEFAULT_PROTECTED_PATHS), kept here so the council can DERIVE agy's checkpoint
+// inputs from the dossier instead of asserting them.
+const DEFAULT_PROTECTED_PATHS = ["CHATGPT/", "me/claude-code/", "me/claude-desktop/", "me/gemini/"];
+
+function normalizeGovPath(p) {
+  return String(p).replace(/\\/g, "/").replace(/^\.\//, "").replace(/^\/+/, "").replace(/\/+$/, "").toLowerCase();
+}
+
+/**
+ * Build the agy_checkpoint inputs for a merge-gate governance check FROM the
+ * dossier rather than asserting them. The prior wiring hardcoded
+ * `present_packets == required_packets` and `protected_path_check: "pass"`, so
+ * agyCheckpoint could only ever return "advance" — a REQUIRED governance seat
+ * reduced to a constant approve, with its documented blocking path dead. Here:
+ *   - protected_path_check is DERIVED: "pass" only when no declared write target
+ *     falls under a protected prefix; otherwise a fail reason (agy dissents).
+ *   - lexi_required / lexi_reference_read pass through so agy blocks an unmet LEXI.
+ *   - packet PRESENCE is NOT asserted — the concurrent council can't know it at
+ *     agy's call time, and the gate independently requires every seat's packet.
+ */
+export function agyCheckpointArgs(dossier, scope) {
+  const protectedPaths = [...DEFAULT_PROTECTED_PATHS, ...(Array.isArray(dossier?.protected_paths) ? dossier.protected_paths : [])]
+    .map(normalizeGovPath)
+    .filter(Boolean);
+  let violation = null;
+  for (const target of Array.isArray(dossier?.write_targets) ? dossier.write_targets : []) {
+    const t = normalizeGovPath(target);
+    if (protectedPaths.some((p) => t === p || t.startsWith(p + "/"))) { violation = target; break; }
+  }
+  return {
+    phase: "merge-gate",
+    scope: scope ?? dossier?.use_case ?? "",
+    protected_path_check: violation ? `not-pass: write target '${violation}' is under a protected path` : "pass",
+    lexi_required: dossier?.lexi_required === true,
+    lexi_reference_read: dossier?.lexi_reference_read === true
+  };
+}
+
 export function agyApprovalPacket(checkpoint, meta = {}) {
   const advance = !!checkpoint && checkpoint.phase_gate_status === "advance";
   const blocked = Array.isArray(checkpoint?.blocked_reasons) ? checkpoint.blocked_reasons : [];

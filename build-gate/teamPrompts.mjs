@@ -8,7 +8,7 @@
 // the gate honest-blocks), mirroring the existing `smoke` scripts. The pure
 // prompt/parse helpers are unit-tested without a network.
 
-import { agyApprovalPacket } from "./council.mjs";
+import { agyApprovalPacket, agyCheckpointArgs } from "./council.mjs";
 import { SCHEMAS } from "./schemas.mjs";
 
 // Chat seats expose an `<model>_ask` tool; agy is structured (no code generation).
@@ -141,8 +141,9 @@ const PACKET_INSTRUCTION =
 export function approvalPromptFor(dossier, { models = {} } = {}) {
   return (model, role, _dossier, workstream) => {
     if (model === "agy") {
-      // A real governance checkpoint: required packets present, paths clean.
-      return { tool: "agy_checkpoint", args: { phase: "merge-gate", scope: dossier?.use_case ?? "", required_packets: ["claude", "codex"], present_packets: ["claude", "codex"], protected_path_check: "pass" } };
+      // Governance checkpoint DERIVED from the dossier (protected paths + LEXI),
+      // not asserted — so agy can actually dissent (see council.agyCheckpointArgs).
+      return { tool: "agy_checkpoint", args: agyCheckpointArgs(dossier, dossier?.use_case) };
     }
     const lens = workstream ? `, workstream lens: ${workstream}` : "";
     return {

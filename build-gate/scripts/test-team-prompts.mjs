@@ -73,7 +73,11 @@ import { buildableSeat, promptForTeam, nodeBuildPrompt, parseTeamFiles, makeLive
   const promptFor = approvalPromptFor({ build_id: "b", use_case: "u", objective: "ship it" }, { models: { claude: "claude-sonnet-4-6" } });
   const agy = promptFor("agy", "approver");
   assert.equal(agy.tool, "agy_checkpoint", "agy uses the structured checkpoint tool");
-  assert.equal(agy.args.protected_path_check, "pass", "agy checkpoint carries governance args");
+  assert.equal(agy.args.protected_path_check, "pass", "a dossier with no protected writes derives protected_path_check:'pass'");
+  assert.equal(agy.args.present_packets, undefined, "packet presence is no longer asserted (the gate enforces it)");
+  // Derived, not asserted: a dossier writing under a protected path makes agy dissent.
+  const guardedAgy = approvalPromptFor({ build_id: "b", use_case: "u", objective: "x", write_targets: ["me/claude-code/notes.md"] })("agy", "approver");
+  assert.notEqual(guardedAgy.args.protected_path_check, "pass", "a protected write target must not derive protected_path_check:'pass'");
   const claude = promptFor("claude", "approver");
   assert.equal(claude.tool, "claude_ask", "chat seats use their ask tool");
   assert.equal(claude.model, "claude-sonnet-4-6", "per-seat model id is threaded through");

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import os from "node:os";
-import { runCouncil, planSeats, maxConcurrency, liveSeatCaller, agyApprovalPacket } from "../council.mjs";
+import { runCouncil, planSeats, maxConcurrency, liveSeatCaller, agyApprovalPacket, agyCheckpointArgs } from "../council.mjs";
 import { verifyPacket } from "../sign.mjs";
 import { validateRecords } from "../gate.mjs";
 // Cross-package (integration): the agy seat consumes the REAL agy_checkpoint
@@ -232,6 +232,28 @@ const okSeatCaller = async ({ model }) => ({
   assert.ok(blockedPkt.hard_stops.length > 0, "blocked checkpoint carries hard_stops");
   const blockedReport = validateRecords(dossier, [blockedPkt, mkApprover("claude"), mkApprover("codex")]);
   assert.ok(blockedReport.blockers.some((b) => /agy/i.test(b)), "a blocked agy checkpoint must block the gate");
+}
+
+// --- agyCheckpointArgs: the required agy seat DERIVES its checkpoint inputs from
+// the dossier so it can actually dissent (no hardcoded present==required stamp) ---
+{
+  // Clean dossier -> pass -> advance -> agy approves.
+  const clean = agyCheckpointArgs({ use_case: "u", write_targets: ["src/app.mjs"] }, "s");
+  assert.equal(clean.protected_path_check, "pass", "no protected write target => pass");
+  assert.equal(clean.present_packets, undefined, "packet presence is not asserted (the gate enforces it)");
+  assert.equal(agyCheckpoint(clean).phase_gate_status, "advance", "clean dossier => agy advances");
+  assert.equal(agyApprovalPacket(agyCheckpoint(clean)).decision, "approve", "advance => approve");
+
+  // A write target under a protected prefix -> not pass -> blocked -> agy revises.
+  const guarded = agyCheckpointArgs({ write_targets: ["me/gemini/scratch.md"] }, "s");
+  assert.notEqual(guarded.protected_path_check, "pass", "protected write target => not pass");
+  assert.equal(agyCheckpoint(guarded).phase_gate_status, "blocked", "protected write => agy blocks");
+  assert.equal(agyApprovalPacket(agyCheckpoint(guarded)).decision, "revise", "blocked => revise (agy dissents)");
+
+  // LEXI required but not read -> blocked.
+  const lexi = agyCheckpointArgs({ lexi_required: true, lexi_reference_read: false }, "s");
+  assert.equal(agyCheckpoint(lexi).phase_gate_status, "blocked", "LEXI required but unread => agy blocks");
+  console.log("agyCheckpointArgs derivation OK");
 }
 
 console.log("test-council-orchestrator.mjs OK");

@@ -12,7 +12,7 @@
 
 import { spawnMcpClient } from "../breakout/mcp_client.mjs";
 import { makeCouncilBreakout } from "../breakout/breakout.mjs";
-import { runCouncil, liveSeatCaller, agyApprovalPacket } from "../build-gate/council.mjs";
+import { runCouncil, liveSeatCaller, agyApprovalPacket, agyCheckpointArgs } from "../build-gate/council.mjs";
 import { forge } from "./forge.mjs";
 import { factBreakout } from "./breakouts.mjs";
 import { workstreamById } from "./workstreams.mjs";
@@ -51,11 +51,9 @@ export function councilApprovals({ callTool, models = {} }) {
 
     function promptFor(model) {
       if (model === "agy") {
-        return { tool: "agy_checkpoint", args: {
-          phase: "merge-gate", scope: "saas-forge",
-          required_packets: ["claude", "codex"], present_packets: ["claude", "codex"],
-          protected_path_check: "pass"
-        } };
+        // Governance inputs derived from the dossier, not asserted (see
+        // council.agyCheckpointArgs) — no hardcoded present==required rubber stamp.
+        return { tool: "agy_checkpoint", args: agyCheckpointArgs(dossierMeta, "saas-forge") };
       }
       return {
         tool: `${model}_ask`, model: models[model],
