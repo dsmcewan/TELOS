@@ -1,0 +1,14 @@
+{
+  "name": "v4-forge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The adversarial-convergence doctrine as an engine: ratchet runs (Styx rule, blocker respec, contract closure, verify-failure banking, evidence-digest approvals) and fixed-point drivers, extracted from the gate-PASSED live runs.",
+  "scripts": {
+    "check": "node --check ratchet.mjs && node --check driver.mjs && node --check scripts/test-ratchet.mjs && node --check scripts/test-driver.mjs",
+    "test": "npm run check && node scripts/test-ratchet.mjs && node scripts/test-driver.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
