@@ -159,10 +159,13 @@ export function makeCouncilFactFns({ callTool, team, reviewer, challengerTool, c
  * Run the forge against live model seats. Spawns the ai-peer-mcp server, wires
  * `callTool`, and runs the same forge loop with live generation + council+fact
  * breakouts. Requires API keys in the server's environment (claude/codex/grok).
+ *
+ * @param {object} opts
+ *   signed default false; when true, gate runs under trust_mode: "signed"
  */
 export async function runForgeLive({
   projectRoot, telos, dossierMeta, serverPath, docsFor,
-  team, reviewer, maxCycles = 3
+  team, reviewer, maxCycles = 3, signed = false
 }) {
   const { client, close } = spawnMcpClient({ serverPath });
   const callTool = (name, args) => client.callTool(name, args);
@@ -172,7 +175,8 @@ export async function runForgeLive({
       makeGenerators: liveGenerators({ callTool }),
       makeBreakoutFns: makeCouncilFactFns({ callTool, team, reviewer }),
       makeApprovals: councilApprovals({ callTool }),
-      maxCycles
+      maxCycles,
+      signed
     });
   } finally {
     close();

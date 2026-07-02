@@ -96,4 +96,44 @@ for (const [rel, needle] of [["db/schema.sql", "create policy"], ["web/DESIGN.md
 const png = path.join(root, "docs/verification/s03-dynamics-discriminator.png");
 assert.ok(existsSync(png) && statSync(png).size > 0, "live: binary screenshot placeholder filled by harness");
 
+// --- signed mode: converge THROUGH the hardened signature+provenance gate ---
+process.env.TELOS_SECRET_CLAUDE = "test-claude";
+process.env.TELOS_SECRET_AGY = "test-agy";
+process.env.TELOS_SECRET_CODEX = "test-codex";
+{
+  const signedRoot = mkdtempSync(path.join(os.tmpdir(), "saas-forge-signed-"));
+  const signedResult = await forge({
+    projectRoot: signedRoot, telos, dossierMeta,
+    makeGenerators: liveGenerators({ callTool }),
+    makeBreakoutFns: makeCouncilFactFns({ callTool }),
+    makeApprovals: councilApprovals({ callTool }),
+    signed: true
+  });
+  assert.equal(signedResult.converged, true,
+    `signed-mode forge must converge through the hardened gate; cycles=${JSON.stringify(signedResult.cycles)}`);
+  assert.equal(signedResult.verdict.gate_status, "pass", "signed-mode gate passes");
+  assert.equal(signedResult.verdict.headline_checks.signing_enforced, true, "signing enforced in the verdict");
+  assert.equal(signedResult.verdict.headline_checks.provenance_enforced, true, "provenance enforced in the verdict");
+}
+// negative: a missing required secret must fail closed in signed mode.
+{
+  delete process.env.TELOS_SECRET_CODEX;
+  const failRoot = mkdtempSync(path.join(os.tmpdir(), "saas-forge-signed-fail-"));
+  const failResult = await forge({
+    projectRoot: failRoot, telos, dossierMeta,
+    makeGenerators: liveGenerators({ callTool }),
+    makeBreakoutFns: makeCouncilFactFns({ callTool }),
+    makeApprovals: councilApprovals({ callTool }),
+    signed: true
+  });
+  assert.equal(failResult.converged, false, "signed mode without a required secret must not converge");
+  const blockers = (failResult.verdict && failResult.verdict.blockers) || [];
+  assert.ok(blockers.some((b) => /no secret to verify codex|signature invalid/i.test(b)),
+    `expected a fail-closed signature blocker; got ${JSON.stringify(blockers)}`);
+  process.env.TELOS_SECRET_CODEX = "test-codex";
+}
+delete process.env.TELOS_SECRET_CLAUDE;
+delete process.env.TELOS_SECRET_AGY;
+delete process.env.TELOS_SECRET_CODEX;
+
 console.log("test-live OK: seat-backed generation + council+fact breakout converged through the live path (stubbed transport)");
