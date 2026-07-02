@@ -243,7 +243,13 @@ try {
         objective: dossierMeta.objective + approvalEvidenceDigest(records, workdir)
       };
       const approvals = await councilApprovals({ callTool })({ dossierMeta: approvalMeta, architecture });
-      const verdict = runMarketGate({ projectRoot: workdir, dossierMeta, teamRecords: records, approvals });
+      // TELOS_SIGNED=1 runs the gate under trust_mode "signed": approval
+      // packets are HMAC-signed inside runCouncil (TELOS_SECRET_<MODEL>) and
+      // the gate verifies signature + provenance + disk — the strictest
+      // posture, here composed with the plugin seat transport.
+      const signed = process.env.TELOS_SIGNED === "1";
+      summary.trust_mode = signed ? "signed" : "advisory";
+      const verdict = runMarketGate({ projectRoot: workdir, dossierMeta, teamRecords: records, approvals, signed });
       summary.gate_status = verdict.gate_status;
       summary.approvals_provenance = (verdict.provenance || []).map((p) => ({
         model: p.model, has_provenance: p.has_provenance, response_id: p.response_id

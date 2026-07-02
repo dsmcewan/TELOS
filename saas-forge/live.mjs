@@ -198,7 +198,11 @@ export function liveGenerators({ callTool }) {
     const produced = parseFileMap(text) || {};
     const out = {};
     for (const rel of injected.files) {
-      if (typeof produced[rel] === "string") out[rel] = produced[rel];
+      // Empty/whitespace content is MISSING, not a file: a zero-byte artifact
+      // is exactly what signed mode's evidence floor blocks. Binary slots fall
+      // through to the pipeline-owned placeholder; text slots fail loudly.
+      const v = produced[rel];
+      if (typeof v === "string" && v.trim().length > 0) out[rel] = v;
       else if (isBinary(rel)) out[rel] = PNG_1x1;
       else throw new Error(`${injected.id}: seat did not return required file ${rel}`);
     }
