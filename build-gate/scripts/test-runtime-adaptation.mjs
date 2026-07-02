@@ -42,6 +42,13 @@ const node = (id) => ({
 
   const noCmd = await runNodeTest({ id: "n", files: [], test: {} }, baseDir);
   assert.equal(noCmd.ok, false, "no test command => not ok");
+
+  // Cross-platform shim: `npm` is npm.cmd on Windows (cannot be spawned without the
+  // cmd.exe wrapper); runNodeTest must run it and capture exit 0 on Windows and
+  // POSIX alike. `npm --version` needs no project and always exits 0.
+  const npm = await runNodeTest({ id: "npm", files: [], test: { cmd: "npm", args: ["--version"] } }, baseDir);
+  assert.equal(npm.ok, true, `npm-based node test must run cross-platform; got detail=${npm.detail}`);
+  assert.equal(npm.status, 0, "npm --version exits 0");
 }
 
 // --- dispatch inner loop: fail attempt 1, self-correct on attempt 2 using priorFailure ---

@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 import { recompute, readPlan } from "./merkle.mjs";
 import { computeDiskTreeHash, hasEscape } from "./artifact.mjs";
 import { readLedger, verifyTransaction } from "./crypto.mjs";
-import { resolveUnder } from "./vendor.mjs";
+import { resolveUnder, spawnCommand } from "./vendor.mjs";
 
 export function verify(telosDir, { baseDir } = {}) {
   baseDir = baseDir || path.dirname(path.resolve(telosDir)); // workspace root (parent of .telos)
@@ -55,7 +55,8 @@ export function verify(telosDir, { baseDir } = {}) {
           const cwd = resolveUnder(baseDir, t.cwd || ".") || baseDir;
           if (!t.cmd) { checks.test = "TEST_FAILED"; b.push(`${node.id}: node has no test command`); }
           else {
-            const res = spawnSync(t.cmd, t.args || [], { cwd, encoding: "utf8", timeout: TEST_TIMEOUT_MS, killSignal: "SIGTERM" });
+            const spec = spawnCommand(t.cmd, t.args || []);
+            const res = spawnSync(spec.command, spec.args, { cwd, encoding: "utf8", timeout: TEST_TIMEOUT_MS, killSignal: "SIGTERM" });
             if (res.error || res.status !== 0) { checks.test = "TEST_FAILED"; b.push(`${node.id}: test exit ${res.status}${res.error ? " ("+res.error.message+")" : ""}${res.signal ? " (signal " + res.signal + ")" : ""}`); }
           }
         }
