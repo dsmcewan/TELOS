@@ -47,24 +47,27 @@ loadWin32Env();
 function mapModelName(model) {
   if (!model) return model;
   const lower = model.trim().toLowerCase();
+  if (lower === "claude fable" || lower === "fable" || lower === "claude") {
+    return "claude-fable-5";
+  }
   if (lower === "claude opus" || lower === "opus") {
-    return "claude-3-opus-20240229";
+    return "claude-opus-4-8";
   }
   if (lower === "claude sonnet" || lower === "sonnet") {
-    return "claude-3-5-sonnet-latest";
+    return "claude-sonnet-4-6";
   }
   if (lower === "grok") {
     return "grok-4.3";
   }
-  // Codex is served by OpenAI; a bare "codex" resolves to a broadly-available
+  // Codex is served by OpenAI; a bare "codex" resolves to the current flagship
   // chat model so `model: "codex"` works the way `model: "grok"` does.
   if (lower === "codex" || lower === "gpt") {
-    return "gpt-4o";
+    return "gpt-5.5";
   }
-  // Gemini is served by Google; a bare "gemini" resolves to a broadly-available
+  // Gemini is served by Google; a bare "gemini" resolves to the current pro
   // model. Real selection stays env-overridable via GEMINI_MODEL.
   if (lower === "gemini" || lower === "gemini pro") {
-    return "gemini-1.5-flash";
+    return "gemini-3.1-pro-preview";
   }
   return model;
 }

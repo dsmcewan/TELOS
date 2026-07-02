@@ -1,0 +1,27 @@
+{
+  "generated_for": "agentic-teams-demo",
+  "live": true,
+  "transport": "seat-router (claude/agy_checkpoint via ai-peer-mcp; grok/gemini/codex via claude-plugins seat servers)",
+  "decompose": "fixture",
+  "phase": "build",
+  "ok": true,
+  "merge_status": "ready",
+  "teams_convened": [
+    "planning",
+    "architecture",
+    "breakout",
+    "integrity"
+  ],
+  "council": "passed",
+  "settled_nodes": [
+    {
+      "id": "greet",
+      "signer": "architecture"
+    },
+    {
+      "id": "index",
+      "signer": "architecture"
+    }
+  ],
+  "note": "Live run over the seat router. Without API keys, required seats fail-closed and the gate honest-blocks at approval (no plan, no ledger) — the correct outcome."
+}
