@@ -129,6 +129,8 @@ git commit -m "feat(sign): add signMarketPacket (attest + HMAC-sign a market pac
 - Consumes: `signMarketPacket(packet, record, signer)` from Task 1.
 - Produces: `forge({ ..., signed })` and `runForgeLive({ ..., signed })` — when `signed: true`, the gate dossier carries `trust_mode: "signed"` and every market packet is signed via `signMarketPacket(packet, record, record.signer)`.
 
+> **Correction (decided during implementation):** several ai-forge patterns sign guardrail/adversary workstreams with `grok`, so a grok-signed market packet needs `TELOS_SECRET_GROK` in signed mode. The signed-mode test in Step 1 therefore also sets `process.env.TELOS_SECRET_GROK` (and cleans it up). This does not apply to saas-forge (Task 3), whose signers are all `claude`/`codex`.
+
 - [ ] **Step 1: Write the failing test**
 
 Append to `ai-forge/scripts/test-live.mjs` immediately before its final `console.log(...)` call. (`runForgeLive`, `mkdtempSync`, `os`, `path`, `stubEmbed`, `stubVectorStore`, `callTool`, `dossierMeta`, `ctx` are already in scope in that file.)

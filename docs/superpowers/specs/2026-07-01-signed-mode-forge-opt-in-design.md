@@ -66,13 +66,20 @@ synthetic fallback) with secrets present.
   distinct, so the ids are unique.
 - **Signature:** `signPacket(packet, secretFor(signer))`.
 - **Signing identity — `signer`, not `lens`:** the packet's `model` is set to the
-  workstream's `signer` (always `claude`/`codex`, which must have secrets in signed mode
-  anyway), not its `lens` (which includes advisory `grok`/`agy`). A market packet is
-  harness-derived from a disk-verified record, so the honest cryptographic identity is the
-  trusted controller signing with a required-seat secret — *who signs* is not *who
-  reviewed*. The reviewing `lens` is preserved as a descriptive `reviewed_by_lens` field on
-  the packet (non-load-bearing; the gate keys coverage off `workstreams_reviewed`, not
-  `model`). This avoids forcing operators to provision `TELOS_SECRET_GROK`.
+  workstream's `signer`, not its `lens`. A market packet is harness-derived from a
+  disk-verified record, so the honest cryptographic identity is the trusted controller
+  signing with the workstream's signer secret — *who signs* is not *who reviewed*. The
+  reviewing `lens` is preserved as a descriptive `reviewed_by_lens` field on the packet
+  (non-load-bearing; the gate keys coverage off `workstreams_reviewed`, not `model`).
+- **Secret requirement (decided during implementation):** signed mode requires a
+  `TELOS_SECRET_<SIGNER>` for **every** workstream signer, because the gate authenticates
+  each market packet by `secretFor(packet.model)`. In `saas-forge` all signers are
+  `claude`/`codex`, so the approval-trio secrets suffice. In `ai-forge`, several patterns
+  sign guardrail/adversary workstreams with `grok`, so **`ai-forge` signed mode also
+  requires `TELOS_SECRET_GROK`**. A missing signer secret leaves that market packet
+  unsigned and the gate blocks it (fail-closed). (An earlier "sign by signer avoids
+  advisory secrets" rationale was based on a saas-forge-only survey and does not hold for
+  ai-forge; requiring the grok secret was the chosen resolution.)
 
 In **unsigned mode nothing changes**: `packet.model = lens`, no provenance, no signature.
 
