@@ -47,8 +47,10 @@ const stubVectorStore = (() => {
 //                      binary files like .png are omitted by the seat).
 //   2. Grok adversary: prompt contains "Attack this claim" — return [] (no holes).
 //   3. Member revise:  prompt contains "Team proposals" — return a no-op verdict.
-//   4. Approval seats: handled by runForgeLive's graceful fallback to
-//                      syntheticApprovals when the council call errors.
+//   4. Approval seats: the council runs for REAL — agy via agy_checkpoint,
+//                      claude/codex via <model>_ask (prompt carries "approval
+//                      packet"). Each returns a packet with provenance so the
+//                      verdict is distinguishable from the synthetic fallback.
 //
 function makeStubCallTool(pattern, ragCtx) {
   return async (name, args) => {
@@ -125,6 +127,23 @@ assert.ok(Array.isArray(result.cycles),
   `result must have a cycles array; got: ${JSON.stringify(result)}`);
 assert.ok(result.cycles.length >= 1,
   "cycles array must have at least one entry (the forge ran at least one cycle)");
+
+// Regression guard for the arg-shape bug: runForgeLive must invoke the async
+// council with { dossierMeta } so the REAL council runs. If it regresses to a
+// bare dossierMeta, councilApprovals throws and runForgeLive silently substitutes
+// syntheticApprovals — which carry NO provenance. The stub's council packets do,
+// so require real provenance to reach the gate (only observable once the build
+// converges and the market gate runs).
+assert.equal(result.converged, true,
+  "live path must converge (stubbed seats + fact breakouts) so the council-fed gate runs");
+assert.ok(result.verdict && result.verdict.gate_status === "pass",
+  `market gate must pass on real council approvals; got ${JSON.stringify(result.verdict && result.verdict.gate_status)}`);
+const provByModel = new Map((result.verdict.provenance || []).map((p) => [p.model, p]));
+for (const model of ["claude", "agy", "codex"]) {
+  const pv = provByModel.get(model);
+  assert.ok(pv && typeof pv.response_id === "string" && pv.response_id.length > 0,
+    `${model} approval must carry real council provenance, not the synthetic fallback; got ${JSON.stringify(pv)}`);
+}
 
 console.log(
   `test-live.mjs OK: live path executed — ` +

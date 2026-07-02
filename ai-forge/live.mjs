@@ -235,7 +235,12 @@ export async function runForgeLive({
     // discarded (acceptable overhead for a single-run council call).
     let approvals;
     try {
-      approvals = await makeApprovalsAsync(dossierMeta);
+      // councilApprovals returns a function that destructures { dossierMeta }
+      // (identical in shape to saas-forge's). It MUST be called with the wrapped
+      // object — a bare dossierMeta makes the destructure yield undefined and
+      // throws on dossierMeta.build_id, silently degrading every live run to the
+      // synthetic self-approvals below.
+      approvals = await makeApprovalsAsync({ dossierMeta });
     } catch {
       // Council call failed (e.g. keys unavailable); fall back to synthetic.
       approvals = syntheticApprovals(dossierMeta);
