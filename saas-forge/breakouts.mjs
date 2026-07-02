@@ -8,6 +8,8 @@
 // driven by makeCouncilBreakout (grok challenges, the builder team revises,
 // a reviewer accepts) — but even there the verdict is anchored to these checks.
 
+import { mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
 import { runBreakout } from "../breakout/breakout.mjs";
 import { reverifyRecord } from "../breakout/verifier.mjs";
 import { WORKSTREAMS } from "./workstreams.mjs";
@@ -50,6 +52,17 @@ export async function runTeamBreakouts({ baseDir, architecture, maxRounds = 3, m
     );
     // Attach the deterministic specs so the gate can independently re-verify.
     records.push({ ...record, checks, lens: ws.lens, signer: ws.signer, isUi: !!ws.isUi, finding: ws.finding, findingsKey: ws.findingsKey });
+
+    // Persist the fight log as run evidence: every round's blockers and
+    // resolutions plus any referee ruling, under .telos/fights/.
+    try {
+      const fightsDir = path.join(baseDir, ".telos", "fights");
+      mkdirSync(fightsDir, { recursive: true });
+      writeFileSync(
+        path.join(fightsDir, `${ws.id}.json`),
+        JSON.stringify({ workstream: ws.id, converged: record.converged, rounds: record.rounds, referee: record.referee ?? null }, null, 2) + "\n"
+      );
+    } catch { /* evidence write is best-effort; the verdict itself is unaffected */ }
   }
   return records;
 }

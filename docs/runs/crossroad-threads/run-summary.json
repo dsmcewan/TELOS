@@ -1,0 +1,82 @@
+{
+  "generated_for": "crossroad-threads-launch-audit",
+  "live": true,
+  "phase": "audit",
+  "transport": "seat-router default (claude/agy_checkpoint via ai-peer-mcp; grok/gemini/codex via claude-plugins seat servers)",
+  "build": {
+    "merge_status": "ready",
+    "settled_this_invocation": [],
+    "halts": []
+  },
+  "teams": [
+    {
+      "workstream": "commerce-gap",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 3,
+      "referee": null
+    },
+    {
+      "workstream": "positioning-launch",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 2,
+      "referee": null
+    },
+    {
+      "workstream": "launch-architecture",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "security-trust",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 2,
+      "referee": null
+    },
+    {
+      "workstream": "ops-content",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "brand-experience",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 4,
+      "referee": null
+    },
+    {
+      "workstream": "advertising-launch",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 5,
+      "referee": null
+    }
+  ],
+  "gate_status": "pass",
+  "approvals_provenance": [
+    {
+      "model": "claude",
+      "has_provenance": true,
+      "response_id": "msg_015sjf2qFN564nRsMtWJGFcj"
+    },
+    {
+      "model": "agy",
+      "has_provenance": true,
+      "response_id": "agy-44cb01da259b0c0515414fce882aa88f8e3827be"
+    },
+    {
+      "model": "codex",
+      "has_provenance": true,
+      "response_id": "chatcmpl-DxG0217cJ0IuSgsVFsP3E5Ll0Gh1e"
+    }
+  ],
+  "blockers": [],
+  "result": "PASS"
+}

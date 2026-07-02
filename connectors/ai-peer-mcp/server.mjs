@@ -83,6 +83,40 @@ const DEFAULT_OPENAI_BASE_URL = "https://api.openai.com/v1";
 const DEFAULT_GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 const DEBUG = process.env.AI_PEER_DEBUG === "1";
 
+// Transport: globalThis.fetch by default (unit tests mock it), or a plain
+// node:https client when AI_PEER_LONG_TIMEOUT=1 — undici's ~300s header
+// timeout aborts long max-effort generations as a bare "fetch failed", and
+// live seat runners opt into patience instead (see build-gate/seat-registry).
+async function doFetch(url, opts = {}) {
+  if (process.env.AI_PEER_LONG_TIMEOUT !== "1") return fetch(url, opts);
+  const { request } = await import("node:https");
+  const timeoutMs = Number(process.env.AI_PEER_TIMEOUT_MS) || 1_800_000;
+  return new Promise((resolve, reject) => {
+    const req = request(url, {
+      method: opts.method || "GET",
+      headers: {
+        ...(opts.headers || {}),
+        ...(opts.body ? { "Content-Length": Buffer.byteLength(opts.body) } : {})
+      },
+      timeout: timeoutMs
+    }, (res) => {
+      let text = "";
+      res.setEncoding("utf8");
+      res.on("data", (c) => (text += c));
+      res.on("end", () => resolve({
+        ok: (res.statusCode || 0) >= 200 && (res.statusCode || 0) < 300,
+        status: res.statusCode || 0,
+        text: async () => text,
+        json: async () => JSON.parse(text)
+      }));
+    });
+    req.on("timeout", () => req.destroy(new Error(`request timed out after ${timeoutMs / 1000}s`)));
+    req.on("error", reject);
+    if (opts.body) req.write(opts.body);
+    req.end();
+  });
+}
+
 // Only run the stdio server loop when executed directly (node server.mjs). When
 // imported by a unit test, the ask* functions are exercised without starting the
 // reader (which would otherwise hold the process open on stdin).
@@ -386,7 +420,7 @@ export async function askClaude(args) {
     body.tool_choice = { type: "tool", name: schemaName };
   }
 
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
+  const response = await doFetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -430,7 +464,7 @@ export async function askGrok(args) {
   messages.push({ role: "user", content: args.prompt });
 
   const baseUrl = (process.env.XAI_BASE_URL || DEFAULT_XAI_BASE_URL).replace(/\/$/, "");
-  const response = await fetch(`${baseUrl}/chat/completions`, {
+  const response = await doFetch(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
       "authorization": `Bearer ${apiKey}`,
@@ -465,7 +499,7 @@ export async function askCodex(args) {
   messages.push({ role: "user", content: args.prompt });
 
   const baseUrl = (process.env.OPENAI_BASE_URL || DEFAULT_OPENAI_BASE_URL).replace(/\/$/, "");
-  const response = await fetch(`${baseUrl}/chat/completions`, {
+  const response = await doFetch(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
       "authorization": `Bearer ${apiKey}`,
@@ -499,7 +533,7 @@ export async function askGemini(args) {
 
   const structured = args.response_schema && typeof args.response_schema === "object";
   const baseUrl = (process.env.GEMINI_BASE_URL || DEFAULT_GEMINI_BASE_URL).replace(/\/$/, "");
-  const response = await fetch(`${baseUrl}/models/${model}:generateContent`, {
+  const response = await doFetch(`${baseUrl}/models/${model}:generateContent`, {
     method: "POST",
     headers: {
       "content-type": "application/json",

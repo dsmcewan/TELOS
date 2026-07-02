@@ -17,3 +17,5 @@ Thumbs.db
 
 # SDD scratch / working files (not committed)
 .superpowers/
+docs/runs/*/workdir/
+docs/runs/crossroad-ads/creative/

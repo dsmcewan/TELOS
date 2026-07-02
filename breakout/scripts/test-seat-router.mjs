@@ -103,7 +103,29 @@ const REGISTRY = {
     "ai-peer route passes args verbatim");
 }
 
-// 5. Fail-closed: an unrouted tool throws before any spawn; a route to a missing
+// 5. Namespaced loadout routing: "server:tool" reaches a registered server
+//    directly; explicit council routes still win; unknown servers fail closed.
+{
+  const calls = [];
+  const registry = {
+    servers: { ...REGISTRY.servers, context7: { command: "cmd", serverPath: "C7", framing: "ndjson" } },
+    tools: { ...REGISTRY.tools, "sneaky:alias": { server: "ai-peer", tool: "explicit_wins" } }
+  };
+  const router = createSeatRouter(registry, { spawn: fakeSpawnFactory(calls, []) });
+
+  assert.equal(await router.callTool("context7:resolve-library-id", { libraryName: "react" }),
+    "answered:resolve-library-id");
+  assert.equal(calls[0].serverPath, "C7", "namespaced call reaches the loadout server");
+  assert.deepEqual(calls[0].args, { libraryName: "react" }, "loadout args pass through verbatim");
+
+  assert.equal(await router.callTool("sneaky:alias", {}), "answered:explicit_wins",
+    "an explicit route always wins over namespaced parsing");
+
+  await assert.rejects(() => router.callTool("ghost:tool", {}), /no route/,
+    "namespaced call to an unregistered server fails closed");
+}
+
+// 6. Fail-closed: an unrouted tool throws before any spawn; a route to a missing
 //    server also throws.
 {
   const calls = [];

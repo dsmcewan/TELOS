@@ -35,6 +35,7 @@ export function createSeatRouter(registry, { spawn = spawnMcpClient } = {}) {
       entry = spawn({
         command: srv.command,
         serverPath: srv.serverPath,
+        args: srv.args,
         env: srv.env,
         framing: srv.framing
       });
@@ -46,9 +47,22 @@ export function createSeatRouter(registry, { spawn = spawnMcpClient } = {}) {
   return {
     async callTool(name, args) {
       const route = tools[name];
-      if (!route) throw new Error(`seat-router: no route for tool "${name}" (fail-closed)`);
-      const mapped = route.argMap ? route.argMap(args || {}) : (args || {});
-      return clientFor(route.server).callTool(route.tool, mapped);
+      if (route) {
+        const mapped = route.argMap ? route.argMap(args || {}) : (args || {});
+        return clientFor(route.server).callTool(route.tool, mapped);
+      }
+      // Namespaced loadout form: "server:tool" reaches any registered plugin
+      // server directly (docs research, search, ...). Explicit council routes
+      // always win above; unknown servers still fail closed.
+      const sep = name.indexOf(":");
+      if (sep > 0) {
+        const serverName = name.slice(0, sep);
+        const toolName = name.slice(sep + 1);
+        if (servers[serverName] && toolName) {
+          return clientFor(serverName).callTool(toolName, args || {});
+        }
+      }
+      throw new Error(`seat-router: no route for tool "${name}" (fail-closed)`);
     },
     close() {
       for (const { close } of live.values()) {

@@ -1,0 +1,82 @@
+{
+  "generated_for": "saas-forge-plugin-seats",
+  "live": true,
+  "ratchet": true,
+  "transport": "seat-router default (claude/agy_checkpoint via ai-peer-mcp; grok/gemini/codex via claude-plugins seat servers)",
+  "build": {
+    "merge_status": "ready",
+    "settled_this_invocation": [],
+    "halts": []
+  },
+  "teams": [
+    {
+      "workstream": "product-architecture",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "business-positioning",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "backend-schema",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "security-trust",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "accuracy-evals",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "scale-operations",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 2,
+      "referee": null
+    },
+    {
+      "workstream": "frontend-brand-experience",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    }
+  ],
+  "gate_status": "pass",
+  "approvals_provenance": [
+    {
+      "model": "claude",
+      "has_provenance": true,
+      "response_id": "msg_0192aiD9UCKT4Et4G9pa63yz"
+    },
+    {
+      "model": "agy",
+      "has_provenance": true,
+      "response_id": "agy-44cb01da259b0c0515414fce882aa88f8e3827be"
+    },
+    {
+      "model": "codex",
+      "has_provenance": true,
+      "response_id": "chatcmpl-DxEFXAgWYwnZ9rOdFw66nGrW7Bq7B"
+    }
+  ],
+  "blockers": [],
+  "result": "PASS"
+}

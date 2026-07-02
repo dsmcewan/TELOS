@@ -5,8 +5,8 @@
   "type": "module",
   "description": "TELOS self-challenge breakout engine: loops adversarial challenge + revision until a workstream claim survives or is honestly downgraded.",
   "scripts": {
-    "check": "node --check breakout.mjs && node --check verifier.mjs && node --check mcp_client.mjs && node --check seat_router.mjs && node --check live.mjs && node --check scripts/test-breakout.mjs && node --check scripts/test-council.mjs && node --check scripts/test-mcp-client.mjs && node --check scripts/test-seat-router.mjs && node --check scripts/test-verifier.mjs && node --check scripts/test-live.mjs",
-    "test": "npm run check && node scripts/test-breakout.mjs && node scripts/test-council.mjs && node scripts/test-mcp-client.mjs && node scripts/test-seat-router.mjs && node scripts/test-verifier.mjs && node scripts/test-live.mjs",
+    "check": "node --check breakout.mjs && node --check verifier.mjs && node --check mcp_client.mjs && node --check seat_router.mjs && node --check fight_memory.mjs && node --check live.mjs && node --check scripts/test-breakout.mjs && node --check scripts/test-council.mjs && node --check scripts/test-mcp-client.mjs && node --check scripts/test-seat-router.mjs && node --check scripts/test-fight-memory.mjs && node --check scripts/test-verifier.mjs && node --check scripts/test-live.mjs",
+    "test": "npm run check && node scripts/test-breakout.mjs && node scripts/test-council.mjs && node scripts/test-mcp-client.mjs && node scripts/test-seat-router.mjs && node scripts/test-fight-memory.mjs && node scripts/test-verifier.mjs && node scripts/test-live.mjs",
     "breakout": "node live.mjs"
   },
   "engines": {
