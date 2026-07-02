@@ -22,14 +22,13 @@
 //   node docs/runs/saas-forge-plugin-seats/run-ratchet.mjs
 //   (re-run after any interruption; exits 0 only on a passed gate)
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { generateKeypair } from "../../../merkle-dag/crypto.mjs";
+import { openState, foldDefs, styxGenerateFiles, bankVerifyFailures, runBouts, approvalEvidenceDigest, loadKeys, pinResearch } from "../../../forge/ratchet.mjs";
 import { computePlan, writePlan } from "../../../merkle-dag/merkle.mjs";
 import { runBuild } from "../../../merkle-dag/orchestrate.mjs";
-import { runBreakout } from "../../../breakout/breakout.mjs";
 import { createSeatRouter } from "../../../breakout/seat_router.mjs";
 import { defaultSeatRegistry, withLoadout } from "../../../build-gate/seat-registry.mjs";
 import { researchArchitecture, makeContext7DocsFor, offlineDocsFor } from "../../../saas-forge/research.mjs";
@@ -76,16 +75,7 @@ const loadJson = (p, fallback) => {
 const saveJson = (p, v) => writeFileSync(p, JSON.stringify(v, null, 2) + "\n");
 const log = (m) => console.log(`[ratchet] ${m}`);
 
-// ---- persisted keys (stable plan hash across invocations) ------------------
-const keysPath = path.join(workdir, "keys.json");
-let keys = loadJson(keysPath, null);
-if (!keys) {
-  keys = { claude: generateKeypair(), codex: generateKeypair() };
-  saveJson(keysPath, keys);
-  log("generated and persisted run keypairs");
-} else {
-  log("reusing persisted run keypairs");
-}
+const keys = loadKeys(workdir, ["claude", "codex"], log);
 
 // The run's PLUGIN LOADOUT: extra MCP servers beyond the council seats, reached
 // through the router's namespaced form ("server:tool"). Declare more here — or
@@ -93,7 +83,8 @@ if (!keys) {
 const router = createSeatRouter(withLoadout(defaultSeatRegistry(), {
   context7: { command: "cmd", args: ["/c", "npx", "-y", "@upstash/context7-mcp"], framing: "ndjson" }
 }));
-const callTool = (name, args) => router.callTool(name, args);
+let seatCalls = 0;
+const callTool = (name, args) => { seatCalls++; return router.callTool(name, args); };
 
 // Live Context7 research through the loadout. Fail-open per domain to the
 // offline KB — research enrichment must never block OR HANG the build (a dead
@@ -141,49 +132,16 @@ try {
   // effective_hash — forward-invalidation re-dispatches exactly that node, and
   // the builder regenerates the artifact with the blockers in its prompt. The
   // bout then re-fights the NEW artifact: fight -> verdict -> respec -> rebuild.
-  const blockersPath = path.join(workdir, "checkpoint.blockers.json");
-  const boutBlockers = loadJson(blockersPath, {});
+  const state = openState(workdir);
 
   // Research is PINNED: performed once (live Context7, offline fallback) and
   // persisted — re-rolling research each invocation would re-hash every node
   // and defeat the ratchet. Delete workdir/architecture.json to re-research.
-  const archPath = path.join(workdir, "architecture.json");
-  let architecture = loadJson(archPath, null);
-  if (!architecture) {
-    architecture = await researchArchitecture({ telos, workstreams: ALL, docsFor: context7DocsFor() });
-    saveJson(archPath, architecture);
-    log(`research: pinned architecture (${architecture.stack.map((s) => s.library).join(", ")})`);
-  } else {
-    log("research: reusing pinned architecture");
-  }
-  // THE STYX RULE — a crossing is permanent. A converged team's spec is FROZEN
-  // (stored def reused verbatim, immune to blocker bookkeeping and cascades)
-  // and its artifact is PRESERVED (re-settles from disk byte-identical if a
-  // merkle cascade forces a re-lineage; the seat is never re-invoked). Only an
-  // operator deleting the checkpoint sends a soul back to the river.
-  const teamsPath = path.join(workdir, "checkpoint.teams.json");
-  const done = loadJson(teamsPath, {});
-  const rawDefs = convergenceTaskDefs(architecture);
-  for (const [id, rec] of Object.entries(done)) {
-    if (rec.converged && !rec.frozen_def) {
-      rec.frozen_def = rawDefs.find((d) => d.id === id) || null;
-      log(`styx: backfilled frozen spec for prior win ${id}`);
-      saveJson(teamsPath, done);
-    }
-  }
+  const architecture = await pinResearch(workdir, "architecture",
+    () => researchArchitecture({ telos, workstreams: ALL, docsFor: context7DocsFor() }), log);
 
-  const defs = rawDefs.map((def) => {
-    if (done[def.id]?.converged && done[def.id].frozen_def) return done[def.id].frozen_def;
-    const raised = boutBlockers[def.id];
-    if (!Array.isArray(raised) || raised.length === 0) return def;
-    log(`respec ${def.id}: ${raised.length} bout blocker(s) folded into requirements`);
-    return {
-      ...def,
-      requirements: def.requirements +
-        "\nPRIOR BOUT BLOCKERS — the adversarial council raised these against the previous version of this artifact; the new version MUST concretely resolve each one:\n" +
-        raised.slice(0, 6).map((b) => `- ${String(b).slice(0, 300)}`).join("\n")
-    };
-  });
+  const rawDefs = convergenceTaskDefs(architecture);
+  const defs = foldDefs(rawDefs, state, log);
   const defById = new Map(defs.map((d) => [d.id, d]));
   const { plan, errors } = computePlan(defs, {
     authorizedSigners: { claude: keys.claude.publicJwk, codex: keys.codex.publicJwk }
@@ -191,25 +149,11 @@ try {
   if (errors) throw new Error(`plan invalid: ${JSON.stringify(errors)}`);
   writePlan(telosDir, plan);
 
-  const isBinaryRel = (rel) => /\.(png|jpe?g|gif|webp|ico)$/i.test(rel);
-  const liveGen = liveGenerators({ callTool })(architecture);
-  const generateFiles = async (injected) => {
-    // Styx: a converged team's artifact re-settles from disk, never regenerates.
-    if (done[injected.id]?.converged) {
-      const files = {};
-      let complete = true;
-      for (const rel of injected.files) {
-        try {
-          files[rel] = readFileSync(path.join(workdir, rel), isBinaryRel(rel) ? undefined : "utf8");
-        } catch { complete = false; }
-      }
-      if (complete) {
-        log(`styx: ${injected.id} re-settled from its preserved artifact (no regeneration)`);
-        return files;
-      }
-    }
-    return liveGen(injected);
-  };
+  const generateFiles = styxGenerateFiles({
+    state,
+    generate: liveGenerators({ callTool })(architecture),
+    log
+  });
   const dispatch = generatorDispatch({
     baseDir: workdir,
     generateFiles,
@@ -225,72 +169,16 @@ try {
   log(`build: merge_status=${report.merge_status}; settled this invocation: ${settledNow.join(", ") || "(none — already ratcheted)"}`);
   summary.build = { merge_status: report.merge_status, settled_this_invocation: settledNow, halts };
   if (report.merge_status !== "ready") {
-    // A failing node test is a blocker RAISED BY THE TEST ITSELF: bank its
-    // diagnostic into the same respec recursion the bout blockers use, so the
-    // next pass regenerates the artifact knowing exactly what the test said.
-    for (const h of halts) {
-      if (!h.reason) continue;
-      const raised = boutBlockers[h.id] || [];
-      const entry = `BUILD VERIFY FAILURE (from the node's own test): ${h.reason.slice(0, 400)}`;
-      if (!raised.includes(entry)) {
-        boutBlockers[h.id] = [entry, ...raised].slice(0, 8);
-        saveJson(blockersPath, boutBlockers);
-        log(`banked verify failure as blocker for ${h.id}`);
-      }
-    }
+    bankVerifyFailures(halts, state, log);
     summary.result = "build-incomplete (re-run to continue from the ledger)";
     summary.blockers = report.blockers || [];
     process.exitCode = 1;
   } else {
-    // ---- Stage B: team bouts (checkpoint per converged team) ----------------
-    // Styx rule: a converged team NEVER re-fights — its spec is frozen and its
-    // artifact preserved, so the win it earned still describes what's on disk.
+    // ---- Stage B: team bouts (Styx skip, closure, checkpoints — forge/) -----
     const makeFns = makeCouncilFactFns({ callTool });
     const hashById = new Map(plan.nodes.map((n) => [n.id, n.effective_hash]));
-    const records = [];
-    for (const ws of WORKSTREAMS) {
-      const checks = ws.checks(architecture);
-      if (done[ws.id]?.converged) {
-        log(`bout ${ws.id}: across the river (converged in a prior invocation — never re-fought)`);
-        records.push(done[ws.id]);
-        continue;
-      }
-      log(`bout ${ws.id}: fighting...`);
-      // Contract closure: after three bouts a workstream's contract CLOSES —
-      // adversaries may only verify the folded prior blockers are resolved or
-      // cite factual defects. Unbounded novelty never terminates on documents.
-      const fightCountsPath = path.join(workdir, 'fight-counts.json');
-      const fightCounts = loadJson(fightCountsPath, {});
-      fightCounts[ws.id] = (fightCounts[ws.id] || 0) + 1;
-      saveJson(fightCountsPath, fightCounts);
-      const closure = fightCounts[ws.id] > 3
-        ? `\n=== CONTRACT CLOSED (bout ${fightCounts[ws.id]}) === This artifact has been through ${fightCounts[ws.id] - 1} adversarial cycles. Valid blockers may ONLY cite (a) a PRIOR BOUT BLOCKER from this contract that remains unresolved, or (b) an internal factual defect (contradiction, broken example). NO new demands.`
-        : "";
-      const fns = makeFns({ workstream: ws.id, checks, baseDir: workdir, contract: (defById.get(ws.id)?.requirements || "") + closure });
-      const record = await runBreakout(
-        { workstream: ws.id, claimedStatus: "meets", goalStatus: "meets",
-          evidence: `${ws.id} artifacts: ${ws.files.join(", ")}` },
-        fns
-      );
-      const full = { ...record, checks, lens: ws.lens, signer: ws.signer, isUi: !!ws.isUi, finding: ws.finding, findingsKey: ws.findingsKey, node_hash: hashById.get(ws.id), frozen_def: defById.get(ws.id) ?? null };
-      // Persist the fight log as evidence either way; checkpoint only a win.
-      const fightsDir = path.join(telosDir, "fights");
-      mkdirSync(fightsDir, { recursive: true });
-      saveJson(path.join(fightsDir, `${ws.id}.json`),
-        { workstream: ws.id, converged: record.converged, rounds: record.rounds, referee: record.referee ?? null });
-      if (record.converged) {
-        done[ws.id] = full;
-        saveJson(teamsPath, done);
-        delete boutBlockers[ws.id];
-        saveJson(blockersPath, boutBlockers);
-        log(`bout ${ws.id}: CONVERGED in ${record.rounds.length} round(s) — checkpointed`);
-      } else {
-        boutBlockers[ws.id] = record.surviving_blockers;
-        saveJson(blockersPath, boutBlockers);
-        log(`bout ${ws.id}: needs-work (${record.surviving_blockers.length} surviving; referee: ${record.referee?.reason ?? "rounds"}) — blockers respec the node next invocation`);
-      }
-      records.push(full);
-    }
+    const wsWithChecks = WORKSTREAMS.map((ws) => ({ ...ws, checks: ws.checks(architecture) }));
+    const records = await runBouts({ workstreams: wsWithChecks, state, makeFns, defById, hashById, telosDir, log });
     summary.teams = records.map((t) => ({
       workstream: t.workstream, converged: t.converged, finalStatus: t.finalStatus,
       rounds: t.rounds?.length ?? 0, referee: t.referee ?? null
@@ -300,10 +188,18 @@ try {
     if (!allConverged) {
       summary.result = "bouts-incomplete (re-run to continue; converged teams are ratcheted)";
       process.exitCode = 1;
+    } else if (process.env.TELOS_SKIP_GATE === "1") {
+      // Replay/verification mode: prove the ratchet + Styx stages alone.
+      summary.result = "ALL-CONVERGED (gate skipped by TELOS_SKIP_GATE)";
+      process.exitCode = 0;
     } else {
       // ---- Stage C: approvals + gate (always re-verified, never resumed) ----
       log("gate: collecting council approvals...");
-      const approvals = await councilApprovals({ callTool })({ dossierMeta, architecture });
+      const approvalMeta = {
+        ...dossierMeta,
+        objective: dossierMeta.objective + approvalEvidenceDigest(records, workdir)
+      };
+      const approvals = await councilApprovals({ callTool })({ dossierMeta: approvalMeta, architecture });
       const verdict = runMarketGate({ projectRoot: workdir, dossierMeta, teamRecords: records, approvals });
       summary.gate_status = verdict.gate_status;
       summary.approvals_provenance = (verdict.provenance || []).map((p) => ({
@@ -322,7 +218,8 @@ try {
   router.close();
 }
 
+summary.seat_calls = seatCalls;
 saveJson(path.join(here, "run-summary.json"), summary);
 console.log(JSON.stringify(summary, null, 2));
-log(`result: ${summary.result}`);
+log(`result: ${summary.result} (seat calls this invocation: ${seatCalls})`);
 process.exit(process.exitCode || 0);

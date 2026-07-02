@@ -29,6 +29,7 @@ jobs:
           - merkle-dag
           - saas-forge
           - ai-forge
+          - forge
     name: ${{ matrix.package }} (node ${{ matrix.node-version }})
     steps:
       - name: Checkout repository

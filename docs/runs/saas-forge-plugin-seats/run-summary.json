@@ -59,24 +59,6 @@
       "referee": null
     }
   ],
-  "gate_status": "pass",
-  "approvals_provenance": [
-    {
-      "model": "claude",
-      "has_provenance": true,
-      "response_id": "msg_0192aiD9UCKT4Et4G9pa63yz"
-    },
-    {
-      "model": "agy",
-      "has_provenance": true,
-      "response_id": "agy-44cb01da259b0c0515414fce882aa88f8e3827be"
-    },
-    {
-      "model": "codex",
-      "has_provenance": true,
-      "response_id": "chatcmpl-DxEFXAgWYwnZ9rOdFw66nGrW7Bq7B"
-    }
-  ],
-  "blockers": [],
-  "result": "PASS"
+  "result": "ALL-CONVERGED (gate skipped by TELOS_SKIP_GATE)",
+  "seat_calls": 0
 }

@@ -14,15 +14,13 @@
 //
 //   node docs/runs/crossroad-threads/run-audit.mjs   (re-run to resume; exits 0 only on a passed gate)
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { generateKeypair } from "../../../merkle-dag/crypto.mjs";
 import { computePlan, writePlan } from "../../../merkle-dag/merkle.mjs";
 import { runBuild } from "../../../merkle-dag/orchestrate.mjs";
-import { runBreakout } from "../../../breakout/breakout.mjs";
-import { reverifyRecord } from "../../../breakout/verifier.mjs";
+import { openState, foldDefs, styxGenerateFiles, bankVerifyFailures, runBouts, approvalEvidenceDigest, loadKeys } from "../../../forge/ratchet.mjs";
 import { createSeatRouter } from "../../../breakout/seat_router.mjs";
 import { defaultSeatRegistry } from "../../../build-gate/seat-registry.mjs";
 import { generatorDispatch } from "../../../saas-forge/generator.mjs";
@@ -262,28 +260,17 @@ const dossierMeta = {
 };
 const telos = "Launch Crossroad Threads on its own domain.";
 
-// ---- persisted keys ---------------------------------------------------------
-const keysPath = path.join(workdir, "keys.json");
-let keys = loadJson(keysPath, null);
-if (!keys) {
-  keys = { claude: generateKeypair(), codex: generateKeypair() };
-  saveJson(keysPath, keys);
-  log("generated and persisted run keypairs");
-} else {
-  log("reusing persisted run keypairs");
-}
+const keys = loadKeys(workdir, ["claude", "codex"], log);
 
 const router = createSeatRouter(defaultSeatRegistry());
-const callTool = (name, args) => router.callTool(name, args);
+let seatCalls = 0;
+const callTool = (name, args) => { seatCalls++; return router.callTool(name, args); };
 
 let summary = { generated_for: dossierMeta.build_id, live: true, phase: "audit",
   transport: "seat-router default (claude/agy_checkpoint via ai-peer-mcp; grok/gemini/codex via claude-plugins seat servers)" };
 
 try {
-  const blockersPath = path.join(workdir, "checkpoint.blockers.json");
-  const boutBlockers = loadJson(blockersPath, {});
-  const teamsPath = path.join(workdir, "checkpoint.teams.json");
-  const done = loadJson(teamsPath, {});
+  const state = openState(workdir);
 
   const checksFor = (ws) => [
     ...ws.files.map((p) => ({ type: "file_exists", path: p })),
@@ -292,32 +279,16 @@ try {
     // hold on disk): adversaries attack the audit AGAINST the source.
     ...ws.anchors.map((p) => ({ type: "file_exists", path: p }))
   ];
+  const wsWithChecks = AUDIT_WORKSTREAMS.map((ws) => ({ ...ws, checks: checksFor(ws) }));
 
-  const rawDefs = AUDIT_WORKSTREAMS.map((ws) => ({
+  const rawDefs = wsWithChecks.map((ws) => ({
     id: ws.id,
     files: ws.files,
     requirements: ws.requirements,
-    test: { cmd: "node", args: [CHECK_NODE, JSON.stringify(checksFor(ws))] },
+    test: { cmd: "node", args: [CHECK_NODE, JSON.stringify(ws.checks)] },
     dependencies: ws.dependencies
   }));
-  for (const [id, rec] of Object.entries(done)) {
-    if (rec.converged && !rec.frozen_def) {
-      rec.frozen_def = rawDefs.find((d) => d.id === id) || null;
-      saveJson(teamsPath, done);
-    }
-  }
-  const defs = rawDefs.map((def) => {
-    if (done[def.id]?.converged && done[def.id].frozen_def) return done[def.id].frozen_def;
-    const raised = boutBlockers[def.id];
-    if (!Array.isArray(raised) || raised.length === 0) return def;
-    log(`respec ${def.id}: ${raised.length} blocker(s) folded into requirements`);
-    return {
-      ...def,
-      requirements: def.requirements +
-        "\nPRIOR BOUT BLOCKERS — the adversarial council raised these against the previous version; the new version MUST concretely resolve each one:\n" +
-        raised.slice(0, 6).map((b) => `- ${String(b).slice(0, 300)}`).join("\n")
-    };
-  });
+  const defs = foldDefs(rawDefs, state, log);
   const defById = new Map(defs.map((d) => [d.id, d]));
   const { plan, errors } = computePlan(defs, {
     authorizedSigners: { claude: keys.claude.publicJwk, codex: keys.codex.publicJwk }
@@ -325,18 +296,12 @@ try {
   if (errors) throw new Error(`plan invalid: ${JSON.stringify(errors)}`);
   writePlan(telosDir, plan);
 
-  const liveGen = liveGenerators({ callTool })({ stack: [] });
-  const generateFiles = async (injected) => {
-    if (done[injected.id]?.converged) {
-      const files = {};
-      let complete = true;
-      for (const rel of injected.files) {
-        try { files[rel] = readFileSync(path.join(workdir, rel), "utf8"); } catch { complete = false; }
-      }
-      if (complete) { log(`styx: ${injected.id} re-settled from its preserved artifact`); return files; }
-    }
-    return liveGen(injected);
-  };
+  const generateFiles = styxGenerateFiles({
+    state,
+    generate: liveGenerators({ callTool })({ stack: [] }),
+    binary: () => false,
+    log
+  });
   const { report, trace } = await runBuild({
     telosDir, baseDir: workdir,
     dispatch: generatorDispatch({ baseDir: workdir, generateFiles, signerForTask: (id) => AUDIT_WORKSTREAMS.find((w) => w.id === id)?.signer || "claude" }),
@@ -349,65 +314,14 @@ try {
   summary.build = { merge_status: report.merge_status, settled_this_invocation: settledNow, halts };
 
   if (report.merge_status !== "ready") {
-    for (const h of halts) {
-      if (!h.reason) continue;
-      const raised = boutBlockers[h.id] || [];
-      const entry = `BUILD VERIFY FAILURE (from the node's own test): ${h.reason.slice(0, 400)}`;
-      if (!raised.includes(entry)) {
-        boutBlockers[h.id] = [entry, ...raised].slice(0, 8);
-        saveJson(blockersPath, boutBlockers);
-        log(`banked verify failure as blocker for ${h.id}`);
-      }
-    }
+    bankVerifyFailures(halts, state, log);
     summary.result = "build-incomplete (re-run to continue from the ledger)";
     summary.blockers = report.blockers || [];
     process.exitCode = 1;
   } else {
     const makeFns = makeCouncilFactFns({ callTool });
     const hashById = new Map(plan.nodes.map((n) => [n.id, n.effective_hash]));
-    const records = [];
-    for (const ws of AUDIT_WORKSTREAMS) {
-      const checks = checksFor(ws);
-      if (done[ws.id]?.converged) {
-        log(`bout ${ws.id}: across the river (never re-fought)`);
-        records.push(done[ws.id]);
-        continue;
-      }
-      log(`bout ${ws.id}: fighting...`);
-      // Contract closure: after three bouts a workstream's contract CLOSES —
-      // adversaries may only verify the folded prior blockers are resolved or
-      // cite factual defects. Unbounded novelty never terminates on documents.
-      const fightCountsPath = path.join(workdir, 'fight-counts.json');
-      const fightCounts = loadJson(fightCountsPath, {});
-      fightCounts[ws.id] = (fightCounts[ws.id] || 0) + 1;
-      saveJson(fightCountsPath, fightCounts);
-      const closure = fightCounts[ws.id] > 3
-        ? `\n=== CONTRACT CLOSED (bout ${fightCounts[ws.id]}) === This artifact has been through ${fightCounts[ws.id] - 1} adversarial cycles. Valid blockers may ONLY cite (a) a PRIOR BOUT BLOCKER from this contract that remains unresolved, or (b) an internal factual defect (contradiction, broken example). NO new demands.`
-        : "";
-      const fns = makeFns({ workstream: ws.id, checks, baseDir: workdir, contract: (defById.get(ws.id)?.requirements || "") + closure });
-      const record = await runBreakout(
-        { workstream: ws.id, claimedStatus: "meets", goalStatus: "meets",
-          evidence: `${ws.id} artifacts: ${ws.files.join(", ")}` },
-        fns
-      );
-      const full = { ...record, checks, lens: ws.lens, signer: ws.signer, isUi: !!ws.isUi, finding: ws.finding, findingsKey: ws.findingsKey, node_hash: hashById.get(ws.id), frozen_def: defById.get(ws.id) ?? null };
-      const fightsDir = path.join(telosDir, "fights");
-      mkdirSync(fightsDir, { recursive: true });
-      saveJson(path.join(fightsDir, `${ws.id}.json`),
-        { workstream: ws.id, converged: record.converged, rounds: record.rounds, referee: record.referee ?? null });
-      if (record.converged) {
-        done[ws.id] = full;
-        saveJson(teamsPath, done);
-        delete boutBlockers[ws.id];
-        saveJson(blockersPath, boutBlockers);
-        log(`bout ${ws.id}: CONVERGED in ${record.rounds.length} round(s) — checkpointed`);
-      } else {
-        boutBlockers[ws.id] = record.surviving_blockers;
-        saveJson(blockersPath, boutBlockers);
-        log(`bout ${ws.id}: needs-work (${record.surviving_blockers.length} surviving; referee: ${record.referee?.reason ?? "rounds"})`);
-      }
-      records.push(full);
-    }
+    const records = await runBouts({ workstreams: wsWithChecks, state, makeFns, defById, hashById, telosDir, log });
     summary.teams = records.map((t) => ({
       workstream: t.workstream, converged: t.converged, finalStatus: t.finalStatus,
       rounds: t.rounds?.length ?? 0, referee: t.referee ?? null
@@ -417,33 +331,15 @@ try {
     if (!allConverged) {
       summary.result = "bouts-incomplete (re-run to continue; converged teams are ratcheted)";
       process.exitCode = 1;
+    } else if (process.env.TELOS_SKIP_GATE === "1") {
+      // Replay/verification mode: prove the ratchet + Styx stages alone.
+      summary.result = "ALL-CONVERGED (gate skipped by TELOS_SKIP_GATE)";
+      process.exitCode = 0;
     } else {
       log("gate: collecting council approvals...");
-      // EVIDENCE DIGEST for the approvers — machine-DERIVED at approval time,
-      // never asserted: checks re-verified from disk right now, bout records
-      // (rounds, referee rulings) read from the checkpoints, Phase-2 item
-      // counts read from the artifacts. Approvers judge evidence, not claims.
-      const digest = records.map((r) => {
-        const rv = reverifyRecord({ checks: r.checks }, workdir);
-        const passed = rv.reverifiable - (rv.failing?.length || 0);
-        let phase2 = 0;
-        try {
-          const doc = readFileSync(path.join(workdir, (r.frozen_def?.files || [`audit/${r.workstream}.md`])[0]), "utf8");
-          const m = doc.match(/Phase 2 Work Items[\s\S]*?(?=\n#|$)/i);
-          phase2 = m ? (m[0].match(/^\s*(?:[-*]|\d+[.)])\s+/gm) || []).length : 0;
-        } catch { /* count stays 0 */ }
-        return `- ${r.workstream}: ${passed}/${rv.reverifiable} deterministic checks RE-VERIFIED FROM DISK at approval time; ` +
-          `converged in ${r.rounds?.length ?? "?"} adversarial round(s) vs grok+agy` +
-          `${r.referee ? `; referee ruling recorded` : ""}; fight log persisted at .telos/fights/${r.workstream}.json; ` +
-          `${phase2} enumerated Phase 2 work items`;
-      }).join("\n");
       const approvalMeta = {
         ...dossierMeta,
-        objective: dossierMeta.objective +
-          "\n\nEVIDENCE DIGEST (derived from disk and run records at approval time, not asserted):\n" + digest +
-          "\nApproval packets in this council carry real per-seat provenance (model + response_id from the actual API " +
-          "response); the gate independently blocks on missing, placeholder, or duplicate provenance and re-verifies " +
-          "every deterministic check from disk — an approver need not re-run them to rely on them."
+        objective: dossierMeta.objective + approvalEvidenceDigest(records, workdir)
       };
       const approvals = await councilApprovals({ callTool })({ dossierMeta: approvalMeta, architecture: { stack: [] } });
       const verdict = runMarketGate({ projectRoot: workdir, dossierMeta, teamRecords: records, approvals });
@@ -464,7 +360,8 @@ try {
   router.close();
 }
 
+summary.seat_calls = seatCalls;
 saveJson(path.join(here, "run-summary.json"), summary);
 console.log(JSON.stringify(summary, null, 2));
-log(`result: ${summary.result}`);
+log(`result: ${summary.result} (seat calls this invocation: ${seatCalls})`);
 process.exit(process.exitCode || 0);
