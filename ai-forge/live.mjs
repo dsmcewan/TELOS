@@ -18,8 +18,10 @@
 // unmodified (zero-change to the spine / other ai-forge modules).
 
 import { spawnMcpClient } from "../breakout/mcp_client.mjs";
+import { createSeatRouter } from "../breakout/seat_router.mjs";
 import { makeCouncilBreakout } from "../breakout/breakout.mjs";
 import { runCouncil, liveSeatCaller, agyApprovalPacket, agyCheckpointArgs } from "../build-gate/council.mjs";
+import { defaultSeatRegistry } from "../build-gate/seat-registry.mjs";
 import { forge, syntheticApprovals } from "./forge.mjs";
 import { factBreakout } from "./breakouts.mjs";
 import { ragPattern, ragContext } from "./patterns/rag.mjs";
@@ -186,8 +188,10 @@ export function liveBoundaries({ embed, vectorStore, callTool }) {
  * Run the forge against live model seats.
  *
  * When `callTool` is injected (test path or caller-supplied transport), it is
- * used directly. When omitted, the ai-peer-mcp server is spawned via
- * spawnMcpClient so live API keys in the server's environment are used.
+ * used directly. When omitted, the transport is the seat router over the default
+ * seat registry (claude/agy_checkpoint on ai-peer-mcp; grok/gemini/codex on the
+ * claude-plugins seat servers). Passing `serverPath` keeps the legacy behavior
+ * of spawning that single ai-peer-mcp server for every seat.
  *
  * forge.mjs does not await makeApprovals, so runForgeLive pre-resolves the async
  * council approval call and wraps the result in a sync function before passing it
@@ -202,7 +206,7 @@ export function liveBoundaries({ embed, vectorStore, callTool }) {
  *   callTool     async (name, args) -> string        (injected: skip server spawn)
  *   pattern      override the default ragPattern
  *   ctx          override the default ragContext
- *   serverPath   path to ai-peer-mcp server.mjs     (live spawn only)
+ *   serverPath   path to ai-peer-mcp server.mjs     (legacy single-server spawn)
  *   maxCycles    default 3
  *   signed       default false; when true, gate runs under trust_mode: "signed"
  */
@@ -219,10 +223,18 @@ export async function runForgeLive({
   let close = () => {};
 
   if (!ct) {
-    // No injected transport: spawn the real ai-peer-mcp server.
-    const spawned = spawnMcpClient({ serverPath });
-    ct = (name, args) => spawned.client.callTool(name, args);
-    close = spawned.close;
+    if (serverPath) {
+      // Legacy: an explicit serverPath spawns that single ai-peer-mcp server.
+      const spawned = spawnMcpClient({ serverPath });
+      ct = (name, args) => spawned.client.callTool(name, args);
+      close = spawned.close;
+    } else {
+      // Default: the seat router — each council tool reaches the backend the
+      // registry declares (fail-closed on unrouted tools).
+      const router = createSeatRouter(defaultSeatRegistry());
+      ct = (name, args) => router.callTool(name, args);
+      close = () => router.close();
+    }
   }
 
   try {

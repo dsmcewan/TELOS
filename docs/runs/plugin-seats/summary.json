@@ -1,0 +1,42 @@
+{
+  "timestamp": "2026-07-02T06:04:02.076Z",
+  "seats": [
+    {
+      "tool": "grok_ask",
+      "ok": true,
+      "model": "grok-4.3",
+      "source": "xai",
+      "response_id": "8e77b936-31f1-9596-b110-bc91e2885af4",
+      "error": null,
+      "answer": "A merge gate combines multiple incoming flows (parallel or alternative) into one outgoing flow in a workflow/process model. \n\nFinal answer: combines multiple flows into one (e.g. in BPMN/workflows)"
+    },
+    {
+      "tool": "codex_ask",
+      "ok": true,
+      "model": "gpt-5.5-2026-04-23",
+      "source": "openai",
+      "response_id": "chatcmpl-Dx4onzV9SRMyxDsU4yyYE9kPMe56M",
+      "error": null,
+      "answer": "A merge gate ensures changes meet required checks and policies before they are merged."
+    },
+    {
+      "tool": "gemini_ask",
+      "ok": true,
+      "model": "gemini-3.1-pro-preview",
+      "source": "google",
+      "response_id": "U_9FarjUEr6hz7IP1PHhmA8",
+      "error": null,
+      "answer": "The purpose of a merge gate is to smoothly combine multiple incoming pathways—such as conveyor lines, traffic, or data—into a single, organized outgoing stream without collisions."
+    },
+    {
+      "tool": "agy_ask",
+      "ok": true,
+      "model": "gemini-3.1-pro-high",
+      "source": "antigravity-cli",
+      "response_id": "agy-a902cf53d44e80184fc0e165c9a9c80f484ffa20843b07597b2c07c534c7a751",
+      "error": null,
+      "answer": "A merge gate is a quality control checkpoint that ensures code changes pass all automated tests, security checks, and peer reviews before they can be merged into a target branch."
+    }
+  ],
+  "result": "PASS"
+}

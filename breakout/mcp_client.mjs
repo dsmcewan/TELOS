@@ -44,10 +44,37 @@ export function createFrameDecoder() {
   };
 }
 
-export function createMcpClient({ send, onData }) {
+// Newline-delimited JSON framing (the modern MCP stdio transport, used by the
+// claude-plugins seat servers). One JSON-RPC message per line.
+export function createNdjsonDecoder() {
+  let buffer = "";
+  return {
+    push(chunk) {
+      buffer += Buffer.isBuffer(chunk) ? chunk.toString("utf8") : String(chunk);
+      const messages = [];
+      let nl;
+      while ((nl = buffer.indexOf("\n")) !== -1) {
+        const line = buffer.slice(0, nl).trim();
+        buffer = buffer.slice(nl + 1);
+        if (!line) continue;
+        try {
+          messages.push(JSON.parse(line));
+        } catch {
+          // skip unparseable line
+        }
+      }
+      return messages;
+    }
+  };
+}
+
+export function createMcpClient({ send, onData, framing = "content-length" }) {
   let nextId = 1;
   const pending = new Map();
-  const decoder = createFrameDecoder();
+  const decoder = framing === "ndjson" ? createNdjsonDecoder() : createFrameDecoder();
+  const encode = framing === "ndjson"
+    ? (obj) => JSON.stringify(obj) + "\n"
+    : frameMessage;
 
   onData((chunk) => {
     for (const msg of decoder.push(chunk)) {
@@ -64,7 +91,7 @@ export function createMcpClient({ send, onData }) {
     const id = nextId++;
     return new Promise((resolve, reject) => {
       pending.set(id, { resolve, reject });
-      send(frameMessage({ jsonrpc: "2.0", id, method, params }));
+      send(encode({ jsonrpc: "2.0", id, method, params }));
     });
   }
 
@@ -102,7 +129,8 @@ export function createMcpClient({ send, onData }) {
 export function spawnMcpClient({
   command = "node",
   serverPath = "../connectors/ai-peer-mcp/server.mjs",
-  env = {}
+  env = {},
+  framing = "content-length"
 } = {}) {
   const child = nodeSpawn(command, [serverPath], {
     env: { ...process.env, ...env },
@@ -110,7 +138,8 @@ export function spawnMcpClient({
   });
   const client = createMcpClient({
     send: (str) => child.stdin.write(str),
-    onData: (cb) => child.stdout.on("data", cb)
+    onData: (cb) => child.stdout.on("data", cb),
+    framing
   });
   return { client, child, close: () => child.kill() };
 }

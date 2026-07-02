@@ -8,11 +8,14 @@
 //      blocker survives AND every fact check holds. Verdict stays anchored to disk.
 //
 // The transport (`callTool`) is injected, so this module is testable with a stub
-// and no API keys; runForgeLive spawns the real ai-peer-mcp server.
+// and no API keys; live, runForgeLive routes seats through the seat registry
+// (or a single ai-peer-mcp server when `serverPath` is given).
 
 import { spawnMcpClient } from "../breakout/mcp_client.mjs";
+import { createSeatRouter } from "../breakout/seat_router.mjs";
 import { makeCouncilBreakout } from "../breakout/breakout.mjs";
 import { runCouncil, liveSeatCaller, agyApprovalPacket, agyCheckpointArgs } from "../build-gate/council.mjs";
+import { defaultSeatRegistry } from "../build-gate/seat-registry.mjs";
 import { forge } from "./forge.mjs";
 import { factBreakout } from "./breakouts.mjs";
 import { workstreamById } from "./workstreams.mjs";
@@ -156,19 +159,35 @@ export function makeCouncilFactFns({ callTool, team, reviewer, challengerTool, c
 }
 
 /**
- * Run the forge against live model seats. Spawns the ai-peer-mcp server, wires
- * `callTool`, and runs the same forge loop with live generation + council+fact
- * breakouts. Requires API keys in the server's environment (claude/codex/grok).
+ * Run the forge against live model seats and run the same forge loop with live
+ * generation + council+fact breakouts. Requires API keys in the backends'
+ * environment (claude/codex/grok).
+ *
+ * Transport resolution mirrors ai-forge/live.mjs: an injected `callTool` is used
+ * directly; an explicit `serverPath` keeps the legacy single ai-peer-mcp spawn;
+ * otherwise the seat router over the default seat registry routes each council
+ * tool to its declared backend (fail-closed on unrouted tools).
  *
  * @param {object} opts
  *   signed default false; when true, gate runs under trust_mode: "signed"
  */
 export async function runForgeLive({
   projectRoot, telos, dossierMeta, serverPath, docsFor,
-  team, reviewer, maxCycles = 3, signed = false
+  team, reviewer, callTool: injectedCallTool, maxCycles = 3, signed = false
 }) {
-  const { client, close } = spawnMcpClient({ serverPath });
-  const callTool = (name, args) => client.callTool(name, args);
+  let callTool = injectedCallTool;
+  let close = () => {};
+  if (!callTool) {
+    if (serverPath) {
+      const spawned = spawnMcpClient({ serverPath });
+      callTool = (name, args) => spawned.client.callTool(name, args);
+      close = spawned.close;
+    } else {
+      const router = createSeatRouter(defaultSeatRegistry());
+      callTool = (name, args) => router.callTool(name, args);
+      close = () => router.close();
+    }
+  }
   try {
     return await forge({
       projectRoot, telos, dossierMeta, docsFor,
