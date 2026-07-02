@@ -18,8 +18,9 @@ const MANIFEST_FIELDS = new Set([
 ]);
 const WORKSTREAM_FIELDS = new Set([
   "id", "signer", "lens", "dependencies", "files", "requirements",
-  "checks", "test", "isUi", "findingsKey", "finding"
+  "checks", "test", "isUi", "findingsKey", "finding", "claims"
 ]);
+const CLAIM_FIELDS = new Set(["statement", "grade"]);
 const CHECK_FIELDS = new Set(["type", "path", "needle", "grade"]);
 const CHECK_TYPES = new Set(["file_exists", "file_contains"]);
 const GRADES = new Set(["executable", "inspectable", "cited", "hypothesis"]);
@@ -68,6 +69,14 @@ export function validateManifest(m) {
     if (ws.test !== undefined) {
       if (!ws.test || typeof ws.test.cmd !== "string" || !Array.isArray(ws.test.args)) {
         errors.push(`${tag}: "test" must be {cmd, args[]}`);
+      }
+    }
+    if (ws.claims !== undefined) {
+      if (!Array.isArray(ws.claims)) errors.push(`${tag}: "claims" must be an array`);
+      for (const c of ws.claims || []) {
+        for (const k of Object.keys(c)) if (!CLAIM_FIELDS.has(k)) errors.push(`${tag}: unknown claim field "${k}"`);
+        if (typeof c.statement !== "string" || !c.statement.trim()) errors.push(`${tag}: claim missing "statement"`);
+        if (!GRADES.has(c.grade)) errors.push(`${tag}: claim grade "${c.grade}" is not one of ${[...GRADES].join("|")}`);
       }
     }
   }
