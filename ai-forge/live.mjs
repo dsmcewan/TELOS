@@ -209,7 +209,7 @@ export async function runForgeLive({
   projectRoot, telos, dossierMeta,
   embed, vectorStore, callTool,
   pattern, ctx,
-  serverPath, maxCycles = 3
+  serverPath, maxCycles = 3, signed = false
 }) {
   const resolvedPattern = pattern || ragPattern;
   const resolvedCtx = ctx || ragContext({ telos });
@@ -255,7 +255,8 @@ export async function runForgeLive({
       makeGenerators,
       makeBreakoutFns,
       makeApprovals,
-      maxCycles
+      maxCycles,
+      signed
     });
   } finally {
     close();

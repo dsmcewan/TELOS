@@ -27,6 +27,7 @@ import { generateKeypair } from "../merkle-dag/crypto.mjs";
 import { computePlan, writePlan } from "../merkle-dag/merkle.mjs";
 import { runBuild } from "../merkle-dag/orchestrate.mjs";
 import { validateRecords } from "../build-gate/gate.mjs";
+import { signMarketPacket } from "../build-gate/sign.mjs";
 import { validatePattern, patternTaskDefs, signerForTask } from "./pattern.mjs";
 import { generatorDispatch, makePatternGenerators } from "./generators.mjs";
 import { runPatternBreakouts } from "./breakouts.mjs";
@@ -37,7 +38,7 @@ const TS = "2026-06-29T00:00:00-04:00";
 // record. The breakout's checks point at the workstream's generated artifacts, so
 // the gate re-verifies on disk the very files the build produced.
 // Mirrors saas-forge/forge.mjs's marketPacketFromRecord.
-function marketPacketFromRecord(record, dossierMeta) {
+function marketPacketFromRecord(record, dossierMeta, { signed = false } = {}) {
   const packet = {
     build_id: dossierMeta.build_id,
     idea_id: dossierMeta.idea_id,
@@ -70,7 +71,7 @@ function marketPacketFromRecord(record, dossierMeta) {
     timestamp: TS
   };
   packet[record.findingsKey] = [record.finding];
-  return packet;
+  return signed ? signMarketPacket(packet, record, record.signer) : packet;
 }
 
 // Synthetic council approvals for the keyless/offline path. Marked honestly:
@@ -116,6 +117,7 @@ export async function forge({
   makeGenerators = makePatternGenerators,
   makeBreakoutFns,
   makeApprovals = syntheticApprovals,
+  signed = false,
   maxCycles = 3
 }) {
   // Step 1: validate the pattern; throw immediately on schema errors.
@@ -176,6 +178,7 @@ export async function forge({
         idea_id: dossierMeta.idea_id,
         use_case: dossierMeta.use_case,
         objective: dossierMeta.objective,
+        trust_mode: signed ? "signed" : undefined,
         required_docs: [],
         write_targets: [],
         protected_paths: [],
@@ -185,7 +188,7 @@ export async function forge({
         lexi_required: false,
         required_market_workstreams: pattern.workstreams.map((w) => w.id)
       };
-      const marketPackets = records.map((r) => marketPacketFromRecord(r, dossierMeta));
+      const marketPackets = records.map((r) => marketPacketFromRecord(r, dossierMeta, { signed }));
       verdict = validateRecords(dossier, approvals, { dossierDir: projectRoot }, [], marketPackets);
     } else {
       verdict = null;
