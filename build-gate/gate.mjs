@@ -194,7 +194,7 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
   validateProtectedPaths(dossier, blockers);
   validateLexiGate(dossier, packets, blockers);
   validateGrokResolution(packetsByModel.get("grok"), dossier, blockers, warnings);
-  validateCapabilityPackets(dossier, capabilityPackets, blockers, warnings);
+  validateCapabilityPackets(dossier, capabilityPackets, blockers, warnings, signed);
   validateMarketReadinessPackets(dossier, marketPackets, blockers, warnings, source, signed);
 
   // Visibility: which optional headline gates actually evaluated anything. A
@@ -232,6 +232,33 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
   };
 }
 
+// In trust_mode "signed", evidence packets that decide gate outcomes (market
+// readiness, capability acquisition) must be authenticated exactly like the
+// required approval packets: HMAC-verified with the model's secret AND bound to
+// real (non-placeholder) provenance. Unverifiable evidence blocks — a
+// self-asserted market/capability packet must never satisfy the gate under
+// signed mode. Mirrors the required-approval checks in validateRecords.
+function enforceSignedPacketAuth(packet, label, blockers) {
+  const model = typeof packet?.model === "string" ? packet.model : "unknown";
+  const secret = secretFor(model);
+  if (!secret) {
+    blockers.push(`trust_mode 'signed' but no secret to verify ${label} for '${model}' (set TELOS_SECRET_${model.toUpperCase()}).`);
+  } else {
+    const result = verifyPacket(packet, secret);
+    if (!result.ok) {
+      blockers.push(`${label} for ${model} signature invalid in signed mode: ${result.reason}.`);
+    }
+  }
+  const prov = packet && packet.provenance && typeof packet.provenance === "object" ? packet.provenance : null;
+  const responseId = prov && typeof prov.response_id === "string" ? prov.response_id : null;
+  const placeholder = !responseId || /^$|_self$|^self$|placeholder/i.test(responseId);
+  if (!prov) {
+    blockers.push(`${label} for ${model} carries no provenance; model identity is self-declared, not authenticated.`);
+  } else if (placeholder) {
+    blockers.push(`${label} for ${model} has placeholder provenance.response_id '${responseId}'; not bound to a real model response.`);
+  }
+}
+
 function validateMarketReadinessPackets(dossier, marketPackets, blockers, warnings, source = {}, signed = false) {
   const requiredWorkstreams = requiredMarketWorkstreams(dossier, marketPackets);
   if (requiredWorkstreams.length === 0) return;
@@ -254,6 +281,7 @@ function validateMarketReadinessPackets(dossier, marketPackets, blockers, warnin
 
   for (const packet of marketPackets) {
     validateMarketReadinessPacketShape(packet, blockers);
+    if (signed) enforceSignedPacketAuth(packet, "Market readiness packet", blockers);
     if (packet?.build_id !== dossier.build_id) {
       blockers.push(`Market readiness packet for ${packet?.model ?? "unknown"} has build_id '${packet?.build_id}' but dossier requires '${dossier.build_id}'.`);
     }
@@ -449,7 +477,7 @@ function validateDossierShape(dossier, blockers) {
   requireArrayField(dossier, "write_targets", "Dossier", blockers);
 }
 
-function validateCapabilityPackets(dossier, capabilityPackets, blockers, warnings) {
+function validateCapabilityPackets(dossier, capabilityPackets, blockers, warnings, signed = false) {
   const requiredModels = requiredCapabilityModels(dossier, capabilityPackets);
   if (requiredModels.length === 0) return;
 
@@ -463,6 +491,7 @@ function validateCapabilityPackets(dossier, capabilityPackets, blockers, warning
   const packetsByModel = new Map();
   for (const packet of capabilityPackets) {
     validateCapabilityPacketShape(packet, blockers);
+    if (signed) enforceSignedPacketAuth(packet, "Capability packet", blockers);
     if (packet?.build_id !== dossier.build_id) {
       blockers.push(`Capability packet for ${packet?.model ?? "unknown"} has build_id '${packet?.build_id}' but dossier requires '${dossier.build_id}'.`);
     }
