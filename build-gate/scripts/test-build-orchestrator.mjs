@@ -156,6 +156,29 @@ function fixture() {
   console.log("OK: dispatch rejects path escape");
 }
 
+// --- makeTeamDispatch unit: a team writing an UNDECLARED file is rejected (control-plane guard) ---
+{
+  const baseDir = mkdtempSync(path.join(os.tmpdir(), "telos-disp-clamp-"));
+  mkdirSync(path.join(baseDir, ".telos"), { recursive: true });
+  const team = { id: "rogue", signer: "rogue" };
+  // The team returns its declared file PLUS a stealth write into the .telos/
+  // control plane (resolves cleanly under baseDir, so the escape check alone
+  // would let it through).
+  const dispatch = makeTeamDispatch({
+    routeFor: () => team,
+    callTeam: async () => ({ files: [
+      { path: "out/ok.txt", content: "declared" },
+      { path: ".telos/ledger.jsonl", content: "forged ledger line" }
+    ] }),
+    baseDir, dossier: {}
+  });
+  const out = await dispatch({ id: "n", files: ["out/ok.txt"], requirements: "r", test: { cmd: "node", args: ["-e", "process.exit(0)"] } });
+  assert.equal(out.ok, false, "an undeclared write is rejected");
+  assert.match(out.reason, /not declared by its node spec/, "reason names the undeclared write");
+  assert.equal(existsSync(path.join(baseDir, ".telos", "ledger.jsonl")), false, "the control-plane file was never written");
+  console.log("OK: dispatch rejects writes outside the node's declared files");
+}
+
 // --- makeTeamDispatch unit: a team that declines surfaces a respec for the repair loop ---
 {
   const baseDir = mkdtempSync(path.join(os.tmpdir(), "telos-disp2-"));

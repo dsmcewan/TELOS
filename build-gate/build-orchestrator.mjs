@@ -64,10 +64,22 @@ export function makeTeamDispatch({ routeFor, callTeam, baseDir, dossier, maxAtte
         return { ok: false, reason: out?.reason || `team ${team?.id} declined`, respec: out?.respec };
       }
       const files = Array.isArray(out.files) ? out.files : [];
+      // Clamp writes to the node's DECLARED files (Rule 1 injects the exact list
+      // the node owns). Rule 3 only ever hashes those, and runBuild's
+      // write-disjoint guard is computed from them, so an undeclared write —
+      // notably into the .telos/ control plane, which resolves cleanly under
+      // baseDir — would slip past both. Enforce it HERE, on the trusted side that
+      // does the writing, not only in the optional live callTeam (parseTeamFiles).
+      const declared = new Set(
+        (injected.files || [])
+          .map((rel) => resolveUnder(baseDir, rel))
+          .filter((abs) => abs !== null)
+      );
       for (const f of files) {
         if (!f || typeof f.path !== "string") return { ok: false, reason: `team ${team.id} returned a malformed file` };
         const resolved = resolveUnder(baseDir, f.path);
         if (resolved === null) return { ok: false, reason: `team ${team.id} path escapes baseDir: ${f.path}` };
+        if (!declared.has(resolved)) return { ok: false, reason: `team ${team.id} wrote a file not declared by its node spec: ${f.path}` };
         mkdirSync(path.dirname(resolved), { recursive: true });
         writeFileSync(resolved, typeof f.content === "string" ? f.content : String(f.content ?? ""));
       }
