@@ -63,9 +63,13 @@ thing that *certifies* — a team's claim is data; the disk is truth.
 - **`build-gate/`** — the gate (`gate.mjs`), per-model HMAC signing (`sign.mjs`), the
   dynamic-workflow council orchestrator (`council.mjs`: per-job seat sizing +
   CPU-bounded fan-out + `liveSeatCaller`), strict-mode JSON Schemas for the three
-  contracts (`schemas.mjs`), and per-model strength profiles (`model-profiles.mjs`).
-- **`breakout/`** — self-challenge with verdict-on-facts (`verifier.mjs`, `live.mjs`)
-  and a minimal MCP stdio client (`mcp_client.mjs`).
+  contracts (`schemas.mjs`), per-model strength profiles (`model-profiles.mjs`),
+  and the seat→backend registry (`seat-registry.mjs`: routes each council tool to
+  ai-peer-mcp or a claude-plugins seat server, `TELOS_PLUGINS_DIR`-configurable).
+- **`breakout/`** — self-challenge with verdict-on-facts (`verifier.mjs`, `live.mjs`),
+  a minimal MCP stdio client (`mcp_client.mjs`: Content-Length or ndjson framing),
+  and the multi-server seat router (`seat_router.mjs`: same `callTool` surface
+  `liveSeatCaller` already consumes, fail-closed on unrouted tools).
 - **`connectors/ai-peer-mcp/`** — MCP server exposing the model backends
   (`claude_ask` / `grok_ask` / `codex_ask` / `gemini_ask` / `agy_checkpoint`) with
   **real per-seat provenance** and **provider-native structured output** (each
