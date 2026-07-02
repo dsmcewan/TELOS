@@ -61,7 +61,17 @@
       ],
       "isUi": false,
       "findingsKey": "architecture_findings",
-      "finding": "Commerce gap audit: what selling on its own domain actually requires."
+      "finding": "Commerce gap audit: what selling on its own domain actually requires.",
+      "claims": [
+        {
+          "statement": "No purchase path (cart/checkout/payments) exists in the current repository",
+          "grade": "cited"
+        },
+        {
+          "statement": "The order, transaction, and POD pipelines are each specified with stages, AWS placement, and failure handling",
+          "grade": "inspectable"
+        }
+      ]
     },
     {
       "id": "positioning-launch",
@@ -104,7 +114,17 @@
       ],
       "isUi": false,
       "findingsKey": "accuracy_eval_findings",
-      "finding": "Launch positioning: hypothesis-framed ICP, pricing, and differentiation for a real, shipped brand."
+      "finding": "Launch positioning: hypothesis-framed ICP, pricing, and differentiation for a real, shipped brand.",
+      "claims": [
+        {
+          "statement": "The museum conceit differentiates the brand enough to command premium tee pricing",
+          "grade": "hypothesis"
+        },
+        {
+          "statement": "Collectors of narrative apparel are the primary ICP segment",
+          "grade": "hypothesis"
+        }
+      ]
     },
     {
       "id": "launch-architecture",
@@ -156,7 +176,17 @@
       ],
       "isUi": false,
       "findingsKey": "scalability_findings",
-      "finding": "Own-domain launch architecture: hosting, DNS, CDN, basePath migration, asset strategy."
+      "finding": "Own-domain launch architecture: hosting, DNS, CDN, basePath migration, asset strategy.",
+      "claims": [
+        {
+          "statement": "The current build is coupled to the GitHub Pages basePath in next.config.ts",
+          "grade": "cited"
+        },
+        {
+          "statement": "S3+CloudFront serves the static export with commerce services as Docker containers",
+          "grade": "inspectable"
+        }
+      ]
     },
     {
       "id": "security-trust",
@@ -356,7 +386,17 @@
       ],
       "isUi": false,
       "findingsKey": "accuracy_eval_findings",
-      "finding": "Digital advertising launch plan: hypothesis-framed demographics, channel strategy, creative system, measurement."
+      "finding": "Digital advertising launch plan: hypothesis-framed demographics, channel strategy, creative system, measurement.",
+      "claims": [
+        {
+          "statement": "Meta (FB+IG) is the primary paid channel at the $250-500/mo test budget",
+          "grade": "hypothesis"
+        },
+        {
+          "statement": "The audio-tour and exhibit lore convert natively to short-video ad creative",
+          "grade": "hypothesis"
+        }
+      ]
     }
   ]
 }

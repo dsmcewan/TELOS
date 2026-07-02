@@ -31,6 +31,7 @@ import path from "node:path";
 import { generateKeypair } from "../merkle-dag/crypto.mjs";
 import { reverifyRecord } from "../breakout/verifier.mjs";
 import { runBreakout } from "../breakout/breakout.mjs";
+import { renderClaimRules } from "./claims.mjs";
 
 export const loadJson = (p, fallback) => {
   try { return JSON.parse(readFileSync(p, "utf8")); } catch { return fallback; }
@@ -176,7 +177,10 @@ export async function runBouts({ workstreams, state, makeFns, defById, hashById,
     }
     log(`bout ${ws.id}: fighting...`);
     const closure = contractClosure(state, ws.id);
-    const fns = makeFns({ workstream: ws.id, checks, baseDir: state.workdir, contract: (defById.get(ws.id)?.requirements || "") + closure });
+    // Epistemic claim typing: declared claims join the contract with per-grade
+    // adjudication rules — challengers judge each claim AT its grade.
+    const claimRules = renderClaimRules(ws.claims);
+    const fns = makeFns({ workstream: ws.id, checks, baseDir: state.workdir, contract: (defById.get(ws.id)?.requirements || "") + claimRules + closure });
     const record = await runBreakout(
       { workstream: ws.id, claimedStatus: "meets", goalStatus: "meets",
         evidence: `${ws.id} artifacts: ${ws.files.join(", ")}` },
