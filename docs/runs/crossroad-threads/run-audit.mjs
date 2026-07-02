@@ -297,7 +297,12 @@ const keys = loadKeys(workdir, ["claude", "codex"], log);
 
 const router = createSeatRouter(defaultSeatRegistry());
 let seatCalls = 0;
-const callTool = (name, args) => { seatCalls++; return router.callTool(name, args); };
+const seatCallsByTool = {};
+const callTool = (name, args) => {
+  seatCalls++;
+  seatCallsByTool[name] = (seatCallsByTool[name] || 0) + 1;
+  return router.callTool(name, args);
+};
 
 let summary = { generated_for: dossierMeta.build_id, live: true, phase: "audit",
   transport: "seat-router default (claude/agy_checkpoint via ai-peer-mcp; grok/gemini/codex via claude-plugins seat servers)" };
@@ -400,6 +405,7 @@ try {
 }
 
 summary.seat_calls = seatCalls;
+summary.seat_call_breakdown = seatCallsByTool;
 saveJson(path.join(here, "run-summary.json"), summary);
 console.log(JSON.stringify(summary, null, 2));
 log(`result: ${summary.result} (seat calls this invocation: ${seatCalls})`);

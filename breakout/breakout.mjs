@@ -119,10 +119,10 @@ export async function runBreakout(input, fns) {
  *   reviewer       { tool?, system? }           judges the proposals
  *   challengerTool tool name for the adversary (default "grok_ask")
  */
-export function makeCouncilBreakout({ callTool, team, reviewer, challengerTool = "grok_ask", challengerSystem, challengerModel, memory }) {
+export function makeCouncilBreakout({ callTool, team, reviewer, challengerTool = "grok_ask", challengerSystem, challengerModel, memory, efforts = {} }) {
   const members = Array.isArray(team) && team.length ? team : [{ name: "claude-builder", tool: "claude_ask" }];
   const reviewerTool = reviewer?.tool || "grok_ask";
-  const withModel = (args, model) => (model ? { ...args, model } : args);
+  const withModel = (args, model, effort) => ({ ...args, ...(model ? { model } : {}), ...(effort ? { effort } : {}) });
 
   return {
     challenge: async ({ workstream, evidence, round, history }) => {
@@ -140,7 +140,7 @@ export function makeCouncilBreakout({ callTool, team, reviewer, challengerTool =
           `Attack this claim. List every concrete reason it does NOT yet meet the goal ` +
           `(missing states, claims not actually rendered, unverified assertions). ` +
           `Return a JSON array of short blocker strings; [] if you cannot break it.`
-      }, challengerModel));
+      }, challengerModel, efforts.challenger));
       return { blockers: parseBlockers(text) };
     },
 
@@ -166,7 +166,7 @@ export function makeCouncilBreakout({ callTool, team, reviewer, challengerTool =
             `An adversarial reviewer raised these blockers:\n- ${blockers.join("\n- ")}\n${beatenNotes}\n` +
             `Propose the concrete change that resolves them. Point to specifics; do not ` +
             `claim a fix you cannot name.`
-        }, member.model));
+        }, member.model, efforts.builder));
         proposals.push({ name: member.name, proposal });
       }
 
@@ -182,7 +182,7 @@ export function makeCouncilBreakout({ callTool, team, reviewer, challengerTool =
           `Team proposals:\n${proposals.map((p) => `[${p.name}]\n${p.proposal}`).join("\n\n")}\n\n` +
           `Return JSON: {"accepted":"<member name or null>","resolved":["<blockers actually fixed>"],` +
           `"evidence":"<updated evidence of meets>"}.`
-      }, reviewer?.model));
+      }, reviewer?.model, efforts.reviewer));
       const verdict = parseVerdict(verdictText, blockers);
 
       // Record defeats: a proposal the reviewer did not accept is a beaten
@@ -256,7 +256,7 @@ function parseBlockers(text) {
  *
  * @param {object} cfg  { callTool, tool = "gemini_ask", model }
  */
-export function makeGeminiReferee({ callTool, tool = "gemini_ask", model }) {
+export function makeGeminiReferee({ callTool, tool = "gemini_ask", model, effort }) {
   return async ({ workstream, rounds }) => {
     try {
       const text = await callTool(tool, {
@@ -270,7 +270,8 @@ export function makeGeminiReferee({ callTool, tool = "gemini_ask", model }) {
           `resolutions are appearing). verdict "stalemate" if it is looping: the same or equivalent blockers and ` +
           `solutions are recycling (about five equivalent solution/result exchanges means a loop). ` +
           `Return ONLY JSON: {"verdict":"continue"|"stalemate","reason":"<one sentence>"}.`,
-        ...(model ? { model } : {})
+        ...(model ? { model } : {}),
+        ...(effort ? { effort } : {})
       });
       const m = String(text).match(/\{[\s\S]*\}/);
       const ruling = m ? JSON.parse(m[0]) : null;

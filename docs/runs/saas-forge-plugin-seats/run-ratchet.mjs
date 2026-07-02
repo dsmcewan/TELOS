@@ -85,7 +85,12 @@ const router = createSeatRouter(withLoadout(defaultSeatRegistry(), {
   context7: { command: "cmd", args: ["/c", "npx", "-y", "@upstash/context7-mcp"], framing: "ndjson" }
 }));
 let seatCalls = 0;
-const callTool = (name, args) => { seatCalls++; return router.callTool(name, args); };
+const seatCallsByTool = {};
+const callTool = (name, args) => {
+  seatCalls++;
+  seatCallsByTool[name] = (seatCallsByTool[name] || 0) + 1;
+  return router.callTool(name, args);
+};
 
 // Live Context7 research through the loadout. Fail-open per domain to the
 // offline KB — research enrichment must never block OR HANG the build (a dead
@@ -268,6 +273,7 @@ try {
 }
 
 summary.seat_calls = seatCalls;
+summary.seat_call_breakdown = seatCallsByTool;
 saveJson(path.join(here, "run-summary.json"), summary);
 console.log(JSON.stringify(summary, null, 2));
 log(`result: ${summary.result} (seat calls this invocation: ${seatCalls})`);
