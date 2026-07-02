@@ -170,9 +170,10 @@ const selfName = thisFile.split(/[\\/]/).pop();
   console.log("test-verifier sufficiency OK");
 }
 
-// 11. Empty-needle bypass is closed: a file_contains spec with needle:"" on a
-//     zero-byte file must NOT satisfy hasFileContains, and the file MUST be
-//     flagged in emptyEvidenceFiles.
+// 11. Empty-needle bypass is fully closed (all modes): a file_contains spec whose
+//     needle is empty / whitespace / missing is not evidence, so the check must
+//     FAIL re-verification (not merely be excluded from the signed-mode floor).
+//     This closes the unsigned-mode vacuous pass where allPass stayed true.
 {
   const { mkdtempSync, writeFileSync } = await import("node:fs");
   const os = await import("node:os");
@@ -183,28 +184,37 @@ const selfName = thisFile.split(/[\\/]/).pop();
   writeFileSync(path.join(dir, "empty.txt"), "");
   writeFileSync(path.join(dir, "real.txt"), "actual-content-marker");
 
-  // Empty needle on zero-byte file: must NOT count as hasFileContains, must flag emptyEvidenceFiles.
-  const emptyNeedle = reverifyRecord(
-    { checks: [{ type: "file_contains", path: "empty.txt", needle: "" }] },
-    dir
-  );
+  // Empty needle: the check FAILS (closes the unsigned vacuous pass), still counts
+  // as reverifiable, and never satisfies hasFileContains (signed-mode floor).
+  const emptyNeedle = reverifyRecord({ checks: [{ type: "file_contains", path: "empty.txt", needle: "" }] }, dir);
+  assert.equal(emptyNeedle.allPass, false, "empty needle must fail re-verification, not pass vacuously");
+  assert.equal(emptyNeedle.reverifiable, 1, "the empty-needle check still ran (counts as reverifiable)");
   assert.equal(emptyNeedle.hasFileContains, false, "empty needle must not satisfy hasFileContains");
-  assert.ok(emptyNeedle.emptyEvidenceFiles.includes("empty.txt"), "zero-byte file_contains target must appear in emptyEvidenceFiles");
 
-  // Whitespace-only needle should also not satisfy hasFileContains.
-  const wsNeedle = reverifyRecord(
-    { checks: [{ type: "file_contains", path: "empty.txt", needle: "   " }] },
-    dir
-  );
+  // The bug was String.includes(""): an empty needle on a NON-empty file must fail too.
+  const emptyOnReal = reverifyRecord({ checks: [{ type: "file_contains", path: "real.txt", needle: "" }] }, dir);
+  assert.equal(emptyOnReal.allPass, false, "empty needle on a non-empty file must also fail");
+
+  // Whitespace-only and missing needle must also fail (match the realNeedle predicate).
+  const wsNeedle = reverifyRecord({ checks: [{ type: "file_contains", path: "real.txt", needle: "   " }] }, dir);
+  assert.equal(wsNeedle.allPass, false, "whitespace-only needle must fail");
   assert.equal(wsNeedle.hasFileContains, false, "whitespace-only needle must not satisfy hasFileContains");
+  const missingNeedle = reverifyRecord({ checks: [{ type: "file_contains", path: "real.txt" }] }, dir);
+  assert.equal(missingNeedle.allPass, false, "missing needle must fail (no includes('undefined') match)");
 
-  // Non-empty needle on non-empty file: must set hasFileContains=true and must NOT flag as empty.
-  const realContains = reverifyRecord(
-    { checks: [{ type: "file_contains", path: "real.txt", needle: "actual-content-marker" }] },
-    dir
-  );
+  // Non-empty needle on non-empty file still passes and sets hasFileContains.
+  const realContains = reverifyRecord({ checks: [{ type: "file_contains", path: "real.txt", needle: "actual-content-marker" }] }, dir);
+  assert.equal(realContains.allPass, true, "real needle on real file passes");
   assert.equal(realContains.hasFileContains, true, "real needle on real file must set hasFileContains=true");
   assert.ok(!realContains.emptyEvidenceFiles.includes("real.txt"), "non-empty file must not appear in emptyEvidenceFiles");
+
+  // The live path (buildCheck -> runVerifiedBreakout) must also fail closed.
+  const liveEmpty = await runVerifiedBreakout(
+    { workstream: "x", claimedStatus: "meets" },
+    [buildCheck({ type: "file_contains", path: "real.txt", needle: "" }, dir)]
+  );
+  assert.equal(liveEmpty.converged, false, "live breakout must not converge on an empty-needle check");
+  assert.equal(liveEmpty.finalStatus, "needs-work");
 
   console.log("test-verifier empty-needle bypass OK");
 }
