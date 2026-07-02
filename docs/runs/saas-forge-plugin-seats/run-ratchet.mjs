@@ -27,6 +27,7 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { openState, foldDefs, styxGenerateFiles, bankVerifyFailures, runBouts, approvalEvidenceDigest, loadKeys, pinResearch } from "../../../forge/ratchet.mjs";
+import { validateManifest, workstreamsFromManifest, defsFromManifest } from "../../../forge/manifest.mjs";
 import { computePlan, writePlan } from "../../../merkle-dag/merkle.mjs";
 import { runBuild } from "../../../merkle-dag/orchestrate.mjs";
 import { createSeatRouter } from "../../../breakout/seat_router.mjs";
@@ -140,7 +141,50 @@ try {
   const architecture = await pinResearch(workdir, "architecture",
     () => researchArchitecture({ telos, workstreams: ALL, docsFor: context7DocsFor() }), log);
 
-  const rawDefs = convergenceTaskDefs(architecture);
+  // One-time manifest emission (Batch 2 migration): materialize the spec —
+  // including the architecture-dependent checks, resolved against the PINNED
+  // research — as data. `TELOS_EMIT_MANIFEST=1 node run-ratchet.mjs`
+  if (process.env.TELOS_EMIT_MANIFEST === "1") {
+    const inlineDefs = convergenceTaskDefs(architecture);
+    const manifest = {
+      build_id: dossierMeta.build_id,
+      idea_id: dossierMeta.idea_id,
+      use_case: dossierMeta.use_case,
+      telos,
+      objective: dossierMeta.objective,
+      workstreams: WORKSTREAMS.map((ws) => {
+        const def = inlineDefs.find((d) => d.id === ws.id);
+        return {
+          id: ws.id, signer: ws.signer, lens: ws.lens, dependencies: ws.dependencies,
+          files: ws.files, requirements: def.requirements,
+          checks: ws.checks(architecture),
+          test: def.test,
+          isUi: !!ws.isUi, findingsKey: ws.findingsKey, finding: ws.finding
+        };
+      })
+    };
+    validateManifest(manifest);
+    saveJson(path.join(here, "manifest.json"), manifest);
+    console.log(`manifest emitted: ${path.join(here, "manifest.json")}`);
+    process.exit(0);
+  }
+
+  // The spec comes from manifest.json when present (declarative path, tests
+  // carried verbatim so plan hashes are stable); the in-file workstreams
+  // remain the authoring source it was emitted from.
+  const manifestPath = path.join(here, "manifest.json");
+  const manifest = loadJson(manifestPath, null);
+  let rawDefs, wsSource;
+  if (manifest) {
+    validateManifest(manifest);
+    wsSource = workstreamsFromManifest(manifest);
+    rawDefs = defsFromManifest(manifest, { checkNodePath: "unused-explicit-tests" });
+    log(`spec: loaded from manifest.json (${wsSource.length} workstreams)`);
+  } else {
+    wsSource = WORKSTREAMS.map((ws) => ({ ...ws, checks: ws.checks(architecture) }));
+    rawDefs = convergenceTaskDefs(architecture);
+    log("spec: manifest.json absent — using in-file workstreams");
+  }
   const defs = foldDefs(rawDefs, state, log);
   const defById = new Map(defs.map((d) => [d.id, d]));
   const { plan, errors } = computePlan(defs, {
@@ -177,8 +221,7 @@ try {
     // ---- Stage B: team bouts (Styx skip, closure, checkpoints — forge/) -----
     const makeFns = makeCouncilFactFns({ callTool });
     const hashById = new Map(plan.nodes.map((n) => [n.id, n.effective_hash]));
-    const wsWithChecks = WORKSTREAMS.map((ws) => ({ ...ws, checks: ws.checks(architecture) }));
-    const records = await runBouts({ workstreams: wsWithChecks, state, makeFns, defById, hashById, telosDir, log });
+    const records = await runBouts({ workstreams: wsSource, state, makeFns, defById, hashById, telosDir, log });
     summary.teams = records.map((t) => ({
       workstream: t.workstream, converged: t.converged, finalStatus: t.finalStatus,
       rounds: t.rounds?.length ?? 0, referee: t.referee ?? null
