@@ -179,11 +179,18 @@ export function fileExistsCheck(id, path) {
 }
 
 export function fileContainsCheck(id, path, needle) {
+  // A missing / empty / whitespace-only needle is not evidence: includes("") is
+  // always true and includes(undefined) matches the literal "undefined". Such a
+  // check must FAIL so a vacuous file_contains can never satisfy re-verification
+  // in any mode. Same predicate as reverifyRecord's realNeedle / the signed-mode
+  // sufficiency floor, so "a real needle" has one definition.
+  const validNeedle = typeof needle === "string" && needle.trim().length > 0;
   return {
     id,
     description: `${path} contains "${needle}"`,
     spec: { type: "file_contains", path, needle, id },
     run: () => {
+      if (!validNeedle) return { ok: false, detail: `file_contains needs a non-empty needle (got ${JSON.stringify(needle)})` };
       if (!existsSync(path)) return { ok: false, detail: `missing ${path}` };
       const ok = readFileSync(path, "utf8").includes(needle);
       return { ok, detail: ok ? `found "${needle}"` : `"${needle}" not in ${path}` };
