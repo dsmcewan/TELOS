@@ -1,0 +1,319 @@
+{
+  "build_id": "saas-forge-plugin-seats",
+  "idea_id": "idea-convergence",
+  "use_case": "forge-live-plugin-seats",
+  "telos": "Make the convergence demo market-ready.",
+  "objective": "Forge the convergence demo live through the seat-router plugin backends. SCOPE: the seven fixture workstreams (product-architecture, business-positioning, backend-schema, security-trust, accuracy-evals, scale-operations, frontend-brand-experience), each authoring its declared files in the run workdir. 'Live' means REAL provider API calls with per-seat response-id provenance — nothing fabricated. SEAT ENUMERATION (all traversal via breakout/seat_router.mjs over build-gate/seat-registry.mjs; routing is fail-closed — an unrouted tool throws, so NO seat can bypass the router): claude -> ai-peer-mcp (Anthropic API); codex -> codex-api plugin server (OpenAI gpt-5.5, xhigh); grok -> grok plugin server (xAI grok-4.3, adversary); gemini -> gemini plugin server (Google gemini-3.1-pro-preview, bout referee); agy -> Antigravity CLI plugin server (co-adversary, content-addressed provenance) plus the agy_checkpoint LOCAL governance approver on ai-peer-mcp. Each backend is authorized via its operator-held API key or signed-in CLI session. SUCCESS CRITERIA (verified, not asserted): every workstream's deterministic checks re-verified from disk by the gate; every artifact survived a dual-adversary breakout (grok + agy) with the gemini referee; every approval packet carries real provenance (a missing/duplicate response_id blocks); all nodes settled on the append-only Ed25519 ledger. SAFEGUARDS: observability via persisted fight logs (.telos/fights), the signed ledger, and run summaries; rollback/fallback via forward-invalidation (a changed spec re-hashes, stale ledger lines fall invalid, the ratchet workdir preserves every prior state); the gate fails closed on any missing evidence.",
+  "workstreams": [
+    {
+      "id": "product-architecture",
+      "signer": "codex",
+      "lens": "codex",
+      "dependencies": [],
+      "files": [
+        "docs/ARCHITECTURE.md"
+      ],
+      "requirements": "Document the researched capability stack (UI/DB/infra) as a coherent SaaS architecture.",
+      "checks": [
+        {
+          "type": "file_exists",
+          "path": "docs/ARCHITECTURE.md"
+        },
+        {
+          "type": "file_contains",
+          "path": "docs/ARCHITECTURE.md",
+          "needle": "Vite"
+        },
+        {
+          "type": "file_contains",
+          "path": "docs/ARCHITECTURE.md",
+          "needle": "Tailwind CSS"
+        },
+        {
+          "type": "file_contains",
+          "path": "docs/ARCHITECTURE.md",
+          "needle": "Supabase"
+        },
+        {
+          "type": "file_contains",
+          "path": "docs/ARCHITECTURE.md",
+          "needle": "AWS CDK"
+        },
+        {
+          "type": "file_contains",
+          "path": "docs/ARCHITECTURE.md",
+          "needle": "Supabase Auth"
+        },
+        {
+          "type": "file_contains",
+          "path": "docs/ARCHITECTURE.md",
+          "needle": "Vitest"
+        }
+      ],
+      "test": {
+        "cmd": "node",
+        "args": [
+          "C:\\Users\\dsmce\\telos\\.claude\\worktrees\\saas-forge-live-run\\saas-forge\\checks\\check-node.mjs",
+          "[{\"type\":\"file_exists\",\"path\":\"docs/ARCHITECTURE.md\"},{\"type\":\"file_contains\",\"path\":\"docs/ARCHITECTURE.md\",\"needle\":\"Vite\"},{\"type\":\"file_contains\",\"path\":\"docs/ARCHITECTURE.md\",\"needle\":\"Tailwind CSS\"},{\"type\":\"file_contains\",\"path\":\"docs/ARCHITECTURE.md\",\"needle\":\"Supabase\"},{\"type\":\"file_contains\",\"path\":\"docs/ARCHITECTURE.md\",\"needle\":\"AWS CDK\"},{\"type\":\"file_contains\",\"path\":\"docs/ARCHITECTURE.md\",\"needle\":\"Supabase Auth\"},{\"type\":\"file_contains\",\"path\":\"docs/ARCHITECTURE.md\",\"needle\":\"Vitest\"}]"
+        ]
+      },
+      "isUi": false,
+      "findingsKey": "architecture_findings",
+      "finding": "Coherent multi-tier architecture grounded in the researched stack."
+    },
+    {
+      "id": "business-positioning",
+      "signer": "claude",
+      "lens": "claude",
+      "dependencies": [
+        "product-architecture"
+      ],
+      "files": [
+        "docs/POSITIONING.md"
+      ],
+      "requirements": "State the ICP, value proposition, differentiation, and pricing posture — as EXPLICITLY-LABELED HYPOTHESES, not market facts. This product is pre-market: no real pricing, adoption, or competitive data exists yet, and the document must not pretend otherwise. For every positioning claim: (1) label it a hypothesis, (2) state the assumptions it rests on, (3) state how it would be validated or falsified (the validation plan IS the methodology). Reviewers judge internal coherence, honest labeling, and testability — demands for real market evidence are out of scope until the validation plan has been executed.",
+      "checks": [
+        {
+          "type": "file_exists",
+          "path": "docs/POSITIONING.md"
+        },
+        {
+          "type": "file_contains",
+          "path": "docs/POSITIONING.md",
+          "needle": "Target users"
+        },
+        {
+          "type": "file_contains",
+          "path": "docs/POSITIONING.md",
+          "needle": "Differentiation"
+        }
+      ],
+      "test": {
+        "cmd": "node",
+        "args": [
+          "C:\\Users\\dsmce\\telos\\.claude\\worktrees\\saas-forge-live-run\\saas-forge\\checks\\check-node.mjs",
+          "[{\"type\":\"file_exists\",\"path\":\"docs/POSITIONING.md\"},{\"type\":\"file_contains\",\"path\":\"docs/POSITIONING.md\",\"needle\":\"Target users\"},{\"type\":\"file_contains\",\"path\":\"docs/POSITIONING.md\",\"needle\":\"Differentiation\"}]"
+        ]
+      },
+      "isUi": false,
+      "findingsKey": "architecture_findings",
+      "finding": "Positioning ties technical credibility to a defensible market thesis."
+    },
+    {
+      "id": "backend-schema",
+      "signer": "codex",
+      "lens": "agy",
+      "dependencies": [
+        "product-architecture"
+      ],
+      "files": [
+        "db/schema.sql"
+      ],
+      "requirements": "Relational schema with tenant isolation enforced by row-level security.",
+      "checks": [
+        {
+          "type": "file_exists",
+          "path": "db/schema.sql"
+        },
+        {
+          "type": "file_contains",
+          "path": "db/schema.sql",
+          "needle": "create table"
+        },
+        {
+          "type": "file_contains",
+          "path": "db/schema.sql",
+          "needle": "create policy"
+        }
+      ],
+      "test": {
+        "cmd": "node",
+        "args": [
+          "C:\\Users\\dsmce\\telos\\.claude\\worktrees\\saas-forge-live-run\\saas-forge\\checks\\check-node.mjs",
+          "[{\"type\":\"file_exists\",\"path\":\"db/schema.sql\"},{\"type\":\"file_contains\",\"path\":\"db/schema.sql\",\"needle\":\"create table\"},{\"type\":\"file_contains\",\"path\":\"db/schema.sql\",\"needle\":\"create policy\"}]"
+        ]
+      },
+      "isUi": false,
+      "findingsKey": "backend_schema_findings",
+      "finding": "Schema enforces tenant isolation via row-level security policies."
+    },
+    {
+      "id": "security-trust",
+      "signer": "codex",
+      "lens": "grok",
+      "dependencies": [
+        "product-architecture"
+      ],
+      "files": [
+        "web/SECURITY.md",
+        "web/site/csp.txt"
+      ],
+      "requirements": "No client-side secrets; strict CSP; read-only findings. CSP SEMANTICS ARE SPEC-BOUND (W3C): require-trusted-types-for accepts ONLY the 'script' sink group — demands to add other tokens to that directive are invalid and are not blockers.",
+      "checks": [
+        {
+          "type": "file_exists",
+          "path": "web/site/csp.txt"
+        },
+        {
+          "type": "file_contains",
+          "path": "web/site/csp.txt",
+          "needle": "Content-Security-Policy"
+        },
+        {
+          "type": "file_contains",
+          "path": "web/site/csp.txt",
+          "needle": "default-src"
+        }
+      ],
+      "test": {
+        "cmd": "node",
+        "args": [
+          "C:\\Users\\dsmce\\telos\\.claude\\worktrees\\saas-forge-live-run\\saas-forge\\checks\\check-node.mjs",
+          "[{\"type\":\"file_exists\",\"path\":\"web/site/csp.txt\"},{\"type\":\"file_contains\",\"path\":\"web/site/csp.txt\",\"needle\":\"Content-Security-Policy\"},{\"type\":\"file_contains\",\"path\":\"web/site/csp.txt\",\"needle\":\"default-src\"}]"
+        ]
+      },
+      "isUi": false,
+      "findingsKey": "security_findings",
+      "finding": "Strict CSP and RLS-guarded anon key; no secrets in the client bundle."
+    },
+    {
+      "id": "accuracy-evals",
+      "signer": "claude",
+      "lens": "claude",
+      "dependencies": [
+        "product-architecture"
+      ],
+      "files": [
+        "evals/scorecard.json",
+        "evals/run.mjs"
+      ],
+      "requirements": "Measure the discriminator against a fixed labeled set; clear the precision threshold. The eval runner is READ-ONLY: it must not create or modify any file (the scorecard is static data it validates against) — print results to stdout and exit 0 on pass, 1 on miss. HARD CONSTRAINT: no self-referential cryptographic checks — do NOT embed precomputed hashes (sha256 etc.) of the artifact's own content for the runner to recompute; an authored hash cannot be correct and artifact integrity is already enforced by the pipeline's signed ledger tree-hash. Self-consistency checks must be ARITHMETIC (e.g. the confusion-matrix counts re-derived from the embedded labeled set must equal the stored metrics).",
+      "checks": [
+        {
+          "type": "file_exists",
+          "path": "evals/scorecard.json"
+        },
+        {
+          "type": "file_contains",
+          "path": "evals/scorecard.json",
+          "needle": "precision"
+        }
+      ],
+      "test": {
+        "cmd": "node",
+        "args": [
+          "evals/run.mjs"
+        ]
+      },
+      "isUi": false,
+      "findingsKey": "accuracy_eval_findings",
+      "finding": "Precision 0.94 clears the 0.90 threshold on the labeled set."
+    },
+    {
+      "id": "scale-operations",
+      "signer": "codex",
+      "lens": "codex",
+      "dependencies": [
+        "product-architecture"
+      ],
+      "files": [
+        "docs/OPERATIONS.md"
+      ],
+      "requirements": "Document hosting (S3 + CloudFront), scale path, and monitoring/SLOs.",
+      "checks": [
+        {
+          "type": "file_exists",
+          "path": "docs/OPERATIONS.md"
+        },
+        {
+          "type": "file_contains",
+          "path": "docs/OPERATIONS.md",
+          "needle": "CloudFront"
+        },
+        {
+          "type": "file_contains",
+          "path": "docs/OPERATIONS.md",
+          "needle": "S3"
+        }
+      ],
+      "test": {
+        "cmd": "node",
+        "args": [
+          "C:\\Users\\dsmce\\telos\\.claude\\worktrees\\saas-forge-live-run\\saas-forge\\checks\\check-node.mjs",
+          "[{\"type\":\"file_exists\",\"path\":\"docs/OPERATIONS.md\"},{\"type\":\"file_contains\",\"path\":\"docs/OPERATIONS.md\",\"needle\":\"CloudFront\"},{\"type\":\"file_contains\",\"path\":\"docs/OPERATIONS.md\",\"needle\":\"S3\"}]"
+        ]
+      },
+      "isUi": false,
+      "findingsKey": "scalability_findings",
+      "finding": "Edge-scaled static delivery with CloudFront/CloudWatch SLOs."
+    },
+    {
+      "id": "frontend-brand-experience",
+      "signer": "claude",
+      "lens": "claude",
+      "dependencies": [
+        "product-architecture",
+        "security-trust",
+        "accuracy-evals"
+      ],
+      "files": [
+        "web/index.html",
+        "web/site/style.css",
+        "web/site/tokens.css",
+        "web/DESIGN.md",
+        "web/VERIFICATION.md",
+        "docs/verification/s03-dynamics-discriminator.png",
+        "docs/verification/s04-scorecard.png"
+      ],
+      "requirements": "LEXI-class first screen: contract, delivery, test posture, TELOS gate; brand token #69e7ff; design system (tokens + toolchain) and verification screenshots. TOKEN RESOLUTION (contract-final): tokens.css defines --accent-cyan: #69e7ff; style.css consumes it as var(--accent-cyan, #69e7ff) — the fallback legitimately carries the literal hex, satisfying BOTH the deterministic check and token discipline; demands to remove the hex or to hardcode it bare are equally invalid. NOTE ON BINARY ASSETS: the verification .png files are PIPELINE-OWNED placeholders in this text bout — real rendering happens outside it; their byte content is out of bout scope and is not a valid blocker. All text files (index.html included) must be complete and internally consistent.",
+      "checks": [
+        {
+          "type": "file_exists",
+          "path": "web/index.html"
+        },
+        {
+          "type": "file_contains",
+          "path": "web/site/style.css",
+          "needle": "#69e7ff"
+        },
+        {
+          "type": "file_contains",
+          "path": "web/site/tokens.css",
+          "needle": "--accent-cyan"
+        },
+        {
+          "type": "file_contains",
+          "path": "web/DESIGN.md",
+          "needle": "shadcn/ui"
+        },
+        {
+          "type": "file_contains",
+          "path": "web/DESIGN.md",
+          "needle": "Figma"
+        },
+        {
+          "type": "file_exists",
+          "path": "web/VERIFICATION.md"
+        },
+        {
+          "type": "file_exists",
+          "path": "docs/verification/s03-dynamics-discriminator.png"
+        },
+        {
+          "type": "file_exists",
+          "path": "docs/verification/s04-scorecard.png"
+        }
+      ],
+      "test": {
+        "cmd": "node",
+        "args": [
+          "C:\\Users\\dsmce\\telos\\.claude\\worktrees\\saas-forge-live-run\\saas-forge\\checks\\check-node.mjs",
+          "[{\"type\":\"file_exists\",\"path\":\"web/index.html\"},{\"type\":\"file_contains\",\"path\":\"web/site/style.css\",\"needle\":\"#69e7ff\"},{\"type\":\"file_contains\",\"path\":\"web/site/tokens.css\",\"needle\":\"--accent-cyan\"},{\"type\":\"file_contains\",\"path\":\"web/DESIGN.md\",\"needle\":\"shadcn/ui\"},{\"type\":\"file_contains\",\"path\":\"web/DESIGN.md\",\"needle\":\"Figma\"},{\"type\":\"file_exists\",\"path\":\"web/VERIFICATION.md\"},{\"type\":\"file_exists\",\"path\":\"docs/verification/s03-dynamics-discriminator.png\"},{\"type\":\"file_exists\",\"path\":\"docs/verification/s04-scorecard.png\"}]"
+        ]
+      },
+      "isUi": true,
+      "findingsKey": "frontend_design_findings",
+      "finding": "First-screen proof band carries the brand token and the LEXI-class contract."
+    }
+  ]
+}

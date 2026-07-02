@@ -21,6 +21,7 @@ import { fileURLToPath } from "node:url";
 import { computePlan, writePlan } from "../../../merkle-dag/merkle.mjs";
 import { runBuild } from "../../../merkle-dag/orchestrate.mjs";
 import { openState, foldDefs, styxGenerateFiles, bankVerifyFailures, runBouts, approvalEvidenceDigest, loadKeys } from "../../../forge/ratchet.mjs";
+import { validateManifest, workstreamsFromManifest, defsFromManifest } from "../../../forge/manifest.mjs";
 import { createSeatRouter } from "../../../breakout/seat_router.mjs";
 import { defaultSeatRegistry } from "../../../build-gate/seat-registry.mjs";
 import { generatorDispatch } from "../../../saas-forge/generator.mjs";
@@ -260,6 +261,38 @@ const dossierMeta = {
 };
 const telos = "Launch Crossroad Threads on its own domain.";
 
+// Checks derived from each workstream's declaration: manifest files exist,
+// needles anchor the contract, source anchors pull the real repository into
+// the bout evidence (and trivially hold on disk).
+const checksFor = (ws) => [
+  ...ws.files.map((p) => ({ type: "file_exists", path: p })),
+  ...ws.needles.map((needle) => ({ type: "file_contains", path: ws.files[0], needle })),
+  ...ws.anchors.map((p) => ({ type: "file_exists", path: p }))
+];
+
+// One-time manifest emission (Batch 2 migration): materialize the current spec
+// as data, hash-stable by construction. `TELOS_EMIT_MANIFEST=1 node run-audit.mjs`
+if (process.env.TELOS_EMIT_MANIFEST === "1") {
+  const manifest = {
+    build_id: dossierMeta.build_id,
+    idea_id: dossierMeta.idea_id,
+    use_case: dossierMeta.use_case,
+    telos,
+    objective: dossierMeta.objective,
+    business_thesis: dossierMeta.business_thesis,
+    target_users: dossierMeta.target_users,
+    workstreams: AUDIT_WORKSTREAMS.map((ws) => ({
+      id: ws.id, signer: ws.signer, lens: ws.lens, dependencies: ws.dependencies,
+      files: ws.files, requirements: ws.requirements, checks: checksFor(ws),
+      isUi: !!ws.isUi, findingsKey: ws.findingsKey, finding: ws.finding
+    }))
+  };
+  validateManifest(manifest);
+  saveJson(path.join(here, "manifest.json"), manifest);
+  console.log(`manifest emitted: ${path.join(here, "manifest.json")}`);
+  process.exit(0);
+}
+
 const keys = loadKeys(workdir, ["claude", "codex"], log);
 
 const router = createSeatRouter(defaultSeatRegistry());
@@ -272,22 +305,28 @@ let summary = { generated_for: dossierMeta.build_id, live: true, phase: "audit",
 try {
   const state = openState(workdir);
 
-  const checksFor = (ws) => [
-    ...ws.files.map((p) => ({ type: "file_exists", path: p })),
-    ...ws.needles.map((needle) => ({ type: "file_contains", path: ws.files[0], needle })),
-    // Anchors pull the real repository into the bout evidence (and trivially
-    // hold on disk): adversaries attack the audit AGAINST the source.
-    ...ws.anchors.map((p) => ({ type: "file_exists", path: p }))
-  ];
-  const wsWithChecks = AUDIT_WORKSTREAMS.map((ws) => ({ ...ws, checks: checksFor(ws) }));
-
-  const rawDefs = wsWithChecks.map((ws) => ({
-    id: ws.id,
-    files: ws.files,
-    requirements: ws.requirements,
-    test: { cmd: "node", args: [CHECK_NODE, JSON.stringify(ws.checks)] },
-    dependencies: ws.dependencies
-  }));
+  // The spec comes from manifest.json when present (the declarative path);
+  // the in-file AUDIT_WORKSTREAMS remain the authoring source it was emitted
+  // from. defsFromManifest is hash-stable with the previous inline derivation.
+  const manifestPath = path.join(here, "manifest.json");
+  const manifest = loadJson(manifestPath, null);
+  let wsWithChecks, rawDefs;
+  if (manifest) {
+    validateManifest(manifest);
+    wsWithChecks = workstreamsFromManifest(manifest);
+    rawDefs = defsFromManifest(manifest, { checkNodePath: CHECK_NODE });
+    log(`spec: loaded from manifest.json (${wsWithChecks.length} workstreams)`);
+  } else {
+    wsWithChecks = AUDIT_WORKSTREAMS.map((ws) => ({ ...ws, checks: checksFor(ws) }));
+    rawDefs = wsWithChecks.map((ws) => ({
+      id: ws.id,
+      files: ws.files,
+      requirements: ws.requirements,
+      test: { cmd: "node", args: [CHECK_NODE, JSON.stringify(ws.checks)] },
+      dependencies: ws.dependencies
+    }));
+    log("spec: manifest.json absent — using in-file workstreams");
+  }
   const defs = foldDefs(rawDefs, state, log);
   const defById = new Map(defs.map((d) => [d.id, d]));
   const { plan, errors } = computePlan(defs, {

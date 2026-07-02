@@ -1,0 +1,362 @@
+{
+  "build_id": "crossroad-threads-launch-audit",
+  "idea_id": "crossroad-threads",
+  "use_case": "launch-audit",
+  "telos": "Launch Crossroad Threads on its own domain.",
+  "objective": "Certify the launch audit of Crossroad Threads for its own domain. PRODUCT & SURFACE: Crossroad Threads (github.com/dsmcewan/CrossroadThreads) — a live Next.js static-export apparel storefront styled as a museum (103 exhibits, five wings, narrated audio tour), today on GitHub Pages, auditing its launch as a standalone storefront on its OWN DOMAIN with the operator-pinned stack: AWS hosting, Docker-containerized services, and order/transaction/print-on-demand pipelines. TARGET USERS: collectors of narrative apparel, Southern Gothic / mythology enthusiasts, story-rich gift buyers. SOURCE MATERIALS: the full repository clone at workdir/source (README, next.config.ts, deploy workflow, content/designs.json, package.json) plus a pinned deterministic repo brief — every technical claim cites these. THE SEVEN AUDIT ARTIFACTS (each with contract-required sections and deterministic content checks, re-verified from disk): audit/COMMERCE-GAP.md (purchase path + order/transaction/POD pipeline specs), audit/POSITIONING.md (hypothesis-framed ICP/pricing/differentiation), audit/LAUNCH-ARCHITECTURE.md (AWS topology, Docker, DNS/CDN, migration), audit/SECURITY.md (CSP/TLS, PCI boundary, pipeline security, IAM), audit/OPERATIONS.md (CI, Docker build, content workflow, asset budget, runbooks), audit/BRAND-EXPERIENCE.md (conceit-vs-commerce collisions, accessibility), audit/ADVERTISING.md (hypothesis demographics, channel plan, creative system, measurement, budget gates). ADVERSARIAL GROUNDING STANDARD: every artifact survived a dual-adversary breakout (grok + agy) reading the complete artifact text and source anchors under a contract-bounded scope, with a gemini referee ending unproductive loops and a durable defeat memory; market claims are admissible only as labeled hypotheses with assumptions and validation plans; technical claims only with repository citations. GATE THRESHOLDS: acceptable Phase-2 gaps are enumerated, buildable work items inside each artifact's 'Phase 2 Work Items' section (missing commerce/infra the audit exists to specify); HARD STOPS are unresolved adversary blockers, any artifact failing its deterministic checks on disk, or any approval packet lacking real per-seat provenance — each blocks certification. This audit certifies the GAP MAP is complete and grounded, not that the launch is done.",
+  "business_thesis": "The museum conceit is the moat: an e-commerce site disguised as a gallery of applied mythology converts narrative depth into premium apparel sales.",
+  "target_users": [
+    "collectors of narrative apparel",
+    "Southern Gothic / mythology enthusiasts",
+    "gift buyers seeking story-rich objects"
+  ],
+  "workstreams": [
+    {
+      "id": "commerce-gap",
+      "signer": "codex",
+      "lens": "codex",
+      "dependencies": [],
+      "files": [
+        "audit/COMMERCE-GAP.md"
+      ],
+      "requirements": "POSTURE: Crossroad Threads is launching on ITS OWN DOMAIN as a real storefront (today it is a static Next.js export on GitHub Pages under a basePath). Audit the PRODUCT AS IT EXISTS in the repository excerpts below and in the bout evidence (workdir/source). Every market claim must be an explicitly-labeled HYPOTHESIS with assumptions and a validation plan; every technical claim must cite the repository. Findings end in a numbered GAP LIST: concrete, buildable items for Phase 2.\n\nREPO FACTS (deterministic): assets crossroad_imgs=344MB, public=18MB; commerce keyword hits: {\"checkout\":[\".github/workflows/deploy.yml\",\"content/designs.json\"],\"cart\":[\"content/designs.json\",\"README.md\",\"src/lib/commerce.ts\",\"src/lib/types.ts\"],\"price\":[\"content/designs.json\",\"src/components/exhibit/GiftShopPanel.module.css\",\"src/components/exhibit/GiftShopPanel.tsx\",\"src/lib/types.ts\"],\"shop\":[\"content/designs.json\",\"docs/BRAND.md\",\"README.md\",\"src/app/exhibit/[slug]/page.tsx\",\"src/app/layout.tsx\",\"src/components/exhibit/GiftShopPanel.tsx\",\"src/lib/commerce.ts\",\"src/lib/copy.ts\"]}\nPACKAGE.JSON:\n{\r\n  \"name\": \"crossroad-collection\",\r\n  \"version\": \"0.1.0\",\r\n  \"private\": true,\r\n  \"scripts\": {\r\n    \"predev\": \"tsx scripts/build-catalog.ts\",\r\n    \"dev\": \"next dev\",\r\n    \"prebuild\": \"tsx scripts/build-catalog.ts\",\r\n    \"build\": \"next build\",\r\n    \"postbuild\": \"node scripts/verify-export.mjs\",\r\n    \"catalog\": \"tsx scripts/build-catalog.ts\",\r\n    \"preview:pages\": \"node scripts/preview-pages.mjs\",\r\n    \"audio\": \"tts/.venv/Scripts/python tts/generate_audio.py\",\r\n    \"test\": \"vitest run\",\r\n    \"lint\": \"next lint\"\r\n  },\r\n  \"dependencies\": {\r\n    \"next\": \"^15.3.0\",\r\n    \"react\": \"^19.0.0\",\r\n    \"react-dom\": \"^19.0.0\"\r\n  },\r\n  \"devDependencies\": {\r\n    \"@types/node\": \"^22\",\r\n    \"@types/react\": \"^19\",\r\n    \"@types/react-dom\": \"^19\",\r\n    \"playwright\": \"^1.61.1\",\r\n    \"sharp\": \"^0.34.0\",\r\n    \"tsx\": \"^4.19.0\",\r\n    \"typescript\": \"^5\",\r\n    \"vitest\": \"^3.1.0\"\r\n  }\r\n}\r\n\nAudit the COMMERCE GAP: the site presents itself as a store, so determine from the repo what purchase path exists today (cite files) and specify every capability an own-domain storefront needs that is absent. OPERATOR-PINNED LAUNCH STACK: the launch requires (a) an ORDER PIPELINE — order lifecycle from cart through payment capture to fulfillment handoff and customer notification, with explicit states and failure handling; (b) a TRANSACTION PIPELINE — payment provider integration, webhook verification, idempotency, refunds/disputes; (c) a POD PIPELINE — print-on-demand integration (product/variant sync to the POD catalog, order submission, shipment tracking webhooks back to the customer). Spec each pipeline's stages, the AWS services or containers they run on, and the events between them. Sections required: Current Purchase Path, Gap Analysis, Checkout, Payment, Order Pipeline, Transaction Pipeline, POD Pipeline, Phase 2 Work Items.",
+      "checks": [
+        {
+          "type": "file_exists",
+          "path": "audit/COMMERCE-GAP.md"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/COMMERCE-GAP.md",
+          "needle": "Checkout"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/COMMERCE-GAP.md",
+          "needle": "Payment"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/COMMERCE-GAP.md",
+          "needle": "Order Pipeline"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/COMMERCE-GAP.md",
+          "needle": "Transaction Pipeline"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/COMMERCE-GAP.md",
+          "needle": "POD"
+        },
+        {
+          "type": "file_exists",
+          "path": "source/package.json"
+        },
+        {
+          "type": "file_exists",
+          "path": "source/README.md"
+        }
+      ],
+      "isUi": false,
+      "findingsKey": "architecture_findings",
+      "finding": "Commerce gap audit: what selling on its own domain actually requires."
+    },
+    {
+      "id": "positioning-launch",
+      "signer": "claude",
+      "lens": "claude",
+      "dependencies": [],
+      "files": [
+        "audit/POSITIONING.md"
+      ],
+      "requirements": "POSTURE: Crossroad Threads is launching on ITS OWN DOMAIN as a real storefront (today it is a static Next.js export on GitHub Pages under a basePath). Audit the PRODUCT AS IT EXISTS in the repository excerpts below and in the bout evidence (workdir/source). Every market claim must be an explicitly-labeled HYPOTHESIS with assumptions and a validation plan; every technical claim must cite the repository. Findings end in a numbered GAP LIST: concrete, buildable items for Phase 2.\n\nREPO FACTS (deterministic): assets crossroad_imgs=344MB, public=18MB; commerce keyword hits: {\"checkout\":[\".github/workflows/deploy.yml\",\"content/designs.json\"],\"cart\":[\"content/designs.json\",\"README.md\",\"src/lib/commerce.ts\",\"src/lib/types.ts\"],\"price\":[\"content/designs.json\",\"src/components/exhibit/GiftShopPanel.module.css\",\"src/components/exhibit/GiftShopPanel.tsx\",\"src/lib/types.ts\"],\"shop\":[\"content/designs.json\",\"docs/BRAND.md\",\"README.md\",\"src/app/exhibit/[slug]/page.tsx\",\"src/app/layout.tsx\",\"src/components/exhibit/GiftShopPanel.tsx\",\"src/lib/commerce.ts\",\"src/lib/copy.ts\"]}\nPACKAGE.JSON:\n{\r\n  \"name\": \"crossroad-collection\",\r\n  \"version\": \"0.1.0\",\r\n  \"private\": true,\r\n  \"scripts\": {\r\n    \"predev\": \"tsx scripts/build-catalog.ts\",\r\n    \"dev\": \"next dev\",\r\n    \"prebuild\": \"tsx scripts/build-catalog.ts\",\r\n    \"build\": \"next build\",\r\n    \"postbuild\": \"node scripts/verify-export.mjs\",\r\n    \"catalog\": \"tsx scripts/build-catalog.ts\",\r\n    \"preview:pages\": \"node scripts/preview-pages.mjs\",\r\n    \"audio\": \"tts/.venv/Scripts/python tts/generate_audio.py\",\r\n    \"test\": \"vitest run\",\r\n    \"lint\": \"next lint\"\r\n  },\r\n  \"dependencies\": {\r\n    \"next\": \"^15.3.0\",\r\n    \"react\": \"^19.0.0\",\r\n    \"react-dom\": \"^19.0.0\"\r\n  },\r\n  \"devDependencies\": {\r\n    \"@types/node\": \"^22\",\r\n    \"@types/react\": \"^19\",\r\n    \"@types/react-dom\": \"^19\",\r\n    \"playwright\": \"^1.61.1\",\r\n    \"sharp\": \"^0.34.0\",\r\n    \"tsx\": \"^4.19.0\",\r\n    \"typescript\": \"^5\",\r\n    \"vitest\": \"^3.1.0\"\r\n  }\r\n}\r\n\nAudit LAUNCH POSITIONING for the real brand ('a publishing house that prints on cotton' — Southern Gothic Americana x mythology, museum conceit with 103 exhibits and an audio tour). As LABELED HYPOTHESES with assumptions and validation plans: ICP segments, price architecture for premium graphic tees, differentiation (the museum experience IS the moat — argue it), channel strategy for an own-domain launch, and the riskiest assumption to test first. Ground every claim in what the repo/product actually contains. Sections required: ICP, Pricing, Differentiation, Riskiest Hypothesis, Validation Plan.",
+      "checks": [
+        {
+          "type": "file_exists",
+          "path": "audit/POSITIONING.md"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/POSITIONING.md",
+          "needle": "Hypothesis"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/POSITIONING.md",
+          "needle": "ICP"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/POSITIONING.md",
+          "needle": "Pricing"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/POSITIONING.md",
+          "needle": "Validation"
+        },
+        {
+          "type": "file_exists",
+          "path": "source/README.md"
+        }
+      ],
+      "isUi": false,
+      "findingsKey": "accuracy_eval_findings",
+      "finding": "Launch positioning: hypothesis-framed ICP, pricing, and differentiation for a real, shipped brand."
+    },
+    {
+      "id": "launch-architecture",
+      "signer": "codex",
+      "lens": "gemini",
+      "dependencies": [],
+      "files": [
+        "audit/LAUNCH-ARCHITECTURE.md"
+      ],
+      "requirements": "POSTURE: Crossroad Threads is launching on ITS OWN DOMAIN as a real storefront (today it is a static Next.js export on GitHub Pages under a basePath). Audit the PRODUCT AS IT EXISTS in the repository excerpts below and in the bout evidence (workdir/source). Every market claim must be an explicitly-labeled HYPOTHESIS with assumptions and a validation plan; every technical claim must cite the repository. Findings end in a numbered GAP LIST: concrete, buildable items for Phase 2.\n\nREPO FACTS (deterministic): assets crossroad_imgs=344MB, public=18MB; commerce keyword hits: {\"checkout\":[\".github/workflows/deploy.yml\",\"content/designs.json\"],\"cart\":[\"content/designs.json\",\"README.md\",\"src/lib/commerce.ts\",\"src/lib/types.ts\"],\"price\":[\"content/designs.json\",\"src/components/exhibit/GiftShopPanel.module.css\",\"src/components/exhibit/GiftShopPanel.tsx\",\"src/lib/types.ts\"],\"shop\":[\"content/designs.json\",\"docs/BRAND.md\",\"README.md\",\"src/app/exhibit/[slug]/page.tsx\",\"src/app/layout.tsx\",\"src/components/exhibit/GiftShopPanel.tsx\",\"src/lib/commerce.ts\",\"src/lib/copy.ts\"]}\nPACKAGE.JSON:\n{\r\n  \"name\": \"crossroad-collection\",\r\n  \"version\": \"0.1.0\",\r\n  \"private\": true,\r\n  \"scripts\": {\r\n    \"predev\": \"tsx scripts/build-catalog.ts\",\r\n    \"dev\": \"next dev\",\r\n    \"prebuild\": \"tsx scripts/build-catalog.ts\",\r\n    \"build\": \"next build\",\r\n    \"postbuild\": \"node scripts/verify-export.mjs\",\r\n    \"catalog\": \"tsx scripts/build-catalog.ts\",\r\n    \"preview:pages\": \"node scripts/preview-pages.mjs\",\r\n    \"audio\": \"tts/.venv/Scripts/python tts/generate_audio.py\",\r\n    \"test\": \"vitest run\",\r\n    \"lint\": \"next lint\"\r\n  },\r\n  \"dependencies\": {\r\n    \"next\": \"^15.3.0\",\r\n    \"react\": \"^19.0.0\",\r\n    \"react-dom\": \"^19.0.0\"\r\n  },\r\n  \"devDependencies\": {\r\n    \"@types/node\": \"^22\",\r\n    \"@types/react\": \"^19\",\r\n    \"@types/react-dom\": \"^19\",\r\n    \"playwright\": \"^1.61.1\",\r\n    \"sharp\": \"^0.34.0\",\r\n    \"tsx\": \"^4.19.0\",\r\n    \"typescript\": \"^5\",\r\n    \"vitest\": \"^3.1.0\"\r\n  }\r\n}\r\n\nNEXT.CONFIG.TS:\nimport type { NextConfig } from \"next\";\r\n\r\n// Project site on GitHub Pages → served under /<repo>. Local dev serves at /.\r\nconst repo = \"CrossroadThreads\";\r\nconst isPages = process.env.GITHUB_ACTIONS === \"true\";\r\nconst basePath = isPages ? `/${repo}` : \"\";\r\n\r\nconst nextConfig: NextConfig = {\r\n  output: \"export\",\r\n  trailingSlash: true,\r\n  basePath,\r\n  assetPrefix: basePath,\r\n  images: { unoptimized: true },\r\n  env: {\r\n    NEXT_PUBLIC_BASE_PATH: basePath,\r\n  },\r\n};\r\n\r\nexport default nextConfig;\r\n\nDEPLOY WORKFLOW:\nname: Deploy to GitHub Pages\r\n\r\non:\r\n  push:\r\n    branches: [main]\r\n  workflow_dispatch:\r\n\r\npermissions:\r\n  contents: read\r\n  pages: write\r\n  id-token: write\r\n\r\nconcurrency:\r\n  group: pages\r\n  cancel-in-progress: true\r\n\r\njobs:\r\n  build:\r\n    runs-on: ubuntu-latest\r\n    steps:\r\n      - uses: actions/checkout@v4\r\n\r\n      - uses: actions/setup-node@v4\r\n        with:\r\n          node-version: 22\r\n          cache: npm\r\n\r\n      # Image derivatives are content-addressed; only re-encode sources that changed\r\n      - name: Cache processed images\r\n        uses: actions/cache@v4\r\n        with:\r\n          path: |\r\n            public/images/designs\r\n            .image-cache.json\r\n          key: images-${{ hashFiles('crossroad_imgs/**', 'scripts/image-pipeline.ts') }}\r\n          restore-keys: images-\r\n\r\n      - run: npm ci\r\n\r\n      - run: npm test\r\n\r\n      # GITHUB_ACTIONS=true is set by the runner, which bakes in the /CrossroadThreads basePath\r\n      - run: npm run build\r\n\r\n      - uses: actions/upload-pages-artifact@v3\r\n        with:\r\n          path: out\r\n\r\n  deploy:\r\n    needs: build\r\n    runs-on: ubuntu-latest\r\n    environment:\r\n      name: github-pages\r\n      url: ${{ steps.deployment.outputs.page_url }}\r\n    steps:\r\n      - id: deployment\r\n        uses: actions/deploy-pages@v4\r\n\nAudit LAUNCH ARCHITECTURE for moving from GitHub Pages to an own domain. OPERATOR-PINNED TARGET: AWS. Specify the AWS topology: static export on S3 + CloudFront (TLS via ACM, Route 53 DNS), and the commerce services (order/transaction/POD pipelines from the commerce audit) as DOCKER CONTAINERS — state where they run (ECS Fargate vs Lambda-container trade-off, with a recommendation), how images are built and stored (ECR), and how the static site talks to them (API Gateway/ALB). Also: what in the current config binds the site to the Pages basePath (cite lines), redirect strategy from the Pages URL, and how CI deploy changes for AWS. Sections required: Current Coupling, AWS Topology, Docker, DNS, CDN, Migration Steps, Phase 2 Work Items.",
+      "checks": [
+        {
+          "type": "file_exists",
+          "path": "audit/LAUNCH-ARCHITECTURE.md"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/LAUNCH-ARCHITECTURE.md",
+          "needle": "AWS"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/LAUNCH-ARCHITECTURE.md",
+          "needle": "Docker"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/LAUNCH-ARCHITECTURE.md",
+          "needle": "DNS"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/LAUNCH-ARCHITECTURE.md",
+          "needle": "CDN"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/LAUNCH-ARCHITECTURE.md",
+          "needle": "basePath"
+        },
+        {
+          "type": "file_exists",
+          "path": "source/next.config.ts"
+        },
+        {
+          "type": "file_exists",
+          "path": "source/.github/workflows/deploy.yml"
+        }
+      ],
+      "isUi": false,
+      "findingsKey": "scalability_findings",
+      "finding": "Own-domain launch architecture: hosting, DNS, CDN, basePath migration, asset strategy."
+    },
+    {
+      "id": "security-trust",
+      "signer": "codex",
+      "lens": "grok",
+      "dependencies": [],
+      "files": [
+        "audit/SECURITY.md"
+      ],
+      "requirements": "POSTURE: Crossroad Threads is launching on ITS OWN DOMAIN as a real storefront (today it is a static Next.js export on GitHub Pages under a basePath). Audit the PRODUCT AS IT EXISTS in the repository excerpts below and in the bout evidence (workdir/source). Every market claim must be an explicitly-labeled HYPOTHESIS with assumptions and a validation plan; every technical claim must cite the repository. Findings end in a numbered GAP LIST: concrete, buildable items for Phase 2.\n\nREPO FACTS (deterministic): assets crossroad_imgs=344MB, public=18MB; commerce keyword hits: {\"checkout\":[\".github/workflows/deploy.yml\",\"content/designs.json\"],\"cart\":[\"content/designs.json\",\"README.md\",\"src/lib/commerce.ts\",\"src/lib/types.ts\"],\"price\":[\"content/designs.json\",\"src/components/exhibit/GiftShopPanel.module.css\",\"src/components/exhibit/GiftShopPanel.tsx\",\"src/lib/types.ts\"],\"shop\":[\"content/designs.json\",\"docs/BRAND.md\",\"README.md\",\"src/app/exhibit/[slug]/page.tsx\",\"src/app/layout.tsx\",\"src/components/exhibit/GiftShopPanel.tsx\",\"src/lib/commerce.ts\",\"src/lib/copy.ts\"]}\nPACKAGE.JSON:\n{\r\n  \"name\": \"crossroad-collection\",\r\n  \"version\": \"0.1.0\",\r\n  \"private\": true,\r\n  \"scripts\": {\r\n    \"predev\": \"tsx scripts/build-catalog.ts\",\r\n    \"dev\": \"next dev\",\r\n    \"prebuild\": \"tsx scripts/build-catalog.ts\",\r\n    \"build\": \"next build\",\r\n    \"postbuild\": \"node scripts/verify-export.mjs\",\r\n    \"catalog\": \"tsx scripts/build-catalog.ts\",\r\n    \"preview:pages\": \"node scripts/preview-pages.mjs\",\r\n    \"audio\": \"tts/.venv/Scripts/python tts/generate_audio.py\",\r\n    \"test\": \"vitest run\",\r\n    \"lint\": \"next lint\"\r\n  },\r\n  \"dependencies\": {\r\n    \"next\": \"^15.3.0\",\r\n    \"react\": \"^19.0.0\",\r\n    \"react-dom\": \"^19.0.0\"\r\n  },\r\n  \"devDependencies\": {\r\n    \"@types/node\": \"^22\",\r\n    \"@types/react\": \"^19\",\r\n    \"@types/react-dom\": \"^19\",\r\n    \"playwright\": \"^1.61.1\",\r\n    \"sharp\": \"^0.34.0\",\r\n    \"tsx\": \"^4.19.0\",\r\n    \"typescript\": \"^5\",\r\n    \"vitest\": \"^3.1.0\"\r\n  }\r\n}\r\n\nAudit SECURITY AND TRUST for an own-domain storefront on the OPERATOR-PINNED AWS/Docker stack: current static-site posture (headers, CSP, TLS), what changes the moment payments exist (PCI scope boundaries under hosted-checkout vs self-hosted), securing the order/transaction/POD pipelines (webhook signature verification, idempotency keys, secrets in AWS Secrets Manager, least-privilege IAM for the containers, ECR image scanning), privacy posture, and a threat sketch for a small commerce site. Sections required: Current Posture, CSP, Payment Security Boundary, Pipeline Security, IAM, Privacy, Threats, Phase 2 Work Items.",
+      "checks": [
+        {
+          "type": "file_exists",
+          "path": "audit/SECURITY.md"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/SECURITY.md",
+          "needle": "CSP"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/SECURITY.md",
+          "needle": "TLS"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/SECURITY.md",
+          "needle": "payment"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/SECURITY.md",
+          "needle": "IAM"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/SECURITY.md",
+          "needle": "webhook"
+        },
+        {
+          "type": "file_exists",
+          "path": "source/next.config.ts"
+        }
+      ],
+      "isUi": false,
+      "findingsKey": "security_findings",
+      "finding": "Security and trust posture for a commerce-bearing own-domain launch."
+    },
+    {
+      "id": "ops-content",
+      "signer": "claude",
+      "lens": "agy",
+      "dependencies": [],
+      "files": [
+        "audit/OPERATIONS.md"
+      ],
+      "requirements": "POSTURE: Crossroad Threads is launching on ITS OWN DOMAIN as a real storefront (today it is a static Next.js export on GitHub Pages under a basePath). Audit the PRODUCT AS IT EXISTS in the repository excerpts below and in the bout evidence (workdir/source). Every market claim must be an explicitly-labeled HYPOTHESIS with assumptions and a validation plan; every technical claim must cite the repository. Findings end in a numbered GAP LIST: concrete, buildable items for Phase 2.\n\nREPO FACTS (deterministic): assets crossroad_imgs=344MB, public=18MB; commerce keyword hits: {\"checkout\":[\".github/workflows/deploy.yml\",\"content/designs.json\"],\"cart\":[\"content/designs.json\",\"README.md\",\"src/lib/commerce.ts\",\"src/lib/types.ts\"],\"price\":[\"content/designs.json\",\"src/components/exhibit/GiftShopPanel.module.css\",\"src/components/exhibit/GiftShopPanel.tsx\",\"src/lib/types.ts\"],\"shop\":[\"content/designs.json\",\"docs/BRAND.md\",\"README.md\",\"src/app/exhibit/[slug]/page.tsx\",\"src/app/layout.tsx\",\"src/components/exhibit/GiftShopPanel.tsx\",\"src/lib/commerce.ts\",\"src/lib/copy.ts\"]}\nPACKAGE.JSON:\n{\r\n  \"name\": \"crossroad-collection\",\r\n  \"version\": \"0.1.0\",\r\n  \"private\": true,\r\n  \"scripts\": {\r\n    \"predev\": \"tsx scripts/build-catalog.ts\",\r\n    \"dev\": \"next dev\",\r\n    \"prebuild\": \"tsx scripts/build-catalog.ts\",\r\n    \"build\": \"next build\",\r\n    \"postbuild\": \"node scripts/verify-export.mjs\",\r\n    \"catalog\": \"tsx scripts/build-catalog.ts\",\r\n    \"preview:pages\": \"node scripts/preview-pages.mjs\",\r\n    \"audio\": \"tts/.venv/Scripts/python tts/generate_audio.py\",\r\n    \"test\": \"vitest run\",\r\n    \"lint\": \"next lint\"\r\n  },\r\n  \"dependencies\": {\r\n    \"next\": \"^15.3.0\",\r\n    \"react\": \"^19.0.0\",\r\n    \"react-dom\": \"^19.0.0\"\r\n  },\r\n  \"devDependencies\": {\r\n    \"@types/node\": \"^22\",\r\n    \"@types/react\": \"^19\",\r\n    \"@types/react-dom\": \"^19\",\r\n    \"playwright\": \"^1.61.1\",\r\n    \"sharp\": \"^0.34.0\",\r\n    \"tsx\": \"^4.19.0\",\r\n    \"typescript\": \"^5\",\r\n    \"vitest\": \"^3.1.0\"\r\n  }\r\n}\r\n\nAudit OPERATIONS AND CONTENT for an own-domain launch on the OPERATOR-PINNED AWS/Docker stack: the CI build (image pipeline with content-addressed caching, TTS generation) retargeted to AWS (build Docker images -> ECR -> deploy; static export -> S3/CloudFront invalidation), the accessioning flow (drop a PNG -> it appears -> POD variant sync), the 344MB-source/89MB-derivative asset budget and its S3/CloudFront cost meaning, operational runbooks for the order/ transaction/POD pipelines (monitoring, alerts, dead-letter handling), and the single-editor content workflow's launch risks. Sections required: CI Pipeline, Docker Build, Content Workflow, Asset Budget, Pipeline Operations, Launch Risks, Phase 2 Work Items.",
+      "checks": [
+        {
+          "type": "file_exists",
+          "path": "audit/OPERATIONS.md"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/OPERATIONS.md",
+          "needle": "CI"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/OPERATIONS.md",
+          "needle": "Docker"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/OPERATIONS.md",
+          "needle": "pipeline"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/OPERATIONS.md",
+          "needle": "budget"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/OPERATIONS.md",
+          "needle": "runbook"
+        },
+        {
+          "type": "file_exists",
+          "path": "source/.github/workflows/deploy.yml"
+        },
+        {
+          "type": "file_exists",
+          "path": "source/package.json"
+        }
+      ],
+      "isUi": false,
+      "findingsKey": "backend_schema_findings",
+      "finding": "Operations audit: CI, image/audio pipelines, content accessioning, asset budget."
+    },
+    {
+      "id": "brand-experience",
+      "signer": "claude",
+      "lens": "gemini",
+      "dependencies": [],
+      "files": [
+        "audit/BRAND-EXPERIENCE.md"
+      ],
+      "requirements": "POSTURE: Crossroad Threads is launching on ITS OWN DOMAIN as a real storefront (today it is a static Next.js export on GitHub Pages under a basePath). Audit the PRODUCT AS IT EXISTS in the repository excerpts below and in the bout evidence (workdir/source). Every market claim must be an explicitly-labeled HYPOTHESIS with assumptions and a validation plan; every technical claim must cite the repository. Findings end in a numbered GAP LIST: concrete, buildable items for Phase 2.\n\nREPO FACTS (deterministic): assets crossroad_imgs=344MB, public=18MB; commerce keyword hits: {\"checkout\":[\".github/workflows/deploy.yml\",\"content/designs.json\"],\"cart\":[\"content/designs.json\",\"README.md\",\"src/lib/commerce.ts\",\"src/lib/types.ts\"],\"price\":[\"content/designs.json\",\"src/components/exhibit/GiftShopPanel.module.css\",\"src/components/exhibit/GiftShopPanel.tsx\",\"src/lib/types.ts\"],\"shop\":[\"content/designs.json\",\"docs/BRAND.md\",\"README.md\",\"src/app/exhibit/[slug]/page.tsx\",\"src/app/layout.tsx\",\"src/components/exhibit/GiftShopPanel.tsx\",\"src/lib/commerce.ts\",\"src/lib/copy.ts\"]}\nPACKAGE.JSON:\n{\r\n  \"name\": \"crossroad-collection\",\r\n  \"version\": \"0.1.0\",\r\n  \"private\": true,\r\n  \"scripts\": {\r\n    \"predev\": \"tsx scripts/build-catalog.ts\",\r\n    \"dev\": \"next dev\",\r\n    \"prebuild\": \"tsx scripts/build-catalog.ts\",\r\n    \"build\": \"next build\",\r\n    \"postbuild\": \"node scripts/verify-export.mjs\",\r\n    \"catalog\": \"tsx scripts/build-catalog.ts\",\r\n    \"preview:pages\": \"node scripts/preview-pages.mjs\",\r\n    \"audio\": \"tts/.venv/Scripts/python tts/generate_audio.py\",\r\n    \"test\": \"vitest run\",\r\n    \"lint\": \"next lint\"\r\n  },\r\n  \"dependencies\": {\r\n    \"next\": \"^15.3.0\",\r\n    \"react\": \"^19.0.0\",\r\n    \"react-dom\": \"^19.0.0\"\r\n  },\r\n  \"devDependencies\": {\r\n    \"@types/node\": \"^22\",\r\n    \"@types/react\": \"^19\",\r\n    \"@types/react-dom\": \"^19\",\r\n    \"playwright\": \"^1.61.1\",\r\n    \"sharp\": \"^0.34.0\",\r\n    \"tsx\": \"^4.19.0\",\r\n    \"typescript\": \"^5\",\r\n    \"vitest\": \"^3.1.0\"\r\n  }\r\n}\r\n\nAudit the BRAND EXPERIENCE for the own-domain launch: how the museum conceit (wings, placards, provenance, conservation status, audio-guide stops) currently carries the storefront, where the conceit will COLLIDE with commerce mechanics (cart, prices, checkout language — 'gift shop' framing as the resolution?), what an own domain changes about first-visit comprehension, and accessibility considerations for the audio tour. Sections required: Conceit Inventory, Commerce Collisions, First Visit, Accessibility, Phase 2 Work Items.",
+      "checks": [
+        {
+          "type": "file_exists",
+          "path": "audit/BRAND-EXPERIENCE.md"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/BRAND-EXPERIENCE.md",
+          "needle": "wing"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/BRAND-EXPERIENCE.md",
+          "needle": "placard"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/BRAND-EXPERIENCE.md",
+          "needle": "audio"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/BRAND-EXPERIENCE.md",
+          "needle": "conceit"
+        },
+        {
+          "type": "file_exists",
+          "path": "source/README.md"
+        }
+      ],
+      "isUi": true,
+      "findingsKey": "frontend_design_findings",
+      "finding": "Brand experience audit: does the museum conceit survive contact with commerce?"
+    },
+    {
+      "id": "advertising-launch",
+      "signer": "claude",
+      "lens": "grok",
+      "dependencies": [],
+      "files": [
+        "audit/ADVERTISING.md"
+      ],
+      "requirements": "POSTURE: Crossroad Threads is launching on ITS OWN DOMAIN as a real storefront (today it is a static Next.js export on GitHub Pages under a basePath). Audit the PRODUCT AS IT EXISTS in the repository excerpts below and in the bout evidence (workdir/source). Every market claim must be an explicitly-labeled HYPOTHESIS with assumptions and a validation plan; every technical claim must cite the repository. Findings end in a numbered GAP LIST: concrete, buildable items for Phase 2.\n\nREPO FACTS (deterministic): assets crossroad_imgs=344MB, public=18MB; commerce keyword hits: {\"checkout\":[\".github/workflows/deploy.yml\",\"content/designs.json\"],\"cart\":[\"content/designs.json\",\"README.md\",\"src/lib/commerce.ts\",\"src/lib/types.ts\"],\"price\":[\"content/designs.json\",\"src/components/exhibit/GiftShopPanel.module.css\",\"src/components/exhibit/GiftShopPanel.tsx\",\"src/lib/types.ts\"],\"shop\":[\"content/designs.json\",\"docs/BRAND.md\",\"README.md\",\"src/app/exhibit/[slug]/page.tsx\",\"src/app/layout.tsx\",\"src/components/exhibit/GiftShopPanel.tsx\",\"src/lib/commerce.ts\",\"src/lib/copy.ts\"]}\nPACKAGE.JSON:\n{\r\n  \"name\": \"crossroad-collection\",\r\n  \"version\": \"0.1.0\",\r\n  \"private\": true,\r\n  \"scripts\": {\r\n    \"predev\": \"tsx scripts/build-catalog.ts\",\r\n    \"dev\": \"next dev\",\r\n    \"prebuild\": \"tsx scripts/build-catalog.ts\",\r\n    \"build\": \"next build\",\r\n    \"postbuild\": \"node scripts/verify-export.mjs\",\r\n    \"catalog\": \"tsx scripts/build-catalog.ts\",\r\n    \"preview:pages\": \"node scripts/preview-pages.mjs\",\r\n    \"audio\": \"tts/.venv/Scripts/python tts/generate_audio.py\",\r\n    \"test\": \"vitest run\",\r\n    \"lint\": \"next lint\"\r\n  },\r\n  \"dependencies\": {\r\n    \"next\": \"^15.3.0\",\r\n    \"react\": \"^19.0.0\",\r\n    \"react-dom\": \"^19.0.0\"\r\n  },\r\n  \"devDependencies\": {\r\n    \"@types/node\": \"^22\",\r\n    \"@types/react\": \"^19\",\r\n    \"@types/react-dom\": \"^19\",\r\n    \"playwright\": \"^1.61.1\",\r\n    \"sharp\": \"^0.34.0\",\r\n    \"tsx\": \"^4.19.0\",\r\n    \"typescript\": \"^5\",\r\n    \"vitest\": \"^3.1.0\"\r\n  }\r\n}\r\n\nAuthor the DIGITAL ADVERTISING LAUNCH PLAN for the own-domain launch. All audience and performance claims are LABELED HYPOTHESES (pre-launch: no campaign data exists) with assumptions and a validation plan. Required content: (1) TARGET DEMOGRAPHICS — hypothesis segments for premium narrative graphic tees (Southern Gothic Americana x mythology, museum conceit): age bands, interests/affinities, purchase occasions (self-expression vs gifting), with the reasoning grounded in what the product actually is; (2) CHANNEL PLAN across the current paid-social landscape — Meta (Facebook + Instagram, Advantage+ catalog-style prospecting), TikTok (the audio-tour and exhibit lore are native short-video material — say how), Pinterest (visual discovery for apparel/gifting), X/Twitter (niche lore/mythology communities, modest role), and YouTube Shorts — for each: role in the funnel, hypothesis audience, creative format, and a starting budget SHARE (percentages of a total, not invented dollar results); (3) CREATIVE SYSTEM — how the museum conceit converts to ad creative (exhibit placards as carousel cards, audio-guide clips as voiceover video, 'Recent Acquisitions' as drop announcements); (4) MEASUREMENT — pixels/Conversion APIs per platform, UTM discipline, the KPI ladder (CTR -> CVR -> AOV -> ROAS) with target hypotheses and the kill/scale rules; (5) BUDGET STRUCTURE — phased test->prove->scale plan in budget shares and decision gates; (6) Phase 2 Work Items (pixel/CAPI install, catalog feed, creative asset pipeline from existing exhibit imagery). Sections required: Target Demographics, Channel Plan, Creative System, Measurement, Budget Structure, Phase 2 Work Items.",
+      "checks": [
+        {
+          "type": "file_exists",
+          "path": "audit/ADVERTISING.md"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/ADVERTISING.md",
+          "needle": "Hypothesis"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/ADVERTISING.md",
+          "needle": "Meta"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/ADVERTISING.md",
+          "needle": "TikTok"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/ADVERTISING.md",
+          "needle": "Pinterest"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/ADVERTISING.md",
+          "needle": "Measurement"
+        },
+        {
+          "type": "file_contains",
+          "path": "audit/ADVERTISING.md",
+          "needle": "Budget"
+        },
+        {
+          "type": "file_exists",
+          "path": "source/README.md"
+        },
+        {
+          "type": "file_exists",
+          "path": "source/content/designs.json"
+        }
+      ],
+      "isUi": false,
+      "findingsKey": "accuracy_eval_findings",
+      "finding": "Digital advertising launch plan: hypothesis-framed demographics, channel strategy, creative system, measurement."
+    }
+  ]
+}
