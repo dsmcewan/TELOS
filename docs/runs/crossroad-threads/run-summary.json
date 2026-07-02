@@ -1,0 +1,88 @@
+{
+  "generated_for": "crossroad-threads-launch-audit",
+  "live": true,
+  "phase": "audit",
+  "transport": "seat-router default (claude/agy_checkpoint via ai-peer-mcp; grok/gemini/codex via claude-plugins seat servers)",
+  "build": {
+    "merge_status": "ready",
+    "settled_this_invocation": [],
+    "halts": []
+  },
+  "teams": [
+    {
+      "workstream": "commerce-gap",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 3,
+      "referee": null
+    },
+    {
+      "workstream": "positioning-launch",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 2,
+      "referee": null
+    },
+    {
+      "workstream": "launch-architecture",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "security-trust",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 2,
+      "referee": null
+    },
+    {
+      "workstream": "ops-content",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "brand-experience",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 4,
+      "referee": null
+    },
+    {
+      "workstream": "advertising-launch",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 5,
+      "referee": null
+    }
+  ],
+  "gate_status": "blocked",
+  "approvals_provenance": [
+    {
+      "model": "claude",
+      "has_provenance": true,
+      "response_id": "msg_01B7Cp7WrqZqramQaqkSA9kn"
+    },
+    {
+      "model": "agy",
+      "has_provenance": true,
+      "response_id": "agy-44cb01da259b0c0515414fce882aa88f8e3827be"
+    },
+    {
+      "model": "codex",
+      "has_provenance": true,
+      "response_id": "chatcmpl-DxFvC6NE8jA3CA0sH1XE9wApnvjk4"
+    }
+  ],
+  "blockers": [
+    "claude decision is 'revise', not 'approve'.",
+    "claude has required edits: Attach the six audit artifacts (or references) so their contents can be reviewed rather than certified sight-unseen; Define concrete pass/fail criteria for 'adversarially-grounded' and enumerate the surviving gaps being handed to Phase-2; Clarify the self-audit conflict-of-interest (Crossroad Threads auditing its own domain) and add independent verification",
+    "codex decision is 'revise', not 'approve'.",
+    "codex has required edits: Define Crossroad Threads' domain, launch surface, target users, and source materials to be audited.; Name the six required audit artifacts and their minimum contents/acceptance criteria.; Specify what counts as adversarial grounding, evidence standards, and reviewer roles.; Define launch gate thresholds distinguishing acceptable Phase-2 gaps from hard-stop launch blockers.",
+    "codex has hard stops: Cannot certify launch readiness without explicit scope, artifacts, evidence, and pass/fail criteria."
+  ],
+  "result": "gate-blocked"
+}

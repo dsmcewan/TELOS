@@ -129,10 +129,11 @@ export function createMcpClient({ send, onData, framing = "content-length" }) {
 export function spawnMcpClient({
   command = "node",
   serverPath = "../connectors/ai-peer-mcp/server.mjs",
+  args,
   env = {},
   framing = "content-length"
 } = {}) {
-  const child = nodeSpawn(command, [serverPath], {
+  const child = nodeSpawn(command, Array.isArray(args) ? args : [serverPath], {
     env: { ...process.env, ...env },
     stdio: ["pipe", "pipe", "inherit"]
   });

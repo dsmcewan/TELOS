@@ -11,9 +11,12 @@
 // and no API keys; live, runForgeLive routes seats through the seat registry
 // (or a single ai-peer-mcp server when `serverPath` is given).
 
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { spawnMcpClient } from "../breakout/mcp_client.mjs";
 import { createSeatRouter } from "../breakout/seat_router.mjs";
-import { makeCouncilBreakout } from "../breakout/breakout.mjs";
+import { makeCouncilBreakout, makeGeminiReferee } from "../breakout/breakout.mjs";
+import { createFightMemory } from "../breakout/fight_memory.mjs";
 import { runCouncil, liveSeatCaller, agyApprovalPacket, agyCheckpointArgs } from "../build-gate/council.mjs";
 import { defaultSeatRegistry } from "../build-gate/seat-registry.mjs";
 import { forge } from "./forge.mjs";
@@ -99,15 +102,61 @@ const PNG_1x1 = Buffer.from(
 );
 const isBinary = (rel) => /\.(png|jpe?g|gif|webp|ico)$/i.test(rel);
 
+// Seats under blocker pressure wrap the file map in prose and code fences
+// despite "Return ONLY a JSON object" — so parse generously: fenced blocks
+// first, then the greedy brace span, then progressive brace-start candidates.
+// (Postel at the parse layer only; what lands on disk is still verified.)
 function parseFileMap(text) {
   if (typeof text !== "string") return null;
-  const m = text.match(/\{[\s\S]*\}/);
-  if (!m) return null;
+  const tryParse = (s) => {
+    try {
+      const obj = JSON.parse(s.trim());
+      return obj && typeof obj === "object" && !Array.isArray(obj) ? obj : null;
+    } catch {
+      return null;
+    }
+  };
+  for (const m of text.matchAll(/```(?:json)?\s*\n([\s\S]*?)```/g)) {
+    const obj = tryParse(m[1]);
+    if (obj) return obj;
+  }
+  const greedy = text.match(/\{[\s\S]*\}/);
+  if (greedy) {
+    const obj = tryParse(greedy[0]);
+    if (obj) return obj;
+  }
+  // Prose before the payload poisons the greedy span: retry from each later
+  // "{" to the final "}" (bounded — the payload is near the front of the list).
+  const end = text.lastIndexOf("}");
+  let i = text.indexOf("{");
+  for (let attempts = 0; i !== -1 && i < end && attempts < 50; attempts++) {
+    const obj = tryParse(text.slice(i, end + 1));
+    if (obj) return obj;
+    i = text.indexOf("{", i + 1);
+  }
+  return null;
+}
+
+// The node's deterministic acceptance checks, restated for the builder seat.
+// Telling the seat its contract is not trust leakage — the same specs are
+// re-verified literally on disk by check-node.mjs and again by the breakout,
+// so a seat that ignores them still fail-closes.
+function acceptanceNotes(test) {
   try {
-    const obj = JSON.parse(m[0]);
-    return obj && typeof obj === "object" ? obj : null;
+    const specs = JSON.parse(test?.args?.[1] || "[]");
+    const byPath = {};
+    for (const s of specs) {
+      if (s?.type === "file_contains" && typeof s.needle === "string") {
+        (byPath[s.path] ||= []).push(s.needle);
+      }
+    }
+    const paths = Object.entries(byPath);
+    if (paths.length === 0) return "";
+    return "\nACCEPTANCE CHECKS (re-verified literally on disk; the build fails without them):\n" +
+      paths.map(([p, needles]) => `- ${p} must contain each of these exact strings: ${JSON.stringify(needles)}`).join("\n") +
+      "\n";
   } catch {
-    return null;
+    return "";
   }
 }
 
@@ -118,15 +167,33 @@ export function liveGenerators({ callTool }) {
   return (arch) => async (injected) => {
     const ws = workstreamById(injected.id);
     const model = (ws && ws.signer) || "claude";
+    // Researched stack guidance (offline KB or live Context7) — the builder
+    // sees what the research phase learned, not just the bare requirements.
+    const guidance = Array.isArray(arch?.stack) && arch.stack.length
+      ? `\nRESEARCHED STACK (ground the artifact in these):\n` +
+        arch.stack.map((s) =>
+          `- ${s.domain}: ${s.library}${s.libraryId ? ` (${s.libraryId})` : ""} — ${String(s.summary || "").slice(0, 240).replace(/\s+/g, " ")}`).join("\n") +
+        "\n"
+      : "";
     const prompt =
       `You are the builder seat for the "${injected.id}" team of a SaaS product.\n` +
-      `Requirements: ${injected.requirements}\n\n` +
-      `Produce the EXACT files listed. Return ONLY a JSON object mapping each path ` +
-      `to its full file contents as a string. Binary assets (.png) may be omitted.\n` +
+      `Requirements: ${injected.requirements}\n` +
+      guidance +
+      acceptanceNotes(injected.test) +
+      `\nProduce the EXACT files listed. These are the ONLY files that will exist on disk: ` +
+      `do not read, import, or reference any other path — embed any data, fixtures, or configuration inline. ` +
+      `A script that will be executed must run standalone from the project root, exit 0 on success, and be ` +
+      `READ-ONLY: it must never create or modify files — artifacts are hash-signed, so a script that writes ` +
+      `drifts the signed tree and the gate blocks the build. ` +
+      `Return ONLY a JSON object mapping each path to its full file contents as a string. ` +
+      `Binary assets (.png) may be omitted.\n` +
       `TEAM:${injected.id}\nFILES:${JSON.stringify(injected.files)}\n`;
     const text = await callTool(`${model}_ask`, {
       system: `You build production-grade ${injected.id} artifacts for a market-ready SaaS.`,
-      prompt
+      prompt,
+      // File authoring needs far more than ai-peer-mcp's 2000-token default —
+      // a truncated JSON file map parses to null and fails the whole team.
+      max_tokens: 16000
     });
     const produced = parseFileMap(text) || {};
     const out = {};
@@ -139,21 +206,86 @@ export function liveGenerators({ callTool }) {
   };
 }
 
-// Council (grok adversary) layered on the fact checks. A blocker survives if the
-// adversary raises it OR a fact check fails — so the model can never talk a team
-// past missing evidence.
-export function makeCouncilFactFns({ callTool, team, reviewer, challengerTool, challengerModel }) {
-  const council = makeCouncilBreakout({ callTool, team, reviewer, challengerTool, challengerModel });
-  return ({ workstream, checks, baseDir }) => {
+// Council adversaries layered on the fact checks. A blocker survives if ANY
+// adversary raises it OR a fact check fails — so the model can never talk a
+// team past missing evidence. By default the grok adversary is joined by an
+// agy co-adversary (`agy_ask`, served by the Antigravity seat backend through
+// the seat router); pass `coChallengers: []` to disable it — e.g. on the
+// legacy single ai-peer-mcp transport, which has no agy_ask tool.
+export function makeCouncilFactFns({
+  callTool, team, reviewer, challengerTool, challengerModel,
+  coChallengers = [{ tool: "agy_ask" }],
+  referee = "gemini",
+  memory = createFightMemory()
+}) {
+  // Scope discipline: a bout can only change the declared files, so blockers
+  // demanding NEW files, external systems, or live operational evidence are
+  // unresolvable by construction and just feed loops. Adversaries stay harsh —
+  // about what the artifact text can actually fix.
+  const SCOPED_CHALLENGER =
+    "You are the adversarial reviewer. Be skeptical, concrete, and source-demanding — about the artifact itself. " +
+    "The file manifest is FIXED: raise only blockers resolvable by EDITING THE FILES SHOWN IN EVIDENCE. " +
+    "Demands for additional files, live infrastructure evidence, command outputs, or external systems are OUT OF " +
+    "SCOPE for this bout and must not be raised as blockers. " +
+    "THE CONTRACT BOUNDS YOU: a valid blocker cites either a specific violation of the stated CONTRACT " +
+    "(the requirements shown with the evidence) or a factual defect in the artifact (internal contradiction, " +
+    "broken example, claim the artifact itself does not fulfill). Aesthetic preferences, completeness wishes, " +
+    "and new demands beyond the contract are NOT blockers — a bout that satisfies its contract ends.";
+  const council = makeCouncilBreakout({
+    callTool, team, reviewer, challengerTool, challengerModel, memory,
+    challengerSystem: SCOPED_CHALLENGER
+  });
+  const extras = (coChallengers || []).map((c) =>
+    makeCouncilBreakout({ callTool, team, reviewer, challengerTool: c.tool, challengerModel: c.model, challengerSystem: c.system || SCOPED_CHALLENGER, memory }));
+  // The gemini referee reviews each bout's fight log and ends adversarial
+  // loops (recycled solutions/results) — see makeGeminiReferee. Pass
+  // referee: null to disable (e.g. on the legacy transport with no gemini_ask).
+  const refereeFn = referee === "gemini" ? makeGeminiReferee({ callTool })
+    : (typeof referee === "function" ? referee : undefined);
+  return ({ workstream, checks, baseDir, contract }) => {
     const facts = factBreakout({ checks, baseDir });
+    // The bout argues about the ARTIFACT against its CONTRACT, so every round
+    // reads both: adversaries attack real content for contract violations and
+    // proposers can cite real lines — without this, text seats stalemate
+    // demanding evidence nobody can produce, and adversaries judge against an
+    // unbounded standard of taste instead of the spec.
+    const contractHeader = contract
+      ? `=== CONTRACT (the requirements this artifact must meet — blockers must cite violations of THIS) ===\n${String(contract).slice(0, 8000)}\n\n`
+      : "";
+    const diskEvidence = () => {
+      const paths = [...new Set(checks.map((c) => c.path).filter(Boolean))];
+      return contractHeader + (paths.map((rel) => {
+        try {
+          const full = readFileSync(path.join(baseDir, rel), "utf8");
+          // Annotate any excerpting explicitly, and show HEAD + TAIL — clipping
+          // only the head hides late sections and adversaries (correctly)
+          // block on content they cannot verify.
+          return full.length > 60000
+            ? `--- ${rel} [EXCERPT: first 45000 + last 12000 of ${full.length} chars — the file on disk is complete] ---\n${full.slice(0, 45000)}\n\n[... ${full.length - 57000} chars omitted (middle) ...]\n\n${full.slice(-12000)}`
+            : `--- ${rel} (complete, ${full.length} chars) ---\n${full}`;
+        } catch {
+          return `--- ${rel} --- (missing on disk)`;
+        }
+      }).join("\n\n") || "(no artifact files declared)");
+    };
     return {
       challenge: async (state) => {
         const f = facts.challenge();
-        const g = (await council.challenge({ ...state, workstream })) || {};
-        const blockers = [...new Set([...(f.blockers || []), ...((g.blockers) || [])])];
+        const evidence = diskEvidence();
+        const councils = await Promise.all(
+          [council, ...extras].map((c) => c.challenge({ ...state, evidence, workstream })));
+        const blockers = [...new Set([
+          ...(f.blockers || []),
+          ...councils.flatMap((g) => (g && g.blockers) || [])
+        ])];
         return { blockers };
       },
-      revise: (state, blockers) => council.revise({ ...state, workstream }, blockers)
+      revise: (state, blockers) => council.revise({ ...state, evidence: diskEvidence(), workstream }, blockers),
+      ...(refereeFn ? { referee: refereeFn } : {}),
+      // Recursion: the same durable fight memory records defeats (rejected
+      // proposals, fixes re-broken on re-attack) and feeds the proposers'
+      // DEFEATED SOLUTIONS log — across rounds, cycles, and runs.
+      ...(memory ? { memory } : {})
     };
   };
 }

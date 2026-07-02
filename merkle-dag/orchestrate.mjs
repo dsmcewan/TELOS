@@ -50,16 +50,22 @@ function criticalWeights(planNodes) {
 function runTest(cmd, args, cwd, timeoutMs) {
   return new Promise((resolve) => {
     let done = false;
+    let output = "";
     const spec = spawnCommand(cmd, args);
     const child = spawn(spec.command, spec.args, { cwd });
+    // Keep the tail of the test's own words — a failing test's diagnostic is
+    // the exact feedback a regenerating builder needs.
+    const collect = (chunk) => { output = (output + chunk).slice(-2000); };
+    child.stdout?.on("data", collect);
+    child.stderr?.on("data", collect);
     const timer = setTimeout(() => {
-      if (!done) { done = true; try { child.kill("SIGTERM"); } catch {} resolve({ status: null, timedOut: true }); }
+      if (!done) { done = true; try { child.kill("SIGTERM"); } catch {} resolve({ status: null, timedOut: true, output }); }
     }, timeoutMs);
     child.on("error", (e) => {
-      if (!done) { done = true; clearTimeout(timer); resolve({ status: null, error: e }); }
+      if (!done) { done = true; clearTimeout(timer); resolve({ status: null, error: e, output }); }
     });
     child.on("close", (code) => {
-      if (!done) { done = true; clearTimeout(timer); resolve({ status: code }); }
+      if (!done) { done = true; clearTimeout(timer); resolve({ status: code, output }); }
     });
   });
 }
@@ -74,7 +80,14 @@ export async function defaultVerifyNode(node, baseDir) {
   const cwd = resolveUnder(baseDir, t.cwd || ".");
   if (cwd === null) return { ok: false, detail: `${node.id}: test cwd escapes baseDir` };
   const res = await runTest(t.cmd, t.args || [], cwd, TEST_TIMEOUT_MS);
-  if (res.error || res.status !== 0) return { ok: false, detail: `${node.id}: test exit ${res.status}${res.timedOut ? " (timeout)" : ""}` };
+  if (res.error || res.status !== 0) {
+    // Prefer the diagnostic lines over banners: a regenerating builder needs
+    // the FAIL/mismatch text, not the harness header.
+    const lines = (res.output || "").trim().split(/\r?\n/).filter(Boolean);
+    const salient = lines.filter((l) => /fail|error|mismatch|expected|assert/i.test(l)).slice(-4);
+    const said = lines.length ? ` — test said: ${(salient.length ? salient : lines.slice(-3)).join(" | ").slice(0, 600)}` : "";
+    return { ok: false, detail: `${node.id}: test exit ${res.status}${res.timedOut ? " (timeout)" : ""}${said}` };
+  }
   return { ok: true, tree_hash: disk.tree_hash, files: disk.files };
 }
 

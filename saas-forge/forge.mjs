@@ -33,8 +33,10 @@ function marketPacketFromRecord(record, dossierMeta, { signed = false } = {}) {
     model: record.lens,
     project_state: "demo",
     workstreams_reviewed: [record.workstream],
-    business_thesis: "Deterministic communication forensics converts technical credibility into market trust.",
-    target_users: ["technical evaluators", "compliance teams", "early buyers"],
+    business_thesis: dossierMeta.business_thesis || "Deterministic communication forensics converts technical credibility into market trust.",
+    target_users: Array.isArray(dossierMeta.target_users) && dossierMeta.target_users.length
+      ? dossierMeta.target_users
+      : ["technical evaluators", "compliance teams", "early buyers"],
     architecture_findings: [],
     backend_schema_findings: [],
     security_findings: [],
@@ -85,7 +87,9 @@ export function syntheticApprovals(dossierMeta) {
 // The REQUIRED-seat approval packets are produced by the seats (or the synthetic
 // fallback) — NEVER fabricated inside the gate call. A dissenting seat
 // (decision != approve) or absent provenance fails the gate closed.
-function runMarketGate({ projectRoot, dossierMeta, teamRecords, approvals, signed = false }) {
+// Exported so stage-driven runners (e.g. the ratcheting evidence runner) can
+// re-run the gate over checkpointed records without re-entering forge().
+export function runMarketGate({ projectRoot, dossierMeta, teamRecords, approvals, signed = false }) {
   const dossier = {
     build_id: dossierMeta.build_id,
     idea_id: dossierMeta.idea_id,

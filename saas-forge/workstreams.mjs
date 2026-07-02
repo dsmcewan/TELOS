@@ -224,7 +224,7 @@ export const WORKSTREAMS = [
   {
     id: "business-positioning", signer: "claude", lens: "claude", dependencies: ["product-architecture"],
     files: ["docs/POSITIONING.md"],
-    requirements: "State the ICP, value proposition, differentiation, and pricing posture.",
+    requirements: "State the ICP, value proposition, differentiation, and pricing posture — as EXPLICITLY-LABELED HYPOTHESES, not market facts. This product is pre-market: no real pricing, adoption, or competitive data exists yet, and the document must not pretend otherwise. For every positioning claim: (1) label it a hypothesis, (2) state the assumptions it rests on, (3) state how it would be validated or falsified (the validation plan IS the methodology). Reviewers judge internal coherence, honest labeling, and testability — demands for real market evidence are out of scope until the validation plan has been executed.",
     render: (arch) => ({ "docs/POSITIONING.md": renderPositioning(arch) }),
     checks: () => [
       { type: "file_exists", path: "docs/POSITIONING.md" },
@@ -250,7 +250,7 @@ export const WORKSTREAMS = [
   {
     id: "security-trust", signer: "codex", lens: "grok", dependencies: ["product-architecture"],
     files: ["web/SECURITY.md", "web/site/csp.txt"],
-    requirements: "No client-side secrets; strict CSP; read-only findings.",
+    requirements: "No client-side secrets; strict CSP; read-only findings. CSP SEMANTICS ARE SPEC-BOUND (W3C): require-trusted-types-for accepts ONLY the 'script' sink group — demands to add other tokens to that directive are invalid and are not blockers.",
     render: () => renderSecurity(),
     checks: () => [
       { type: "file_exists", path: "web/site/csp.txt" },
@@ -263,7 +263,7 @@ export const WORKSTREAMS = [
   {
     id: "accuracy-evals", signer: "claude", lens: "claude", dependencies: ["product-architecture"],
     files: ["evals/scorecard.json", "evals/run.mjs"],
-    requirements: "Measure the discriminator against a fixed labeled set; clear the precision threshold.",
+    requirements: "Measure the discriminator against a fixed labeled set; clear the precision threshold. The eval runner is READ-ONLY: it must not create or modify any file (the scorecard is static data it validates against) — print results to stdout and exit 0 on pass, 1 on miss. HARD CONSTRAINT: no self-referential cryptographic checks — do NOT embed precomputed hashes (sha256 etc.) of the artifact's own content for the runner to recompute; an authored hash cannot be correct and artifact integrity is already enforced by the pipeline's signed ledger tree-hash. Self-consistency checks must be ARITHMETIC (e.g. the confusion-matrix counts re-derived from the embedded labeled set must equal the stored metrics).",
     render: () => renderEvals(),
     // Node test RUNS the generated eval harness (a real command), proving the
     // numbers clear threshold — not just that a file exists.
@@ -294,9 +294,10 @@ export const WORKSTREAMS = [
     files: ["web/index.html", "web/site/style.css", "web/site/tokens.css", "web/DESIGN.md",
             "web/VERIFICATION.md",
             "docs/verification/s03-dynamics-discriminator.png", "docs/verification/s04-scorecard.png"],
-    requirements: "LEXI-class first screen: contract, delivery, test posture, TELOS gate; brand token #69e7ff; design system (tokens + toolchain) and verification screenshots.",
+    requirements: "LEXI-class first screen: contract, delivery, test posture, TELOS gate; brand token #69e7ff; design system (tokens + toolchain) and verification screenshots. TOKEN RESOLUTION (contract-final): tokens.css defines --accent-cyan: #69e7ff; style.css consumes it as var(--accent-cyan, #69e7ff) — the fallback legitimately carries the literal hex, satisfying BOTH the deterministic check and token discipline; demands to remove the hex or to hardcode it bare are equally invalid. NOTE ON BINARY ASSETS: the verification .png files are PIPELINE-OWNED placeholders in this text bout — real rendering happens outside it; their byte content is out of bout scope and is not a valid blocker. All text files (index.html included) must be complete and internally consistent.",
     render: (arch) => renderFrontend(arch),
     checks: () => [
+      { type: "file_exists", path: "web/index.html" },
       { type: "file_contains", path: "web/site/style.css", needle: "#69e7ff" },
       { type: "file_contains", path: "web/site/tokens.css", needle: "--accent-cyan" },
       { type: "file_contains", path: "web/DESIGN.md", needle: "shadcn/ui" },

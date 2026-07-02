@@ -18,6 +18,7 @@
 // ~/claude-plugins. Model ids stay env/per-call — this file names backends, not
 // models (see model-profiles.mjs).
 
+import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -41,6 +42,28 @@ export function mapAskArgs(args = {}) {
 }
 
 /**
+ * Merge a LOADOUT of extra MCP plugin servers into a registry. Their tools are
+ * reached through the router's namespaced form — `callTool("name:tool", args)`
+ * — so a run can declare any plugins it wants (docs research, search, anything
+ * MCP-shaped) without touching the council seat routes. Loadout servers can
+ * also be declared in a JSON file via TELOS_LOADOUT (or ~/.telos/loadout.json):
+ *   { "servers": { "context7": { "command": "cmd", "args": ["/c","npx","-y","@upstash/context7-mcp"], "framing": "ndjson" } } }
+ * Council tool routes always win: a loadout server can never shadow a seat.
+ */
+export function withLoadout(registry, servers = {}) {
+  let fileServers = {};
+  const loadoutPath = process.env.TELOS_LOADOUT || join(homedir(), ".telos", "loadout.json");
+  try {
+    const parsed = JSON.parse(readFileSync(loadoutPath, "utf8"));
+    if (parsed && typeof parsed.servers === "object" && parsed.servers) fileServers = parsed.servers;
+  } catch { /* no loadout file — programmatic servers only */ }
+  return {
+    ...registry,
+    servers: { ...fileServers, ...servers, ...registry.servers }
+  };
+}
+
+/**
  * Build the default registry consumed by breakout/seat_router.mjs.
  *   { servers: { name: {command, serverPath, framing} },
  *     tools:   { councilTool: {server, tool, argMap?} } }
@@ -53,7 +76,7 @@ export function defaultSeatRegistry({ dir = pluginsDir() } = {}) {
   });
   return {
     servers: {
-      "ai-peer": { command: "node", serverPath: AI_PEER_SERVER, framing: "content-length" },
+      "ai-peer": { command: "node", serverPath: AI_PEER_SERVER, framing: "content-length", env: { AI_PEER_LONG_TIMEOUT: "1" } },
       grok: pluginServer("grok"),
       gemini: pluginServer("gemini"),
       codex: pluginServer("codex-api"),

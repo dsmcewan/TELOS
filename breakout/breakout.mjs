@@ -12,21 +12,34 @@
 // plain stubs. This mirrors the build-gate's keyless-core philosophy.
 
 /**
- * @param {object} input  { workstream, claimedStatus, evidence, goalStatus="meets", maxRounds=3 }
- * @param {object} fns    { challenge(state)->{blockers:string[]}, revise(state, blockers)->{evidence, resolved:string[]} }
+ * @param {object} input  { workstream, claimedStatus, evidence, goalStatus="meets", maxRounds }
+ * @param {object} fns    { challenge(state)->{blockers:string[]}, revise(state, blockers)->{evidence, resolved:string[]},
+ *                          referee?(state)->{verdict:"continue"|"stalemate", reason} }
+ *
+ * rounds[] IS the fight log: each round's blockers and resolutions. It is
+ * passed to challenge() as `history` so adversaries do not re-raise settled
+ * blockers, and to the optional referee, who reviews the log after each
+ * contested round and ends the bout when the exchange is looping (the same
+ * solutions and results recycling). With a referee the round cap is a cost
+ * fuse (12), not the governing bound — the referee is expected to rule first.
+ * A stalemate ruling never grants convergence: the claim honestly stays
+ * needs-work with its surviving blockers.
  */
 export async function runBreakout(input, fns) {
   const goalStatus = input.goalStatus || "meets";
-  const maxRounds = Number.isInteger(input.maxRounds) ? input.maxRounds : 3;
+  const maxRounds = Number.isInteger(input.maxRounds)
+    ? input.maxRounds
+    : (typeof fns.referee === "function" ? 12 : 3);
   const workstream = input.workstream;
 
   let evidence = input.evidence;
   const rounds = [];
   let converged = false;
   let lastBlockers = [];
+  let refereeRuling = null;
 
   for (let round = 1; round <= maxRounds; round++) {
-    const challenged = (await fns.challenge({ workstream, evidence, round })) || {};
+    const challenged = (await fns.challenge({ workstream, evidence, round, history: rounds.slice() })) || {};
     const blockers = Array.isArray(challenged.blockers) ? challenged.blockers : [];
 
     if (blockers.length === 0) {
@@ -34,6 +47,25 @@ export async function runBreakout(input, fns) {
       converged = true;
       lastBlockers = [];
       break;
+    }
+
+    // A blocker that was claimed resolved in an earlier round and is raised
+    // again means that fix got beat — record it so it is not re-proposed
+    // (this cycle, or in any future run reading the same fight memory).
+    if (fns.memory && typeof fns.memory.record === "function" && rounds.length) {
+      const beaten = [];
+      for (const b of blockers) {
+        const prior = rounds.find((r) => Array.isArray(r.resolved) && r.resolved.includes(b));
+        if (prior) {
+          beaten.push({
+            workstream,
+            blocker: b,
+            solution: prior.review?.raw ? String(prior.review.raw) : `resolution claimed in round ${prior.round}`,
+            outcome: "fix-did-not-survive-reattack"
+          });
+        }
+      }
+      if (beaten.length) fns.memory.record(beaten);
     }
 
     // The challenger found holes. Send them to the builder team, then loop back
@@ -44,6 +76,16 @@ export async function runBreakout(input, fns) {
     const resolved = Array.isArray(revised.resolved) ? revised.resolved : [];
     rounds.push({ round, blockers, resolved, review: revised.review });
     lastBlockers = blockers;
+
+    // The referee reviews the fight log; a stalemate ruling stops the loop
+    // with an honest needs-work — never a granted convergence.
+    if (typeof fns.referee === "function") {
+      const ruling = (await fns.referee({ workstream, rounds: rounds.slice(), evidence })) || {};
+      if (ruling.verdict === "stalemate") {
+        refereeRuling = { round, verdict: "stalemate", reason: ruling.reason || "adversarial loop detected" };
+        break;
+      }
+    }
   }
 
   const surviving_blockers = converged ? [] : lastBlockers;
@@ -55,6 +97,7 @@ export async function runBreakout(input, fns) {
     finalStatus,
     converged,
     rounds,
+    referee: refereeRuling,
     surviving_blockers,
     // What the market-readiness packet should carry — derived from whether the
     // claim survived challenge, never self-asserted.
@@ -76,17 +119,24 @@ export async function runBreakout(input, fns) {
  *   reviewer       { tool?, system? }           judges the proposals
  *   challengerTool tool name for the adversary (default "grok_ask")
  */
-export function makeCouncilBreakout({ callTool, team, reviewer, challengerTool = "grok_ask", challengerSystem, challengerModel }) {
+export function makeCouncilBreakout({ callTool, team, reviewer, challengerTool = "grok_ask", challengerSystem, challengerModel, memory }) {
   const members = Array.isArray(team) && team.length ? team : [{ name: "claude-builder", tool: "claude_ask" }];
   const reviewerTool = reviewer?.tool || "grok_ask";
   const withModel = (args, model) => (model ? { ...args, model } : args);
 
   return {
-    challenge: async ({ workstream, evidence, round }) => {
+    challenge: async ({ workstream, evidence, round, history }) => {
+      const fightLog = Array.isArray(history) && history.length
+        ? `\nFIGHT LOG (prior rounds — blockers already raised and the team's resolutions):\n` +
+          history.map((r) =>
+            `Round ${r.round}: raised ${JSON.stringify(r.blockers)}; resolved ${JSON.stringify(r.resolved || [])}`).join("\n") +
+          `\nDo NOT re-raise a blocker from the log unless its resolution is demonstrably inadequate — ` +
+          `and say why in the blocker text. Raise only NEW, concrete blockers.\n`
+        : "";
       const text = await callTool(challengerTool, withModel({
         system: challengerSystem || "You are the adversarial reviewer. Be skeptical, concrete, and source-demanding.",
         prompt:
-          `Workstream: ${workstream}\nRound: ${round}\nClaimed "meets" evidence:\n${evidence}\n\n` +
+          `Workstream: ${workstream}\nRound: ${round}\nClaimed "meets" evidence:\n${evidence}\n${fightLog}\n` +
           `Attack this claim. List every concrete reason it does NOT yet meet the goal ` +
           `(missing states, claims not actually rendered, unverified assertions). ` +
           `Return a JSON array of short blocker strings; [] if you cannot break it.`
@@ -95,6 +145,17 @@ export function makeCouncilBreakout({ callTool, team, reviewer, challengerTool =
     },
 
     revise: async ({ workstream, evidence }, blockers) => {
+      // Recursion over the fight memory: approaches that already LOST — in a
+      // prior round, cycle, or run — are shown to the proposers so they are
+      // not re-proposed. The memory informs; it never decides.
+      const beaten = memory && typeof memory.beatenFor === "function" ? memory.beatenFor(workstream) : [];
+      const beatenNotes = beaten.length
+        ? `\nDEFEATED SOLUTIONS LOG (approaches that already lost in prior fights — do NOT re-propose these or trivial variants of them):\n` +
+          beaten.map((b) =>
+            `- ${b.solution.slice(0, 300).replace(/\s+/g, " ")}${b.blocker ? ` [failed against: ${b.blocker.slice(0, 120)}]` : ""}`).join("\n") +
+          "\n"
+        : "";
+
       // 1. Each team member independently proposes a fix for the blockers.
       const proposals = [];
       for (const member of members) {
@@ -102,7 +163,7 @@ export function makeCouncilBreakout({ callTool, team, reviewer, challengerTool =
           system: member.system || `You are ${member.name}, a builder on the ${workstream} team.`,
           prompt:
             `Workstream: ${workstream}\nEvidence so far:\n${evidence}\n\n` +
-            `An adversarial reviewer raised these blockers:\n- ${blockers.join("\n- ")}\n\n` +
+            `An adversarial reviewer raised these blockers:\n- ${blockers.join("\n- ")}\n${beatenNotes}\n` +
             `Propose the concrete change that resolves them. Point to specifics; do not ` +
             `claim a fix you cannot name.`
         }, member.model));
@@ -123,6 +184,19 @@ export function makeCouncilBreakout({ callTool, team, reviewer, challengerTool =
           `"evidence":"<updated evidence of meets>"}.`
       }, reviewer?.model));
       const verdict = parseVerdict(verdictText, blockers);
+
+      // Record defeats: a proposal the reviewer did not accept is a beaten
+      // solution — the next proposer (this cycle or a future run) skips it.
+      if (memory && typeof memory.record === "function") {
+        memory.record(proposals
+          .filter((p) => p.name !== verdict.accepted)
+          .map((p) => ({
+            workstream,
+            blocker: blockers.join(" | ").slice(0, 500),
+            solution: String(p.proposal || ""),
+            outcome: "rejected-by-review"
+          })));
+      }
 
       return {
         evidence: verdict.resolved.length > 0 && verdict.evidence ? verdict.evidence : evidence,
@@ -169,4 +243,42 @@ function parseBlockers(text) {
     .split(/\r?\n/)
     .map((line) => line.replace(/^[-*\d.)\s]+/, "").trim())
     .filter(Boolean);
+}
+
+/**
+ * The gemini referee: reviews the fight log after each contested round and
+ * rules whether the bout is still productive or has become an adversarial loop
+ * (the same solutions and results recycling round after round — roughly five
+ * equivalent solution/result exchanges is a loop). Replaces a wall-clock/round
+ * bound with a judgment on the log itself. Fail-open on referee errors: a
+ * broken referee never ends a fight (the round fuse still bounds cost), and it
+ * can never grant convergence — only runBreakout's challenger can do that.
+ *
+ * @param {object} cfg  { callTool, tool = "gemini_ask", model }
+ */
+export function makeGeminiReferee({ callTool, tool = "gemini_ask", model }) {
+  return async ({ workstream, rounds }) => {
+    try {
+      const text = await callTool(tool, {
+        system:
+          "You are the neutral referee of an adversarial review bout. You judge only the exchange dynamics, " +
+          "never the artifact itself. You cannot approve or reject the claim — only rule whether the bout continues.",
+        prompt:
+          `Workstream: ${workstream}\n` +
+          `FIGHT LOG (round, blockers raised, resolutions):\n${JSON.stringify(rounds, null, 2)}\n\n` +
+          `Rule on the bout. verdict "continue" if the exchange is productive (new blockers or genuinely new ` +
+          `resolutions are appearing). verdict "stalemate" if it is looping: the same or equivalent blockers and ` +
+          `solutions are recycling (about five equivalent solution/result exchanges means a loop). ` +
+          `Return ONLY JSON: {"verdict":"continue"|"stalemate","reason":"<one sentence>"}.`,
+        ...(model ? { model } : {})
+      });
+      const m = String(text).match(/\{[\s\S]*\}/);
+      const ruling = m ? JSON.parse(m[0]) : null;
+      return ruling && (ruling.verdict === "stalemate" || ruling.verdict === "continue")
+        ? { verdict: ruling.verdict, reason: ruling.reason }
+        : { verdict: "continue", reason: "referee returned no usable ruling" };
+    } catch (e) {
+      return { verdict: "continue", reason: `referee unavailable: ${e?.message || e}` };
+    }
+  };
 }
