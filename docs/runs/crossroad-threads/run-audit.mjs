@@ -232,7 +232,29 @@ const dossierMeta = {
   build_id: "crossroad-threads-launch-audit",
   idea_id: "crossroad-threads",
   use_case: "launch-audit",
-  objective: "Certify a launch audit of Crossroad Threads for its own domain: six council-authored, adversarially-grounded audit artifacts whose surviving gaps are the Phase-2 build spec.",
+  objective:
+    "Certify the launch audit of Crossroad Threads for its own domain. " +
+    "PRODUCT & SURFACE: Crossroad Threads (github.com/dsmcewan/CrossroadThreads) — a live Next.js static-export " +
+    "apparel storefront styled as a museum (103 exhibits, five wings, narrated audio tour), today on GitHub Pages, " +
+    "auditing its launch as a standalone storefront on its OWN DOMAIN with the operator-pinned stack: AWS hosting, " +
+    "Docker-containerized services, and order/transaction/print-on-demand pipelines. TARGET USERS: collectors of " +
+    "narrative apparel, Southern Gothic / mythology enthusiasts, story-rich gift buyers. SOURCE MATERIALS: the full " +
+    "repository clone at workdir/source (README, next.config.ts, deploy workflow, content/designs.json, package.json) " +
+    "plus a pinned deterministic repo brief — every technical claim cites these. " +
+    "THE SEVEN AUDIT ARTIFACTS (each with contract-required sections and deterministic content checks, re-verified from " +
+    "disk): audit/COMMERCE-GAP.md (purchase path + order/transaction/POD pipeline specs), audit/POSITIONING.md " +
+    "(hypothesis-framed ICP/pricing/differentiation), audit/LAUNCH-ARCHITECTURE.md (AWS topology, Docker, DNS/CDN, " +
+    "migration), audit/SECURITY.md (CSP/TLS, PCI boundary, pipeline security, IAM), audit/OPERATIONS.md (CI, Docker " +
+    "build, content workflow, asset budget, runbooks), audit/BRAND-EXPERIENCE.md (conceit-vs-commerce collisions, " +
+    "accessibility), audit/ADVERTISING.md (hypothesis demographics, channel plan, creative system, measurement, budget " +
+    "gates). ADVERSARIAL GROUNDING STANDARD: every artifact survived a dual-adversary breakout (grok + agy) reading the " +
+    "complete artifact text and source anchors under a contract-bounded scope, with a gemini referee ending unproductive " +
+    "loops and a durable defeat memory; market claims are admissible only as labeled hypotheses with assumptions and " +
+    "validation plans; technical claims only with repository citations. " +
+    "GATE THRESHOLDS: acceptable Phase-2 gaps are enumerated, buildable work items inside each artifact's 'Phase 2 Work " +
+    "Items' section (missing commerce/infra the audit exists to specify); HARD STOPS are unresolved adversary blockers, " +
+    "any artifact failing its deterministic checks on disk, or any approval packet lacking real per-seat provenance — " +
+    "each blocks certification. This audit certifies the GAP MAP is complete and grounded, not that the launch is done.",
   business_thesis: "The museum conceit is the moat: an e-commerce site disguised as a gallery of applied mythology converts narrative depth into premium apparel sales.",
   target_users: ["collectors of narrative apparel", "Southern Gothic / mythology enthusiasts", "gift buyers seeking story-rich objects"],
   required_market_workstreams: ALL
