@@ -118,6 +118,26 @@ const tmp = () => mkdtempSync(path.join(os.tmpdir(), "forge-test-"));
   assert.equal(fight.workstream, "loser", "fight log persisted");
 }
 
+// 6b. maxRounds caps within-bout arguing (cost flows to between-pass rebuilds).
+{
+  const w = tmp();
+  const telosDir = path.join(w, ".telos");
+  mkdirSync(telosDir, { recursive: true });
+  const state = openState(w);
+  let challenges = 0;
+  const makeFns = () => ({
+    // Always finds a fresh blocker — without a cap this runs to the referee fuse.
+    challenge: async () => { challenges++; return { blockers: [`blocker ${challenges}`] }; },
+    revise: async () => ({ evidence: "e", resolved: [] })
+  });
+  const workstreams = [{ id: "endless", files: ["e.md"], checks: [], lens: "grok", signer: "codex" }];
+  const defById = new Map([["endless", { id: "endless", files: ["e.md"], requirements: "REQ" }]]);
+  const records = await runBouts({ workstreams, state, makeFns, defById, hashById: new Map(), telosDir, maxRounds: 2 });
+  assert.equal(records[0].rounds.length, 2, "maxRounds caps the bout at 2 rounds");
+  assert.equal(challenges, 2, "no arguing beyond the cap");
+  assert.equal(records[0].converged, false, "unconverged, blockers banked for the rebuild");
+}
+
 // 7. approvalEvidenceDigest derives from disk: check counts and Phase-2 items.
 {
   const w = tmp();

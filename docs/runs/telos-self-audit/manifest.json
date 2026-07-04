@@ -1,0 +1,131 @@
+{
+  "build_id": "telos-self-audit",
+  "idea_id": "telos-as-a-service",
+  "use_case": "launch-audit",
+  "telos": "Launch TELOS-as-a-service: certified, adversarially-hardened launch audits and builds as a product.",
+  "objective": "Certify the launch audit of TELOS-as-a-service — the factory auditing its own launch, under trust_mode signed, through its own machinery. PRODUCT & SURFACE: the engine in this repository (forge/ ratchet+driver+manifest+claims+operator, build-gate/ gate+council+seat-registry, breakout/ adversarial engine+referee+defeat-memory+seat-router, merkle-dag/ signed ledger, connectors/ ai-peer-mcp+meta-ads-mcp, plus the four claude-plugins seat backends) offered as a hosted service: a customer submits a product manifest, the council researches/builds/adversarially-grounds/gate-certifies, and the customer receives certified artifacts, fight logs, and signed ledgers. SOURCE MATERIALS: the self-snapshot at workdir/source — key engine modules, CI workflow, README, and the machine's own gate-PASSED run summaries (demo advisory PASS, demo SIGNED PASS, Crossroad launch-audit PASS) — every technical claim cites these; every market claim is a labeled hypothesis with assumptions and a validation plan. THE SIX AUDIT ARTIFACTS (contract-required sections, deterministic content checks re-verified from disk): audit/POSITIONING.md, audit/SERVICE-ARCHITECTURE.md, audit/SECURITY.md, audit/UNIT-ECONOMICS.md, audit/OPERATIONS.md, audit/PROOF.md. ADVERSARIAL GROUNDING STANDARD: every artifact survives a dual-adversary breakout (grok + agy) reading complete artifact text and source anchors under contract-bounded, claim-graded scope, with the gemini referee ending unproductive loops and durable defeat memory; approvals carry real per-seat provenance and per-seat HMAC signatures (trust_mode signed). GATE THRESHOLDS: acceptable gaps are enumerated buildable work items in each artifact's 'Phase 2 Work Items' section (the service does not exist as a hosted offering yet — specifying that gap is this audit's purpose); HARD STOPS are unresolved adversary blockers, artifacts failing their deterministic checks on disk, or approval packets lacking provenance or valid signatures. This audit certifies the LAUNCH MAP is complete, grounded, and honestly graded — not that the service is live.",
+  "business_thesis": "Verified beats plausible: a council of frontier models plus a deterministic fail-closed gate turns launch claims into certified artifacts — and the strongest evidence is that the factory certified itself with the same machinery it sells.",
+  "target_users": ["solo founders and indie builders shipping products without a review bench", "agencies certifying deliverables to clients", "engineering teams that distrust unverified AI output"],
+  "workstreams": [
+    {
+      "id": "proof-of-work",
+      "signer": "claude", "lens": "gemini", "dependencies": [],
+      "files": ["audit/PROOF.md"],
+      "requirements": "Author the PROOF-OF-WORK dossier: what a prospective customer can independently verify about TELOS today. From the self-snapshot evidence (workdir/source): enumerate the certified runs with their actual results — the convergence-demo market-gate PASS (advisory), the SIGNED-mode gate PASS (per-seat HMAC + provenance), and the Crossroad Threads launch-audit gate PASS — citing the run-summary.json files (gate_status, trust_mode, approvals_provenance, seat_call counts). Explain the verification chain a customer can replay: deterministic checks re-verified from disk, zero-seat-call replays over certified workdirs, Ed25519 ledgers, fight logs. Explain honestly what is NOT yet proven (no external customer run; single-operator key custody). Sections required: Certified Runs, Verification Chain, Replay Protocol, Honest Limits, Phase 2 Work Items.",
+      "checks": [
+        { "type": "file_exists", "path": "audit/PROOF.md" },
+        { "type": "file_contains", "path": "audit/PROOF.md", "needle": "Certified Runs" },
+        { "type": "file_contains", "path": "audit/PROOF.md", "needle": "signed" },
+        { "type": "file_contains", "path": "audit/PROOF.md", "needle": "Honest Limits" },
+        { "type": "file_exists", "path": "source/runs/demo-run-summary.json" },
+        { "type": "file_exists", "path": "source/runs/signed-gate-run-summary.json" },
+        { "type": "file_exists", "path": "source/runs/crossroad-run-summary.json" }
+      ],
+      "claims": [
+        { "statement": "The demo forge run passed the market gate with three-seat provenance", "grade": "cited" },
+        { "statement": "The gate also passed under trust_mode signed with per-seat HMAC over the plugin transport", "grade": "cited" },
+        { "statement": "The Crossroad Threads launch audit passed with seven certified artifacts", "grade": "cited" },
+        { "statement": "A customer can replay any certified workdir to ALL-CONVERGED with zero seat calls", "grade": "executable" }
+      ],
+      "findingsKey": "accuracy_eval_findings",
+      "finding": "The factory's own certifications, independently verifiable."
+    },
+    {
+      "id": "positioning-service",
+      "signer": "claude", "lens": "claude", "dependencies": ["proof-of-work"],
+      "files": ["audit/POSITIONING.md"],
+      "requirements": "Author LAUNCH POSITIONING for TELOS-as-a-service as LABELED HYPOTHESES with assumptions and validation plans (pre-market: no customers exist). ICP segments (who pays for certified launches and why), the differentiation argument — evidence-backed certification vs. plausible-sounding AI output, grounded in the proof dossier's cited runs — pricing architecture hypotheses (per-certified-run vs subscription; anchor on the real per-run seat-call costs visible in the run summaries), channel hypotheses for reaching builders, and the riskiest hypothesis to test first. Sections required: ICP, Differentiation, Pricing, Channels, Riskiest Hypothesis, Validation Plan, Phase 2 Work Items.",
+      "checks": [
+        { "type": "file_exists", "path": "audit/POSITIONING.md" },
+        { "type": "file_contains", "path": "audit/POSITIONING.md", "needle": "Hypothesis" },
+        { "type": "file_contains", "path": "audit/POSITIONING.md", "needle": "ICP" },
+        { "type": "file_contains", "path": "audit/POSITIONING.md", "needle": "Validation Plan" },
+        { "type": "file_exists", "path": "source/README.md" }
+      ],
+      "claims": [
+        { "statement": "Builders will pay for gate-certified launch artifacts over raw LLM output", "grade": "hypothesis" },
+        { "statement": "Per-certified-run pricing anchored above marginal seat cost is viable", "grade": "hypothesis" }
+      ],
+      "findingsKey": "architecture_findings",
+      "finding": "Hypothesis-graded positioning for the certification service."
+    },
+    {
+      "id": "service-architecture",
+      "signer": "codex", "lens": "gemini", "dependencies": ["proof-of-work"],
+      "files": ["audit/SERVICE-ARCHITECTURE.md"],
+      "requirements": "Author the HOSTED SERVICE ARCHITECTURE: manifest in, certified artifacts out. From the self-snapshot: how the existing pieces compose into a service — forge/manifest.mjs validates customer specs fail-closed; forge/ratchet.mjs + driver run passes in isolated per-customer workdirs; breakout/seat_router.mjs + build-gate/seat-registry.mjs route council seats (plugin backends today; pooled or customer-BYO API keys as a design decision to argue); forge/operator.mjs for long-lived customer ops loops; merkle-dag signed ledgers as customer deliverables. Specify: the run-orchestration topology (queue, workers, workdir isolation), the metering point (seat_call_breakdown already exists — cite it), the API surface (submit manifest, stream fight logs, fetch certified bundle), and multi-tenancy boundaries. Cite module paths for every capability claimed to exist. Sections required: Composition, Run Orchestration, Metering, API Surface, Tenancy, Phase 2 Work Items.",
+      "checks": [
+        { "type": "file_exists", "path": "audit/SERVICE-ARCHITECTURE.md" },
+        { "type": "file_contains", "path": "audit/SERVICE-ARCHITECTURE.md", "needle": "manifest" },
+        { "type": "file_contains", "path": "audit/SERVICE-ARCHITECTURE.md", "needle": "Metering" },
+        { "type": "file_contains", "path": "audit/SERVICE-ARCHITECTURE.md", "needle": "Tenancy" },
+        { "type": "file_exists", "path": "source/forge/ratchet.mjs" },
+        { "type": "file_exists", "path": "source/forge/manifest.mjs" }
+      ],
+      "claims": [
+        { "statement": "Manifest validation is fail-closed (unknown fields reject)", "grade": "cited" },
+        { "statement": "Per-run seat-call metering already exists in run summaries", "grade": "cited" },
+        { "statement": "A queue-and-workers topology serves concurrent customer runs with workdir isolation", "grade": "hypothesis" }
+      ],
+      "findingsKey": "scalability_findings",
+      "finding": "The service is a composition of shipped modules plus an orchestration layer to build."
+    },
+    {
+      "id": "security-trust",
+      "signer": "codex", "lens": "grok", "dependencies": ["service-architecture"],
+      "files": ["audit/SECURITY.md"],
+      "requirements": "Author SECURITY AND TRUST for the hosted service. From the self-snapshot: the trust spine as shipped (fail-closed gate, per-seat provenance, HMAC-signed packets under trust_mode signed, Ed25519 ledgers, fail-closed seat routing — cite modules); then the service-layer questions: customer API-key custody (BYO keys vs pooled — argue the trade-off), TELOS_SECRET_* HMAC key management per tenant, isolation between customer workdirs and manifests, what a malicious customer manifest could attempt (the validator rejects unknown fields — what else?), and a threat sketch for the service. Honest limits: single-operator key custody today (the sign.mjs header says so — cite it). Sections required: Trust Spine As Shipped, Key Custody, Tenant Isolation, Malicious Manifests, Threats, Honest Limits, Phase 2 Work Items.",
+      "checks": [
+        { "type": "file_exists", "path": "audit/SECURITY.md" },
+        { "type": "file_contains", "path": "audit/SECURITY.md", "needle": "Key Custody" },
+        { "type": "file_contains", "path": "audit/SECURITY.md", "needle": "Tenant Isolation" },
+        { "type": "file_contains", "path": "audit/SECURITY.md", "needle": "Honest Limits" },
+        { "type": "file_exists", "path": "source/build-gate/seat-registry.mjs" }
+      ],
+      "claims": [
+        { "statement": "Seat routing fails closed: an unrouted tool throws rather than falling back", "grade": "cited" },
+        { "statement": "A single operator holding every TELOS_SECRET_* can forge packets (documented residual)", "grade": "cited" }
+      ],
+      "findingsKey": "security_findings",
+      "finding": "The shipped trust spine plus the service-layer custody and isolation work to build."
+    },
+    {
+      "id": "unit-economics",
+      "signer": "codex", "lens": "codex", "dependencies": ["proof-of-work"],
+      "files": ["audit/UNIT-ECONOMICS.md"],
+      "requirements": "Author UNIT ECONOMICS for certified runs. From the run summaries in the self-snapshot: the real seat-call counts of the certified runs (cite seat_calls / seat_call_breakdown where present), the cost drivers (max-effort builder calls dominate; adversary rounds scale with contestedness; the referee runs medium effort — cite build-gate/model-profiles.mjs EFFORT_TIERS), the levers already shipped (effort tiers, contract closure capping rounds, the ratchet never re-buying proven work, Styx preventing re-fights), and hypothesis-graded pricing floors: what a certified audit run costs in seat calls and what price covers it with margin. All dollar figures are HYPOTHESES (provider prices shift); call counts are CITED. Sections required: Observed Run Costs, Cost Drivers, Shipped Levers, Pricing Floor Hypotheses, Phase 2 Work Items.",
+      "checks": [
+        { "type": "file_exists", "path": "audit/UNIT-ECONOMICS.md" },
+        { "type": "file_contains", "path": "audit/UNIT-ECONOMICS.md", "needle": "seat_call" },
+        { "type": "file_contains", "path": "audit/UNIT-ECONOMICS.md", "needle": "Pricing Floor" },
+        { "type": "file_exists", "path": "source/build-gate/model-profiles.mjs" }
+      ],
+      "claims": [
+        { "statement": "The signed-mode gate pass cost 6 seat calls end-to-end over a ratcheted workdir", "grade": "cited" },
+        { "statement": "Effort tiers and the ratchet make marginal certified-run cost predictable enough to price", "grade": "hypothesis" }
+      ],
+      "findingsKey": "backend_schema_findings",
+      "finding": "Real call counts anchor the pricing floor; dollar figures stay hypotheses."
+    },
+    {
+      "id": "ops-service",
+      "signer": "claude", "lens": "agy", "dependencies": ["service-architecture"],
+      "files": ["audit/OPERATIONS.md"],
+      "requirements": "Author SERVICE OPERATIONS. From the self-snapshot: how runs are driven today (the fixed-point driver: pass/fixed-point/fuse terminals — cite forge/driver.mjs), quota-halt behavior (billing-class errors halt with needs-human instead of retrying — cite forge/operator.mjs QUOTA_ERROR), the needs-human inbox as the customer touchpoint (INBOX.md rendering), fight logs and signed ledgers as the observability surface, and the operational runbook for a stuck customer run (fixed point reached -> deliver the honest blocker list). SLA formulations are HYPOTHESES (no customers yet). Sections required: Run Lifecycle, Quota and Failure Handling, Customer Touchpoints, Observability, Runbook, SLA Hypotheses, Phase 2 Work Items.",
+      "checks": [
+        { "type": "file_exists", "path": "audit/OPERATIONS.md" },
+        { "type": "file_contains", "path": "audit/OPERATIONS.md", "needle": "fixed point" },
+        { "type": "file_contains", "path": "audit/OPERATIONS.md", "needle": "needs-human" },
+        { "type": "file_contains", "path": "audit/OPERATIONS.md", "needle": "Runbook" },
+        { "type": "file_exists", "path": "source/forge/operator.mjs" },
+        { "type": "file_exists", "path": "source/forge/driver.mjs" }
+      ],
+      "claims": [
+        { "statement": "Quota/billing-class errors halt with a needs-human record instead of retrying", "grade": "cited" },
+        { "statement": "A fixed-point terminal delivers an honest blocker list as the customer deliverable", "grade": "cited" }
+      ],
+      "findingsKey": "frontend_design_findings",
+      "finding": "Operations are the shipped driver + operator, plus the hosting runbook to write."
+    }
+  ]
+}

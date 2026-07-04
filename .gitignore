@@ -20,3 +20,4 @@ Thumbs.db
 docs/runs/*/workdir/
 docs/runs/crossroad-ads/creative/
 1.1.0
+docs/runs/*/workdir-driver*.log

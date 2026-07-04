@@ -46,4 +46,37 @@ import { driveUntil } from "../driver.mjs";
   assert.equal(calls, 4);
 }
 
+// 4. Transient failures are retried (not counted as fixed-point) and recovery
+//    continues to the real terminal. Two identical error-passes must NOT stop.
+{
+  let calls = 0;
+  const r = await driveUntil({
+    invoke: async () => {
+      calls++;
+      if (calls <= 2) return "error: connect ETIMEDOUT"; // two flaky passes in a row
+      return calls === 4 ? "PASS" : "blocked";
+    },
+    isTerminal: (x) => x === "PASS",
+    isTransient: (x) => typeof x === "string" && x.startsWith("error"),
+    stateSnapshot: () => ({ n: calls }),
+    maxPasses: 10, transientBackoffMs: 0
+  });
+  assert.equal(r.outcome, "pass", "recovers past two transient failures instead of false fixed-point");
+  assert.equal(calls, 4);
+}
+
+// 5. Sustained transient failure stops with transient-exhausted, not fixed-point.
+{
+  let calls = 0;
+  const r = await driveUntil({
+    invoke: async () => { calls++; return "error: network down"; },
+    isTerminal: () => false,
+    isTransient: (x) => typeof x === "string" && x.startsWith("error"),
+    stateSnapshot: () => ({ n: calls }),
+    maxPasses: 20, maxTransient: 3, transientBackoffMs: 0
+  });
+  assert.equal(r.outcome, "transient-exhausted");
+  assert.equal(calls, 4, "maxTransient+1 attempts then stop");
+}
+
 console.log("test-driver: all assertions passed");

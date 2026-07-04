@@ -1,0 +1,26 @@
+{
+  "generated_for": "telos-self-audit",
+  "live": true,
+  "phase": "self-audit",
+  "transport": "seat-router default (claude/agy_checkpoint via ai-peer-mcp; grok/gemini/codex via claude-plugins seat servers)",
+  "trust_mode": "signed",
+  "build": {
+    "merge_status": "blocked",
+    "settled_this_invocation": [],
+    "halts": [
+      {
+        "id": "positioning-service",
+        "action": "halt",
+        "reason": "positioning-service: generator threw: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\"},\"request_id\":\"req_011CcexDh57MZVjEtYjXFkuN\"}"
+      }
+    ]
+  },
+  "result": "build-incomplete (re-run to continue from the ledger)",
+  "blockers": [
+    "positioning-service: ledger sha256:2a1d46290dd137c31b6c7c6a019ff04514ccaba0f4ab02e05df45b461a5d99f3 != recomputed sha256:98136137093b38d87c5437cc62f0c182867737af28a7f2a76e6cf8059417f448 (spec or ancestor changed)"
+  ],
+  "seat_calls": 1,
+  "seat_call_breakdown": {
+    "claude_ask": 1
+  }
+}

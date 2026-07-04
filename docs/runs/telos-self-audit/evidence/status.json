@@ -1,0 +1,12 @@
+{
+  "converged": [
+    "proof-of-work"
+  ],
+  "contested": {
+    "positioning-service": 2,
+    "service-architecture": 6,
+    "security-trust": 4,
+    "unit-economics": 3,
+    "ops-service": 6
+  }
+}

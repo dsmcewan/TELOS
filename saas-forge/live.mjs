@@ -161,10 +161,39 @@ function acceptanceNotes(test) {
   }
 }
 
+// Read the read-only ANCHOR files a node's checks point at (paths outside the
+// files being authored) from `evidenceBaseDir`. These are exactly what the
+// adversarial reviewer sees via diskEvidence — so the builder must too, or it
+// is writing precise `cited` claims about source it cannot read while the judge
+// holds that source open (the self-audit's non-convergence bug).
+function sourceEvidenceFor(injected, evidenceBaseDir) {
+  if (!evidenceBaseDir) return "";
+  let checks = [];
+  try { checks = JSON.parse(injected.test?.args?.[1] || "[]"); } catch { return ""; }
+  const authoring = new Set(injected.files || []);
+  const anchors = [...new Set(checks.map((c) => c.path).filter((p) => p && !authoring.has(p)))];
+  const blocks = [];
+  let budget = 28000;
+  for (const rel of anchors) {
+    if (budget <= 0) break;
+    try {
+      const full = readFileSync(path.join(evidenceBaseDir, rel), "utf8");
+      const cap = Math.min(6000, budget);
+      const slice = full.slice(0, cap);
+      budget -= slice.length;
+      blocks.push(`--- ${rel} (${full.length} chars${full.length > cap ? `, first ${cap} shown` : ""}) ---\n${slice}`);
+    } catch { /* anchor not on disk yet — skip */ }
+  }
+  return blocks.length
+    ? `\nSOURCE EVIDENCE — the exact files the adversarial reviewer will read to verify every cited claim. Cite these ACCURATELY; do not assert what they do not show; quote real identifiers/paths from them:\n${blocks.join("\n\n")}\n`
+    : "";
+}
+
 // Seat-backed generation: each team's builder seat authors its files. Binary
 // assets the text seat can't emit (screenshots) get a non-empty placeholder so
-// the harness — not the model — owns rendering.
-export function liveGenerators({ callTool }) {
+// the harness — not the model — owns rendering. `evidenceBaseDir` (optional)
+// lets the builder read the same source anchors the reviewer holds.
+export function liveGenerators({ callTool, evidenceBaseDir }) {
   return (arch) => async (injected) => {
     const ws = workstreamById(injected.id);
     const model = (ws && ws.signer) || "claude";
@@ -180,6 +209,7 @@ export function liveGenerators({ callTool }) {
       `You are the builder seat for the "${injected.id}" team of a SaaS product.\n` +
       `Requirements: ${injected.requirements}\n` +
       guidance +
+      sourceEvidenceFor(injected, evidenceBaseDir) +
       acceptanceNotes(injected.test) +
       `\nProduce the EXACT files listed. These are the ONLY files that will exist on disk: ` +
       `do not read, import, or reference any other path — embed any data, fixtures, or configuration inline. ` +
