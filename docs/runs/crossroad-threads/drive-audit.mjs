@@ -27,6 +27,7 @@ const { outcome, pass } = await driveUntil({
     return summary;
   },
   isTerminal: (summary) => summary.result === "PASS",
+  isTransient: (summary) => typeof summary.result === "string" && summary.result.startsWith("error"),
   stateSnapshot: () => ({
     converged: Object.keys(loadJson(path.join(workdir, "checkpoint.teams.json")) || {}).sort(),
     blockers: loadJson(path.join(workdir, "checkpoint.blockers.json")) || {}

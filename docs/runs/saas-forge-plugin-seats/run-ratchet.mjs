@@ -218,8 +218,8 @@ try {
   log(`build: merge_status=${report.merge_status}; settled this invocation: ${settledNow.join(", ") || "(none — already ratcheted)"}`);
   summary.build = { merge_status: report.merge_status, settled_this_invocation: settledNow, halts };
   if (report.merge_status !== "ready") {
-    bankVerifyFailures(halts, state, log);
-    summary.result = "build-incomplete (re-run to continue from the ledger)";
+    const infra = bankVerifyFailures(halts, state, log);
+    summary.result = infra ? "error: infrastructure failure (quota/network) during build — top up or check connectivity, then resume" : "build-incomplete (re-run to continue from the ledger)";
     summary.blockers = report.blockers || [];
     process.exitCode = 1;
   } else {

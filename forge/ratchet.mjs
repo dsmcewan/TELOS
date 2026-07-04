@@ -135,10 +135,29 @@ export function styxGenerateFiles({ state, generate, binary = (rel) => /\.(png|j
   };
 }
 
-/** BANKING: a failing node test's diagnostic becomes a banked blocker. */
+// Provider quota/billing/transport failures are NOT artifact defects — they are
+// infrastructure, and banking them as blockers pollutes the real list and makes
+// a node look broken when only the wallet or the wire is. (Learned the hard way
+// during the self-audit: repeated "credit balance too low" errors banked onto a
+// converging workstream.)
+export const INFRA_ERROR = /credit balance|insufficient_quota|quota exceeded|rate limit|429|ENOTFOUND|ETIMEDOUT|ECONNRESET|fetch failed|getaddrinfo|socket hang up/i;
+
+/**
+ * BANKING: a failing node test's own diagnostic becomes a banked blocker so the
+ * rebuild fixes the exact failure — EXCEPT infrastructure failures (quota,
+ * network), which are surfaced (return true) for the caller to halt on, not
+ * banked as artifact defects.
+ * @returns {boolean} true if any halt was an infrastructure failure.
+ */
 export function bankVerifyFailures(halts, state, log = () => {}) {
+  let infra = false;
   for (const h of halts) {
     if (!h.reason) continue;
+    if (INFRA_ERROR.test(String(h.reason))) {
+      infra = true;
+      log(`infrastructure failure on ${h.id} (quota/network) — NOT banked as a blocker: ${String(h.reason).slice(0, 120)}`);
+      continue;
+    }
     const raised = state.boutBlockers[h.id] || [];
     const entry = `BUILD VERIFY FAILURE (from the node's own test): ${String(h.reason).slice(0, 400)}`;
     if (!raised.includes(entry)) {
@@ -147,6 +166,7 @@ export function bankVerifyFailures(halts, state, log = () => {}) {
       log(`banked verify failure as blocker for ${h.id}`);
     }
   }
+  return infra;
 }
 
 /** CLOSURE: after three bouts the contract closes — count and render the clause. */
@@ -166,7 +186,15 @@ export function contractClosure(state, wsId) {
  *   makeFns      makeCouncilFactFns({callTool}) result
  *   defById      folded defs (contract source)
  */
-export async function runBouts({ workstreams, state, makeFns, defById, hashById, telosDir, log = () => {} }) {
+export async function runBouts({ workstreams, state, makeFns, defById, hashById, telosDir, maxRounds, log = () => {} }) {
+  // Cost economics: within-bout rounds ARGUE about a frozen artifact; the real
+  // improvement happens BETWEEN passes (respec -> rebuild). A tight round cap
+  // therefore both saves money and converges faster — money flows to rebuilds,
+  // not to re-litigating a document the builder cannot change mid-bout. The
+  // referee still ends genuine loops earlier; this bounds the pathological case
+  // where adversaries keep surfacing new (real) blockers on an unchanging file.
+  const roundCap = Number.isInteger(maxRounds) ? maxRounds
+    : (Number.isInteger(Number(process.env.TELOS_MAX_ROUNDS)) && process.env.TELOS_MAX_ROUNDS ? Number(process.env.TELOS_MAX_ROUNDS) : undefined);
   const records = [];
   for (const ws of workstreams) {
     const checks = ws.checks;
@@ -183,7 +211,8 @@ export async function runBouts({ workstreams, state, makeFns, defById, hashById,
     const fns = makeFns({ workstream: ws.id, checks, baseDir: state.workdir, contract: (defById.get(ws.id)?.requirements || "") + claimRules + closure });
     const record = await runBreakout(
       { workstream: ws.id, claimedStatus: "meets", goalStatus: "meets",
-        evidence: `${ws.id} artifacts: ${ws.files.join(", ")}` },
+        evidence: `${ws.id} artifacts: ${ws.files.join(", ")}`,
+        ...(roundCap ? { maxRounds: roundCap } : {}) },
       fns
     );
     const full = {
