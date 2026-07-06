@@ -26,7 +26,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { openState, foldDefs, styxGenerateFiles, bankVerifyFailures, runBouts, approvalEvidenceDigest, loadKeys, pinResearch } from "../../../forge/ratchet.mjs";
+import { openState, foldDefs, styxGenerateFiles, bankVerifyFailures, runBouts, approvalEvidenceDigest, loadKeys, pinResearch, withTransientRetry } from "../../../forge/ratchet.mjs";
 import { validateManifest, workstreamsFromManifest, defsFromManifest } from "../../../forge/manifest.mjs";
 import { computePlan, writePlan } from "../../../merkle-dag/merkle.mjs";
 import { runBuild } from "../../../merkle-dag/orchestrate.mjs";
@@ -86,10 +86,11 @@ const router = createSeatRouter(withLoadout(defaultSeatRegistry(), {
 }));
 let seatCalls = 0;
 const seatCallsByTool = {};
+const retryingCall = withTransientRetry((n, a) => router.callTool(n, a), { log });
 const callTool = (name, args) => {
   seatCalls++;
   seatCallsByTool[name] = (seatCallsByTool[name] || 0) + 1;
-  return router.callTool(name, args);
+  return retryingCall(name, args);
 };
 
 // Live Context7 research through the loadout. Fail-open per domain to the

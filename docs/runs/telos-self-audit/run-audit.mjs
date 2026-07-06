@@ -18,7 +18,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { computePlan, writePlan } from "../../../merkle-dag/merkle.mjs";
 import { runBuild } from "../../../merkle-dag/orchestrate.mjs";
-import { openState, foldDefs, styxGenerateFiles, bankVerifyFailures, runBouts, approvalEvidenceDigest, loadKeys, pinResearch } from "../../../forge/ratchet.mjs";
+import { openState, foldDefs, styxGenerateFiles, bankVerifyFailures, runBouts, approvalEvidenceDigest, loadKeys, pinResearch, withTransientRetry } from "../../../forge/ratchet.mjs";
 import { validateManifest, workstreamsFromManifest, defsFromManifest, dossierFromManifest } from "../../../forge/manifest.mjs";
 import { createSeatRouter } from "../../../breakout/seat_router.mjs";
 import { defaultSeatRegistry } from "../../../build-gate/seat-registry.mjs";
@@ -77,10 +77,11 @@ const keys = loadKeys(workdir, ["claude", "codex"], log);
 const router = createSeatRouter(defaultSeatRegistry());
 let seatCalls = 0;
 const seatCallsByTool = {};
+const retryingCall = withTransientRetry((n, a) => router.callTool(n, a), { log });
 const callTool = (name, args) => {
   seatCalls++;
   seatCallsByTool[name] = (seatCallsByTool[name] || 0) + 1;
-  return router.callTool(name, args);
+  return retryingCall(name, args);
 };
 
 let summary = { generated_for: dossierMeta.build_id, live: true, phase: "self-audit",

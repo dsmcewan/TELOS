@@ -6,24 +6,42 @@ through the same ratchet / adversarial-council / signed-gate pipeline TELOS
 sells, grounded against a self-snapshot of this repository and its own
 gate-PASSED run summaries.
 
-## Result: substantially converged, resumable to a signed PASS
+## Result: 3/6 certified signed, ~4 blockers from a full PASS, resumable
 
 | Workstream | State |
 | --- | --- |
-| `proof-of-work` | ✅ **certified under trust_mode: signed** — the machine's own certifications, verified from disk |
-| `positioning-service` | 2 grounded blockers (claude-authored) |
-| `unit-economics` | 3 grounded blockers (codex-authored) |
-| `security-trust` | 4 grounded blockers (codex-authored) |
-| `service-architecture` | 6 grounded blockers (codex-authored) |
-| `ops-service` | 6 grounded blockers (claude-authored) |
+| `proof-of-work` | ✅ **certified, trust_mode: signed** |
+| `unit-economics` | ✅ **certified, trust_mode: signed** |
+| `ops-service` | ✅ **certified, trust_mode: signed** (claude-authored) |
+| `service-architecture` | 3 grounded blockers (codex-authored) |
+| `positioning-service` | 1 grounded blocker (claude-authored) |
+| `security-trust` | effectively cleared (0 banked; converges on next bout) |
 
-Blocker counts are low and were trending down (e.g. `unit-economics` fell 9→3,
-`security-trust` 7→4) once the builder-source-visibility fix landed. **No code
-problem stands between here and a full signed PASS** — the run is hard-blocked
-only on exhausted Anthropic API credits (the two claude-authored workstreams
-cannot rebuild until topped up). The ratchet preserves all state; a top-up plus
-`node docs/runs/telos-self-audit/drive-audit.mjs` (with `TELOS_SECRET_*` set)
-resumes straight to the finish.
+**No code problem stands between here and a full signed PASS** — the remaining
+blockers are few and doc-fixable, and `security-trust` is clear. The run is
+blocked only on exhausted Anthropic API credits: `positioning-service` is the
+last claude-authored node, and TELOS builds all nodes before running any bouts,
+so that one un-buildable node gates the two healthy codex workstreams. A single
+Anthropic top-up + `node docs/runs/telos-self-audit/drive-audit.mjs` (with
+`TELOS_SECRET_*` set) resumes straight to the finish from preserved ratchet
+state.
+
+### Two engine hardening fixes the final push surfaced (both tested)
+
+5. **Editable-artifact vs read-only-evidence scope** (`saas-forge/live.mjs`) —
+   the deepest self-audit bug: once the builder could read the source anchors,
+   the adversary's "raise blockers resolvable by editing the files shown" rule
+   started demanding the builder EDIT TELOS's own source to match the audit's
+   claims (16 passes of deadlock). Evidence files are now tagged `[EDITABLE
+   ARTIFACT]` vs `[READ-ONLY EVIDENCE]`; a cited claim is resolved by correcting
+   the ARTIFACT to match the evidence, never by changing the evidence. This
+   collapsed the fake blockers (14 pruned) — the general shape any audit-of-
+   existing-code needs.
+6. **Call-level transient retry** (`forge/ratchet.mjs` `withTransientRetry`) — a
+   single flaky-network seat call (ECONNRESET/ETIMEDOUT) retries in place with
+   backoff instead of aborting a whole pass; billing/quota failures are NEVER
+   retried (retrying a wallet buys nothing). Complements the driver's pass-level
+   transient handling.
 
 ## What the self-audit proved
 

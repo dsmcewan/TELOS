@@ -142,6 +142,38 @@ export function styxGenerateFiles({ state, generate, binary = (rel) => /\.(png|j
 // converging workstream.)
 export const INFRA_ERROR = /credit balance|insufficient_quota|quota exceeded|rate limit|429|ENOTFOUND|ETIMEDOUT|ECONNRESET|fetch failed|getaddrinfo|socket hang up/i;
 
+// Network flakiness (ECONNRESET/ETIMEDOUT/ENOTFOUND/socket hang up) — NOT
+// billing. A single reset should retry the call, not abort the whole pass.
+// (Distinct from INFRA_ERROR: quota/credit failures are NOT retryable here —
+// retrying a billing failure buys nothing; they surface for a clean halt.)
+const NETWORK_FLAKE = /ECONNRESET|ETIMEDOUT|ENOTFOUND|socket hang up|getaddrinfo|fetch failed|network|EAI_AGAIN/i;
+const isBilling = (s) => /credit balance|insufficient_quota|quota exceeded|billing|429|rate limit/i.test(s);
+
+/**
+ * Wrap a callTool so transient NETWORK failures retry in place (a blip on one
+ * seat call must not abort a pass of dozens). Billing/quota failures are NOT
+ * retried — they propagate immediately for a clean halt. Handles both a
+ * rejected promise and an isError-style text envelope carrying the error.
+ */
+export function withTransientRetry(callTool, { retries = 3, backoffMs = 4000, log = () => {} } = {}) {
+  return async (name, args) => {
+    for (let attempt = 0; ; attempt++) {
+      let text, thrown = null;
+      try { text = await callTool(name, args); }
+      catch (e) { thrown = e; }
+      const errStr = thrown ? String(thrown.message || thrown)
+        : (typeof text === "string" && /"?isError"?|^Error:/.test(text) && NETWORK_FLAKE.test(text) ? text : null);
+      const flaky = errStr && NETWORK_FLAKE.test(errStr) && !isBilling(errStr);
+      if (!flaky || attempt >= retries) {
+        if (thrown) throw thrown;
+        return text;
+      }
+      log(`transient network error on ${name} (attempt ${attempt + 1}/${retries}), retrying in ${backoffMs / 1000}s: ${errStr.slice(0, 80)}`);
+      await new Promise((r) => setTimeout(r, backoffMs * (attempt + 1)));
+    }
+  };
+}
+
 /**
  * BANKING: a failing node test's own diagnostic becomes a banked blocker so the
  * rebuild fixes the exact failure — EXCEPT infrastructure failures (quota,
@@ -208,7 +240,14 @@ export async function runBouts({ workstreams, state, makeFns, defById, hashById,
     // Epistemic claim typing: declared claims join the contract with per-grade
     // adjudication rules — challengers judge each claim AT its grade.
     const claimRules = renderClaimRules(ws.claims);
-    const fns = makeFns({ workstream: ws.id, checks, baseDir: state.workdir, contract: (defById.get(ws.id)?.requirements || "") + claimRules + closure });
+    const fns = makeFns({
+      workstream: ws.id, checks, baseDir: state.workdir,
+      contract: (defById.get(ws.id)?.requirements || "") + claimRules + closure,
+      // Only the workstream's own files are editable; source anchors are
+      // read-only evidence (the self-audit deadlocked when adversaries demanded
+      // the builder edit TELOS's own source instead of the audit document).
+      authoredFiles: ws.files
+    });
     const record = await runBreakout(
       { workstream: ws.id, claimedStatus: "meets", goalStatus: "meets",
         evidence: `${ws.id} artifacts: ${ws.files.join(", ")}`,
