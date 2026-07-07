@@ -5,22 +5,84 @@
   "transport": "seat-router default (claude/agy_checkpoint via ai-peer-mcp; grok/gemini/codex via claude-plugins seat servers)",
   "trust_mode": "signed",
   "build": {
-    "merge_status": "blocked",
-    "settled_this_invocation": [],
-    "halts": [
-      {
-        "id": "positioning-service",
-        "action": "halt",
-        "reason": "positioning-service: generator threw: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\"},\"request_id\":\"req_011CcmdR4jU3qAegvnT3G6si\"}"
-      }
-    ]
+    "merge_status": "ready",
+    "settled_this_invocation": [
+      "service-architecture",
+      "ops-service",
+      "security-trust"
+    ],
+    "halts": []
   },
-  "result": "error: infrastructure failure (quota/network) during build — top up or check connectivity, then resume",
-  "blockers": [
-    "positioning-service: ledger sha256:658cb98120b4b975e52191109bd5abb322ee161dec1f20696794ff98d496b25f != recomputed sha256:4f6c7b17354f2c66e7dabf9b1955d6b81323fd559cd8310a484f8d30f459d3b2 (spec or ancestor changed)"
+  "teams": [
+    {
+      "workstream": "proof-of-work",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "positioning-service",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "service-architecture",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "security-trust",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "unit-economics",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 2,
+      "referee": null
+    },
+    {
+      "workstream": "ops-service",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 2,
+      "referee": null
+    }
   ],
-  "seat_calls": 1,
+  "gate_status": "pass",
+  "approvals_provenance": [
+    {
+      "model": "claude",
+      "has_provenance": true,
+      "response_id": "msg_011CcmtPLaejawtAritRoFUH"
+    },
+    {
+      "model": "agy",
+      "has_provenance": true,
+      "response_id": "agy-44cb01da259b0c0515414fce882aa88f8e3827be"
+    },
+    {
+      "model": "codex",
+      "has_provenance": true,
+      "response_id": "chatcmpl-DypZzCvgq2E03ZAK900vYT8APkOEM"
+    }
+  ],
+  "blockers": [],
+  "result": "PASS",
+  "seat_calls": 6,
   "seat_call_breakdown": {
-    "claude_ask": 1
+    "claude_ask": 2,
+    "grok_ask": 1,
+    "agy_ask": 1,
+    "agy_checkpoint": 1,
+    "codex_ask": 1
   }
 }

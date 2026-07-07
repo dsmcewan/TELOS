@@ -6,25 +6,30 @@ through the same ratchet / adversarial-council / signed-gate pipeline TELOS
 sells, grounded against a self-snapshot of this repository and its own
 gate-PASSED run summaries.
 
-## Result: 3/6 certified signed, ~4 blockers from a full PASS, resumable
+## Result: PASS — the factory certified its own launch audit, signed. 🔏
+
+`gate_status: pass` · `trust_mode: signed` · all six workstreams converged ·
+three-seat provenance (claude `msg_011Ccm…`, agy `agy-44cb…`, codex
+`chatcmpl-Dyp…`).
 
 | Workstream | State |
 | --- | --- |
-| `proof-of-work` | ✅ **certified, trust_mode: signed** |
-| `unit-economics` | ✅ **certified, trust_mode: signed** |
-| `ops-service` | ✅ **certified, trust_mode: signed** (claude-authored) |
-| `service-architecture` | 3 grounded blockers (codex-authored) |
-| `positioning-service` | 1 grounded blocker (claude-authored) |
-| `security-trust` | effectively cleared (0 banked; converges on next bout) |
+| `proof-of-work` | ✅ certified, signed |
+| `positioning-service` | ✅ certified, signed |
+| `service-architecture` | ✅ certified, signed |
+| `security-trust` | ✅ certified, signed |
+| `unit-economics` | ✅ certified, signed |
+| `ops-service` | ✅ certified, signed |
 
-**No code problem stands between here and a full signed PASS** — the remaining
-blockers are few and doc-fixable, and `security-trust` is clear. The run is
-blocked only on exhausted Anthropic API credits: `positioning-service` is the
-last claude-authored node, and TELOS builds all nodes before running any bouts,
-so that one un-buildable node gates the two healthy codex workstreams. A single
-Anthropic top-up + `node docs/runs/telos-self-audit/drive-audit.mjs` (with
-`TELOS_SECRET_*` set) resumes straight to the finish from preserved ratchet
-state.
+The six certified audit artifacts are in `evidence/`. The last workstream
+converged in one round the moment it was given the evidence needed to verify its
+own claim — a genuine audit finding the machine caught in its own documentation:
+the "per-run seat-call metering exists" claim was unverifiable from the engine
+module alone because metering lives in the run harness, so the run-summary was
+added to that workstream's evidence and the claim then verified honestly. The
+whole thesis in miniature — *an adversary holding the source refused a plausible
+claim until its evidence was present; verified beats plausible, enforced on the
+factory itself.*
 
 ### Two engine hardening fixes the final push surfaced (both tested)
 
