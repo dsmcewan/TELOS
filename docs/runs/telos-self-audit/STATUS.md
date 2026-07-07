@@ -6,24 +6,47 @@ through the same ratchet / adversarial-council / signed-gate pipeline TELOS
 sells, grounded against a self-snapshot of this repository and its own
 gate-PASSED run summaries.
 
-## Result: substantially converged, resumable to a signed PASS
+## Result: PASS — the factory certified its own launch audit, signed. 🔏
+
+`gate_status: pass` · `trust_mode: signed` · all six workstreams converged ·
+three-seat provenance (claude `msg_011Ccm…`, agy `agy-44cb…`, codex
+`chatcmpl-Dyp…`).
 
 | Workstream | State |
 | --- | --- |
-| `proof-of-work` | ✅ **certified under trust_mode: signed** — the machine's own certifications, verified from disk |
-| `positioning-service` | 2 grounded blockers (claude-authored) |
-| `unit-economics` | 3 grounded blockers (codex-authored) |
-| `security-trust` | 4 grounded blockers (codex-authored) |
-| `service-architecture` | 6 grounded blockers (codex-authored) |
-| `ops-service` | 6 grounded blockers (claude-authored) |
+| `proof-of-work` | ✅ certified, signed |
+| `positioning-service` | ✅ certified, signed |
+| `service-architecture` | ✅ certified, signed |
+| `security-trust` | ✅ certified, signed |
+| `unit-economics` | ✅ certified, signed |
+| `ops-service` | ✅ certified, signed |
 
-Blocker counts are low and were trending down (e.g. `unit-economics` fell 9→3,
-`security-trust` 7→4) once the builder-source-visibility fix landed. **No code
-problem stands between here and a full signed PASS** — the run is hard-blocked
-only on exhausted Anthropic API credits (the two claude-authored workstreams
-cannot rebuild until topped up). The ratchet preserves all state; a top-up plus
-`node docs/runs/telos-self-audit/drive-audit.mjs` (with `TELOS_SECRET_*` set)
-resumes straight to the finish.
+The six certified audit artifacts are in `evidence/`. The last workstream
+converged in one round the moment it was given the evidence needed to verify its
+own claim — a genuine audit finding the machine caught in its own documentation:
+the "per-run seat-call metering exists" claim was unverifiable from the engine
+module alone because metering lives in the run harness, so the run-summary was
+added to that workstream's evidence and the claim then verified honestly. The
+whole thesis in miniature — *an adversary holding the source refused a plausible
+claim until its evidence was present; verified beats plausible, enforced on the
+factory itself.*
+
+### Two engine hardening fixes the final push surfaced (both tested)
+
+5. **Editable-artifact vs read-only-evidence scope** (`saas-forge/live.mjs`) —
+   the deepest self-audit bug: once the builder could read the source anchors,
+   the adversary's "raise blockers resolvable by editing the files shown" rule
+   started demanding the builder EDIT TELOS's own source to match the audit's
+   claims (16 passes of deadlock). Evidence files are now tagged `[EDITABLE
+   ARTIFACT]` vs `[READ-ONLY EVIDENCE]`; a cited claim is resolved by correcting
+   the ARTIFACT to match the evidence, never by changing the evidence. This
+   collapsed the fake blockers (14 pruned) — the general shape any audit-of-
+   existing-code needs.
+6. **Call-level transient retry** (`forge/ratchet.mjs` `withTransientRetry`) — a
+   single flaky-network seat call (ECONNRESET/ETIMEDOUT) retries in place with
+   backoff instead of aborting a whole pass; billing/quota failures are NEVER
+   retried (retrying a wallet buys nothing). Complements the driver's pass-level
+   transient handling.
 
 ## What the self-audit proved
 

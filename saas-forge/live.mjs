@@ -259,13 +259,17 @@ export function makeCouncilFactFns({
   // about what the artifact text can actually fix.
   const SCOPED_CHALLENGER =
     "You are the adversarial reviewer. Be skeptical, concrete, and source-demanding — about the artifact itself. " +
-    "The file manifest is FIXED: raise only blockers resolvable by EDITING THE FILES SHOWN IN EVIDENCE. " +
-    "Demands for additional files, live infrastructure evidence, command outputs, or external systems are OUT OF " +
-    "SCOPE for this bout and must not be raised as blockers. " +
+    "The evidence contains TWO kinds of files. [EDITABLE ARTIFACT] files are the ONLY thing the builder can change — " +
+    "raise blockers ONLY if they are resolvable by editing those. [READ-ONLY EVIDENCE] files (source code, prior run " +
+    "records, external references) are IMMUTABLE GROUND TRUTH: cite them to verify or refute the artifact's claims, but " +
+    "NEVER raise a blocker that would require editing them — demanding a change to read-only evidence (e.g. 'the source " +
+    "file should be modified', 'the README must be updated') is OUT OF SCOPE and invalid. A cited claim is resolved by " +
+    "correcting the ARTIFACT to match the evidence, not by changing the evidence. " +
+    "Also out of scope: demands for additional files, live infrastructure, command outputs, or external systems. " +
     "THE CONTRACT BOUNDS YOU: a valid blocker cites either a specific violation of the stated CONTRACT " +
-    "(the requirements shown with the evidence) or a factual defect in the artifact (internal contradiction, " +
-    "broken example, claim the artifact itself does not fulfill). Aesthetic preferences, completeness wishes, " +
-    "and new demands beyond the contract are NOT blockers — a bout that satisfies its contract ends.";
+    "(the requirements shown with the evidence) or a factual defect in the ARTIFACT (internal contradiction, " +
+    "broken example, a claim the artifact makes that its cited evidence does not support). Aesthetic preferences, " +
+    "completeness wishes, and demands beyond the contract are NOT blockers — a bout that satisfies its contract ends.";
   // Seat economics: per-role reasoning-effort tiers (env-overridable) — the
   // referee needs no xhigh deliberation to spot repetition.
   const efforts = { challenger: effortForRole("challenger"), builder: effortForRole("builder"), reviewer: effortForRole("reviewer") };
@@ -280,8 +284,9 @@ export function makeCouncilFactFns({
   // referee: null to disable (e.g. on the legacy transport with no gemini_ask).
   const refereeFn = referee === "gemini" ? makeGeminiReferee({ callTool, effort: effortForRole("referee") })
     : (typeof referee === "function" ? referee : undefined);
-  return ({ workstream, checks, baseDir, contract }) => {
+  return ({ workstream, checks, baseDir, contract, authoredFiles = [] }) => {
     const facts = factBreakout({ checks, baseDir });
+    const authored = new Set(authoredFiles);
     // The bout argues about the ARTIFACT against its CONTRACT, so every round
     // reads both: adversaries attack real content for contract violations and
     // proposers can cite real lines — without this, text seats stalemate
@@ -293,16 +298,21 @@ export function makeCouncilFactFns({
     const diskEvidence = () => {
       const paths = [...new Set(checks.map((c) => c.path).filter(Boolean))];
       return contractHeader + (paths.map((rel) => {
+        // Editability tag: only the authored artifact can change; source anchors
+        // are immutable evidence the adversary must cite, never demand edits to.
+        const tag = authored.size === 0 || authored.has(rel)
+          ? "[EDITABLE ARTIFACT]"
+          : "[READ-ONLY EVIDENCE — cite, do NOT demand changes]";
         try {
           const full = readFileSync(path.join(baseDir, rel), "utf8");
           // Annotate any excerpting explicitly, and show HEAD + TAIL — clipping
           // only the head hides late sections and adversaries (correctly)
           // block on content they cannot verify.
           return full.length > 60000
-            ? `--- ${rel} [EXCERPT: first 45000 + last 12000 of ${full.length} chars — the file on disk is complete] ---\n${full.slice(0, 45000)}\n\n[... ${full.length - 57000} chars omitted (middle) ...]\n\n${full.slice(-12000)}`
-            : `--- ${rel} (complete, ${full.length} chars) ---\n${full}`;
+            ? `--- ${tag} ${rel} [EXCERPT: first 45000 + last 12000 of ${full.length} chars — the file on disk is complete] ---\n${full.slice(0, 45000)}\n\n[... ${full.length - 57000} chars omitted (middle) ...]\n\n${full.slice(-12000)}`
+            : `--- ${tag} ${rel} (complete, ${full.length} chars) ---\n${full}`;
         } catch {
-          return `--- ${rel} --- (missing on disk)`;
+          return `--- ${tag} ${rel} --- (missing on disk)`;
         }
       }).join("\n\n") || "(no artifact files declared)");
     };

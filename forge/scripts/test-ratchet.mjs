@@ -10,7 +10,8 @@ import os from "node:os";
 import path from "node:path";
 import {
   openState, foldDefs, styxGenerateFiles, bankVerifyFailures,
-  contractClosure, runBouts, approvalEvidenceDigest, loadKeys, saveJson
+  contractClosure, runBouts, approvalEvidenceDigest, loadKeys, saveJson,
+  withTransientRetry
 } from "../ratchet.mjs";
 
 const tmp = () => mkdtempSync(path.join(os.tmpdir(), "forge-test-"));
@@ -156,6 +157,30 @@ const tmp = () => mkdtempSync(path.join(os.tmpdir(), "forge-test-"));
   const digest = approvalEvidenceDigest(records, w);
   assert.ok(digest.includes("2/3 deterministic checks RE-VERIFIED FROM DISK"), `derived counts real: ${digest.split("\n")[2]}`);
   assert.ok(digest.includes("3 enumerated Phase 2 work items"), "work items counted from the artifact");
+}
+
+// 8. withTransientRetry: retries network flakes, passes through success, does
+//    NOT retry billing failures, and gives up after the retry budget.
+{
+  // (a) a transient ECONNRESET then success -> retried, resolves.
+  let n = 0;
+  const flaky = withTransientRetry(async () => {
+    n++; if (n < 3) throw new Error("read ECONNRESET"); return "ok";
+  }, { retries: 5, backoffMs: 0 });
+  assert.equal(await flaky("t", {}), "ok");
+  assert.equal(n, 3, "retried past two network resets");
+
+  // (b) a billing failure is NOT retried (retrying a wallet buys nothing).
+  let m = 0;
+  const billing = withTransientRetry(async () => { m++; throw new Error("credit balance is too low"); }, { retries: 5, backoffMs: 0 });
+  await assert.rejects(() => billing("t", {}), /credit balance/);
+  assert.equal(m, 1, "billing failure thrown immediately, no retry");
+
+  // (c) sustained network failure exhausts the budget then throws.
+  let k = 0;
+  const dead = withTransientRetry(async () => { k++; throw new Error("ETIMEDOUT"); }, { retries: 2, backoffMs: 0 });
+  await assert.rejects(() => dead("t", {}), /ETIMEDOUT/);
+  assert.equal(k, 3, "initial try + 2 retries");
 }
 
 console.log("test-ratchet: all assertions passed");

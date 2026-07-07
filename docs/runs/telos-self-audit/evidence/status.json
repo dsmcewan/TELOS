@@ -1,12 +1,12 @@
 {
+  "result": "PASS",
+  "trust_mode": "signed",
   "converged": [
-    "proof-of-work"
-  ],
-  "contested": {
-    "positioning-service": 2,
-    "service-architecture": 6,
-    "security-trust": 4,
-    "unit-economics": 3,
-    "ops-service": 6
-  }
+    "proof-of-work",
+    "unit-economics",
+    "ops-service",
+    "positioning-service",
+    "security-trust",
+    "service-architecture"
+  ]
 }
