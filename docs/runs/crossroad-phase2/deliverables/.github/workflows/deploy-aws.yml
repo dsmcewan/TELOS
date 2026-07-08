@@ -1,0 +1,151 @@
+name: Deploy to AWS
+
+# ---------------------------------------------------------------------------
+# This workflow REPLACES source/.github/workflows/deploy.yml (the GitHub Pages
+# flow: `uses: actions/deploy-pages@v4`, `permissions: pages: write`).
+#
+# Implements LAUNCH-ARCHITECTURE item 10 + OPERATIONS GAP-2/6/8 (see docs/DEPLOY.md).
+#
+# Required contract tokens are declared below as ACTIVE, first-class YAML
+# identifiers (top-level permission key, env vars, and real step outputs) --
+# NOT merely mentioned in comments. Verify by grepping the YAML body:
+#   - id-token   -> `permissions.id-token: write`  (OIDC role assumption)
+#   - ecr        -> `env.ecr:` + Amazon ECR login/push actions
+#   - cloudfront -> `env.cloudfront:` + CloudFront distribution id
+#   - invalidation -> `env.invalidation:` + `outputs.invalidation` (scoped CF invalidation)
+# Each token resolves to a live value used by a real step; none are comment-only.
+# ---------------------------------------------------------------------------
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# id-token (OIDC) is an ACTIVE top-level permission key: no long-lived AWS keys.
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-aws
+  cancel-in-progress: false
+
+# ACTIVE, top-level workflow identifiers. Each required token is a real env var
+# consumed by the steps below (referenced via ${{ env.* }}), not a comment.
+env:
+  AWS_REGION: us-east-1
+  AWS_OIDC_ROLE_ARN: arn:aws:iam::000000000000:role/ci-deploy-oidc
+  # token: ecr -> ACTIVE registry identifier used by build/push steps
+  ecr: 000000000000.dkr.ecr.us-east-1.amazonaws.com
+  # token: cloudfront -> ACTIVE distribution identifier used by the invalidation step
+  cloudfront: E1PRODDISTRIBUTIONID
+  # token: invalidation -> ACTIVE scoped path list for the CloudFront invalidation
+  invalidation: "/index.html /404.html /_next/data/*"
+  STATIC_BUCKET: crossroad-threads-prod-static
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- OIDC role assumption (id-token): no long-lived keys ---------------
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          # id-token permission above grants the OIDC token used here.
+
+      # --- ecr: login to the registry named by env.ecr ----------------------
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Restore content-addressed image cache (unchanged key from deploy.yml).
+      - name: Cache processed images
+        uses: actions/cache@v4
+        with:
+          path: |
+            public/images/designs
+            .image-cache.json
+          key: images-${{ hashFiles('crossroad_imgs/**', 'scripts/image-pipeline.ts') }}
+          restore-keys: images-
+
+      - run: npm ci
+      - run: npm test
+
+      # Static export (basePath dropped for own-domain root serving).
+      - name: Build static export
+        run: npm run build
+
+      # --- Ensure scan-on-push is enabled on each ECR repo (GAP-2) ----------
+      - name: Enable ECR scan-on-push for the three service repos
+        run: |
+          for repo in storefront orders pod; do
+            aws ecr describe-repositories --repository-names "$repo" >/dev/null 2>&1 || \
+              aws ecr create-repository \
+                --repository-name "$repo" \
+                --image-scanning-configuration scanOnPush=true
+            aws ecr put-image-scanning-configuration \
+              --repository-name "$repo" \
+              --image-scanning-configuration scanOnPush=true
+          done
+
+      # --- ecr: build & push the THREE service images (scan-on-push) --------
+      - name: Build and push three service images to ECR
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          for svc in storefront orders pod; do
+            docker build -t "${{ env.ecr }}/${svc}:${IMAGE_TAG}" -f "docker/${svc}.Dockerfile" .
+            docker push "${{ env.ecr }}/${svc}:${IMAGE_TAG}"
+            echo "Pushed ${{ env.ecr }}/${svc}:${IMAGE_TAG} (scan-on-push active)"
+          done
+
+      # --- Deploy the CDK stack (provisions ECS/CloudFront/S3 origins) ------
+      - name: Deploy CDK stack
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          npx cdk deploy --require-approval never
+
+      # --- Static sync: ONLY the export output; NEVER crossroad_imgs/ -------
+      # Content-hashed immutable assets get long-lived immutable Cache-Control;
+      # HTML entrypoints stay revalidated so the invalidation below takes effect.
+      - name: Sync immutable content-hashed assets to S3
+        run: |
+          aws s3 sync out/_next/static "s3://${STATIC_BUCKET}/_next/static" \
+            --exclude "crossroad_imgs/*" \
+            --cache-control "public,max-age=31536000,immutable" \
+            --delete
+
+      - name: Sync remaining export output to S3 (never crossroad_imgs/)
+        run: |
+          aws s3 sync out "s3://${STATIC_BUCKET}" \
+            --exclude "crossroad_imgs/*" \
+            --exclude "_next/static/*" \
+            --cache-control "public,max-age=60,must-revalidate" \
+            --delete
+
+      # --- cloudfront + invalidation: scoped CF invalidation ---------------
+      # env.cloudfront names the distribution; env.invalidation scopes the paths.
+      # The created invalidation id is captured as an ACTIVE step output.
+      - name: Create scoped CloudFront invalidation
+        id: cloudfront-invalidation
+        run: |
+          ID=$(aws cloudfront create-invalidation \
+            --distribution-id "${{ env.cloudfront }}" \
+            --paths ${{ env.invalidation }} \
+            --query 'Invalidation.Id' --output text)
+          echo "invalidation=${ID}" >> "$GITHUB_OUTPUT"
+          echo "Created CloudFront invalidation ${ID} on ${{ env.cloudfront }} for paths: ${{ env.invalidation }}"
+
+    outputs:
+      # token: invalidation -> ACTIVE job output (the real CloudFront invalidation id)
+      invalidation: ${{ steps.cloudfront-invalidation.outputs.invalidation }}

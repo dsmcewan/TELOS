@@ -140,13 +140,16 @@ export function styxGenerateFiles({ state, generate, binary = (rel) => /\.(png|j
 // a node look broken when only the wallet or the wire is. (Learned the hard way
 // during the self-audit: repeated "credit balance too low" errors banked onto a
 // converging workstream.)
-export const INFRA_ERROR = /credit balance|insufficient_quota|quota exceeded|rate limit|429|ENOTFOUND|ETIMEDOUT|ECONNRESET|fetch failed|getaddrinfo|socket hang up/i;
+export const INFRA_ERROR = /credit balance|insufficient_quota|quota exceeded|rate limit|429|ENOTFOUND|ETIMEDOUT|ECONNRESET|fetch failed|getaddrinfo|socket hang up|MCP error -3260[0-9]|MCP error -32000/i;
 
 // Network flakiness (ECONNRESET/ETIMEDOUT/ENOTFOUND/socket hang up) — NOT
 // billing. A single reset should retry the call, not abort the whole pass.
 // (Distinct from INFRA_ERROR: quota/credit failures are NOT retryable here —
 // retrying a billing failure buys nothing; they surface for a clean halt.)
-const NETWORK_FLAKE = /ECONNRESET|ETIMEDOUT|ENOTFOUND|socket hang up|getaddrinfo|fetch failed|network|EAI_AGAIN/i;
+// Includes MCP transport hiccups (JSON-RPC internal/server errors -32603/-32000,
+// seen when several large generations hit the plugin servers concurrently) —
+// retry with backoff, which also staggers the concurrent load that provoked them.
+const NETWORK_FLAKE = /ECONNRESET|ETIMEDOUT|ENOTFOUND|socket hang up|getaddrinfo|fetch failed|network|EAI_AGAIN|MCP error -3260[0-9]|MCP error -32000|internal error/i;
 const isBilling = (s) => /credit balance|insufficient_quota|quota exceeded|billing|429|rate limit/i.test(s);
 
 /**

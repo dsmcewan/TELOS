@@ -1,0 +1,149 @@
+{
+  "$schema_note": "Machine-readable ad plan derived from audit/ADVERTISING.md (certified). All audience/performance figures are Hypotheses per the doc's epistemic contract; no pre-launch data is asserted as measured. Own-domain URLs only (no GitHub Pages basePath).",
+  "currency": "USD",
+  "phase": "test",
+  "own_domain": "https://crossroadthreads.com",
+  "source_evidence": {
+    "advertising_audit": "audit/ADVERTISING.md",
+    "designs": "source/designs.json",
+    "catalog_builder": "scripts/build-catalog.ts",
+    "exhibit_route": "src/app/exhibit/[slug]/page.tsx"
+  },
+  "budget": {
+    "note": "Test-phase daily budget shares across campaigns; shares sum to 1.0. Absolute dollars set at launch, ratios fixed here.",
+    "daily_total_usd": 100.0,
+    "shares": {
+      "meta_prospecting_advantage_plus": 0.7,
+      "meta_retargeting": 0.3
+    },
+    "shares_sum": 1.0
+  },
+  "campaigns": [
+    {
+      "id": "meta_prospecting_advantage_plus",
+      "platform": "meta",
+      "objective": "sales",
+      "type": "advantage_plus_shopping",
+      "daily_budget_share": 0.7,
+      "landing_url_base": "https://crossroadthreads.com/exhibit/",
+      "utm_template": "?utm_source=meta&utm_medium=paid_social&utm_campaign=prospecting_advplus",
+      "adsets": [
+        {
+          "id": "advplus_broad_us",
+          "name": "Advantage+ Broad US",
+          "daily_budget_share": 0.5,
+          "audiences": [
+            {
+              "id": "td1_narrative_self_expressor",
+              "hypothesis": "TD-1",
+              "description": "Ages 24-40, US-first, Southern Gothic / mythology / museum-goer affinities (audit/ADVERTISING.md TD-1)",
+              "age_min": 24,
+              "age_max": 40,
+              "geo": "US",
+              "creatives": [
+                {
+                  "id": "cr_placard_carousel",
+                  "format": "carousel",
+                  "copy_source": "src/lib/copy.ts (museum placard voice)",
+                  "daily_budget_share": 0.6
+                },
+                {
+                  "id": "cr_giftshop_single",
+                  "format": "single_image",
+                  "copy_source": "GiftShopPanel.tsx conceit",
+                  "daily_budget_share": 0.4
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "advplus_gifting",
+          "name": "Advantage+ Gifting",
+          "daily_budget_share": 0.5,
+          "audiences": [
+            {
+              "id": "td2_thoughtful_gifter",
+              "hypothesis": "TD-2",
+              "description": "Ages 28-55, unique-gift / museum-shop buyers (audit/ADVERTISING.md TD-2)",
+              "age_min": 28,
+              "age_max": 55,
+              "geo": "US",
+              "creatives": [
+                {
+                  "id": "cr_gift_frame_video",
+                  "format": "video",
+                  "copy_source": "npm run audio narration voiceover",
+                  "daily_budget_share": 1.0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "meta_retargeting",
+      "platform": "meta",
+      "objective": "sales",
+      "type": "retargeting",
+      "daily_budget_share": 0.3,
+      "landing_url_base": "https://crossroadthreads.com/exhibit/",
+      "utm_template": "?utm_source=meta&utm_medium=paid_social&utm_campaign=retargeting",
+      "adsets": [
+        {
+          "id": "rt_visitors_30d",
+          "name": "Site Visitors 30d + Add-to-Cart",
+          "daily_budget_share": 1.0,
+          "audiences": [
+            {
+              "id": "rt_engaged_no_purchase",
+              "hypothesis": "retargeting-warm",
+              "description": "Exhibit page viewers and cart-abandoners (src/lib/commerce.ts cart primitive), 30-day window, excluding purchasers",
+              "window_days": 30,
+              "exclude": ["purchasers_180d"],
+              "creatives": [
+                {
+                  "id": "cr_dpa_catalog",
+                  "format": "dynamic_product_ads",
+                  "copy_source": "catalog feed (see ads/catalog-feed-spec.md)",
+                  "daily_budget_share": 0.7
+                },
+                {
+                  "id": "cr_reassurance",
+                  "format": "single_image",
+                  "copy_source": "sizing/quality/arrival reassurance per TD-2 assumptions",
+                  "daily_budget_share": 0.3
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "rules": {
+    "roas_floor": 1.0,
+    "roas_scale_target": 2.0,
+    "evaluation_window_days": 7,
+    "min_spend_before_action_usd": 50.0,
+    "kill": {
+      "description": "Pause any adset/creative below the ROAS floor after the evaluation window and minimum spend.",
+      "metric": "roas",
+      "operator": "<",
+      "threshold": 1.0,
+      "action": "pause",
+      "applies_to": ["adset", "creative", "audience"]
+    },
+    "scale": {
+      "description": "Increase daily budget 20% per week for any adset with ROAS >= 2.0 over the evaluation window.",
+      "metric": "roas",
+      "operator": ">=",
+      "threshold": 2.0,
+      "action": "increase_budget",
+      "step_pct": 20,
+      "cadence": "weekly",
+      "applies_to": ["adset"]
+    }
+  }
+}
