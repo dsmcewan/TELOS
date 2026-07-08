@@ -1,0 +1,91 @@
+{
+  "generated_for": "crossroad-phase2",
+  "live": true,
+  "phase": "phase2-build",
+  "transport": "seat-router default (claude/agy_checkpoint via ai-peer-mcp; grok/gemini/codex via claude-plugins seat servers)",
+  "trust_mode": "advisory",
+  "build": {
+    "merge_status": "ready",
+    "settled_this_invocation": [],
+    "halts": []
+  },
+  "teams": [
+    {
+      "workstream": "infra-static",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "order-service",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "transaction-service",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 2,
+      "referee": null
+    },
+    {
+      "workstream": "pod-service",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "security-controls",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "ci-deploy",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    },
+    {
+      "workstream": "ads-campaign-plan",
+      "converged": true,
+      "finalStatus": "meets",
+      "rounds": 1,
+      "referee": null
+    }
+  ],
+  "gate_status": "pass",
+  "approvals_provenance": [
+    {
+      "model": "claude",
+      "has_provenance": true,
+      "response_id": "msg_011CcofWrebymDMNWU4ZZ7Gm"
+    },
+    {
+      "model": "agy",
+      "has_provenance": true,
+      "response_id": "agy-44cb01da259b0c0515414fce882aa88f8e3827be"
+    },
+    {
+      "model": "codex",
+      "has_provenance": true,
+      "response_id": "chatcmpl-DzAgloLSqc156K4E4HkuSwp2YC7sM"
+    }
+  ],
+  "blockers": [],
+  "result": "PASS",
+  "seat_calls": 5,
+  "seat_call_breakdown": {
+    "grok_ask": 1,
+    "agy_ask": 1,
+    "claude_ask": 1,
+    "agy_checkpoint": 1,
+    "codex_ask": 1
+  }
+}

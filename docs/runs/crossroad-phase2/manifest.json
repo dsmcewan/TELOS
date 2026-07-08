@@ -1,0 +1,167 @@
+{
+  "build_id": "crossroad-phase2",
+  "idea_id": "crossroad-threads",
+  "use_case": "phase2-build",
+  "telos": "Build Crossroad Threads' own-domain commerce infrastructure from the certified launch-audit gap lists: AWS static plane, Dockerized order/transaction/POD services, security controls, AWS CI, and the ad campaign plan.",
+  "objective": "Build the Phase-2 deliverables the certified Crossroad Threads launch audit specified. Each workstream AUTHORS real, self-contained artifacts (IaC, service code, Dockerfiles, config, docs) grounded against two read-only evidence sources: the certified audit artifacts (audit/*.md) and the CrossroadThreads repository snapshot (source/*). Operator-pinned stack: AWS (Route53, CloudFront, S3, ACM, API Gateway, Lambda, ECS Fargate, DynamoDB, SQS, EventBridge, Step Functions, Secrets Manager, KMS, CloudWatch, ECR, IAM) with Docker-containerized order/transaction/POD services and a Stripe payment + Printful-style POD pipeline. Every technical claim cites the audit or source; the artifacts must contain their required section tokens verbatim (deterministic on-disk checks). Adversaries verify each artifact against the cited evidence; a claim is resolved by correcting the ARTIFACT to match the evidence, never by editing the read-only audit/source. This run BUILDS the infrastructure spec — not the audit; the gate certifies each artifact is present, self-consistent, and faithful to the certified gap lists.",
+  "business_thesis": "The certified audit's gap map is the build spec: turning a static museum-brochure into a real own-domain storefront requires exactly the AWS/Docker/order-transaction-POD pipeline the audit enumerated, built to survive adversarial verification against the audit and the source.",
+  "target_users": ["the Crossroad Threads operator deploying the storefront", "engineers implementing the commerce backend", "the ads operator wiring campaigns to the catalog"],
+  "workstreams": [
+    {
+      "id": "infra-static",
+      "signer": "codex", "lens": "gemini", "dependencies": [],
+      "files": ["infra/cdk/lib/static-stack.ts", "infra/cdk/bin/app.ts", "infra/cdk/README.md"],
+      "requirements": "Author the AWS CDK (TypeScript) static-plane stack from LAUNCH-ARCHITECTURE Phase-2 items 7-9 and 1. static-stack.ts: a private S3 bucket (no public access) fronted by CloudFront with Origin Access Control (OAC), an ACM certificate in us-east-1, Route 53 A/AAAA alias records for the apex and www, a CloudFront Function that rewrites directory paths to index.html (trailingSlash) and 301s to the canonical host, and an /api/* CloudFront behavior pointing at an API origin (API Gateway/ALB). bin/app.ts wires the stack. README.md documents deploy and the basePath decoupling (DEPLOY_TARGET env, default '' for AWS — cite source/next.config.ts). All values inline; cite audit/LAUNCH-ARCHITECTURE.md and source/next.config.ts. Required tokens in static-stack.ts: CloudFront, OriginAccessControl, HostedZone, Certificate, Function.",
+      "checks": [
+        { "type": "file_exists", "path": "infra/cdk/lib/static-stack.ts" },
+        { "type": "file_exists", "path": "infra/cdk/bin/app.ts" },
+        { "type": "file_contains", "path": "infra/cdk/lib/static-stack.ts", "needle": "CloudFront", "grade": "inspectable" },
+        { "type": "file_contains", "path": "infra/cdk/lib/static-stack.ts", "needle": "OriginAccessControl", "grade": "inspectable" },
+        { "type": "file_contains", "path": "infra/cdk/lib/static-stack.ts", "needle": "HostedZone", "grade": "inspectable" },
+        { "type": "file_contains", "path": "infra/cdk/lib/static-stack.ts", "needle": "Certificate", "grade": "inspectable" },
+        { "type": "file_contains", "path": "infra/cdk/lib/static-stack.ts", "needle": "Function", "grade": "inspectable" },
+        { "type": "file_exists", "path": "audit/LAUNCH-ARCHITECTURE.md" },
+        { "type": "file_exists", "path": "source/next.config.ts" }
+      ],
+      "claims": [
+        { "statement": "The current build couples basePath to GITHUB_ACTIONS in next.config.ts and must be re-keyed to an explicit DEPLOY_TARGET for AWS", "grade": "cited" },
+        { "statement": "The static plane is a private S3 bucket behind CloudFront with OAC, ACM(us-east-1), and Route53 alias records", "grade": "inspectable" }
+      ],
+      "findingsKey": "architecture_findings",
+      "finding": "AWS static-plane IaC realizing the launch-architecture gap list."
+    },
+    {
+      "id": "order-service",
+      "signer": "codex", "lens": "codex", "dependencies": [],
+      "files": ["services/order/src/state-machine.ts", "services/order/src/tables.ts", "services/order/Dockerfile"],
+      "requirements": "Build the order-service from COMMERCE-GAP items 4-6/8 and SECURITY item 8. state-machine.ts: an order state machine with explicit states (cart, pending, paid, fulfilling, shipped, delivered, cancelled, failed) and guarded transitions, with immutable transition audit records and idempotency (dedupe via a ProcessedEvents concept). tables.ts: the DynamoDB table definitions — Orders, Carts (TTL), ProcessedEvents — with unique constraints for paymentSessionId, webhookEventId, podOrderId. Dockerfile: a multi-stage non-root Node image (pinned base). All inline; cite audit/COMMERCE-GAP.md and audit/SECURITY.md. Required tokens: idempotency (state-machine.ts), ProcessedEvents (tables.ts), 'FROM node' (Dockerfile).",
+      "checks": [
+        { "type": "file_exists", "path": "services/order/src/state-machine.ts" },
+        { "type": "file_exists", "path": "services/order/src/tables.ts" },
+        { "type": "file_exists", "path": "services/order/Dockerfile" },
+        { "type": "file_contains", "path": "services/order/src/state-machine.ts", "needle": "idempotency", "grade": "inspectable" },
+        { "type": "file_contains", "path": "services/order/src/tables.ts", "needle": "ProcessedEvents", "grade": "inspectable" },
+        { "type": "file_contains", "path": "services/order/Dockerfile", "needle": "FROM node", "grade": "inspectable" },
+        { "type": "file_exists", "path": "audit/COMMERCE-GAP.md" },
+        { "type": "file_exists", "path": "audit/SECURITY.md" }
+      ],
+      "claims": [
+        { "statement": "The order state machine records immutable transitions and dedupes via a ProcessedEvents table", "grade": "inspectable" },
+        { "statement": "There is no purchase path in the current repo; order persistence is net-new", "grade": "cited" }
+      ],
+      "findingsKey": "backend_schema_findings",
+      "finding": "Order-pipeline service with state machine, tables, and container."
+    },
+    {
+      "id": "transaction-service",
+      "signer": "codex", "lens": "grok", "dependencies": [],
+      "files": ["services/transaction/src/checkout.ts", "services/transaction/src/webhook.ts", "services/transaction/Dockerfile"],
+      "requirements": "Build the transaction-service from COMMERCE-GAP item 7-8 and SECURITY items 6-7. checkout.ts: server-authoritative checkout-session creation — server-side re-pricing (never trust browser amounts), idempotency keys, SKU/amount validation, no secrets in the response. webhook.ts: a payment webhook handler with raw-body signature verification (Stripe constructEvent-style), timestamp tolerance, replay protection, provider event-ID dedupe, amount/currency/order validation, redacted logging, and refund/dispute routing; order success is recorded ONLY from the verified webhook. Dockerfile: multi-stage non-root Node image. Inline; cite audit/SECURITY.md and audit/COMMERCE-GAP.md. Required tokens: idempotency (checkout.ts), signature (webhook.ts), refund (webhook.ts), 'FROM node' (Dockerfile).",
+      "checks": [
+        { "type": "file_exists", "path": "services/transaction/src/checkout.ts" },
+        { "type": "file_exists", "path": "services/transaction/src/webhook.ts" },
+        { "type": "file_exists", "path": "services/transaction/Dockerfile" },
+        { "type": "file_contains", "path": "services/transaction/src/checkout.ts", "needle": "idempotency", "grade": "inspectable" },
+        { "type": "file_contains", "path": "services/transaction/src/webhook.ts", "needle": "signature", "grade": "inspectable" },
+        { "type": "file_contains", "path": "services/transaction/src/webhook.ts", "needle": "refund", "grade": "inspectable" },
+        { "type": "file_contains", "path": "services/transaction/Dockerfile", "needle": "FROM node", "grade": "inspectable" },
+        { "type": "file_exists", "path": "audit/SECURITY.md" }
+      ],
+      "claims": [
+        { "statement": "Order success is recorded only from a raw-body signature-verified webhook with replay protection and event-ID dedupe", "grade": "inspectable" },
+        { "statement": "Checkout re-prices server-side because content/designs.json prices cannot be trusted from the browser", "grade": "cited" }
+      ],
+      "findingsKey": "security_findings",
+      "finding": "Transaction service: server-authoritative checkout + verified webhook."
+    },
+    {
+      "id": "pod-service",
+      "signer": "codex", "lens": "gemini", "dependencies": [],
+      "files": ["services/pod/src/worker.ts", "services/pod/src/variant-sync.ts", "services/pod/Dockerfile"],
+      "requirements": "Build the POD fulfillment service from COMMERCE-GAP item 9, OPERATIONS GAP-4, SECURITY item 9. worker.ts: an SQS-consumer worker on ECS Fargate that submits ONLY paid orders to the POD provider, with idempotency keys, retry-with-backoff, a dead-letter queue, shipment-tracking-webhook reconciliation, and manual-review support. variant-sync.ts: idempotent variant sync mapping our SKU to the POD provider variant (ourSku -> podVariant), with retry/backoff and DLQ + replay. Dockerfile: multi-stage non-root Node image for Fargate. Inline; cite audit/COMMERCE-GAP.md and audit/OPERATIONS.md. Required tokens: variant (variant-sync.ts), dead letter (worker.ts), tracking (worker.ts), 'FROM node' (Dockerfile).",
+      "checks": [
+        { "type": "file_exists", "path": "services/pod/src/worker.ts" },
+        { "type": "file_exists", "path": "services/pod/src/variant-sync.ts" },
+        { "type": "file_exists", "path": "services/pod/Dockerfile" },
+        { "type": "file_contains", "path": "services/pod/src/variant-sync.ts", "needle": "variant", "grade": "inspectable" },
+        { "type": "file_contains", "path": "services/pod/src/worker.ts", "needle": "dead letter", "grade": "inspectable" },
+        { "type": "file_contains", "path": "services/pod/src/worker.ts", "needle": "tracking", "grade": "inspectable" },
+        { "type": "file_contains", "path": "services/pod/Dockerfile", "needle": "FROM node", "grade": "inspectable" },
+        { "type": "file_exists", "path": "audit/COMMERCE-GAP.md" },
+        { "type": "file_exists", "path": "audit/OPERATIONS.md" }
+      ],
+      "claims": [
+        { "statement": "The POD worker submits only paid orders and a POD failure never drops a paid order (DLQ + reconciliation)", "grade": "inspectable" },
+        { "statement": "POD variant sync is net-new; the current repo has no fulfillment integration", "grade": "cited" }
+      ],
+      "findingsKey": "scalability_findings",
+      "finding": "POD fulfillment worker with queue, DLQ, and tracking reconciliation."
+    },
+    {
+      "id": "security-controls",
+      "signer": "codex", "lens": "grok", "dependencies": [],
+      "files": ["infra/security/headers.ts", "infra/security/iam-policies.json", "docs/SECURITY-RUNBOOK.md"],
+      "requirements": "Build the security controls from SECURITY items 3, 10-13. headers.ts: hosting-level security headers (the current source/next.config.ts has no headers()) — Content-Security-Policy (report-only then enforce), Strict-Transport-Security (HSTS), X-Content-Type-Options: nosniff, Referrer-Policy, Permissions-Policy, plus a CSP report endpoint note. iam-policies.json: least-privilege IAM role policy documents for CI deploy, ECS execution, application task, fulfillment worker, and static-asset publisher — no wildcard actions, no long-lived keys. SECURITY-RUNBOOK.md: Secrets Manager + KMS (runtime injection only, per-environment names, rotation), observability (correlation IDs, CloudWatch alarms, failed-webhook and POD DLQ alerts), and runbooks (refunds, secret rotation, provider outage). Inline; cite audit/SECURITY.md and source/next.config.ts. Required tokens: Content-Security-Policy (headers.ts), Strict-Transport-Security (headers.ts), least-privilege (iam-policies.json), Secrets Manager (SECURITY-RUNBOOK.md).",
+      "checks": [
+        { "type": "file_exists", "path": "infra/security/headers.ts" },
+        { "type": "file_exists", "path": "infra/security/iam-policies.json" },
+        { "type": "file_exists", "path": "docs/SECURITY-RUNBOOK.md" },
+        { "type": "file_contains", "path": "infra/security/headers.ts", "needle": "Content-Security-Policy", "grade": "inspectable" },
+        { "type": "file_contains", "path": "infra/security/headers.ts", "needle": "Strict-Transport-Security", "grade": "inspectable" },
+        { "type": "file_contains", "path": "infra/security/iam-policies.json", "needle": "least-privilege", "grade": "inspectable" },
+        { "type": "file_contains", "path": "docs/SECURITY-RUNBOOK.md", "needle": "Secrets Manager", "grade": "inspectable" },
+        { "type": "file_exists", "path": "audit/SECURITY.md" },
+        { "type": "file_exists", "path": "source/next.config.ts" }
+      ],
+      "claims": [
+        { "statement": "The current next.config.ts defines no headers(); security headers are added at the hosting layer", "grade": "cited" },
+        { "statement": "IAM roles are least-privilege with no wildcard actions and no long-lived keys", "grade": "inspectable" }
+      ],
+      "findingsKey": "accuracy_eval_findings",
+      "finding": "Security controls: headers, least-privilege IAM, secrets + runbooks."
+    },
+    {
+      "id": "ci-deploy",
+      "signer": "claude", "lens": "gemini", "dependencies": [],
+      "files": [".github/workflows/deploy-aws.yml", "docs/DEPLOY.md"],
+      "requirements": "Build the AWS deploy pipeline from LAUNCH-ARCHITECTURE item 10, OPERATIONS GAP-2/6/8, replacing the current GitHub Pages flow (source/.github/workflows/deploy.yml). deploy-aws.yml: a GitHub Actions workflow using OIDC role assumption (no long-lived keys), building & pushing the three service images to ECR with scan-on-push, deploying the CDK stack, then 'aws s3 sync' of ONLY the static export output (never crossroad_imgs/) followed by a scoped CloudFront invalidation. DEPLOY.md: the deploy runbook — staging distribution mirroring prod, CloudFront rollback via versioned S3 origin + invalidation, and content-hashed immutable Cache-Control. Inline; cite audit/LAUNCH-ARCHITECTURE.md, audit/OPERATIONS.md, and source/.github/workflows/deploy.yml. Required tokens in deploy-aws.yml: id-token (OIDC), ecr, cloudfront, invalidation.",
+      "checks": [
+        { "type": "file_exists", "path": ".github/workflows/deploy-aws.yml" },
+        { "type": "file_exists", "path": "docs/DEPLOY.md" },
+        { "type": "file_contains", "path": ".github/workflows/deploy-aws.yml", "needle": "id-token", "grade": "inspectable" },
+        { "type": "file_contains", "path": ".github/workflows/deploy-aws.yml", "needle": "ecr", "grade": "inspectable" },
+        { "type": "file_contains", "path": ".github/workflows/deploy-aws.yml", "needle": "cloudfront", "grade": "inspectable" },
+        { "type": "file_contains", "path": ".github/workflows/deploy-aws.yml", "needle": "invalidation", "grade": "inspectable" },
+        { "type": "file_exists", "path": "audit/OPERATIONS.md" },
+        { "type": "file_exists", "path": "source/deploy.yml" }
+      ],
+      "claims": [
+        { "statement": "The AWS deploy uses OIDC (no long-lived keys) and syncs only the export output, never crossroad_imgs/", "grade": "inspectable" },
+        { "statement": "The current CI publishes to GitHub Pages and must be retargeted to S3+CloudFront+ECR", "grade": "cited" }
+      ],
+      "findingsKey": "frontend_design_findings",
+      "finding": "AWS CI/CD: OIDC, ECR push, S3 sync, scoped CloudFront invalidation."
+    },
+    {
+      "id": "ads-campaign-plan",
+      "signer": "claude", "lens": "claude", "dependencies": [],
+      "files": ["ads/campaign-plan.json", "ads/catalog-feed-spec.md"],
+      "requirements": "Build the machine-readable ad plan and catalog-feed spec from the certified ADVERTISING.md. campaign-plan.json: a valid JSON object with a 'campaigns' array (Meta prospecting Advantage+, Meta retargeting), each with adsets -> audiences -> creatives -> daily_budget_share, plus top-level 'budget' (test-phase shares summing to 1.0) and 'rules' with explicit numeric 'kill' and 'scale' thresholds (e.g. kill below ROAS floor, scale 20%/week above ROAS>=2). catalog-feed-spec.md: the Meta/Google catalog feed spec — fields id, title, price, image_link, link per exhibit slug, generated by extending scripts/build-catalog.ts, with absolute own-domain URLs (no GitHub Pages basePath). Inline; cite audit/ADVERTISING.md and source/designs.json. Required tokens: campaigns + kill + scale (campaign-plan.json), feed + image_link (catalog-feed-spec.md).",
+      "checks": [
+        { "type": "file_exists", "path": "ads/campaign-plan.json" },
+        { "type": "file_exists", "path": "ads/catalog-feed-spec.md" },
+        { "type": "file_contains", "path": "ads/campaign-plan.json", "needle": "campaigns", "grade": "inspectable" },
+        { "type": "file_contains", "path": "ads/campaign-plan.json", "needle": "kill", "grade": "inspectable" },
+        { "type": "file_contains", "path": "ads/campaign-plan.json", "needle": "scale", "grade": "inspectable" },
+        { "type": "file_contains", "path": "ads/catalog-feed-spec.md", "needle": "image_link", "grade": "inspectable" },
+        { "type": "file_exists", "path": "audit/ADVERTISING.md" }
+      ],
+      "claims": [
+        { "statement": "The campaign plan encodes numeric kill/scale rules and budget shares summing to 1.0", "grade": "inspectable" },
+        { "statement": "The catalog feed emits absolute own-domain URLs per exhibit slug for Meta/Google prospecting", "grade": "cited" }
+      ],
+      "findingsKey": "go_to_market_findings",
+      "finding": "Machine-readable campaign plan + catalog-feed spec from the certified ad strategy."
+    }
+  ]
+}

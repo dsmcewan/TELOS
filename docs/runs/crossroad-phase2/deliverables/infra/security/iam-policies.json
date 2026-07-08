@@ -1,0 +1,262 @@
+{
+  "$schema-note": "least-privilege IAM role policy documents for Crossroad Threads Phase 2 (audit/SECURITY.md item 7 lists 'least-privilege IAM' as a required storefront control not present in the supplied repo). Constraints enforced here: no wildcard actions (no 'Action': '*' and no 'service:*'), no long-lived access keys (all principals are role-assumable via OIDC or AWS service trust), and per-resource scoping. Placeholders like ACCOUNT_ID, REGION, and account-specific ARNs must be substituted at deploy time; they are documented, not secret.",
+  "principles": {
+    "least-privilege": "Every statement enumerates explicit actions and explicit resource ARNs. No 'Action':'*', no 'Resource':'*' except where AWS requires it for a describe/list action that has no resource-level control, in which case it is scoped by a Condition.",
+    "no-long-lived-keys": "CI authenticates via GitHub OIDC (sts:AssumeRoleWithWebIdentity). Runtime principals are ECS task/execution roles assumed by ecs-tasks.amazonaws.com. No IAM users or static access keys are defined.",
+    "secrets-injection": "Secrets are read at runtime from Secrets Manager + decrypted via KMS; see docs/SECURITY-RUNBOOK.md."
+  },
+  "roles": {
+    "ci-deploy": {
+      "description": "GitHub Actions deploy role (referenced by .github/workflows/deploy.yml per audit/SECURITY.md). least-privilege: push static export to the site bucket, invalidate CDN, register/deploy ECS task defs. Assumed only via GitHub OIDC — no long-lived keys.",
+      "assumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "GitHubOIDC",
+            "Effect": "Allow",
+            "Principal": { "Federated": "arn:aws:iam::ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com" },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+              "StringEquals": { "token.actions.githubusercontent.com:aud": "sts.amazonaws.com" },
+              "StringLike": { "token.actions.githubusercontent.com:sub": "repo:CrossroadThreads/*:ref:refs/heads/main" }
+            }
+          }
+        ]
+      },
+      "policyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "SyncStaticSiteObjects",
+            "Effect": "Allow",
+            "Action": ["s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetObject"],
+            "Resource": [
+              "arn:aws:s3:::crossroadthreads-site-prod",
+              "arn:aws:s3:::crossroadthreads-site-prod/*"
+            ]
+          },
+          {
+            "Sid": "InvalidateCdn",
+            "Effect": "Allow",
+            "Action": ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation"],
+            "Resource": "arn:aws:cloudfront::ACCOUNT_ID:distribution/EDISTRIBUTIONID"
+          },
+          {
+            "Sid": "DeployEcsTaskDefinitions",
+            "Effect": "Allow",
+            "Action": ["ecs:RegisterTaskDefinition", "ecs:DeregisterTaskDefinition", "ecs:UpdateService", "ecs:DescribeServices", "ecs:DescribeTaskDefinition"],
+            "Resource": [
+              "arn:aws:ecs:REGION:ACCOUNT_ID:service/crossroadthreads-prod/app",
+              "arn:aws:ecs:REGION:ACCOUNT_ID:service/crossroadthreads-prod/fulfillment",
+              "arn:aws:ecs:REGION:ACCOUNT_ID:task-definition/crossroadthreads-*"
+            ]
+          },
+          {
+            "Sid": "PassRuntimeRolesToEcsOnly",
+            "Effect": "Allow",
+            "Action": ["iam:PassRole"],
+            "Resource": [
+              "arn:aws:iam::ACCOUNT_ID:role/crossroadthreads-ecs-execution",
+              "arn:aws:iam::ACCOUNT_ID:role/crossroadthreads-app-task",
+              "arn:aws:iam::ACCOUNT_ID:role/crossroadthreads-fulfillment-worker"
+            ],
+            "Condition": { "StringEquals": { "iam:PassedToService": "ecs-tasks.amazonaws.com" } }
+          }
+        ]
+      }
+    },
+    "ecs-execution": {
+      "description": "ECS task execution role: pulls images, writes logs, and injects secrets at container start. least-privilege: scoped to this project's ECR repos, log groups, secret ARNs, and KMS key.",
+      "assumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "EcsTasksTrust",
+            "Effect": "Allow",
+            "Principal": { "Service": "ecs-tasks.amazonaws.com" },
+            "Action": "sts:AssumeRole"
+          }
+        ]
+      },
+      "policyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "PullContainerImages",
+            "Effect": "Allow",
+            "Action": ["ecr:GetDownloadUrlForLayer", "ecr:BatchGetImage", "ecr:BatchCheckLayerAvailability"],
+            "Resource": [
+              "arn:aws:ecr:REGION:ACCOUNT_ID:repository/crossroadthreads-app",
+              "arn:aws:ecr:REGION:ACCOUNT_ID:repository/crossroadthreads-fulfillment"
+            ]
+          },
+          {
+            "Sid": "EcrAuthToken",
+            "Effect": "Allow",
+            "Action": ["ecr:GetAuthorizationToken"],
+            "Resource": "*",
+            "Condition": { "StringEquals": { "aws:RequestedRegion": "REGION" } }
+          },
+          {
+            "Sid": "WriteContainerLogs",
+            "Effect": "Allow",
+            "Action": ["logs:CreateLogStream", "logs:PutLogEvents"],
+            "Resource": "arn:aws:logs:REGION:ACCOUNT_ID:log-group:/ecs/crossroadthreads-*:*"
+          },
+          {
+            "Sid": "InjectSecretsAtStartup",
+            "Effect": "Allow",
+            "Action": ["secretsmanager:GetSecretValue"],
+            "Resource": [
+              "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:crossroadthreads/prod/*"
+            ]
+          },
+          {
+            "Sid": "DecryptSecrets",
+            "Effect": "Allow",
+            "Action": ["kms:Decrypt"],
+            "Resource": "arn:aws:kms:REGION:ACCOUNT_ID:key/CROSSROADTHREADS_SECRETS_KEY_ID",
+            "Condition": { "StringEquals": { "kms:ViaService": "secretsmanager.REGION.amazonaws.com" } }
+          }
+        ]
+      }
+    },
+    "app-task": {
+      "description": "Application task role (storefront/checkout API, HYPOTHESIS H1). least-privilege: read its own runtime secrets, publish fulfillment jobs to SQS, emit metrics. No S3 write, no IAM, no wildcard.",
+      "assumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "EcsTasksTrust",
+            "Effect": "Allow",
+            "Principal": { "Service": "ecs-tasks.amazonaws.com" },
+            "Action": "sts:AssumeRole"
+          }
+        ]
+      },
+      "policyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "ReadAppRuntimeSecrets",
+            "Effect": "Allow",
+            "Action": ["secretsmanager:GetSecretValue"],
+            "Resource": [
+              "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:crossroadthreads/prod/app/*",
+              "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:crossroadthreads/prod/payment/*"
+            ]
+          },
+          {
+            "Sid": "DecryptAppSecrets",
+            "Effect": "Allow",
+            "Action": ["kms:Decrypt"],
+            "Resource": "arn:aws:kms:REGION:ACCOUNT_ID:key/CROSSROADTHREADS_SECRETS_KEY_ID",
+            "Condition": { "StringEquals": { "kms:ViaService": "secretsmanager.REGION.amazonaws.com" } }
+          },
+          {
+            "Sid": "EnqueueFulfillmentJobs",
+            "Effect": "Allow",
+            "Action": ["sqs:SendMessage", "sqs:GetQueueAttributes"],
+            "Resource": "arn:aws:sqs:REGION:ACCOUNT_ID:crossroadthreads-fulfillment-queue"
+          },
+          {
+            "Sid": "EmitMetrics",
+            "Effect": "Allow",
+            "Action": ["cloudwatch:PutMetricData"],
+            "Resource": "*",
+            "Condition": { "StringEquals": { "cloudwatch:namespace": "CrossroadThreads/App" } }
+          }
+        ]
+      }
+    },
+    "fulfillment-worker": {
+      "description": "POD fulfillment worker (HYPOTHESIS H3). least-privilege: consume from the fulfillment queue, move poison messages to the POD DLQ, read POD vendor credentials, emit metrics.",
+      "assumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "EcsTasksTrust",
+            "Effect": "Allow",
+            "Principal": { "Service": "ecs-tasks.amazonaws.com" },
+            "Action": "sts:AssumeRole"
+          }
+        ]
+      },
+      "policyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "ConsumeFulfillmentQueue",
+            "Effect": "Allow",
+            "Action": ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"],
+            "Resource": "arn:aws:sqs:REGION:ACCOUNT_ID:crossroadthreads-fulfillment-queue"
+          },
+          {
+            "Sid": "WriteToPodDlq",
+            "Effect": "Allow",
+            "Action": ["sqs:SendMessage"],
+            "Resource": "arn:aws:sqs:REGION:ACCOUNT_ID:crossroadthreads-pod-dlq"
+          },
+          {
+            "Sid": "ReadPodVendorCredentials",
+            "Effect": "Allow",
+            "Action": ["secretsmanager:GetSecretValue"],
+            "Resource": "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:crossroadthreads/prod/pod/*"
+          },
+          {
+            "Sid": "DecryptPodSecrets",
+            "Effect": "Allow",
+            "Action": ["kms:Decrypt"],
+            "Resource": "arn:aws:kms:REGION:ACCOUNT_ID:key/CROSSROADTHREADS_SECRETS_KEY_ID",
+            "Condition": { "StringEquals": { "kms:ViaService": "secretsmanager.REGION.amazonaws.com" } }
+          },
+          {
+            "Sid": "EmitMetrics",
+            "Effect": "Allow",
+            "Action": ["cloudwatch:PutMetricData"],
+            "Resource": "*",
+            "Condition": { "StringEquals": { "cloudwatch:namespace": "CrossroadThreads/Fulfillment" } }
+          }
+        ]
+      }
+    },
+    "static-asset-publisher": {
+      "description": "Publishes the large image footprint (crossroad_imgs/ 344 MB, public/ 18 MB per audit/SECURITY.md item 6) to the asset bucket after EXIF/malware screening. least-privilege: write only to the assets bucket + its CDN invalidation. Assumed via GitHub OIDC — no long-lived keys.",
+      "assumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "GitHubOIDC",
+            "Effect": "Allow",
+            "Principal": { "Federated": "arn:aws:iam::ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com" },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+              "StringEquals": { "token.actions.githubusercontent.com:aud": "sts.amazonaws.com" },
+              "StringLike": { "token.actions.githubusercontent.com:sub": "repo:CrossroadThreads/*:ref:refs/heads/main" }
+            }
+          }
+        ]
+      },
+      "policyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "PublishAssets",
+            "Effect": "Allow",
+            "Action": ["s3:PutObject", "s3:PutObjectTagging", "s3:ListBucket"],
+            "Resource": [
+              "arn:aws:s3:::crossroadthreads-assets-prod",
+              "arn:aws:s3:::crossroadthreads-assets-prod/*"
+            ]
+          },
+          {
+            "Sid": "InvalidateAssetsCdn",
+            "Effect": "Allow",
+            "Action": ["cloudfront:CreateInvalidation"],
+            "Resource": "arn:aws:cloudfront::ACCOUNT_ID:distribution/EASSETSDISTID"
+          }
+        ]
+      }
+    }
+  }
+}

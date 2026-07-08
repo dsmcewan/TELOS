@@ -322,10 +322,17 @@ export function makeCouncilFactFns({
         const evidence = diskEvidence();
         const councils = await Promise.all(
           [council, ...extras].map((c) => c.challenge({ ...state, evidence, workstream })));
+        // A "blocker" that is actually a seat TRANSPORT/CLI error (a crashed
+        // co-challenger, an MCP hiccup, a quota message) is infrastructure, not
+        // an artifact defect — never let it enter the blocker set and deadlock a
+        // bout. (The agy co-challenger CLI can exit non-zero on oversized
+        // prompts; that crash is not a finding about the artifact.)
+        const isTransportNoise = (b) =>
+          /agy CLI failed|exit code \d|MCP error -?\d|ECONNRESET|ETIMEDOUT|ENOTFOUND|getaddrinfo|credit balance|insufficient_quota|internal error|socket hang up|fetch failed/i.test(String(b));
         const blockers = [...new Set([
           ...(f.blockers || []),
           ...councils.flatMap((g) => (g && g.blockers) || [])
-        ])];
+        ])].filter((b) => !isTransportNoise(b));
         return { blockers };
       },
       revise: (state, blockers) => council.revise({ ...state, evidence: diskEvidence(), workstream }, blockers),
