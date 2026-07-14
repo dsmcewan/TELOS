@@ -161,32 +161,38 @@ export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, 
     return { phase: "situation", ok: false, blocked: situation.collisions.map((c) => `write target already exists (block_on_collision): ${c.path}`), situation, teams };
   }
 
-  // 2. COUNCIL APPROVAL GATE — must pass BEFORE any plan is written or executed.
-  const council = await runCouncil({ callSeat, dossier });
-  const packets = council.filter((r) => r && r.ok && r.packet).map((r) => r.packet);
-  // marketPackets pass straight through to the gate so a market-bound build still
-  // demands real market-readiness evidence (the gate stays load-bearing). `source`
-  // (e.g. { dossierDir: baseDir }) lets the gate re-verify breakout `meets` checks
-  // against the build workspace rather than process.cwd().
-  const report = validateRecords(dossier, packets, source || {}, [], marketPackets);
-  if (report.blockers.length > 0) {
-    return { phase: "approval", ok: false, blocked: report.blockers, council: report, teams, situation };
-  }
-
-  // 3. Compile + persist the content-addressed plan (signers pinned into plan_hash).
+  // 2. Compile + persist the content-addressed plan FIRST (Required Point 1: candidate compilation
+  // precedes council review, so the council reviews the exact plan hash it authorizes). The sibling
+  // contract's phase order is situation|decompose|plan|approval|build.
   const authorizedSigners = authorizedSignersFor(teams, keyring);
   const compiled = compileAndHashPlan({ tasks: taskList, authorizedSigners, repoRoot: baseDir });
   if (compiled.errors) {
     return { phase: "plan", ok: false, blocked: compiled.errors, advisories: compiled.advisories, teams, situation };
   }
   writePlan(telosDir, compiled.plan);
+  const planHash = compiled.plan.plan_hash;
+
+  // 3. COUNCIL REVIEW of the exact written candidate. In proposal-lifecycle mode each required seat's
+  // packet is bound to the recomputed plan hash (proposal_ref) via runCouncil's context; in legacy
+  // mode behavior is unchanged (packets keep the dossier build_id).
+  const councilContext = dossier?.proposal_lifecycle === true
+    ? { invocations: ["claude", "agy", "codex"].map((seat) => ({ seat, proposal_ref: planHash })) }
+    : null;
+  const council = await runCouncil({ callSeat, dossier, context: councilContext });
+  const packets = council.filter((r) => r && r.ok && r.packet).map((r) => r.packet);
+  const gateSource = dossier?.proposal_lifecycle === true ? { ...(source || {}), telosDir, baseDir } : (source || {});
+  const report = validateRecords(dossier, packets, gateSource, [], marketPackets);
+  if (report.blockers.length > 0) {
+    return { phase: "approval", ok: false, blocked: report.blockers, council: report, teams, situation, plan: compiled.plan };
+  }
 
   // Decide each node's owning team NOW, while the task list still carries
   // `workstream` (Rule 1 strips it from the dispatched spec). Route by id at build time.
   const nodeTeam = new Map(taskList.map((t) => [t.id, teamForNode(t, teams)]));
   const routeFor = (id) => nodeTeam.get(id) || teamForNode({}, teams);
 
-  // 4. Execute: teams build, the controller verifies (Rule 3) and settles the ledger.
+  // 4. Execute: teams build, the controller verifies (Rule 3) and settles the ledger. The written
+  // plan hash is passed as a TOCTOU strengthening (the plan was just written, so it matches).
   const build = await runBuild({
     telosDir,
     baseDir,
@@ -194,7 +200,8 @@ export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, 
     verifyNode: defaultVerifyNode,
     signerFor,
     maxRounds: maxRepairRounds,
-    concurrency
+    concurrency,
+    authorizedPlanHash: planHash
   });
 
   return {

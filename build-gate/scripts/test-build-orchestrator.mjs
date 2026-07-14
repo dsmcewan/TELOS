@@ -91,9 +91,12 @@ function fixture() {
   assert.equal(result.phase, "approval", "stopped at the approval phase");
   assert.equal(result.ok, false, "not ok");
   assert.ok(result.blocked.some((b) => /decision is 'revise'/.test(b)), "blocked on the revise decision");
-  assert.equal(existsSync(path.join(telosDir, "plan.json")), false, "no plan written when approval fails");
+  // Per the amended sibling contract (Required Point 1), the candidate plan is compiled + written
+  // BEFORE council review, so plan.json now EXISTS at an approval block — but NO ledger is written,
+  // which is the load-bearing fail-closed guarantee (no execution).
+  assert.equal(existsSync(path.join(telosDir, "plan.json")), true, "candidate plan written before review (reordered)");
   assert.equal(existsSync(path.join(telosDir, "ledger.jsonl")), false, "no ledger written when approval fails");
-  console.log("OK: fail-closed — approval blocks before any execution");
+  console.log("OK: fail-closed — approval blocks before any execution (plan written, no ledger)");
 }
 
 // --- Autonomous decompose: omit tasks, the Planning team proposes them, build reaches ready ---
@@ -305,7 +308,9 @@ function fixture() {
   });
   assert.equal(result.phase, "approval", "blocked at approval");
   assert.ok(result.blocked.some((b) => /security-trust/.test(b)), "blocked on the unreviewed required workstream");
-  assert.equal(existsSync(path.join(telosDir, "plan.json")), false, "no plan written when market gate fails");
+  // Reordered: candidate written before review, so plan.json exists — but no ledger (no execution).
+  assert.equal(existsSync(path.join(telosDir, "plan.json")), true, "candidate plan written before review");
+  assert.equal(existsSync(path.join(telosDir, "ledger.jsonl")), false, "no ledger written when market gate fails");
   console.log("OK: market-bound fail-closed on missing workstream");
 }
 
