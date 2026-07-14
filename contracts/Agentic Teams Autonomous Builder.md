@@ -62,12 +62,19 @@ So the team count is a function of the job, not a fixed roster.
 
 ## The lifecycle (fail-closed sequencing)
 
+*Amended by `contracts/Proposal Lifecycle.md`: candidate compilation and writing
+precede council review, and the council reviews the exact written plan hash.*
+
 ```
 idea + telos
-  → [planning] decompose() → tasks[] {id,writes,reads,requirements,test,workstream}
+  → [planning] decompose() / Daedalus negotiation → tasks[] {id,writes,reads,requirements,test,workstream}
   → compileAndHashPlan() → content-addressed plan (+ authorized_signers); writePlan()
-  → COUNCIL APPROVAL GATE: runCouncil → validateRecords      [MUST pass before execution]
-  → runBuild(): each ready node dispatched to its OWNING TEAM (team = worker)
+        the immutable candidate is on disk BEFORE any review
+  → COUNCIL REVIEW of the exact candidate plan hash (recomputed from the written
+        plan on disk): runCouncil → validateRecords
+  → proposal authorization gate                              [MUST pass before execution]
+  → runBuild(): re-verifies the written plan hash, then each ready node is
+        dispatched to its OWNING TEAM (team = worker)
         Rule 1 — the team sees only the node spec; it writes the node's files
   → Rule 3 defaultVerifyNode re-derives the artifact hash + runs node.test
   → [breakout] reverifyRecord on declarative checks for "meets"-class nodes
@@ -78,7 +85,21 @@ idea + telos
 
 The orchestrator (`build-gate/build-orchestrator.mjs`, `buildProject`) STOPS at the
 first failing phase and **never advances to execution unless the council approval
-gate passed**. The phases it reports: `situation | decompose | approval | plan | build`.
+gate passed**. The target phase order is:
+
+```text
+situation | decompose | plan | approval | build
+```
+
+**Nonconformance note.** Earlier revisions of this contract were internally
+contradictory: the lifecycle above declared compile-before-approval while the
+phase list read `situation | decompose | approval | plan | build`. The code in
+`build-gate/build-orchestrator.mjs` currently implements the latter (council
+review before `compileAndHashPlan()`), which means the council does not yet
+review the exact plan hash it authorizes. That implementation is **temporarily
+nonconforming** with this contract and with `contracts/Proposal Lifecycle.md`;
+the reorder is a required implementation point of the proposal-lifecycle
+contract, not an optional cleanup.
 
 ## Situational awareness
 
