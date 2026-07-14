@@ -6,6 +6,8 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { reverifyRecord } from "../breakout/verifier.mjs";
 import { verifyPacket, secretFor } from "./sign.mjs";
+import { validateProposalLifecycle } from "./proposal-gate.mjs";
+import { validateAgainstSchema, PROPOSAL_REVIEW_PACKET_SCHEMA } from "./schemas.mjs";
 
 const REQUIRED_MODELS = ["claude", "agy", "codex"];
 const DEFAULT_CAPABILITY_MODELS = ["claude", "codex", "agy", "grok"];
@@ -97,12 +99,13 @@ export async function validateGate(dossierPath, packetDir, options = {}) {
   }, capabilityPackets, marketPackets);
 }
 
-export function validateRecords(dossier, packets, source = {}, capabilityPackets = [], marketPackets = []) {
+export function validateRecords(dossier, packets, source = {}, capabilityPackets = [], marketPackets = [], proposal = null) {
   const blockers = [];
   const warnings = [];
 
   validateDossierShape(dossier, blockers);
   const signed = dossier?.trust_mode === "signed";
+  const proposalMode = dossier?.proposal_lifecycle === true;
 
   const packetsByModel = new Map();
   for (const packet of packets) {
@@ -135,8 +138,16 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
       blockers.push(`${model} has required edits: ${asArray(packet.required_edits).join("; ")}`);
     }
     if (asArray(packet.hard_stops).length > 0) {
-      blockers.push(`${model} has hard stops: ${asArray(packet.hard_stops).join("; ")}`);
+      if (proposalMode) {
+        // In proposal-lifecycle mode a hard stop is a normalization the controller must have done
+        // BEFORE signing; an unnormalized one reaching the gate is a protocol failure, never
+        // treated as verified evidence.
+        blockers.push(`PROTOCOL FAILURE: unnormalized legacy hard_stops reached the proposal gate on ${model} packet; the controller must normalize hard stops into hold-request concerns before evaluation.`);
+      } else {
+        blockers.push(`${model} has hard stops: ${asArray(packet.hard_stops).join("; ")}`);
+      }
     }
+    if (proposalMode) validateConcernShapes(packet, blockers);
   }
 
   // In signed mode, only signature-verified required packets are trusted as
@@ -179,10 +190,12 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
     const prov = packet && packet.provenance && typeof packet.provenance === "object" ? packet.provenance : null;
     const responseId = prov && typeof prov.response_id === "string" ? prov.response_id : null;
     const placeholder = !responseId || /^$|_self$|^self$|placeholder/i.test(responseId);
+    const provider = prov && typeof prov.provider === "string" ? prov.provider : "";
     provenance.push({
       model,
       has_provenance: !!prov,
-      response_model: prov && typeof prov.model === "string" ? prov.model : null,
+      provider: provider || null,
+      response_model: prov && typeof (prov.response_model ?? prov.model) === "string" ? (prov.response_model ?? prov.model) : null,
       response_id: responseId,
       source: prov && typeof prov.source === "string" ? prov.source : null
     });
@@ -192,9 +205,12 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
         : `Approval packet for ${model} has placeholder provenance.response_id '${responseId}'; not bound to a real model response.`;
       if (signed) blockers.push(msg); else if (!prov) warnings.push(msg);
     } else if (packet && responseId) {
-      const key = responseId.toLowerCase();
+      // Provider-scoped key: response ids are only unique per provider. An empty-provider fallback
+      // makes this behavior-identical for legacy packets (all map to ":"+id) while two distinct
+      // providers with colliding raw ids no longer collide.
+      const key = provider.toLowerCase() + ":" + responseId.toLowerCase();
       if (seenResponseIds.has(key)) {
-        const msg = `Approval packets for ${seenResponseIds.get(key)} and ${model} share provenance.response_id '${responseId}'; a seat may not borrow another's id.`;
+        const msg = `Approval packets for ${seenResponseIds.get(key)} and ${model} share provenance key '${key}'; a seat may not borrow another's id.`;
         if (signed) blockers.push(msg); else warnings.push(msg);
       } else {
         seenResponseIds.set(key, model);
@@ -215,9 +231,23 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
 
   validateProtectedPaths(dossier, blockers);
   validateLexiGate(dossier, evidencePackets, blockers);
-  validateGrokResolution(packetsByModel.get("grok"), dossier, blockers, warnings);
+  validateGrokResolution(packetsByModel.get("grok"), dossier, blockers, warnings, proposalMode);
   validateCapabilityPackets(dossier, capabilityPackets, blockers, warnings, signed);
   validateMarketReadinessPackets(dossier, marketPackets, blockers, warnings, source, signed);
+
+  // Proposal-lifecycle branch (decision 8): the gate reconstructs ALL proposal state from the
+  // ledger itself via validateProposalLifecycle — the caller-supplied `proposal` is a reporting
+  // PREVIEW only, never read for enforcement.
+  let proposalLifecycle = null;
+  if (proposalMode && source && source.telosDir) {
+    const pl = validateProposalLifecycle({
+      telosDir: source.telosDir, packets: [...packetsByModel.values()],
+      requiredModels: REQUIRED_MODELS, signed, baseDir: source.baseDir, nowMs: source.nowMs || 0
+    });
+    blockers.push(...pl.blockers);
+    warnings.push(...pl.warnings);
+    proposalLifecycle = { evaluated: true, plan_hash: pl.plan_hash, proposal_id: pl.proposal_id, checks: pl.checks, findings: pl.findings, preview_only: proposal ? true : false };
+  }
 
   // Visibility: which optional headline gates actually evaluated anything. A
   // minimal dossier no longer silently runs only the base checks — the report
@@ -228,7 +258,8 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
     lexi_required: dossier.lexi_required === true,
     breakout_evaluated: marketPackets.some((packet) => packet && packet.lexi_class_ui_status === "meets"),
     signing_enforced: signed,
-    provenance_enforced: signed
+    provenance_enforced: signed,
+    proposal_lifecycle_enforced: proposalMode
   };
 
   const gateStatus = blockers.length === 0 ? "pass" : "blocked";
@@ -244,6 +275,7 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
     headline_checks,
     required_capability_models: requiredCapabilityModels(dossier, capabilityPackets),
     required_market_workstreams: requiredMarketWorkstreams(dossier, marketPackets),
+    proposal_lifecycle: proposalLifecycle,
     packets_seen: unique(packets.map((packet) => packet.model).filter(Boolean)),
     capability_packets_seen: unique(capabilityPackets.map((packet) => packet.model).filter(Boolean)),
     market_packets_seen: unique(marketPackets.map((packet) => packet.model).filter(Boolean)),
@@ -667,9 +699,33 @@ function validateLexiGate(dossier, packets, blockers) {
   }
 }
 
-function validateGrokResolution(grokPacket, dossier, blockers, warnings) {
+// Fail-closed concern shape check (decision 14): any malformed concern / unknown enum / unexpected
+// field invalidates the whole required packet — never sanitize-and-continue. A required seat's
+// review packet with a dropped critical concern must not leave a clean approve standing.
+function validateConcernShapes(packet, blockers) {
+  const concerns = packet && packet.concerns;
+  if (concerns === undefined) return;                 // no concerns is fine
+  if (!Array.isArray(concerns)) { blockers.push(`Packet for ${packet.model}: concerns must be an array.`); return; }
+  for (const c of concerns) {
+    const v = validateAgainstSchema(PROPOSAL_REVIEW_PACKET_SCHEMA.properties.concerns.items, c);
+    if (!v.ok) { blockers.push(`Packet for ${packet.model}: malformed concern (${v.violations.slice(0, 2).map((x) => x.path + ":" + x.detail).join(", ")}) — packet invalid.`); return; }
+  }
+}
+
+function validateGrokResolution(grokPacket, dossier, blockers, warnings, proposalMode = false) {
   if (!grokPacket) {
     warnings.push("No Grok advisory packet present.");
+    return;
+  }
+
+  // In proposal-lifecycle mode the grok_objections string-key machinery is bypassed entirely:
+  // a nonempty hard_stops is a protocol failure (normalization must precede the gate), and any
+  // legacy grok_objections in the dossier is ignored with a warning.
+  if (proposalMode) {
+    if (asArray(grokPacket.hard_stops).length > 0) {
+      blockers.push(`PROTOCOL FAILURE: unnormalized grok hard_stops reached the proposal gate; normalize into hold-request concerns before evaluation.`);
+    }
+    if (asArray(dossier.grok_objections).length > 0) warnings.push("legacy grok_objections ignored under proposal lifecycle");
     return;
   }
 

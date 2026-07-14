@@ -21,6 +21,7 @@
 
 import os from "node:os";
 import { signPacket, secretFor } from "./sign.mjs";
+import { normalizeLegacyHardStops } from "./concerns.mjs";
 
 const REQUIRED_SEATS = ["claude", "agy", "codex"];
 
@@ -54,13 +55,26 @@ export function planSeats(dossier) {
 }
 
 // One seat: call it, sign + provenance-stamp the packet, never throw.
-async function runSeat(seat, callSeat, dossier) {
+// `context` (proposal-lifecycle) injects the trusted proposal_ref / review-input bindings and
+// normalizes any legacy hard_stops into typed concerns — BOTH before signing, so the HMAC covers
+// them (sign.mjs canonicalize signs the whole packet).
+async function runSeat(seat, callSeat, dossier, context = null) {
   try {
-    const out = (await callSeat({ model: seat.model, role: seat.role, workstream: seat.workstream, dossier })) || {};
+    const ctx = context && context.invocations ? context.invocations.find((iv) => iv.seat === seat.model && (iv.role == null || iv.role === seat.role) && (iv.workstream == null || iv.workstream === seat.workstream)) : null;
+    const out = (await callSeat({ model: seat.model, role: seat.role, workstream: seat.workstream, dossier, context: ctx })) || {};
     if (!out.packet || typeof out.packet !== "object") {
       return { model: seat.model, role: seat.role, ok: false, reason: "seat returned no packet" };
     }
-    const stamped = { ...out.packet, provenance: out.provenance || out.packet.provenance };
+    let stamped = { ...out.packet, provenance: out.provenance || out.packet.provenance };
+    if (ctx) {
+      if (typeof ctx.proposal_ref === "string") stamped.proposal_ref = ctx.proposal_ref;
+      if (typeof ctx.review_input_hash === "string") stamped.review_input_hash = ctx.review_input_hash;
+      if (typeof ctx.review_manifest_ref === "string") stamped.review_manifest_ref = ctx.review_manifest_ref;
+      if (typeof ctx.review_call_ref === "string") stamped.review_call_ref = ctx.review_call_ref;
+    }
+    if (dossier && dossier.proposal_lifecycle === true) {
+      stamped = normalizeLegacyHardStops(stamped, context && context.writeArtifact ? { writeArtifact: context.writeArtifact } : {}).packet;
+    }
     const secret = secretFor(seat.model);
     const packet = secret ? signPacket(stamped, secret) : stamped;
     return { model: seat.model, role: seat.role, ok: true, signed: !!secret, packet };
@@ -74,7 +88,7 @@ async function runSeat(seat, callSeat, dossier) {
  * order. A thrown/empty seat becomes { ok:false, reason } (never a rejection).
  * Pass `seats` explicitly, or omit to derive them from the dossier via planSeats.
  */
-export async function runCouncil({ seats, callSeat, dossier, maxConcurrency: requested } = {}) {
+export async function runCouncil({ seats, callSeat, dossier, maxConcurrency: requested, context = null } = {}) {
   const list = Array.isArray(seats) ? seats : planSeats(dossier);
   const limit = maxConcurrency(requested);
   const results = new Array(list.length);
@@ -82,7 +96,7 @@ export async function runCouncil({ seats, callSeat, dossier, maxConcurrency: req
   async function worker() {
     while (next < list.length) {
       const i = next++;
-      results[i] = await runSeat(list[i], callSeat, dossier);
+      results[i] = await runSeat(list[i], callSeat, dossier, context);
     }
   }
   const poolSize = Math.min(limit, list.length);
