@@ -720,38 +720,76 @@ Each verification obligation is part of the hashed plan and contains at least:
 ```json
 {
   "obligation_id": "verify-auth-boundary-001",
+  "obligation_ref": "sha256:...",
   "concern_ref": "sha256:...",
   "discharge_node_id": "auth-boundary-test",
   "discharge_test_ref": "sha256:...",
+  "check_contract_ref": "sha256:...",
   "required_result": "pass"
 }
 ```
+
+`obligation_id` is a human-readable label with no enforcement authority. The
+obligation's enforcement identity is `obligation_ref`, a controller-derived
+content address of the obligation's **semantics**:
+
+```text
+obligation_ref =
+  hash(canonicalize({
+    obligation_id,
+    concern_ref,
+    required_result,
+    check_contract_ref
+  }))
+```
+
+`discharge_test_ref` is deliberately excluded from `obligation_ref` to avoid a
+circular dependency, because the test declaration itself registers
+`obligation_ref`.
 
 `discharge_test_ref` is computed by the controller from the canonical test
 declaration or a repository-owned check manifest — not supplied as a trustworthy
 assertion by the model.
 
 Registration is machine-readable. The discharge node's test declaration must
-register the obligation explicitly:
+register the obligation's content-addressed identity explicitly:
 
 ```json
 {
   "test": {
     "cmd": "node",
     "args": ["--test", "tests/auth-boundary.test.mjs"],
-    "verifies": ["verify-auth-boundary-001"]
+    "verifies": ["sha256:<obligation_ref>"]
   }
 }
 ```
 
-`verifies` lists the obligation ids the test discharges. It is part of the
+`verifies` lists the `obligation_ref`s the test discharges. It is part of the
 canonical test declaration, so it is covered by `discharge_test_ref`, the node's
-`spec_hash`, and the plan hash. A repository may equivalently use a
-repository-owned check manifest mapping:
+`spec_hash`, and the plan hash. That makes invalidation a mechanical chain
+rather than a promise:
 
 ```text
-obligation_id → discharge_node_id → discharge_test_ref
+changed obligation semantics
+→ changed obligation_ref
+→ changed test.verifies
+→ changed test declaration
+→ changed node spec_hash / effective_hash
+→ old settlement becomes stale
 ```
+
+Retargeting an obligation — changing its `concern_ref`, `required_result`, or
+check contract while retaining the human-readable `obligation_id` — therefore
+invalidates the prior discharge with no additional check.
+
+A repository may equivalently use a repository-owned check manifest mapping:
+
+```text
+obligation_ref → discharge_node_id → discharge_test_ref
+```
+
+but the manifest entry hash must likewise be bound into the node's canonical
+test declaration; otherwise the manifest path recreates the same gap.
 
 Either way, the coverage anchor is a field the gate reads mechanically — never
 an inference about what a test "really exercises."
@@ -761,11 +799,13 @@ The proposal gate must verify:
 1. The named node exists in the candidate plan.
 2. The referenced test/check exists.
 3. The test reference matches the named node's actual hashed test declaration.
-4. The obligation's `obligation_id` appears in the named node's `verifies`
-   registration (or the repository-owned check manifest). A test declaration
-   whose hash matches `discharge_test_ref` but which does not register the
-   obligation fails review.
-5. The obligation, node, test, and concern reference are all covered by the
+4. The obligation's recomputed `obligation_ref` appears in the named node's
+   `verifies` registration (or the bound check-manifest entry). A test
+   declaration whose hash matches `discharge_test_ref` but which does not
+   register the obligation's `obligation_ref` fails review.
+5. The recorded `obligation_ref` matches the controller's recomputation from
+   the obligation's canonical semantics.
+6. The obligation, node, test, and concern reference are all covered by the
    candidate `plan_hash`.
 
 Then `done(plan, ledger)` must require:
@@ -797,11 +837,13 @@ test file exists
 ```
 
 Discharge reuse follows the Merkle structure, matching the existing ledger
-semantics: a discharge remains valid only while the obligation definition,
+semantics: a discharge remains valid only while `obligation_ref`,
 `discharge_test_ref`, and the discharge node's `effective_hash` are unchanged.
 Any mutation to the discharge node, its ancestors, its test declaration, or the
-obligation binding changes one of those values and invalidates the discharge
-automatically.
+obligation's semantics changes one of those values and invalidates the
+discharge automatically — the obligation-semantics case mechanically, because a
+changed `obligation_ref` changes `test.verifies` and therefore the node's
+`spec_hash` and `effective_hash`.
 
 An unrelated node mutation changes the global `plan_hash` — and therefore
 requires fresh review and authorization of the revised plan — but does not by
@@ -1188,8 +1230,10 @@ Exact-plan authorization + deterministic checks
   resolution, supersession, or withdrawal record disposes of a workshop
   objection.
 - **Obligation coverage is a field the gate reads, not an inference.** The
-  discharge test must register the obligation id in its canonical declaration
-  (or the repository-owned check manifest).
+  discharge test must register the obligation's content-addressed
+  `obligation_ref` in its canonical declaration (or a check-manifest entry
+  hash bound into that declaration). The human-readable `obligation_id` has no
+  enforcement authority.
 - **Cold review is verified from provider-scoped lineage and input manifests.**
 - **A model may raise a hold but may not set its own TTL or release condition.**
 - **A model may not dispose of its own concern or grade its own work.**
@@ -1284,9 +1328,13 @@ The implementation is incomplete until tests prove:
 - an obligation naming a missing node, missing test, or mismatched test
   reference fails the proposal gate,
 - a test declaration whose hash matches `discharge_test_ref` but which does not
-  register the obligation in `verifies` (or the check manifest) fails review,
+  register the obligation's `obligation_ref` in `verifies` (or the bound check
+  manifest) fails review,
+- changing `concern_ref`, `required_result`, or the obligation's check contract
+  while retaining the human-readable `obligation_id` changes `obligation_ref`
+  and invalidates the prior discharge,
 - mutating the discharge node, an ancestor, its test declaration, or the
-  obligation binding invalidates a prior discharge,
+  obligation's semantics invalidates a prior discharge,
 - an unrelated node mutation forces re-authorization of the new plan hash but
   does not invalidate an untouched node's discharge,
 - an objection silently dropped from a later round (no resolution,
