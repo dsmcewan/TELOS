@@ -7,8 +7,12 @@ import { fileURLToPath } from "node:url";
 import { computePlan, writePlan, readPlan, recompute } from "../merkle.mjs";
 import { computeDiskTreeHash } from "../artifact.mjs";
 import { generateKeypair, makeRecord, appendLedger, readLedger } from "../crypto.mjs";
-import { readySet, runBuild, defaultVerifyNode } from "../orchestrate.mjs";
+import { readySet, runBuild, defaultVerifyNode, checkLifecycleAuthorization } from "../orchestrate.mjs";
 import { maxConcurrency } from "../vendor.mjs";
+import {
+  PROPOSAL_KEY_ID, POLICY_CONTRACT_V1, POLICY_CHECK_KEYS,
+  makeProposalEvent, proposalEventHash, atomicAppendProposalEvent, writeProposalArtifact
+} from "../proposal-ledger.mjs";
 
 // Anchor to import.meta.url — never CWD.
 const __filename = fileURLToPath(import.meta.url);
@@ -733,6 +737,78 @@ function makeDispatch(ws) {
   const ws = mkdtempSync(path.join(os.tmpdir(), "telos-orch-npm-"));
   const v = await defaultVerifyNode({ id: "npm", files: [], test: { cmd: "npm", args: ["--version"] } }, ws);
   assert.equal(v.ok, true, `defaultVerifyNode must run an npm-based node test cross-platform; got ${JSON.stringify(v)}`);
+}
+
+// ---------------------------------------------------------------------------
+// Case 15: legacy authorizedPlanHash TOCTOU guard — a plan changed after authorization is blocked
+// before any dispatch. Absent param = today's behavior.
+// ---------------------------------------------------------------------------
+{
+  const { ws, telosDir, plan } = makeFixture();
+  let dispatched = false;
+  const spyDispatch = async (injected) => { dispatched = true; for (const f of injected.files) writeFileSync(path.join(ws, f), `c ${injected.id}`); return { ok: true, signer: "tester" }; };
+  // matching hash -> proceeds (dispatch runs)
+  const okRun = await runBuild({ telosDir, baseDir: ws, dispatch: makeDispatch(ws), verifyNode: makeRealVerifyNode(), signerFor: () => makeFixture, authorizedPlanHash: plan.plan_hash, maxRounds: 5 });
+  assert.ok(!okRun.error, "Case 15: matching authorizedPlanHash proceeds");
+  // wrong hash -> PLAN_HASH_MISMATCH, dispatch never called
+  const { ws: ws2, telosDir: td2 } = makeFixture();
+  const bad = await runBuild({ telosDir: td2, baseDir: ws2, dispatch: spyDispatch, verifyNode: makeRealVerifyNode(), signerFor: () => null, authorizedPlanHash: "sha256:not-the-plan", maxRounds: 5 });
+  assert.equal(bad.error, "PLAN_HASH_MISMATCH", "Case 15: wrong authorizedPlanHash blocks");
+  assert.equal(dispatched, false, "Case 15: dispatch never called on mismatch");
+  console.log("Case 15 OK: authorizedPlanHash TOCTOU guard");
+}
+
+// ---------------------------------------------------------------------------
+// Case 16: lifecycle authorization (decision 11) — checkLifecycleAuthorization reads the authorized
+// decision + closed policy certificate from disk, keyed by the recomputed plan hash.
+// ---------------------------------------------------------------------------
+{
+  // A plan with a proposal-controller signer pinned into authorized_signers.
+  const ws = mkdtempSync(path.join(os.tmpdir(), "telos-auth-"));
+  const telosDir = path.join(ws, ".telos");
+  mkdirSync(telosDir, { recursive: true });
+  const { privatePem, publicJwk } = generateKeypair();
+  const { plan } = (() => {
+    const r = computePlan(makeDefs(), { authorizedSigners: { [PROPOSAL_KEY_ID]: publicJwk } });
+    writePlan(telosDir, r.plan); return r;
+  })();
+  const planHash = plan.plan_hash;
+
+  const writeDecision = (decision, { pref = true, planForRef = planHash, outcome = decision } = {}) => {
+    const checks = Object.fromEntries(POLICY_CHECK_KEYS.map((k) => [k, outcome === "authorized" ? "pass" : "fail"]));
+    const artifact = { policy_contract_ref: POLICY_CONTRACT_V1, plan_hash: planForRef, outcome, checks, blockers: outcome === "authorized" ? [] : ["x"], findings: outcome === "authorized" ? [] : [{ class: "protocol", reparable: false, requires_human: false }], revision: { index: 1, maximum: 3 } };
+    const { ref } = writeProposalArtifact(telosDir, artifact);
+    return atomicAppendProposalEvent(telosDir, (parentHash, sequence) => makeProposalEvent({ proposal_id: "proposal-x", sequence, stage: "decision", plan_hash: planHash, parent_event_hash: parentHash, artifact_refs: [ref], actor: {}, provenance: null, policy_result: null, recorded_at: "t", ...(pref ? { decision, policy_result_ref: ref } : { decision }) }, privatePem), { publicJwk });
+  };
+
+  // no decision yet
+  assert.equal(checkLifecycleAuthorization(telosDir, plan).error, "NO_AUTHORIZED_DECISION", "Case 16: no decision blocks");
+  // authorized decision + valid certificate -> ok
+  writeDecision("authorized");
+  const good = checkLifecycleAuthorization(telosDir, plan);
+  assert.equal(good.ok, true, "Case 16: authorized + valid cert -> ok: " + JSON.stringify(good.detail || ""));
+  console.log("Case 16 OK: lifecycle authorization happy path");
+}
+
+// ---------------------------------------------------------------------------
+// Case 17: lifecycle authorization negative paths — blocked/revise decision, and a missing
+// policy_result_ref each block execution.
+// ---------------------------------------------------------------------------
+{
+  const ws = mkdtempSync(path.join(os.tmpdir(), "telos-auth2-"));
+  const telosDir = path.join(ws, ".telos");
+  mkdirSync(telosDir, { recursive: true });
+  const { privatePem, publicJwk } = generateKeypair();
+  const r = computePlan(makeDefs(), { authorizedSigners: { [PROPOSAL_KEY_ID]: publicJwk } });
+  writePlan(telosDir, r.plan);
+  const planHash = r.plan.plan_hash;
+  // a "blocked" decision (with a valid policy artifact for that outcome) -> DECISION_NOT_AUTHORIZED
+  const checks = Object.fromEntries(POLICY_CHECK_KEYS.map((k) => [k, "fail"]));
+  const artifact = { policy_contract_ref: POLICY_CONTRACT_V1, plan_hash: planHash, outcome: "blocked", checks, blockers: ["x"], findings: [{ class: "protocol", reparable: false, requires_human: false }], revision: { index: 1, maximum: 3 } };
+  const { ref } = writeProposalArtifact(telosDir, artifact);
+  atomicAppendProposalEvent(telosDir, (parentHash, sequence) => makeProposalEvent({ proposal_id: "proposal-y", sequence, stage: "decision", plan_hash: planHash, parent_event_hash: parentHash, artifact_refs: [ref], actor: {}, provenance: null, policy_result: null, recorded_at: "t", decision: "blocked", policy_result_ref: ref }, privatePem), { publicJwk });
+  assert.equal(checkLifecycleAuthorization(telosDir, r.plan).error, "DECISION_NOT_AUTHORIZED", "Case 17: blocked decision does not authorize");
+  console.log("Case 17 OK: lifecycle authorization negative paths");
 }
 
 // ---------------------------------------------------------------------------
