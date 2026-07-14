@@ -112,9 +112,11 @@ export function stableStringify(value) {
 export function agyAttestation(checkpoint) {
   const digest = createHash("sha256").update(stableStringify(checkpoint ?? null)).digest("hex");
   return {
+    provider: "local",
     model: "agy-checkpoint",
     source: "ai-peer-mcp/agy_checkpoint",
     response_id: `agy-${digest.slice(0, 40)}`,
+    answered_at: null,
     attestation: "local-deterministic",
     engine_version: AGY_ENGINE_VERSION
   };

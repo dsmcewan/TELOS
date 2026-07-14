@@ -353,13 +353,13 @@ async function callTool(params) {
 
   switch (name) {
     case "claude_ask":
-      return askResult(await askClaude(args), "ai-peer-mcp/claude_ask", args.include_provenance);
+      return askResult(await askClaude(args), "ai-peer-mcp/claude_ask", args.include_provenance, "anthropic");
     case "grok_ask":
-      return askResult(await askGrok(args), "ai-peer-mcp/grok_ask", args.include_provenance);
+      return askResult(await askGrok(args), "ai-peer-mcp/grok_ask", args.include_provenance, "xai");
     case "codex_ask":
-      return askResult(await askCodex(args), "ai-peer-mcp/codex_ask", args.include_provenance);
+      return askResult(await askCodex(args), "ai-peer-mcp/codex_ask", args.include_provenance, "openai");
     case "gemini_ask":
-      return askResult(await askGemini(args), "ai-peer-mcp/gemini_ask", args.include_provenance);
+      return askResult(await askGemini(args), "ai-peer-mcp/gemini_ask", args.include_provenance, "google");
     case "agy_checkpoint": {
       // agy is local + deterministic: stamp the checkpoint with a content-addressed
       // attestation so it carries its OWN provenance (not a borrowed model id).
@@ -378,11 +378,11 @@ async function callTool(params) {
 // feeds this straight into the next model). With include_provenance: a JSON
 // envelope {text, provenance:{model,response_id,source}} so the council can bind
 // the packet to the model's REAL response.
-function askResult(result, source, includeProvenance) {
+function askResult(result, source, includeProvenance, provider) {
   if (!includeProvenance) return textResult(result.text);
   return textResult(JSON.stringify({
     text: result.text,
-    provenance: { model: result.model, response_id: result.id, source }
+    provenance: { provider, model: result.model, response_id: result.id, source, answered_at: new Date().toISOString() }
   }));
 }
 
