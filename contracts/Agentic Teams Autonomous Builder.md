@@ -84,8 +84,9 @@ idea + telos
 ```
 
 The orchestrator (`build-gate/build-orchestrator.mjs`, `buildProject`) STOPS at the
-first failing phase and **never advances to execution unless the council approval
-gate passed**. The target phase order is:
+first failing phase and **never advances to execution unless the proposal
+authorization gate passed** (council approval is a necessary input to that gate,
+never sufficient by itself). The target phase order is:
 
 ```text
 situation | decompose | plan | approval | build

@@ -1,45 +1,92 @@
-# Proposal Lifecycle — Review Packet
+# Proposal Lifecycle — Review Packet (revision 2)
 
 **Date:** 2026-07-14
-**Status:** frozen text, awaiting independent review against the frozen invariants
-**Reviewer task:** verify the merged contract below against the agreed amendments and invariants before the file-level implementation plan begins.
+**Status:** revision 2 — all round-1 review findings addressed; awaiting re-review
+**Branch:** `contracts/proposal-lifecycle` (round-1 text was commit `24a6ad5`)
+**Reviewer task:** verify the round-1 findings below are correctly resolved, then re-check the frozen invariants.
 
 ## Files under review
 
 1. `contracts/Proposal Lifecycle.md` — new contract (full text in section A below).
-2. `contracts/Agentic Teams Autonomous Builder.md` — amended (diff in section B below).
+2. `contracts/Agentic Teams Autonomous Builder.md` — amended (diff vs `main` in section B below).
 
-Both are uncommitted in the working tree.
+## Round-1 findings and resolutions
 
-## Where each frozen amendment landed
+### Blocking
+
+1. **Verification obligations lacked a machine-readable coverage anchor.**
+   Resolved: the discharge node's canonical test declaration must carry
+   `verifies: [obligation_id, ...]` (or a repository-owned check manifest
+   mapping `obligation_id → discharge_node_id → discharge_test_ref`). The field
+   is covered by `discharge_test_ref`, `spec_hash`, and `plan_hash`. Gate check
+   4 is now a mechanical membership check, and a new required test proves a
+   matching test hash **without** the registration fails review. New invariant:
+   *obligation coverage is a field the gate reads, not an inference.*
+
+2. **Daedalus could converge by silently dropping an objection; one state
+   transition was uncovered.** Resolved: convergence now requires every prior
+   objection to be explicitly resolved, superseded, or withdrawn by its
+   originating seat through a provenance-bound workshop record — *absence is
+   not a disposition* (new invariant). The state machine is now total and
+   candidate-hash-driven: unresolved + changed candidate hash → continue until
+   the hard cap; unresolved + repeated candidate hash → stalemate; cap →
+   stalemate. The controller never semantically judges whether a mutation
+   "addressed" an objection. Two required tests added.
+
+3. **Plan-mutation invalidation overclaimed what the Merkle structure
+   guarantees.** Resolved by choosing **Merkle-reusable discharge**, matching
+   the existing ledger semantics (`effective_hash` binds spec + ancestors only;
+   verified against `merkle-dag/merkle.mjs`): a discharge stays valid only
+   while the obligation definition, `discharge_test_ref`, and the discharge
+   node's `effective_hash` are unchanged; an unrelated node mutation forces
+   fresh review/authorization of the new `plan_hash` but does not invalidate an
+   untouched node's discharge. New invariant: *authorization is exact-plan;
+   discharge is node-lineage.* Required tests split accordingly.
+
+### Smaller
+
+4. **Packet staleness** — the "uncommitted in the working tree" status line is
+   corrected (round-1 text was committed as `24a6ad5`; this packet reflects the
+   revision-2 working tree).
+5. **Sibling contract wording** — "council approval gate" corrected to
+   "proposal authorization gate," with council approval named as a necessary
+   input, never sufficient by itself.
+6. **Fork recovery underspecified** — resolved by declaring it honestly: no
+   in-band recovery event is defined in this version; a fork is terminal for
+   automation, and recovery is manual human ledger reconstruction outside
+   normal authorization, with the forked file preserved as audit evidence.
+
+## Where each round-0 frozen amendment landed (unchanged from revision 1)
 
 | # | Amendment | Location in the contract |
 |---|---|---|
 | 1 | `hard_stops` deprecation, normalization to `hold-request` with preserved attribution (`normalized_from_legacy: true`), unnormalized → protocol failure, both legacy gate paths named | "Legacy `hard_stops` deprecation" under **Review packets**; invariant; 4 required tests |
 | 2 | Pre-build judgment is the normal case + Rule-3 bridge + `verification-required` | "Pre-build judgment is the normal case" under **Concerns**; **Verification obligations — the bridge to Rule 3**; disposition subsection |
-| — | Obligation anchor (frozen rule): obligation schema, `discharge_test_ref` controller-computed, 5 proposal-gate checks, `done(plan, ledger)` requirement, `blocked: undischarged verification obligation` | "Obligation anchor" under **Verification obligations**; implementation point 11; 3 required tests incl. the vacuous case |
+| — | Obligation anchor: obligation schema, `discharge_test_ref` controller-computed, machine-readable `verifies` registration, 5 proposal-gate checks, `done(plan, ledger)` requirement, `blocked: undischarged verification obligation` | "Obligation anchor" under **Verification obligations**; implementation point 11; required tests incl. the vacuous and unregistered cases |
 | 3 | Provider-scoped lineage keys, `${provider.toLowerCase()}:${responseId}`, missing provider fails closed | **Cold-review enforcement**; authorization conditions 5–6; 2 required tests |
 | 4 | `runBuild()` re-verifies written plan hash before dispatch | "Execution-time re-verification" under **Authorization decision**; invariant; implementation point 12; required test |
-| 5 | Ledger linearity + fork rules, signed human recovery | "Chain linearity and forks" under **Proposal lifecycle ledger**; authorization condition 14; 6 fork tests |
+| 5 | Ledger linearity + fork rules; fork terminal for automation, manual human recovery | "Chain linearity and forks" under **Proposal lifecycle ledger**; authorization condition 14; 6 fork tests |
 | 6 | Fable identity: `claude` seat, Fable 5 as runtime-configured concrete model, no `fable` registry route | **Roles** table and surrounding text |
 | 7 | `review_input_hash` honesty bound (controller observation, bounded by controller/transport integrity) | **Cold-review enforcement**, closing paragraphs |
-| 8 | Sibling contract amendment: corrected ordering, phase list `situation \| decompose \| plan \| approval \| build`, explicit nonconformance note for `build-orchestrator.mjs` | Section B below; implementation point 14; Scope note in the new contract |
+| 8 | Sibling contract amendment: corrected ordering, phase list `situation \| decompose \| plan \| approval \| build`, explicit nonconformance note for `build-orchestrator.mjs`, proposal-authorization-gate wording | Section B below; implementation point 14; Scope note in the new contract |
 | — | Daedalus naming (the Fable–Codex planning workshop; TELOS governs, Daedalus plans) | **Roles** intro, **The Daedalus workshop**, convergence/stalemate states, implementation point 4, frontmatter tag `workshop/daedalus` |
 
 ## Review checklist (frozen invariants)
 
 - [ ] The gate reads the plan from disk; the orchestrator never supplies both sides of a hash comparison.
 - [ ] `proposal_ref` must equal the independently recomputed written plan hash; `build_id` no longer satisfies it.
-- [ ] Workshop convergence permits submission only; repeated unresolved objections are stalemate.
+- [ ] Workshop convergence permits submission only; repeated candidate hashes with unresolved objections are stalemate.
+- [ ] An absent objection is not a resolved objection; only provenance-bound resolution, supersession, or withdrawal disposes of it.
 - [ ] Cold review is verified from provider-scoped lineage and input manifests, with the honesty bound stated.
 - [ ] `hard_stops` carries no direct blocking force; normalization preserves attribution; both legacy paths covered.
-- [ ] Every verification obligation names its discharge node and test; `done()` fails on undischarged obligations.
+- [ ] Obligation coverage is a machine-readable field (`verifies` / check manifest); `done()` fails on undischarged obligations.
+- [ ] Authorization is exact-plan; discharge is node-lineage (obligation definition + test ref + node effective hash).
 - [ ] Holds have policy-derived TTLs; expiry → `expired-unresolved`, never implicit approval.
 - [ ] Unknown risk defaults high; model downgrades require signed human ratification.
 - [ ] Evidence execution is closed-whitelist and sandboxed; arbitrary model-authored scripts never run as gate evidence.
 - [ ] Dispositions come only from deterministic output or signed human action; no seat disposes of its own concern.
 - [ ] `runBuild()` re-verifies the written plan hash before dispatch.
-- [ ] The proposal ledger is a single canonical chain; forks invalidate authorization until signed human recovery.
+- [ ] The proposal ledger is a single canonical chain; forks are terminal for automation, recovered only by manual human reconstruction.
 - [ ] Standing is recomputed from disk, backs off conservatively, and never satisfies approvals; new model versions start conservative.
 - [ ] The controller is the sole proposal-ledger writer; only deterministic authorization permits execution.
 - [ ] Closing language intact: *evidence certifies; audited judgment interrupts and escalates; deterministic policy decides* — and *model judgment is an interrupt, not a certificate.*
@@ -316,9 +363,15 @@ The proposal ledger is a **single canonical chain**. Verification must enforce:
 - all event hashes and signatures must recompute from disk.
 
 Two validly signed events claiming the same parent constitute a **fork** and
-invalidate authorization until resolved by an explicit signed human recovery
-procedure. Sole-writer discipline should prevent forks; verification from disk
-must not assume the writer behaved.
+invalidate authorization. Sole-writer discipline should prevent forks;
+verification from disk must not assume the writer behaved.
+
+No in-band recovery event is defined in this version. Fork recovery is manual
+ledger reconstruction outside normal authorization: a human selects the
+canonical chain, preserves the forked file as audit evidence, and re-establishes
+a single verified chain. Authorization remains impossible until ledger
+verification passes again from disk. A future revision may define a signed
+recovery record; until then, a fork is terminal for automation.
 
 Large reasoning artifacts, workshop responses, and evidence bodies are stored as
 content-addressed files. The ledger stores their hashes and paths rather than
@@ -417,8 +470,12 @@ The controller derives one of three states:
 Continue when:
 
 - one or more unresolved objections exist,
-- at least one unresolved objection hash is new,
+- the candidate artifact hash changed in the current round,
 - and the maximum round count has not been reached.
+
+The controller never semantically decides whether a mutation "addressed" an
+objection. A changed candidate buys another round; the hard round cap bounds
+meaningless mutation.
 
 #### Converged for submission
 
@@ -428,8 +485,13 @@ Daedalus is mechanically marked `converged-for-submission` only when:
 - each carries distinct valid call provenance,
 - both responses bind to the same output artifact hash,
 - both unresolved-objection sets are empty,
-- and the controller can account for every prior objection as resolved,
-  superseded, or still absent from the final round.
+- and the controller can account for every prior objection as explicitly
+  resolved, superseded, or withdrawn by its originating seat through a
+  provenance-bound workshop record.
+
+**Absence is not a disposition.** An objection absent from a later response
+remains unresolved unless a resolution, supersession, or withdrawal record
+exists. A seat cannot enable convergence by silently dropping an objection.
 
 This state means only:
 
@@ -441,10 +503,25 @@ It does not authorize implementation.
 
 Daedalus enters `stalemate` when:
 
-- a nonempty unresolved objection set repeats without a plan mutation that
-  addresses it,
-- the exchange cycles through materially identical artifact hashes,
+- unresolved objections exist and the candidate artifact hash repeats a hash
+  from any prior round,
 - or the hard round cap is reached with unresolved objections.
+
+Every reachable state is covered deterministically:
+
+```text
+unresolved objections + changed candidate artifact hash
+→ continue, until the hard cap
+
+unresolved objections + repeated candidate artifact hash
+→ stalemate
+
+hard cap reached with unresolved objections
+→ stalemate
+
+no unresolved objections + all priors resolved / superseded / withdrawn
+→ converged-for-submission
+```
 
 A stalemate never grants convergence.
 
@@ -752,13 +829,40 @@ Each verification obligation is part of the hashed plan and contains at least:
 declaration or a repository-owned check manifest — not supplied as a trustworthy
 assertion by the model.
 
+Registration is machine-readable. The discharge node's test declaration must
+register the obligation explicitly:
+
+```json
+{
+  "test": {
+    "cmd": "node",
+    "args": ["--test", "tests/auth-boundary.test.mjs"],
+    "verifies": ["verify-auth-boundary-001"]
+  }
+}
+```
+
+`verifies` lists the obligation ids the test discharges. It is part of the
+canonical test declaration, so it is covered by `discharge_test_ref`, the node's
+`spec_hash`, and the plan hash. A repository may equivalently use a
+repository-owned check manifest mapping:
+
+```text
+obligation_id → discharge_node_id → discharge_test_ref
+```
+
+Either way, the coverage anchor is a field the gate reads mechanically — never
+an inference about what a test "really exercises."
+
 The proposal gate must verify:
 
 1. The named node exists in the candidate plan.
 2. The referenced test/check exists.
 3. The test reference matches the named node's actual hashed test declaration.
-4. The test deterministically invokes or registers the obligation's declared
-   check.
+4. The obligation's `obligation_id` appears in the named node's `verifies`
+   registration (or the repository-owned check manifest). A test declaration
+   whose hash matches `discharge_test_ref` but which does not register the
+   obligation fails review.
 5. The obligation, node, test, and concern reference are all covered by the
    candidate `plan_hash`.
 
@@ -790,8 +894,19 @@ test file exists
 ≠ ready
 ```
 
-A plan mutation also invalidates the discharge automatically because the node's
-effective hash or test reference changes.
+Discharge reuse follows the Merkle structure, matching the existing ledger
+semantics: a discharge remains valid only while the obligation definition,
+`discharge_test_ref`, and the discharge node's `effective_hash` are unchanged.
+Any mutation to the discharge node, its ancestors, its test declaration, or the
+obligation binding changes one of those values and invalidates the discharge
+automatically.
+
+An unrelated node mutation changes the global `plan_hash` — and therefore
+requires fresh review and authorization of the revised plan — but does not by
+itself invalidate a discharge whose node lineage is untouched. Authorization is
+exact-plan; discharge is node-lineage. `done()` re-validates every obligation
+against the current plan regardless, so a reused discharge is still re-checked
+from disk on every evaluation.
 
 ## Evidence verification
 
@@ -1167,6 +1282,12 @@ Exact-plan authorization + deterministic checks
   independently recomputed written plan hash.
 - **Workshop convergence is not authorization.** It permits submission only.
 - **Repeated unresolved objections are stalemate, not agreement.**
+- **An absent objection is not a resolved objection.** Only a provenance-bound
+  resolution, supersession, or withdrawal record disposes of a workshop
+  objection.
+- **Obligation coverage is a field the gate reads, not an inference.** The
+  discharge test must register the obligation id in its canonical declaration
+  (or the repository-owned check manifest).
 - **Cold review is verified from provider-scoped lineage and input manifests.**
 - **A model may raise a hold but may not set its own TTL or release condition.**
 - **A model may not dispose of its own concern or grade its own work.**
@@ -1181,8 +1302,13 @@ Exact-plan authorization + deterministic checks
   fails while any obligation lacks a settled, Rule-3-verified discharge.
 - **Disposition comes from deterministic output or signed human action.**
 - **`runBuild()` re-verifies the written plan hash before dispatch.**
-- **The proposal ledger is a single canonical chain.** Forks invalidate
-  authorization until resolved by signed human recovery.
+- **The proposal ledger is a single canonical chain.** A fork invalidates
+  authorization and is terminal for automation; recovery is manual human ledger
+  reconstruction outside normal authorization.
+- **Authorization is exact-plan; discharge is node-lineage.** Every new plan
+  hash requires fresh authorization; a discharge is reusable only while the
+  obligation definition, discharge test reference, and discharge node effective
+  hash are unchanged.
 - **Standing is recomputed from disk.** It is not a mutable authority score.
 - **A new model version starts conservative.**
 - **Audit does not equal correctness.** It supplies attribution, reproducibility,
@@ -1255,7 +1381,16 @@ The implementation is incomplete until tests prove:
   `merge_status: "ready"` even when every node settles,
 - an obligation naming a missing node, missing test, or mismatched test
   reference fails the proposal gate,
-- discharging a node then mutating the plan invalidates the discharge,
+- a test declaration whose hash matches `discharge_test_ref` but which does not
+  register the obligation in `verifies` (or the check manifest) fails review,
+- mutating the discharge node, an ancestor, its test declaration, or the
+  obligation binding invalidates a prior discharge,
+- an unrelated node mutation forces re-authorization of the new plan hash but
+  does not invalidate an untouched node's discharge,
+- an objection silently dropped from a later round (no resolution,
+  supersession, or withdrawal record) blocks convergence,
+- unresolved objections with a changed candidate hash continue the workshop;
+  with a repeated candidate hash they produce stalemate,
 - `runBuild()` blocks before dispatch when the written plan hash differs from
   the authorized hash,
 - proposal ledger mutation, deletion, or reordering breaks verification,
@@ -1285,11 +1420,11 @@ It places judgment inside an accountable system where:
 
 ---
 
-# B. Diff — `contracts/Agentic Teams Autonomous Builder.md`
+# B. Diff vs main — `contracts/Agentic Teams Autonomous Builder.md`
 
 ```diff
 diff --git a/contracts/Agentic Teams Autonomous Builder.md b/contracts/Agentic Teams Autonomous Builder.md
-index 4fdc0c6..79326fe 100644
+index 4fdc0c6..9ebd738 100644
 --- a/contracts/Agentic Teams Autonomous Builder.md	
 +++ b/contracts/Agentic Teams Autonomous Builder.md	
 @@ -62,12 +62,19 @@ So the team count is a function of the job, not a fixed roster.
@@ -1315,12 +1450,15 @@ index 4fdc0c6..79326fe 100644
          Rule 1 — the team sees only the node spec; it writes the node's files
    → Rule 3 defaultVerifyNode re-derives the artifact hash + runs node.test
    → [breakout] reverifyRecord on declarative checks for "meets"-class nodes
-@@ -78,7 +85,21 @@ idea + telos
+@@ -77,8 +84,23 @@ idea + telos
+ ```
  
  The orchestrator (`build-gate/build-orchestrator.mjs`, `buildProject`) STOPS at the
- first failing phase and **never advances to execution unless the council approval
+-first failing phase and **never advances to execution unless the council approval
 -gate passed**. The phases it reports: `situation | decompose | approval | plan | build`.
-+gate passed**. The target phase order is:
++first failing phase and **never advances to execution unless the proposal
++authorization gate passed** (council approval is a necessary input to that gate,
++never sufficient by itself). The target phase order is:
 +
 +```text
 +situation | decompose | plan | approval | build

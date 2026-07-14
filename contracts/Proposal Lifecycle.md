@@ -265,9 +265,15 @@ The proposal ledger is a **single canonical chain**. Verification must enforce:
 - all event hashes and signatures must recompute from disk.
 
 Two validly signed events claiming the same parent constitute a **fork** and
-invalidate authorization until resolved by an explicit signed human recovery
-procedure. Sole-writer discipline should prevent forks; verification from disk
-must not assume the writer behaved.
+invalidate authorization. Sole-writer discipline should prevent forks;
+verification from disk must not assume the writer behaved.
+
+No in-band recovery event is defined in this version. Fork recovery is manual
+ledger reconstruction outside normal authorization: a human selects the
+canonical chain, preserves the forked file as audit evidence, and re-establishes
+a single verified chain. Authorization remains impossible until ledger
+verification passes again from disk. A future revision may define a signed
+recovery record; until then, a fork is terminal for automation.
 
 Large reasoning artifacts, workshop responses, and evidence bodies are stored as
 content-addressed files. The ledger stores their hashes and paths rather than
@@ -366,8 +372,12 @@ The controller derives one of three states:
 Continue when:
 
 - one or more unresolved objections exist,
-- at least one unresolved objection hash is new,
+- the candidate artifact hash changed in the current round,
 - and the maximum round count has not been reached.
+
+The controller never semantically decides whether a mutation "addressed" an
+objection. A changed candidate buys another round; the hard round cap bounds
+meaningless mutation.
 
 #### Converged for submission
 
@@ -377,8 +387,13 @@ Daedalus is mechanically marked `converged-for-submission` only when:
 - each carries distinct valid call provenance,
 - both responses bind to the same output artifact hash,
 - both unresolved-objection sets are empty,
-- and the controller can account for every prior objection as resolved,
-  superseded, or still absent from the final round.
+- and the controller can account for every prior objection as explicitly
+  resolved, superseded, or withdrawn by its originating seat through a
+  provenance-bound workshop record.
+
+**Absence is not a disposition.** An objection absent from a later response
+remains unresolved unless a resolution, supersession, or withdrawal record
+exists. A seat cannot enable convergence by silently dropping an objection.
 
 This state means only:
 
@@ -390,10 +405,25 @@ It does not authorize implementation.
 
 Daedalus enters `stalemate` when:
 
-- a nonempty unresolved objection set repeats without a plan mutation that
-  addresses it,
-- the exchange cycles through materially identical artifact hashes,
+- unresolved objections exist and the candidate artifact hash repeats a hash
+  from any prior round,
 - or the hard round cap is reached with unresolved objections.
+
+Every reachable state is covered deterministically:
+
+```text
+unresolved objections + changed candidate artifact hash
+→ continue, until the hard cap
+
+unresolved objections + repeated candidate artifact hash
+→ stalemate
+
+hard cap reached with unresolved objections
+→ stalemate
+
+no unresolved objections + all priors resolved / superseded / withdrawn
+→ converged-for-submission
+```
 
 A stalemate never grants convergence.
 
@@ -701,13 +731,40 @@ Each verification obligation is part of the hashed plan and contains at least:
 declaration or a repository-owned check manifest — not supplied as a trustworthy
 assertion by the model.
 
+Registration is machine-readable. The discharge node's test declaration must
+register the obligation explicitly:
+
+```json
+{
+  "test": {
+    "cmd": "node",
+    "args": ["--test", "tests/auth-boundary.test.mjs"],
+    "verifies": ["verify-auth-boundary-001"]
+  }
+}
+```
+
+`verifies` lists the obligation ids the test discharges. It is part of the
+canonical test declaration, so it is covered by `discharge_test_ref`, the node's
+`spec_hash`, and the plan hash. A repository may equivalently use a
+repository-owned check manifest mapping:
+
+```text
+obligation_id → discharge_node_id → discharge_test_ref
+```
+
+Either way, the coverage anchor is a field the gate reads mechanically — never
+an inference about what a test "really exercises."
+
 The proposal gate must verify:
 
 1. The named node exists in the candidate plan.
 2. The referenced test/check exists.
 3. The test reference matches the named node's actual hashed test declaration.
-4. The test deterministically invokes or registers the obligation's declared
-   check.
+4. The obligation's `obligation_id` appears in the named node's `verifies`
+   registration (or the repository-owned check manifest). A test declaration
+   whose hash matches `discharge_test_ref` but which does not register the
+   obligation fails review.
 5. The obligation, node, test, and concern reference are all covered by the
    candidate `plan_hash`.
 
@@ -739,8 +796,19 @@ test file exists
 ≠ ready
 ```
 
-A plan mutation also invalidates the discharge automatically because the node's
-effective hash or test reference changes.
+Discharge reuse follows the Merkle structure, matching the existing ledger
+semantics: a discharge remains valid only while the obligation definition,
+`discharge_test_ref`, and the discharge node's `effective_hash` are unchanged.
+Any mutation to the discharge node, its ancestors, its test declaration, or the
+obligation binding changes one of those values and invalidates the discharge
+automatically.
+
+An unrelated node mutation changes the global `plan_hash` — and therefore
+requires fresh review and authorization of the revised plan — but does not by
+itself invalidate a discharge whose node lineage is untouched. Authorization is
+exact-plan; discharge is node-lineage. `done()` re-validates every obligation
+against the current plan regardless, so a reused discharge is still re-checked
+from disk on every evaluation.
 
 ## Evidence verification
 
@@ -1116,6 +1184,12 @@ Exact-plan authorization + deterministic checks
   independently recomputed written plan hash.
 - **Workshop convergence is not authorization.** It permits submission only.
 - **Repeated unresolved objections are stalemate, not agreement.**
+- **An absent objection is not a resolved objection.** Only a provenance-bound
+  resolution, supersession, or withdrawal record disposes of a workshop
+  objection.
+- **Obligation coverage is a field the gate reads, not an inference.** The
+  discharge test must register the obligation id in its canonical declaration
+  (or the repository-owned check manifest).
 - **Cold review is verified from provider-scoped lineage and input manifests.**
 - **A model may raise a hold but may not set its own TTL or release condition.**
 - **A model may not dispose of its own concern or grade its own work.**
@@ -1130,8 +1204,13 @@ Exact-plan authorization + deterministic checks
   fails while any obligation lacks a settled, Rule-3-verified discharge.
 - **Disposition comes from deterministic output or signed human action.**
 - **`runBuild()` re-verifies the written plan hash before dispatch.**
-- **The proposal ledger is a single canonical chain.** Forks invalidate
-  authorization until resolved by signed human recovery.
+- **The proposal ledger is a single canonical chain.** A fork invalidates
+  authorization and is terminal for automation; recovery is manual human ledger
+  reconstruction outside normal authorization.
+- **Authorization is exact-plan; discharge is node-lineage.** Every new plan
+  hash requires fresh authorization; a discharge is reusable only while the
+  obligation definition, discharge test reference, and discharge node effective
+  hash are unchanged.
 - **Standing is recomputed from disk.** It is not a mutable authority score.
 - **A new model version starts conservative.**
 - **Audit does not equal correctness.** It supplies attribution, reproducibility,
@@ -1204,7 +1283,16 @@ The implementation is incomplete until tests prove:
   `merge_status: "ready"` even when every node settles,
 - an obligation naming a missing node, missing test, or mismatched test
   reference fails the proposal gate,
-- discharging a node then mutating the plan invalidates the discharge,
+- a test declaration whose hash matches `discharge_test_ref` but which does not
+  register the obligation in `verifies` (or the check manifest) fails review,
+- mutating the discharge node, an ancestor, its test declaration, or the
+  obligation binding invalidates a prior discharge,
+- an unrelated node mutation forces re-authorization of the new plan hash but
+  does not invalidate an untouched node's discharge,
+- an objection silently dropped from a later round (no resolution,
+  supersession, or withdrawal record) blocks convergence,
+- unresolved objections with a changed candidate hash continue the workshop;
+  with a repeated candidate hash they produce stalemate,
 - `runBuild()` blocks before dispatch when the written plan hash differs from
   the authorized hash,
 - proposal ledger mutation, deletion, or reordering breaks verification,
