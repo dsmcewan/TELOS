@@ -1,0 +1,27 @@
+{
+  "generated_by": "run-proposal-lifecycle.mjs",
+  "live": false,
+  "keyless": true,
+  "variants": [
+    {
+      "variant": "authorized",
+      "plan_hash": "sha256:1994b1610d53c70548b35a2ae52a263ebbb5518b2f0da0dc48beba0805c938d2",
+      "lifecycle_checks_ok": true,
+      "merge_status": "ready",
+      "runBuild_error": null
+    },
+    {
+      "variant": "obligation",
+      "plan_hash": "sha256:96f565cc8ed0f95b3fcbe4c09353d4eb98a36cd993db04b3c893ebfbcd0b2d30",
+      "merge_status": "blocked",
+      "reason": "undischarged verification obligation",
+      "safe_next_action": "discharge-obligations"
+    },
+    {
+      "variant": "blocked",
+      "plan_hash": "sha256:1d8f4ec86167859cacb05f3ae88e6ed87cf3f2023e1e2488045b4c9fd14e6716",
+      "decision": "blocked",
+      "runBuild_error": "DECISION_NOT_AUTHORIZED"
+    }
+  ]
+}

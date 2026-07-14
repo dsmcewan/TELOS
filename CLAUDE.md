@@ -22,9 +22,21 @@ Each top-level directory is an independent, self-contained Node package:
 - `connectors/ai-peer-mcp/` — MCP server exposing the model backends with real per-seat
   provenance (`server.mjs`, `lib.mjs`).
 - `merkle-dag/` — content-addressed planning, Ed25519 verified delegation, append-only
-  signed ledger, and a pure `done()` merge gate (`ledger-gate.mjs`).
-- `contracts/` — the human-readable protocol the gate enforces.
+  signed ledger, a pure `done()` merge gate (`ledger-gate.mjs`), verification obligations
+  (`obligation.mjs`), and the signed proposal-lifecycle ledger + primitives
+  (`proposal-ledger.mjs`).
+- `contracts/` — the human-readable protocol the gate enforces (incl.
+  `Proposal Lifecycle.md`: audited judgment, cold review, verification obligations).
 - `docs/` — status, specs, plans, and run evidence.
+
+The **proposal-lifecycle** layer (opt-in via `dossier.proposal_lifecycle === true`;
+legacy advisory mode is byte-identical) lives in `build-gate/`: `daedalus.mjs` (the
+claude/codex planning workshop), `concerns.mjs` (typed concerns/holds/dispositions),
+`risk-policy.mjs`, `evidence.mjs` (closed-whitelist sandboxed verifier),
+`proposal-gate.mjs` (reconstructs proposal state from the ledger),
+`proposal-recorder.mjs` (sole-writer), and `standing.mjs`. Its rule: **no mutable
+label keys an enforcement decision; every enforcement identity is a controller-derived
+content address.** End-to-end evidence: `docs/runs/proposal-lifecycle/`.
 
 Note: `build-gate/` imports from `breakout/` (`reverifyRecord` from `../breakout/verifier.mjs`),
 so the packages are not fully isolated — preserve those cross-package relative imports.

@@ -246,3 +246,33 @@ gate logic, and `merkle-dag` are untouched.
 extended `test-provenance.mjs`; `build-gate` `test-schemas.mjs` + extended
 `test-teams`/`test-council-orchestrator`/`test-team-prompts`. All three packages
 `npm test` exit 0. Docs: `docs/specs/2026-06-28-provider-agentic-design.md`.
+
+---
+
+## Addendum — Proposal Lifecycle (Daedalus) implemented
+
+**Date:** 2026-07-14. Branch `daedalus/implementation` (off `contracts/proposal-lifecycle`).
+
+Implemented the frozen `contracts/Proposal Lifecycle.md` (all 14 Required
+Implementation Points) as an opt-in layer (`dossier.proposal_lifecycle === true`);
+legacy advisory mode stays byte-identical.
+
+- **M1 merkle-dag:** `obligation.mjs` (content-addressed obligations + done()-time
+  discharge), `proposal-ledger.mjs` (signed hash-chained `.telos/proposal.jsonl`,
+  atomic single-lock append, `POLICY_CONTRACT_V1` + layered verifiers), plan-hash
+  binding of obligations + node-lineage metadata, `runBuild` disk-read authorization.
+- **M2:** connector provenance (`provider` + `answered_at`), `risk-policy.mjs`,
+  strict schemas, `evidence.mjs` (closed-whitelist verifier with a real filesystem +
+  network namespace sandbox, fail-closed when unavailable).
+- **M3:** `concerns.mjs` (typed concerns/holds/controller-only dispositions),
+  `proposal-gate.mjs` (reconstructs all proposal state from the ledger), gate
+  provider-scoped ids + `hard_stops` deprecation.
+- **M4:** `daedalus.mjs` (bounded claude/codex workshop, total state machine),
+  `proposal-recorder.mjs` (sole-writer, durable key), and the `buildProject`
+  reorder (candidate compiled + written before council review).
+- **M5:** `standing.mjs` (pure calibration, new-model firewall).
+
+Every package's `npm test` is green (merkle-dag, build-gate — which chains
+breakout —, connectors/ai-peer-mcp). Keyless end-to-end evidence:
+`docs/runs/proposal-lifecycle/` (authorized→ready, undischarged-obligation blocked,
+verified-blocker refused).
