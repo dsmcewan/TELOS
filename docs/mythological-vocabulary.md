@@ -33,6 +33,7 @@ Use them only with their defined meanings.
 - **Clotho** — creates and maintains knowledge-graph threads across artifacts and repositories.
 - **Lachesis** — measures dependencies, relevance, risk, and blast radius.
 - **Atropos** — retires obsolete relationships, artifacts, tools, and processes.
+- **The Iliad** — the umbrella system: the coordinated whole under which the registered components operate; organizes module plans and their cross-plan dependencies (using Clotho's weave).
 - **The Eye** — human-held authority required for the system to act on self-improvement proposals.
 
 Anything not on this list is unregistered. Unregistered ≠ available.
