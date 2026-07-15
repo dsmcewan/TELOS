@@ -1,0 +1,35 @@
+{
+  "build_id": "clotho-phase-1-authz-003",
+  "use_case": "clotho-phase-1",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/clotho-daedalus-delta9/matured-plan-v10.md",
+    "docs/clotho-phase-1-design.md"
+  ],
+  "proposal_ref": "sha256:a23da81a38c16cd1948875c104a8297cad7a092b8f088ea9f34c566e5ec19116",
+  "decision": "revise",
+  "required_edits": [
+    "Amend D14, D27, the governing specification, and Tasks 4a/5 with replacement semantics equivalent to: \"For `implementation_refs`, `orchestrator_refs`, and the permitted `merkle-dag/` closure, the transitive closure includes every literal relative module-loading edge accepted by the outbound scanner: import declarations, side-effect imports, `export ... from`, `export * from`, literal dynamic `import()`, and any accepted literal `require()` or `module.require()` form. Each resolved target is traversed recursively and must appear in the applicable committed closure inventory.\"",
+    "Add closure tests proving that helpers reached through relative re-export, literal dynamic import, and each accepted require-style form cannot be omitted from the applicable inventory or manifest refs. Route the specification amendment to The Eye and release a newly content-addressed plan before authorization."
+  ],
+  "hard_stops": [
+    "Mechanism provenance is not closed over every module-loading form permitted inside Clotho: D27 allows literal relative dynamic imports and require-style loads, while D14 and the closure tests specify only a static relative-import closure. Executed helper bytes could therefore be omitted from `implementation_refs` or `orchestrator_refs` while closure tests still pass."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-15T23:15:53.005Z",
+  "rationale": "This gap defeats the claimed content binding of the complete assertion mechanism and conflicts with D14 and the mechanism-bound exit criteria. A weaver or orchestrator could load a relative helper through an accepted non-static form, execute that code, and publish a verified ledger whose trailer does not identify the helper bytes. The plan is otherwise highly developed, but this trust-boundary defect prevents execution as-is.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E237SI679zryc8MtVuWglMxjaEYcG",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-15T23:22:53.162Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "38aec2c1777b308df5a7d3ad914e831d0fa1b7c650b5019283ea07a6352fd525",
+    "signed_fields": "canonical-minus-signature"
+  }
+}
