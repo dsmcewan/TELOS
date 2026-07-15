@@ -57,17 +57,20 @@ function mapModelName(model) {
     return "claude-sonnet-4-6";
   }
   if (lower === "grok") {
-    return "grok-4.3";
+    return "grok-4.5";
   }
   // Codex is served by OpenAI; a bare "codex" resolves to the current flagship
   // chat model so `model: "codex"` works the way `model: "grok"` does.
-  if (lower === "codex" || lower === "gpt") {
-    return "gpt-5.5";
+  if (lower === "codex" || lower === "gpt" || lower === "sol") {
+    return "gpt-5.6-sol";
   }
   // Gemini is served by Google; a bare "gemini" resolves to the current pro
   // model. Real selection stays env-overridable via GEMINI_MODEL.
   if (lower === "gemini" || lower === "gemini pro") {
     return "gemini-3.1-pro-preview";
+  }
+  if (lower === "gemini flash") {
+    return "gemini-3.5-flash";
   }
   return model;
 }
@@ -236,15 +239,16 @@ function toolDefinitions() {
   return [
     {
       name: "claude_ask",
-      description: "Ask Claude through the Anthropic Messages API. Requires ANTHROPIC_API_KEY and a model via input or ANTHROPIC_MODEL. Set include_provenance to return a JSON envelope {text, provenance:{model,response_id,source}} instead of raw text.",
+      description: "Ask Claude through the Anthropic Messages API. Requires ANTHROPIC_API_KEY and a model via input or ANTHROPIC_MODEL. Pass effort to set thinking depth (the Fable 5 seat defaults to max). Set include_provenance to return a JSON envelope {text, provenance:{model,response_id,source}} instead of raw text.",
       inputSchema: {
         type: "object",
         properties: {
           prompt: { type: "string" },
           system: { type: "string" },
           model: { type: "string" },
-          max_tokens: { type: "integer", minimum: 1, maximum: 8192 },
+          max_tokens: { type: "integer", minimum: 1, maximum: 64000 },
           temperature: { type: "number", minimum: 0, maximum: 1 },
+          effort: { type: "string", enum: ["low", "medium", "high", "xhigh", "max"] },
           include_provenance: { type: "boolean" },
           response_schema: { type: "object" },
           schema_name: { type: "string" }
@@ -254,7 +258,7 @@ function toolDefinitions() {
     },
     {
       name: "grok_ask",
-      description: "Ask Grok through xAI's OpenAI-compatible chat completions API. Requires XAI_API_KEY and a model via input or XAI_MODEL. Set include_provenance to return a JSON envelope {text, provenance:{model,response_id,source}} instead of raw text.",
+      description: "Ask Grok through xAI's OpenAI-compatible chat completions API. Requires XAI_API_KEY and a model via input or XAI_MODEL. Pass effort to set reasoning depth (grok-4.5 caps at high; xhigh/max clamp down). Set include_provenance to return a JSON envelope {text, provenance:{model,response_id,source}} instead of raw text.",
       inputSchema: {
         type: "object",
         properties: {
@@ -263,6 +267,7 @@ function toolDefinitions() {
           model: { type: "string" },
           max_tokens: { type: "integer", minimum: 1, maximum: 8192 },
           temperature: { type: "number", minimum: 0, maximum: 1 },
+          effort: { type: "string", enum: ["low", "medium", "high", "xhigh", "max"] },
           include_provenance: { type: "boolean" },
           response_schema: { type: "object" },
           schema_name: { type: "string" }
@@ -272,15 +277,16 @@ function toolDefinitions() {
     },
     {
       name: "codex_ask",
-      description: "Ask Codex through OpenAI's chat completions API. Requires OPENAI_API_KEY and a model via input or OPENAI_MODEL (OPENAI_BASE_URL overrides the endpoint). Set include_provenance to return a JSON envelope {text, provenance:{model,response_id,source}} instead of raw text.",
+      description: "Ask Codex through OpenAI's chat completions API. Requires OPENAI_API_KEY and a model via input or OPENAI_MODEL (OPENAI_BASE_URL overrides the endpoint). Pass effort to set reasoning depth (gpt-5.6 defaults to xhigh, its live API ceiling; max clamps down). Set include_provenance to return a JSON envelope {text, provenance:{model,response_id,source}} instead of raw text.",
       inputSchema: {
         type: "object",
         properties: {
           prompt: { type: "string" },
           system: { type: "string" },
           model: { type: "string" },
-          max_tokens: { type: "integer", minimum: 1, maximum: 8192 },
+          max_tokens: { type: "integer", minimum: 1, maximum: 64000 },
           temperature: { type: "number", minimum: 0, maximum: 1 },
+          effort: { type: "string", enum: ["none", "low", "medium", "high", "xhigh", "max"] },
           include_provenance: { type: "boolean" },
           response_schema: { type: "object" },
           schema_name: { type: "string" }
@@ -290,7 +296,7 @@ function toolDefinitions() {
     },
     {
       name: "gemini_ask",
-      description: "Ask Gemini (the callable Google model behind Antigravity) through the Gemini API. Requires GEMINI_API_KEY and a model via input or GEMINI_MODEL (GEMINI_BASE_URL overrides the endpoint). Pass response_schema for native structured JSON. Set include_provenance to return a JSON envelope {text, provenance:{model,response_id,source}} instead of raw text.",
+      description: "Ask Gemini (the callable Google model behind Antigravity) through the Gemini API. Requires GEMINI_API_KEY and a model via input or GEMINI_MODEL (GEMINI_BASE_URL overrides the endpoint). Pass effort to set thinking depth (gemini-3* defaults to high, the ceiling; xhigh/max clamp down). Pass response_schema for native structured JSON. Set include_provenance to return a JSON envelope {text, provenance:{model,response_id,source}} instead of raw text.",
       inputSchema: {
         type: "object",
         properties: {
@@ -299,6 +305,7 @@ function toolDefinitions() {
           model: { type: "string" },
           max_tokens: { type: "integer", minimum: 1, maximum: 8192 },
           temperature: { type: "number", minimum: 0, maximum: 1 },
+          effort: { type: "string", enum: ["low", "medium", "high", "xhigh", "max"] },
           include_provenance: { type: "boolean" },
           response_schema: { type: "object" },
           schema_name: { type: "string" }
@@ -386,6 +393,29 @@ function askResult(result, source, includeProvenance, provider) {
   }));
 }
 
+// Effort support varies by Claude model, and effort args are threaded to every
+// seat per role — so the SEND (not just the default) is gated here: unknown or
+// unsupported values are clamped to the model's ceiling, and models without
+// effort support get no output_config at all. xhigh arrived with Opus 4.7;
+// Opus 4.5 tops out at high; pre-4.5 models reject the parameter entirely.
+function claudeEffort(model, requested) {
+  const VALID = new Set(["low", "medium", "high", "xhigh", "max"]);
+  const asked = VALID.has(requested) ? requested : undefined;
+  if (model.startsWith("claude-fable") || model.startsWith("claude-mythos")) {
+    return asked || "max";
+  }
+  if (model.startsWith("claude-opus-4-7") || model.startsWith("claude-opus-4-8") || model.startsWith("claude-sonnet-5")) {
+    return asked;
+  }
+  if (model.startsWith("claude-opus-4-6") || model.startsWith("claude-sonnet-4-6")) {
+    return asked === "xhigh" ? "high" : asked;
+  }
+  if (model.startsWith("claude-opus-4-5")) {
+    return asked === "xhigh" || asked === "max" ? "high" : asked;
+  }
+  return undefined;
+}
+
 export async function askClaude(args) {
   requireString(args.prompt, "prompt");
   const apiKey = requireEnv("ANTHROPIC_API_KEY");
@@ -395,6 +425,13 @@ export async function askClaude(args) {
   }
   const model = mapModelName(rawModel);
 
+  // Thinking depth: on Fable 5 thinking is always on and output_config.effort
+  // (low|medium|high|xhigh|max) controls it — there is no "ultracode" API mode.
+  // Callers pass per-role effort (see build-gate/model-profiles.mjs EFFORT_TIERS);
+  // the Fable seat defaults to "max". claudeEffort() clamps to what the target
+  // model accepts and drops the field entirely for models without effort support.
+  const effort = claudeEffort(model, args.effort);
+
   // Structured output: Anthropic forces schema-valid JSON via a single tool call.
   // We force the model to call one tool whose input_schema IS the requested schema;
   // the JSON is then the tool_use block's `input`.
@@ -403,7 +440,10 @@ export async function askClaude(args) {
 
   const body = {
     model,
-    max_tokens: args.max_tokens ?? 2000,
+    // Thinking tokens bill against max_tokens, so leave more headroom when a
+    // deep-effort tier is in play.
+    max_tokens: args.max_tokens ?? (effort ? 16000 : 2000),
+    output_config: effort ? { effort } : undefined,
     // Only send temperature when explicitly requested; newer Claude models
     // reject it as deprecated. (Forced tools also dislike a sampled temperature.)
     temperature: typeof args.temperature === "number" ? args.temperature : undefined,
@@ -431,10 +471,22 @@ export async function askClaude(args) {
   });
 
   const json = await parseApiResponse(response, "Anthropic");
+  // Fable 5 safety classifiers can decline with HTTP 200 + stop_reason "refusal"
+  // (empty or partial content). Fail loudly so the seat blocks with a clear
+  // cause instead of an empty packet.
+  if (json?.stop_reason === "refusal") {
+    throw new Error(`Anthropic declined the request (stop_reason: refusal, category: ${json?.stop_details?.category ?? "unspecified"}).`);
+  }
   // Returns { text, model, id } — model/id are the API's actual response
   // provenance, not the requested model string. Structured mode reads the JSON
   // from the tool_use block (and falls back to text if the model declined).
-  return structured ? extractAnthropicStructuredResult(json) : extractAnthropicResult(json);
+  const result = structured ? extractAnthropicStructuredResult(json) : extractAnthropicResult(json);
+  // Deep thinking can exhaust the whole output budget before any answer —
+  // fail loudly (same as refusal) instead of emitting an empty packet.
+  if (json?.stop_reason === "max_tokens" && !result.text.trim()) {
+    throw new Error("Anthropic output budget exhausted before any answer (stop_reason: max_tokens — thinking consumed the budget). Raise max_tokens or lower effort.");
+  }
+  return result;
 }
 
 // OpenAI-compatible structured output (xAI Grok and OpenAI Codex share the shape):
@@ -457,6 +509,16 @@ export async function askGrok(args) {
   }
   const model = mapModelName(rawModel);
 
+  // Reasoning effort: xAI caps at "high" (low|medium|high — no xhigh/max), so
+  // deeper per-role tiers clamp down to it and unknown values fall back to the
+  // default. Gated on grok-4.5 for BOTH the default and caller-supplied values;
+  // other models get no reasoning_effort at all.
+  const GROK_EFFORTS = new Set(["low", "medium", "high"]);
+  const clampedGrok = ["xhigh", "max"].includes(args.effort) ? "high" : args.effort;
+  const effort = model.startsWith("grok-4.5")
+    ? (GROK_EFFORTS.has(clampedGrok) ? clampedGrok : "high")
+    : undefined;
+
   const messages = [];
   if (args.system) {
     messages.push({ role: "system", content: args.system });
@@ -473,8 +535,11 @@ export async function askGrok(args) {
     body: JSON.stringify({
       model,
       messages,
-      max_tokens: args.max_tokens ?? 2000,
-      temperature: args.temperature ?? 0,
+      max_tokens: args.max_tokens ?? (effort ? 8192 : 2000),
+      reasoning_effort: effort,
+      // Only send temperature when explicitly requested; xAI reasoning models
+      // reject sampling parameters.
+      temperature: typeof args.temperature === "number" ? args.temperature : undefined,
       response_format: jsonSchemaResponseFormat(args)
     })
   });
@@ -492,6 +557,19 @@ export async function askCodex(args) {
   }
   const model = mapModelName(rawModel);
 
+  // Reasoning effort ("thinking" depth): callers pass per-role effort (see
+  // build-gate/model-profiles.mjs EFFORT_TIERS); the gpt-5.6 seat defaults to
+  // "xhigh" — the LIVE chat-completions ceiling (the API rejects "max":
+  // observed 400 unsupported_value, supported none|low|medium|high|xhigh), so
+  // "max" clamps down. Gated on gpt-5.6 for BOTH the default and caller-supplied
+  // values — other models (incl. OPENAI_BASE_URL-compatible gateways) reject or
+  // ignore the parameter — and unknown values fall back to the default.
+  const CODEX_EFFORTS = new Set(["none", "low", "medium", "high", "xhigh"]);
+  const clampedCodex = args.effort === "max" ? "xhigh" : args.effort;
+  const effort = model.startsWith("gpt-5.6")
+    ? (CODEX_EFFORTS.has(clampedCodex) ? clampedCodex : "xhigh")
+    : undefined;
+
   const messages = [];
   if (args.system) {
     messages.push({ role: "system", content: args.system });
@@ -508,7 +586,14 @@ export async function askCodex(args) {
     body: JSON.stringify({
       model,
       messages,
-      max_tokens: args.max_tokens ?? 2000,
+      // gpt-5 reasoning models reject max_tokens and bill reasoning tokens
+      // against the completion budget — use max_completion_tokens with more
+      // headroom there. Other models (incl. OPENAI_BASE_URL-compatible
+      // gateways that only know max_tokens) keep the legacy field.
+      ...(model.startsWith("gpt-5")
+        ? { max_completion_tokens: args.max_tokens ?? (effort ? 16000 : 2000) }
+        : { max_tokens: args.max_tokens ?? 2000 }),
+      reasoning_effort: effort,
       // Only send temperature when explicitly requested; some OpenAI models
       // reject a non-default temperature.
       temperature: typeof args.temperature === "number" ? args.temperature : undefined,
@@ -517,6 +602,13 @@ export async function askCodex(args) {
   });
 
   const json = await parseApiResponse(response, "OpenAI");
+  // Deep reasoning can exhaust the whole completion budget before any answer —
+  // fail loudly instead of emitting an empty packet.
+  const finishReason = json?.choices?.[0]?.finish_reason;
+  const content = json?.choices?.[0]?.message?.content;
+  if (finishReason === "length" && !(content ?? "").trim()) {
+    throw new Error("OpenAI completion budget exhausted before any answer (finish_reason: length — reasoning consumed the budget). Raise max_tokens or lower effort.");
+  }
   // Returns { text, model, id } — model/id are the API's real response
   // provenance, not the requested model string.
   return extractOpenAIResult(json);
@@ -530,6 +622,17 @@ export async function askGemini(args) {
     throw new Error("Missing Gemini model. Pass model or set GEMINI_MODEL.");
   }
   const model = mapModelName(rawModel);
+
+  // Thinking depth: Gemini 3+ takes generationConfig.thinkingConfig.thinkingLevel
+  // (minimal|low|medium|high — high is the ceiling, so deeper per-role tiers
+  // clamp down to it and unknown values fall back to the default). Only sent for
+  // gemini-3* models; 2.5-era models use the older thinkingBudget and would
+  // reject thinkingLevel.
+  const GEMINI_LEVELS = new Set(["minimal", "low", "medium", "high"]);
+  const clampedGemini = ["xhigh", "max"].includes(args.effort) ? "high" : args.effort;
+  const thinkingLevel = model.startsWith("gemini-3")
+    ? (GEMINI_LEVELS.has(clampedGemini) ? clampedGemini : "high")
+    : undefined;
 
   const structured = args.response_schema && typeof args.response_schema === "object";
   const baseUrl = (process.env.GEMINI_BASE_URL || DEFAULT_GEMINI_BASE_URL).replace(/\/$/, "");
@@ -546,6 +649,7 @@ export async function askGemini(args) {
       generationConfig: {
         maxOutputTokens: args.max_tokens ?? 2000,
         temperature: typeof args.temperature === "number" ? args.temperature : undefined,
+        thinkingConfig: thinkingLevel ? { thinkingLevel } : undefined,
         responseMimeType: structured ? "application/json" : undefined,
         responseSchema: structured ? args.response_schema : undefined
       }
@@ -563,20 +667,20 @@ async function councilReview(args) {
   const maxTokens = args.max_tokens ?? 2000;
   const context = args.context ? `\n\nContext:\n${args.context}` : "";
 
+  // No temperature here: current reasoning models (Fable 5, grok-4.5) reject
+  // sampling parameters outright.
   const claude = await askClaude({
     prompt: `Objective:\n${args.objective}${context}\n\nReturn a concise, decision-ready proposal.`,
     system: args.claude_system || "You are Claude, the lead information architect. Be explicit, evidence-first, and mark unknowns.",
     model: args.claude_model,
-    max_tokens: maxTokens,
-    temperature: 0
+    max_tokens: maxTokens
   });
 
   const grok = await askGrok({
     prompt: `Objective:\n${args.objective}${context}\n\nClaude proposal:\n${claude.text}\n\nAttack this for unsupported inference, missing evidence, archive contamination, and execution risk. Return approve/reject/needs-revision with reasons.`,
     system: args.grok_system || "You are Grok, the adversarial checker. Be skeptical, concrete, and source-demanding.",
     model: args.grok_model,
-    max_tokens: maxTokens,
-    temperature: 0
+    max_tokens: maxTokens
   });
 
   return {
