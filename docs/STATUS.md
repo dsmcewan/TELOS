@@ -320,7 +320,12 @@ dropped, so a build could reach `merge_status: "ready"` with the required check 
 requested verification now forces a revise until it is actually minted) and pinned by a regression test
 that fails when the fix is reverted. See `docs/design-by-adversarial-review.md` § "The case study".
 
-**Integration state (2026-07-15).** Argo's completion is committed (`3c03b7f`) and open as **PR #84**
-(`argo/completion` → `daedalus/implementation`). Canonical integration is NOT complete: the stacked PR
-is still open, `daedalus/implementation` has yet to reach `contracts/proposal-lifecycle` (which remains
-the bare frozen contract at `c3767b2` on both local and origin), and neither has reached mainline.
+**Integration state (2026-07-15).** **PR #83 merged `daedalus/implementation` into
+`contracts/proposal-lifecycle` at `684a9a8`** (implementation head `55935b55`), so the contract branch
+carries the M1–M6 primitives. Argo's completion is committed (`3c03b7f`, `b74ca8d`) and open as
+**PR #84** (`argo/completion` → `contracts/proposal-lifecycle`), whose diff is the Argo completion
+alone. Remaining: land PR #84, then integrate `contracts/proposal-lifecycle` to mainline.
+
+*(Correction: an earlier draft of this addendum claimed `684a9a8` did not exist and that the contract
+branch was still bare at `c3767b2`. That was wrong — it was read from stale local remote-tracking refs
+in an environment that cannot fetch. GitHub's history is canonical and always contained the merge.)*
