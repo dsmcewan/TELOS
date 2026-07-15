@@ -7,7 +7,7 @@
 > loader construction open (`docs/clotho-phase-1-remediation.md` § Eighth
 > round). Re-converged under spec v2.6 by the eighth delta workshop. The
 > canonical submission candidate is
-> **`docs/runs/clotho-daedalus-delta8/matured-plan-v9.md`**. The extracted copy
+> **`docs/runs/clotho-daedalus-delta9/matured-plan-v10.md`**. The extracted copy
 > below is unmodified apart from this banner; the content-addressed,
 > provenance-bearing round artifacts under `artifacts/` are the authoritative
 > record.

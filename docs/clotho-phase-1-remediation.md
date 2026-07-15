@@ -262,6 +262,31 @@ workshop (`docs/runs/clotho-daedalus-delta8/`):
 contract: delta-8 convergence → cold review of committed v9 bytes → release by
 The Eye → only then `authz-002`.
 
+## Ninth round — authz-002 dissent accepted; The Eye's delta-9 contract (2026-07-15)
+
+TELOS `authz-002` over released plan v9 (bound to `sha256:47f6348…`, reviewed
+head `0598237`, merge anchor `73baad0c`) returned **NOT_AUTHORIZED**: claude,
+agy (required) and grok, gemini (advisory) approved; **codex (required)
+dissented — revise, high confidence, two hard stops**, both accepted by The
+Eye. Failed-council record preserved at commit `016d0e5`
+(`docs/runs/clotho-authorization-2/`, immutable). Resolved via spec v2.7 +
+amendments AM-32..AM-33 (`docs/clotho-phase-1-plan-amendments-9.md`) and a
+ninth surgical delta workshop (`docs/runs/clotho-daedalus-delta9/`) whose
+draft carried the codex dissent packet verbatim as workshop input (input and
+historical evidence — not a normative amendment, not a signature):
+
+| # | Codex hard stop | Resolution |
+|---|---|---|
+| 1 | D29 contradiction: the ledger weaver must resolve obligation references against current contract-section bytes (incl. doc-weaver skipped) but its counted-source schema has only `ledger-sources`/`run-sources` — no valid execution path (unaccounted read / misattributed consumption / dropped required edge) | AM-32 + **spec v2.7** + D31: `contract-files` joins the ledger-weaver's required inventory ids (frozen row: `contract-files, ledger-sources, run-sources`); exact count definition (opened, read, canonically section-split, heading-pathed, hashed, collision-checked-indexed without fatal error); consumed via the weaver's own driver-counted iterator even when doc-weaver is skipped; no byte used for clause resolution outside the counted source; 13 tests |
+| 2 | D30 called its safe-export allowlist frozen while giving only examples — a security-sensitive closed set left to implementation-time choice | AM-33 + **spec v2.7** + D32: exhaustive normative mapping `LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS = {module: [builtinModules, isBuiltin], node:module: [builtinModules, isBuiltin]}`, deeply frozen; permission decided from imported export name; all nonlisted access fails closed; scanner imports the canonical mapping from `inventory.mjs` (no second allowlist); expansion requires spec amendment + authorization; 17 tests incl. mutation and exact-equality fixtures |
+
+Delta-9: 1 round, 0 unresolved, reviewer bound the exact candidate, distinct
+real provenance; spec v2.7 survived challenge unamended. `matured-plan-v10.md`
+is the canonical submission candidate. Sequence: v10 cold review → held PR →
+The Eye release → `authz-003` (new evidence directory, binds the v10 hash and
+its new merge anchor; required constituency unchanged — no seat removed or
+downgraded to escape dissent). Argo remains closed.
+
 ## Not accepted / needs no change
 
 - "Ledger cannot answer from itself" — true of the reviewed skeleton, already false
