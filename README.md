@@ -2,12 +2,14 @@
 
 [![CI](https://github.com/dsmcewan/TELOS/actions/workflows/ci.yml/badge.svg)](https://github.com/dsmcewan/TELOS/actions/workflows/ci.yml)
 
-A multi-model build-gate, and an autonomous builder on top of it. Independent AI
-model **seats** (claude / grok / codex / agy / gemini) produce signed,
-provenance-bound approval packets; a deterministic **gate** certifies
+**A multi-model build system where nothing merges on a model's say-so.**
+Independent AI model **seats** (claude / grok / codex / agy / gemini) produce
+signed, provenance-bound approval packets; a deterministic **gate** certifies
 merge-readiness from disk + signatures + provenance — never from a model's
-self-report. The same trust spine then drives software from idea to merged,
-verified artifacts.
+self-report. The same trust spine drives software from idea to merged, verified
+artifacts, and now governs the plan *before* it runs (see **Proposal Lifecycle**
+below): a candidate must survive adversarial cold review and produce a verified
+implementation contract before any irreversible step.
 
 ## How it works
 
