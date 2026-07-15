@@ -112,6 +112,13 @@ This is the core invariant of the project. When changing gate, signing, or prove
   env-only; when unset, the autonomous proposal-lifecycle entry point uses an ephemeral per-run key.
   Runtime `.telos/` artifacts are ephemeral and git-ignored — never commit them, `*.pem`, or
   `.env*` files.
+- **CI credentials are a SEPARATE thing from the env vars above.** The API keys listed above are
+  LOCAL-dev env vars. The repository's only GitHub Actions secret is `CLAUDE_CODE_OAUTH_TOKEN` (a
+  Claude subscription token, minted with `claude setup-token`), which funds the automated review
+  workflows; `ANTHROPIC_API_KEY` was removed as a repo secret once subscription auth was proven, so
+  CI has no metered fallback. Do not read a local env var's name as evidence of a CI credential — in
+  a job log, `ANTHROPIC_API_KEY:` may appear DECLARED AND EMPTY beside the token that actually
+  authenticated.
 - Prefer failing closed: if evidence is absent or ambiguous, block rather than approve.
 
 ## Pull requests
