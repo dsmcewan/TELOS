@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:5545e1a2fc70c1279225bebb90391269d326fd3746d46e68bc305e29fde451c6",
+  "output_plan_artifact_hash": "sha256:667e69f6fdc3225bf31d3d1fe8eeda674cfb2e3b66f6a68ce912af1f87c93ac3",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:ca7a5adf409a44d8e4169227df8341c33dee2498726edd174e821e9e1acefd29",
+    "provenance_key": "anthropic:msg_011Cd3ihfHSvKDp7gSk5ZoHf"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:7a45c5ad2f61f1fc96eefb7bc848312fef8825bda50aa372497d1619821dbd17",
+    "provenance_key": "openai:chatcmpl-E1rbBgDO879Pd7Fxqwbw9NnRZWEec",
+    "bound_hash": "sha256:b6a661d88d2abd455fbbf3d2f7834cdd535d11f24f9a5cc67f933518f1229fab"
+  },
+  "objections": [
+    {
+      "claim": "The code-weaver requires a module with no Phase 1 export to thread a used named import from its `repository-file` node to the resolved imported symbol, but the closed endpoint matrix omits `repository-file -> code-symbol`. `validateEdgeInput` would therefore reject an edge Task 4a requires. Add that endpoint to the `depends-on` matrix, file responsibility, validation tests, and exact-output tests.",
+      "scope": "Normative data model and Task 4a — AM-1 repository-file dependency endpoints",
+      "objection_hash": "sha256:5b360099f47de01624d9cd459e2fc139e00108576c3df4c7378cde21646e0345",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "A model can currently append a status record with `asserted_by: model:<seat>`, its own `assertion_status: model-proposal`, and `new_status: human-authorized`; the latest-transition-wins query rule would then promote the model's proposal without human authorization. Status transitions must be human-authorized adjudications targeting an earlier edge record, and model/weaver transition attempts must be rejected and tested.",
+      "scope": "Assertion status and Tasks 3/5 — AM-2 proposal quarantine",
+      "objection_hash": "sha256:47e7bccd7b446f92b4def0598381577b0caa706f9877344d46800dd6ae29c442",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The manifest is structurally validated but is not required to agree with emitted deterministic records. A validly signed ledger could contain edges asserted by `clotho-doc-weaver` while declaring that weaver `skipped` or `failed`, allowing facts that contradict signed coverage. `close`, `verifyLedger`, and manifest-aware query validation must reject any weaver-asserted edge whose manifest state is not `executed`, with skipped/failed inconsistency tests.",
+      "scope": "Coverage trailer, ledger verification, and queries — AM-3 coverage honesty",
+      "objection_hash": "sha256:88f5317c629dbbfc688d602453548734684cdb3aa06413b90af8d60e1310fc1a",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

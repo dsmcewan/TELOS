@@ -33,8 +33,8 @@ Use them only with their defined meanings.
 - **Clotho** — creates and maintains knowledge-graph threads across artifacts and repositories.
 - **Lachesis** — measures dependencies, relevance, risk, and blast radius.
 - **Atropos** — retires obsolete relationships, artifacts, tools, and processes.
-- **The Iliad** — the umbrella system: the coordinated whole under which the registered components operate; organizes module plans and their cross-plan dependencies (using Clotho's weave).
-- **The Eye** — human-held authority required for the system to act on self-improvement proposals.
+- **The Iliad** — the system-of-systems lifecycle umbrella under which registered components coordinate the creation, governance, maintenance, recovery, evolution, and retirement of enrolled systems; it uses Clotho's weave to preserve cross-plan and cross-system coherence.
+- **The Eye** — human-held authority required to approve consequential action, including destructive, irreversible, self-improving, or authority-expanding changes; it cannot be delegated to a model or inferred from silence.
 
 Anything not on this list is unregistered. Unregistered ≠ available.
 

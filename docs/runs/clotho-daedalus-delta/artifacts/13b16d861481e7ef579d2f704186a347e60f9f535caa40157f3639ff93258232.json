@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 2,
+  "input_plan_artifact_hash": "sha256:b6a661d88d2abd455fbbf3d2f7834cdd535d11f24f9a5cc67f933518f1229fab",
+  "output_plan_artifact_hash": "sha256:a0ac55e6c16eb79061139734326b55d9e202517ad4aabd061cb8cc3d6573b2ca",
+  "author": {
+    "seat": "codex",
+    "provenance_ref": "sha256:b521cc8c44a09763c246117db96ccd484c76fe9f05066a1c10d47756511dbf82",
+    "provenance_key": "openai:chatcmpl-E1rgmrDQKvPvDQYpIqoD2n0zmq2u7"
+  },
+  "reviewer": {
+    "seat": "claude",
+    "provenance_ref": "sha256:7f00df447ef67d7e59d7f83d429d5811b852d4be8e5c122fcbd065483c4dc295",
+    "provenance_key": "anthropic:msg_011Cd3jcD36siFpAgs9VTafn",
+    "bound_hash": "sha256:a0ac55e6c16eb79061139734326b55d9e202517ad4aabd061cb8cc3d6573b2ca"
+  },
+  "objections": [],
+  "resolutions": [
+    {
+      "record_type": "objection-resolved",
+      "objection_hash": "sha256:5b360099f47de01624d9cd459e2fc139e00108576c3df4c7378cde21646e0345",
+      "actor": {
+        "seat": "codex",
+        "provenance_key": "openai:chatcmpl-E1rgmrDQKvPvDQYpIqoD2n0zmq2u7"
+      }
+    },
+    {
+      "record_type": "objection-resolved",
+      "objection_hash": "sha256:47e7bccd7b446f92b4def0598381577b0caa706f9877344d46800dd6ae29c442",
+      "actor": {
+        "seat": "codex",
+        "provenance_key": "openai:chatcmpl-E1rgmrDQKvPvDQYpIqoD2n0zmq2u7"
+      }
+    },
+    {
+      "record_type": "objection-resolved",
+      "objection_hash": "sha256:88f5317c629dbbfc688d602453548734684cdb3aa06413b90af8d60e1310fc1a",
+      "actor": {
+        "seat": "codex",
+        "provenance_key": "openai:chatcmpl-E1rgmrDQKvPvDQYpIqoD2n0zmq2u7"
+      }
+    }
+  ],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

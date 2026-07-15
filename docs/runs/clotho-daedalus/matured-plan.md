@@ -1,5 +1,12 @@
 # Clotho Phase 1 Implementation Plan
 
+> **SUPERSEDED historical artifact.** This first-workshop convergence was
+> cold-reviewed (`docs/clotho-phase-1-remediation.md`) and re-converged under the
+> challengeable spec v2 by the delta workshop. The canonical submission candidate
+> is **`docs/runs/clotho-daedalus-delta/matured-plan-v2.md`**. The extracted copy
+> below is unmodified apart from this banner; the signed round artifacts under
+> `artifacts/` are the content-addressed record.
+
 > **Status: implementation-ready.** Execute one task per branch, PR, CI run, and
 > squash merge. Do not begin a task until the prior task is merged and every existing
 > package is green.
