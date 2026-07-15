@@ -8,8 +8,8 @@
 // the gate honest-blocks), mirroring the existing `smoke` scripts. The pure
 // prompt/parse helpers are unit-tested without a network.
 
-import { agyApprovalPacket, agyCheckpointArgs } from "./council.mjs";
-import { SCHEMAS, validateAgainstSchema, PROPOSAL_REVIEW_PACKET_SCHEMA } from "./schemas.mjs";
+import { agyApprovalPacket, agyCheckpointArgs, agyLifecycleCheckpointArgs } from "./council.mjs";
+import { SCHEMAS, validateAgainstSchema, PROPOSAL_REVIEW_PACKET_SCHEMA, DAEDALUS_RESPONSE_SCHEMA } from "./schemas.mjs";
 
 // Chat seats expose an `<model>_ask` tool; agy is structured (no code generation).
 const ASK_MODELS = new Set(["claude", "grok", "codex", "gemini"]);
@@ -197,6 +197,69 @@ export function parseReviewPacket(text, model, dossier, meta = {}) {
     parse_ok: true,
     timestamp: meta.timestamp ?? new Date(0).toISOString()
   };
+}
+
+const REVIEW_INSTRUCTION =
+  "Review the compiled candidate plan. Provide: decision (approve/revise/reject), confidence, required_edits, " +
+  "considerations, and concerns. Each concern is typed {scope, claim, severity, judgment_class, evidence_refs, " +
+  "required_verification}. To require a post-build verification, set required_verification.requested=true and name " +
+  "ONLY a check_contract.kind (from the repo's closed check-registry) + params_json — never a node id; the " +
+  "controller mints the discharge node.";
+
+const DAEDALUS_INSTRUCTION =
+  "You are negotiating an implementation plan. Return {plan_revision, objections, dispositions, rationale}. " +
+  "plan_revision is the full candidate task list as canonical JSON (or \"\" to keep it). Each objection is " +
+  "{scope, claim, evidence_refs} — do NOT include an objection_hash; identity is computed by the controller. " +
+  "Dispositions resolve/supersede/withdraw an OPEN objection from the menu by its objection_hash.";
+
+/** Live REVIEW prompt (mirrors approvalPromptFor but emits a proposal-lifecycle review packet). The
+ *  agy branch derives its checkpoint from the RECOMPUTED plan via agyLifecycleCheckpointArgs. */
+export function reviewPromptFor(dossier, { models = {}, plan = null } = {}) {
+  return (model, role, _dossier, workstream) => {
+    if (model === "agy") {
+      const args = plan ? agyLifecycleCheckpointArgs(plan, dossier, dossier?.use_case) : agyCheckpointArgs(dossier, dossier?.use_case);
+      return { tool: "agy_checkpoint", args };
+    }
+    const lens = workstream ? `, workstream lens: ${workstream}` : "";
+    return {
+      tool: `${model}_ask`,
+      model: models[model],
+      system: profileFor(model).frame(`You are ${model}, a council ${role} for TELOS${lens}. Judge the candidate plan on the merits. ${REVIEW_INSTRUCTION}`),
+      prompt: `Objective:\n${dossier?.objective ?? ""}\n\n${REVIEW_INSTRUCTION}`,
+      response_schema: SCHEMAS.review.schema,
+      schema_name: SCHEMAS.review.schema_name
+    };
+  };
+}
+
+/** Live DAEDALUS workshop prompt for one seat/round. Emits the {plan_revision,objections,dispositions}
+ *  contract; the parser (parseDaedalusResponse) strips any model-supplied objection_hash so objection
+ *  identity is unconditionally controller-recomputed (round-7/8). */
+export function daedalusPromptFor({ seat, candidateBody, openMenu = [], model }) {
+  const menu = openMenu.length
+    ? `\n\nOPEN objections you may dispose (by objection_hash, only those you raised):\n${JSON.stringify(openMenu)}`
+    : "\n\nNo open objections yet.";
+  return {
+    tool: `${seat}_ask`,
+    model,
+    system: profileFor(seat).frame(`You are ${seat}, negotiating a TELOS implementation plan. ${DAEDALUS_INSTRUCTION}`),
+    prompt: `Current candidate (canonical JSON task body):\n${candidateBody}${menu}\n\n${DAEDALUS_INSTRUCTION}`,
+    response_schema: SCHEMAS.daedalus.schema,
+    schema_name: SCHEMAS.daedalus.schema_name
+  };
+}
+
+/** Parse a Daedalus seat response into the workshop callSeat contract. Fail-closed: an unparseable /
+ *  schema-violating response yields an empty no-op round (plan unchanged, no objections). Objections
+ *  carry NO objection_hash (the workshop recomputes it); a model-supplied one is dropped here. */
+export function parseDaedalusResponse(text, { provenance = null } = {}) {
+  const raw = (() => { try { return JSON.parse(text); } catch { return null; } })() || (extractJson(text) || {});
+  const v = validateAgainstSchema(DAEDALUS_RESPONSE_SCHEMA, {
+    plan_revision: raw.plan_revision, objections: raw.objections, dispositions: raw.dispositions, rationale: raw.rationale
+  });
+  if (!v.ok) return { plan_revision: "", objections: [], dispositions: [], rationale: "", provenance, parse_ok: false, parse_error: v.violations.slice(0, 3) };
+  const objections = (raw.objections || []).map((o) => ({ scope: o.scope, claim: o.claim, evidence_refs: [...(o.evidence_refs || [])] })); // NO objection_hash passed through
+  return { plan_revision: raw.plan_revision || "", objections, dispositions: raw.dispositions || [], rationale: raw.rationale || "", provenance, parse_ok: true };
 }
 
 export function parseApprovalPacket(text, model, dossier, meta = {}) {

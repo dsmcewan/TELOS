@@ -781,13 +781,20 @@ function makeDispatch(ws) {
     return atomicAppendProposalEvent(telosDir, (parentHash, sequence) => makeProposalEvent({ proposal_id: "proposal-x", sequence, stage: "decision", plan_hash: planHash, parent_event_hash: parentHash, artifact_refs: [ref], actor: {}, provenance: null, policy_result: null, recorded_at: "t", ...(pref ? { decision, policy_result_ref: ref } : { decision }) }, privatePem), { publicJwk });
   };
 
+  // lifecycleVerify stub: merkle-dag cannot import build-gate's validateProposalLifecycle, so the
+  // execution-time lifecycle-state re-verify (decision 6) is injected. {ok:true} = no post-decision drift.
+  const okVerify = () => ({ ok: true });
   // no decision yet
-  assert.equal(checkLifecycleAuthorization(telosDir, plan).error, "NO_AUTHORIZED_DECISION", "Case 16: no decision blocks");
-  // authorized decision + valid certificate -> ok
+  assert.equal(checkLifecycleAuthorization(telosDir, plan, { lifecycleVerify: okVerify }).error, "NO_AUTHORIZED_DECISION", "Case 16: no decision blocks");
+  // authorized decision + valid certificate + no lifecycle drift -> ok
   writeDecision("authorized");
-  const good = checkLifecycleAuthorization(telosDir, plan);
-  assert.equal(good.ok, true, "Case 16: authorized + valid cert -> ok: " + JSON.stringify(good.detail || ""));
-  console.log("Case 16 OK: lifecycle authorization happy path");
+  const good = checkLifecycleAuthorization(telosDir, plan, { lifecycleVerify: okVerify });
+  assert.equal(good.ok, true, "Case 16: authorized + valid cert + clean lifecycle -> ok: " + JSON.stringify(good.detail || ""));
+  // decision 6 fail-closed: lifecycleVerify absent -> MISSING_LIFECYCLE_VERIFY (distinct from hash mismatch)
+  assert.equal(checkLifecycleAuthorization(telosDir, plan).error, "MISSING_LIFECYCLE_VERIFY", "Case 16: absent lifecycleVerify fails closed");
+  // decision 6 drift: a hold appended after the authorized decision -> lifecycleVerify {ok:false} blocks
+  assert.equal(checkLifecycleAuthorization(telosDir, plan, { lifecycleVerify: () => ({ ok: false, blockers: ["post-decision hold"] }) }).error, "LIFECYCLE_STATE_DRIFT", "Case 16: lifecycle drift blocks execution");
+  console.log("Case 16 OK: lifecycle authorization happy path + decision-6 re-verify");
 }
 
 // ---------------------------------------------------------------------------

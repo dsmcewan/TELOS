@@ -24,6 +24,7 @@ import { runBuild, defaultVerifyNode } from "../merkle-dag/orchestrate.mjs";
 import { writePlan } from "../merkle-dag/merkle.mjs";
 import { generateKeypair } from "../merkle-dag/crypto.mjs";
 import { resolveUnder } from "../merkle-dag/vendor.mjs";
+import { runProposalLifecycle } from "./proposal-orchestrator.mjs";
 
 /**
  * Build a dispatch(injected) for runBuild that routes each node to its owning
@@ -137,7 +138,7 @@ export function makeTeamKeyring(teams) {
  * to execution unless the council approval gate passed (fail-closed sequencing).
  *   { phase: "decompose"|"approval"|"plan"|"build", ok, ... }
  */
-export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, keyring, signerFor, baseDir, telosDir, marketPackets = [], source, maxRepairRounds = 8, adaptAttempts = 2, concurrency }) {
+export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, callWorkshopSeat, keyring, signerFor, baseDir, telosDir, marketPackets = [], source, maxRepairRounds = 8, adaptAttempts = 2, concurrency, nowMs = 0, maxRevisions }) {
   const teams = planTeams(dossier);
 
   // PROJECT SENSE (conventions): read the real project BEFORE decompose so the
@@ -159,6 +160,17 @@ export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, 
   const situation = senseProject({ baseDir, dossier, tasks: taskList });
   if (dossier?.block_on_collision === true && situation.collisions.length > 0) {
     return { phase: "situation", ok: false, blocked: situation.collisions.map((c) => `write target already exists (block_on_collision): ${c.path}`), situation, teams };
+  }
+
+  // PROPOSAL-LIFECYCLE delegation (decision 1): the opt-in audited-judgment path composes the
+  // recorder + Daedalus workshop + outer revision loop + gate-reconstructed authorization. The legacy
+  // advisory path below is byte-identical. runProposalLifecycle owns compile/review/decision/execution.
+  if (dossier?.proposal_lifecycle === true) {
+    return await runProposalLifecycle({
+      dossier, taskList, teams, situation, callSeat, callWorkshopSeat, callTeam,
+      keyring, signerFor, baseDir, telosDir, marketPackets, source,
+      maxRepairRounds, adaptAttempts, concurrency, nowMs, maxRevisions
+    });
   }
 
   // 2. Compile + persist the content-addressed plan FIRST (Required Point 1: candidate compilation

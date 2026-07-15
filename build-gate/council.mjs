@@ -21,7 +21,6 @@
 
 import os from "node:os";
 import { signPacket, secretFor } from "./sign.mjs";
-import { normalizeLegacyHardStops } from "./concerns.mjs";
 
 const REQUIRED_SEATS = ["claude", "agy", "codex"];
 
@@ -72,9 +71,11 @@ async function runSeat(seat, callSeat, dossier, context = null) {
       if (typeof ctx.review_manifest_ref === "string") stamped.review_manifest_ref = ctx.review_manifest_ref;
       if (typeof ctx.review_call_ref === "string") stamped.review_call_ref = ctx.review_call_ref;
     }
-    if (dossier && dossier.proposal_lifecycle === true) {
-      stamped = normalizeLegacyHardStops(stamped, context && context.writeArtifact ? { writeArtifact: context.writeArtifact } : {}).packet;
-    }
+    // Single concern-production path (round-6 blocking fix): in lifecycle mode the council does NOT
+    // pre-mint concerns. processReviewPackets (post-council, controller-side) is the SOLE minter — it
+    // recomputes concern_ref from the body and treats all model-supplied concern fields as untrusted,
+    // so a seat cannot key enforcement by pre-supplying concern identity. The structured
+    // packet.concerns flow through untouched (HMAC-covered); legacy hard_stops are not used here.
     const secret = secretFor(seat.model);
     const packet = secret ? signPacket(stamped, secret) : stamped;
     return { model: seat.model, role: seat.role, ok: true, signed: !!secret, packet };
@@ -199,6 +200,34 @@ export function agyCheckpointArgs(dossier, scope) {
     phase: "merge-gate",
     scope: scope ?? dossier?.use_case ?? "",
     protected_path_check: violation ? `not-pass: write target '${violation}' is under a protected path` : "pass",
+    lexi_required: dossier?.lexi_required === true,
+    lexi_reference_read: dossier?.lexi_reference_read === true
+  };
+}
+
+/**
+ * Lifecycle variant of agyCheckpointArgs: derives agy's governance checkpoint from the RECOMPUTED
+ * written plan (its real node writes + obligation count), NOT from a caller-supplied write_targets.
+ * So agy reviews what the plan actually does, and the args cannot be spoofed by the caller. Advisory
+ * (the gate independently enforces); agy can still dissent when a real plan write hits a protected path.
+ */
+export function agyLifecycleCheckpointArgs(plan, dossier, scope) {
+  const protectedPaths = [...DEFAULT_PROTECTED_PATHS, ...(Array.isArray(dossier?.protected_paths) ? dossier.protected_paths : [])]
+    .map(normalizeGovPath)
+    .filter(Boolean);
+  let violation = null;
+  for (const node of Array.isArray(plan?.nodes) ? plan.nodes : []) {
+    for (const f of Array.isArray(node.files) ? node.files : []) {
+      const t = normalizeGovPath(f);
+      if (protectedPaths.some((p) => t === p || t.startsWith(p + "/"))) { violation = f; break; }
+    }
+    if (violation) break;
+  }
+  return {
+    phase: "merge-gate",
+    scope: scope ?? dossier?.use_case ?? "",
+    protected_path_check: violation ? `not-pass: plan node writes '${violation}' under a protected path` : "pass",
+    obligation_count: (Array.isArray(plan?.obligations) ? plan.obligations : []).length,
     lexi_required: dossier?.lexi_required === true,
     lexi_reference_read: dossier?.lexi_reference_read === true
   };

@@ -32,6 +32,11 @@ function setup({ proposalId = "proposal-e2e" } = {}) {
   return { ws, telosDir, plan, signerFor, controller, proposalId };
 }
 
+// The execution-time lifecycle-state re-verification (decision 6). runBuild's requireAuthorizedDecision
+// path now REQUIRES this injected dependency (merkle-dag cannot import build-gate); it re-runs the
+// ledger-reconstructable lifecycle checks so a hold appended after the authorized decision blocks.
+const lifecycleVerify = ({ telosDir, nowMs }) => validateProposalLifecycle({ telosDir, requiredModels: [], packets: [], nowMs });
+
 // dispatch/verify stubs (settle node A green).
 const makeDispatch = (ws) => async (injected) => { for (const f of injected.files) writeFileSync(path.join(ws, f), `c ${injected.id}`); return { ok: true, signer: PROPOSAL_KEY_ID }; };
 const realVerify = () => async (node, baseDir) => { const disk = computeDiskTreeHash(node.files, baseDir); return { ok: true, tree_hash: disk.tree_hash, files: disk.files }; };
@@ -48,7 +53,7 @@ const allPass = () => Object.fromEntries(["written_plan", "proposal_ref_binding"
   // authorized decision with an all-pass certificate
   rec.recordDecision({ planHash: plan.plan_hash, checks: allPass(), blockers: [], findings: [] });
   // runBuild reads authorization from disk (no caller-supplied hash)
-  const build = await runBuild({ telosDir, baseDir: ws, dispatch: makeDispatch(ws), verifyNode: realVerify(), signerFor, requireAuthorizedDecision: true, maxRounds: 5 });
+  const build = await runBuild({ telosDir, baseDir: ws, dispatch: makeDispatch(ws), verifyNode: realVerify(), signerFor, requireAuthorizedDecision: true, lifecycleVerify, maxRounds: 5 });
   assert.ok(!build.error, "runBuild authorized: " + JSON.stringify(build.error || ""));
   assert.equal(build.report.merge_status, "ready", "reaches ready");
   console.log("Case 1 OK: happy path to ready");
@@ -64,7 +69,7 @@ const allPass = () => Object.fromEntries(["written_plan", "proposal_ref_binding"
   const { decision } = rec.recordDecision({ planHash: plan.plan_hash, checks: { ...allPass(), concerns: "fail" }, blockers: ["verified blocker: x"], findings: [{ code: "VERIFIED_BLOCKER", class: "protocol", reparable: false, requires_human: false, ref: null }] });
   assert.equal(decision, "blocked", "verified/protocol -> blocked");
   let dispatched = false;
-  const build = await runBuild({ telosDir, baseDir: ws, dispatch: async () => { dispatched = true; return { ok: true, signer: PROPOSAL_KEY_ID }; }, verifyNode: realVerify(), signerFor, requireAuthorizedDecision: true, maxRounds: 5 });
+  const build = await runBuild({ telosDir, baseDir: ws, dispatch: async () => { dispatched = true; return { ok: true, signer: PROPOSAL_KEY_ID }; }, verifyNode: realVerify(), signerFor, requireAuthorizedDecision: true, lifecycleVerify, maxRounds: 5 });
   assert.equal(build.error, "DECISION_NOT_AUTHORIZED", "blocked decision does not authorize");
   assert.equal(dispatched, false, "no dispatch");
   console.log("Case 2 OK: blocked decision -> runBuild refuses");
@@ -114,7 +119,7 @@ const allPass = () => Object.fromEntries(["written_plan", "proposal_ref_binding"
   rec.recordCandidate({ planHash: plan.plan_hash });
   // authorize a DIFFERENT (fictional) plan hash
   rec.recordDecision({ planHash: "sha256:some-other-plan", checks: allPass(), blockers: [], findings: [] });
-  const build = await runBuild({ telosDir, baseDir: ws, dispatch: makeDispatch(ws), verifyNode: realVerify(), signerFor, requireAuthorizedDecision: true, maxRounds: 5 });
+  const build = await runBuild({ telosDir, baseDir: ws, dispatch: makeDispatch(ws), verifyNode: realVerify(), signerFor, requireAuthorizedDecision: true, lifecycleVerify, maxRounds: 5 });
   assert.equal(build.error, "NO_AUTHORIZED_DECISION", "authorization for another plan does not apply");
   console.log("Case 5 OK: authorization keyed to exact written plan");
 }

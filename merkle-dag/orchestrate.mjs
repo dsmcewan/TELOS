@@ -16,7 +16,7 @@ import { readProposalEvents, verifyProposalChain, latestDecisionForPlan, readPro
  * hash, require it authorized, and independently re-verify its closed policy-result certificate.
  * @returns { ok:true, planHash } | { ok:false, error, detail }
  */
-export function checkLifecycleAuthorization(telosDir, plan) {
+export function checkLifecycleAuthorization(telosDir, plan, { lifecycleVerify, nowMs = 0 } = {}) {
   const rc = recompute(plan);
   if (rc.errors) return { ok: false, error: "PLAN_INVALID", detail: rc.errors };
   if (rc.plan.plan_hash !== plan.plan_hash) return { ok: false, error: "PLAN_TAMPERED", detail: "stored plan_hash does not recompute" };
@@ -38,6 +38,20 @@ export function checkLifecycleAuthorization(telosDir, plan) {
   if (artifact.plan_hash !== planHash) return { ok: false, error: "WRONG_PLAN_POLICY_RESULT", detail: "policy-result plan_hash != recomputed plan hash" };
   const av = verifyAuthorizationResult(artifact, { planHash });
   if (!av.ok) return { ok: false, error: "NON_AUTHORIZING_POLICY_RESULT", detail: av.errors };
+  // Decision 6: MANDATORY execution-time lifecycle-STATE re-verification. The static certificate
+  // above proves the authorized decision existed; it does NOT catch a hold appended AFTER that
+  // decision. Re-run the ledger-reconstructable lifecycle verification (the injected lifecycleVerify
+  // wraps validateProposalLifecycle with requiredModels=[]/packets=[] — the full packets are not on
+  // the ledger, so a literal "full" re-run would false-fail proposal_ref_binding/cold_review).
+  // merkle-dag must not import build-gate, so this is a REQUIRED injected dependency: absent it, FAIL
+  // CLOSED with a DISTINCT error (never conflated with the exact-hash-mismatch refusal above).
+  if (typeof lifecycleVerify !== "function") {
+    return { ok: false, error: "MISSING_LIFECYCLE_VERIFY", detail: "requireAuthorizedDecision path requires an injected lifecycleVerify (fail-closed)" };
+  }
+  let live;
+  try { live = lifecycleVerify({ telosDir, plan: rc.plan, planHash, nowMs }); }
+  catch (e) { return { ok: false, error: "LIFECYCLE_REVERIFY_THREW", detail: String((e && e.message) || e) }; }
+  if (!live || live.ok !== true) return { ok: false, error: "LIFECYCLE_STATE_DRIFT", detail: (live && (live.blockers || live.errors)) || "lifecycle re-verification failed" };
   return { ok: true, planHash };
 }
 
@@ -173,7 +187,7 @@ async function runOne(node, { dispatch, verifyNode, signerFor, baseDir }) {
  *   signerFor(model) -> privatePem  (model's public key MUST be in plan.authorized_signers)
  *   concurrency -> worker-pool size hint (clamped via maxConcurrency to [1, cores-2])
  */
-export async function runBuild({ telosDir, baseDir, dispatch, verifyNode = defaultVerifyNode, signerFor, maxRounds = 1000, concurrency, authorizedPlanHash, requireAuthorizedDecision }) {
+export async function runBuild({ telosDir, baseDir, dispatch, verifyNode = defaultVerifyNode, signerFor, maxRounds = 1000, concurrency, authorizedPlanHash, requireAuthorizedDecision, lifecycleVerify, nowMs = 0 }) {
   baseDir = baseDir || path.dirname(path.resolve(telosDir));
   const ledgerPath = path.join(telosDir, "ledger.jsonl");
   let plan = readPlan(telosDir);
@@ -183,7 +197,7 @@ export async function runBuild({ telosDir, baseDir, dispatch, verifyNode = defau
   // Lifecycle mode reads the authorized decision + policy certificate from disk (no caller selector);
   // legacy callers may pass authorizedPlanHash as a pure TOCTOU strengthening.
   if (requireAuthorizedDecision) {
-    const auth = checkLifecycleAuthorization(telosDir, plan);
+    const auth = checkLifecycleAuthorization(telosDir, plan, { lifecycleVerify, nowMs });
     if (!auth.ok) return { error: auth.error, detail: auth.detail, trace };
   } else if (typeof authorizedPlanHash === "string" && authorizedPlanHash) {
     const rc0 = recompute(plan);

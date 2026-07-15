@@ -4,7 +4,8 @@ import {
   JUDGMENT_CLASSES, TERMINAL_DISPOSITIONS, DISPOSITION_DERIVATIONS,
   concernRef, requiredVerificationRef, makeConcern, normalizeLegacyHardStops,
   makeHold, makeDisposition, assertDispositionAllowed, expireHolds, activeConcerns,
-  evaluateConcernGate, deriveRevisionDispositions
+  evaluateConcernGate, deriveRevisionDispositions,
+  processReviewPackets, sweepExpiredHolds, reconstructProposalState
 } from "../concerns.mjs";
 
 const holdPolicy = { ttl_ms: 3600000, escalation: "human-adjudication", min_ttl_ms: 60000, max_ttl_ms: 604800000 };
@@ -16,12 +17,22 @@ const holdPolicy = { ttl_ms: 3600000, escalation: "human-adjudication", min_ttl_
   assert.equal(c.evidence, null, "evidence forced null");
   assert.throws(() => makeConcern({ planHash: "p", scope: "s", claim: "c", severity: "nope", judgmentClass: "hold-request", raisedBy: { seat: "g" } }), /severity/);
   assert.throws(() => makeConcern({ planHash: "p", scope: "s", claim: "c", severity: "high", judgmentClass: "bogus", raisedBy: { seat: "g" } }), /judgment_class/);
-  // concern_ref changes with required_verification (retarget-safe)
-  const rvA = { requested: true, discharge_node_id: "n", check_contract: { kind: "k", params: {} }, required_result: "pass" };
-  const rvB = { requested: true, discharge_node_id: "n2", check_contract: { kind: "k", params: {} }, required_result: "pass" };
-  assert.notEqual(makeConcern({ planHash: "p", scope: "s", claim: "c", severity: "high", judgmentClass: "hold-request", raisedBy: { seat: "g" }, requiredVerification: rvA }).concern_ref,
-    makeConcern({ planHash: "p", scope: "s", claim: "c", severity: "high", judgmentClass: "hold-request", raisedBy: { seat: "g" }, requiredVerification: rvB }).concern_ref, "rv changes concern_ref");
-  console.log("Case 1 OK: makeConcern + frozen concern_ref");
+  // Identity red-team (decision 7 / round-7 B-B): concern_ref is INVARIANT to a model-supplied
+  // discharge_node_id (the discharge node is controller-minted FROM concern_ref, so a model cannot
+  // key the concern identity — or the minted node id — via a node id it names), and changes ONLY
+  // with the check_contract / required_result.
+  const base = { planHash: "p", scope: "s", claim: "c", severity: "high", judgmentClass: "hold-request", raisedBy: { seat: "g" } };
+  const rv = { requested: true, check_contract: { kind: "assert-file-contains", params_json: "{\"target\":\"src/a.mjs\",\"needle\":\"AUTH_GUARD\"}" }, required_result: "pass" };
+  const rvWithNodeId = { ...rv, discharge_node_id: "attacker-named-node" };
+  assert.equal(
+    makeConcern({ ...base, requiredVerification: rv }).concern_ref,
+    makeConcern({ ...base, requiredVerification: rvWithNodeId }).concern_ref,
+    "concern_ref INVARIANT to a model-supplied discharge_node_id");
+  const rvDiffKind = { ...rv, check_contract: { kind: "assert-path-absent", params_json: rv.check_contract.params_json } };
+  const rvDiffResult = { ...rv, required_result: "fail" };
+  assert.notEqual(makeConcern({ ...base, requiredVerification: rv }).concern_ref, makeConcern({ ...base, requiredVerification: rvDiffKind }).concern_ref, "check_contract.kind changes concern_ref");
+  assert.notEqual(makeConcern({ ...base, requiredVerification: rv }).concern_ref, makeConcern({ ...base, requiredVerification: rvDiffResult }).concern_ref, "required_result changes concern_ref");
+  console.log("Case 1 OK: makeConcern + concern_ref identity (invariant to model node id)");
 }
 
 // Case 2: legacy hard_stops normalization preserves attribution; bare string cannot become verified.
@@ -129,6 +140,74 @@ const holdPolicy = { ttl_ms: 3600000, escalation: "human-adjudication", min_ttl_
   const sup = deriveRevisionDispositions({ priorActiveConcerns: [c], actualNewPlan: gonePlan, supersessionProofs: [{ concern_ref: c.concern_ref, proof_ref: "sha256:pf" }] });
   assert.equal(sup[0].disposition, "superseded");
   console.log("Case 9 OK: deriveRevisionDispositions against actual N+1");
+}
+
+// Case 10: processReviewPackets is the SOLE controller minter — one review event per packet, a
+// policy-derived hold per hold-request (matching concern_ref so the gate reports NO PROTOCOL FAILURE),
+// no hold for a consideration, model-supplied concern fields ignored (concern_ref recomputed), and an
+// unregistered check kind routed to human-review (never silently minted as a verification).
+{
+  const events = [];
+  const rec = {
+    recordReview: ({ seat, concerns }) => events.push({ stage: "review", proposal_id: "p", seat, concerns }),
+    recordHold: ({ hold }) => events.push({ stage: "hold", proposal_id: "p", hold }),
+    recordDisposition: ({ disposition }) => events.push({ stage: "disposition", proposal_id: "p", disposition })
+  };
+  const results = [{ model: "grok", role: "approver", ok: true, packet: { proposal_ref: "sha256:p", review_input_hash: "sha256:r", review_manifest_ref: "sha256:m", provenance: { provider: "xai", response_id: "r1" },
+    concerns: [
+      { scope: "plan", claim: "auth", severity: "high", judgment_class: "hold-request", evidence_refs: [], concern_ref: "sha256:FORGED",
+        required_verification: { requested: true, check_contract: { kind: "assert-file-contains", params_json: "{\"target\":\"a.mjs\",\"needle\":\"AUTH_GUARD\"}" }, required_result: "pass" } },
+      { scope: "plan", claim: "note", severity: "low", judgment_class: "consideration", evidence_refs: [], required_verification: { requested: false, check_contract: { kind: "", params_json: "" }, required_result: "" } },
+      { scope: "plan", claim: "bad", severity: "high", judgment_class: "hold-request", evidence_refs: [], required_verification: { requested: true, check_contract: { kind: "NOPE", params_json: "{}" }, required_result: "pass" } }
+    ] } }];
+  const out = processReviewPackets({ results, planHash: "sha256:p", recorder: rec, riskClassFor: () => "authorization", holdPolicyFor: () => holdPolicy, standingFor: () => null, nowMs: 1000 });
+  assert.equal(out.reviewEventCount, 1, "exactly one review event per packet");
+  assert.equal(events.filter((e) => e.stage === "review").length, 1);
+  assert.equal(out.concerns.length, 3, "all concerns minted");
+  assert.equal(out.holds.length, 2, "a hold per hold-request; none for the consideration");
+  assert.equal(out.verificationRequests.length, 1, "only the REGISTERED-kind verification is a request");
+  assert.deepEqual(out.unregisteredKinds, ["NOPE"], "unregistered kind routed to human-review");
+  assert.notEqual(out.concerns[0].concern_ref, "sha256:FORGED", "model-supplied concern_ref is ignored (recomputed)");
+  const st = reconstructProposalState(events);
+  const cg = evaluateConcernGate({ concerns: st.concerns, holds: st.holds, dispositions: st.dispositions, proposalId: "p", nowMs: 1000 });
+  assert.ok(!cg.blockers.some((b) => /PROTOCOL FAILURE/.test(b)), "every hold-request has a hold -> no protocol failure");
+  console.log("Case 10 OK: processReviewPackets sole minter (cardinality, holds, untrusted fields, unregistered->human)");
+}
+
+// Case 11: sweepExpiredHolds is idempotent — a first sweep past expiry writes an expired-unresolved
+// disposition; a re-sweep over the freshly-read events (now carrying that disposition) writes nothing.
+{
+  const events = [];
+  const rec = { recordDisposition: ({ disposition }) => events.push({ stage: "disposition", proposal_id: "p", disposition }) };
+  const c = makeConcern({ planHash: "sha256:p", scope: "s", claim: "x", severity: "high", judgmentClass: "hold-request", raisedBy: { seat: "grok" } });
+  const hold = makeHold({ concern: c, riskClass: "authorization", holdPolicy, createdAtMs: 0 });
+  events.push({ stage: "review", proposal_id: "p", concerns: [c] }, { stage: "hold", proposal_id: "p", hold });
+  const first = sweepExpiredHolds({ recorder: rec, events: events.slice(), nowMs: 10 ** 15 });
+  assert.equal(first.length, 1, "first sweep past expiry writes one disposition");
+  const second = sweepExpiredHolds({ recorder: rec, events: events.slice(), nowMs: 10 ** 15 });
+  assert.equal(second.length, 0, "re-sweep is idempotent (nothing appended)");
+  console.log("Case 11 OK: sweepExpiredHolds idempotency");
+}
+
+// Case 12: fail-closed — a hold-request whose policy resolves to NULL gets NO hold, so the concern
+// gate reports a PROTOCOL FAILURE and blocks (never a hold-request silently cleared). Guards the
+// `if (holdPolicy)` branch of processReviewPackets that no other test drives.
+{
+  const events = [];
+  const rec = {
+    recordReview: ({ seat, concerns }) => events.push({ stage: "review", proposal_id: "p", seat, concerns }),
+    recordHold: ({ hold }) => events.push({ stage: "hold", proposal_id: "p", hold }),
+    recordDisposition: ({ disposition }) => events.push({ stage: "disposition", proposal_id: "p", disposition })
+  };
+  const results = [{ model: "grok", role: "approver", ok: true, packet: { proposal_ref: "sha256:p", provenance: { provider: "xai", response_id: "r1" },
+    concerns: [{ scope: "plan", claim: "must hold", severity: "high", judgment_class: "hold-request", evidence_refs: [], required_verification: { requested: false, check_contract: { kind: "", params_json: "" }, required_result: "" } }] } }];
+  const out = processReviewPackets({ results, planHash: "sha256:p", recorder: rec, riskClassFor: () => "authorization", holdPolicyFor: () => null, standingFor: () => null, nowMs: 1000 });
+  assert.equal(out.holds.length, 0, "no hold when policy is null");
+  assert.equal(events.filter((e) => e.stage === "hold").length, 0, "no hold recorded");
+  const st = reconstructProposalState(events);
+  const cg = evaluateConcernGate({ concerns: st.concerns, holds: st.holds, dispositions: st.dispositions, proposalId: "p", nowMs: 1000 });
+  assert.ok(cg.blockers.some((b) => /PROTOCOL FAILURE/.test(b)), "hold-request with no hold -> PROTOCOL FAILURE (fail closed)");
+  console.log("Case 12 OK: fail-closed — hold-request with no policy blocks (protocol failure)");
 }
 
 console.log("test-concerns.mjs OK");

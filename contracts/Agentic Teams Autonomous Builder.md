@@ -92,15 +92,14 @@ never sufficient by itself). The target phase order is:
 situation | decompose | plan | approval | build
 ```
 
-**Nonconformance note.** Earlier revisions of this contract were internally
-contradictory: the lifecycle above declared compile-before-approval while the
-phase list read `situation | decompose | approval | plan | build`. The code in
-`build-gate/build-orchestrator.mjs` currently implements the latter (council
-review before `compileAndHashPlan()`), which means the council does not yet
-review the exact plan hash it authorizes. That implementation is **temporarily
-nonconforming** with this contract and with `contracts/Proposal Lifecycle.md`;
-the reorder is a required implementation point of the proposal-lifecycle
-contract, not an optional cleanup.
+**Conformance.** `build-gate/build-orchestrator.mjs` now compiles + writes the
+content-addressed plan BEFORE council review, so the council reviews the exact
+plan hash it authorizes (`situation | decompose | plan | approval | build`). The
+opt-in proposal-lifecycle path (`dossier.proposal_lifecycle === true`) delegates
+to `build-gate/proposal-orchestrator.mjs`, which additionally runs the Daedalus
+workshop and the outer revision loop before authorization; the legacy advisory
+path is byte-identical. Both conform to this contract and to
+`contracts/Proposal Lifecycle.md`.
 
 ## Situational awareness
 

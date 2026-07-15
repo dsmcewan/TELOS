@@ -142,19 +142,23 @@ export const PROPOSAL_REVIEW_PACKET_SCHEMA = {
           evidence_refs: { type: "array", items: { type: "string" } },
           required_verification: {
             type: "object",
+            // NO discharge_node_id (decision 7 / round-7 B-B): the reviewer names only the
+            // check_contract kind; the controller MINTS a fresh discharge node keyed by concern_ref
+            // at N+1 compile. A model-supplied node id must never key the concern identity or the
+            // minted node — so the schema does not accept one (additionalProperties:false rejects it).
             properties: {
               requested: { type: "boolean" },
-              discharge_node_id: { type: "string" },
               check_contract: {
                 type: "object",
                 // params_json is a JSON STRING (strict mode forbids open objects); the controller
-                // parses + validates it, keeping model-authored params out of the schema surface.
+                // parses + validates it against the check-registry's per-kind whitelist, keeping
+                // model-authored params out of the schema surface.
                 properties: { kind: { type: "string" }, params_json: { type: "string" } },
                 required: ["kind", "params_json"], additionalProperties: false
               },
               required_result: { type: "string" }
             },
-            required: ["requested", "discharge_node_id", "check_contract", "required_result"], additionalProperties: false
+            required: ["requested", "check_contract", "required_result"], additionalProperties: false
           }
         },
         required: ["scope", "claim", "severity", "judgment_class", "evidence_refs", "required_verification"],

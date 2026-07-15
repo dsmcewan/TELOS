@@ -9,7 +9,7 @@ Each TELOS task node carries two hashes:
 - **spec_hash** — SHA-256 of `{files, requirements, test}` (the node's own declared spec).
 - **effective_hash** — SHA-256 of `{spec_hash, sorted parent effective_hashes}`. Any upstream change cascades forward; parallel branches are unaffected.
 
-The **ledger-gate** (`verify`) runs four checks per node before issuing a `done()` verdict:
+The **ledger-gate** (`verify`) runs four per-node checks plus a plan-wide obligation-discharge sweep before issuing a `done()` verdict:
 
 | # | Check | Pass condition |
 |---|-------|----------------|
@@ -17,8 +17,11 @@ The **ledger-gate** (`verify`) runs four checks per node before issuing a `done(
 | 2 | **signature** | Ed25519 signature verifies against published public key |
 | 3 | **artifact** | SHA-256 tree hash of declared files on disk matches signed hash |
 | 4 | **test** | Node's declared test command exits 0 |
+| 5 | **obligations** | Every verification obligation (`obligation.mjs`) is discharged — its named discharge node is settled + Rule-3-verified and reproduced the required result |
 
-All four must pass. A **spec change** cascades — the new `effective_hash` blocks the node and every downstream dependent (`STALE_LINEAGE`). A **post-settlement** failure with an unchanged spec (e.g. artifact drift) blocks that node directly; descendants are evaluated independently, but either way the overall merge fails closed (exit 1).
+All five must pass. A **spec change** cascades — the new `effective_hash` blocks the node and every downstream dependent (`STALE_LINEAGE`). A **post-settlement** failure with an unchanged spec (e.g. artifact drift) blocks that node directly. An **undischarged verification obligation** blocks the merge with `UNDISCHARGED_OBLIGATION` even when every node "settled" — a test file that exists but whose node never ran leaves the obligation open. Descendants are evaluated independently, but either way the overall merge fails closed (exit 1).
+
+Verification obligations live in `obligation.mjs` (content-addressed semantic identity + the discharge sweep); the signed proposal-lifecycle ledger + its primitives (append-only `.telos/proposal.jsonl`, `POLICY_CONTRACT_V1` certificate, layered verifiers) live in `proposal-ledger.mjs`.
 
 ### Exit codes
 

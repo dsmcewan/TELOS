@@ -2,6 +2,7 @@
 // Every enforcement identity is a content address (concern_ref, required_verification_ref,
 // node_version_ref). Dispositions are gated by a closed derivation table; a seat never writes one.
 import { canonicalize, sha256hex } from "../merkle-dag/vendor.mjs";
+import { isRegistered } from "./check-registry.mjs";
 
 const H = (v) => "sha256:" + sha256hex(canonicalize(v));
 
@@ -25,11 +26,21 @@ export const DISPOSITION_DERIVATIONS = {
   "expired-unresolved": ["expiration-policy"]
 };
 
-const EMPTY_RV = { requested: false, discharge_node_id: "", check_contract: { kind: "", params: {} }, required_result: "" };
+// The check_contract is hashed in its STORED schema shape { kind, params_json } (params_json a
+// JSON string; schemas.mjs) identically here and in the proposal-gate reconciliation, so
+// check_contract_ref reconciles. `discharge_node_id` is DELIBERATELY absent from the identity
+// (decision 7 / round-7 B-B): the discharge node is a fresh controller-minted node keyed BY
+// concern_ref, so a model-supplied node id must not key the concern's identity nor the minted id.
+const EMPTY_RV = { requested: false, check_contract: { kind: "", params_json: "" }, required_result: "" };
+
+function normalizeCheckContract(cc) {
+  const c = cc || {};
+  return { kind: c.kind || "", params_json: c.params_json || "" };
+}
 
 export function requiredVerificationRef(rv) {
   const v = rv || EMPTY_RV;
-  return H({ requested: !!v.requested, discharge_node_id: v.discharge_node_id || "", check_contract: v.check_contract || { kind: "", params: {} }, required_result: v.required_result || "" });
+  return H({ requested: !!v.requested, check_contract: normalizeCheckContract(v.check_contract), required_result: v.required_result || "" });
 }
 
 // Frozen concern identity (decision 16). Severity is EXCLUDED (a model proposal; policy decides).
@@ -119,7 +130,7 @@ export function assertDispositionAllowed({ concern, recommendedBy, creationLinea
 }
 
 // Latest disposition per concern_ref (by decided_at_ms, then array order).
-function latestDispositions(dispositions) {
+export function latestDispositions(dispositions) {
   const m = new Map();
   for (const d of dispositions) {
     const prev = m.get(d.concern_ref);
@@ -160,6 +171,107 @@ export function expireHolds({ holds, dispositions, nowMs }) {
     out.push({ hold: h, disposition: makeDisposition({ concernRef: h.concern_ref, planHash: h.plan_hash, disposition: "expired-unresolved", derivedFrom: { kind: "expiration-policy", ref: h.hold_id }, decidedAtMs: nowMs }) });
   }
   return out;
+}
+
+/**
+ * The SOLE controller-derived concern minter in lifecycle mode (round-6 blocking fix). Consumes the
+ * council's review results and, per OK packet, emits EXACTLY ONE review event carrying (a) the
+ * cold-review manifest binding already stamped by council.mjs and (b) controller-minted concern
+ * records whose concern_ref is RECOMPUTED from the body — model-supplied fields are untrusted data,
+ * never enforcement identities. Policy-derived holds are recorded for hold-requests. A concern
+ * carrying a required_verification is collected as a verification REQUEST to be minted into a
+ * dedicated discharge node at N+1 compile (decision 7); an UNREGISTERED check_contract.kind routes
+ * the outer loop to human-review-required (never a silent drop).
+ *
+ * @param results       council results [{ model, role, ok, packet }]
+ * @param planHash      candidate plan hash (== packet.proposal_ref)
+ * @param recorder      proposal recorder (sole ledger writer)
+ * @param riskClassFor  (concern) -> riskClass string
+ * @param holdPolicyFor (riskClass) -> { ttl_ms, escalation, min_ttl_ms, max_ttl_ms } | null
+ * @param standingFor   ({ seat, concern }) -> standing | null   (null = cold start; never SHORTENS)
+ * @param nowMs         single frozen clock
+ * @returns { concerns, holds, verificationRequests, unregisteredKinds, reviewEventCount }
+ */
+export function processReviewPackets({ results = [], planHash, recorder, riskClassFor, holdPolicyFor, standingFor = () => null, nowMs = 0 }) {
+  const concerns = [], holds = [], verificationRequests = [], unregisteredKinds = [];
+  let reviewEventCount = 0;
+  for (const r of results) {
+    if (!r || r.ok === false) continue;
+    const packet = r.packet || {};
+    const seat = r.model || packet.model;
+    const role = r.role || packet.role;
+    const provenance = packet.provenance || null;
+    const raisedBy = { seat, role, provenance };
+    const madeConcerns = [];
+    for (const raw of (Array.isArray(packet.concerns) ? packet.concerns : [])) {
+      const cc = (raw.required_verification && raw.required_verification.check_contract) || {};
+      const requested = !!(raw.required_verification && raw.required_verification.requested);
+      const rv = requested
+        ? { requested: true, check_contract: { kind: cc.kind || "", params_json: cc.params_json || "" }, required_result: (raw.required_verification.required_result) || "pass" }
+        : { requested: false, check_contract: { kind: "", params_json: "" }, required_result: "" };
+      // Controller re-derivation: makeConcern RECOMPUTES concern_ref from the body; any model-supplied
+      // concern_ref / discharge_node_id is ignored (a model cannot key enforcement identity).
+      const concern = makeConcern({
+        planHash, scope: raw.scope, claim: raw.claim, severity: raw.severity, judgmentClass: raw.judgment_class,
+        requiredVerification: rv, raisedBy, raisedAt: nowMs
+      });
+      madeConcerns.push(concern);
+      concerns.push(concern);
+      if (raw.judgment_class === "hold-request") {
+        const riskClass = riskClassFor ? riskClassFor(concern) : null;
+        const holdPolicy = riskClass != null && holdPolicyFor ? holdPolicyFor(riskClass) : null;
+        // Fail closed: a hold-request with no policy gets NO hold, so the concern gate reports a
+        // PROTOCOL FAILURE (never a concern silently cleared) and the build blocks.
+        if (holdPolicy) {
+          const standing = standingFor ? standingFor({ seat, concern }) : null;
+          const hold = makeHold({ concern, riskClass, holdPolicy, createdAtMs: nowMs, standing });
+          holds.push(hold);
+          recorder.recordHold({ hold, recordedAt: nowMs });
+        }
+      }
+      if (requested) {
+        if (!isRegistered(rv.check_contract.kind)) unregisteredKinds.push(rv.check_contract.kind);
+        else verificationRequests.push({ concern_ref: concern.concern_ref, check_contract: rv.check_contract, required_result: rv.required_result });
+      }
+    }
+    // EXACTLY ONE review event per packet: manifest binding (cold-review) + minted concern records.
+    recorder.recordReview({
+      seat, provenance, reviewInputHash: packet.review_input_hash,
+      artifactRefs: packet.review_manifest_ref ? [packet.review_manifest_ref] : [],
+      recordedAt: nowMs, concerns: madeConcerns
+    });
+    reviewEventCount++;
+  }
+  return { concerns, holds, verificationRequests, unregisteredKinds, reviewEventCount };
+}
+
+// Reconstruct concerns/holds/dispositions FROM the signed ledger events (decision 8). The gate and
+// the sweep both reduce from HERE, never from a caller-supplied array, so a miswired orchestrator
+// cannot weaken enforcement by omitting a record. Concerns ride the review event; holds/dispositions
+// their own stages. Each record is tagged with its event's proposal_id for partitioning.
+export function reconstructProposalState(events) {
+  const concerns = [], holds = [], dispositions = [];
+  for (const e of events) {
+    const pid = e.proposal_id;
+    if (e.stage === "review" && Array.isArray(e.concerns)) for (const c of e.concerns) concerns.push({ ...c, proposal_id: pid });
+    if (e.stage === "hold" && e.hold) holds.push({ ...e.hold, proposal_id: pid });
+    if (e.stage === "disposition" && e.disposition) dispositions.push({ ...e.disposition, proposal_id: pid });
+  }
+  return { concerns, holds, dispositions };
+}
+
+/**
+ * Sweep expired holds reconstructed from the ledger and PERSIST an expired-unresolved disposition
+ * for each, through the recorder (the sole ledger writer). IDEMPOTENT: expireHolds skips a hold that
+ * already carries a terminal/verified/expired-unresolved disposition, so a re-sweep over freshly-read
+ * events (now including this sweep's dispositions) appends nothing.
+ * @returns [{ hold, disposition }] the dispositions written this sweep (empty if none)
+ */
+export function sweepExpiredHolds({ recorder, events, nowMs, recordedAt = null }) {
+  const { holds, dispositions } = reconstructProposalState(events);
+  const swept = expireHolds({ holds, dispositions, nowMs });
+  for (const s of swept) recorder.recordDisposition({ disposition: s.disposition, recordedAt });
+  return swept;
 }
 
 /**

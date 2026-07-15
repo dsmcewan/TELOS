@@ -1,0 +1,17 @@
+{
+  "build_id": "proposal-lifecycle-demo",
+  "use_case": "governance",
+  "objective": "Add an authorization boundary to the login path.",
+  "proposal_lifecycle": true,
+  "write_targets": [
+    "src/auth.mjs"
+  ],
+  "protected_paths": [
+    "CHATGPT/",
+    "me/claude-code/",
+    "me/claude-desktop/",
+    "me/gemini/"
+  ],
+  "required_docs": [],
+  "max_revisions": 3
+}

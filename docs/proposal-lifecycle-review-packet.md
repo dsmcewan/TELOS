@@ -1,9 +1,13 @@
 # Proposal Lifecycle — Review Packet (revision 3)
 
-**Date:** 2026-07-14
-**Status:** revision 3 — round-2 blocking finding (obligation semantic identity) addressed; awaiting final confirmation
+**Date:** 2026-07-14 (status updated 2026-07-15)
+**Status:** FROZEN + IMPLEMENTED. The contract froze at `c3767b2`; the implementation shipped
+(all primitives + the autonomous entry-point composition completed by the Argo pass) and every
+package suite is green. The canonical contract is `contracts/Proposal Lifecycle.md`; the discharge
+mechanism is the dedicated controller-minted verification node (`build-gate/check-registry.mjs` +
+`proposal-orchestrator.mjs`), superseding any cross-revision node-lineage discharge target described
+in earlier drafts below. The text below is retained as the review history.
 **Branch:** `contracts/proposal-lifecycle` (round 1: `24a6ad5`; round-1 fixes: `8e06e78`)
-**Reviewer task:** verify the round-2 fix below, then confirm freeze.
 
 ## Round-2 finding and resolution
 
