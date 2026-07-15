@@ -181,6 +181,28 @@ independently materializable in the review environment.
 
 `matured-plan-v4.md` becomes superseded evidence once delta-4 converges.
 
+## Fifth review — The Eye holds #90 at head `e77e61b` (2026-07-15)
+
+All three fourth-review corrections verified at the normative level; two
+residual execution blockers found — both plan-level, no spec defects (spec
+stays at v2.3). Resolved via amendments AM-19..AM-20
+(`docs/clotho-phase-1-plan-amendments-5.md`) and a fifth surgical delta
+workshop (`docs/runs/clotho-daedalus-delta5/`):
+
+| # | Finding | Resolution |
+|---|---|---|
+| 1 | The shallow/full-clone test is asserted, not implemented — Task 2 uses an injected `git` stub, testing conditional logic but not Git's shallow-boundary behavior, the wrapper, or real root resolution; Task 0 prevents the bad state without proving it is rejected | AM-19: integration fixture — multi-commit temp origin; `--depth 1` `file://` clone must throw the stable shallow-history error; full clone must resolve `git-root:<origin root SHA>`; injected units retained as branch-coverage tests |
+| 2 | Task 3's `close(coverage)` validates against per-weaver and orchestrator inventories that per D17 cannot legally exist until Tasks 4a/4b/5 | AM-20: split generic ledger integrity (Task 3, injected fixture coverage only) from repository-specific inventory equality (Task 5, actual committed inventories + closure equality before `close()`) |
+
+Verified-passed from the fourth review: the frozen shallow guard + Task 0
+`fetch-depth: 0`; Task 4a/Task 5 sequencing with the no-future-files rule; the
+`motivated-by`/`discharges` matrix agreed across spec, endpoints, weavers,
+queries, and flagship semantics. The Eye again triangulated the candidate
+binding, noting the raw-byte hash recomputation remains non-materializable in
+the connector environment.
+
+`matured-plan-v5.md` becomes superseded evidence once delta-5 converges.
+
 ## Not accepted / needs no change
 
 - "Ledger cannot answer from itself" — true of the reviewed skeleton, already false

@@ -1,14 +1,5 @@
 # Clotho Phase 1 Implementation Plan
 
-> **SUPERSEDED historical artifact.** The Eye's third hold-review of PR #90 head
-> `b68210b` found three execution-level blockers in this candidate
-> (`docs/clotho-phase-1-remediation.md` § Fourth review); it was re-converged
-> under spec v2.3 by the fourth delta workshop. The canonical submission
-> candidate is **`docs/runs/clotho-daedalus-delta5/matured-plan-v6.md`**. The
-> extracted copy below is unmodified apart from this banner; the
-> content-addressed, provenance-bearing round artifacts under `artifacts/` are
-> the authoritative record.
-
 > **Status: implementation-ready.** Execute one task per branch, PR, CI run, and
 > squash merge. Do not begin a task until the prior task is merged and every existing
 > package is green.
@@ -60,7 +51,10 @@ call them "signed".
 | D13 | Locators are content-bound version identities. | Every repository-scoped locator carries `repository_ref` and a content hash of the exact bytes it names (`blob_sha`, `text_sha256`, `entry_hash`, or `summary_sha256`). The single named globally-addressed exception is `commit = {sha}`. A changed body, file, section, or summary is a NEW version node; lineage is explicit `supersedes` (`old_version --supersedes--> new_version`; the edge points forward through version lineage); no fact silently reattaches to changed bytes. |
 | D14 | Coverage provenance binds the whole mechanism, mechanically. | Manifest weaver entries carry `implementation_refs` equal to the exact transitive static relative-import closure of the weaver module (content-addressed); the manifest carries `orchestrator_refs` for the driver and shared machinery; `inventories_consumed` entries carry a `source_ref` content address. A committed test proves each implementation inventory equal to the derived closure. Manual integer versions remain human-readable labels only and prove nothing. |
 | D15 | Any weaver failure aborts the weave. | A throwing weaver destroys the temporary ledger; the destination is never published; there is no partial advisory artifact in Phase 1. Published manifests contain only `executed` and `skipped` states; `failed` survives solely in verifier fixtures and internal diagnostics, and the verifier rejects a published manifest containing it. |
-| D16 | `repository_ref` is defined, not delegated. | `repository_ref = "git-root:" + <full 40-hex SHA of the repository's root commit>`, derived mechanically via `git rev-list --max-parents=0 HEAD`; more than one root commit is fatal in Phase 1. The weave derives it, records it in the header, and validators reject locators whose `repository_ref` differs from the derived value. Rename/re-hosting does not change identity; clones of the same history share the namespace; forks share it exactly as far as they share the root commit; cross-repository accession preserves Phase 1 node ids. |
+| D16 | `repository_ref` is defined, not delegated. | `repository_ref = "git-root:" + <full 40-hex SHA of the repository's root commit>`, derived mechanically: first `git rev-parse --is-shallow-repository` must return exactly `false` (a shallow repository is rejected with a stable error), then `git rev-list --max-parents=0 HEAD`; more than one root commit is fatal in Phase 1. The weave derives it, records it in the header, and validators reject locators whose `repository_ref` differs from the derived value. Rename/re-hosting does not change identity; clones of the same history share the namespace; forks share it exactly as far as they share the root commit; cross-repository accession preserves Phase 1 node ids. |
+| D17 | Committed inventories name only files that exist. | No inventory may name a file that does not yet exist in the repository at the PR that commits it. Task 4a commits the closure scanner and per-weaver inventories only; Task 5 creates `weave.mjs`, commits the complete orchestrator inventory, and enforces orchestrator closure equality in the same PR. Per-weaver closure equality is enforced from Task 4a/4b as those weavers land; orchestrator closure equality from Task 5 onward. |
+| D18 | The shallow/full-clone contract is proven against real git, not only injected. | Injected-git units remain as fast branch-coverage tests, but the normative proof is an integration fixture: a multi-commit temporary origin cloned via `file://` with `--depth 1` must make `deriveRepositoryRef` throw the stable shallow-history error, and a full clone of the same origin must resolve exactly `git-root:<origin root SHA>`. The fixture uses only allowlisted no-shell git commands, builds under a cleaned-up temporary directory, and runs in the normal `npm test` suite. |
+| D19 | Ledger integrity validation is split from repository-specific inventory equality. | Task 3's `close(coverage)` and `verifyLedger` validate manifest schema, signatures, chain structure, content-reference shapes, published states, and record/coverage consistency using injected fixture coverage only — no dependency on committed inventories, which per D17 cannot legally exist yet. Task 5 validates coverage against the actual committed per-weaver and orchestrator inventories before `close()` and proves exact inventory/closure equality. |
 
 ## Global constraints
 
@@ -75,9 +69,9 @@ call them "signed".
 - **Closed and fail-closed:** unknown kinds, invalid endpoint-kind combinations,
   unknown assertion statuses, invalid status/assertor couplings, unknown
   source-reference schemes, malformed locators, mismatched node ids, unsupported
-  configured ledger formats, manifest/record contradictions, and untrusted evidence
-  are rejected or omitted with deterministic warnings. They never produce an inferred
-  edge.
+  configured ledger formats, manifest/record contradictions, shallow repository
+  history, and untrusted evidence are rejected or omitted with deterministic
+  warnings. They never produce an inferred edge.
 - **Identity preservation:** existing commit SHAs, ledger entry hashes, concern refs,
   obligation refs, and contract ids remain inside their locators. Clotho derives a
   containing node id; it does not replace the existing identity.
@@ -106,7 +100,7 @@ call them "signed".
 | Path | Responsibility |
 |---|---|
 | `clotho/package.json` | Private ESM package, Node engine, fixed check/test commands, no dependencies. |
-| `clotho/inventory.mjs` | Closed package, document, ledger-adapter, run-summary, weaver-id, weaver-version, weaver-implementation-file, orchestrator-file, exclusion, and fatal-warning inventories. |
+| `clotho/inventory.mjs` | Closed package, document, ledger-adapter, run-summary, weaver-id, weaver-version, weaver-implementation-file, orchestrator-file, exclusion, and fatal-warning inventories. Each inventory names only files existing at the PR that commits it (D17): per-weaver implementation-file lists land in Tasks 4a/4b; the orchestrator-file list lands in Task 5. |
 | `clotho/registry.mjs` | Read-only kind and assertion-status registries, canonical encoding, locator/source/endpoint/status validation, document keys, and node-id derivation. |
 | `clotho/thread-ledger.mjs` | Exclusive creation, signing, chaining, coverage-manifest trailer, closing, verification, and incremental edge reads. |
 | `clotho/weavers/util.mjs` | Closed-root walks, lexical extraction, Markdown sections, token matching, current-byte blob refs, and the git wrapper. |
@@ -119,16 +113,16 @@ call them "signed".
 | `clotho/weave.mjs` | Guarded CLI entry point and complete-weave orchestration. |
 | `clotho/scripts/check.mjs` | Recursively invokes `node --check` for every Clotho `.mjs` file. |
 | `clotho/scripts/test-all.mjs` | Spawns every named `test-*.mjs` script in a committed fixed order. |
-| `clotho/scripts/test-registry.mjs` | Registry, canonicalization, locator, endpoint, status, and identity units. |
-| `clotho/scripts/test-ledger.mjs` | Creation, append, signature, chain, trailer, tamper, truncation, and streaming units. |
+| `clotho/scripts/test-registry.mjs` | Registry, canonicalization, locator, endpoint, status, and identity units, plus the real-git shallow/full-clone integration fixture (D18). |
+| `clotho/scripts/test-ledger.mjs` | Creation, append, signature, chain, trailer, tamper, truncation, and streaming units against injected fixture coverage (D19). |
 | `clotho/scripts/test-weavers.mjs` | Fixture-based exact-output and determinism tests. |
 | `clotho/scripts/test-query.mjs` | Query traversal, validation, truncation, gap, coverage, status-filter, and drift units. |
 | `clotho/scripts/test-advisory.mjs` | Repository-wide structural no-import check and scanner units. |
-| `clotho/scripts/test-closure.mjs` | Derives each weaver's static relative-import closure and the orchestrator closure; fails on any divergence from the committed inventories. |
+| `clotho/scripts/test-closure.mjs` | Derives each weaver's static relative-import closure (Task 4a onward) and, from Task 5, the orchestrator closure; fails on any divergence from the committed inventories. |
 | `clotho/scripts/test-flagship.mjs` | Real-repository full and skipped-weaver acceptance with review-set reporting. |
 | `clotho/scripts/expected-flagship.json` | Hand-audited exact-subset expectations for eight source groups. |
-| `clotho/scripts/fixtures/` | Miniature packages, Markdown, ledgers, streams, and run summaries. |
-| `.github/workflows/ci.yml` | Adds `clotho` to the package matrix (Task 0, workflow-only PR, after Task 1). |
+| `clotho/scripts/fixtures/` | Miniature packages, Markdown, ledgers, streams, run summaries, and the temporary-origin git fixture builder. |
+| `.github/workflows/ci.yml` | Adds `clotho` to the package matrix with `fetch-depth: 0` (Task 0, workflow-only PR, after Task 1). |
 | `.gitignore` | Ignores `.telos/clotho/`. |
 | `docs/runs/clotho-self-weave/` | Reproduction script, snapshot, summary, match report, review set, and verification report. |
 | `docs/STATUS.md`, `docs/ROADMAP.md` | Completion state and follow-on work. |
@@ -180,12 +174,34 @@ membership list is allowed.
 repository_ref = "git-root:" + <full 40-hex SHA of the repository's root commit>
 ```
 
-The root commit SHA is obtained with exact arguments
-`git rev-list --max-parents=0 HEAD`. Exactly one output line is required; more than
-one root commit is fatal in Phase 1, as is a malformed or non-40-hex result. The
-deliberate consequences (per spec v2.2): repository rename or re-hosting does not
-change identity; clones of the same history weave into the same namespace; forks
-share the namespace exactly as far as they share the root commit; and later
+The derivation is guarded against shallow history, then resolves the root:
+
+```text
+deriveRepositoryRef:
+  git rev-parse --is-shallow-repository
+  require exactly "false"
+  otherwise fail with a stable shallow-repository error
+  then git rev-list --max-parents=0 HEAD
+  require exactly one commit (multiple roots fatal)
+```
+
+The shallow guard is load-bearing: git treats a shallow-boundary commit as
+parentless, so an unguarded derivation in a shallow clone (the
+`actions/checkout@v4` default) would return the checkout boundary — not the
+root — and CI and a full local clone would mint **different** repository
+identities for the same repository. Task 0's workflow-only PR therefore sets
+`fetch-depth: 0` for the `clotho` matrix entry, and per D18 the contract is
+proven both by fast injected-git units and by a real-git integration fixture:
+a `--depth 1` clone of a multi-commit temporary origin is rejected with the
+stable shallow-history error, and a full clone of the same origin resolves the
+actual origin root commit.
+
+After the guard, exactly one full 40-hex output line is required from
+`git rev-list --max-parents=0 HEAD`; more than one root commit is fatal in
+Phase 1, as is a malformed or non-40-hex result. The deliberate consequences
+(per spec v2.2/v2.3): repository rename or re-hosting does not change identity;
+clones of the same history weave into the same namespace; forks share the
+namespace exactly as far as they share the root commit; and later
 cross-repository accession preserves every Phase 1 node id unchanged.
 
 The weave driver derives `repository_ref` once per weave, records it in the ledger
@@ -292,7 +308,10 @@ The payload identity key used for determinism comparison and deduplication is
 
 ### Endpoint compatibility
 
-Append and verification both enforce this matrix:
+Append and verification both enforce this matrix, which matches the spec v2.3
+canonical-semantics statement exactly (`code-symbol --motivated-by--> concern`,
+`code-symbol --discharges--> obligation`,
+`obligation --discharges--> contract-clause`):
 
 | Edge | Allowed direction |
 |---|---|
@@ -382,9 +401,10 @@ human-readable label only; it proves nothing.
   every per-weaver ref is unchanged.
 - The committed inventories are **proven equal to the derived closures, never
   trusted**: `scripts/test-closure.mjs` derives the static relative-import
-  closure of each weaver module and of the orchestrator entry points using the
-  same lexical import scanner discipline as the advisory checker, and fails when
-  any committed inventory omits or adds a file.
+  closure of each weaver module and, once Task 5 lands `weave.mjs`, of the
+  orchestrator entry points, using the same lexical import scanner discipline as
+  the advisory checker, and fails when any committed inventory omits or adds a
+  file. Per D17, each inventory is committed in the PR whose files it names.
 
 A skipped weaver still records its `implementation_refs` (the bytes that would
 have run, identifying the mechanism version) with zero `inspected_source_counts`.
@@ -398,6 +418,11 @@ flagship run evidence records them.
 The trailer is written by `close()` from driver-supplied coverage data; weavers never
 see or emit it. A complete ledger has exactly one trailer as its final record; a
 missing, duplicate, or non-final trailer is a verification error.
+
+Per D19, the ledger layer itself validates coverage **structurally** (schema,
+states, ref shapes, record/coverage consistency); equality of coverage data with
+the committed repository inventories is a driver-level obligation enforced in
+`weave.mjs` (Task 5), not a `thread-ledger.mjs` dependency.
 
 For every edge whose `asserted_by` is one of the five weaver ids, the trailer entry
 for that exact id must have `state: executed`. `close()` rejects contradictory
@@ -473,6 +498,11 @@ failing workflow-only PR.
 
 - [ ] Add `clotho` to the existing CI package matrix without changing any existing
       package command. No other file changes in this PR.
+- [ ] Set `fetch-depth: 0` for the `clotho` matrix entry's checkout so the job runs
+      against full history: `actions/checkout@v4` is shallow by default, and
+      `deriveRepositoryRef` rejects a shallow repository with a stable error
+      (AM-16). Without full history the `clotho` job would fail closed rather than
+      mint a wrong repository identity.
 - [ ] Flag the PR explicitly as workflow-only in its title and description; it
       requires human review as a workflow change before any further Clotho feature
       task lands (per the documented self-skipping-reviewer failure).
@@ -480,8 +510,9 @@ failing workflow-only PR.
       Task 1 scaffold and must be green in this PR's own CI run; no red or skipped
       state is expected or tolerated, and no branch-protection bypass is used.
 - [ ] **Exit:** the workflow-only PR is human-reviewed and merged, the `clotho` CI
-      job is green against the scaffold, and every existing package's CI job is
-      unchanged and green. Task 2 onward proceeds under CI enforcement.
+      job is green against the scaffold with full-history checkout, and every
+      existing package's CI job is unchanged and green. Task 2 onward proceeds
+      under CI enforcement.
 
 ## Task 2: Closed registries, canonical identity, and endpoint validation
 
@@ -511,9 +542,11 @@ deriveRepositoryRef(git) -> 'git-root:<40-hex>' | throws
       `check-contract`; `text_sha256` for `doc-section`, `contract-clause`, and
       `decision`; `entry_hash` for `concern` and `obligation`; `summary_sha256`
       for `run-evidence`.
-- [ ] Implement `deriveRepositoryRef`: invoke exactly
-      `git rev-list --max-parents=0 HEAD`, require exactly one full 40-hex output
-      line (more than one root commit is fatal in Phase 1), and return
+- [ ] Implement `deriveRepositoryRef` with the shallow guard: invoke exactly
+      `git rev-parse --is-shallow-repository` and require the output to be exactly
+      `false`, otherwise throw the stable shallow-repository error; then invoke
+      exactly `git rev-list --max-parents=0 HEAD`, require exactly one full 40-hex
+      output line (more than one root commit is fatal in Phase 1), and return
       `git-root:<sha>`. Locator validation receives the derived value and rejects
       any locator whose `repository_ref` differs from it.
 - [ ] Reject unknown kinds, unknown statuses, status/assertor coupling violations,
@@ -522,6 +555,25 @@ deriveRepositoryRef(git) -> 'git-root:<40-hex>' | throws
       wrong `repository_ref` values, missing or malformed `blob_sha`,
       `text_sha256`, `entry_hash`, and `summary_sha256` content hashes,
       endpoint-kind mismatches, and caller-owned ledger fields.
+- [ ] **Real-git shallow/full-clone integration fixture (D18/AM-19):** a fixture
+      builder creates a multi-commit temporary origin repository under a temporary
+      directory, using only allowlisted `git` commands through the existing
+      no-shell wrapper. The test then:
+      1. clones the origin via `file://` with `--depth 1` and asserts
+         `deriveRepositoryRef` throws the stable shallow-history error against the
+         shallow clone;
+      2. clones the same origin with full history and asserts
+         `deriveRepositoryRef` returns exactly
+         `git-root:` + the origin's root-commit SHA.
+      The temporary directory is removed in `finally`; the fixture runs in the
+      normal `npm test` suite (real `git` is already a repository prerequisite).
+      The clone-building git invocations (`init`, commit construction, `clone
+      --depth 1 file://...`, `clone file://...`) are permitted for this fixture
+      builder only and are not added to the weaver-facing allowlist.
+- [ ] **Keep the injected-git units** as fast branch-coverage tests for the guard's
+      conditional logic (injected `true`, malformed non-`false` output, multi-root,
+      malformed root output); they complement, and do not replace, the real-git
+      integration proof.
 - [ ] Units cover exact registry membership and counts for all three sets; all three
       mutators on each facade; iteration; unknown kinds and statuses; each locator
       schema including the content-bound forms of every repository-scoped kind
@@ -529,18 +581,23 @@ deriveRepositoryRef(git) -> 'git-root:<40-hex>' | throws
       `decision`, `concern`, `obligation`, `check-contract`, `run-evidence`) and
       the `commit` exception taking no `repository_ref`; missing/extra fields
       including missing `repository_ref` or content hash on each repository-scoped
-      kind; `deriveRepositoryRef` happy path, multi-root fatality, and malformed
-      output fatality; a mismatched `repository_ref` rejection; every path
-      rejection; canonical key-order independence; array-order sensitivity;
-      non-JSON values; same-input stability; malformed source refs; mismatched
-      node ids; distinct node ids for the same `{path, symbol}` at two different
-      `blob_sha` values; every allowed and representative forbidden endpoint pair,
-      including all four `depends-on` rows involving `repository-file`; each valid
-      and each invalid initial status/assertor coupling; and `supersedes`
-      provenance including a `repository-file` rename pair and a content-changed
-      `code-symbol` version pair.
+      kind; `deriveRepositoryRef` happy path, shallow-repository rejection with
+      the stable error (both via the injected units and the real-git fixture
+      above), multi-root fatality, and malformed output fatality; a mismatched
+      `repository_ref` rejection; every path rejection; canonical key-order
+      independence; array-order sensitivity; non-JSON values; same-input
+      stability; malformed source refs; mismatched node ids; distinct node ids for
+      the same `{path, symbol}` at two different `blob_sha` values; every allowed
+      and representative forbidden endpoint pair, including all four `depends-on`
+      rows involving `repository-file` and the exact spec v2.3 `discharges` matrix
+      (`code-symbol -> obligation` and `obligation -> contract-clause` allowed;
+      other `discharges` endpoint pairs rejected); each valid and each invalid
+      initial status/assertor coupling; and `supersedes` provenance including a
+      `repository-file` rename pair and a content-changed `code-symbol` version
+      pair.
 - [ ] **Exit:** `registry.mjs` is the only authoritative node/edge/status membership
-      source and `npm test` is green.
+      source, the shallow/full-clone contract is proven against real git as well as
+      injected units, and `npm test` is green.
 
 ## Task 3: Signed thread ledger
 
@@ -555,6 +612,13 @@ readEdges(path, {openReadStream?} = {})
   -> AsyncIterable<signedRecord>
 ```
 
+Per D19 (AM-20), this task validates **generic ledger integrity** only: manifest
+schema, signatures, chain structure, content-reference shapes, published states,
+and record/coverage consistency, exercised with **injected fixture coverage**. It
+takes no dependency on committed per-weaver or orchestrator inventories, which per
+D17 do not yet exist at this PR; validating coverage against the actual committed
+inventories is Task 5's obligation.
+
 - [ ] Reuse exported Ed25519 or envelope primitives from `merkle-dag` only when they
       implement the normative bytes above. Otherwise modify no spine file and use
       `node:crypto`, with a comment naming the proposal-ledger pattern source.
@@ -563,9 +627,9 @@ readEdges(path, {openReadStream?} = {})
       ephemeral Ed25519 keypair unless given a valid Ed25519 private key.
 - [ ] Capture one canonical `wovenAt`, one validated `repoHead`, and one validated
       `repositoryRef`; obtain the head with exact arguments `git rev-parse HEAD`
-      and the ref with `deriveRepositoryRef` unless a test injects them. Record
-      `repository_ref` in the header; every appended locator must carry exactly
-      that value.
+      and the ref with `deriveRepositoryRef` (including its shallow guard) unless a
+      test injects them. Record `repository_ref` in the header; every appended
+      locator must carry exactly that value.
 - [ ] Write the canonical header immediately. Serialize appends through one file
       descriptor, reject appends after close, and make `close` idempotent only after
       a successful first close.
@@ -582,17 +646,21 @@ readEdges(path, {openReadStream?} = {})
       discipline. Phase 1 weaves emit no status records; the capability exists for
       human adjudication during construction of a separate ledger and is fully
       unit-tested.
-- [ ] `close(coverage)` validates driver-supplied coverage data against the
-      inventory weaver-id, version, implementation-file, and orchestrator-file
-      lists and the closed published state set (`executed | skipped`): five entries
-      in inventory order, each with well-formed nonempty `implementation_refs`
-      content addresses and deterministic `inspected_source_counts`, plus nonempty
-      well-formed `orchestrator_refs` and content-addressed `inventories_consumed`
-      entries. It rejects any `failed` or unknown state and rejects coverage that
-      marks any weaver `skipped` when an already-appended edge is asserted by that
-      weaver. It writes the signed trailer as the final chained record, flushes,
-      closes the descriptor, and only then reports success. A close without valid
-      coverage data throws and poisons the ledger.
+- [ ] `close(coverage)` validates **the structure of** driver-supplied coverage
+      data: five entries carrying the exact weaver ids in a stable declared order,
+      each with an integer `version` label, well-formed nonempty
+      `implementation_refs` content addresses (valid `file:` form, repo-relative
+      path, 40-hex blob SHA), a state from the closed published set
+      (`executed | skipped`), and deterministic `inspected_source_counts`, plus
+      nonempty well-formed `orchestrator_refs` and content-addressed
+      `inventories_consumed` entries. It rejects any `failed` or unknown state and
+      rejects coverage that marks any weaver `skipped` when an already-appended
+      edge is asserted by that weaver. It writes the signed trailer as the final
+      chained record, flushes, closes the descriptor, and only then reports
+      success. A close without valid coverage data throws and poisons the ledger.
+      All Task 3 tests exercise `close(coverage)` with injected fixture coverage
+      objects; equality of coverage refs with committed repository inventories is
+      out of scope here (D19) and enforced by the Task 5 driver.
 - [ ] An append or close failure poisons the ledger object; later appends throw and
       the CLI must not publish the temporary file.
 - [ ] `verifyLedger` incrementally parses exact lines, validates canonical encoding,
@@ -616,28 +684,30 @@ readEdges(path, {openReadStream?} = {})
       not confer trust; callers query only records from a successful `verifyLedger`
       result.
 - [ ] Units cover exclusive creation; generated and injected keys; happy append,
-      close-with-coverage, and verify; append after close; every append rejection
-      including status-coupling violations and a locator whose `repository_ref`
-      differs from the header; status-record append; edge-only back-reference
-      validation; human acceptance, rejection, and supersession; model
-      self-promotion rejection; weaver-transition rejection; unknown `status_of`;
-      malformed, missing, duplicate, and misplaced headers; missing, duplicate, and
-      non-final trailers; close without coverage; malformed, empty, or missing
-      `implementation_refs`; malformed or missing `orchestrator_refs`; malformed
-      `inventories_consumed` refs; close-time rejection of a `failed` state and of
-      skipped-weaver records; independently signed verification fixtures containing
-      an edge from a skipped weaver and containing a manifest with a `failed` state
-      (both must fail verification); noncanonical lines; signed unknown kinds;
-      mismatched ids; every permitted `depends-on` endpoint including
-      `repository-file -> code-symbol`; wrong endpoint kinds; wrong timestamp;
-      altered signature; altered record hash; middle-line byte tamper; middle-line
-      removal; partial final line; removal of the trailer; removal of a complete
-      tail record plus the trailer; and a valid human `supersedes` edge.
+      close-with-fixture-coverage, and verify; append after close; every append
+      rejection including status-coupling violations and a locator whose
+      `repository_ref` differs from the header; status-record append; edge-only
+      back-reference validation; human acceptance, rejection, and supersession;
+      model self-promotion rejection; weaver-transition rejection; unknown
+      `status_of`; malformed, missing, duplicate, and misplaced headers; missing,
+      duplicate, and non-final trailers; close without coverage; malformed, empty,
+      or missing `implementation_refs`; malformed or missing `orchestrator_refs`;
+      malformed `inventories_consumed` refs; close-time rejection of a `failed`
+      state and of skipped-weaver records; independently signed verification
+      fixtures containing an edge from a skipped weaver and containing a manifest
+      with a `failed` state (both must fail verification); noncanonical lines;
+      signed unknown kinds; mismatched ids; every permitted `depends-on` endpoint
+      including `repository-file -> code-symbol`; wrong endpoint kinds; wrong
+      timestamp; altered signature; altered record hash; middle-line byte tamper;
+      middle-line removal; partial final line; removal of the trailer; removal of a
+      complete tail record plus the trailer; and a valid human `supersedes` edge.
 - [ ] Prove incremental reading with a gated injected stream: release only a complete
       header and first complete edge; race `iterator.next()` against a short timeout
       and require the edge before ending the stream or releasing later chunks; then
       release the rest and require complete ordered output.
-- [ ] **Exit:** all ledger tests are green and no spine file changed.
+- [ ] **Exit:** all ledger tests are green against injected fixture coverage, the
+      ledger layer references no committed inventory (D19), and no spine file
+      changed.
 
 ## Task 4a: Closed inventory, substrate, git-weaver, and code-weaver
 
@@ -661,27 +731,29 @@ ctx = {
       `inventory.mjs`. Commit `DOC_ROOTS`, exact configured ledger files plus
       adapter ids, exact run directories plus summary files, the five weaver ids, a
       committed integer version per weaver (a human-readable label only; the
-      manifest's `implementation_refs` carry the proving content addresses), a
+      manifest's `implementation_refs` carry the proving content addresses), and a
       committed per-weaver implementation-file list equal to the transitive static
       relative-import closure of each weaver module (the weaver module, shared
       substrate such as `clotho/weavers/util.mjs`, `clotho/registry.mjs`, and
       `clotho/inventory.mjs`, and any permitted `merkle-dag` primitives
-      participating in identity, canonicalization, or hashing), and a committed
-      orchestrator-file list covering `clotho/weave.mjs`, `clotho/thread-ledger.mjs`,
-      and the shared registry/canonicalization machinery. The driver computes
-      `implementation_refs` and `orchestrator_refs` from these lists.
-      `repository_ref` is derived per weave via `deriveRepositoryRef`, never
-      hardcoded. Do not discover new top-level inputs at runtime. A future package
-      or evidence source requires an inventory change and tests.
+      participating in identity, canonicalization, or hashing). The driver computes
+      `implementation_refs` from these lists. **Per D17 (AM-17), this task commits
+      per-weaver inventories only, covering the weavers that exist at this PR
+      (git and code); Task 4b extends them for its weavers; the orchestrator-file
+      inventory is committed in Task 5, the PR that creates `weave.mjs`. No
+      inventory may name a file that does not yet exist in the repository at the PR
+      that commits it.** `repository_ref` is derived per weave via
+      `deriveRepositoryRef`, never hardcoded. Do not discover new top-level inputs
+      at runtime. A future package or evidence source requires an inventory change
+      and tests.
 - [ ] `scripts/test-closure.mjs` derives the transitive static relative-import
-      closure of each weaver module and of the orchestrator entry points with the
-      lexical import scanner, and fails when any committed implementation-file or
-      orchestrator-file inventory omits a file in the derived closure or lists a
-      file outside it. The inventories are proven equal to the closures, never
-      trusted. (This test lands with the first weaver inventories in this task and
-      extends automatically as later tasks add weavers; the orchestrator entries
-      for `weave.mjs` are asserted once Task 5 lands it, via the committed test
-      list.)
+      closure of each committed weaver module with the lexical import scanner, and
+      fails when any committed implementation-file inventory omits a file in the
+      derived closure or lists a file outside it — including any inventory entry
+      naming a nonexistent file. The inventories are proven equal to the closures,
+      never trusted. This test lands with the first weaver inventories in this task
+      and extends in Task 4b as its weavers land; Task 5 adds the orchestrator
+      closure assertion in the same PR that commits the orchestrator inventory.
 - [ ] Set `DOC_ROOTS` to the reviewed documentation and contract roots. Exclude
       `docs/runs/` from doc-weaver because run evidence has a separate owner, and
       exclude `docs/runs/clotho-self-weave/` from every inventory.
@@ -689,9 +761,11 @@ ctx = {
       root escape and symlinked input rather than following it; normalizes all output
       paths to validated repository-relative POSIX paths; and sorts directory entries.
 - [ ] The git wrapper permits only the exact subcommands and argument shapes needed
-      for `rev-parse HEAD`, `rev-list --max-parents=0 HEAD`,
-      `hash-object --no-filters -- <path>`, and path-scoped `log`. It uses
-      `execFileSync('git', args, {cwd: repoRoot, ...})` with no shell.
+      for `rev-parse HEAD`, `rev-parse --is-shallow-repository`,
+      `rev-list --max-parents=0 HEAD`, `hash-object --no-filters -- <path>`, and
+      path-scoped `log`. It uses `execFileSync('git', args, {cwd: repoRoot, ...})`
+      with no shell. (The Task 2 clone/init fixture builder has its own separate
+      test-only allowlist and is not part of this weaver-facing wrapper.)
 - [ ] Implement a dependency-free lexical scanner that skips comments and recognizes
       strings without executing code. Phase 1 export grammar is exactly
       `export function`, `export async function`, `export const`, and `export class`
@@ -749,11 +823,12 @@ ctx = {
       strings not counting as uses; metacharacter-safe matching;
       `unrepresentable-consumer` only for unresolvable specifiers; root/symlink
       rejection; closure-equality failure fixtures (an inventory missing a closure
-      file and an inventory listing an extra file both fail); and byte-equal
-      `{edges, warnings}` over two runs.
+      file, an inventory listing an extra file, and an inventory naming a
+      nonexistent file all fail); and byte-equal `{edges, warnings}` over two runs.
 - [ ] **Exit:** the inventory and shared contract are merged, the closure test
-      proves the committed inventories, both weavers are deterministic, and
-      `npm test` is green.
+      proves the committed per-weaver inventories name only existing files equal to
+      their derived closures, both weavers are deterministic, and `npm test` is
+      green.
 
 ## Task 4b: Test, documentation, and ledger weavers
 
@@ -806,13 +881,18 @@ ctx = {
 - [ ] Emit `obligation -> contract-clause` `discharges` only when the same trusted
       obligation contains an exact `{path, heading_path, text_sha256}` reference that
       resolves uniquely in the current configured contract sections. A stale,
-      partial, or ambiguous reference warns and emits no clause edge.
+      partial, or ambiguous reference warns and emits no clause edge. (These two
+      `discharges` shapes are exactly the spec v2.3 matrix: `code-symbol ->
+      obligation` and `obligation -> contract-clause`.)
 - [ ] Each configured run source names one directory below `docs/runs/` and one exact
       summary file. If its validated bytes contain the symbol token in declared
       summary fields, emit `code-symbol -> run-evidence` `evidenced-by`; the node
       locator is `{repository_ref, path, summary_sha256}` where `path` locates the
       directory and `summary_sha256` is the SHA-256 of the summary file's exact
       validated bytes; the source ref locates the summary file by blob SHA.
+- [ ] Extend the committed per-weaver implementation-file inventories and the
+      closure test for the three weavers added in this task, per D17: every newly
+      committed inventory entry names a file that exists at this PR.
 - [ ] Add fixtures for a direct test; a script-executed test target; a two-section
       document containing `alpha` and `alphabet`; a document naming a file path;
       duplicate headings; a matching contract clause; a valid concern; a discharged
@@ -825,8 +905,8 @@ ctx = {
       and counts; `alphabet` does not match `alpha`; ambiguous/stale clauses
       produce no edge; malformed input never validates a suffix; and all five
       weavers return byte-equal results across repeated runs.
-- [ ] **Exit:** every weaver obeys the same `{edges, warnings}` contract and
-      `npm test` is green.
+- [ ] **Exit:** every weaver obeys the same `{edges, warnings}` contract, all five
+      per-weaver inventories are closure-proven, and `npm test` is green.
 
 ## Task 5: Queries, complete-weave driver, and advisory invariant
 
@@ -893,7 +973,8 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
 - [ ] `why` collects the target's outgoing `introduced-by`, `motivated-by`,
       `documented-in`, and `evidenced-by` records. It follows target
       `code-symbol -> obligation` `discharges` records and then each obligation's
-      outgoing `obligation -> contract-clause` `discharges` records. Traversal is
+      outgoing `obligation -> contract-clause` `discharges` records — the exact
+      spec v2.3 walk (code-symbol → obligation → contract-clause). Traversal is
       cycle-safe and the stable chain contains both direct and obligation records.
 - [ ] `expectedKinds` is a deduplicated subset of exactly `introduced-by`,
       `motivated-by`, `documented-in`, `evidenced-by`, and `discharges`; other values,
@@ -920,7 +1001,8 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       dependency-connected artifact appears in `affected`); **a truncation-source
       case** (`truncated` set only by unvisited inverse-dependency neighbors, and
       not set when only evidence attachment remains); true and false truncation;
-      complete why traversal; a missing target concern; missing target
+      complete why traversal including the two-hop discharge walk (code-symbol →
+      obligation → contract-clause); a missing target concern; missing target
       documentation; missing target obligation; obligation without clause
       discharge; changed, deleted, ambiguous, and unchanged document sections;
       default exclusion of `model-proposal` records and opt-in marked inclusion;
@@ -934,19 +1016,40 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       invoked entry point. It has a Node shebang and imports all roots, the five
       exact ids, and the per-weaver implementation-file and orchestrator-file lists
       from `inventory.mjs`.
+- [ ] **Commit the complete orchestrator-file inventory in this PR** (D17/AM-17):
+      the list covering `clotho/weave.mjs`, `clotho/thread-ledger.mjs`, and the
+      shared registry/canonicalization machinery lands here, in the same PR that
+      creates `weave.mjs`, so no inventory ever names a file that does not yet
+      exist. The driver computes `orchestrator_refs` from this list.
+- [ ] **Inventory-equality enforcement at close (D19/AM-20):** the driver validates
+      coverage against the actual committed inventories before calling `close()`:
+      the five weaver ids and versions equal the `inventory.mjs` lists in inventory
+      order, every weaver's `implementation_refs` is computed exactly from its
+      committed implementation-file inventory, `orchestrator_refs` is computed
+      exactly from the committed orchestrator-file inventory, and
+      `inventories_consumed` content-addresses the inventory actually read. The
+      inventory-equality obligations deferred from Task 3 are discharged here, in
+      the driver, alongside the closure-equality proofs.
+- [ ] Extend `scripts/test-closure.mjs` in this same PR to derive the static
+      relative-import closure of the orchestrator entry points (`weave.mjs` and
+      `thread-ledger.mjs`) and fail on any omitted or extra file in the committed
+      orchestrator-file inventory. Orchestrator closure equality is enforced from
+      this task onward; per-weaver closure equality has been enforced since Tasks
+      4a/4b.
 - [ ] `--skip <id>` is repeatable but rejects unknown or duplicate ids. `--out`
       accepts a validated repository-relative path only below `.telos/clotho/` or the
       explicit self-export directory. Existing destinations are rejected.
 - [ ] The driver captures one timestamp and repo head, derives `repository_ref`
-      with `deriveRepositoryRef` (multi-root output is fatal), computes every
-      weaver's `implementation_refs`, the `orchestrator_refs`, and every inventory
-      `source_ref` with `git hash-object --no-filters` from the committed
-      implementation-file and orchestrator-file lists, builds one symbol and one
-      file table, and runs non-skipped weavers. **Any weaver failure aborts the
-      weave:** if a weaver throws, the driver removes the temporary file, never
-      publishes the destination, and exits nonzero reporting the weaver id and its
-      stable error code. No partial advisory artifact exists in Phase 1. For a
-      successful run it records per-weaver
+      with `deriveRepositoryRef` (a shallow repository or multi-root output is
+      fatal), computes every weaver's `implementation_refs`, the
+      `orchestrator_refs`, and every inventory `source_ref` with
+      `git hash-object --no-filters` from the committed implementation-file and
+      orchestrator-file lists, builds one symbol and one file table, and runs
+      non-skipped weavers. **Any weaver failure aborts the weave:** if a weaver
+      throws, the driver removes the temporary file, never publishes the
+      destination, and exits nonzero reporting the weaver id and its stable error
+      code. No partial advisory artifact exists in Phase 1. For a successful run it
+      records per-weaver
       `{id, version, implementation_refs, state, inspected_source_counts}` (skipped
       weavers recorded as `skipped` with zero counts and their implementation refs
       intact), aggregates and canonical-sorts warnings and deduplicated edges,
@@ -977,14 +1080,14 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
 - [ ] Driver units cover the abort contract: a fixture weaver that throws must
       leave no temporary file, publish no destination, and exit nonzero with the
       stable error code; a `--skip` run must publish a manifest whose only
-      non-`executed` state is `skipped`.
-- [ ] The closure test now also proves the orchestrator inventory: the derived
-      static relative-import closure of `weave.mjs` and `thread-ledger.mjs` must
-      equal the committed orchestrator-file list, failing on any omitted or extra
-      file.
+      non-`executed` state is `skipped`; and a driver given coverage diverging from
+      the committed inventories (wrong id order, a ref missing from a committed
+      list, an extra ref) must refuse to close and publish nothing.
 - [ ] **Exit:** a real-repository weave completes, verifies, carries a complete and
       record-consistent signed manifest with mechanism-bound provenance (weaver
-      closures and orchestrator refs), and remains below the advisory boundary;
+      closures and orchestrator refs, all inventories closure-proven in the PRs
+      that created their files, and coverage proven equal to the committed
+      inventories at close per D19), and remains below the advisory boundary;
       `npm test` is green.
 
 ## Task 6: Flagship acceptance and skipped-source coverage failure
@@ -1006,7 +1109,9 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       `depends-on` edges; tests are reachable `verified-by` edges; introduction is
       `introduced-by`; documentation targets `doc-section`; concern is
       `motivated-by`; run-evidence is `evidenced-by`; and contract includes the
-      audited discharge path ending at a `contract-clause`.
+      audited discharge path ending at a `contract-clause` (the spec v2.3 two-hop
+      walk: `code-symbol --discharges--> obligation --discharges-->
+      contract-clause`).
 - [ ] Duplicate expectations are invalid. Matching is one-to-one: one returned fact
       cannot satisfy two expectations. Every audited consumer and test expectation
       must obtain a distinct match.
@@ -1164,3 +1269,15 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
     namespace by design. This is the deliberate spec v2.2 trade (identity is
     history lineage, not hosting); no hosting-based disambiguation exists in
     Phase 1.
+12. **Full-history requirement:** the shallow guard means Clotho cannot weave in a
+    shallow clone at all; it fails closed with a stable error rather than minting
+    a boundary-commit identity. CI must check out full history (`fetch-depth: 0`),
+    and any future consumer environment must do the same. This is the chosen trade:
+    a refused weave over a wrong repository identity. Per D18 this behavior is
+    proven against real git in both directions, not only prevented by workflow
+    configuration.
+13. **Test-suite git dependency:** the D18 integration fixture creates and clones
+    real temporary repositories during `npm test`, adding a real-`git` runtime
+    dependency and modest wall time to the suite. Real `git` is already a
+    repository prerequisite for weaving; the fixture builds under a temporary
+    directory cleaned in `finally` and touches nothing in the working repository.
