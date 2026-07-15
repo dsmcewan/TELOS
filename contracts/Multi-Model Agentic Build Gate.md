@@ -172,9 +172,9 @@ For projects intended to become professional demos, alpha products, beta product
 
 The gate should not allow a market-bound build to start while `go_to_market_blockers` remain unresolved. `lexi_class_ui_status: needs-work` is a blocker when the product has a user-facing frontend.
 
-## Trust Mode: signed (2026-06-27 upgrade — staged in ENGINE.patch)
+## Trust Mode: signed
 
-Standard gate runs validate *structure and agreement*. A dossier may additionally set `"trust_mode": "signed"` to make approvals **load-bearing**: an approval cannot be produced by a single careless actor and must be bound to a real model response. Legacy dossiers (no `trust_mode`) behave exactly as before. Implementation is staged in `me/claude-code/telos-upgrade/ENGINE.patch`, pending Codex merge into `me/codex/`.
+Standard gate runs validate *structure and agreement*. A dossier may additionally set `"trust_mode": "signed"` to make approvals **load-bearing**: an approval cannot be produced by a single careless actor and must be bound to a real model response. Legacy dossiers (no `trust_mode`) behave exactly as before. This ships in `build-gate/` (`sign.mjs` + the gate's signed-mode checks); the historical `me/codex/` / `ENGINE.patch` staging references below are superseded.
 
 In signed mode, for each required model (claude/agy/codex):
 

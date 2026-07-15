@@ -4,15 +4,42 @@
 // An optional import-scan ADVISES on likely-undeclared read coupling; it never adds edges.
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { computePlan } from "./merkle.mjs";
+import { computePlan, specHash } from "./merkle.mjs";
+import { canonicalize, sha256hex } from "./vendor.mjs";
+import { attachObligations } from "./obligation.mjs";
+
+const H = (v) => "sha256:" + sha256hex(canonicalize(v));
 
 /**
- * @param tasks [{ id, writes:[file], reads:[file], requirements, test:{cmd,args,cwd?}, baseDependencies?:[id] }]
+ * Assign node-lineage identities (decision 2): a surviving node (same id) carries its
+ * predecessor's node_lineage_ref; a node new to this revision gets an origin address
+ * H({proposal_id, initial_node_id, initial_spec_hash}). Lineage is stable across revisions
+ * so a concern's carry-forward never depends on a mutable effective_hash.
+ * @param defs [{ id, files, requirements, test, dependencies }]
+ * @returns { node_lineages:[{ node_id, node_lineage_ref }] }
+ */
+export function assignNodeLineages(defs, { proposalId, predecessorPlan = null } = {}) {
+  const prev = new Map();
+  if (predecessorPlan && predecessorPlan.lifecycle) {
+    for (const e of predecessorPlan.lifecycle.node_lineages || []) prev.set(e.node_id, e.node_lineage_ref);
+  }
+  const node_lineages = defs.map((d) => {
+    if (prev.has(d.id)) return { node_id: d.id, node_lineage_ref: prev.get(d.id) };
+    const initial_spec_hash = specHash({ files: d.files, requirements: d.requirements, test: d.test });
+    return { node_id: d.id, node_lineage_ref: H({ proposal_id: proposalId, initial_node_id: d.id, initial_spec_hash }) };
+  });
+  return { node_lineages };
+}
+
+/**
+ * @param tasks [{ id, writes:[file], reads:[file], requirements, test:{cmd,args,cwd?,verifies?}, baseDependencies?:[id] }]
  * @param authorizedSigners { key_id: jwk }   (pinned into plan_hash by computePlan)
  * @param repoRoot absolute path used to normalize all footprints to one relative key space
+ * @param obligations optional [{ obligation_id, concern_ref, required_result, check_contract_ref, discharge_node_id }]
+ * @param lifecycle optional { contract_ref, proposal_id, predecessor_plan_hash, node_lineages }
  * @returns { plan, warnings, advisories } | { errors, advisories }   (advisories = string[])
  */
-export function compileAndHashPlan({ tasks, authorizedSigners, repoRoot, strict }) {
+export function compileAndHashPlan({ tasks, authorizedSigners, repoRoot, strict, obligations, lifecycle }) {
   const norm = (p) => path.relative(repoRoot, path.resolve(repoRoot, p));
   const fileWriters = new Map(); // relPath -> [taskId] (declaration order)
   for (const t of tasks) for (const f of t.writes || []) {
@@ -50,7 +77,19 @@ export function compileAndHashPlan({ tasks, authorizedSigners, repoRoot, strict 
 
   const scanAdvisories = advisoryScan({ tasks, fileWriters, norm, repoRoot });
   const advisories = [...conflictAdvisories, ...scanAdvisories]; // conflict advisories prepended
-  const res = computePlan(defs, { authorizedSigners }); // { plan, warnings } | { errors }
+
+  // Attach verification obligations (registers obligation_ref into each discharge node's
+  // test.verifies, then computes discharge_test_ref from the final test) before hashing.
+  let planDefs = defs;
+  let computedObligations = [];
+  if (obligations && obligations.length) {
+    const att = attachObligations(defs, obligations);
+    if (att.errors) return { errors: att.errors, advisories };
+    planDefs = att.defs;
+    computedObligations = att.obligations;
+  }
+
+  const res = computePlan(planDefs, { authorizedSigners, obligations: computedObligations, lifecycle }); // { plan, warnings } | { errors }
   return { ...res, advisories };
 }
 

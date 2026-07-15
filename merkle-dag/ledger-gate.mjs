@@ -8,6 +8,7 @@ import { recompute, readPlan } from "./merkle.mjs";
 import { computeDiskTreeHash, hasEscape } from "./artifact.mjs";
 import { readLedger, verifyTransaction } from "./crypto.mjs";
 import { resolveUnder, spawnCommand } from "./vendor.mjs";
+import { undischargedObligations } from "./obligation.mjs";
 
 export function verify(telosDir, { baseDir } = {}) {
   baseDir = baseDir || path.dirname(path.resolve(telosDir)); // workspace root (parent of .telos)
@@ -32,7 +33,7 @@ export function verify(telosDir, { baseDir } = {}) {
     summary: { total: rc.plan.nodes.length, passed: 0, blocked: 0 }, nodes: [], blockers: [] };
 
   for (const node of rc.plan.nodes) {
-    const checks = { ledger: "ok", lineage: "ok", signature: "ok", artifact: "ok", test: "ok" };
+    const checks = { ledger: "ok", lineage: "ok", signature: "ok", artifact: "ok", test: "ok", obligations: "ok" };
     const b = [];
     const matches = ledger.filter((r) => r.task_id === node.id);
     const entry = matches.length ? matches[matches.length - 1] : null; // last wins (retries)
@@ -67,8 +68,31 @@ export function verify(telosDir, { baseDir } = {}) {
     if (ok) report.summary.passed++; else { report.summary.blocked++; report.blockers.push(...b); }
   }
 
-  if (report.summary.blocked > 0) { report.merge_status = "blocked"; report.safe_next_action = "rebuild-and-resign-blocked-nodes"; }
-  return withExit(report, report.summary.blocked > 0 ? 1 : 0);
+  // Verification-obligation discharge sweep: an obligation is discharged only when its named
+  // discharge node is settled + Rule-3-verified. A test file that exists but whose node never
+  // ran leaves the obligation undischarged — merge stays blocked even if every node "settled".
+  const reportById = new Map(report.nodes.map((n) => [n.id, n]));
+  report.obligations = [];
+  let undischarged = 0;
+  for (const { obligation, reason } of undischargedObligations(rc.plan, reportById)) {
+    const nr = reportById.get(obligation.discharge_node_id);
+    if (nr) nr.checks.obligations = "UNDISCHARGED_OBLIGATION";
+    report.blockers.push(`${obligation.obligation_id}: undischarged verification obligation (${reason})`);
+    report.obligations.push({ obligation_id: obligation.obligation_id, obligation_ref: obligation.obligation_ref, discharge_node_id: obligation.discharge_node_id, discharged: false, detail: reason });
+    undischarged++;
+  }
+  for (const ob of rc.plan.obligations || []) {
+    if (!report.obligations.some((o) => o.obligation_ref === ob.obligation_ref)) {
+      report.obligations.push({ obligation_id: ob.obligation_id, obligation_ref: ob.obligation_ref, discharge_node_id: ob.discharge_node_id, discharged: true, detail: null });
+    }
+  }
+
+  if (report.summary.blocked > 0 || undischarged > 0) {
+    report.merge_status = "blocked";
+    report.safe_next_action = undischarged > 0 ? "discharge-obligations" : "rebuild-and-resign-blocked-nodes";
+    if (undischarged > 0) report.reason = "undischarged verification obligation";
+  }
+  return withExit(report, (report.summary.blocked > 0 || undischarged > 0) ? 1 : 0);
 }
 
 function withExit(report, exit) { return { ...report, exit }; }

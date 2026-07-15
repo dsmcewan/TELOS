@@ -8,6 +8,52 @@ import { computeDiskTreeHash } from "./artifact.mjs";
 import { makeRecord, appendLedger, readLedger } from "./crypto.mjs";
 import { verify } from "./ledger-gate.mjs";
 import { resolveUnder, maxConcurrency, spawnCommand } from "./vendor.mjs";
+import { readProposalEvents, verifyProposalChain, latestDecisionForPlan, readProposalArtifact, verifyAuthorizationResult, PROPOSAL_KEY_ID } from "./proposal-ledger.mjs";
+
+/**
+ * Lifecycle authorization check (decision 11): the enforcement key is the plan hash RECOMPUTED
+ * from disk — never a caller-supplied selector. Resolve the latest decision bound to that exact
+ * hash, require it authorized, and independently re-verify its closed policy-result certificate.
+ * @returns { ok:true, planHash } | { ok:false, error, detail }
+ */
+export function checkLifecycleAuthorization(telosDir, plan, { lifecycleVerify, nowMs = 0 } = {}) {
+  const rc = recompute(plan);
+  if (rc.errors) return { ok: false, error: "PLAN_INVALID", detail: rc.errors };
+  if (rc.plan.plan_hash !== plan.plan_hash) return { ok: false, error: "PLAN_TAMPERED", detail: "stored plan_hash does not recompute" };
+  const planHash = rc.plan.plan_hash;
+  const pub = (rc.plan.authorized_signers || {})[PROPOSAL_KEY_ID];
+  if (!pub) return { ok: false, error: "NO_AUTHORIZED_DECISION", detail: "no proposal-controller signer pinned in plan" };
+  const { events, errors } = readProposalEvents(telosDir);
+  if (errors.length) return { ok: false, error: "CHAIN_INVALID", detail: errors };
+  if (events.length === 0) return { ok: false, error: "NO_AUTHORIZED_DECISION", detail: "empty proposal ledger" };
+  const chain = verifyProposalChain(events, pub);
+  if (!chain.ok) return { ok: false, error: "CHAIN_INVALID", detail: chain.errors };
+  const decision = latestDecisionForPlan(events, planHash);
+  if (!decision) return { ok: false, error: "NO_AUTHORIZED_DECISION", detail: `no decision event for plan ${planHash}` };
+  if (decision.decision !== "authorized") return { ok: false, error: "DECISION_NOT_AUTHORIZED", detail: `latest decision for plan is '${decision.decision}'` };
+  const prRef = decision.policy_result_ref;
+  if (!prRef) return { ok: false, error: "MISSING_POLICY_RESULT", detail: "authorized decision has no policy_result_ref" };
+  const artifact = readProposalArtifact(telosDir, prRef);
+  if (!artifact) return { ok: false, error: "CORRUPT_POLICY_RESULT", detail: `policy-result artifact ${prRef} missing or tampered` };
+  if (artifact.plan_hash !== planHash) return { ok: false, error: "WRONG_PLAN_POLICY_RESULT", detail: "policy-result plan_hash != recomputed plan hash" };
+  const av = verifyAuthorizationResult(artifact, { planHash });
+  if (!av.ok) return { ok: false, error: "NON_AUTHORIZING_POLICY_RESULT", detail: av.errors };
+  // Decision 6: MANDATORY execution-time lifecycle-STATE re-verification. The static certificate
+  // above proves the authorized decision existed; it does NOT catch a hold appended AFTER that
+  // decision. Re-run the ledger-reconstructable lifecycle verification (the injected lifecycleVerify
+  // wraps validateProposalLifecycle with requiredModels=[]/packets=[] — the full packets are not on
+  // the ledger, so a literal "full" re-run would false-fail proposal_ref_binding/cold_review).
+  // merkle-dag must not import build-gate, so this is a REQUIRED injected dependency: absent it, FAIL
+  // CLOSED with a DISTINCT error (never conflated with the exact-hash-mismatch refusal above).
+  if (typeof lifecycleVerify !== "function") {
+    return { ok: false, error: "MISSING_LIFECYCLE_VERIFY", detail: "requireAuthorizedDecision path requires an injected lifecycleVerify (fail-closed)" };
+  }
+  let live;
+  try { live = lifecycleVerify({ telosDir, plan: rc.plan, planHash, nowMs }); }
+  catch (e) { return { ok: false, error: "LIFECYCLE_REVERIFY_THREW", detail: String((e && e.message) || e) }; }
+  if (!live || live.ok !== true) return { ok: false, error: "LIFECYCLE_STATE_DRIFT", detail: (live && (live.blockers || live.errors)) || "lifecycle re-verification failed" };
+  return { ok: true, planHash };
+}
 
 const TEST_TIMEOUT_MS = 60000;
 
@@ -141,11 +187,24 @@ async function runOne(node, { dispatch, verifyNode, signerFor, baseDir }) {
  *   signerFor(model) -> privatePem  (model's public key MUST be in plan.authorized_signers)
  *   concurrency -> worker-pool size hint (clamped via maxConcurrency to [1, cores-2])
  */
-export async function runBuild({ telosDir, baseDir, dispatch, verifyNode = defaultVerifyNode, signerFor, maxRounds = 1000, concurrency }) {
+export async function runBuild({ telosDir, baseDir, dispatch, verifyNode = defaultVerifyNode, signerFor, maxRounds = 1000, concurrency, authorizedPlanHash, requireAuthorizedDecision, lifecycleVerify, nowMs = 0 }) {
   baseDir = baseDir || path.dirname(path.resolve(telosDir));
   const ledgerPath = path.join(telosDir, "ledger.jsonl");
   let plan = readPlan(telosDir);
   const trace = [];
+
+  // Execution-start authorization (decisions 11/12): re-verify the written plan BEFORE any dispatch.
+  // Lifecycle mode reads the authorized decision + policy certificate from disk (no caller selector);
+  // legacy callers may pass authorizedPlanHash as a pure TOCTOU strengthening.
+  if (requireAuthorizedDecision) {
+    const auth = checkLifecycleAuthorization(telosDir, plan, { lifecycleVerify, nowMs });
+    if (!auth.ok) return { error: auth.error, detail: auth.detail, trace };
+  } else if (typeof authorizedPlanHash === "string" && authorizedPlanHash) {
+    const rc0 = recompute(plan);
+    if (rc0.errors) return { error: "PLAN_INVALID", detail: rc0.errors, trace };
+    if (rc0.plan.plan_hash !== plan.plan_hash) return { error: "PLAN_TAMPERED", detail: "stored plan_hash does not recompute", trace };
+    if (rc0.plan.plan_hash !== authorizedPlanHash) return { error: "PLAN_HASH_MISMATCH", detail: `authorized ${authorizedPlanHash} != recomputed ${rc0.plan.plan_hash}`, trace };
+  }
 
   // Change 1: seed in-memory ledger ONCE before the loop (avoids per-round file re-parse).
   // The controller is the sole ledger writer, so ledger.push() after each appendLedger keeps

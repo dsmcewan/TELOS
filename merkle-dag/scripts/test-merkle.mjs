@@ -229,4 +229,33 @@ function stub(id, opts = {}) {
   );
 }
 
+// ─── Property 9: obligation-free / lifecycle-free plans keep byte-identical plan_hash ─────────
+{
+  const defs = [{ id: "a", files: ["a.txt"], requirements: "r", test: { cmd: "node", args: ["-e", "0"] }, dependencies: [] }];
+  const legacy = computePlan(defs, { authorizedSigners: {} });
+  const withEmpty = computePlan(defs, { authorizedSigners: {}, obligations: [], lifecycle: null });
+  assert.equal(legacy.plan.plan_hash, withEmpty.plan.plan_hash, "P9: empty obligations/lifecycle -> legacy plan_hash");
+  assert.deepEqual(legacy.plan.obligations, [], "P9: obligations field present as []");
+  assert.equal(legacy.plan.lifecycle, null, "P9: lifecycle field present as null");
+}
+
+// ─── Property 10: lifecycle bound into plan_hash + node-lineage validation ────────────────────
+{
+  const defs = [
+    { id: "a", files: ["a.txt"], requirements: "r", test: { cmd: "node", args: ["-e", "0"] }, dependencies: [] },
+    { id: "b", files: ["b.txt"], requirements: "r", test: { cmd: "node", args: ["-e", "0"] }, dependencies: ["a"] }
+  ];
+  const lc = { contract_ref: "sha256:c", proposal_id: "proposal-x", predecessor_plan_hash: null, node_lineages: [{ node_id: "a", node_lineage_ref: "sha256:la" }, { node_id: "b", node_lineage_ref: "sha256:lb" }] };
+  const p1 = computePlan(defs, { authorizedSigners: {}, lifecycle: lc });
+  const p0 = computePlan(defs, { authorizedSigners: {} });
+  assert.notEqual(p1.plan.plan_hash, p0.plan.plan_hash, "P10: lifecycle changes plan_hash");
+  // changing a node_lineage_ref changes plan_hash (can't drift under a fixed hash)
+  const lc2 = { ...lc, node_lineages: [{ node_id: "a", node_lineage_ref: "sha256:CHANGED" }, { node_id: "b", node_lineage_ref: "sha256:lb" }] };
+  assert.notEqual(computePlan(defs, { authorizedSigners: {}, lifecycle: lc2 }).plan.plan_hash, p1.plan.plan_hash, "P10: changed lineage_ref -> changed plan_hash");
+  // validation: unknown node, duplicate ref, incomplete coverage
+  assert.equal(computePlan(defs, { authorizedSigners: {}, lifecycle: { ...lc, node_lineages: [{ node_id: "ghost", node_lineage_ref: "sha256:x" }] } }).errors[0].code, "UnknownLineageNode");
+  assert.equal(computePlan(defs, { authorizedSigners: {}, lifecycle: { ...lc, node_lineages: [{ node_id: "a", node_lineage_ref: "sha256:d" }, { node_id: "b", node_lineage_ref: "sha256:d" }] } }).errors[0].code, "DuplicateLineageRef");
+  assert.equal(computePlan(defs, { authorizedSigners: {}, lifecycle: { ...lc, node_lineages: [{ node_id: "a", node_lineage_ref: "sha256:la" }] } }).errors[0].code, "IncompleteLineage");
+}
+
 console.log("test-merkle.mjs OK");

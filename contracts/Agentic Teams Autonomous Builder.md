@@ -62,12 +62,19 @@ So the team count is a function of the job, not a fixed roster.
 
 ## The lifecycle (fail-closed sequencing)
 
+*Amended by `contracts/Proposal Lifecycle.md`: candidate compilation and writing
+precede council review, and the council reviews the exact written plan hash.*
+
 ```
 idea + telos
-  → [planning] decompose() → tasks[] {id,writes,reads,requirements,test,workstream}
+  → [planning] decompose() / Daedalus negotiation → tasks[] {id,writes,reads,requirements,test,workstream}
   → compileAndHashPlan() → content-addressed plan (+ authorized_signers); writePlan()
-  → COUNCIL APPROVAL GATE: runCouncil → validateRecords      [MUST pass before execution]
-  → runBuild(): each ready node dispatched to its OWNING TEAM (team = worker)
+        the immutable candidate is on disk BEFORE any review
+  → COUNCIL REVIEW of the exact candidate plan hash (recomputed from the written
+        plan on disk): runCouncil → validateRecords
+  → proposal authorization gate                              [MUST pass before execution]
+  → runBuild(): re-verifies the written plan hash, then each ready node is
+        dispatched to its OWNING TEAM (team = worker)
         Rule 1 — the team sees only the node spec; it writes the node's files
   → Rule 3 defaultVerifyNode re-derives the artifact hash + runs node.test
   → [breakout] reverifyRecord on declarative checks for "meets"-class nodes
@@ -77,8 +84,22 @@ idea + telos
 ```
 
 The orchestrator (`build-gate/build-orchestrator.mjs`, `buildProject`) STOPS at the
-first failing phase and **never advances to execution unless the council approval
-gate passed**. The phases it reports: `situation | decompose | approval | plan | build`.
+first failing phase and **never advances to execution unless the proposal
+authorization gate passed** (council approval is a necessary input to that gate,
+never sufficient by itself). The target phase order is:
+
+```text
+situation | decompose | plan | approval | build
+```
+
+**Conformance.** `build-gate/build-orchestrator.mjs` now compiles + writes the
+content-addressed plan BEFORE council review, so the council reviews the exact
+plan hash it authorizes (`situation | decompose | plan | approval | build`). The
+opt-in proposal-lifecycle path (`dossier.proposal_lifecycle === true`) delegates
+to `build-gate/proposal-orchestrator.mjs`, which additionally runs the Daedalus
+workshop and the outer revision loop before authorization; the legacy advisory
+path is byte-identical. Both conform to this contract and to
+`contracts/Proposal Lifecycle.md`.
 
 ## Situational awareness
 

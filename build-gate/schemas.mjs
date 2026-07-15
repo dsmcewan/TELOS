@@ -86,11 +86,144 @@ export const BUILD_FILESET_SCHEMA = {
   additionalProperties: false
 };
 
+// The Daedalus workshop response a planning seat AUTHORS. `dispositions[].objection_hash`
+// ECHOES a controller-supplied open-objection menu entry (never a self-asserted hash).
+export const DAEDALUS_RESPONSE_SCHEMA = {
+  type: "object",
+  properties: {
+    plan_revision: { type: "string" },
+    objections: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { scope: { type: "string" }, claim: { type: "string" }, evidence_refs: { type: "array", items: { type: "string" } } },
+        required: ["scope", "claim", "evidence_refs"], additionalProperties: false
+      }
+    },
+    dispositions: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          objection_hash: { type: "string" },
+          action: { type: "string", enum: ["resolved", "superseded", "withdrawn"] },
+          note: { type: "string" },
+          replacement_scope: { type: "string" }, replacement_claim: { type: "string" },
+          replacement_evidence_refs: { type: "array", items: { type: "string" } }
+        },
+        required: ["objection_hash", "action", "note", "replacement_scope", "replacement_claim", "replacement_evidence_refs"],
+        additionalProperties: false
+      }
+    },
+    rationale: { type: "string" }
+  },
+  required: ["plan_revision", "objections", "dispositions", "rationale"],
+  additionalProperties: false
+};
+
+// The proposal-lifecycle review packet a seat AUTHORS. `hard_stops` is deliberately ABSENT
+// (deprecated). Each concern carries a NESTED `required_verification` — the typed concern->
+// obligation route — so an obligation is never inferred from prose or an array index.
+export const PROPOSAL_REVIEW_PACKET_SCHEMA = {
+  type: "object",
+  properties: {
+    decision: { type: "string", enum: ["approve", "revise", "reject"] },
+    confidence: { type: "string", enum: ["low", "medium", "high"] },
+    required_edits: { type: "array", items: { type: "string" } },
+    considerations: { type: "array", items: { type: "string" } },
+    concerns: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          scope: { type: "string" }, claim: { type: "string" },
+          severity: { type: "string", enum: ["low", "medium", "high", "critical"] },
+          judgment_class: { type: "string", enum: ["consideration", "hold-request", "evidence-claim"] },
+          evidence_refs: { type: "array", items: { type: "string" } },
+          required_verification: {
+            type: "object",
+            // NO discharge_node_id (decision 7 / round-7 B-B): the reviewer names only the
+            // check_contract kind; the controller MINTS a fresh discharge node keyed by concern_ref
+            // at N+1 compile. A model-supplied node id must never key the concern identity or the
+            // minted node — so the schema does not accept one (additionalProperties:false rejects it).
+            properties: {
+              requested: { type: "boolean" },
+              check_contract: {
+                type: "object",
+                // params_json is a JSON STRING (strict mode forbids open objects); the controller
+                // parses + validates it against the check-registry's per-kind whitelist, keeping
+                // model-authored params out of the schema surface.
+                properties: { kind: { type: "string" }, params_json: { type: "string" } },
+                required: ["kind", "params_json"], additionalProperties: false
+              },
+              required_result: { type: "string" }
+            },
+            required: ["requested", "check_contract", "required_result"], additionalProperties: false
+          }
+        },
+        required: ["scope", "claim", "severity", "judgment_class", "evidence_refs", "required_verification"],
+        additionalProperties: false
+      }
+    },
+    rationale: { type: "string" }
+  },
+  required: ["decision", "confidence", "required_edits", "considerations", "concerns", "rationale"],
+  additionalProperties: false
+};
+
+// The evidence claim a seat AUTHORS (envelope injected by trusted wiring). `params` is
+// per-kind-validated by evidence.mjs against a closed whitelist.
+export const EVIDENCE_CLAIM_SCHEMA = {
+  type: "object",
+  properties: {
+    kind: { type: "string" },
+    concern_ref: { type: "string" },
+    // params_json is a JSON STRING; the controller parses it and the evidence verifier applies its
+    // per-kind param whitelist to the parsed object (a model never emits an open object here).
+    params_json: { type: "string" }
+  },
+  required: ["kind", "concern_ref", "params_json"],
+  additionalProperties: false
+};
+
 // Select a schema by stable name. `schema_name` matches ^[A-Za-z0-9_-]+$ (the
 // OpenAI/xAI json_schema name constraint). Pass {schema_name, schema} to the
 // MCP `*_ask` call as response_schema + schema_name.
 export const SCHEMAS = {
   approval: { schema_name: "approval", schema: APPROVAL_PACKET_SCHEMA },
   decompose: { schema_name: "decompose", schema: DECOMPOSE_TASKS_SCHEMA },
-  fileset: { schema_name: "fileset", schema: BUILD_FILESET_SCHEMA }
+  fileset: { schema_name: "fileset", schema: BUILD_FILESET_SCHEMA },
+  daedalus: { schema_name: "daedalus", schema: DAEDALUS_RESPONSE_SCHEMA },
+  review: { schema_name: "review", schema: PROPOSAL_REVIEW_PACKET_SCHEMA },
+  evidence_claim: { schema_name: "evidence_claim", schema: EVIDENCE_CLAIM_SCHEMA }
 };
+
+// Minimal validator for the strict-mode subset these schemas use (type / properties /
+// required / additionalProperties:false / items / enum). Returns { ok, violations:[{path,detail}] }.
+// Used by the `schema-violation` evidence kind against the closed SCHEMAS registry only.
+export function validateAgainstSchema(schema, value, at = "$") {
+  const violations = [];
+  const walk = (sch, val, p) => {
+    if (!sch || typeof sch !== "object") return;
+    const t = sch.type;
+    if (t === "object") {
+      if (val === null || typeof val !== "object" || Array.isArray(val)) { violations.push({ path: p, detail: "expected object" }); return; }
+      const props = sch.properties || {};
+      for (const req of sch.required || []) if (!(req in val)) violations.push({ path: `${p}.${req}`, detail: "missing required property" });
+      if (sch.additionalProperties === false) for (const k of Object.keys(val)) if (!(k in props)) violations.push({ path: `${p}.${k}`, detail: "additional property not allowed" });
+      for (const [k, subsch] of Object.entries(props)) if (k in val) walk(subsch, val[k], `${p}.${k}`);
+    } else if (t === "array") {
+      if (!Array.isArray(val)) { violations.push({ path: p, detail: "expected array" }); return; }
+      if (sch.items) val.forEach((item, i) => walk(sch.items, item, `${p}[${i}]`));
+    } else if (t === "string") {
+      if (typeof val !== "string") violations.push({ path: p, detail: "expected string" });
+      else if (Array.isArray(sch.enum) && !sch.enum.includes(val)) violations.push({ path: p, detail: `not in enum` });
+    } else if (t === "boolean") {
+      if (typeof val !== "boolean") violations.push({ path: p, detail: "expected boolean" });
+    } else if (t === "number" || t === "integer") {
+      if (typeof val !== "number") violations.push({ path: p, detail: "expected number" });
+    }
+  };
+  walk(schema, value, at);
+  return { ok: violations.length === 0, violations };
+}

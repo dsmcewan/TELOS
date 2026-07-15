@@ -94,9 +94,9 @@ these backends now yields fully-distinct per-seat provenance (codex requires
 
 | Artifact | Location | Live? |
 |---|---|---|
-| Spec / Plan | `specs/` , `plans/` | ✅ |
+| Spec / Plan | `history/specs/` , `history/plans/` | ✅ |
 | Engine changes (16 files) | Applied into `build-gate`, `breakout`, and `connectors/ai-peer-mcp`; verification green in Codex working tree | ✅ |
-| Apply instructions | `ENGINE-APPLY.md` | ✅ |
+| Apply instructions | `history/ENGINE-APPLY.md` | ✅ |
 | Contract upgrade | `shared/Coordination/{Multi-Model Agentic Build Gate, Claude-Led Multi-Model Prototype Workflow}.md` | ✅ |
 | Recursion run (PASS) | `runs/upgrade-001/` (dossier, signed packets, market packet, gate-report, ledger) | ✅ |
 | Live-capture evidence | `runs/live-capture/` (real provenance) | ✅ |
@@ -114,7 +114,7 @@ Verification run from the Codex tree:
 
 ## Remaining actions (handoffs, not blockers)
 
-1. ~~**Codex** applies `ENGINE.patch` to make signed-mode live in `me/codex/` (`patch -p1` dry-run is clean; `ENGINE-APPLY.md` has steps). Verify with `npm test` in both packages after merge.~~ **DONE** (2026-06-28) — applied and verified in `build-gate`, `breakout`, `connectors/ai-peer-mcp`, and `merkle-dag`.
+1. ~~**Codex** applies `ENGINE.patch` to make signed-mode live in `me/codex/` (`patch -p1` dry-run is clean; `history/ENGINE-APPLY.md` has steps). Verify with `npm test` in both packages after merge.~~ **DONE** (2026-06-28) — applied and verified in `build-gate`, `breakout`, `connectors/ai-peer-mcp`, and `merkle-dag`.
 2. ~~**Optional, for fully-distinct provenance:** wire a codex (OpenAI) and agy backend so agy/codex packets carry their own model `response_id`.~~ **DONE** (2026-06-27) — codex (OpenAI) + agy (local attestation) backends wired into `ai-peer-mcp` and `council.mjs`; bundled in the same `ENGINE.patch`. To exercise codex's live `response_id`, set `OPENAI_API_KEY` before a run; agy is keyless.
 
 ## Agentic Teams — Autonomous Builder (2026-06-28)
@@ -154,7 +154,7 @@ reproducible, real gate + real Ed25519 ledger + real merkle-dag, reaching
 `merge_status: "ready"`.
 
 **Docs:** `contracts/Agentic Teams Autonomous Builder.md` (protocol),
-`docs/specs/2026-06-28-agentic-teams-design.md` (design).
+`docs/history/specs/2026-06-28-agentic-teams-design.md` (design).
 
 ## Live MCP path wired (2026-06-28)
 
@@ -213,7 +213,7 @@ extensions to `test-team-prompts`/`test-decompose`/`test-build-orchestrator`.
 + real test command and a team self-corrects after its own test fails, reaching
 `merge_status: "ready"`.
 
-**Docs:** `docs/specs/2026-06-28-situational-awareness-design.md`; the contract
+**Docs:** `docs/history/specs/2026-06-28-situational-awareness-design.md`; the contract
 `contracts/Agentic Teams Autonomous Builder.md` gained a Situational awareness section.
 
 ## Provider-native agentic seats — structured outputs + strengths + Gemini (2026-06-28)
@@ -245,4 +245,87 @@ gate logic, and `merkle-dag` are untouched.
 **Tests (all green):** `connectors/ai-peer-mcp` `test-structured-requests.mjs` +
 extended `test-provenance.mjs`; `build-gate` `test-schemas.mjs` + extended
 `test-teams`/`test-council-orchestrator`/`test-team-prompts`. All three packages
-`npm test` exit 0. Docs: `docs/specs/2026-06-28-provider-agentic-design.md`.
+`npm test` exit 0. Docs: `docs/history/specs/2026-06-28-provider-agentic-design.md`.
+
+---
+
+## Addendum — Proposal Lifecycle (Daedalus) implemented
+
+**Date:** 2026-07-14. Branch `daedalus/implementation` (off `contracts/proposal-lifecycle`).
+
+Implemented the frozen `contracts/Proposal Lifecycle.md` (all 14 Required
+Implementation Points) as an opt-in layer (`dossier.proposal_lifecycle === true`);
+legacy advisory mode stays byte-identical.
+
+- **M1 merkle-dag:** `obligation.mjs` (content-addressed obligations + done()-time
+  discharge), `proposal-ledger.mjs` (signed hash-chained `.telos/proposal.jsonl`,
+  atomic single-lock append, `POLICY_CONTRACT_V1` + layered verifiers), plan-hash
+  binding of obligations + node-lineage metadata, `runBuild` disk-read authorization.
+- **M2:** connector provenance (`provider` + `answered_at`), `risk-policy.mjs`,
+  strict schemas, `evidence.mjs` (closed-whitelist verifier with a real filesystem +
+  network namespace sandbox, fail-closed when unavailable).
+- **M3:** `concerns.mjs` (typed concerns/holds/controller-only dispositions),
+  `proposal-gate.mjs` (reconstructs all proposal state from the ledger), gate
+  provider-scoped ids + `hard_stops` deprecation.
+- **M4:** `daedalus.mjs` (bounded claude/codex workshop, total state machine),
+  `proposal-recorder.mjs` (sole-writer, durable key), and the `buildProject`
+  reorder (candidate compiled + written before council review).
+- **M5:** `standing.mjs` (pure calibration, new-model firewall).
+
+Every package's `npm test` is green (merkle-dag, build-gate — which chains
+breakout —, connectors/ai-peer-mcp). Keyless end-to-end evidence:
+`docs/runs/proposal-lifecycle/` (authorized→ready, undischarged-obligation blocked,
+verified-blocker refused).
+
+---
+
+## Addendum — Argo completion pass (2026-07-15 correction)
+
+**Date:** 2026-07-15. Branch `argo/completion`.
+
+**Correction to the 2026-07-14 addendum above:** that merge shipped the proposal-lifecycle
+*primitives* + the `buildProject` reorder, but the primitives were **not yet composed into the
+autonomous entry point** — `buildProject` in lifecycle mode only bound `proposal_ref`. The Argo pass
+completed that composition and the remaining functions, so the opt-in layer now runs end to end.
+
+- **Entry-point composition:** `build-orchestrator.mjs buildProject` delegates (when
+  `dossier.proposal_lifecycle === true`) to the new `build-gate/proposal-orchestrator.mjs`
+  (`runProposalLifecycle`): controller key single-sourced + pinned → recorder → recordDraft → outer
+  revision loop {Daedalus workshop → compile candidate (+ minted verification nodes) → review
+  manifests → council → `processReviewPackets` (sole concern minter) → `sweepExpiredHolds` →
+  gate → `recordDecision`} → on `authorized`, `runBuild` with execution-time lifecycle re-verification.
+- **New/completed functions:** `processReviewPackets`, `sweepExpiredHolds` (concerns.mjs);
+  `reviewPromptFor`, `daedalusPromptFor` (teamPrompts.mjs); `agyLifecycleCheckpointArgs` (council.mjs);
+  new `check-registry.mjs` (closed verification-check registry) + `proposal-orchestrator.mjs`;
+  `deriveExecutableRef` (obligation.mjs) binds each obligation's executable to its concern's contract.
+- **Discharge mechanism:** a `required_verification` mints a DEDICATED controller-minted verification
+  node keyed by `concern_ref` (no cross-revision node-lineage tracking); the gate re-resolves the
+  check-registry and rejects a no-op-swapped discharge node.
+- **Flagship evidence** is now the buildProject-driven run: `docs/runs/proposal-lifecycle/
+  run-lifecycle-e2e.mjs` (revise→authorize→discharge→ready + a negative control proving the obligation
+  is load-bearing at Rule 3); `run-proposal-lifecycle.mjs` is retained as a primitive-composition demo.
+- **Honest limits documented** (see `CLAUDE.md` / `README.md`): single trust principal
+  (proposal-controller == build-controller), execution re-verify covers only ledger-reconstructable
+  state, protected-path enforcement trusts `dossier.write_targets`; live-key runs, human-adjudication
+  UX, fork recovery, key rotation, and cross-process durable resume of the autonomous entry point are
+  out of scope.
+
+The reorder (candidate compiled + written before council review) is landed and confirmed, so the
+"council gate first → compile" ordering earlier in this file and the retired contract nonconformance
+note describe the pre-reorder state. All package suites remain green.
+
+**Adversarial review of the SHIPPED code (not just the plan) found a real fail-open** that every green
+suite had missed: a mandatory `required_verification` attached to a NON-blocking concern was silently
+dropped, so a build could reach `merge_status: "ready"` with the required check never run. Fixed (a
+requested verification now forces a revise until it is actually minted) and pinned by a regression test
+that fails when the fix is reverted. See `docs/design-by-adversarial-review.md` § "The case study".
+
+**Integration state (2026-07-15).** **PR #83 merged `daedalus/implementation` into
+`contracts/proposal-lifecycle` at `684a9a8`** (implementation head `55935b55`), so the contract branch
+carries the M1–M6 primitives. Argo's completion is committed (`3c03b7f`, `b74ca8d`) and open as
+**PR #84** (`argo/completion` → `contracts/proposal-lifecycle`), whose diff is the Argo completion
+alone. Remaining: land PR #84, then integrate `contracts/proposal-lifecycle` to mainline.
+
+*(Correction: an earlier draft of this addendum claimed `684a9a8` did not exist and that the contract
+branch was still bare at `c3767b2`. That was wrong — it was read from stale local remote-tracking refs
+in an environment that cannot fetch. GitHub's history is canonical and always contained the merge.)*

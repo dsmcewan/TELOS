@@ -2,12 +2,18 @@
 
 [![CI](https://github.com/dsmcewan/TELOS/actions/workflows/ci.yml/badge.svg)](https://github.com/dsmcewan/TELOS/actions/workflows/ci.yml)
 
-A multi-model build-gate, and an autonomous builder on top of it. Independent AI
-model **seats** (claude / grok / codex / agy / gemini) produce signed,
-provenance-bound approval packets; a deterministic **gate** certifies
+> An AI agent that grades its own work can rubber-stamp its own mistakes. TELOS
+> makes the thing that *builds* never be the thing that *certifies*: a build's
+> claim is data; the disk is the truth.
+
+**A multi-model build system where nothing merges on a model's say-so.**
+Independent AI model **seats** (claude / grok / codex / agy / gemini) produce
+signed, provenance-bound approval packets; a deterministic **gate** certifies
 merge-readiness from disk + signatures + provenance — never from a model's
-self-report. The same trust spine then drives software from idea to merged,
-verified artifacts.
+self-report. The same trust spine drives software from idea to merged, verified
+artifacts, and now governs the plan *before* it runs (see **Proposal Lifecycle**
+below): a candidate must survive adversarial cold review and produce a verified
+implementation contract before any irreversible step.
 
 ## How it works
 
@@ -77,7 +83,11 @@ thing that *certifies* — a team's claim is data; the disk is truth.
   `json_schema` strict, Anthropic forced tool call, Gemini `responseSchema`).
 - **`merkle-dag/`** — content-addressed planning + verified delegation + a pure
   `done()` evaluator (`ledger-gate.mjs`): immutable `plan.json`, append-only signed
-  `ledger.jsonl`, Ed25519 settlement, forward-invalidation by hash.
+  `ledger.jsonl`, Ed25519 settlement, forward-invalidation by hash. Also
+  **verification obligations** (`obligation.mjs`: content-addressed obligation
+  identity, done()-time discharge) and the **signed proposal-lifecycle ledger**
+  (`proposal-ledger.mjs`: hash-chained `.telos/proposal.jsonl`, atomic single-lock
+  append, `POLICY_CONTRACT_V1` + layered authorization verifiers).
 
 **The autonomous layers (composed on the substrate, no new trust surface):**
 
@@ -86,6 +96,14 @@ thing that *certifies* — a team's claim is data; the disk is truth.
   (`buildProject` — the full lifecycle), `teamPrompts.mjs` (live wiring over
   `ai-peer-mcp`), `situation.mjs` (project sense), `test-runner.mjs` (runtime
   self-correction).
+- **`build-gate/` proposal-lifecycle (Daedalus)** — audited-judgment governance
+  BEFORE execution (opt-in `dossier.proposal_lifecycle === true`; legacy advisory
+  mode is byte-identical). `daedalus.mjs` (the bounded claude/codex planning
+  workshop), `concerns.mjs` (typed concerns/holds/controller-only dispositions),
+  `risk-policy.mjs`, `evidence.mjs` (closed-whitelist sandboxed verifier),
+  `proposal-gate.mjs` (reconstructs proposal state from the ledger),
+  `proposal-recorder.mjs` (sole-writer), `standing.mjs` (pure calibration). See
+  `contracts/Proposal Lifecycle.md`.
 - **`saas-forge/`** — a 7-team SaaS generator that drives a project to
   market-ready, each team put through an adversarial breakout-on-facts.
 - **`ai-forge/`** — pattern-library-driven forge for AI architectures; Phase A: the
@@ -122,6 +140,58 @@ idea + telos
   its own node test runs; on failure the team is re-called with the failure detail
   to self-correct (bounded), then the substrate's halt → mutate → re-dispatch gives
   a second, outer adaptation level.
+
+## Proposal Lifecycle (Daedalus)
+
+The agentic-teams path answers *whether work is merge-ready*. The proposal
+lifecycle answers a prior question — *is this plan mature enough to authorize?* —
+by putting a candidate through audited judgment before any irreversible step. It
+implements `contracts/Proposal Lifecycle.md` and adds **no new root of trust**:
+every decision reduces to the existing primitives (content hashes, signatures,
+provenance, deterministic policy, re-verifiable evidence, disk as ground truth).
+
+```
+idea + telos
+  → draft
+  → Daedalus workshop (claude/codex negotiation; content-addressed rounds)
+  → compileAndHashPlan() → immutable candidate (obligations + lifecycle bound into plan_hash)
+  → COLD REVIEW of the exact written plan hash (creation/review lineage disjoint, provider-scoped)
+  → typed concerns → holds / dispositions / verification obligations
+  → deterministic decision: authorized | revise | blocked | human-review-required
+  → runBuild(): reads the authorized decision + closed policy certificate FROM DISK, keyed by the
+       recomputed plan hash — then Rule-3 execution + obligation discharge
+```
+
+The governing rule, and the one most likely to catch a design flaw: **no mutable
+label keys an enforcement decision; every enforcement identity is a
+controller-derived content address.** So `proposal_ref` is the recomputed plan
+hash (never `build_id`), obligation identity is a hash of its semantics (never a
+label), the gate reconstructs concern state from the ledger (never a
+caller-supplied array), and `runBuild` reads authorization from disk (never a
+caller-supplied selector).
+
+- **Sole-writer, atomic ledger** (`proposal-recorder.mjs` + `proposal-ledger.mjs`):
+  a durable controller key; every append rereads + verifies + derives the head
+  under one lock, so holds, TTL expirations, and later evidence safely span
+  processes and a self-fork is impossible.
+- **Model judgment is an interrupt, not a certificate** (`concerns.mjs`): evidence
+  certifies; audited judgment blocks or holds; deterministic policy decides. A
+  judgment-only hold fails safe (liveness, not integrity); a verified blocker needs
+  independently re-verifiable evidence.
+- **Sandboxed evidence** (`evidence.mjs`): a frozen closed whitelist; executable
+  evidence runs in a real filesystem + network namespace and is rejected without
+  execution when isolation is unavailable.
+- **Calibration, not authority** (`standing.mjs`): reviewer standing is recomputed
+  from the ledger, influences hold TTL / escalation only, and a new concrete model
+  version starts conservative (never inherits a predecessor's reputation).
+
+Keyless end-to-end evidence: `docs/runs/proposal-lifecycle/` (authorized→`ready`,
+undischarged-obligation→blocked, unauthorized-decision→refused). This subsystem's
+own design was put through the process it implements — see
+[Designing a trust system by adversarial review](docs/design-by-adversarial-review.md)
+(the contract was frozen over three review rounds; the implementation plan was
+revised seven times, each answering a numbered findings list, before a line was
+written).
 
 ## AI Forge (`ai-forge/`)
 
@@ -188,24 +258,32 @@ Node ≥ 18, zero runtime dependencies. CI runs every package on ubuntu (Node 18
 
 ```bash
 cd build-gate            && npm test   # gate, sign, trust, council, teams, decompose,
-                                       #   build-orchestrator, schemas, situation, + breakout
+                                       #   build-orchestrator, schemas, situation, concerns,
+                                       #   proposal-gate, check-registry, proposal-orchestrator,
+                                       #   daedalus, proposal-lifecycle, standing, + breakout
 cd breakout              && npm test
 cd connectors/ai-peer-mcp && npm test  # provenance, structured requests, smoke
-cd merkle-dag            && npm test   # 8 suites + end-to-end harness
+cd merkle-dag            && npm test   # 10 suites incl. obligations + proposal-ledger + end-to-end harness
 cd saas-forge            && npm test   # 7 teams generate + breakout-survive + gate pass
 ```
 
 ## Docs & evidence
 
 - `docs/STATUS.md` — current status.
-- `docs/specs/` — design specs (agentic-teams, provider-native outputs, situational
-  awareness, the trust upgrade).
+- `docs/proposal-lifecycle-implementation.md` — implementation reference for the audited-judgment
+  proposal-lifecycle subsystem (composed flow, module map, enforcement mechanisms, trust boundaries).
+- `docs/history/` — superseded dated records (design specs, plans, apply-instructions) from earlier
+  phases, kept for provenance; not maintained against the shipping code.
 - `docs/runs/` — runnable evidence: `live-council/` (distinct per-seat provenance;
   fail-closed without a key; signed-mode pass), `agentic-teams/` +
   `agentic-teams-live/` + `agentic-teams-situational/` + `agentic-teams-market/`
-  (idea → `merge_status: "ready"` over the real gate + Ed25519 ledger + merkle-dag).
+  (idea → `merge_status: "ready"` over the real gate + Ed25519 ledger + merkle-dag),
+  and `proposal-lifecycle/` (keyless audited-judgment evidence: `run-lifecycle-e2e.mjs`
+  drives revise→authorize→discharge→ready through `buildProject`, with a negative
+  control proving the verification obligation is load-bearing at Rule 3).
 - `contracts/` — the human-readable protocols the gate enforces (build gate,
-  prototype workflow, hierarchical workflow, agentic-teams autonomous builder).
+  prototype workflow, hierarchical workflow, agentic-teams autonomous builder,
+  proposal lifecycle — audited judgment + cold review + verification obligations).
 
 ## Provenance / layout note
 
