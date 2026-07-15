@@ -1,0 +1,30 @@
+{
+  "build_id": "clotho-phase-1-authz-001",
+  "use_case": "clotho-phase-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/clotho-daedalus-delta5/matured-plan-v6.md",
+    "docs/clotho-phase-1-design.md"
+  ],
+  "proposal_ref": "sha256:1a9f22085d57f9ace35931f48ae370e91934b3e6e7451b23375b08e74973e47d",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-15T17:57:56.604Z",
+  "rationale": "I approve this plan as-is. My assessment against the stated authorization criteria:\n\n**Implementation-readiness.** The plan is unusually concrete: exact interfaces for every module (registry, ledger, weavers, queries, driver), exact locator schemas per node kind, exact git invocations with an allowlisted no-shell wrapper, exact test coverage enumerations per task, and per-task exit criteria that are mechanically checkable (green npm test, no spine diff, closure-equality proofs). Task ordering resolves its own bootstrap paradoxes explicitly: Task 1 before Task 0 so the CI matrix never names an absent package (D12); D17 sequences inventory commits so no inventory ever names a nonexistent file; D19 splits generic ledger validation (Task 3, injected fixture coverage) from repository inventory equality (Task 5, when the inventories legally exist). D6 splits weavers into two PRs against an already-merged contract. These orderings are internally consistent — I traced each dependency and found no task requiring an artifact that does not yet exist at its PR.\n\n**Trust-model consistency.** Fail-closed is applied uniformly: unknown kinds/statuses/schemes are rejected, never inferred; weaver failure aborts the entire weave with no partial artifact (D15); shallow history fails with a stable error rather than minting a wrong repository identity (D16/D18, with the load-bearing rationale about shallow-boundary commits appearing parentless correctly identified and proven against real git, not just injected units); coverage-unknown answers replace silently smaller results (D11), and verification rejects any ledger whose edges contradict its manifest. Closed sets are genuine: read-only Set facades with throwing mutators, single authoritative membership source, closed inventories, closed adapter dispatch with no generic JSON fallback, closed FATAL_WARNING_CODES. Spine read-only is enforced structurally (Task 5 advisory scanner covering static/dynamic/CommonJS forms, failing closed on nonliteral dynamic imports) and procedurally (Task 7 final-diff review). Advisory-only is preserved: no gate or authorization path reads Clotho data, and the one-way merkle-dag import direction is stated and enforced.\n\n**Internal decision/exit-criteria coherence.** The endpoint matrix matches the claimed spec v2.3 semantics (discharges as code-symbol→obligation and obligation→contract-clause; the two-hop why walk mirrors it). D13 content-bound locators are carried through every locator schema, the flagship expectations (audited blob/text/entry/summary hashes required), and accepted risk #9 (version-node churn honestly acknowledged). D14's mechanism-binding provenance is proven, not trusted, via closure-equality tests committed in the same PRs as the files they name. The status-record design (D10) closes the model self-promotion loophole: transitions are human-only, human-authorized, reference earlier edge records only, and queries resolve effective status with rejected/superseded never returned as facts. The flagship acceptance (Task 6) is a real end-to-end proof: one-to-one expected matching across eight groups, a mandatory unscored review set (D3, correctly deferring relevance to Lachesis), a negative skipped-weaver run asserting the exact coverage-unknown gap rather than a missing-edge claim, and a 120s runtime ceiling per D4.\n\n**Residual risks are acknowledged, not hidden.** The thirteen accepted-risk entries each have explicit boundaries and none contradicts the trust model: self-signed ephemeral keys prove internal consistency only (consistent with advisory-only); tail-deletion of a never-completed weave is covered by the external snapshot checkpoint; rename discontinuity and static-grammar limits surface as warnings/gaps rather than inferred edges.\n\n**Minor observations (not blocking, recorded for the execution record).** (1) The plan cites both spec v2.2 and v2.3 in the repository_ref consequences paragraph; the governing spec is stated as v2.3 and the v2.2 citation reads as lineage of the decision, not a conflict. (2) Task 3's close() rejects skipped-weaver coverage when that weaver's edges are present, and the driver additionally never appends edges under a skipped id — belt-and-suspenders, coherent. (3) The `commit` locator exception is explicitly named and justified (globally addressed content identity), so the repository-scoped invariant remains closed. None of these warrant an edit or a block.\n\nConfidence is high because the plan's claims are mostly self-verifying (committed tests prove the inventories, closures, endpoint matrix, and abort contract) and the sequencing hazards that typically sink multi-PR plans are each explicitly decided (D6, D12, D17, D19). Approving as-is; per field semantics, required_edits and hard_stops are empty.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011Cd4GzMtdoXJby2pBQvLEf",
+    "source": "ai-peer-mcp/claude_ask",
+    "answered_at": "2026-07-15T17:58:27.769Z",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "712b747e055bdaad166211cbf95fba5200f6be311f0f9b233591cc1e96fc2803",
+    "signed_fields": "canonical-minus-signature"
+  }
+}
