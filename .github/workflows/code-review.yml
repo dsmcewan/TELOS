@@ -23,7 +23,11 @@ jobs:
       - name: Automated Claude review
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Authenticate with the Claude subscription (Max), NOT metered API credits.
+          # Mint with `claude setup-token` and store as the CLAUDE_CODE_OAUTH_TOKEN repo secret.
+          # The token is long-lived but NOT eternal — when it lapses this check fails fast
+          # (~15s, is_error with no findings), which looks identical to an exhausted balance.
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # Install the code-review plugin and run its skill against this PR.
           plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
           plugins: "code-review@claude-code-plugins"
