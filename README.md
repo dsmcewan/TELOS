@@ -77,7 +77,11 @@ thing that *certifies* — a team's claim is data; the disk is truth.
   `json_schema` strict, Anthropic forced tool call, Gemini `responseSchema`).
 - **`merkle-dag/`** — content-addressed planning + verified delegation + a pure
   `done()` evaluator (`ledger-gate.mjs`): immutable `plan.json`, append-only signed
-  `ledger.jsonl`, Ed25519 settlement, forward-invalidation by hash.
+  `ledger.jsonl`, Ed25519 settlement, forward-invalidation by hash. Also
+  **verification obligations** (`obligation.mjs`: content-addressed obligation
+  identity, done()-time discharge) and the **signed proposal-lifecycle ledger**
+  (`proposal-ledger.mjs`: hash-chained `.telos/proposal.jsonl`, atomic single-lock
+  append, `POLICY_CONTRACT_V1` + layered authorization verifiers).
 
 **The autonomous layers (composed on the substrate, no new trust surface):**
 
@@ -86,6 +90,14 @@ thing that *certifies* — a team's claim is data; the disk is truth.
   (`buildProject` — the full lifecycle), `teamPrompts.mjs` (live wiring over
   `ai-peer-mcp`), `situation.mjs` (project sense), `test-runner.mjs` (runtime
   self-correction).
+- **`build-gate/` proposal-lifecycle (Daedalus)** — audited-judgment governance
+  BEFORE execution (opt-in `dossier.proposal_lifecycle === true`; legacy advisory
+  mode is byte-identical). `daedalus.mjs` (the bounded claude/codex planning
+  workshop), `concerns.mjs` (typed concerns/holds/controller-only dispositions),
+  `risk-policy.mjs`, `evidence.mjs` (closed-whitelist sandboxed verifier),
+  `proposal-gate.mjs` (reconstructs proposal state from the ledger),
+  `proposal-recorder.mjs` (sole-writer), `standing.mjs` (pure calibration). See
+  `contracts/Proposal Lifecycle.md`.
 - **`saas-forge/`** — a 7-team SaaS generator that drives a project to
   market-ready, each team put through an adversarial breakout-on-facts.
 - **`ai-forge/`** — pattern-library-driven forge for AI architectures; Phase A: the
@@ -122,6 +134,53 @@ idea + telos
   its own node test runs; on failure the team is re-called with the failure detail
   to self-correct (bounded), then the substrate's halt → mutate → re-dispatch gives
   a second, outer adaptation level.
+
+## Proposal Lifecycle (Daedalus)
+
+The agentic-teams path answers *whether work is merge-ready*. The proposal
+lifecycle answers a prior question — *is this plan mature enough to authorize?* —
+by putting a candidate through audited judgment before any irreversible step. It
+implements `contracts/Proposal Lifecycle.md` and adds **no new root of trust**:
+every decision reduces to the existing primitives (content hashes, signatures,
+provenance, deterministic policy, re-verifiable evidence, disk as ground truth).
+
+```
+idea + telos
+  → draft
+  → Daedalus workshop (claude/codex negotiation; content-addressed rounds)
+  → compileAndHashPlan() → immutable candidate (obligations + lifecycle bound into plan_hash)
+  → COLD REVIEW of the exact written plan hash (creation/review lineage disjoint, provider-scoped)
+  → typed concerns → holds / dispositions / verification obligations
+  → deterministic decision: authorized | revise | blocked | human-review-required
+  → runBuild(): reads the authorized decision + closed policy certificate FROM DISK, keyed by the
+       recomputed plan hash — then Rule-3 execution + obligation discharge
+```
+
+The governing rule, and the one most likely to catch a design flaw: **no mutable
+label keys an enforcement decision; every enforcement identity is a
+controller-derived content address.** So `proposal_ref` is the recomputed plan
+hash (never `build_id`), obligation identity is a hash of its semantics (never a
+label), the gate reconstructs concern state from the ledger (never a
+caller-supplied array), and `runBuild` reads authorization from disk (never a
+caller-supplied selector).
+
+- **Sole-writer, atomic ledger** (`proposal-recorder.mjs` + `proposal-ledger.mjs`):
+  a durable controller key; every append rereads + verifies + derives the head
+  under one lock, so holds, TTL expirations, and later evidence safely span
+  processes and a self-fork is impossible.
+- **Model judgment is an interrupt, not a certificate** (`concerns.mjs`): evidence
+  certifies; audited judgment blocks or holds; deterministic policy decides. A
+  judgment-only hold fails safe (liveness, not integrity); a verified blocker needs
+  independently re-verifiable evidence.
+- **Sandboxed evidence** (`evidence.mjs`): a frozen closed whitelist; executable
+  evidence runs in a real filesystem + network namespace and is rejected without
+  execution when isolation is unavailable.
+- **Calibration, not authority** (`standing.mjs`): reviewer standing is recomputed
+  from the ledger, influences hold TTL / escalation only, and a new concrete model
+  version starts conservative (never inherits a predecessor's reputation).
+
+Keyless end-to-end evidence: `docs/runs/proposal-lifecycle/` (authorized→`ready`,
+undischarged-obligation→blocked, unauthorized-decision→refused).
 
 ## AI Forge (`ai-forge/`)
 
