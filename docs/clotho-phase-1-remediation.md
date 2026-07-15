@@ -244,6 +244,24 @@ workshop (`docs/runs/clotho-daedalus-delta7/`):
 `matured-plan-v7.md` becomes superseded evidence once delta-7 converges;
 `authz-002` runs only after The Eye releases the re-converged plan.
 
+## Eighth round — The Eye's delta-8 repair contract (2026-07-15)
+
+Two remaining blockers, delivered as a fixed repair contract (requirements
+frozen; alternative mechanisms only if they prove equal-or-stronger
+invariants). Resolved via spec v2.6 + amendments AM-30..AM-31
+(`docs/clotho-phase-1-plan-amendments-8.md`) and an eighth surgical delta
+workshop (`docs/runs/clotho-daedalus-delta8/`):
+
+| # | Finding | Resolution |
+|---|---|---|
+| 1 | `executed` permitted incomplete consumption (configured 10 / observed 9 / executed) — downstream absence claims unsound | AM-30 + **spec v2.6** + D29: `executed` requires every iterator constructed AND exhausted AND observed == configured cardinality; no partial-execution state; driver retains `{inventory_id, expected_cardinality, observed_count, exhausted}` and gates edge append + `close()` on the accounting check with stable fatal codes; driver-vs-verifier proof boundary explicit; 8 behavioral tests incl. skipped-iterator-construction contradiction and signed skipped-nonzero fixture |
+| 2 | D27 left loader construction open — `createRequire` (any alias/namespace/default/re-export/property/immediate-invocation form) and `process.getBuiltinModule("module")` bypass the zero-dependency proof | AM-31 + **spec v2.6** + D30: no constructed module loaders; frozen safe-export allowlists for loader-capable built-ins (`builtinModules`, `isBuiltin`); 11 synthetic tests (8 rejected forms + safe export + ordinary built-in + comment/string lookalikes); ambiguous loader construction fails closed |
+
+`docs/runs/clotho-authorization/*` untouched (immutable historical evidence).
+`matured-plan-v8.md` superseded once delta-8 converged. Sequence per the
+contract: delta-8 convergence → cold review of committed v9 bytes → release by
+The Eye → only then `authz-002`.
+
 ## Not accepted / needs no change
 
 - "Ledger cannot answer from itself" — true of the reviewed skeleton, already false

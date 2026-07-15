@@ -6,7 +6,7 @@
 > introduced by the no-replace publication fix
 > (`docs/clotho-phase-1-remediation.md` § Seventh round); re-converged under
 > spec v2.5 by the seventh delta workshop. The canonical submission candidate
-> is **`docs/runs/clotho-daedalus-delta7/matured-plan-v8.md`**. The extracted
+> is **`docs/runs/clotho-daedalus-delta8/matured-plan-v9.md`**. The extracted
 > copy below is unmodified apart from this banner; the content-addressed,
 > provenance-bearing round artifacts under `artifacts/` are the authoritative
 > record.
