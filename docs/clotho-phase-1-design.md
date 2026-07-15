@@ -10,11 +10,18 @@ creates and maintains knowledge-graph threads across artifacts and repositories.
 This phase builds exactly that and nothing else. Measurement of threads is Lachesis;
 retirement of threads is Atropos; both are explicitly out of scope here.
 
-**Status:** v2.6 — `executed` means complete source consumption (frozen
-executed/skipped state semantics, no partial-execution state, explicit
-driver-vs-verifier proof boundary), and general-purpose module-loader
-construction is prohibited inside Clotho (frozen safe-export allowlists for
-loader-capable built-ins), per The Eye's delta-8 repair contract. History:
+**Status:** v2.7 — incorporates the codex seat's second authorization dissent
+(authz-002, both hard stops accepted by The Eye): the ledger weaver owns an
+independently counted `contract-files` inventory (required even when the
+doc-weaver is skipped; clause resolution reads no byte outside it), and the
+loader-capable built-in safe-export allowlist is the exact frozen normative
+mapping `LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS` — no illustrative wording, no
+implementation-time choice. History: v2.6 — `executed` means complete source
+consumption (frozen executed/skipped state semantics, no partial-execution
+state, explicit driver-vs-verifier proof boundary), and general-purpose
+module-loader construction is prohibited inside Clotho (safe-export
+allowlists for loader-capable built-ins), per The Eye's delta-8 repair
+contract. Earlier history:
 v2.5 — adds executable accuracy semantics for
 `inspected_source_counts` (frozen per-weaver inventory-id table, a normative
 definition of "inspected", driver-owned counted iterators — counts are never
@@ -313,6 +320,24 @@ expected cardinality at runtime; the **ledger verifier** proves manifest
 structure and rejects nonzero counts for `skipped`; the verifier never claims
 it can reconstruct runtime iterator exhaustion from the signed ledger alone.
 
+**The ledger weaver owns a counted `contract-files` inventory (v2.7).** Its
+required inventory ids are exactly `contract-files`, `ledger-sources`,
+`run-sources`. `contract-files` is an exact, deterministic, sorted inventory
+of repository-relative contract Markdown paths committed in `inventory.mjs`,
+with count definition:
+
+> Number of configured contract Markdown files whose exact bytes were opened,
+> read, split with the canonical Markdown section splitter, assigned
+> normalized heading paths and exact section hashes, and incorporated into a
+> collision-checked current-contract index without fatal error.
+
+The inventory **remains required when the doc-weaver is skipped**: contract
+consumption then belongs solely to the ledger weaver while the doc-weaver
+stays skipped with zero counts. Overlap between doc-files and contract-files
+is intentional — each weaver independently reads, counts, and proves the
+bytes needed for its own output. No contract byte used for clause resolution
+may be read outside the counted `contract-files` source.
+
 **Weaver failure aborts the weave (v2.1).** A throwing weaver means the temporary
 ledger is destroyed and never published; published manifests contain only
 `executed` and `skipped` states. `failed` exists solely as an internal /
@@ -343,7 +368,11 @@ Deterministic, read-only scanners, each with a stable id recorded in `asserted_b
 4. **doc-weaver** — docs/contracts sections that name a symbol or mechanism
    (`documented-in`, with heading-path + section-text-hash locators).
 5. **ledger-weaver** — concerns/obligations/run evidence from the proposal ledgers
-   and `docs/runs/` (`motivated-by`, `discharges`, `evidenced-by`).
+   and `docs/runs/` (`motivated-by`, `discharges`, `evidenced-by`). **Clause
+   resolution is self-accounted (v2.7):** the ledger weaver constructs its
+   current-contract clause-resolution index **solely from its own counted
+   contract-file sources** (`ctx.sources["contract-files"]`) — never from a map
+   produced by the doc-weaver, and never through uncounted fallback reads.
 
 Weavers return `{edges, warnings}`; warnings are deterministic data, never edges.
 Missing or malformed evidence yields a warning and a gap — never an inferred edge.
@@ -372,17 +401,31 @@ The flagship query is `why()` + `blastRadius()` composed over the
 - **Advisory, never authorizing.** No gate, sign, or lifecycle decision keys off a
   Clotho record. Threads inform humans and future Lachesis analysis. This is
   structural: no package in the repo gains an import from `clotho/`.
-- **No constructed module loaders (v2.6).** Clotho may not construct, obtain,
-  alias, or invoke a general-purpose module loader. Built-in modules capable of
-  producing loaders (`node:module` and its bare `module` form, and equivalent
-  acquisition mechanisms such as `process.getBuiltinModule("module")` where the
-  supported Node range provides it) are governed by **frozen safe-export
-  allowlists** (e.g. `builtinModules`, `isBuiltin`); namespace and default
-  access to such modules is forbidden; any reference to a loader-producing
-  export or API — `createRequire` under any alias, re-export, property access,
-  or immediate invocation — fails closed. The scanner recognizes the frozen
-  syntactic forms it prohibits; unsupported ambiguous loader construction fails
-  closed rather than passing unexamined.
+- **No constructed module loaders (v2.6, mapping frozen v2.7).** Clotho may not
+  construct, obtain, alias, or invoke a general-purpose module loader.
+  Loader-capable built-ins are governed by **one exhaustive normative
+  mapping** — there is no implementation-time choice about safe exports:
+
+  ```
+  LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS =
+    { "module":      ["builtinModules", "isBuiltin"],
+      "node:module": ["builtinModules", "isBuiltin"] }
+  ```
+
+  The key set is exactly `module` and `node:module`; each value is exactly the
+  sorted pair shown; the outer mapping and inner collections are deeply
+  frozen. Only static named imports of these source export names are
+  permitted (a local alias is fine — permission is decided from the imported
+  export name, never the local binding name). **All nonlisted access fails
+  closed**: every other export from either specifier; namespace imports;
+  default imports; CommonJS `require` and `module.require`; dynamic imports;
+  re-exports (including of otherwise safe names); property acquisition from
+  any module namespace; `process.getBuiltinModule("module")` and
+  `process.getBuiltinModule("node:module")`; and computed, concatenated,
+  aliased, or otherwise ambiguous acquisition. The outbound scanner imports
+  the canonical mapping from `inventory.mjs` (no second hand-written
+  allowlist). Expanding the mapping requires a future specification amendment
+  and authorization — it is not an implementation choice.
 - Weavers are read-only over the repo; the only thing Clotho writes is its own
   ledger under `.telos/` (ephemeral, git-ignored) or an explicitly exported
   snapshot. The self-weave output directory is never a weave input.
@@ -405,6 +448,14 @@ The flagship query is `why()` + `blastRadius()` composed over the
    checkpointed tail deletion) are detected.
 4. `clotho/ npm test` green; no new dependencies anywhere; existing package tests
    untouched and green.
+5. **Independent clause resolution (v2.7):** a weave with the doc-weaver skipped
+   and the ledger-weaver executed still resolves the flagship obligation's
+   `contract-clause` edge from the ledger-weaver's own counted `contract-files`
+   consumption, while documentation coverage is reported unknown.
+6. **Exact loader-mapping equality (v2.7):** the
+   `LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS` mapping committed in `inventory.mjs`
+   deep-equals the normative mapping in this specification; any missing, extra,
+   or mutated entry fails validation.
 
 ## Explicit non-goals (Phase 1)
 

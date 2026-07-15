@@ -1,5 +1,18 @@
 # Clotho Phase 1 Implementation Plan
 
+> **SUPERSEDED historical artifact.** This candidate was released by The Eye
+> (PR #92, reviewed head `0598237`, merge `73baad0c`) but TELOS authorization
+> `authz-002` did NOT authorize it: the codex required seat dissented with two
+> hard stops — a D29 contradiction in the ledger weaver's contract-file
+> accounting, and an examples-only "frozen" loader allowlist
+> (`docs/runs/clotho-authorization-2/`, preserved at `016d0e5`;
+> `docs/clotho-phase-1-remediation.md` § Ninth round). Re-converged under spec
+> v2.7 by the ninth delta workshop. The canonical submission candidate is
+> **`docs/runs/clotho-daedalus-delta9/matured-plan-v10.md`**. The extracted
+> copy below is unmodified apart from this banner; the content-addressed,
+> provenance-bearing round artifacts under `artifacts/` are the authoritative
+> record.
+
 > **Status: implementation-ready.** Execute one task per branch, PR, CI run, and
 > squash merge. Do not begin a task until the prior task is merged and every existing
 > package is green.
