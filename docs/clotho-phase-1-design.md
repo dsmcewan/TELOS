@@ -10,7 +10,11 @@ creates and maintains knowledge-graph threads across artifacts and repositories.
 This phase builds exactly that and nothing else. Measurement of threads is Lachesis;
 retirement of threads is Atropos; both are explicitly out of scope here.
 
-**Status:** v2.3 — v2 revised after cold review of `2d93816` and the first
+**Status:** v2.4 — incorporates the codex seat's TELOS-authorization dissent
+(routed via The Eye, 2026-07-15; see
+`docs/convergence-is-not-authorization.md`): normative evidence provenance for
+command-inferred `verified-by` edges, and a closed normative trailer schema
+(`inspected_source_counts`). History: v2.3 — v2 revised after cold review of `2d93816` and the first
 Daedalus workshop (`docs/runs/clotho-daedalus/`); v2.1 incorporated The Eye's
 second review (content-bound locators, frozen blastRadius semantics,
 mechanism-bound coverage provenance, abort-on-weaver-failure); v2.2 incorporated
@@ -242,6 +246,15 @@ assertions.
   committed implementation inventory omits or adds a file** — the list is proven
   equal to the closure, never trusted.
 
+**The trailer schema is closed and normative (v2.4):** every manifest field
+validated by the ledger has an exact type, key set, and accuracy rule — in
+particular `inspected_source_counts` is a sorted array of unique
+`{inventory_id, count}` entries with no extra fields and nonnegative
+safe-integer counts; the exact inventory ids required per weaver are stated;
+`executed` weavers carry their actual inspected counts and `skipped` weavers
+carry zero counts. A trailer field with no normative schema cannot be
+validated and therefore cannot exist.
+
 **Weaver failure aborts the weave (v2.1).** A throwing weaver means the temporary
 ledger is destroyed and never published; published manifests contain only
 `executed` and `skipped` states. `failed` exists solely as an internal /
@@ -262,6 +275,13 @@ Deterministic, read-only scanners, each with a stable id recorded in `asserted_b
    where imports terminate at modules, manifests, or configuration.
 3. **test-weaver** — test scripts ↔ the symbols/files they exercise (`verified-by`),
    including tests that execute files or commands rather than importing symbols.
+   **Evidence provenance is normative (v2.4):** a `verified-by` edge inferred
+   from a package `check`/`test` command carries
+   `source_ref = file:<package.json path>@<package.json blob_sha>` — the
+   manifest bytes that actually evidence execution of the target; edges
+   inferred from test-file imports or test-file classification keep the test
+   file's own source reference. The two provenance cases are distinguished by
+   exact-output tests.
 4. **doc-weaver** — docs/contracts sections that name a symbol or mechanism
    (`documented-in`, with heading-path + section-text-hash locators).
 5. **ledger-weaver** — concerns/obligations/run evidence from the proposal ledgers

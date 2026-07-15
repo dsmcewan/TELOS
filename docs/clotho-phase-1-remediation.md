@@ -203,6 +203,29 @@ the connector environment.
 
 `matured-plan-v5.md` becomes superseded evidence once delta-5 converges.
 
+## Sixth round — TELOS authorization dissent (codex required seat, 2026-07-15)
+
+Not an Eye hold: the released plan went to the signed authorization council
+(`docs/runs/clotho-authorization/`, dossier bound to `sha256:1a9f2208…` at
+merge `698e3d85`). Four seats approved (claude, agy required; grok, gemini
+advisory — all high confidence); **codex (required) returned `revise`, high
+confidence, with six hard stops**; the gate failed closed. The Eye accepted all
+six findings (canonical use case:
+`docs/convergence-is-not-authorization.md`) into delta-6:
+
+| # | Codex hard stop | Resolution |
+|---|---|---|
+| 1 | TOCTOU: rename-to-destination publication can silently overwrite a destination created in the window | AM-21: atomic no-replace `link`+unlink publication, `EEXIST` = failure, race test |
+| 2 | Lexical-only containment: symlinked allowed dir/parent redirects ledger writes outside authorized locations | AM-22: symlink rejection in root/parent chain, physical containment vs realpath, re-check before publication, escape tests |
+| 3 | Fatal warnings don't explicitly prohibit publication; poisoned ledgers may leak descriptors | AM-23: abort-before-close/publication contract, idempotent descriptor cleanup, lifecycle tests |
+| 4 | Advisory proof misses nonliteral `require()`/`module.require()`, symlink aliases, and Clotho's outbound boundary | AM-24: extended `test-advisory.mjs` + Clotho-side outbound import checks + synthetic evasion tests |
+| 5 | `inspected_source_counts` has no normative type/keys/accuracy rule | AM-25 + **spec v2.4**: closed trailer schema (sorted unique `{inventory_id, count}`, executed=actual / skipped=zero) |
+| 6 | Command-inferred `verified-by` edges not bound to the manifest bytes that evidence execution | AM-26 + **spec v2.4**: `source_ref = file:<package.json>@<blob_sha>` for command-inferred edges; test-file refs retained for import-inferred edges |
+
+The `NOT_AUTHORIZED` packets and summary are preserved intact as primary
+evidence. Re-authorization runs only after delta-6 re-converges and The Eye
+releases the corrected plan.
+
 ## Not accepted / needs no change
 
 - "Ledger cannot answer from itself" — true of the reviewed skeleton, already false
