@@ -31,4 +31,9 @@ jobs:
           # Install the code-review plugin and run its skill against this PR.
           plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
           plugins: "code-review@claude-code-plugins"
-          prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
+          # --comment POSTS findings as inline PR comments. Without it the review still runs
+          # (minutes, real cost) and then DISCARDS its conclusion: `show_full_output` is false
+          # (and must stay false — this repo is public and those logs are world-readable), so an
+          # unposted finding is unrecoverable. The check then means only "the reviewer did not
+          # crash", never "the code is fine". A review that cannot report is not an audit.
+          prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }} --comment"
