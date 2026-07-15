@@ -2,6 +2,10 @@
 
 [![CI](https://github.com/dsmcewan/TELOS/actions/workflows/ci.yml/badge.svg)](https://github.com/dsmcewan/TELOS/actions/workflows/ci.yml)
 
+> An AI agent that grades its own work can rubber-stamp its own mistakes. TELOS
+> makes the thing that *builds* never be the thing that *certifies*: a build's
+> claim is data; the disk is the truth.
+
 **A multi-model build system where nothing merges on a model's say-so.**
 Independent AI model **seats** (claude / grok / codex / agy / gemini) produce
 signed, provenance-bound approval packets; a deterministic **gate** certifies
@@ -182,7 +186,12 @@ caller-supplied selector).
   version starts conservative (never inherits a predecessor's reputation).
 
 Keyless end-to-end evidence: `docs/runs/proposal-lifecycle/` (authorized→`ready`,
-undischarged-obligation→blocked, unauthorized-decision→refused).
+undischarged-obligation→blocked, unauthorized-decision→refused). This subsystem's
+own design was put through the process it implements — see
+[Designing a trust system by adversarial review](docs/design-by-adversarial-review.md)
+(the contract was frozen over three review rounds; the implementation plan was
+revised seven times, each answering a numbered findings list, before a line was
+written).
 
 ## AI Forge (`ai-forge/`)
 
