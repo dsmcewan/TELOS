@@ -1,0 +1,141 @@
+{
+  "build_id": "clotho-phase-1-authz-002",
+  "use_case": "clotho-phase-1",
+  "objective": "Authorize Argo execution of the Clotho Phase 1 implementation plan v9 (content address sha256:47f634889001eeeecc65390bc7e58e64d39d86f0c0061e0ff04afafacc556f8a; released by The Eye via PR #92, merge commit 73baad0caf5c3bee63dbdfc0672a7831644a12c1). The plan builds clotho/, an advisory zero-dependency knowledge-graph package proven by weaving TELOS itself. Approve ONLY if the plan is implementation-ready and consistent with its governing spec (v2.6), the repository's trust model (fail-closed, closed sets, spine read-only, advisory-only Clotho), and its own decisions and exit criteria.",
+  "plan_ref": "sha256:47f634889001eeeecc65390bc7e58e64d39d86f0c0061e0ff04afafacc556f8a",
+  "merge_anchor": "73baad0caf5c3bee63dbdfc0672a7831644a12c1",
+  "reviewed_head": "0598237712fa45cd887029a961d3d2792c680461",
+  "timestamp": "2026-07-15T20:36:05.590Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd4V3qiBqTYZzP6yCT9zf",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-15T20:36:27.296Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E20cpB7pSHDTYcrYyHttlAJGESqWg",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-15T20:48:21.656Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "8871c461-0d5e-957d-9f1f-318b6df62cfc",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-15T20:36:20.817Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "Nu9XavrSJ9eEz7IPoPaV0AI",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-15T20:36:14.894Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Route a specification amendment to The Eye and update the plan’s normative inventory table so `clotho-ledger-weaver` also requires `contract-files`, defined as the configured contract Markdown files opened, read, section-split, and uniquely indexed for clause-reference resolution. Require the ledger weaver to consume that driver-counted iterator even when `clotho-doc-weaver` is skipped, and extend manifest, completeness, skipped-weaver, and flagship tests accordingly.; Replace every illustrative D30 allowlist reference with one exhaustive normative mapping of loader-capable builtin specifiers to permitted named exports. At minimum, freeze the policy for both `module` and `node:module`, update `inventory.mjs` and tests to assert exact equality with that mapping, and reject every import, require, dynamic-import, re-export, namespace/default, or property-acquisition form not explicitly permitted.",
+      "codex has hard stops: The ledger weaver must resolve obligation references against current contract-section bytes, including when the documentation weaver is skipped, but its closed counted-source schema contains only `ledger-sources` and `run-sources`, and `ctx` provides no prevalidated contract map. Execution would therefore require an unaccounted contract-file read, consumption attributed to a skipped weaver, or omission of a required contract edge.; D30 repeatedly calls its loader-capable-builtin safe-export allowlist frozen, yet the plan supplies only examples (`builtinModules`, `isBuiltin`) rather than an exhaustive normative table. This leaves a security-sensitive closed set for the implementer to choose during execution."
+    ],
+    "warnings": [],
+    "provenance": [
+      {
+        "model": "claude",
+        "has_provenance": true,
+        "provider": "anthropic",
+        "response_model": "claude-fable-5",
+        "response_id": "msg_011Cd4V3qiBqTYZzP6yCT9zf",
+        "source": "ai-peer-mcp/claude_ask"
+      },
+      {
+        "model": "agy",
+        "has_provenance": true,
+        "provider": "local",
+        "response_model": "agy-checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "source": "ai-peer-mcp/agy_checkpoint"
+      },
+      {
+        "model": "codex",
+        "has_provenance": true,
+        "provider": "openai",
+        "response_model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E20cpB7pSHDTYcrYyHttlAJGESqWg",
+        "source": "ai-peer-mcp/codex_ask"
+      }
+    ]
+  },
+  "authorized": false,
+  "authorization": {
+    "status": "NOT_AUTHORIZED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

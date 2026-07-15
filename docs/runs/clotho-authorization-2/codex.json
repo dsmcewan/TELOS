@@ -1,0 +1,36 @@
+{
+  "build_id": "clotho-phase-1-authz-002",
+  "use_case": "clotho-phase-1",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/clotho-daedalus-delta8/matured-plan-v9.md",
+    "docs/clotho-phase-1-design.md"
+  ],
+  "proposal_ref": "sha256:47f634889001eeeecc65390bc7e58e64d39d86f0c0061e0ff04afafacc556f8a",
+  "decision": "revise",
+  "required_edits": [
+    "Route a specification amendment to The Eye and update the plan’s normative inventory table so `clotho-ledger-weaver` also requires `contract-files`, defined as the configured contract Markdown files opened, read, section-split, and uniquely indexed for clause-reference resolution. Require the ledger weaver to consume that driver-counted iterator even when `clotho-doc-weaver` is skipped, and extend manifest, completeness, skipped-weaver, and flagship tests accordingly.",
+    "Replace every illustrative D30 allowlist reference with one exhaustive normative mapping of loader-capable builtin specifiers to permitted named exports. At minimum, freeze the policy for both `module` and `node:module`, update `inventory.mjs` and tests to assert exact equality with that mapping, and reject every import, require, dynamic-import, re-export, namespace/default, or property-acquisition form not explicitly permitted."
+  ],
+  "hard_stops": [
+    "The ledger weaver must resolve obligation references against current contract-section bytes, including when the documentation weaver is skipped, but its closed counted-source schema contains only `ledger-sources` and `run-sources`, and `ctx` provides no prevalidated contract map. Execution would therefore require an unaccounted contract-file read, consumption attributed to a skipped weaver, or omission of a required contract edge.",
+    "D30 repeatedly calls its loader-capable-builtin safe-export allowlist frozen, yet the plan supplies only examples (`builtinModules`, `isBuiltin`) rather than an exhaustive normative table. This leaves a security-sensitive closed set for the implementer to choose during execution."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-15T20:36:05.590Z",
+  "rationale": "The plan cannot be executed as-is while satisfying its own D26/D29 accounting semantics and the Task 6 skipped-documentation acceptance case: the ledger-derived contract path has an undeclared source dependency. Separately, the outbound loader boundary is not actually closed until its safe-export membership is enumerated. Both defects affect signed coverage or dependency-boundary claims rather than incidental implementation detail, but they are repairable through a revised plan and governing-spec update.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E20cpB7pSHDTYcrYyHttlAJGESqWg",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-15T20:48:21.656Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "1f43b1c4b97a80f3cf42491d07bef84dc7c684e599c6754aff4e7f443c7db03a",
+    "signed_fields": "canonical-minus-signature"
+  }
+}
