@@ -1,5 +1,17 @@
 # Clotho Phase 1 Implementation Plan
 
+> **SUPERSEDED historical artifact.** The Eye's delta-8 repair contract found
+> two remaining blockers in this candidate: `executed` did not require complete
+> source consumption (configured 10 / observed 9 / state executed was legal,
+> making absence claims unsound), and D27's allowlist left `createRequire`-style
+> loader construction open (`docs/clotho-phase-1-remediation.md` § Eighth
+> round). Re-converged under spec v2.6 by the eighth delta workshop. The
+> canonical submission candidate is
+> **`docs/runs/clotho-daedalus-delta8/matured-plan-v9.md`**. The extracted copy
+> below is unmodified apart from this banner; the content-addressed,
+> provenance-bearing round artifacts under `artifacts/` are the authoritative
+> record.
+
 > **Status: implementation-ready.** Execute one task per branch, PR, CI run, and
 > squash merge. Do not begin a task until the prior task is merged and every existing
 > package is green.

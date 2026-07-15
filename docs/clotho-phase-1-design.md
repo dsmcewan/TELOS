@@ -10,7 +10,12 @@ creates and maintains knowledge-graph threads across artifacts and repositories.
 This phase builds exactly that and nothing else. Measurement of threads is Lachesis;
 retirement of threads is Atropos; both are explicitly out of scope here.
 
-**Status:** v2.5 — adds executable accuracy semantics for
+**Status:** v2.6 — `executed` means complete source consumption (frozen
+executed/skipped state semantics, no partial-execution state, explicit
+driver-vs-verifier proof boundary), and general-purpose module-loader
+construction is prohibited inside Clotho (frozen safe-export allowlists for
+loader-capable built-ins), per The Eye's delta-8 repair contract. History:
+v2.5 — adds executable accuracy semantics for
 `inspected_source_counts` (frozen per-weaver inventory-id table, a normative
 definition of "inspected", driver-owned counted iterators — counts are never
 self-reported) after The Eye's hold of PR #91. History: v2.4 — incorporates
@@ -276,6 +281,38 @@ accuracy — a structurally valid ledger must not be semantically false.
 - Accuracy is tested behaviorally: under-count, over-count, and
   skipped-but-read cases — not merely malformed-schema cases.
 
+**`executed` means complete source consumption (v2.6):** honest observed
+counts are not enough — a source that was never inspected cannot coexist with
+complete `executed` coverage, or downstream absence claims are unsound.
+
+> A weaver may be recorded as `executed` only when every required source
+> iterator was exhausted successfully and every observed count equals the
+> cardinality of its configured source inventory. Any incomplete, excess, or
+> contradictory consumption is fatal and prevents ledger closure and
+> publication.
+
+The state semantics are frozen:
+
+```
+executed
+  = every required iterator constructed
+  + every iterator exhausted
+  + observed count equals configured cardinality
+  + no fatal error
+
+skipped
+  = no iterator constructed
+  + no iterator consumed
+  + every count is zero
+```
+
+Phase 1 has **no partial-execution state**: partial coverage aborts rather
+than masquerading as either `executed` or `skipped`. The boundary of proof is
+explicit — the **driver** proves iterator construction, exhaustion, and
+expected cardinality at runtime; the **ledger verifier** proves manifest
+structure and rejects nonzero counts for `skipped`; the verifier never claims
+it can reconstruct runtime iterator exhaustion from the signed ledger alone.
+
 **Weaver failure aborts the weave (v2.1).** A throwing weaver means the temporary
 ledger is destroyed and never published; published manifests contain only
 `executed` and `skipped` states. `failed` exists solely as an internal /
@@ -335,6 +372,17 @@ The flagship query is `why()` + `blastRadius()` composed over the
 - **Advisory, never authorizing.** No gate, sign, or lifecycle decision keys off a
   Clotho record. Threads inform humans and future Lachesis analysis. This is
   structural: no package in the repo gains an import from `clotho/`.
+- **No constructed module loaders (v2.6).** Clotho may not construct, obtain,
+  alias, or invoke a general-purpose module loader. Built-in modules capable of
+  producing loaders (`node:module` and its bare `module` form, and equivalent
+  acquisition mechanisms such as `process.getBuiltinModule("module")` where the
+  supported Node range provides it) are governed by **frozen safe-export
+  allowlists** (e.g. `builtinModules`, `isBuiltin`); namespace and default
+  access to such modules is forbidden; any reference to a loader-producing
+  export or API — `createRequire` under any alias, re-export, property access,
+  or immediate invocation — fails closed. The scanner recognizes the frozen
+  syntactic forms it prohibits; unsupported ambiguous loader construction fails
+  closed rather than passing unexamined.
 - Weavers are read-only over the repo; the only thing Clotho writes is its own
   ledger under `.telos/` (ephemeral, git-ignored) or an explicitly exported
   snapshot. The self-weave output directory is never a weave input.
