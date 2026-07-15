@@ -1,5 +1,16 @@
 # Clotho Phase 1 Implementation Plan
 
+> **SUPERSEDED historical artifact.** The Eye's hold-review of PR #91 head
+> `314c772` found two dissent resolutions incomplete (count-accuracy
+> semantics; outbound-scanner closure) and one new state-machine ambiguity
+> introduced by the no-replace publication fix
+> (`docs/clotho-phase-1-remediation.md` § Seventh round); re-converged under
+> spec v2.5 by the seventh delta workshop. The canonical submission candidate
+> is **`docs/runs/clotho-daedalus-delta7/matured-plan-v8.md`**. The extracted
+> copy below is unmodified apart from this banner; the content-addressed,
+> provenance-bearing round artifacts under `artifacts/` are the authoritative
+> record.
+
 > **Status: implementation-ready.** Execute one task per branch, PR, CI run, and
 > squash merge. Do not begin a task until the prior task is merged and every existing
 > package is green.

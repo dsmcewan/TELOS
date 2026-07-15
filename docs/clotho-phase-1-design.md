@@ -10,11 +10,14 @@ creates and maintains knowledge-graph threads across artifacts and repositories.
 This phase builds exactly that and nothing else. Measurement of threads is Lachesis;
 retirement of threads is Atropos; both are explicitly out of scope here.
 
-**Status:** v2.4 — incorporates the codex seat's TELOS-authorization dissent
-(routed via The Eye, 2026-07-15; see
-`docs/convergence-is-not-authorization.md`): normative evidence provenance for
-command-inferred `verified-by` edges, and a closed normative trailer schema
-(`inspected_source_counts`). History: v2.3 — v2 revised after cold review of `2d93816` and the first
+**Status:** v2.5 — adds executable accuracy semantics for
+`inspected_source_counts` (frozen per-weaver inventory-id table, a normative
+definition of "inspected", driver-owned counted iterators — counts are never
+self-reported) after The Eye's hold of PR #91. History: v2.4 — incorporates
+the codex seat's TELOS-authorization dissent (routed via The Eye, 2026-07-15;
+see `docs/convergence-is-not-authorization.md`): normative evidence provenance
+for command-inferred `verified-by` edges, and a closed normative trailer
+schema (`inspected_source_counts`). v2.3 — v2 revised after cold review of `2d93816` and the first
 Daedalus workshop (`docs/runs/clotho-daedalus/`); v2.1 incorporated The Eye's
 second review (content-bound locators, frozen blastRadius semantics,
 mechanism-bound coverage provenance, abort-on-weaver-failure); v2.2 incorporated
@@ -254,6 +257,24 @@ safe-integer counts; the exact inventory ids required per weaver are stated;
 `executed` weavers carry their actual inspected counts and `skipped` weavers
 carry zero counts. A trailer field with no normative schema cannot be
 validated and therefore cannot exist.
+
+**Counts have executable accuracy semantics (v2.5):** structure alone is not
+accuracy — a structurally valid ledger must not be semantically false.
+
+- The implementation plan freezes the **exact inventory-id table for every
+  weaver** and the count definition; ids are never delegated to a future file
+  or illustrated by example.
+- **"Inspected" is defined**: a source counts as inspected only when the
+  weaver actually consumed its bytes — opened, read, and processed to
+  edge-extraction eligibility without fatal error. Discovered-but-unread
+  sources do not count.
+- **Counts are mechanically bound, never self-reported**: the driver hands
+  each weaver its sources through **driver-owned counted iterators** and
+  records the counts itself. The weaver interface stays `{edges, warnings}` —
+  weavers never emit counts, exactly as they never emit time, signatures, or
+  chain fields.
+- Accuracy is tested behaviorally: under-count, over-count, and
+  skipped-but-read cases — not merely malformed-schema cases.
 
 **Weaver failure aborts the weave (v2.1).** A throwing weaver means the temporary
 ledger is destroyed and never published; published manifests contain only

@@ -226,6 +226,24 @@ The `NOT_AUTHORIZED` packets and summary are preserved intact as primary
 evidence. Re-authorization runs only after delta-6 re-converges and The Eye
 releases the corrected plan.
 
+## Seventh round — The Eye holds PR #91 at head `314c772` (2026-07-15)
+
+Four dissent targets verified clean (physical containment, abort/descriptor
+lifecycle, manifest-byte provenance, dissent-provenance wording). Two dissent
+resolutions incomplete + one new ambiguity introduced by the fix itself.
+Resolved via spec v2.5 + amendments AM-27..AM-29
+(`docs/clotho-phase-1-plan-amendments-7.md`) and a seventh surgical delta
+workshop (`docs/runs/clotho-daedalus-delta7/`):
+
+| # | Finding | Resolution |
+|---|---|---|
+| 1 | `inspected_source_counts` lacks executable accuracy semantics — ids delegated to a future file, weaver interface has no count source; a weaver could under-inspect while the driver records inventory size (structurally valid, semantically false) | AM-27 + **spec v2.5**: frozen per-weaver inventory-id table; "inspected" = opened+read+processed without fatal error; **driver-owned counted iterators** (weavers never emit counts); under-count / over-count / skipped-but-read behavioral tests |
+| 2 | D23's outbound proof not closed: nonliteral `require`/`module.require`/`import()`, `file:` URLs, and absolute paths evade the Clotho-side rule | AM-28: closed rule — only Node built-ins + literal relative imports resolving physically into `clotho/` or the permitted `merkle-dag/` closure; every other specifier form fails closed; one synthetic test per rejected form |
+| 3 | Hard-link publication has an undefined post-commit failure state — unlink-of-temp failure cannot honor "nothing was published" | AM-29: **successful `linkSync` is publication commit**; temp-unlink failure is cleanup failure, not rollback; distinct `published-cleanup-incomplete` result + stable warning; injected unlink-failure test proving destination byte-identical and preserved |
+
+`matured-plan-v7.md` becomes superseded evidence once delta-7 converges;
+`authz-002` runs only after The Eye releases the re-converged plan.
+
 ## Not accepted / needs no change
 
 - "Ledger cannot answer from itself" — true of the reviewed skeleton, already false
