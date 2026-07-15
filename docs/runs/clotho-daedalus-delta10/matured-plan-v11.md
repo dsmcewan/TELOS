@@ -1,17 +1,5 @@
 # Clotho Phase 1 Implementation Plan
 
-> **SUPERSEDED historical artifact.** The Eye's delta-8 repair contract found
-> two remaining blockers in this candidate: `executed` did not require complete
-> source consumption (configured 10 / observed 9 / state executed was legal,
-> making absence claims unsound), and D27's allowlist left `createRequire`-style
-> loader construction open (`docs/clotho-phase-1-remediation.md` § Eighth
-> round). Re-converged under spec v2.6 by the eighth delta workshop. The
-> canonical submission candidate is
-> **`docs/runs/clotho-daedalus-delta10/matured-plan-v11.md`**. The extracted copy
-> below is unmodified apart from this banner; the content-addressed,
-> provenance-bearing round artifacts under `artifacts/` are the authoritative
-> record.
-
 > **Status: implementation-ready.** Execute one task per branch, PR, CI run, and
 > squash merge. Do not begin a task until the prior task is merged and every existing
 > package is green.
@@ -61,21 +49,26 @@ call them "signed".
 | D11 | Absence is classifiable. | Every weave ends with a signed coverage-manifest trailer inside the chain. Queries consult it and answer `coverage-unknown` for threads whose producing weaver did not execute, instead of returning a silently smaller answer. Weaver-asserted records are invalid unless that same manifest marks the asserting weaver `executed`. |
 | D12 | CI workflow changes ship alone, after the package exists. | The `.github/workflows/ci.yml` matrix edit is Task 0: a minimal, explicitly flagged, workflow-only PR, human-reviewed and merged immediately after the Task 1 scaffold, so the matrix never names an absent package and no knowingly red workflow PR lands. |
 | D13 | Locators are content-bound version identities. | Every repository-scoped locator carries `repository_ref` and a content hash of the exact bytes it names (`blob_sha`, `text_sha256`, `entry_hash`, or `summary_sha256`). The single named globally-addressed exception is `commit = {sha}`. A changed body, file, section, or summary is a NEW version node; lineage is explicit `supersedes` (`old_version --supersedes--> new_version`; the edge points forward through version lineage); no fact silently reattaches to changed bytes. |
-| D14 | Coverage provenance binds the whole mechanism, mechanically. | Manifest weaver entries carry `implementation_refs` equal to the exact transitive static relative-import closure of the weaver module (content-addressed); the manifest carries `orchestrator_refs` for the driver and shared machinery; `inventories_consumed` entries carry a `source_ref` content address. A committed test proves each implementation inventory equal to the derived closure. Manual integer versions remain human-readable labels only and prove nothing. |
+| D14 | Coverage provenance binds the whole executable mechanism, mechanically (revised per AM-34; see D33). | `implementation_refs` for each weaver equal the exact transitive **accepted relative module-load closure** (D33) of that weaver's entry module (content-addressed); `orchestrator_refs` equal the corresponding closure of the frozen orchestrator entry points; `inventories_consumed` entries carry a `source_ref` content address. The accepted edge forms are exactly the literal relative forms permitted by D27: static imports, side-effect imports, static re-exports (`export ... from`, `export * from`), literal dynamic `import()`, and accepted literal `require()`/`module.require()` calls. Closure derivation and outbound enforcement share one parser, one literal classifier, and one resolver. A committed test proves each implementation and orchestrator inventory exactly equal to the derived closure; any omitted, extra, unresolved, or forbidden target is fatal. Manual integer versions remain human-readable labels only and prove nothing. |
 | D15 | Any weaver failure aborts the weave. | A throwing weaver destroys the temporary ledger; the destination is never published; there is no partial advisory artifact in Phase 1. Published manifests contain only `executed` and `skipped` states; `failed` survives solely in verifier fixtures and internal diagnostics, and the verifier rejects a published manifest containing it. |
 | D16 | `repository_ref` is defined, not delegated. | `repository_ref = "git-root:" + <full 40-hex SHA of the repository's root commit>`, derived mechanically: first `git rev-parse --is-shallow-repository` must return exactly `false` (a shallow repository is rejected with a stable error), then `git rev-list --max-parents=0 HEAD`; more than one root commit is fatal in Phase 1. The weave derives it, records it in the header, and validators reject locators whose `repository_ref` differs from the derived value. Rename/re-hosting does not change identity; clones of the same history share the namespace; forks share it exactly as far as they share the root commit; cross-repository accession preserves Phase 1 node ids. |
-| D17 | Committed inventories name only files that exist. | No inventory may name a file that does not yet exist in the repository at the PR that commits it. Task 4a commits the closure scanner and per-weaver inventories only; Task 5 creates `weave.mjs`, commits the complete orchestrator inventory, and enforces orchestrator closure equality in the same PR. Per-weaver closure equality is enforced from Task 4a/4b as those weavers land; orchestrator closure equality from Task 5 onward. |
+| D17 | Committed inventories name only files that exist. | No inventory may name a file that does not yet exist in the repository at the PR that commits it. Task 4a commits the closure scanner and per-weaver inventories only; Task 5 creates `weave.mjs`, commits the complete orchestrator inventory, and enforces orchestrator closure equality in the same PR. Per-weaver closure equality is enforced from Task 4a/4b as those weavers land; orchestrator closure equality from Task 5 onward. Every resolved closure target must exist when its inventory is committed (AM-34 invariant 8). |
 | D18 | The shallow/full-clone contract is proven against real git, not only injected. | Injected-git units remain as fast branch-coverage tests, but the normative proof is an integration fixture: a multi-commit temporary origin cloned via `file://` with `--depth 1` must make `deriveRepositoryRef` throw the stable shallow-history error, and a full clone of the same origin must resolve exactly `git-root:<origin root SHA>`. The fixture uses only allowlisted no-shell git commands, builds under a cleaned-up temporary directory, and runs in the normal `npm test` suite. |
 | D19 | Ledger integrity validation is split from repository-specific inventory equality. | Task 3's `close(coverage)` and `verifyLedger` validate manifest schema, signatures, chain structure, content-reference shapes, published states, and record/coverage consistency using injected fixture coverage only — no dependency on committed inventories, which per D17 cannot legally exist yet. Task 5 validates coverage against the actual committed per-weaver and orchestrator inventories before `close()` and proves exact inventory/closure equality. |
 | D20 | Publication is atomic and never replaces, and the commit point is frozen. | The closed-and-verified sibling temporary file is published with exclusive `link` semantics (`fs.linkSync(tmp, dest)`), then the temporary name is unlinked. `EEXIST` is failure; a pre-existing destination is preserved, never replaced. There is no rename-over window in which a concurrently created destination can be silently overwritten. **Successful `linkSync` IS publication commit (D28):** a later unlink failure of the temporary name is a cleanup failure, never a publication rollback — the published destination is never disturbed, and the outcome is the distinct machine-visible state `published-cleanup-incomplete`. |
 | D21 | Write-location containment is physical, not lexical. | Before creating temporary files or destination parent directories, every component of the allowed-root and parent chain is checked: symlinks are rejected and the resolved real path must remain beneath the repository's real path. The containment check is repeated immediately before publication. |
 | D22 | Fatal warnings abort before publication, and every failure path closes the descriptor. | Any `FATAL_WARNING_CODES` result aborts the weave before close and publication, exits nonzero, and removes the temporary ledger. Ledger poisoning (append or close failure) closes the file descriptor via an idempotent `abort()` on the ledger handle before temporary-file removal; no failure path leaks a descriptor, a temporary file, or a destination. |
-| D23 | The advisory boundary is proven against evasion, in both directions. | Outside Clotho: nonliteral `require()`/`module.require()` fail closed, tracked source symlinks are rejected, and resolved real paths are inspected so symlink aliases into `clotho/` fail. Inside Clotho: the outbound scanner is closed over ALL specifier forms (D27) — only Node built-ins and literal relative imports resolving physically into `clotho/` or the exact permitted `merkle-dag/` closure are accepted; every other specifier form, including nonliteral, absolute, and `file:` forms, fails closed. |
+| D23 | The advisory boundary is proven against evasion, in both directions. | Outside Clotho: nonliteral `require()`/`module.require()` fail closed, tracked source symlinks are rejected, and resolved real paths are inspected so symlink aliases into `clotho/` fail. Inside Clotho: the outbound scanner is closed over ALL specifier forms (D27) — only Node built-ins and the accepted literal relative module-loading forms (D27/D33) resolving physically into `clotho/` or the exact permitted `merkle-dag/` closure are accepted; every other specifier form, including nonliteral, absolute, and `file:` forms, fails closed. |
 | D24 | The trailer's `inspected_source_counts` has a closed normative schema (spec v2.4). | It is a sorted array of unique `{inventory_id, count}` entries with no extra fields and nonnegative safe-integer counts; the exact inventory ids required per weaver are frozen in this plan's normative table (D26) and committed in `inventory.mjs`; `executed` weavers carry actual inspected counts, `skipped` weavers carry zero counts. Close, verify, driver, and tamper tests all enforce the schema. |
 | D25 | Command-inferred `verified-by` provenance names the manifest bytes (spec v2.4). | A `verified-by` edge inferred from a package `check`/`test` command carries `source_ref = file:<package.json path>@<package.json blob_sha>` — the bytes that evidence execution; edges inferred from test-file imports or classification keep the test file's own source reference. Exact-output tests distinguish the two provenance cases. |
-| D26 | Inspected counts have executable accuracy semantics (spec v2.5). | The exact per-weaver inventory-id table and the count definition per id are frozen in this plan's body — never delegated or illustrated by example. "Inspected" means opened, read, and processed to edge-extraction eligibility without fatal error; discovered-but-unread does not count. The driver hands each weaver its sources through **driver-owned counted iterators** and records the counts itself; weavers never emit counts (the D5 discipline extended). Accuracy is proven behaviorally: under-count, over-count, and skipped-but-read cases, in addition to malformed-schema cases. |
-| D27 | The Clotho-side outbound scanner is a closed allowlist over ALL specifier forms. | Inside `clotho/`, only Node built-ins and literal relative imports resolving physically into `clotho/` or the exact permitted `merkle-dag/` closure are accepted. Every other specifier form — nonliteral `require()`, nonliteral `module.require()`, nonliteral dynamic `import()`, literal `file:` URLs, literal absolute paths, and non-built-in bare specifiers — fails closed, each proven by its own synthetic test. |
+| D26 | Inspected counts have executable accuracy semantics (spec v2.5). | The exact per-weaver inventory-id table and the count definition per id are frozen in this plan's body — never delegated or illustrated by example. "Inspected" means opened, read, and processed to edge-extraction eligibility without fatal error; discovered-but-unread does not count. The driver hands each weaver its sources through **driver-owned counted iterators** and records the counts itself; weavers never emit counts (the D5 discipline extended). Accuracy is proven behaviorally: under-consumption, early-return, cardinality-mismatch, and skipped-but-read cases, in addition to malformed-schema cases. |
+| D27 | The Clotho-side outbound scanner is a closed allowlist over ALL specifier forms, and every accepted relative module-loading edge participates in D33's provenance closure. | Inside `clotho/`, only Node built-ins and the **accepted literal relative module-loading forms** — static `import` declarations with `from`, side-effect `import` declarations, static `export ... from`, static `export * from` (including recognized namespace re-export variants), literal dynamic `import()`, accepted literal `require()`, and accepted literal `module.require()` — resolving physically into `clotho/` or the exact permitted `merkle-dag/` closure are accepted. Every other specifier form — nonliteral `require()`, nonliteral `module.require()`, nonliteral dynamic `import()`, literal `file:` URLs, literal absolute paths, and non-built-in bare specifiers — fails closed, each proven by its own synthetic test. Every accepted form is a closure-traversed edge under D33; a form the scanner permits is a form the closure traverses. Loader-capable built-ins are further governed by the exact frozen safe-export mapping (D30/D32). |
 | D28 | The publication commit point is frozen. | Successful `linkSync(tmp, dest)` is publication commit. A subsequent failure to unlink the temporary name is a **cleanup failure, not a publication rollback**: the destination exists, is never disturbed or removed, and the result is the distinct machine-visible state `published-cleanup-incomplete` with a stable warning naming the leftover temporary path. Callers and run evidence distinguish all three publication states: not published / published clean / published with incomplete cleanup. |
+| D29 | `executed` means complete source consumption (spec v2.6). | A weaver may be recorded as `executed` only when every required source iterator was constructed and exhausted successfully and every observed count equals the cardinality of its configured source inventory. Any incomplete, excess, or contradictory consumption is fatal with a stable code from `{incomplete-source-consumption, source-count-mismatch, unexpected-source-consumption}`, prevents ledger closure and publication, and Phase 1 has no partial-execution state. No edge from a weaver reaches `appendEdge` before that weaver's accounting check succeeds. The driver proves construction, exhaustion, and cardinality at runtime; the verifier proves manifest structure and rejects nonzero counts on `skipped` entries, and never claims to reconstruct runtime iterator exhaustion from the signed ledger alone. |
+| D30 | Constructed module loaders are prohibited inside Clotho (spec v2.6). | Clotho may not construct, obtain, alias, or invoke a general-purpose module loader. Loader-capable built-ins are governed by the exact normative safe-export mapping frozen in D32; namespace and default imports of loader-capable modules are forbidden; `createRequire` under any alias, re-export, property access, or immediate invocation fails closed, as does equivalent acquisition via `process.getBuiltinModule("module")` or `process.getBuiltinModule("node:module")`. The scanner recognizes the frozen syntactic forms it prohibits; unsupported ambiguous loader construction fails closed — no arbitrary data-flow analysis is claimed. |
+| D31 | Ledger clause resolution owns an independent counted `contract-files` inventory (spec v2.7). | The ledger weaver's required inventory ids are exactly `contract-files`, `ledger-sources`, `run-sources`. The ledger weaver builds its current-contract clause-resolution index solely from its own driver-counted `contract-files` iterator (`ctx.sources["contract-files"]`) — never from a map produced by the doc-weaver and never through uncounted fallback reads. Contract files are consumed whenever the ledger weaver executes, including when the doc-weaver is skipped, when no obligation produces a clause edge, and when every reference is stale. Doc-files/contract-files overlap is intentional: each weaver independently reads, counts, and proves the bytes for its own output. No contract byte used for clause resolution may be read outside the counted `contract-files` source. |
+| D32 | Loader-capable built-in access is governed by the exact normative mapping (spec v2.7). | `LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS = { "module": ["builtinModules", "isBuiltin"], "node:module": ["builtinModules", "isBuiltin"] }` — the key set is exactly `module` and `node:module`, each value exactly that sorted pair, and the outer mapping and inner collections are deeply frozen. Only static named imports of these source export names are permitted; local aliases are permitted because permission is decided from the imported export name, never the local binding name. All other access fails closed. The outbound scanner imports the canonical mapping from `inventory.mjs` and maintains no second hand-written allowlist. Expanding the mapping requires a future specification amendment and authorization; it is not an implementation choice. |
+| D33 | Mechanism provenance closes over every accepted literal relative module-loading edge (spec v2.8, AM-34). | The **accepted relative module-load closure** of an entry point is the entry-point file itself plus every file recursively reachable through an accepted literal relative module-loading edge of exactly these forms: static `import` declarations with `from`; side-effect `import` declarations; static `export ... from`; static `export * from` (including recognized namespace re-export variants); literal dynamic `import()`; accepted literal `require()`; accepted literal `module.require()`. The traversal is recursive, cycle-safe, deterministic, and sorted by normalized repository-relative path; every accepted edge's resolved target is included before traversal continues recursively. Closure derivation and outbound enforcement share the **same** parser, literal classifier, resolver, physical-containment checks, extension rules, and accepted-form definition — no separately maintained closure-only form list and no closure-only resolver. A missing, unresolved, ambiguous, non-regular, symlinked, escaping, or otherwise forbidden target fails closed. Conditional or apparently unreachable literal dynamic imports and require-style loads are included conservatively: the closure describes **bytes capable of executing**, not observed branch coverage. Shared files may legitimately appear in more than one weaver closure or in both implementation and orchestrator closures. Nonliteral loads remain forbidden under D27 — this closure does not broaden the executable surface; D30/D32 loader prohibitions are unchanged; the code-weaver's knowledge-graph extraction semantics are unchanged (D33 governs mechanism provenance, not inferred application dependencies). No published manifest may identify an executed mechanism while omitting a file reachable through an accepted relative module-loading form. |
 
 ## Global constraints
 
@@ -89,16 +82,33 @@ call them "signed".
 - **Zero dependencies:** `clotho/package.json` contains neither `dependencies` nor
   `devDependencies`. Only Node built-ins and permitted relative repository imports
   are used, and this is mechanically proven: the Clotho-side outbound scanner is a
-  closed allowlist over all specifier forms — only Node built-ins and literal
-  relative imports resolving physically into `clotho/` or the exact permitted
-  `merkle-dag/` closure are accepted; every other form fails closed (D23/D27).
+  closed allowlist over all specifier forms — only Node built-ins and the accepted
+  literal relative module-loading forms (D27/D33) resolving physically into
+  `clotho/` or the exact permitted `merkle-dag/` closure are accepted; every other
+  form fails closed (D23/D27).
+- **Provenance closes over the accepted module-load surface:** mechanism
+  provenance (`implementation_refs`, `orchestrator_refs`, the permitted
+  `merkle-dag/` closure) is derived over every accepted literal relative
+  module-loading form, using the same parser and resolver as the outbound
+  scanner; no published manifest may omit a file reachable through an accepted
+  form (D14/D33).
+- **No constructed module loaders:** Clotho never constructs, obtains, aliases, or
+  invokes a general-purpose module loader; loader-capable built-ins are restricted
+  to the exact frozen `LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS` mapping (D32), and
+  every loader-acquisition form — including `createRequire` under any alias,
+  namespace or default imports of `module`/`node:module`, forbidden re-exports,
+  property access, immediate invocation, and both
+  `process.getBuiltinModule("module")` and
+  `process.getBuiltinModule("node:module")` spellings — fails closed (D30/D32).
 - **Closed and fail-closed:** unknown kinds, invalid endpoint-kind combinations,
   unknown assertion statuses, invalid status/assertor couplings, unknown
   source-reference schemes, malformed locators, mismatched node ids, unsupported
   configured ledger formats, manifest/record contradictions, malformed
-  `inspected_source_counts` entries, count/consumption contradictions, shallow
-  repository history, and untrusted evidence are rejected or omitted with
-  deterministic warnings. They never produce an inferred edge.
+  `inspected_source_counts` entries, count/consumption contradictions, incomplete
+  source consumption (D29), loader-construction forms (D30/D32), unresolved or
+  forbidden closure targets (D33), shallow repository history, and untrusted
+  evidence are rejected or omitted with deterministic warnings. They never produce
+  an inferred edge.
 - **Identity preservation:** existing commit SHAs, ledger entry hashes, concern refs,
   obligation refs, and contract ids remain inside their locators. Clotho derives a
   containing node id; it does not replace the existing identity.
@@ -124,10 +134,13 @@ call them "signed".
 - **Fatal warnings abort:** any `FATAL_WARNING_CODES` result aborts the weave
   before close and publication, exits nonzero, and removes the temporary ledger;
   every failure path closes the ledger descriptor via idempotent `abort()` (D22).
-- **Counts are driver-owned:** weavers return `{edges, warnings}` only; inspected
-  counts come from driver-owned counted iterators, never from weaver self-report
-  (D26). A `skipped` weaver whose iterators were consumed is a contradiction and
-  fails verification.
+- **Counts are driver-owned and `executed` means complete consumption:** weavers
+  return `{edges, warnings}` only; inspected counts come from driver-owned counted
+  iterators, never from weaver self-report (D26). An `executed` weaver requires
+  every required iterator constructed and exhausted with observed counts equal to
+  the configured inventory cardinality; any incomplete, excess, or contradictory
+  consumption is fatal and prevents closure and publication (D29). A `skipped`
+  weaver whose iterators were constructed or consumed is a contradiction and fails.
 - **Coverage honesty:** a query over a ledger whose manifest shows a weaver did not
   execute answers `coverage-unknown` for that weaver's edge kinds; only the
   predefined flagship expected set may name a specific missing relationship. A
@@ -135,7 +148,9 @@ call them "signed".
   inconsistent and rejected.
 - **No partial weave artifacts:** a weaver failure aborts the entire weave; the
   temporary ledger is removed and the destination is never published. A published,
-  verified manifest contains only `executed` and `skipped` weaver states.
+  verified manifest contains only `executed` and `skipped` weaver states, and no
+  published manifest can contain `state: executed` for a weaver that failed to
+  inspect every configured source (D29).
 - **Exit:** `cd clotho && npm test` is green, every existing package remains green,
   no spine file changed, and verified reproduction evidence is committed.
 
@@ -144,28 +159,28 @@ call them "signed".
 | Path | Responsibility |
 |---|---|
 | `clotho/package.json` | Private ESM package, Node engine, fixed check/test commands, no dependencies. |
-| `clotho/inventory.mjs` | Closed package, document, ledger-adapter, run-summary, weaver-id, weaver-version, weaver-implementation-file, orchestrator-file, per-weaver required inventory-id, exclusion, and fatal-warning inventories, matching the frozen inventory-id table in this plan. Each inventory names only files existing at the PR that commits it (D17): per-weaver implementation-file lists land in Tasks 4a/4b; the orchestrator-file list lands in Task 5. |
+| `clotho/inventory.mjs` | Closed package, document, contract-file, ledger-adapter, run-summary, weaver-id, weaver-version, weaver-implementation-file, orchestrator-file, per-weaver required inventory-id, exclusion, fatal-warning, and `LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS` inventories, matching the frozen inventory-id table and the exact frozen safe-export mapping in this plan (D31/D32). Each inventory names only files existing at the PR that commits it (D17): per-weaver implementation-file lists land in Tasks 4a/4b; the orchestrator-file list lands in Task 5. |
 | `clotho/registry.mjs` | Read-only kind and assertion-status registries, canonical encoding, locator/source/endpoint/status validation, document keys, and node-id derivation. |
 | `clotho/thread-ledger.mjs` | Exclusive creation, signing, chaining, coverage-manifest trailer, closing, idempotent `abort()`, verification, and incremental edge reads. |
-| `clotho/weavers/util.mjs` | Closed-root walks, lexical extraction, Markdown sections, token matching, current-byte blob refs, physical-containment checks, counted source iterators (D26), and the git wrapper. |
+| `clotho/weavers/util.mjs` | Closed-root walks, lexical extraction, Markdown sections, token matching, current-byte blob refs, physical-containment checks, counted source iterators with cardinality/exhaustion accounting (D26/D29), the shared module-load form classifier/resolver used by both the outbound scanner and the closure derivation (D33), and the git wrapper. |
 | `clotho/weavers/git.mjs` | `code-symbol -> commit` and `repository-file -> commit` `introduced-by` edges. |
 | `clotho/weavers/code.mjs` | `code-symbol -> code-symbol`, `code-symbol -> repository-file`, `repository-file -> code-symbol`, and `repository-file -> repository-file` `depends-on` edges. |
 | `clotho/weavers/test.mjs` | `code-symbol -> test` and `repository-file -> test` `verified-by` edges, with import-derived and command-inferred provenance distinguished per D25. |
 | `clotho/weavers/doc.mjs` | `code-symbol` or `repository-file` `-> doc-section` or `contract-clause` `documented-in` edges. |
-| `clotho/weavers/ledger.mjs` | Concern, obligation, contract-discharge, and run-evidence edges through closed adapters. |
+| `clotho/weavers/ledger.mjs` | Concern, obligation, contract-discharge, and run-evidence edges through closed adapters, with clause resolution against the weaver's own counted `contract-files` index (D31). |
 | `clotho/query.mjs` | `threadsOf`, `blastRadius`, `why`, and `reportGaps`, all manifest- and status-aware. |
-| `clotho/weave.mjs` | Guarded CLI entry point and complete-weave orchestration, including counted iterators, physical containment, and atomic no-replace publication with the frozen commit point. |
+| `clotho/weave.mjs` | Guarded CLI entry point and complete-weave orchestration, including counted iterators with the D29 accounting gate, physical containment, and atomic no-replace publication with the frozen commit point. |
 | `clotho/scripts/check.mjs` | Recursively invokes `node --check` for every Clotho `.mjs` file. |
 | `clotho/scripts/test-all.mjs` | Spawns every named `test-*.mjs` script in a committed fixed order. |
 | `clotho/scripts/test-registry.mjs` | Registry, canonicalization, locator, endpoint, status, and identity units, plus the real-git shallow/full-clone integration fixture (D18). |
 | `clotho/scripts/test-ledger.mjs` | Creation, append, signature, chain, trailer, `inspected_source_counts` schema, abort/descriptor-cleanup, tamper, truncation, and streaming units against injected fixture coverage (D19). |
-| `clotho/scripts/test-weavers.mjs` | Fixture-based exact-output and determinism tests, including the two `verified-by` provenance cases (D25) and count-accuracy behavioral cases (D26). |
+| `clotho/scripts/test-weavers.mjs` | Fixture-based exact-output and determinism tests, including the two `verified-by` provenance cases (D25), consumption-accuracy behavioral cases (D26/D29), and independent contract-files consumption cases (D31). |
 | `clotho/scripts/test-query.mjs` | Query traversal, validation, truncation, gap, coverage, status-filter, and drift units. |
-| `clotho/scripts/test-advisory.mjs` | Repository-wide structural no-import check, evasion-route checks, closed Clotho-side outbound specifier check (D27), and scanner units (D23). |
-| `clotho/scripts/test-closure.mjs` | Derives each weaver's static relative-import closure (Task 4a onward) and, from Task 5, the orchestrator closure; fails on any divergence from the committed inventories. |
+| `clotho/scripts/test-advisory.mjs` | Repository-wide structural no-import check, evasion-route checks, closed Clotho-side outbound specifier check (D27), loader-construction prohibition checks against the exact frozen mapping (D30/D32), scanner units (D23), and the shared-grammar proof that the closure derivation and the outbound scanner use one form classifier and resolver (D33). |
+| `clotho/scripts/test-closure.mjs` | Derives each weaver's accepted relative module-load closure (D33; Task 4a onward) and, from Task 5, the orchestrator closure; fails on any divergence from the committed inventories, including omission of targets reached through re-export, literal dynamic import, or accepted require-style forms. |
 | `clotho/scripts/test-flagship.mjs` | Real-repository full and skipped-weaver acceptance with review-set reporting. |
 | `clotho/scripts/expected-flagship.json` | Hand-audited exact-subset expectations for eight source groups. |
-| `clotho/scripts/fixtures/` | Miniature packages, Markdown, ledgers, streams, run summaries, symlink-escape fixtures, and the temporary-origin git fixture builder. |
+| `clotho/scripts/fixtures/` | Miniature packages, Markdown, ledgers, streams, run summaries, symlink-escape fixtures, loader-construction fixtures, module-load closure fixtures for every accepted form (D33), and the temporary-origin git fixture builder. |
 | `.github/workflows/ci.yml` | Adds `clotho` to the package matrix with `fetch-depth: 0` (Task 0, workflow-only PR, after Task 1). |
 | `.gitignore` | Ignores `.telos/clotho/`. |
 | `docs/runs/clotho-self-weave/` | Reproduction script, snapshot, summary, match report, review set, and verification report. |
@@ -427,20 +442,38 @@ contract below). `weavers` lists all five weaver ids in inventory order.
 `version` is the committed integer from `inventory.mjs`, retained as a
 human-readable label only; it proves nothing.
 
+**The state semantics are frozen (D29, spec v2.6):**
+
+```text
+executed = every required iterator constructed + every iterator exhausted
+           + observed count equals configured cardinality + no fatal error
+skipped  = no iterator constructed + no iterator consumed + every count is zero
+```
+
+Phase 1 has **no partial-execution state**: partial coverage aborts rather than
+masquerading as either `executed` or `skipped`. No published manifest can contain
+`state: executed` for a weaver that failed to inspect every configured source.
+The proof boundary is explicit: the **driver** proves iterator construction,
+exhaustion, and expected cardinality at runtime (Task 5); the **ledger verifier**
+proves manifest structure and rejects nonzero counts for `skipped` entries; the
+verifier never claims it can reconstruct runtime iterator exhaustion from the
+signed ledger alone.
+
 **`inspected_source_counts` has a closed normative schema (D24, spec v2.4):**
 it is a sorted array of unique `{inventory_id, count}` entries — no extra
 fields, `inventory_id` from the closed inventory-id set, `count` a nonnegative
 safe integer, entries sorted by `inventory_id`, no duplicates. An `executed`
 weaver carries its actual inspected counts over exactly its required inventory
-ids; a `skipped` weaver carries the same required ids with every `count` zero.
+ids — which per D29 must equal the configured inventory cardinalities; a
+`skipped` weaver carries the same required ids with every `count` zero.
 `close()` and `verifyLedger` both reject missing or extra inventory ids, extra
 fields, unsorted or duplicate entries, negative, non-integer, or unsafe counts,
 and nonzero counts on a skipped weaver.
 
-**The per-weaver inventory-id table is frozen here (D26, spec v2.5).** It is
-normative in this plan body; `inventory.mjs` commits the identical table and a
-unit proves the committed table equal to this one. No delegation, no
-examples-as-normative:
+**The per-weaver inventory-id table is frozen here (D26, spec v2.5; extended
+D31, spec v2.7).** It is normative in this plan body; `inventory.mjs` commits
+the identical table and a unit proves the committed table equal to this one. No
+delegation, no examples-as-normative:
 
 | Weaver | Required `inventory_id`s | Count definition per id |
 |---|---|---|
@@ -448,49 +481,94 @@ examples-as-normative:
 | `clotho-code-weaver` | `package-modules` | Number of `.mjs` modules below the closed package roots whose bytes were opened, read, and lexically scanned to import-extraction eligibility without fatal error. |
 | `clotho-test-weaver` | `test-files`, `package-manifests` | Number of classified test files (respectively `package.json` manifests) whose bytes were opened, read, and processed to `verified-by`-extraction eligibility without fatal error. |
 | `clotho-doc-weaver` | `doc-files` | Number of Markdown files below the configured documentation and contract roots whose bytes were opened, read, and section-split without fatal error. |
-| `clotho-ledger-weaver` | `ledger-sources`, `run-sources` | Number of configured ledger files (respectively configured run-summary files) whose bytes were opened, read, and adapter-validated to entry-extraction eligibility without fatal error. |
+| `clotho-ledger-weaver` | `contract-files`, `ledger-sources`, `run-sources` | `contract-files`: number of configured contract Markdown files whose exact bytes were opened, read, split with the canonical Markdown section splitter, assigned normalized heading paths and exact section hashes, and incorporated into a collision-checked current-contract index without fatal error. `ledger-sources` (respectively `run-sources`): number of configured ledger files (respectively configured run-summary files) whose bytes were opened, read, and adapter-validated to entry-extraction eligibility without fatal error. |
+
+`contract-files` is an exact, deterministic, sorted inventory of
+repository-relative contract Markdown paths committed in `inventory.mjs`
+(D31). Overlap between `doc-files` and `contract-files` is intentional: the
+doc-weaver and ledger-weaver each independently read, count, and prove the
+bytes needed for their own output, with no shared mutable state. The
+ledger-weaver's clause resolution reads no contract byte outside this counted
+source, and the inventory remains required whenever the ledger weaver
+executes — even when the doc-weaver is skipped, when no obligation yields a
+clause edge, and when every reference is stale or absent.
 
 **"Inspected" is defined (spec v2.5):** a source counts as inspected only when
 the weaver actually consumed its bytes — opened, read, and processed to
 edge-extraction eligibility without fatal error. A discovered-but-unread source
 does not count. A source whose processing raised a fatal warning does not count
-(and the weave aborts anyway per D22).
+(and the weave aborts anyway per D22). Per D29, an `executed` weaver has no
+uninspected sources at all: an inspected count below the configured cardinality
+is not a smaller honest count but a fatal `incomplete-source-consumption`
+accounting failure.
 
-**Counts are driver-owned, never self-reported (D26):** the driver hands each
-weaver its sources through **counting iterators** built in `weavers/util.mjs`.
-Each counted iterator wraps one required inventory's source stream; a source
-increments its iterator's count only when the weaver completes consumption of
-that source (the iterator observes consumption; the weaver signals neither
-success counts nor totals). The driver records the iterator counts itself when
-assembling coverage. The weaver interface remains exactly
-`{edges, warnings}` — weavers never emit counts, time, signatures, record
-hashes, or chain fields (D5). A `skipped` weaver's iterators are never
-constructed or consumed; **a `skipped` weaver whose iterator was consumed is a
-contradiction** — the driver refuses to close, and an independently signed
+**Counts are driver-owned, never self-reported (D26), and gated for
+completeness (D29):** the driver hands each weaver its sources through
+**counting iterators** built in `weavers/util.mjs`. Each counted iterator wraps
+one required inventory's source stream and retains, driver-side,
+`{inventory_id, expected_cardinality, observed_count, exhausted}`; a source
+increments `observed_count` only when the weaver completes consumption of that
+source, and `exhausted` becomes true only on normal exhaustion of the iterator
+(the iterator observes consumption; the weaver signals neither success counts
+nor totals). After a weaver returns and **before any of its edges reach
+`appendEdge` and before `close()`** — this edge-append ordering is normative,
+so an incomplete weaver never influences the temporary ledger before rejection
+— the driver:
+
+1. confirms every required iterator exists (was constructed);
+2. confirms every iterator reached normal exhaustion;
+3. confirms `observed_count === expected_cardinality` for every iterator;
+4. rejects any count-shaped field returned by the weaver;
+5. aborts on any mismatch with a stable fatal code from
+   `{incomplete-source-consumption, source-count-mismatch,
+   unexpected-source-consumption}`.
+
+The weaver interface remains exactly `{edges, warnings}` — weavers never emit
+counts, time, signatures, record hashes, or chain fields (D5). A `skipped`
+weaver's iterators are never constructed or consumed; **a `skipped` weaver
+whose iterator was constructed or consumed is a driver contradiction** — even
+at zero count — the driver refuses to close, and an independently signed
 fixture manifest asserting `skipped` with nonzero counts fails verification.
 
-**Coverage provenance binds the whole mechanism, mechanically:**
+**Coverage provenance binds the whole executable mechanism, mechanically
+(D14/D33):**
 
-- `implementation_refs` per weaver is a nonempty deterministically sorted array of
-  `file:<path>@<blob_sha>` content addresses equal to the **exact transitive
-  static relative-import closure** of that weaver's module — the weaver module
-  itself, the shared substrate it imports (e.g. `clotho/weavers/util.mjs`,
-  `clotho/registry.mjs`, `clotho/inventory.mjs`), and any permitted `merkle-dag`
-  primitives participating in identity, canonicalization, or hashing. The driver
-  computes each ref with `git hash-object --no-filters` from the committed
-  per-weaver implementation-file inventory in `inventory.mjs`.
+- `implementation_refs` per weaver is a nonempty deterministically sorted array
+  of `file:<path>@<blob_sha>` content addresses equal to the **exact accepted
+  relative module-load closure** (D33) of that weaver's entry module — the
+  weaver module itself, every file recursively reachable through an accepted
+  literal relative module-loading edge (static imports, side-effect imports,
+  static re-exports, literal dynamic `import()`, accepted literal
+  `require()`/`module.require()`), the shared substrate it loads
+  (e.g. `clotho/weavers/util.mjs`, `clotho/registry.mjs`,
+  `clotho/inventory.mjs`), and any permitted `merkle-dag` primitives
+  participating in identity, canonicalization, or hashing, themselves
+  recursively traversed. The driver computes each ref with
+  `git hash-object --no-filters` from the committed per-weaver
+  implementation-file inventory in `inventory.mjs`.
 - `orchestrator_refs` is a nonempty deterministically sorted array of content
-  addresses for the orchestration machinery — `clotho/weave.mjs`,
-  `clotho/thread-ledger.mjs`, registry/canonicalization code, and other shared
-  machinery from the committed orchestrator-file inventory — because the driver
-  shapes the graph (tables, skip policy, dedupe, ordering, publication) even when
-  every per-weaver ref is unchanged.
+  addresses equal to the accepted relative module-load closure of the frozen
+  orchestrator entry points — `clotho/weave.mjs`, `clotho/thread-ledger.mjs`,
+  registry/canonicalization code, and other shared machinery from the committed
+  orchestrator-file inventory — because the driver shapes the graph (tables,
+  skip policy, dedupe, ordering, publication) even when every per-weaver ref is
+  unchanged.
+- Conditional or apparently unreachable literal dynamic imports and
+  require-style loads are included conservatively: the closure describes
+  **bytes capable of executing**, not observed branch coverage. Shared files
+  may legitimately appear in more than one weaver closure or in both
+  implementation and orchestrator closures.
 - The committed inventories are **proven equal to the derived closures, never
-  trusted**: `scripts/test-closure.mjs` derives the static relative-import
-  closure of each weaver module and, once Task 5 lands `weave.mjs`, of the
-  orchestrator entry points, using the same lexical import scanner discipline as
-  the advisory checker, and fails when any committed inventory omits or adds a
-  file. Per D17, each inventory is committed in the PR whose files it names.
+  trusted**: `scripts/test-closure.mjs` derives the accepted relative
+  module-load closure of each weaver module and, once Task 5 lands
+  `weave.mjs`, of the orchestrator entry points, using the **same parser,
+  literal classifier, resolver, physical-containment checks, extension rules,
+  and accepted-form definition** as the advisory outbound scanner (D33 —
+  no closure-only form list, no closure-only resolver), and fails when any
+  committed inventory omits or adds a file. A missing, unresolved, ambiguous,
+  non-regular, symlinked, escaping, or otherwise forbidden target fails
+  closed. Per D17, each inventory is committed in the PR whose files it names,
+  and every resolved closure target must exist at that PR.
 
 A skipped weaver still records its `implementation_refs` (the bytes that would
 have run, identifying the mechanism version) with zero-count
@@ -500,7 +578,9 @@ have run, identifying the mechanism version) with zero-count
 inventory read, all content-addressed). Verification recomputes and checks every
 ref's shape (valid `file:` form, repo-relative path, 40-hex blob SHA) for
 `implementation_refs`, `orchestrator_refs`, and `inventories_consumed`, and the
-flagship run evidence records them.
+flagship run evidence records them. No published manifest may identify an
+executed mechanism while omitting a file reachable through an accepted relative
+module-loading form (D33).
 
 The trailer is written by `close()` from driver-supplied coverage data; weavers never
 see or emit it. A complete ledger has exactly one trailer as its final record; a
@@ -510,8 +590,8 @@ Per D19, the ledger layer itself validates coverage **structurally** (schema,
 states, ref shapes, `inspected_source_counts` schema, record/coverage
 consistency); equality of coverage data with the committed repository
 inventories, and equality of recorded counts with the driver's counted-iterator
-observations, are driver-level obligations enforced in `weave.mjs` (Task 5), not
-`thread-ledger.mjs` dependencies.
+observations and configured cardinalities (D29), are driver-level obligations
+enforced in `weave.mjs` (Task 5), not `thread-ledger.mjs` dependencies.
 
 For every edge whose `asserted_by` is one of the five weaver ids, the trailer entry
 for that exact id must have `state: executed`. `close()` rejects contradictory
@@ -540,24 +620,30 @@ platform-specific separators. Results sort edges by
 warnings by `(weaver, code, path, detail)`. Exact duplicate edge inputs are removed;
 records with different evidence, assertors, or statuses remain distinct. Weavers
 receive their sources through the driver's counted iterators (D26) and never emit
-counts or totals of any kind.
+counts or totals of any kind; a weaver recorded `executed` must have exhausted
+every handed iterator with observed counts equal to the configured cardinalities
+(D29).
 
 **Any weaver failure aborts the weave.** A weaver that throws terminates the entire
 weave: the ledger handle is aborted (descriptor closed), the temporary ledger file
 is removed, the destination is never published, and the driver exits nonzero
 reporting the stable error code. There is no partial advisory artifact in Phase 1;
-the deliberate coverage-unknown path is `--skip` (`state: skipped`). The rejected
-alternative—publishing partial advisory artifacts with `failed` manifest states—is
-recorded here for provenance and may be revisited by a future authorized phase.
+the deliberate coverage-unknown path is `--skip` (`state: skipped`). Incomplete,
+excess, or contradictory source consumption aborts identically with its stable
+D29 accounting code. The rejected alternative—publishing partial advisory
+artifacts with `failed` manifest states—is recorded here for provenance and may
+be revisited by a future authorized phase.
 
 `inventory.mjs` contains a closed `FATAL_WARNING_CODES` set for structural failures
 such as root escape, symlink input, unsupported configured ledger format, invalid
-configured ledger entry, chain failure, invalid content address, and duplicate
-heading address. **Any fatal-warning result aborts the weave before close and
-publication (D22):** the driver exits nonzero, aborts the ledger handle, and
-removes the temporary ledger; a fatal warning can never coexist with a published
-artifact. Missing matches and unrepresentable static grammar produce nonfatal
-warnings; flagship expected-set and gap checks decide whether they are acceptable.
+configured ledger entry, chain failure, invalid content address, duplicate
+heading address, and the D29 accounting codes `incomplete-source-consumption`,
+`source-count-mismatch`, and `unexpected-source-consumption`. **Any fatal-warning
+result aborts the weave before close and publication (D22):** the driver exits
+nonzero, aborts the ledger handle, and removes the temporary ledger; a fatal
+warning can never coexist with a published artifact. Missing matches and
+unrepresentable static grammar produce nonfatal warnings; flagship expected-set
+and gap checks decide whether they are acceptable.
 
 ## Task 1: Package scaffold
 
@@ -712,8 +798,11 @@ schema, signatures, chain structure, content-reference shapes, published states,
 the `inspected_source_counts` schema (D24), and record/coverage consistency,
 exercised with **injected fixture coverage**. It takes no dependency on committed
 per-weaver or orchestrator inventories, which per D17 do not yet exist at this PR;
-validating coverage against the actual committed inventories and against the
-driver's counted-iterator observations (D26) is Task 5's obligation.
+validating coverage against the actual committed inventories, against the
+driver's counted-iterator observations, and against the configured inventory
+cardinalities (D26/D29) is Task 5's obligation. The verifier proves manifest
+structure and rejects nonzero counts for `skipped` entries; it never claims it
+can reconstruct runtime iterator exhaustion from the signed ledger alone (D29).
 
 - [ ] Reuse exported Ed25519 or envelope primitives from `merkle-dag` only when they
       implement the normative bytes above. Otherwise modify no spine file and use
@@ -758,8 +847,9 @@ driver's counted-iterator observations (D26) is Task 5's obligation.
       only then reports success. A close without valid coverage data throws and
       poisons the ledger. All Task 3 tests exercise `close(coverage)` with
       injected fixture coverage objects; equality of coverage refs with committed
-      repository inventories and of counts with counted-iterator observations is
-      out of scope here (D19/D26) and enforced by the Task 5 driver.
+      repository inventories and of counts with counted-iterator observations and
+      configured cardinalities is out of scope here (D19/D26/D29) and enforced by
+      the Task 5 driver.
 - [ ] **`abort()` and descriptor lifecycle (D22):** the ledger handle exposes an
       idempotent `abort()` that closes the file descriptor (if open) and marks the
       ledger permanently poisoned; any append or close failure poisons the ledger
@@ -776,8 +866,8 @@ driver's counted-iterator observations (D26) is Task 5's obligation.
       `orchestrator_refs`, and `inventories_consumed` content address, the D24
       `inspected_source_counts` schema for every weaver entry (including all-zero
       counts on `skipped` entries — a `skipped` entry with a nonzero count is a
-      skipped-but-read contradiction and fails verification, D26), the absence of
-      `failed` or unknown weaver states in the manifest, and the consistency of
+      skipped-but-read contradiction and fails verification, D26/D29), the absence
+      of `failed` or unknown weaver states in the manifest, and the consistency of
       weaver assertors with manifest states. It requires exactly one trailer as
       the final record. It returns the parsed manifest; `records` contains only
       trusted signed edge and status records, not the header or trailer. On a
@@ -834,6 +924,7 @@ ctx = {
   repositoryRef,
   packageRoots,
   docRoots,
+  contractFiles,
   ledgerSources,
   runSources,
   sources: {<inventory_id>: countedIterable, ...},
@@ -844,52 +935,98 @@ ctx = {
 ```
 
 `ctx.sources` carries one driver-owned counted iterable per required inventory id
-for the invoked weaver (D26); the weaver consumes its sources exclusively through
-them and never sees or reports the counts.
+for the invoked weaver (D26) — for the ledger weaver that is exactly
+`contract-files`, `ledger-sources`, and `run-sources` (D31); the weaver consumes
+its sources exclusively through them and never sees or reports the counts. An
+`executed` weaver must exhaust every handed iterable (D29); a weaver that leaves
+a source unconsumed causes a fatal accounting failure at the driver's
+post-return check.
 
 - [ ] Inventory every current package root once and commit the exact sorted paths in
-      `inventory.mjs`. Commit `DOC_ROOTS`, exact configured ledger files plus
-      adapter ids, exact run directories plus summary files, the five weaver ids, a
-      committed integer version per weaver (a human-readable label only; the
-      manifest's `implementation_refs` carry the proving content addresses), the
-      per-weaver required `inspected_source_counts` inventory-id table **exactly
-      equal to the frozen normative table in this plan** (D24/D26) with a unit
-      asserting that equality, and a committed per-weaver implementation-file list
-      equal to the transitive static relative-import closure of each weaver module
-      (the weaver module, shared substrate such as `clotho/weavers/util.mjs`,
-      `clotho/registry.mjs`, and `clotho/inventory.mjs`, and any permitted
-      `merkle-dag` primitives participating in identity, canonicalization, or
-      hashing). The driver computes `implementation_refs` from these lists. **Per
-      D17 (AM-17), this task commits per-weaver inventories only, covering the
-      weavers that exist at this PR (git and code); Task 4b extends them for its
-      weavers; the orchestrator-file inventory is committed in Task 5, the PR that
-      creates `weave.mjs`. No inventory may name a file that does not yet exist in
-      the repository at the PR that commits it.** `repository_ref` is derived per
-      weave via `deriveRepositoryRef`, never hardcoded. Do not discover new
+      `inventory.mjs`. Commit `DOC_ROOTS`, the exact sorted `contract-files`
+      inventory of repository-relative contract Markdown paths (D31), exact
+      configured ledger files plus adapter ids, exact run directories plus summary
+      files, the five weaver ids, a committed integer version per weaver (a
+      human-readable label only; the manifest's `implementation_refs` carry the
+      proving content addresses), the per-weaver required `inspected_source_counts`
+      inventory-id table **exactly equal to the frozen normative table in this
+      plan** (D24/D26/D31) with a unit asserting that equality, the exact frozen
+      `LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS` mapping (D32) — deeply frozen, key set
+      exactly `module` and `node:module`, each value exactly the sorted pair
+      `["builtinModules", "isBuiltin"]`, with units asserting deep equality with
+      the normative mapping, exact key and value equality, deep-freeze of the
+      outer mapping and inner arrays, and that mutation attempts fail or leave it
+      unchanged — and a committed per-weaver implementation-file list
+      equal to the **accepted relative module-load closure** (D33) of each weaver
+      module (the weaver module, every file reachable through an accepted literal
+      relative module-loading edge — static imports, side-effect imports, static
+      re-exports, literal dynamic `import()`, accepted literal
+      `require()`/`module.require()` — shared substrate such as
+      `clotho/weavers/util.mjs`, `clotho/registry.mjs`, and
+      `clotho/inventory.mjs`, and any permitted `merkle-dag` primitives
+      participating in identity, canonicalization, or hashing, recursively
+      traversed). The driver computes `implementation_refs` from these lists.
+      **Per D17 (AM-17), this task commits per-weaver inventories only, covering
+      the weavers that exist at this PR (git and code); Task 4b extends them for
+      its weavers; the orchestrator-file inventory is committed in Task 5, the PR
+      that creates `weave.mjs`. No inventory may name a file that does not yet
+      exist in the repository at the PR that commits it, and every resolved
+      closure target must exist at that PR (D33).** `repository_ref` is derived
+      per weave via `deriveRepositoryRef`, never hardcoded. Do not discover new
       top-level inputs at runtime. A future package or evidence source requires an
       inventory change and tests.
-- [ ] `scripts/test-closure.mjs` derives the transitive static relative-import
-      closure of each committed weaver module with the lexical import scanner, and
-      fails when any committed implementation-file inventory omits a file in the
-      derived closure or lists a file outside it — including any inventory entry
-      naming a nonexistent file. The inventories are proven equal to the closures,
-      never trusted. This test lands with the first weaver inventories in this task
-      and extends in Task 4b as its weavers land; Task 5 adds the orchestrator
-      closure assertion in the same PR that commits the orchestrator inventory.
+- [ ] **Shared module-load grammar (D33):** implement the module-load form
+      classifier and resolver once, in `weavers/util.mjs`, and export it to both
+      the advisory outbound scanner and the closure derivation. It classifies
+      exactly the accepted forms (static `import ... from`, side-effect `import`,
+      `export ... from`, `export * from` including recognized namespace re-export
+      variants, literal dynamic `import()`, accepted literal `require()`,
+      accepted literal `module.require()`), applies one literal classifier, one
+      relative-specifier resolver, the physical-containment checks, and the
+      extension rules. There is no closure-only form list and no closure-only
+      resolver; a unit proves both consumers import the same exported classifier
+      and resolver (AM-34 required test 19).
+- [ ] `scripts/test-closure.mjs` derives the accepted relative module-load closure
+      (D33) of each committed weaver module with the shared classifier/resolver,
+      and fails when any committed implementation-file inventory omits a file in
+      the derived closure or lists a file outside it — including any inventory
+      entry naming a nonexistent file, any unresolved or missing target, and any
+      symlinked, non-regular, escaping, or forbidden target (all fatal). The
+      inventories are proven equal to the closures, never trusted. Closure units
+      cover, per accepted form, a fixture helper reached ONLY through that form
+      which cannot be omitted from the inventory: named static import,
+      side-effect import, `export { ... } from`, `export * from`, literal dynamic
+      `import()`, literal `require()`, and literal `module.require()`; a
+      recursive chain mixing re-export, dynamic import, and require reaching the
+      fixed point; cycles terminating deterministically with every member
+      included exactly once; a conditional/apparently-unreachable literal dynamic
+      import still included; a reachable permitted `merkle-dag` helper included
+      and recursively traversed; an extra unreachable inventory file failing;
+      missing and unresolved targets failing; symlink, physical-escape, and
+      forbidden `merkle-dag` targets failing; nonliteral dynamic import, require,
+      and module.require remaining rejected (no closure edge); and comments and
+      string lookalikes creating no edge. This test lands with the first weaver
+      inventories in this task and extends in Task 4b as its weavers land; Task 5
+      adds the orchestrator closure assertion in the same PR that commits the
+      orchestrator inventory.
 - [ ] Set `DOC_ROOTS` to the reviewed documentation and contract roots. Exclude
       `docs/runs/` from doc-weaver because run evidence has a separate owner, and
       exclude `docs/runs/clotho-self-weave/` from every inventory.
 - [ ] `util.mjs` walks only real regular files beneath configured roots. It rejects
       root escape and symlinked input rather than following it; normalizes all output
       paths to validated repository-relative POSIX paths; and sorts directory entries.
-- [ ] `util.mjs` also exposes the **counted-iterator constructor (D26)**: given an
-      inventory id and its ordered source list, it returns an iterable that yields
-      each source and increments its private count only when the consumer completes
-      consumption of that source (open + read + processing to edge-extraction
-      eligibility without fatal error; a source that raises before completion is
-      not counted). The driver retains the count accessor; the weaver receives
-      only the iterable. Units prove a partially consumed source is not counted
-      and a fully consumed one is counted exactly once.
+- [ ] `util.mjs` also exposes the **counted-iterator constructor (D26/D29)**: given
+      an inventory id and its ordered source list, it returns an iterable that
+      yields each source and increments its private count only when the consumer
+      completes consumption of that source (open + read + processing to
+      edge-extraction eligibility without fatal error; a source that raises before
+      completion is not counted), and records normal exhaustion when the iterator
+      completes. The driver retains the accounting accessor exposing
+      `{inventory_id, expected_cardinality, observed_count, exhausted}`; the
+      weaver receives only the iterable. Units prove a partially consumed source
+      is not counted, a fully consumed one is counted exactly once, exhaustion is
+      recorded only on normal completion, and `expected_cardinality` equals the
+      configured source-list length.
 - [ ] `util.mjs` also exposes the physical-containment helper used by the driver
       (D21): given a repository root and a candidate write path, it walks every
       existing component of the allowed-root and parent chain with `lstat`,
@@ -931,6 +1068,9 @@ them and never sees or reports the counts.
       seeded exports thread at symbol level: if an imported local binding occurs as
       an identifier token outside its import declaration, emit a `depends-on` edge
       from every seeded export in the consuming module to the imported symbol.
+      (The code-weaver's knowledge-graph extraction grammar is unchanged by D33,
+      which governs mechanism provenance only, not inferred application
+      dependencies.)
 - [ ] If that consuming module has no Phase 1 export, the same used named import
       emits `repository-file -> code-symbol` from the consuming module's seeded file
       descriptor to the imported symbol. It is not dropped or downgraded to an
@@ -960,18 +1100,24 @@ them and never sees or reports the counts.
       strings not counting as uses; metacharacter-safe matching;
       `unrepresentable-consumer` only for unresolvable specifiers; root/symlink
       rejection; counted-iterator units (full consumption counted once, partial
-      consumption not counted, counts observable only through the driver-held
-      accessor); physical-containment helper units (a symlinked allowed root, a
-      symlinked nested parent component, and an escape via a symlink target all
-      rejected; a plain nested path accepted); closure-equality failure fixtures
-      (an inventory missing a closure file, an inventory listing an extra file,
-      and an inventory naming a nonexistent file all fail); and byte-equal
+      consumption not counted, exhaustion recorded only on normal completion,
+      cardinality equal to the configured list length, accounting observable only
+      through the driver-held accessor); physical-containment helper units (a
+      symlinked allowed root, a symlinked nested parent component, and an escape
+      via a symlink target all rejected; a plain nested path accepted);
+      closure-equality failure fixtures (an inventory missing a closure file —
+      including one reached only through re-export, literal dynamic import, or an
+      accepted require-style form — an inventory listing an extra file, and an
+      inventory naming a nonexistent file all fail); and byte-equal
       `{edges, warnings}` over two runs.
 - [ ] **Exit:** the inventory and shared contract are merged, the committed
-      inventory-id table is proven equal to this plan's frozen table, the closure
-      test proves the committed per-weaver inventories name only existing files
-      equal to their derived closures, both weavers are deterministic and consume
-      only counted sources, and `npm test` is green.
+      inventory-id table is proven equal to this plan's frozen table, the committed
+      `LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS` mapping is proven deep-equal to the
+      normative mapping and deeply frozen, the closure test proves the committed
+      per-weaver inventories name only existing files equal to their derived
+      accepted relative module-load closures (D33) using the shared
+      classifier/resolver, both weavers are deterministic and consume only counted
+      sources, and `npm test` is green.
 
 ## Task 4b: Test, documentation, and ledger weavers
 
@@ -1016,11 +1162,25 @@ them and never sees or reports the counts.
       blob is the source ref.
 - [ ] `util.mjs` exposes an I/O helper that builds `currentDocs` with
       `docAddressKey`; query functions themselves remain I/O-free.
-- [ ] `ledger.mjs` consumes its `ledger-sources` and `run-sources` counted sources
-      and dispatches each configured ledger path through its exact adapter id
-      from a closed adapter object. There is no generic JSON fallback. Each adapter
-      validates its required schema, recorded entry hash, signature, and chain
-      metadata using read-only existing primitives where compatible.
+- [ ] `ledger.mjs` consumes its `contract-files`, `ledger-sources`, and
+      `run-sources` counted sources (D31). It dispatches each configured ledger
+      path through its exact adapter id from a closed adapter object. There is no
+      generic JSON fallback. Each adapter validates its required schema, recorded
+      entry hash, signature, and chain metadata using read-only existing
+      primitives where compatible.
+- [ ] **Independent contract-files consumption (D31):** the ledger weaver builds
+      its current-contract clause-resolution index solely from
+      `ctx.sources["contract-files"]`: it opens, reads, and splits each configured
+      contract Markdown file with the canonical Markdown section splitter, assigns
+      normalized heading paths and exact section hashes, and incorporates every
+      section into a collision-checked current-contract index. It receives no map
+      produced by the doc-weaver and performs no uncounted fallback reads. The
+      iterator is consumed and exhausted whenever the ledger weaver executes —
+      even when the doc-weaver is skipped, when no obligation ultimately produces
+      a clause edge, and when every obligation reference is stale or absent.
+      Duplicate `{path, heading_path}` addresses use the existing fatal
+      `duplicate-heading-path` behavior; an ambiguous section is never silently
+      selected.
 - [ ] An adapter returns only trusted normalized entries with
       `{entryKind, entryHash, evidenceText, dischargeEvidence, contractClauseRef}`.
       Missing integrity fields required by that format are invalid rather than treated
@@ -1034,11 +1194,13 @@ them and never sees or reports the counts.
       `discharges` only when the adapter returns nonempty validated discharge evidence.
       Missing discharge evidence warns and emits no edge.
 - [ ] Emit `obligation -> contract-clause` `discharges` only when the same trusted
-      obligation contains an exact `{path, heading_path, text_sha256}` reference that
-      resolves uniquely in the current configured contract sections. A stale,
-      partial, or ambiguous reference warns and emits no clause edge. (These two
-      `discharges` shapes are exactly the spec v2.3 matrix: `code-symbol ->
-      obligation` and `obligation -> contract-clause`.)
+      obligation contains an exact `{path, heading_path, text_sha256}` reference
+      that resolves uniquely in the ledger weaver's own contract-files index
+      (D31) — requiring equality of all three fields. A stale, partial, missing,
+      or nonunique reference warns and emits no clause edge, while full
+      contract-files consumption is still recorded. (These two `discharges`
+      shapes are exactly the spec v2.3 matrix: `code-symbol -> obligation` and
+      `obligation -> contract-clause`.)
 - [ ] Each configured run source names one directory below `docs/runs/` and one exact
       summary file. If its validated bytes contain the symbol token in declared
       summary fields, emit `code-symbol -> run-evidence` `evidenced-by`; the node
@@ -1046,14 +1208,18 @@ them and never sees or reports the counts.
       directory and `summary_sha256` is the SHA-256 of the summary file's exact
       validated bytes; the source ref locates the summary file by blob SHA.
 - [ ] Extend the committed per-weaver implementation-file inventories, the required
-      `inspected_source_counts` inventory-id lists (matching the frozen table),
-      and the closure test for the three weavers added in this task, per D17:
-      every newly committed inventory entry names a file that exists at this PR.
+      `inspected_source_counts` inventory-id lists (matching the frozen table,
+      including the ledger weaver's `contract-files` entry per D31), and the
+      closure test for the three weavers added in this task, per D17 and D33:
+      every newly committed inventory entry names a file that exists at this PR,
+      and each inventory equals the weaver's derived accepted relative
+      module-load closure.
 - [ ] Add fixtures for a direct test; a script-executed test target; a two-section
       document containing `alpha` and `alphabet`; a document naming a file path;
       duplicate headings; a matching contract clause; a valid concern; a discharged
       obligation with an exact clause ref; stale and missing clause refs; a
-      malformed final ledger line; a chain break with a suffix; and one run summary.
+      duplicate contract heading path; a malformed final ledger line; a chain
+      break with a suffix; and one run summary.
 - [ ] Units assert exact endpoint kinds, directions, locators (including
       `repository_ref` plus the content binding on every node kind these weavers
       emit: `test`, `doc-section`, `contract-clause`, `concern`, `obligation`, and
@@ -1061,14 +1227,22 @@ them and never sees or reports the counts.
       import-derived (test-file blob) and command-inferred (`package.json` blob)
       `verified-by` provenance — assertor ids, statuses, warning codes, and
       counts; `alphabet` does not match `alpha`; ambiguous/stale clauses produce
-      no edge; malformed input never validates a suffix; and all five weavers
-      return byte-equal results across repeated runs while consuming only their
-      counted sources.
+      no edge; a stale hash yields a warning and no clause edge while full
+      contract-files consumption is still recorded (D31); a duplicate contract
+      heading path is fatal with no ambiguous clause edge; the ledger weaver
+      resolves an exact clause edge from its independently consumed
+      contract-files index without any doc-weaver product; the doc-weaver and
+      ledger-weaver reading the same contract file produce independent counts
+      with no shared mutable state; malformed input never validates a suffix;
+      and all five weavers return byte-equal results across repeated runs while
+      consuming only their counted sources.
 - [ ] **Exit:** every weaver obeys the same `{edges, warnings}` contract and
       consumes only driver-owned counted sources, all five per-weaver inventories
-      are closure-proven and match the frozen inventory-id table, both
-      `verified-by` provenance cases are proven by exact-output tests, and
-      `npm test` is green.
+      are closure-proven against the accepted relative module-load closure (D33)
+      and match the frozen inventory-id table (including the ledger weaver's
+      three required ids per D31), both `verified-by` provenance cases are proven
+      by exact-output tests, clause resolution is proven independent of the
+      doc-weaver, and `npm test` is green.
 
 ## Task 5: Queries, complete-weave driver, and advisory invariant
 
@@ -1182,7 +1356,9 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       the list covering `clotho/weave.mjs`, `clotho/thread-ledger.mjs`, and the
       shared registry/canonicalization machinery lands here, in the same PR that
       creates `weave.mjs`, so no inventory ever names a file that does not yet
-      exist. The driver computes `orchestrator_refs` from this list.
+      exist. The driver computes `orchestrator_refs` from this list, which per
+      D33 equals the accepted relative module-load closure of the frozen
+      orchestrator entry points.
 - [ ] **Inventory-equality enforcement at close (D19/AM-20):** the driver validates
       coverage against the actual committed inventories before calling `close()`:
       the five weaver ids and versions equal the `inventory.mjs` lists in inventory
@@ -1190,27 +1366,41 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       committed implementation-file inventory, `orchestrator_refs` is computed
       exactly from the committed orchestrator-file inventory,
       `inspected_source_counts` covers exactly each weaver's committed required
-      inventory ids (D24), and `inventories_consumed` content-addresses the
-      inventory actually read. The inventory-equality obligations deferred from
-      Task 3 are discharged here, in the driver, alongside the closure-equality
-      proofs.
-- [ ] **Counted-iterator accounting (D26):** for each non-skipped weaver the driver
-      constructs one counted iterable per required inventory id, hands them to the
-      weaver through `ctx.sources`, and after the weaver returns reads the counts
-      from its own retained accessors to build that weaver's
-      `inspected_source_counts`. Weaver-returned values contain no counts; any
-      count-shaped field in a weaver result is a contract violation and aborts.
-      For a `skipped` weaver no iterators are constructed; the driver records
-      zero counts over the weaver's required ids. If any accounting invariant is
-      violated — a skipped weaver's iterator was constructed or consumed, or a
-      recorded count diverges from its iterator's observation — the driver
-      refuses to close and aborts.
-- [ ] Extend `scripts/test-closure.mjs` in this same PR to derive the static
-      relative-import closure of the orchestrator entry points (`weave.mjs` and
-      `thread-ledger.mjs`) and fail on any omitted or extra file in the committed
-      orchestrator-file inventory. Orchestrator closure equality is enforced from
-      this task onward; per-weaver closure equality has been enforced since Tasks
-      4a/4b.
+      inventory ids (D24/D31, including `contract-files` for the ledger weaver;
+      a missing, extra, or duplicate `contract-files` entry fails close and
+      verification), and `inventories_consumed` content-addresses the inventory
+      actually read. The inventory-equality obligations deferred from Task 3 are
+      discharged here, in the driver, alongside the closure-equality proofs.
+- [ ] **Counted-iterator accounting with the D29 completeness gate:** for each
+      non-skipped weaver the driver constructs one counted iterable per required
+      inventory id — including a dedicated `contract-files` iterator whenever the
+      ledger weaver executes (D31) — hands them to the weaver through
+      `ctx.sources`, and retains per iterator `{inventory_id,
+      expected_cardinality, observed_count, exhausted}`. After the weaver returns
+      and **before any of that weaver's edges reach `appendEdge` and before
+      `close()`** — the edge-append ordering is normative: an incomplete weaver
+      must not influence the temporary ledger before rejection — the driver
+      confirms every required iterator was constructed, every iterator reached
+      normal exhaustion, and every `observed_count === expected_cardinality`;
+      rejects any count-shaped field returned by the weaver; and aborts on any
+      mismatch with a stable fatal code from `{incomplete-source-consumption,
+      source-count-mismatch, unexpected-source-consumption}`. Only after the
+      accounting check succeeds are the weaver's edges appended and its counts
+      assembled into `inspected_source_counts`. Weaver-returned values contain no
+      counts; any count-shaped field in a weaver result is a contract violation
+      and aborts. For a `skipped` weaver no iterators are constructed; the driver
+      records zero counts over the weaver's required ids (all three, including
+      `contract-files`, for a skipped ledger weaver). Construction of a skipped
+      weaver's iterator is itself a driver contradiction, even at zero count: the
+      driver refuses to close and aborts.
+- [ ] Extend `scripts/test-closure.mjs` in this same PR to derive the accepted
+      relative module-load closure (D33) of the orchestrator entry points
+      (`weave.mjs` and `thread-ledger.mjs`) with the shared classifier/resolver
+      and fail on any omitted or extra file in the committed orchestrator-file
+      inventory — including omission of an orchestrator helper reached only
+      through a re-export, literal dynamic import, or accepted require-style
+      form. Orchestrator closure equality is enforced from this task onward;
+      per-weaver closure equality has been enforced since Tasks 4a/4b.
 - [ ] `--skip <id>` is repeatable but rejects unknown or duplicate ids. `--out`
       accepts a validated repository-relative path only below `.telos/clotho/` or the
       explicit self-export directory. Existing destinations are rejected.
@@ -1236,16 +1426,19 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       reporting the weaver id and its stable error code. No partial advisory
       artifact exists in Phase 1. **Any fatal warning aborts identically
       (D22/AM-23):** a `FATAL_WARNING_CODES` result from any weaver aborts before
-      close and publication with the same abort/remove/nonzero discipline. For a
+      close and publication with the same abort/remove/nonzero discipline; the
+      D29 accounting codes abort through this same discipline. For a
       successful run it records per-weaver
       `{id, version, implementation_refs, state, inspected_source_counts}`
-      (executed weavers with driver-observed counts over their required inventory
-      ids, skipped weavers recorded as `skipped` with zero counts over the same
-      ids and their implementation refs intact, per D24/D26), aggregates and
-      canonical-sorts warnings and deduplicated edges, appends edges in that
-      exact order, and closes with the complete coverage data including
-      `orchestrator_refs` so the signed trailer is written. It never appends an
-      edge returned under the id of a skipped weaver.
+      (executed weavers with driver-observed counts equal to configured
+      cardinalities over their required inventory ids, skipped weavers recorded
+      as `skipped` with zero counts over the same ids and their implementation
+      refs intact, per D24/D26/D29/D31), aggregates and canonical-sorts warnings
+      and deduplicated edges, appends edges in that exact order (each weaver's
+      edges only after its accounting check succeeded), and closes with the
+      complete coverage data including `orchestrator_refs` so the signed trailer
+      is written. It never appends an edge returned under the id of a skipped
+      weaver.
 - [ ] Write to an exclusive sibling temporary file. Close and run `verifyLedger`
       before publication. **Publication is atomic, no-replace, and has a frozen
       commit point (D20/D28):** after re-running the physical-containment check,
@@ -1285,16 +1478,48 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       resolution is not lexical-only: the resolved target's path components are
       real-path-checked, so a symlink alias whose physical target lies inside
       `clotho/` fails even when its lexical path does not mention `clotho/`.
-- [ ] **Closed Clotho-side outbound check (D23/D27):** the same scanner pass
+- [ ] **Closed Clotho-side outbound check (D23/D27/D33):** the same scanner pass
       inspects every Clotho source file and applies the closed allowlist rule:
-      **only Node built-ins (`node:` prefix or the built-in module list) and
-      literal relative imports resolving physically (after real-path checks) into
-      `clotho/` or the exact permitted `merkle-dag/` closure are accepted. Every
-      other specifier form fails closed** — nonliteral `require()`, nonliteral
-      `module.require()`, nonliteral dynamic `import()`, literal `file:` URLs,
-      literal absolute paths, and non-built-in bare specifiers. This mechanically
-      proves the zero-dependency and permitted-import boundary in the outbound
-      direction over all specifier forms.
+      **only Node built-ins (`node:` prefix or the built-in module list) and the
+      accepted literal relative module-loading forms (D27/D33) resolving
+      physically (after real-path checks) into `clotho/` or the exact permitted
+      `merkle-dag/` closure are accepted. Every other specifier form fails
+      closed** — nonliteral `require()`, nonliteral `module.require()`,
+      nonliteral dynamic `import()`, literal `file:` URLs, literal absolute
+      paths, and non-built-in bare specifiers. This mechanically proves the
+      zero-dependency and permitted-import boundary in the outbound direction
+      over all specifier forms. The scanner uses the shared form
+      classifier/resolver from `weavers/util.mjs` — the same one that drives
+      closure derivation (D33) — and a unit proves the two consumers share it,
+      and that every accepted literal syntax supported by the outbound scanner
+      receives identical closure treatment.
+- [ ] **Loader-construction prohibition with the exact frozen mapping (D30/D32,
+      spec v2.7):** the Clotho-side scanner additionally enforces
+      `LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS`, imported from `inventory.mjs` — the
+      scanner maintains no second hand-written allowlist. For `module` and
+      `node:module` (exactly these two specifiers), only static named imports of
+      the source export names `builtinModules` and `isBuiltin` are permitted;
+      a permitted source export may use a local alias, because permission is
+      decided from the imported export name, never the local binding name. The
+      scanner rejects, each with a stable code: any other named export from
+      either specifier (the rule is allowlist-based, not a `createRequire`
+      denylist); `createRequire` under any local alias in a named import;
+      namespace imports (`import * as M from "node:module"`); default imports;
+      CommonJS `require`/`module.require` of either specifier; dynamic imports of
+      either specifier; static and dynamic re-exports from either specifier —
+      including re-export of otherwise safe names (`export { builtinModules }
+      from "node:module"` is forbidden); property access obtaining any export
+      from an imported namespace or default binding; immediate invocation forms
+      (`createRequire(import.meta.url)(...)`); and both
+      `process.getBuiltinModule("module")` and
+      `process.getBuiltinModule("node:module")` spellings. Computed,
+      concatenated, aliased, or otherwise ambiguous acquisition **fails closed**
+      — the scanner recognizes the frozen syntactic forms it prohibits and claims
+      no arbitrary data-flow analysis. Expanding the mapping requires a future
+      specification amendment and authorization; it is not an implementation
+      choice. Acceptance criterion: no supported syntactic route inside `clotho/`
+      obtains a general-purpose loader capable of resolving an undeclared
+      external package.
 - [ ] Include synthetic scanner units for every recognized form, comments and
       lookalike strings, aliases, path traversal into Clotho, safe nearby paths, a
       nonliteral dynamic import, a nonliteral `require()` and `module.require()`,
@@ -1303,7 +1528,30 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       (D27): a nonliteral `require()`, a nonliteral `module.require()`, a
       nonliteral dynamic `import()`, a literal `file:` URL import, a literal
       absolute-path import, a forbidden bare import, and a relative import
-      escaping to a non-permitted package.
+      escaping to a non-permitted package; plus one synthetic unit per D30/D32
+      loader-construction form: `builtinModules` accepted from both `module` and
+      `node:module`; `isBuiltin` accepted from both specifiers; a safe named
+      export under a local alias accepted; `createRequire` rejected from both
+      specifiers; at least two additional non-allowlisted named exports rejected
+      (proving allowlist semantics rather than a one-name denylist); aliased
+      named `createRequire`
+      (`import { createRequire as loadFactory } from "node:module"`) rejected;
+      namespace import plus property access (`Module.createRequire(...)`)
+      rejected; default import plus property access rejected; immediate
+      invocation (`createRequire(import.meta.url)("external-package")`) rejected;
+      static re-export (`export { createRequire } from "node:module"`) and
+      re-export of a safe name rejected; dynamic re-export forms rejected;
+      CommonJS `require("module")`/`module.require("node:module")` rejected;
+      dynamic `import("node:module")` rejected; both
+      `process.getBuiltinModule` spellings rejected; an ordinary permitted Node
+      built-in accepted; and comments and string lookalikes that must NOT
+      trigger. Additional inventory units (landed with the mapping in Task 4a,
+      re-exercised here): the committed mapping deep-equals the normative
+      mapping; exact key equality (no missing or additional specifier); exact
+      value equality (no missing or additional export); the outer mapping and
+      inner arrays are frozen; mutation attempts fail or leave it unchanged; and
+      a fixture that adds one export to a copy of the mapping fails
+      exact-equality validation.
 - [ ] Driver units cover the abort contract: a fixture weaver that throws must
       leave no temporary file, no open descriptor, publish no destination, and
       exit nonzero with the stable error code; a fixture weaver emitting a
@@ -1314,34 +1562,75 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       zero counts over its required inventory ids; a driver given coverage
       diverging from the committed inventories (wrong id order, a ref missing
       from a committed list, an extra ref, wrong or missing
-      `inspected_source_counts` inventory ids) must refuse to close and publish
-      nothing; **count-accuracy behavioral tests (D26):** an under-count case (a
-      fixture weaver that skips a handed source yields a lower driver-observed
-      count than the configured inventory size, and the recorded count equals
-      the observation, not the inventory size), an over-count case (a recorded
-      count diverging from the iterator observation makes the driver refuse to
-      close), and a skipped-but-read case (a skipped weaver whose iterator was
-      consumed is a contradiction: the driver refuses to close, and the
-      corresponding signed fixture fails verification); a fixture weaver
-      returning a count-shaped field must abort; **a publication race test
-      (D20)** creates the destination after initial validation but before
-      publication and asserts the driver fails with `EEXIST`, preserves the
-      pre-existing destination byte-identically, and removes its temporary file;
-      **an injected unlink-failure test (D28)** makes `linkSync` succeed and the
-      temporary-name unlink fail, and asserts the destination remains
-      byte-identical and is never removed, the result state is exactly
-      `published-cleanup-incomplete`, and the stable warning names the leftover
-      temporary path; and **symlink escape tests (D21)** replace the allowed
-      root and a nested parent component with symlinks and assert the stable
-      containment error with nothing written outside the repository's real path.
+      `inspected_source_counts` inventory ids — including a missing, extra, or
+      duplicate `contract-files` entry for the ledger weaver, which must fail
+      close and verification per D31) must refuse to close and publish nothing;
+      **a tampered-inventory provenance test (D33/AM-34):** an inventory copy
+      omitting a helper reached only through a re-export, a literal dynamic
+      import, or an accepted require-style form must fail closure equality and
+      must not close or publish, and the manifest of a successful run must
+      contain the exact content addresses of all reachable helper bytes in
+      `implementation_refs` and all reachable orchestrator bytes in
+      `orchestrator_refs`;
+      **consumption-completeness behavioral tests (D26/D29/D31, replacing
+      the earlier under-count expectation):**
+      1. **under-consumption** — a fixture weaver ignores one handed source →
+         fatal `incomplete-source-consumption`, no `close()`, no destination,
+         temporary file cleaned up; proven additionally for the ledger weaver
+         under-consuming `contract-files` (no edge append, no close, no
+         publication);
+      2. **early return** — a fixture weaver consumes part of an iterator and
+         returns → same fatal accounting failure and cleanup;
+      3. **expected-cardinality mismatch** — a recorded or assembled count
+         differing from the configured source-list cardinality → closure
+         refused (`source-count-mismatch`); proven additionally for a
+         `contract-files` cardinality mismatch;
+      4. **complete consumption** — every iterator exhausted exactly once →
+         `executed` accepted and published;
+      5. **skipped** — no iterator constructed → zero counts published; for a
+         skipped ledger weaver, no contract-files iterator is constructed and
+         all three required counts are zero;
+      6. **skipped iterator construction** — construction alone, even at zero
+         count, is a driver contradiction (`unexpected-source-consumption`) and
+         refuses closure; proven additionally for a contract-files iterator
+         constructed for a skipped ledger weaver;
+      7. **skipped nonzero signed fixture** — an independently signed manifest
+         asserting `skipped` with nonzero counts fails verification;
+      8. **edges from an incomplete weaver** — proven never to reach
+         `appendEdge`: the accounting check rejects before any of that weaver's
+         edges are appended to the temporary ledger;
+      9. **doc-skipped clause resolution (D31)** — a run with the doc-weaver
+         skipped and the ledger weaver executed resolves the exact clause edge
+         from independently consumed contract-files, and its manifest reports
+         doc-weaver counts as zero and the full `contract-files` count under the
+         ledger weaver;
+      a fixture weaver returning a count-shaped field must abort; **a
+      publication race test (D20)** creates the destination after initial
+      validation but before publication and asserts the driver fails with
+      `EEXIST`, preserves the pre-existing destination byte-identically, and
+      removes its temporary file; **an injected unlink-failure test (D28)**
+      makes `linkSync` succeed and the temporary-name unlink fail, and asserts
+      the destination remains byte-identical and is never removed, the result
+      state is exactly `published-cleanup-incomplete`, and the stable warning
+      names the leftover temporary path; and **symlink escape tests (D21)**
+      replace the allowed root and a nested parent component with symlinks and
+      assert the stable containment error with nothing written outside the
+      repository's real path.
 - [ ] **Exit:** a real-repository weave completes, verifies, carries a complete and
       record-consistent signed manifest with mechanism-bound provenance (weaver
-      closures and orchestrator refs, all inventories closure-proven in the PRs
-      that created their files, coverage proven equal to the committed
-      inventories at close per D19, and D24-conformant counts that are
-      driver-observed per D26), publishes atomically without replacement under
-      physical containment with the frozen D28 commit point, and remains below
-      the advisory boundary in both directions with the closed outbound rule;
+      and orchestrator refs equal to their accepted relative module-load closures
+      per D33, all inventories closure-proven in the PRs that created their
+      files, coverage proven equal to the committed inventories at close per D19,
+      and D24-conformant counts that are driver-observed and complete per
+      D26/D29/D31 — no published manifest can contain `state: executed` for a
+      weaver that failed to inspect every configured source, no published
+      manifest omits a file reachable through an accepted relative
+      module-loading form, and no published ledger contains a ledger-weaver
+      clause edge without complete independent contract-files consumption),
+      publishes atomically without replacement under physical containment with
+      the frozen D28 commit point, and remains below the advisory boundary in
+      both directions with the closed outbound rule, the shared form
+      classifier/resolver, and the exact D32 frozen loader-construction mapping;
       `npm test` is green.
 
 ## Task 6: Flagship acceptance and skipped-source coverage failure
@@ -1390,12 +1679,17 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       `repository_ref` equals the independently derived value, and a manifest
       showing all five weavers `executed`, well-formed `implementation_refs` for
       every weaver, D24-conformant `inspected_source_counts` over each weaver's
-      required inventory ids from the frozen table, well-formed
-      `orchestrator_refs`, and content-addressed `inventories_consumed` entries
-      before any query or expected-set match. Queries use only `records` and
-      `manifest` returned by this successful verification. Verification must
-      already have established that every weaver-asserted edge agrees with that
-      manifest.
+      required inventory ids from the frozen table — including the ledger
+      weaver's `contract-files` cardinality equal to the committed contract-files
+      inventory length (D31) — well-formed `orchestrator_refs`, and
+      content-addressed `inventories_consumed` entries before any query or
+      expected-set match. Additionally require the flagship reproduction to prove
+      committed inventory equality against the complete accepted module-load
+      closure (D33/AM-34 test 23): the manifest's `implementation_refs` and
+      `orchestrator_refs` equal the independently derived closures. Queries use
+      only `records` and `manifest` returned by this successful verification.
+      Verification must already have established that every weaver-asserted edge
+      agrees with that manifest.
 - [ ] Step 3: derive the target `code-symbol` from
       `{repository_ref, path: 'merkle-dag/obligation.mjs',
       symbol: 'deriveExecutableRef', blob_sha}` with the derived repository ref and
@@ -1415,24 +1709,32 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       `--skip clotho-doc-weaver`. Verify it and require its manifest to record
       `clotho-doc-weaver` as `skipped` with zero counts over its required
       inventory ids (implementation refs intact) and the other four as
-      `executed`. Require verification and the manifest-aware query validation to
-      establish that no edge is asserted by `clotho-doc-weaver`. Rerun the same
-      ledger-only calls with that manifest and require exactly the expected
-      coverage failure containing
+      `executed` — with the ledger weaver's `contract-files` count at the full
+      committed cardinality, proving contract consumption belongs solely to the
+      ledger weaver while the doc-weaver stays skipped with zero counts (D31).
+      Require verification and the manifest-aware query validation to establish
+      that no edge is asserted by `clotho-doc-weaver`. Rerun the same ledger-only
+      calls with that manifest and require exactly the expected coverage failure
+      containing
       `{gap: 'coverage-unknown', weaver: 'clotho-doc-weaver', expected_kind:
       'documented-in'}`—not a `missing-edge` claim, not merely a smaller result, and
       no fabricated `documented-in` edge. The deliberate coverage-unknown path is
       `skipped`; `failed` never appears in any published manifest.
 - [ ] Remove documentation expectations for this negative run and require the other
-      seven groups, including the ledger-derived contract discharge, still to match.
-      Any gap other than the asserted `coverage-unknown` fails the test.
+      seven groups, including the ledger-derived contract discharge, still to
+      match: the flagship obligation's `contract-clause` edge must still resolve
+      from the ledger weaver's own counted contract-files consumption while
+      documentation coverage is reported unknown (D31). Any gap other than the
+      asserted `coverage-unknown` fails the test.
 - [ ] Clean temporary ledgers in `finally` blocks without masking a prior assertion.
 - [ ] **Exit:** `npm test` proves valid signatures, the signed and record-consistent
-      coverage manifest with mechanism-bound provenance and D24-conformant,
-      driver-observed counts, the runtime ceiling, all eight groups, distinct
-      expected matching including both `verified-by` provenance cases, complete
-      review-set reporting, current-doc freshness, and fail-closed
-      `coverage-unknown` skipped-source behavior.
+      coverage manifest with mechanism-bound provenance proven equal to the
+      complete accepted module-load closure (D33) and D24-conformant,
+      driver-observed, consumption-complete counts (D29), the ledger-weaver
+      contract-files cardinality (D31), the runtime ceiling, all eight groups,
+      distinct expected matching including both `verified-by` provenance cases,
+      complete review-set reporting, current-doc freshness, doc-skipped clause
+      resolution, and fail-closed `coverage-unknown` skipped-source behavior.
 
 ## Task 7: Reproduction evidence and documentation
 
@@ -1445,11 +1747,13 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       summary or snapshot.
 - [ ] Verify the temporary ledger—including its header `repository_ref`, its
       coverage manifest showing all five weavers `executed`, well-formed
-      mechanism-bound `implementation_refs` and `orchestrator_refs` and
+      mechanism-bound `implementation_refs` and `orchestrator_refs` (equal to
+      their derived accepted relative module-load closures per D33) and
       `inventories_consumed` content addresses, D24-conformant
-      `inspected_source_counts` over the frozen inventory-id table, and no
-      manifest/record contradiction—and complete the flagship expected-set,
-      review-set, gap, and current-doc checks before publishing any evidence file.
+      `inspected_source_counts` over the frozen inventory-id table (including the
+      ledger weaver's `contract-files` count, D31), and no manifest/record
+      contradiction—and complete the flagship expected-set, review-set, gap, and
+      current-doc checks before publishing any evidence file.
 - [ ] Copy the verified ledger bytes to a temporary export file, compute its SHA-256,
       and publish `thread-ledger.snapshot.jsonl` with the same physical-containment
       and atomic discipline as the driver: containment is checked immediately
@@ -1474,10 +1778,13 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       score or rank of any kind.
 - [ ] Write `verification.json` with snapshot verification status, trusted record
       count, manifest weaver states, implementation refs, and orchestrator refs,
-      manifest/record consistency status, closure-test status, advisory scanner
-      file/package counts (both inbound and the closed Clotho-side outbound
-      checks), every executed package test command, exit status, and Node version.
-      Do not record absolute paths or nondeterministic process ids.
+      manifest/record consistency status, closure-test status (accepted relative
+      module-load closure equality per D33), advisory scanner file/package counts
+      (both inbound and the closed Clotho-side outbound checks, including the
+      D30/D32 loader-construction checks against the exact frozen mapping and the
+      shared-grammar proof per D33), every executed package test command, exit
+      status, and Node version. Do not record absolute paths or nondeterministic
+      process ids.
 - [ ] The reproduction script exits nonzero on a fatal warning, failed ledger
       verification, incomplete or record-inconsistent manifest, expected mismatch,
       incomplete review set, query gap, drift gap, containment failure, failed
@@ -1537,10 +1844,11 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
    by explicit evidenced `supersedes` assertions, and each immutable per-weave
    ledger remains internally consistent.
 10. **Abort-on-failure availability:** a single throwing weaver or fatal warning
-    yields no advisory artifact at all rather than a partial one. This is the
-    chosen Phase 1 contract; the rejected alternative (publishing partial
-    artifacts with `failed` states) is recorded for provenance and may be
-    revisited by a future authorized phase.
+    yields no advisory artifact at all rather than a partial one, and per D29 a
+    weaver that fails to consume every configured source likewise yields no
+    artifact. This is the chosen Phase 1 contract; the rejected alternative
+    (publishing partial artifacts with `failed` or partial-execution states) is
+    recorded for provenance and may be revisited by a future authorized phase.
 11. **Shared-history namespace:** because `repository_ref` is the root-commit
     lineage, clones and forks sharing the root commit weave into the same
     namespace by design. This is the deliberate spec v2.2 trade (identity is
@@ -1578,8 +1886,34 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
     manual removal; the alternative — removing the published destination to
     restore an unpublished state — would destroy a committed artifact and is
     forbidden.
-17. **Counted-iterator granularity (D26):** driver-owned counted iterators prove
-    that handed sources were consumed to edge-extraction eligibility; they cannot
-    prove the weaver *used* the bytes correctly after reading them. Correct use
-    remains covered by the exact-output fixture tests; the counts eliminate
-    silent under-inspection and self-reported accounting, not all semantic error.
+17. **Counted-iterator granularity (D26/D29):** driver-owned counted iterators
+    with the completeness gate prove that every handed source was consumed to
+    edge-extraction eligibility and that no source was silently skipped; they
+    cannot prove the weaver *used* the bytes correctly after reading them.
+    Correct use remains covered by the exact-output fixture tests; the counts
+    eliminate silent under-inspection and self-reported accounting, not all
+    semantic error. The verifier's proof boundary is explicit: runtime iterator
+    exhaustion is a driver-proven fact, not reconstructible from the signed
+    ledger alone.
+18. **Loader-scanner syntactic boundary (D30/D32):** the loader-construction
+    prohibition is enforced over the frozen syntactic forms; genuinely novel or
+    obfuscated construction routes outside those forms are handled by the
+    fail-closed rule for unsupported ambiguous forms, not by data-flow analysis.
+    A future Node API that mints loaders through a route invisible to lexical
+    scanning would require a specification amendment extending the frozen form
+    list; the exact `LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS` mapping keeps that
+    surface enumerable and removes any implementation-time choice.
+19. **Duplicated contract reads (D31):** the doc-weaver and ledger-weaver each
+    independently read and section-split the configured contract files. This
+    deliberate overlap costs redundant I/O per weave in exchange for honest
+    per-weaver accounting: each weaver's counts prove exactly the bytes its own
+    output depends on, and skipping the doc-weaver cannot silently remove the
+    contract evidence the ledger weaver needs.
+20. **Conservative closure inflation (D33):** because the accepted relative
+    module-load closure includes conditional or apparently unreachable literal
+    dynamic imports and require-style loads, `implementation_refs` and
+    `orchestrator_refs` may name bytes that never execute in a given run. This
+    is the chosen trade: the closure describes bytes *capable of executing*, and
+    over-inclusion is honest while omission would defeat the content binding of
+    the mechanism. The closure remains syntactic: a route outside the accepted
+    literal forms is already forbidden by D27 and cannot silently execute.

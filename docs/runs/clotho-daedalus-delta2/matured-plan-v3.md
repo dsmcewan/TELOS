@@ -5,7 +5,7 @@
 > (`docs/clotho-phase-1-remediation.md` § Third review); this candidate was
 > re-converged under spec v2.2 by the third delta workshop. The canonical
 > submission candidate is
-> **`docs/runs/clotho-daedalus-delta9/matured-plan-v10.md`**. The extracted copy
+> **`docs/runs/clotho-daedalus-delta10/matured-plan-v11.md`**. The extracted copy
 > below is unmodified apart from this banner; the content-addressed,
 > provenance-bearing round artifacts under `artifacts/` are the authoritative
 > record.
