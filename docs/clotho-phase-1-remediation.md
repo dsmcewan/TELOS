@@ -138,6 +138,28 @@ Four blocking defects + one contract ambiguity found in the delta candidate
 
 `matured-plan-v2.md` becomes superseded evidence once delta-2 converges.
 
+## Third review — The Eye holds #90 at head `21ed226` (2026-07-15)
+
+Four of five second-hold findings resolved; two fixes incomplete plus one
+provenance gap and two governance wordings. Resolved via spec v2.2 + amendments
+AM-12..AM-15 (`docs/clotho-phase-1-plan-amendments-3.md`) and a third narrow
+delta workshop (`docs/runs/clotho-daedalus-delta3/`):
+
+| # | Finding | Resolution |
+|---|---|---|
+| 1 | Six locator kinds omit `repository_ref`/content binding; `check-contract` bytes mutable under a stable id | AM-12: completed locator table (heading_path+text_sha256 forms; ledger_path+entry_hash forms; check-contract gains blob_sha); `commit = {sha}` stated as the single named globally-addressed exception |
+| 2 | `REPOSITORY_REF` load-bearing but undefined | AM-13: `"git-root:" + <root-commit sha>` via `git rev-list --max-parents=0 HEAD` (multiple roots fatal); rename-immune, clone-stable, fork-shared to the shared root; derived and validated, never invented by Argo |
+| 3 | `implementation_refs` manually curated; orchestration unbound | AM-14: refs = exact transitive static relative-import closure (incl. merkle-dag primitives in identity/canonicalization/hashing); new `orchestrator_refs` for weave.mjs/thread-ledger.mjs/registry machinery; closure-equality test that fails on omission or addition |
+| G1 | Banners called round artifacts "signed" | AM-15: corrected to "content-addressed, provenance-bearing round artifacts" (banners already fixed in-tree) |
+| G2 | Spec's `supersedes` sentence garbled | AM-15 + spec v2.2: `old_version --supersedes--> new_version`; the edge points forward through version lineage |
+
+Resolved-and-verified from the second hold: blastRadius semantics, task order,
+abort-on-failure, manifest content-reference structure. The Eye triangulated the
+v3 candidate binding but noted the hash recomputation was not independently
+performed (connector truncation); the binding recipe remains in the PR body.
+
+`matured-plan-v3.md` becomes superseded evidence once delta-3 converges.
+
 ## Not accepted / needs no change
 
 - "Ledger cannot answer from itself" — true of the reviewed skeleton, already false

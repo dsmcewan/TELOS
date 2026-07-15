@@ -10,10 +10,13 @@ creates and maintains knowledge-graph threads across artifacts and repositories.
 This phase builds exactly that and nothing else. Measurement of threads is Lachesis;
 retirement of threads is Atropos; both are explicitly out of scope here.
 
-**Status:** v2.1 — v2 revised after cold review of `2d93816` and the first
-Daedalus workshop (`docs/runs/clotho-daedalus/`); v2.1 incorporates The Eye's
-second review of the delta candidate (content-bound locators, frozen blastRadius
-semantics, mechanism-bound coverage provenance, abort-on-weaver-failure). See
+**Status:** v2.2 — v2 revised after cold review of `2d93816` and the first
+Daedalus workshop (`docs/runs/clotho-daedalus/`); v2.1 incorporated The Eye's
+second review (content-bound locators, frozen blastRadius semantics,
+mechanism-bound coverage provenance, abort-on-weaver-failure); v2.2 incorporates
+The Eye's third review (repository-wide locator invariant with the named `commit`
+exception, the `repository_ref` definition, mechanical mechanism-provenance
+closure, and the `supersedes`-direction wording fix). See
 `docs/clotho-phase-1-remediation.md` for the finding-by-finding dispositions.
 
 **Process rule (The Eye, 2026-07-15):** *a governing specification is normative,
@@ -79,13 +82,35 @@ repository-scoped locator therefore includes `repository_ref` (consistent with
 content hash of the exact bytes it names — at minimum:
 
 ```
-code-symbol  = {repository_ref, path, symbol, blob_sha}
-test         = {repository_ref, path, blob_sha}
-run-evidence = {repository_ref, path, summary_sha256}
+code-symbol     = {repository_ref, path, symbol, blob_sha}
+repository-file = {repository_ref, path, blob_sha}
+test            = {repository_ref, path, blob_sha}
+run-evidence    = {repository_ref, path, summary_sha256}
+doc-section     = {repository_ref, path, heading_path, text_sha256}
+contract-clause = {repository_ref, path, heading_path, text_sha256}
+decision        = {repository_ref, path, heading_path, text_sha256}
+concern         = {repository_ref, ledger_path, entry_hash}
+obligation      = {repository_ref, ledger_path, entry_hash}
+check-contract  = {repository_ref, path, contract_id, blob_sha}
 ```
 
-A changed function body, test file, or run summary is a NEW version node; lineage
-across versions is `supersedes`, never silent reattachment.
+The single **named exception** is `commit = {sha}`: a git commit sha is already a
+globally addressed content identity and takes no `repository_ref`. Every other
+kind is repository-scoped and content-bound — no locator may name bytes that can
+change without changing the node id. A changed function body, test file, section,
+contract, or run summary is a NEW version node; lineage across versions is
+`supersedes`, never silent reattachment.
+
+**`repository_ref` is defined, not delegated (v2.2):**
+`repository_ref = "git-root:" + <full 40-hex sha of the repository's root commit>`
+(`git rev-list --max-parents=0 HEAD`; more than one root commit is fatal in
+Phase 1). Consequences, chosen deliberately: a repository *rename or re-hosting
+does not change identity*; clones of the same history weave into the *same*
+namespace (reproducibility); forks share the namespace exactly as far as they
+share the root commit (identity is history lineage, not hosting); and later
+cross-repository accession preserves every Phase 1 node id unchanged. The weave
+derives it mechanically and records it in the header; validators reject locators
+whose `repository_ref` does not match the derived value.
 
 **`repository-file` (The Eye, 2026-07-15):** files are genuine architectural objects
 — imports often terminate at modules rather than named symbols; workflow files and
@@ -120,8 +145,8 @@ decision made in exactly one place (`clotho/registry.mjs`).
 append and verification time (canonical semantics: consumer —`depends-on`→
 dependency; artifact —`verified-by`→ test; artifact —`introduced-by`→ commit;
 artifact —`motivated-by`→ concern; obligation —`discharges`→ concern or
-contract-clause; old version —`supersedes`→ is *not* valid: **new** —`supersedes`—
-carries lineage from old node → new node of the same kind). The implementation plan
+contract-clause; and `old_version` —`supersedes`→ `new_version` — the edge points
+forward through version lineage, old node → new node of the same kind). The implementation plan
 carries the full matrix, extended for `repository-file` endpoints
 (e.g. `repository-file → commit` for `introduced-by`, `code-symbol →
 repository-file` and `repository-file → repository-file` for `depends-on` where
@@ -182,6 +207,22 @@ manually-bumped integer versions identify nothing; the manifest binds the
 **mechanism itself**. An ephemeral signature proves the ledger did not mutate
 after signing — the implementation refs identify the algorithm that made its
 assertions.
+
+**Mechanism coverage is mechanical, not curated (v2.2):**
+
+- `implementation_refs` for each weaver = the **exact transitive static
+  relative-import closure** of that weaver's module — including shared substrate
+  (`weavers/util.mjs`, `registry.mjs`) and any permitted `merkle-dag` primitives
+  that participate in identity, canonicalization, or hashing.
+- The manifest additionally carries `orchestrator_refs` = content addresses of
+  the orchestration machinery (`weave.mjs`, `thread-ledger.mjs`,
+  registry/canonicalization code, and other shared machinery) — the driver
+  constructs the fact tables, applies skip policy, deduplicates, orders, and
+  decides what publishes; a changed driver changes the graph even when every
+  per-weaver ref is unchanged.
+- A test derives the static relative-import closure and **fails when the
+  committed implementation inventory omits or adds a file** — the list is proven
+  equal to the closure, never trusted.
 
 **Weaver failure aborts the weave (v2.1).** A throwing weaver means the temporary
 ledger is destroyed and never published; published manifests contain only
