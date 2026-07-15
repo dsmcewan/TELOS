@@ -10,14 +10,16 @@ creates and maintains knowledge-graph threads across artifacts and repositories.
 This phase builds exactly that and nothing else. Measurement of threads is Lachesis;
 retirement of threads is Atropos; both are explicitly out of scope here.
 
-**Status:** v2.2 — v2 revised after cold review of `2d93816` and the first
+**Status:** v2.3 — v2 revised after cold review of `2d93816` and the first
 Daedalus workshop (`docs/runs/clotho-daedalus/`); v2.1 incorporated The Eye's
 second review (content-bound locators, frozen blastRadius semantics,
-mechanism-bound coverage provenance, abort-on-weaver-failure); v2.2 incorporates
+mechanism-bound coverage provenance, abort-on-weaver-failure); v2.2 incorporated
 The Eye's third review (repository-wide locator invariant with the named `commit`
 exception, the `repository_ref` definition, mechanical mechanism-provenance
-closure, and the `supersedes`-direction wording fix). See
-`docs/clotho-phase-1-remediation.md` for the finding-by-finding dispositions.
+closure, and the `supersedes`-direction wording fix); v2.3 incorporates The Eye's
+fourth review (shallow-clone guard on the `repository_ref` derivation; the exact
+`discharges` matrix replacing the contradictory canonical-semantics sentence).
+See `docs/clotho-phase-1-remediation.md` for the finding-by-finding dispositions.
 
 **Process rule (The Eye, 2026-07-15):** *a governing specification is normative,
 not immune from challenge.* Daedalus workshops over this spec's plans MUST permit
@@ -101,16 +103,31 @@ change without changing the node id. A changed function body, test file, section
 contract, or run summary is a NEW version node; lineage across versions is
 `supersedes`, never silent reattachment.
 
-**`repository_ref` is defined, not delegated (v2.2):**
-`repository_ref = "git-root:" + <full 40-hex sha of the repository's root commit>`
-(`git rev-list --max-parents=0 HEAD`; more than one root commit is fatal in
-Phase 1). Consequences, chosen deliberately: a repository *rename or re-hosting
-does not change identity*; clones of the same history weave into the *same*
+**`repository_ref` is defined, not delegated (v2.2, hardened v2.3):**
+`repository_ref = "git-root:" + <full 40-hex sha of the repository's root commit>`,
+derived mechanically as:
+
+```
+deriveRepositoryRef:
+  git rev-parse --is-shallow-repository
+  require exactly "false"
+  otherwise fail with a stable shallow-repository error
+  then git rev-list --max-parents=0 HEAD
+  require exactly one commit (multiple roots fatal in Phase 1)
+```
+
+The shallow guard is load-bearing: git treats a shallow-boundary commit as
+parentless, so an unguarded derivation in a shallow clone (the
+`actions/checkout` default) would mint a *different* repository identity than a
+full clone. Task 0's workflow-only PR therefore sets `fetch-depth: 0`, and a
+test proves a shallow clone is rejected while a full clone resolves the actual
+root. Consequences, chosen deliberately: a repository *rename or re-hosting does
+not change identity*; full clones of the same history weave into the *same*
 namespace (reproducibility); forks share the namespace exactly as far as they
 share the root commit (identity is history lineage, not hosting); and later
 cross-repository accession preserves every Phase 1 node id unchanged. The weave
-derives it mechanically and records it in the header; validators reject locators
-whose `repository_ref` does not match the derived value.
+derives it, records it in the header; validators reject locators whose
+`repository_ref` does not match the derived value.
 
 **`repository-file` (The Eye, 2026-07-15):** files are genuine architectural objects
 — imports often terminate at modules rather than named symbols; workflow files and
@@ -144,9 +161,10 @@ decision made in exactly one place (`clotho/registry.mjs`).
 **Directions are frozen** in an endpoint-compatibility matrix enforced at both
 append and verification time (canonical semantics: consumer —`depends-on`→
 dependency; artifact —`verified-by`→ test; artifact —`introduced-by`→ commit;
-artifact —`motivated-by`→ concern; obligation —`discharges`→ concern or
-contract-clause; and `old_version` —`supersedes`→ `new_version` — the edge points
-forward through version lineage, old node → new node of the same kind). The implementation plan
+`code-symbol` —`motivated-by`→ `concern`; `code-symbol` —`discharges`→
+`obligation`; `obligation` —`discharges`→ `contract-clause`; and `old_version`
+—`supersedes`→ `new_version` — the edge points forward through version lineage,
+old node → new node of the same kind). The implementation plan
 carries the full matrix, extended for `repository-file` endpoints
 (e.g. `repository-file → commit` for `introduced-by`, `code-symbol →
 repository-file` and `repository-file → repository-file` for `depends-on` where

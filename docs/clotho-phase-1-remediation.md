@@ -160,6 +160,27 @@ performed (connector truncation); the binding recipe remains in the PR body.
 
 `matured-plan-v3.md` becomes superseded evidence once delta-3 converges.
 
+## Fourth review — The Eye holds #90 at head `b68210b` (2026-07-15)
+
+All five third-review corrections verified present; three execution-level
+blockers found. Resolved via spec v2.3 + amendments AM-16..AM-18
+(`docs/clotho-phase-1-plan-amendments-4.md`) and a fourth surgical delta
+workshop (`docs/runs/clotho-daedalus-delta4/`):
+
+| # | Finding | Resolution |
+|---|---|---|
+| 1 | `repository_ref` derivation returns the shallow boundary in shallow clones (CI's `actions/checkout@v4` default), minting different identities in CI vs full clones | AM-16 + spec v2.3: `git rev-parse --is-shallow-repository` must equal "false" (else stable fatal error) before root derivation; Task 0 sets `fetch-depth: 0`; test proves shallow rejection + full-clone resolution |
+| 2 | Task 4a requires a committed orchestrator inventory naming `weave.mjs`, which Task 5 creates — closure-equality test unexecutable as sequenced | AM-17: Task 4a = closure scanner + per-weaver inventories only; Task 5 creates `weave.mjs`, commits the complete orchestrator inventory, and enforces orchestrator closure equality in the same PR; no inventory names a future file |
+| 3 | Spec's canonical-semantics sentence (`obligation --discharges--> concern or contract-clause`) contradicted the plan's enforced matrix | Spec v2.3 states the exact matrix (`code-symbol --motivated-by--> concern`; `code-symbol --discharges--> obligation`; `obligation --discharges--> contract-clause`); AM-18 obliges the plan to verify consistency (plan side was already correct) |
+
+Verified-passed from the third review: complete locator invariant with the
+named `commit` exception; mechanism-provenance architecture (defect was
+sequencing only); both governance wordings; supersession chain. The Eye again
+triangulated the candidate binding while noting the hash recomputation was not
+independently materializable in the review environment.
+
+`matured-plan-v4.md` becomes superseded evidence once delta-4 converges.
+
 ## Not accepted / needs no change
 
 - "Ledger cannot answer from itself" — true of the reviewed skeleton, already false

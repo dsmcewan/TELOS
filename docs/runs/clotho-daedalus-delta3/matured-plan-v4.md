@@ -1,5 +1,14 @@
 # Clotho Phase 1 Implementation Plan
 
+> **SUPERSEDED historical artifact.** The Eye's third hold-review of PR #90 head
+> `b68210b` found three execution-level blockers in this candidate
+> (`docs/clotho-phase-1-remediation.md` § Fourth review); it was re-converged
+> under spec v2.3 by the fourth delta workshop. The canonical submission
+> candidate is **`docs/runs/clotho-daedalus-delta4/matured-plan-v5.md`**. The
+> extracted copy below is unmodified apart from this banner; the
+> content-addressed, provenance-bearing round artifacts under `artifacts/` are
+> the authoritative record.
+
 > **Status: implementation-ready.** Execute one task per branch, PR, CI run, and
 > squash merge. Do not begin a task until the prior task is merged and every existing
 > package is green.
