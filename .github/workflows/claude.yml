@@ -34,7 +34,9 @@ jobs:
       - name: Run Claude Code
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Authenticate with the Claude subscription (Max), NOT metered API credits.
+          # Mint with `claude setup-token` and store as the CLAUDE_CODE_OAUTH_TOKEN repo secret.
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # Responds to @claude mentions in issues and PR comments.
           # Add `claude_args` to pass CLI options, e.g.:
           # claude_args: "--max-turns 10 --model claude-sonnet-4-6"
