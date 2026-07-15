@@ -9,7 +9,7 @@
 // prompt/parse helpers are unit-tested without a network.
 
 import { agyApprovalPacket, agyCheckpointArgs } from "./council.mjs";
-import { SCHEMAS } from "./schemas.mjs";
+import { SCHEMAS, validateAgainstSchema, PROPOSAL_REVIEW_PACKET_SCHEMA } from "./schemas.mjs";
 
 // Chat seats expose an `<model>_ask` tool; agy is structured (no code generation).
 const ASK_MODELS = new Set(["claude", "grok", "codex", "gemini"]);
@@ -167,6 +167,38 @@ export function approvalPromptFor(dossier, { models = {} } = {}) {
  * identity checks. An unparseable answer degrades to a non-approving
  * 'advisory-note' (fail-closed), never a fabricated approve.
  */
+// Parse a PROPOSAL-LIFECYCLE review packet. FAIL-CLOSED (decision 14): a malformed concern / unknown
+// enum / unexpected field makes the whole packet invalid rather than being silently sanitized.
+// Identity + proposal_ref/review-input bindings are injected by trusted wiring, never model-authored.
+export function parseReviewPacket(text, model, dossier, meta = {}) {
+  const raw = (() => { try { return JSON.parse(text); } catch { return null; } })() || (extractJson(text) || {});
+  const judgment = {
+    decision: raw.decision, confidence: raw.confidence,
+    required_edits: raw.required_edits, considerations: raw.considerations,
+    concerns: raw.concerns, rationale: raw.rationale
+  };
+  const v = validateAgainstSchema(PROPOSAL_REVIEW_PACKET_SCHEMA, judgment);
+  if (!v.ok) {
+    return { build_id: dossier?.build_id, use_case: dossier?.use_case, model, role: "approver",
+      proposal_ref: meta.proposal_ref ?? dossier?.build_id, hard_stops: [],
+      parse_ok: false, parse_error: v.violations.slice(0, 3), timestamp: meta.timestamp ?? new Date(0).toISOString() };
+  }
+  return {
+    build_id: dossier?.build_id, use_case: dossier?.use_case, model, role: "approver",
+    docs_reviewed: Array.isArray(meta.docs_reviewed) ? meta.docs_reviewed : [],
+    proposal_ref: meta.proposal_ref ?? dossier?.build_id,
+    review_input_hash: meta.review_input_hash ?? null,
+    review_manifest_ref: meta.review_manifest_ref ?? null,
+    review_call_ref: meta.review_call_ref ?? null,
+    decision: judgment.decision, confidence: judgment.confidence,
+    required_edits: judgment.required_edits, considerations: judgment.considerations,
+    concerns: judgment.concerns, rationale: judgment.rationale,
+    hard_stops: [],                          // deprecated; always injected empty for shape compat
+    parse_ok: true,
+    timestamp: meta.timestamp ?? new Date(0).toISOString()
+  };
+}
+
 export function parseApprovalPacket(text, model, dossier, meta = {}) {
   const direct = (() => { try { return JSON.parse(text); } catch { return null; } })();
   if (direct && direct.phase_gate_status) {
@@ -240,7 +272,11 @@ export function makeLiveCallSeat({ client, liveSeatCaller, dossier, meta = {}, m
       const text = await client.callTool(`${planningModel}_ask`, { system, prompt, model: models[planningModel], include_provenance: true, response_schema, schema_name });
       const body = (() => { try { return JSON.parse(text); } catch { return null; } })();
       const inner = body && typeof body.text === "string" ? body.text : text;
-      return { tasks: parseDecomposeTasks(inner) };
+      // Keep the decompose provenance (creation lineage) instead of discarding it. Honest-null when
+      // the server did not attest one.
+      const provenance = body && typeof body.provenance === "object" && body.provenance
+        ? body.provenance : { model: planningModel, response_id: null, source: "ai-peer-mcp" };
+      return { tasks: parseDecomposeTasks(inner), provenance };
     }
     return approval(args);
   };

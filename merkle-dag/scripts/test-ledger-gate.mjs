@@ -7,6 +7,7 @@ import { computePlan, writePlan, mutateNode } from "../merkle.mjs";
 import { computeDiskTreeHash } from "../artifact.mjs";
 import { generateKeypair, makeRecord, appendLedger, writePublicKey } from "../crypto.mjs";
 import { verify } from "../ledger-gate.mjs";
+import { compileAndHashPlan } from "../planner.mjs";
 
 // ---------------------------------------------------------------------------
 // buildGreenFixture: real workspace, real Ed25519 keypair, real signed ledger.
@@ -298,6 +299,62 @@ function buildGreenFixture({ testB } = {}) {
   assert.equal(r.reason, "PLAN_TAMPERED", "Case 11: reason === PLAN_TAMPERED");
   assert.equal(r.exit, 2, "Case 11: exit === 2");
   console.log("Case 11 OK: authorized_signers tamper → PLAN_TAMPERED exit 2");
+}
+
+// ---------------------------------------------------------------------------
+// Obligation fixture: impl + auth-test nodes; an obligation discharged by auth-test.
+// settleAuthTest — whether to write a ledger entry for auth-test.
+// ---------------------------------------------------------------------------
+function buildObligationFixture({ settleAuthTest = true, requiredResult = "pass" } = {}) {
+  const ws = mkdtempSync(path.join(os.tmpdir(), "telos-obgate-"));
+  const telosDir = path.join(ws, ".telos");
+  mkdirSync(telosDir, { recursive: true });
+  writeFileSync(path.join(ws, "impl.txt"), "impl\n");
+  writeFileSync(path.join(ws, "auth.test.txt"), "test\n");
+  const { privatePem, publicJwk } = generateKeypair();
+  const tasks = [
+    { id: "impl", writes: ["impl.txt"], reads: [], requirements: "impl", test: { cmd: "node", args: ["-e", "0"] } },
+    { id: "auth-test", writes: ["auth.test.txt"], reads: [], requirements: "test", test: { cmd: "node", args: ["-e", "0"] } }
+  ];
+  const obligations = [{ obligation_id: "verify-auth-001", concern_ref: "sha256:cA", required_result: requiredResult, check_contract_ref: "sha256:cc", discharge_node_id: "auth-test" }];
+  const { plan } = compileAndHashPlan({ tasks, authorizedSigners: { tester: publicJwk }, repoRoot: ws, obligations });
+  writePlan(telosDir, plan);
+  const ledgerPath = path.join(telosDir, "ledger.jsonl");
+  for (const node of plan.nodes) {
+    if (node.id === "auth-test" && !settleAuthTest) continue;
+    const disk = computeDiskTreeHash(node.files, ws);
+    appendLedger(ledgerPath, makeRecord({ task_id: node.id, effective_hash: node.effective_hash, artifact_tree_hash: disk.tree_hash, artifact_files: disk.files }, "tester", privatePem));
+  }
+  return { ws, telosDir, plan };
+}
+
+// Case 12: obligation discharged when its node settles → ready.
+{
+  const { ws, telosDir } = buildObligationFixture();
+  const r = verify(telosDir, { baseDir: ws });
+  assert.equal(r.merge_status, "ready", "Case 12: ready when obligation discharged");
+  assert.ok(r.obligations.every((o) => o.discharged), "Case 12: obligation marked discharged");
+  console.log("Case 12 OK: obligation discharged → ready");
+}
+
+// Case 13: vacuous case — the obligation's discharge node never settles → blocked, exact reason.
+{
+  const { ws, telosDir } = buildObligationFixture({ settleAuthTest: false });
+  const r = verify(telosDir, { baseDir: ws });
+  assert.equal(r.merge_status, "blocked", "Case 13: blocked when discharge node not settled");
+  assert.equal(r.reason, "undischarged verification obligation", "Case 13: exact contract reason");
+  assert.equal(r.safe_next_action, "discharge-obligations", "Case 13: safe_next_action");
+  assert.equal(r.exit, 1, "Case 13: exit 1");
+  console.log("Case 13 OK: undischarged obligation blocks (vacuous case)");
+}
+
+// Case 14: required_result != "pass" is never auto-discharged, even when the node settles green.
+{
+  const { ws, telosDir } = buildObligationFixture({ requiredResult: "fail" });
+  const r = verify(telosDir, { baseDir: ws });
+  assert.equal(r.merge_status, "blocked", "Case 14: non-pass required_result stays blocked");
+  assert.equal(r.reason, "undischarged verification obligation");
+  console.log("Case 14 OK: non-pass required_result blocks despite settlement");
 }
 
 console.log("test-ledger-gate.mjs OK");

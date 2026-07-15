@@ -5,8 +5,8 @@
   "type": "module",
   "description": "TELOS Merkle-DAG planning, Ed25519 verified delegation, and a pure done() merge gate.",
   "scripts": {
-    "check": "node --check vendor.mjs && node --check scripts/test-vendor.mjs && node --check merkle.mjs && node --check scripts/test-merkle.mjs && node --check artifact.mjs && node --check crypto.mjs && node --check scripts/test-artifact.mjs && node --check scripts/test-crypto.mjs && node --check ledger-gate.mjs && node --check scripts/test-ledger-gate.mjs && node --check orchestrate.mjs && node --check scripts/test-orchestrate.mjs && node --check test-harness.mjs && node --check planner.mjs && node --check scripts/test-planner.mjs",
-    "test": "npm run check && node scripts/test-vendor.mjs && node scripts/test-merkle.mjs && node scripts/test-artifact.mjs && node scripts/test-crypto.mjs && node scripts/test-ledger-gate.mjs && node scripts/test-orchestrate.mjs && node test-harness.mjs && node scripts/test-planner.mjs"
+    "check": "node --check vendor.mjs && node --check scripts/test-vendor.mjs && node --check merkle.mjs && node --check scripts/test-merkle.mjs && node --check artifact.mjs && node --check crypto.mjs && node --check scripts/test-artifact.mjs && node --check scripts/test-crypto.mjs && node --check ledger-gate.mjs && node --check scripts/test-ledger-gate.mjs && node --check orchestrate.mjs && node --check scripts/test-orchestrate.mjs && node --check test-harness.mjs && node --check planner.mjs && node --check scripts/test-planner.mjs && node --check obligation.mjs && node --check scripts/test-obligation.mjs && node --check proposal-ledger.mjs && node --check scripts/test-proposal-ledger.mjs",
+    "test": "npm run check && node scripts/test-vendor.mjs && node scripts/test-merkle.mjs && node scripts/test-artifact.mjs && node scripts/test-crypto.mjs && node scripts/test-ledger-gate.mjs && node scripts/test-orchestrate.mjs && node test-harness.mjs && node scripts/test-planner.mjs && node scripts/test-obligation.mjs && node scripts/test-proposal-ledger.mjs"
   },
   "engines": { "node": ">=18" }
 }
