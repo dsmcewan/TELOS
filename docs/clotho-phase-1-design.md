@@ -10,9 +10,11 @@ creates and maintains knowledge-graph threads across artifacts and repositories.
 This phase builds exactly that and nothing else. Measurement of threads is Lachesis;
 retirement of threads is Atropos; both are explicitly out of scope here.
 
-**Status:** v2 — revised after cold review of `2d93816` and the first Daedalus
-workshop (`docs/runs/clotho-daedalus/`); see `docs/clotho-phase-1-remediation.md`
-for the finding-by-finding disposition and The Eye's decisions incorporated here.
+**Status:** v2.1 — v2 revised after cold review of `2d93816` and the first
+Daedalus workshop (`docs/runs/clotho-daedalus/`); v2.1 incorporates The Eye's
+second review of the delta candidate (content-bound locators, frozen blastRadius
+semantics, mechanism-bound coverage provenance, abort-on-weaver-failure). See
+`docs/clotho-phase-1-remediation.md` for the finding-by-finding dispositions.
 
 **Process rule (The Eye, 2026-07-15):** *a governing specification is normative,
 not immune from challenge.* Daedalus workshops over this spec's plans MUST permit
@@ -69,6 +71,21 @@ NODE_KINDS = { contract-clause, code-symbol, repository-file, test, commit, conc
 
 `node_id = H({kind, locator})`, with kind-specific locator schemas that reject
 missing and extra fields.
+
+**Locators are content-bound version identities (v2.1).** A node id that can keep
+pointing at changed bytes is a mutable label, not a version reference. Every
+repository-scoped locator therefore includes `repository_ref` (consistent with
+`repository-file`, so cross-repository weaving later needs no schema break) and a
+content hash of the exact bytes it names — at minimum:
+
+```
+code-symbol  = {repository_ref, path, symbol, blob_sha}
+test         = {repository_ref, path, blob_sha}
+run-evidence = {repository_ref, path, summary_sha256}
+```
+
+A changed function body, test file, or run summary is a NEW version node; lineage
+across versions is `supersedes`, never silent reattachment.
 
 **`repository-file` (The Eye, 2026-07-15):** files are genuine architectural objects
 — imports often terminate at modules rather than named symbols; workflow files and
@@ -157,8 +174,19 @@ ASSERTION_STATUS = { deterministic-extraction, human-authorized,
 Absence of an edge alone cannot distinguish "no relationship" from "weaver skipped /
 source unavailable / extraction failed / relationship unrecognized". Each weave
 therefore records a **signed coverage manifest** (in the weave header/trailer):
-per-weaver `{id, version, state: executed|skipped|failed, error_code?,
-inspected_source_counts}` plus the closed input inventories actually consumed.
+per-weaver `{id, version, implementation_refs, state, inspected_source_counts}`
+plus `inventories_consumed`, each entry carrying a `source_ref` — where
+`implementation_refs`/`source_ref` are content addresses of the extractor and
+inventory bytes that actually ran (`file:<path>@<blob_sha>`). Names and
+manually-bumped integer versions identify nothing; the manifest binds the
+**mechanism itself**. An ephemeral signature proves the ledger did not mutate
+after signing — the implementation refs identify the algorithm that made its
+assertions.
+
+**Weaver failure aborts the weave (v2.1).** A throwing weaver means the temporary
+ledger is destroyed and never published; published manifests contain only
+`executed` and `skipped` states. `failed` exists solely as an internal /
+verifier-fixture diagnostic. The deliberate coverage-unknown path is `skipped`.
 General queries answer **coverage-unknown** when the relevant weaver did not
 execute; only a predefined expected set (the flagship test) may name a *specific*
 missing relationship.
@@ -187,9 +215,13 @@ Missing or malformed evidence yields a warning and a gap — never an inferred e
 
 - `threadsOf(node_id)` — all edges touching a node, grouped by kind, locators
   included.
-- `blastRadius(node_id, depth)` — transitive closure traversing **inverse
-  `depends-on`** (from the changed dependency to its consumers) plus `verified-by`
-  evidence attached to affected nodes: "what breaks if its preimage changes."
+- `blastRadius(node_id, depth)` — `affected` = the **inverse transitive closure of
+  `depends-on`** (from the changed dependency to its consumers); `evidence` = the
+  outgoing `verified-by` edges of affected artifacts. Traversal **stops at test
+  nodes** (test co-coverage is not a dependency relationship), never follows
+  forward `depends-on` (a target's own dependencies do not break when the target
+  changes), and `truncated` is computed from dependency traversal only: "what
+  breaks if its preimage changes."
 - `why(node_id)` — walks `introduced-by` → `motivated-by` → `discharges` to the
   concern and contract clause: "why does this exist."
 

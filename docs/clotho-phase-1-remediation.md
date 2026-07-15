@@ -121,6 +121,23 @@ delivery must not repeat it.
   (`docs/clotho-phase-1-plan-amendments.md`), delta workshop under
   `docs/runs/clotho-daedalus-delta/`.
 
+## Second review — The Eye holds #90 at head `2623758` (2026-07-15)
+
+Four blocking defects + one contract ambiguity found in the delta candidate
+(`matured-plan-v2.md`); resolved via spec v2.1 + amendments AM-7..AM-11
+(`docs/clotho-phase-1-plan-amendments-2.md`) and a second narrow delta workshop
+(`docs/runs/clotho-daedalus-delta2/`):
+
+| # | Finding | Resolution |
+|---|---|---|
+| 1 | `code-symbol`/`test`/`run-evidence` locators not version identities | AM-7: content-bound locators (`blob_sha`/`summary_sha256`) + `repository_ref` on every repository-scoped locator |
+| 2 | plan `blastRadius` (both-direction BFS incl. through tests) contradicts spec | AM-8: inverse `depends-on` closure only; `verified-by` as attached evidence; traversal stops at tests; `truncated` from dependency traversal |
+| 3 | Task 0 (CI matrix) would land red before the package exists | AM-9: Task 1 scaffold first under existing CI, then the isolated workflow-only Task 0 |
+| 4 | coverage manifest binds names/manual versions, not extractor bytes | AM-10: `implementation_refs` / inventory `source_ref` as `file:<path>@<blob_sha>` content addresses |
+| 5 | `failed` state both query-visible and never-published | AM-11: **abort on weaver failure**; published manifests carry only `executed`/`skipped`; `skipped` is the deliberate coverage-unknown path; partial-advisory alternative recorded as rejected |
+
+`matured-plan-v2.md` becomes superseded evidence once delta-2 converges.
+
 ## Not accepted / needs no change
 
 - "Ledger cannot answer from itself" — true of the reviewed skeleton, already false

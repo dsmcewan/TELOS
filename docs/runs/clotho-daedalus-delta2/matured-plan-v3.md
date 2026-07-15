@@ -1,14 +1,5 @@
 # Clotho Phase 1 Implementation Plan
 
-> **SUPERSEDED historical artifact.** The Eye's hold-review of PR #90 head
-> `2623758` found four blocking defects and one contract ambiguity in this
-> candidate (`docs/clotho-phase-1-remediation.md` § Second review); it was
-> re-converged under spec v2.1 by the second delta workshop. The canonical
-> submission candidate is
-> **`docs/runs/clotho-daedalus-delta2/matured-plan-v3.md`**. The extracted copy
-> below is unmodified apart from this banner; the signed round artifacts under
-> `artifacts/` are the content-addressed record.
-
 > **Status: implementation-ready.** Execute one task per branch, PR, CI run, and
 > squash merge. Do not begin a task until the prior task is merged and every existing
 > package is green.
@@ -51,7 +42,10 @@ specification mistake. Any proposal accepted by The Eye is recorded in a final
 | D9 | Files are first-class version-identified nodes. | `repository-file` nodes carry `{repository_ref, path, blob_sha}`; imports terminating at modules, manifests, workflows, and configuration thread to file nodes instead of being dropped. A module with no Phase 1 export uses its file node as the consumer endpoint, including `repository-file -> code-symbol` when a used named import resolves to a seeded symbol. `unrepresentable-consumer` survives only for genuinely unresolvable references. |
 | D10 | Proposals are quarantined from facts. | Every record carries an `assertion_status` from a closed set, coupled at write time to `asserted_by`. Default queries exclude unresolved `model-proposal` records; status transitions are append-only human-authorized follow-up records, never rewrites. |
 | D11 | Absence is classifiable. | Every weave ends with a signed coverage-manifest trailer inside the chain. Queries consult it and answer `coverage-unknown` for threads whose producing weaver did not execute, instead of returning a silently smaller answer. Weaver-asserted records are invalid unless that same manifest marks the asserting weaver `executed`. |
-| D12 | CI workflow changes ship alone. | The `.github/workflows/ci.yml` matrix edit is Task 0: a minimal, explicitly flagged, workflow-only PR, human-reviewed and merged before any feature task. |
+| D12 | CI workflow changes ship alone, after the package exists. | The `.github/workflows/ci.yml` matrix edit is Task 0: a minimal, explicitly flagged, workflow-only PR, human-reviewed and merged immediately after the Task 1 scaffold, so the matrix never names an absent package and no knowingly red workflow PR lands. |
+| D13 | Locators are content-bound version identities. | Every repository-scoped locator carries `repository_ref` and a content hash of the exact bytes it names (`blob_sha` or `summary_sha256`). A changed body, file, or summary is a NEW version node; lineage is explicit `supersedes`; no fact silently reattaches to changed bytes. |
+| D14 | Coverage provenance binds the mechanism bytes. | Manifest weaver entries carry `implementation_refs` (content addresses of the extractor and shared substrate files that ran) and `inventories_consumed` entries carry a `source_ref` content address. Manual integer versions remain human-readable labels only and prove nothing. |
+| D15 | Any weaver failure aborts the weave. | A throwing weaver destroys the temporary ledger; the destination is never published; there is no partial advisory artifact in Phase 1. Published manifests contain only `executed` and `skipped` states; `failed` survives solely in verifier fixtures and internal diagnostics, and the verifier rejects a published manifest containing it. |
 
 ## Global constraints
 
@@ -84,8 +78,11 @@ specification mistake. Any proposal accepted by The Eye is recorded in a final
 - **Coverage honesty:** a query over a ledger whose manifest shows a weaver did not
   execute answers `coverage-unknown` for that weaver's edge kinds; only the
   predefined flagship expected set may name a specific missing relationship. A
-  ledger or query input containing an edge asserted by a skipped or failed weaver is
+  ledger or query input containing an edge asserted by a non-`executed` weaver is
   inconsistent and rejected.
+- **No partial weave artifacts:** a weaver failure aborts the entire weave; the
+  temporary ledger is removed and the destination is never published. A published,
+  verified manifest contains only `executed` and `skipped` weaver states.
 - **Exit:** `cd clotho && npm test` is green, every existing package remains green,
   no spine file changed, and verified reproduction evidence is committed.
 
@@ -94,7 +91,7 @@ specification mistake. Any proposal accepted by The Eye is recorded in a final
 | Path | Responsibility |
 |---|---|
 | `clotho/package.json` | Private ESM package, Node engine, fixed check/test commands, no dependencies. |
-| `clotho/inventory.mjs` | Closed package, document, ledger-adapter, run-summary, weaver-id, weaver-version, repository-ref, exclusion, and fatal-warning inventories. |
+| `clotho/inventory.mjs` | Closed package, document, ledger-adapter, run-summary, weaver-id, weaver-version, weaver-implementation-file, repository-ref, exclusion, and fatal-warning inventories. |
 | `clotho/registry.mjs` | Read-only kind and assertion-status registries, canonical encoding, locator/source/endpoint/status validation, document keys, and node-id derivation. |
 | `clotho/thread-ledger.mjs` | Exclusive creation, signing, chaining, coverage-manifest trailer, closing, verification, and incremental edge reads. |
 | `clotho/weavers/util.mjs` | Closed-root walks, lexical extraction, Markdown sections, token matching, current-byte blob refs, and the git wrapper. |
@@ -115,7 +112,7 @@ specification mistake. Any proposal accepted by The Eye is recorded in a final
 | `clotho/scripts/test-flagship.mjs` | Real-repository full and skipped-weaver acceptance with review-set reporting. |
 | `clotho/scripts/expected-flagship.json` | Hand-audited exact-subset expectations for eight source groups. |
 | `clotho/scripts/fixtures/` | Miniature packages, Markdown, ledgers, streams, and run summaries. |
-| `.github/workflows/ci.yml` | Adds `clotho` to the package matrix (Task 0, workflow-only PR). |
+| `.github/workflows/ci.yml` | Adds `clotho` to the package matrix (Task 0, workflow-only PR, after Task 1). |
 | `.gitignore` | Ignores `.telos/clotho/`. |
 | `docs/runs/clotho-self-weave/` | Reproduction script, snapshot, summary, match report, review set, and verification report. |
 | `docs/STATUS.md`, `docs/ROADMAP.md` | Completion state and follow-on work. |
@@ -161,26 +158,33 @@ membership list is allowed.
 
 ### Locator schemas
 
-Objects reject missing and extra fields.
+Objects reject missing and extra fields. Every repository-scoped locator is a
+**content-bound version identity**: it carries `repository_ref` (the committed
+Phase 1 constant `REPOSITORY_REF` in `inventory.mjs`; any other value is rejected)
+and a content hash of the exact bytes it names. A changed function body, file,
+or summary produces a NEW version node; lineage across versions is carried only by
+explicit evidenced `supersedes` edges. No fact may silently reattach to a node whose
+named bytes changed.
 
 | Kind | Locator |
 |---|---|
-| `code-symbol` | `{path, symbol}` where `symbol` is a nonempty JavaScript identifier exported by the Phase 1 grammar. |
-| `repository-file` | `{repository_ref, path, blob_sha}` where `repository_ref` equals the committed Phase 1 constant `REPOSITORY_REF` in `inventory.mjs` and `blob_sha` is a lowercase full 40-hex git blob SHA produced by `git hash-object --no-filters -- <path>`. |
-| `test` | `{path}`. |
+| `code-symbol` | `{repository_ref, path, symbol, blob_sha}` where `symbol` is a nonempty JavaScript identifier exported by the Phase 1 grammar and `blob_sha` is the lowercase full 40-hex git blob SHA of the defining file's exact scanned bytes, from `git hash-object --no-filters -- <path>`. |
+| `repository-file` | `{repository_ref, path, blob_sha}` with `blob_sha` produced identically. |
+| `test` | `{repository_ref, path, blob_sha}` with `blob_sha` produced identically. |
 | `commit` | `{sha}` with a lowercase full 40-hex SHA. |
 | `doc-section` | `{path, heading_path, text_sha256}`. |
 | `contract-clause` | `{path, heading_path, text_sha256}`. |
 | `concern` | `{ledger_path, entry_hash}`. |
 | `obligation` | `{ledger_path, entry_hash}`. |
 | `check-contract` | `{path, contract_id}` with a nonblank contract id. |
-| `run-evidence` | `{path}` naming a configured directory below `docs/runs/`. |
+| `run-evidence` | `{repository_ref, path, summary_sha256}` where `path` names a configured directory below `docs/runs/` and `summary_sha256` is the lowercase 64-hex SHA-256 of the configured summary file's exact validated bytes. |
 | `decision` | `{path, heading_path, text_sha256}`. |
 
 `repository_ref` is kept explicit so cross-repository weaving later needs no schema
-break; in Phase 1 any other value is rejected. A `repository-file` node is a version
-reference: a rename or content change yields a new node, with lineage carried only
-by explicit evidenced `supersedes` edges.
+break; in Phase 1 any other value is rejected. Locator validators reject missing and
+extra fields as everywhere else. Content hashes are computed from the exact bytes
+actually scanned, matching the `file:` source-ref discipline; a non-40-hex
+`hash-object` result or malformed digest is fatal.
 
 `heading_path` is a nonempty array of normalized nonempty headings. Heading
 normalization applies Unicode NFC, trims leading/trailing whitespace, collapses
@@ -259,7 +263,7 @@ Append and verification both enforce this matrix:
 | `motivated-by` | `code-symbol -> concern` |
 | `evidenced-by` | `code-symbol -> run-evidence` |
 | `discharges` | `code-symbol -> obligation` or `obligation -> contract-clause` |
-| `supersedes` | old node -> new node of the same kind (including `repository-file` renames); `asserted_by` must be `human` or begin with `model:` |
+| `supersedes` | old node -> new node of the same kind (including `repository-file` renames and content-changed `code-symbol`, `test`, and `run-evidence` versions); `asserted_by` must be `human` or begin with `model:` |
 
 A consumer module with no representable exported symbol is itself represented as a
 `repository-file` node. A used named import that resolves to a seeded symbol emits
@@ -305,17 +309,32 @@ trailer**, signed and chained exactly like an edge record:
 
 ```text
 {clotho_weave_trailer: {
-  weavers: [{id, version, state, error_code?, inspected_source_counts}],
-  inventories_consumed
+  weavers: [{id, version, implementation_refs, state, inspected_source_counts}],
+  inventories_consumed: [{id, source_ref}]
 }, woven_at, prev_hash, record_hash, signature}
 ```
 
-`state` is from the closed set `executed | skipped | failed`; `error_code` is
-present exactly when `state` is `failed`. `weavers` lists all five weaver ids in
-inventory order with the committed weaver versions from `inventory.mjs`;
-`inspected_source_counts` records deterministic per-weaver input counts (zero for a
-skipped weaver); `inventories_consumed` names the closed inventories read. The
-trailer is written by `close()` from driver-supplied coverage data; weavers never
+`state` is from the closed set `executed | skipped` for any published manifest;
+`failed` exists solely in verifier fixtures and internal diagnostics, and
+`verifyLedger` rejects a manifest containing it (see the weaver-failure abort
+contract below). `weavers` lists all five weaver ids in inventory order.
+`version` is the committed integer from `inventory.mjs`, retained as a
+human-readable label only; it proves nothing. **Coverage provenance binds the
+mechanism bytes:** `implementation_refs` is a nonempty deterministically sorted
+array of `file:<path>@<blob_sha>` content addresses covering the extractor module
+that ran and the shared substrate files it imports (e.g.
+`file:clotho/weavers/code.mjs@<blob_sha>`, `file:clotho/weavers/util.mjs@<blob_sha>`,
+`file:clotho/registry.mjs@<blob_sha>`), computed by the driver with
+`git hash-object --no-filters` from the committed per-weaver implementation-file
+inventory. A skipped weaver still records its `implementation_refs` (the bytes that
+would have run, identifying the mechanism version) with zero
+`inspected_source_counts`. `inventories_consumed` entries are `{id, source_ref}`
+with `source_ref = file:clotho/inventory.mjs@<blob_sha>` (one entry per closed
+inventory read, all content-addressed). Verification recomputes and checks every
+ref's shape (valid `file:` form, repo-relative path, 40-hex blob SHA) and the
+flagship run evidence records them.
+
+The trailer is written by `close()` from driver-supplied coverage data; weavers never
 see or emit it. A complete ledger has exactly one trailer as its final record; a
 missing, duplicate, or non-final trailer is a verification error.
 
@@ -333,7 +352,7 @@ A weaver `edgeInput` contains only the edge payload fields except `woven_at`. Th
 ledger rejects caller-supplied time, predecessor, hash, signature, header, or trailer
 fields.
 
-### Weaver result and warning contract
+### Weaver result, warning, and failure contract
 
 ```text
 weave(ctx) -> Promise<{edges: edgeInput[], warnings: warning[]}>
@@ -346,32 +365,30 @@ platform-specific separators. Results sort edges by
 warnings by `(weaver, code, path, detail)`. Exact duplicate edge inputs are removed;
 records with different evidence, assertors, or statuses remain distinct.
 
+**Any weaver failure aborts the weave.** A weaver that throws terminates the entire
+weave: the temporary ledger file is removed, the destination is never published, and
+the driver exits nonzero reporting the stable error code. There is no partial
+advisory artifact in Phase 1; the deliberate coverage-unknown path is `--skip`
+(`state: skipped`). The rejected alternative—publishing partial advisory artifacts
+with `failed` manifest states—is recorded here for provenance and may be revisited
+by a future authorized phase.
+
 `inventory.mjs` contains a closed `FATAL_WARNING_CODES` set for structural failures
 such as root escape, symlink input, unsupported configured ledger format, invalid
 configured ledger entry, chain failure, invalid content address, and duplicate
 heading address. Missing matches and unrepresentable static grammar produce nonfatal
 warnings; flagship expected-set and gap checks decide whether they are acceptable.
 
-## Task 0: CI-workflow isolation PR
-
-**Files:** modify only `.github/workflows/ci.yml`.
-
-- [ ] Add `clotho` to the existing CI package matrix without changing any existing
-      package command. No other file changes in this PR.
-- [ ] Flag the PR explicitly as workflow-only in its title and description; it
-      requires human review as a workflow change before any Clotho feature task
-      lands (per the documented self-skipping-reviewer failure).
-- [ ] The matrix entry runs the standard package command; until Task 1 merges, the
-      `clotho` job is expected to be red or skipped exactly as the matrix treats an
-      absent package, and Task 1 must turn it green.
-- [ ] **Exit:** the workflow-only PR is human-reviewed and merged, and every
-      existing package's CI job is unchanged and green.
-
 ## Task 1: Package scaffold
 
 **Files:** create `clotho/package.json`, `clotho/scripts/check.mjs`,
 `clotho/scripts/test-all.mjs`, and a scaffold `test-registry.mjs`; modify only
 `.gitignore` outside `clotho/`.
+
+This task lands first, under the existing CI, so that the Task 0 workflow PR adds a
+package that already exists and passes: the CI workflow does not skip absent
+packages, and a matrix entry naming a nonexistent package would land a knowingly
+failing workflow-only PR.
 
 - [ ] Set `name`, `private: true`, `type: module`, and `engines.node: >=18`; omit both
       dependency fields.
@@ -384,11 +401,26 @@ warnings; flagship expected-set and gap checks decide whether they are acceptabl
 - [ ] `npm test` runs check and then test-all. The scaffold test prints
       `clotho scaffold OK`.
 - [ ] Add `.telos/clotho/` to `.gitignore`. Do not touch `.github/workflows/`; the
-      matrix change already landed in Task 0.
+      matrix change ships alone in Task 0, immediately after this task merges.
 - [ ] **Exit:** package `npm test` is green locally, no spine or existing package
       source changed, and `package.json` has zero dependencies. CI enforcement of
-      Clotho begins at Task 2, when the Task 0 matrix entry runs against the merged
-      scaffold.
+      Clotho begins when Task 0 merges the matrix entry against this scaffold.
+
+## Task 0: CI-workflow isolation PR (after Task 1)
+
+**Files:** modify only `.github/workflows/ci.yml`.
+
+- [ ] Add `clotho` to the existing CI package matrix without changing any existing
+      package command. No other file changes in this PR.
+- [ ] Flag the PR explicitly as workflow-only in its title and description; it
+      requires human review as a workflow change before any further Clotho feature
+      task lands (per the documented self-skipping-reviewer failure).
+- [ ] The matrix entry runs the standard package command against the already-merged
+      Task 1 scaffold and must be green in this PR's own CI run; no red or skipped
+      state is expected or tolerated, and no branch-protection bypass is used.
+- [ ] **Exit:** the workflow-only PR is human-reviewed and merged, the `clotho` CI
+      job is green against the scaffold, and every existing package's CI job is
+      unchanged and green. Task 2 onward proceeds under CI enforcement.
 
 ## Task 2: Closed registries, canonical identity, and endpoint validation
 
@@ -411,21 +443,28 @@ docAddressKey({path, heading_path}) -> string
       `Object.freeze(new Set(...))` as a mutation boundary.
 - [ ] Implement the exact canonicalization, path, heading, locator, provenance,
       source-ref, status-coupling, node-id, and endpoint rules above, including the
-      `repository-file` locator and the fixed `REPOSITORY_REF` constant check.
+      content-bound `code-symbol`, `repository-file`, `test`, and `run-evidence`
+      locators and the fixed `REPOSITORY_REF` constant check on every
+      repository-scoped locator.
 - [ ] Reject unknown kinds, unknown statuses, status/assertor coupling violations,
       extra or missing fields, inherited enumerable fields, malformed identifiers,
       traversal, noncanonical paths, short SHAs, uppercase hashes, empty provenance,
-      wrong `repository_ref` values, endpoint-kind mismatches, and caller-owned
+      wrong `repository_ref` values, missing or malformed `blob_sha` and
+      `summary_sha256` content hashes, endpoint-kind mismatches, and caller-owned
       ledger fields.
 - [ ] Units cover exact registry membership and counts for all three sets; all three
       mutators on each facade; iteration; unknown kinds and statuses; each locator
-      schema including `repository-file`; missing/extra fields; every path rejection;
-      canonical key-order independence; array-order sensitivity; non-JSON values;
-      same-input stability; malformed source refs; mismatched node ids; every allowed
+      schema including the content-bound `code-symbol`, `test`, and `run-evidence`
+      forms; missing/extra fields including missing `repository_ref` or content
+      hash on each repository-scoped kind; every path rejection; canonical
+      key-order independence; array-order sensitivity; non-JSON values; same-input
+      stability; malformed source refs; mismatched node ids; distinct node ids for
+      the same `{path, symbol}` at two different `blob_sha` values; every allowed
       and representative forbidden endpoint pair, including all four `depends-on`
       rows involving `repository-file`; each valid and each invalid initial
       status/assertor coupling; and `supersedes` provenance including a
-      `repository-file` rename pair.
+      `repository-file` rename pair and a content-changed `code-symbol` version
+      pair.
 - [ ] **Exit:** `registry.mjs` is the only authoritative node/edge/status membership
       source and `npm test` is green.
 
@@ -467,23 +506,30 @@ readEdges(path, {openReadStream?} = {})
       human adjudication during construction of a separate ledger and is fully
       unit-tested.
 - [ ] `close(coverage)` validates driver-supplied coverage data against the
-      inventory weaver-id and version lists and the closed state set. It also rejects
-      coverage that marks any weaver `skipped` or `failed` when an already-appended
-      edge is asserted by that weaver. It writes the signed trailer as the final
-      chained record, flushes, closes the descriptor, and only then reports success.
-      A close without valid coverage data throws and poisons the ledger.
+      inventory weaver-id, version, and implementation-file lists and the closed
+      published state set (`executed | skipped`): five entries in inventory order,
+      each with well-formed nonempty `implementation_refs` content addresses and
+      deterministic `inspected_source_counts`, plus content-addressed
+      `inventories_consumed` entries. It rejects any `failed` or unknown state and
+      rejects coverage that marks any weaver `skipped` when an already-appended edge
+      is asserted by that weaver. It writes the signed trailer as the final chained
+      record, flushes, closes the descriptor, and only then reports success. A close
+      without valid coverage data throws and poisons the ledger.
 - [ ] An append or close failure poisons the ledger object; later appends throw and
       the CLI must not publish the temporary file.
 - [ ] `verifyLedger` incrementally parses exact lines, validates canonical encoding,
       the single first header, timestamps, all record fields, endpoint semantics,
       status couplings, human-only status adjudication, `status_of` back-references
-      to earlier edge records, signatures, record hashes, chain links, and the
-      consistency of weaver assertors with manifest states. It requires exactly one
-      trailer as the final record. It returns the parsed manifest; `records` contains
-      only trusted signed edge and status records, not the header or trailer. On a
-      failure it returns only records before the first failing line or trailer-level
-      invariant, marks the result `ok: false`, and never confers trust on a suffix. It
-      also returns `ok: false` for an empty ledger or a ledger missing its trailer.
+      to earlier edge records, signatures, record hashes, chain links, the shape of
+      every manifest `implementation_refs` and `inventories_consumed` content
+      address, the absence of `failed` or unknown weaver states in the manifest, and
+      the consistency of weaver assertors with manifest states. It requires exactly
+      one trailer as the final record. It returns the parsed manifest; `records`
+      contains only trusted signed edge and status records, not the header or
+      trailer. On a failure it returns only records before the first failing line or
+      trailer-level invariant, marks the result `ok: false`, and never confers trust
+      on a suffix. It also returns `ok: false` for an empty ledger or a ledger
+      missing its trailer.
 - [ ] `readEdges` uses `fs.createReadStream` and an incremental line splitter, skips
       the header, and yields signed records including status records and the trailer
       without buffering the complete file. It performs structural parsing but does
@@ -495,14 +541,17 @@ readEdges(path, {openReadStream?} = {})
       back-reference validation; human acceptance, rejection, and supersession;
       model self-promotion rejection; weaver-transition rejection; unknown
       `status_of`; malformed, missing, duplicate, and misplaced headers; missing,
-      duplicate, and non-final trailers; close without coverage; close-time rejection
-      of skipped/failed weaver records; independently signed verification fixtures
-      containing an edge from a skipped or failed weaver; noncanonical lines; signed
-      unknown kinds; mismatched ids; every permitted `depends-on` endpoint including
-      `repository-file -> code-symbol`; wrong endpoint kinds; wrong timestamp;
-      altered signature; altered record hash; middle-line byte tamper; middle-line
-      removal; partial final line; removal of the trailer; removal of a complete tail
-      record plus the trailer; and a valid human `supersedes` edge.
+      duplicate, and non-final trailers; close without coverage; malformed, empty,
+      or missing `implementation_refs`; malformed `inventories_consumed` refs;
+      close-time rejection of a `failed` state and of skipped-weaver records;
+      independently signed verification fixtures containing an edge from a skipped
+      weaver and containing a manifest with a `failed` state (both must fail
+      verification); noncanonical lines; signed unknown kinds; mismatched ids; every
+      permitted `depends-on` endpoint including `repository-file -> code-symbol`;
+      wrong endpoint kinds; wrong timestamp; altered signature; altered record hash;
+      middle-line byte tamper; middle-line removal; partial final line; removal of
+      the trailer; removal of a complete tail record plus the trailer; and a valid
+      human `supersedes` edge.
 - [ ] Prove incremental reading with a gated injected stream: release only a complete
       header and first complete edge; race `iterator.next()` against a short timeout
       and require the edge before ending the stream or releasing later chunks; then
@@ -521,7 +570,7 @@ ctx = {
   docRoots,
   ledgerSources,
   runSources,
-  symbols: [{path, symbol}],
+  symbols: [{path, symbol, blob_sha}],
   files: [{path, blob_sha}],
   git(args, options?) -> stdout
 }
@@ -530,10 +579,15 @@ ctx = {
 - [ ] Inventory every current package root once and commit the exact sorted paths in
       `inventory.mjs`. Commit `REPOSITORY_REF` (the Phase 1 repo identity constant),
       `DOC_ROOTS`, exact configured ledger files plus adapter ids, exact run
-      directories plus summary files, the five weaver ids, and a committed integer
-      version per weaver for the coverage manifest. Do not discover new top-level
-      inputs at runtime. A future package or evidence source requires an inventory
-      change and tests.
+      directories plus summary files, the five weaver ids, a committed integer
+      version per weaver (a human-readable label only; the manifest's
+      `implementation_refs` carry the proving content addresses), and a committed
+      per-weaver implementation-file list naming each extractor module and the
+      shared substrate files it imports (for example `clotho/weavers/code.mjs`,
+      `clotho/weavers/util.mjs`, `clotho/registry.mjs`), from which the driver
+      computes `implementation_refs`. Do not discover new top-level inputs at
+      runtime. A future package or evidence source requires an inventory change and
+      tests.
 - [ ] Set `DOC_ROOTS` to the reviewed documentation and contract roots. Exclude
       `docs/runs/` from doc-weaver because run evidence has a separate owner, and
       exclude `docs/runs/clotho-self-weave/` from every inventory.
@@ -548,11 +602,14 @@ ctx = {
       `export function`, `export async function`, `export const`, and `export class`
       followed by an identifier. Unsupported re-exports, computed exports, default
       exports, and dynamic symbol flow warn and emit no inferred symbol.
-- [ ] Seed `ctx.symbols` from `.mjs` files below closed package roots and sort by
-      `(path, symbol)`. Duplicate descriptors are an error. Seed `ctx.files` with a
-      `repository-file` descriptor for every walked file below the closed package
-      roots (source modules, manifests, scripts, configuration), with `blob_sha`
-      from `git hash-object --no-filters`, sorted by `path`.
+- [ ] Seed `ctx.symbols` from `.mjs` files below closed package roots, each
+      descriptor carrying the defining file's `blob_sha` from
+      `git hash-object --no-filters`, and sort by `(path, symbol)`. Duplicate
+      descriptors are an error. Seed `ctx.files` with a `repository-file` descriptor
+      for every walked file below the closed package roots (source modules,
+      manifests, scripts, configuration), with `blob_sha` from the same command,
+      sorted by `path`. Symbol and file descriptors for the same path carry the
+      same `blob_sha` by construction (one hash per walked file per weave).
 - [ ] Identifier matching uses tokens or escaped guards against
       `[A-Za-z0-9_$]`; regex metacharacters in searched text can never alter the
       matcher.
@@ -591,7 +648,8 @@ ctx = {
       earliest-result selection; malformed git output failure; conservative code
       edges; alias resolution; all four permitted `depends-on` endpoint shapes;
       file-level fallback endpoints and locators including `repository_ref` and
-      `blob_sha`; no-export named-import preservation as
+      `blob_sha`; symbol-level locators carrying `repository_ref` and the defining
+      file's `blob_sha`; no-export named-import preservation as
       `repository-file -> code-symbol`; deduplication; unused imports; comments and
       strings not counting as uses; metacharacter-safe matching;
       `unrepresentable-consumer` only for unresolvable specifiers; root/symlink
@@ -604,7 +662,8 @@ ctx = {
 - [ ] `test.mjs` considers sorted `scripts/test-*.mjs` files plus literal `.mjs`
       test paths referenced by the package `check` or `test` command. Referenced paths
       must remain inside that package root. Command strings are parsed only as text;
-      no command is executed.
+      no command is executed. `test` node locators carry `{repository_ref, path,
+      blob_sha}` with the test file's exact scanned-byte blob SHA.
 - [ ] A static named import resolving to a seeded symbol emits
       `code-symbol -> test` `verified-by`; the test file blob is the source ref.
       A test that imports a module without resolving to seeded symbols, or whose
@@ -650,17 +709,20 @@ ctx = {
 - [ ] Each configured run source names one directory below `docs/runs/` and one exact
       summary file. If its validated bytes contain the symbol token in declared
       summary fields, emit `code-symbol -> run-evidence` `evidenced-by`; the node
-      locates the directory and the source ref locates the summary file.
+      locator is `{repository_ref, path, summary_sha256}` where `path` locates the
+      directory and `summary_sha256` is the SHA-256 of the summary file's exact
+      validated bytes; the source ref locates the summary file by blob SHA.
 - [ ] Add fixtures for a direct test; a script-executed test target; a two-section
       document containing `alpha` and `alphabet`; a document naming a file path;
       duplicate headings; a matching contract clause; a valid concern; a discharged
       obligation with an exact clause ref; stale and missing clause refs; a
       malformed final ledger line; a chain break with a suffix; and one run summary.
-- [ ] Units assert exact endpoint kinds, directions, locators, hashes, source refs,
-      assertor ids, statuses, warning codes, and counts; `alphabet` does not match
-      `alpha`; ambiguous/stale clauses produce no edge; malformed input never
-      validates a suffix; and all five weavers return byte-equal results across
-      repeated runs.
+- [ ] Units assert exact endpoint kinds, directions, locators (including
+      `repository_ref` plus content hash on every `test` and `run-evidence` node),
+      hashes, source refs, assertor ids, statuses, warning codes, and counts;
+      `alphabet` does not match `alpha`; ambiguous/stale clauses produce no edge;
+      malformed input never validates a suffix; and all five weavers return
+      byte-equal results across repeated runs.
 - [ ] **Exit:** every weaver obeys the same `{edges, warnings}` contract and
       `npm test` is green.
 
@@ -672,7 +734,8 @@ ctx = {
 threadsOf(records, nodeId, {manifest?, includeProposals?} = {})
   -> {byKind: Map<edgeKind, record[]>, coverageUnknown: weaverId[]}
 blastRadius(records, nodeId, depth, {manifest?, includeProposals?} = {})
-  -> {nodes: nodeDescriptor[], edges: record[], truncated, coverageUnknown: weaverId[]}
+  -> {affected: nodeDescriptor[], evidence: record[], edges: record[],
+      truncated, coverageUnknown: weaverId[]}
 why(records, nodeId, {expectedKinds?, currentDocs?, manifest?, includeProposals?} = {})
   -> {chain: record[], gaps: gap[]}
 reportGaps(records, nodeId, expectedKinds, {currentDocs?, manifest?, includeProposals?} = {})
@@ -700,18 +763,31 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       determines which of its consulted edge kinds are produced by weavers whose
       manifest state is not `executed`, and reports those weaver ids in
       `coverageUnknown` (for `why`/`reportGaps`, as `{gap: 'coverage-unknown',
-      weaver, expected_kind}` gap records instead of `missing-edge` claims). A
-      missing manifest leaves `coverageUnknown` empty for `threadsOf`/`blastRadius`
-      but is an error for `why`/`reportGaps` when `expectedKinds` is nonempty:
-      naming a specific missing relationship requires knowing coverage. Independently
-      of gap construction, an edge asserted by a skipped or failed weaver makes the
+      weaver, expected_kind}` gap records instead of `missing-edge` claims). Any
+      non-`executed` state means coverage-unknown; in a verified published manifest
+      that state is always `skipped`, and internal verifier fixtures carrying
+      `failed` never reach queries because verification rejects them. A missing
+      manifest leaves `coverageUnknown` empty for `threadsOf`/`blastRadius` but is
+      an error for `why`/`reportGaps` when `expectedKinds` is nonempty: naming a
+      specific missing relationship requires knowing coverage. Independently of gap
+      construction, an edge asserted by a non-`executed` weaver makes the
       records/manifest pair invalid and the query throws.
 - [ ] `threadsOf` groups every touching edge by kind and sorts each group by the
       canonical edge tuple.
-- [ ] `blastRadius` requires a nonnegative integer depth and performs cycle-safe BFS
-      over both directions of `depends-on` and `verified-by`. It returns unique stable
-      node descriptors and edges. `truncated` is true exactly when a traversable
-      neighbor remains unvisited beyond the requested depth.
+- [ ] `blastRadius` requires a nonnegative integer depth and implements the frozen
+      spec semantics. `affected` is the **inverse transitive closure of
+      `depends-on`**: cycle-safe BFS from the target node following `depends-on`
+      edges only in the inverse direction, from the changed dependency to its
+      consumers. Forward `depends-on` is never followed: a target's own dependencies
+      do not break when the target changes. `evidence` is the set of outgoing
+      `verified-by` edges of affected artifacts (including the target). **Traversal
+      stops at test nodes:** a test node reached through `verified-by` contributes
+      evidence but is never expanded, so test co-coverage cannot pull sibling
+      artifacts into `affected`. `edges` is the stable union of traversed
+      `depends-on` records and `evidence` records; `affected` contains unique stable
+      node descriptors. `truncated` is true exactly when an inverse-`depends-on`
+      neighbor remains unvisited beyond the requested depth; evidence attachment
+      never sets it.
 - [ ] `why` collects the target's outgoing `introduced-by`, `motivated-by`,
       `documented-in`, and `evidenced-by` records. It follows target
       `code-symbol -> obligation` `discharges` records and then each obligation's
@@ -736,34 +812,45 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
 - [ ] Query units cover touching-edge grouping; malformed input rejection; all four
       `depends-on` endpoint shapes including traversal through
       `repository-file -> code-symbol`; BFS depth zero and larger depths; cycles;
-      stable node descriptors; true and false truncation; complete why traversal; a
-      missing target concern; missing target documentation; missing target
-      obligation; obligation without clause discharge; changed, deleted, ambiguous,
-      and unchanged document sections; default exclusion of `model-proposal` records
-      and opt-in marked inclusion; effective status resolution through human
-      acceptance and rejection records; rejection of model self-promotion and
-      status-of-status records; never returning status records or
-      `rejected`/`superseded` facts; `coverage-unknown` gaps for skipped and failed
-      weavers versus `missing-edge` for executed ones; rejection of edges asserted by
-      skipped or failed weavers; the missing-manifest error for expected-kind
-      queries; and stable gap ordering.
+      stable node descriptors; **a forward-dependency non-inclusion case** (the
+      target's own dependency is absent from `affected`); **a shared-test
+      non-propagation case** (two artifacts verified by one test where only the
+      dependency-connected artifact appears in `affected`); **a truncation-source
+      case** (`truncated` set only by unvisited inverse-dependency neighbors, and
+      not set when only evidence attachment remains); true and false truncation;
+      complete why traversal; a missing target concern; missing target
+      documentation; missing target obligation; obligation without clause
+      discharge; changed, deleted, ambiguous, and unchanged document sections;
+      default exclusion of `model-proposal` records and opt-in marked inclusion;
+      effective status resolution through human acceptance and rejection records;
+      rejection of model self-promotion and status-of-status records; never
+      returning status records or `rejected`/`superseded` facts; `coverage-unknown`
+      gaps for skipped weavers versus `missing-edge` for executed ones; rejection of
+      edges asserted by non-`executed` weavers; the missing-manifest error for
+      expected-kind queries; and stable gap ordering.
 - [ ] `weave.mjs` exports guarded orchestration and runs as a CLI only when it is the
-      invoked entry point. It has a Node shebang and imports all roots and the five
-      exact ids from `inventory.mjs`.
+      invoked entry point. It has a Node shebang and imports all roots, the five
+      exact ids, and the per-weaver implementation-file lists from `inventory.mjs`.
 - [ ] `--skip <id>` is repeatable but rejects unknown or duplicate ids. `--out`
       accepts a validated repository-relative path only below `.telos/clotho/` or the
       explicit self-export directory. Existing destinations are rejected.
-- [ ] The driver captures one timestamp and repo head, builds one symbol and one file
-      table, runs non-skipped weavers, records per-weaver
-      `{id, version, state, error_code?, inspected_source_counts}` (skipped weavers
-      recorded as `skipped` with zero counts; a throwing weaver recorded as `failed`
-      with its stable error code), aggregates and canonical-sorts warnings and
-      deduplicated edges, appends edges in that exact order, and closes with the
-      complete coverage data so the signed trailer is written. It never appends an
-      edge returned under the id of a skipped or failed weaver.
+- [ ] The driver captures one timestamp and repo head, computes every weaver's
+      `implementation_refs` and every inventory `source_ref` with
+      `git hash-object --no-filters` from the committed implementation-file lists,
+      builds one symbol and one file table, and runs non-skipped weavers. **Any
+      weaver failure aborts the weave:** if a weaver throws, the driver removes the
+      temporary file, never publishes the destination, and exits nonzero reporting
+      the weaver id and its stable error code. No partial advisory artifact exists
+      in Phase 1. For a successful run it records per-weaver
+      `{id, version, implementation_refs, state, inspected_source_counts}` (skipped
+      weavers recorded as `skipped` with zero counts and their implementation refs
+      intact), aggregates and canonical-sorts warnings and deduplicated edges,
+      appends edges in that exact order, and closes with the complete coverage data
+      so the signed trailer is written. It never appends an edge returned under the
+      id of a skipped weaver.
 - [ ] Write to an exclusive sibling temporary file. Close and run `verifyLedger`
-      before atomically renaming to the absent destination. On weaving, append, close,
-      coverage-consistency, or verification failure, exit nonzero, remove the
+      before atomically renaming to the absent destination. On weaving, append,
+      close, coverage-consistency, or verification failure, exit nonzero, remove the
       temporary file, and never publish the destination.
 - [ ] Print stable JSON containing output path, edge count, ledger bytes, per-weaver
       manifest states, warnings, and fatal-warning count. A fatal warning exits
@@ -782,9 +869,13 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       and fails closed. Include synthetic scanner units for every recognized form,
       comments and lookalike strings, aliases, path traversal into Clotho, safe nearby
       paths, and a nonliteral dynamic import.
+- [ ] Driver units cover the abort contract: a fixture weaver that throws must
+      leave no temporary file, publish no destination, and exit nonzero with the
+      stable error code; a `--skip` run must publish a manifest whose only
+      non-`executed` state is `skipped`.
 - [ ] **Exit:** a real-repository weave completes, verifies, carries a complete and
-      record-consistent signed manifest, and remains below the advisory boundary;
-      `npm test` is green.
+      record-consistent signed manifest with mechanism-bound provenance, and remains
+      below the advisory boundary; `npm test` is green.
 
 ## Task 6: Flagship acceptance and skipped-source coverage failure
 
@@ -796,7 +887,9 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       `{source_group, subject: 'node', kind, locator_match}`. An edge expectation is
       `{source_group, subject: 'edge', edge_kind, from_kind, from_locator_match,
       to_kind, to_locator_match, source_ref}`. Match objects contain exact JSON values
-      only: no regex, glob, prefix, short SHA, or node id.
+      only: no regex, glob, prefix, short SHA, or node id. Locator matches carry the
+      full content-bound schemas, including `repository_ref` and the audited
+      `blob_sha` or `summary_sha256` values from the reviewed repository state.
 - [ ] Validate group semantics: definition is the target node; consumers are incoming
       `depends-on` edges; tests are reachable `verified-by` edges; introduction is
       `introduced-by`; documentation targets `doc-section`; concern is
@@ -820,16 +913,20 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       `.telos/clotho/`; require exit zero, no fatal warning, and wall time below 120
       seconds. Capture edge count, bytes, and all nonfatal warnings.
 - [ ] Step 2: call `verifyLedger`; require `ok: true` and a manifest showing all five
-      weavers `executed` before any query or expected-set match. Queries use only
-      `records` and `manifest` returned by this successful verification. Verification
-      must already have established that every weaver-asserted edge agrees with that
-      manifest.
-- [ ] Step 3: derive the target from
-      `{path: 'merkle-dag/obligation.mjs', symbol: 'deriveExecutableRef'}`. Call `why`
-      with all five expected rationale/support kinds and call `blastRadius` at depth
-      3, both with the verified manifest. Build node descriptors solely from the
-      target and verified edge endpoint descriptors. The fact set is the stable union
-      of the target, `why.chain`, and `blastRadius.edges`.
+      weavers `executed`, well-formed `implementation_refs` for every weaver, and
+      content-addressed `inventories_consumed` entries before any query or
+      expected-set match. Queries use only `records` and `manifest` returned by this
+      successful verification. Verification must already have established that every
+      weaver-asserted edge agrees with that manifest.
+- [ ] Step 3: derive the target `code-symbol` from
+      `{repository_ref, path: 'merkle-dag/obligation.mjs',
+      symbol: 'deriveExecutableRef', blob_sha}` with the audited current blob SHA.
+      Call `why` with all five expected rationale/support kinds and call
+      `blastRadius` at depth 3, both with the verified manifest. Build node
+      descriptors solely from the target and verified edge endpoint descriptors. The
+      fact set is the stable union of the target, `why.chain`, and
+      `blastRadius.edges` (the inverse-dependency `affected` closure plus its
+      `verified-by` evidence, per the frozen semantics).
 - [ ] Require every expectation to match distinctly, all eight groups to be present,
       audited consumer/test multiplicities to match, ledger-only `why.gaps` to be
       empty, and the review set to be complete per the rule above.
@@ -838,21 +935,24 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       current files; the preceding fact reconstruction remains ledger-only.
 - [ ] Step 4: weave to a second unique ledger with
       `--skip clotho-doc-weaver`. Verify it and require its manifest to record
-      `clotho-doc-weaver` as `skipped` with zero inspected sources and the other four
-      as `executed`. Require verification and the manifest-aware query validation to
-      establish that no edge is asserted by `clotho-doc-weaver`. Rerun the same
-      ledger-only calls with that manifest and require exactly the expected coverage
-      failure containing `{gap: 'coverage-unknown', weaver:
-      'clotho-doc-weaver', expected_kind: 'documented-in'}`—not a `missing-edge`
-      claim, not merely a smaller result, and no fabricated `documented-in` edge.
+      `clotho-doc-weaver` as `skipped` with zero inspected sources (implementation
+      refs intact) and the other four as `executed`. Require verification and the
+      manifest-aware query validation to establish that no edge is asserted by
+      `clotho-doc-weaver`. Rerun the same ledger-only calls with that manifest and
+      require exactly the expected coverage failure containing
+      `{gap: 'coverage-unknown', weaver: 'clotho-doc-weaver', expected_kind:
+      'documented-in'}`—not a `missing-edge` claim, not merely a smaller result, and
+      no fabricated `documented-in` edge. The deliberate coverage-unknown path is
+      `skipped`; `failed` never appears in any published manifest.
 - [ ] Remove documentation expectations for this negative run and require the other
       seven groups, including the ledger-derived contract discharge, still to match.
       Any gap other than the asserted `coverage-unknown` fails the test.
 - [ ] Clean temporary ledgers in `finally` blocks without masking a prior assertion.
 - [ ] **Exit:** `npm test` proves valid signatures, the signed and record-consistent
-      coverage manifest, the runtime ceiling, all eight groups, distinct expected
-      matching, complete review-set reporting, current-doc freshness, and fail-closed
-      `coverage-unknown` skipped-source behavior.
+      coverage manifest with mechanism-bound provenance, the runtime ceiling, all
+      eight groups, distinct expected matching, complete review-set reporting,
+      current-doc freshness, and fail-closed `coverage-unknown` skipped-source
+      behavior.
 
 ## Task 7: Reproduction evidence and documentation
 
@@ -864,24 +964,27 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
       excluded from all input inventories, so repeated runs cannot consume an old
       summary or snapshot.
 - [ ] Verify the temporary ledger—including its coverage manifest showing all five
-      weavers executed and no manifest/record contradiction—and complete the flagship
-      expected-set, review-set, gap, and current-doc checks before publishing any
-      evidence file.
+      weavers `executed`, well-formed mechanism-bound `implementation_refs` and
+      `inventories_consumed` content addresses, and no manifest/record
+      contradiction—and complete the flagship expected-set, review-set, gap, and
+      current-doc checks before publishing any evidence file.
 - [ ] Copy the verified ledger bytes to a temporary export file, compute its SHA-256,
       and atomically replace `thread-ledger.snapshot.jsonl`. This explicit export is
       not an append operation and never modifies the source temporary ledger.
 - [ ] Write `summary.json` with input repo head, weave timestamp, public key, snapshot
-      SHA-256, wall time, edge count, ledger bytes, per-weaver manifest entries, all
-      warnings, full why chain, blast-radius nodes and edges, empty gaps, and all
-      eight matched groups.
+      SHA-256, wall time, edge count, ledger bytes, per-weaver manifest entries
+      including their `implementation_refs`, the `inventories_consumed` refs, all
+      warnings, full why chain, blast-radius affected nodes, evidence, and edges,
+      empty gaps, and all eight matched groups.
 - [ ] Write `expected-match-report.json` with each expected entry, its unique matched
       fact, and zero unmatched expectations. Write `review-set.json` with every
       unmatched flagship-neighborhood fact, deterministically sorted, carrying no
       score or rank of any kind.
 - [ ] Write `verification.json` with snapshot verification status, trusted record
-      count, manifest weaver states, manifest/record consistency status, advisory
-      scanner file/package counts, every executed package test command, exit status,
-      and Node version. Do not record absolute paths or nondeterministic process ids.
+      count, manifest weaver states and implementation refs, manifest/record
+      consistency status, advisory scanner file/package counts, every executed
+      package test command, exit status, and Node version. Do not record absolute
+      paths or nondeterministic process ids.
 - [ ] The reproduction script exits nonzero on a fatal warning, failed ledger
       verification, incomplete or record-inconsistent manifest, expected mismatch,
       incomplete review set, query gap, drift gap, or failed atomic publish; partial
@@ -900,14 +1003,16 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
 
 1. **Rename discontinuity:** path-scoped `git -S` and path-scoped file `log` do not
    infer renames. Missing lineage is exposed through warnings/gaps or an explicit
-   evidenced `supersedes` (same-kind, including `repository-file` renames).
+   evidenced `supersedes` (same-kind, including `repository-file` renames and
+   content-changed symbol, test, and run-evidence versions).
 2. **Document drift:** historical section hashes remain facts; a current-doc map
    reports changed, deleted, or ambiguous sections.
 3. **Over-threading:** module-level conservative attribution and file-level fallback
    endpoints can add dependency edges; deterministic output and the mandatory
    flagship review-set artifact expose the noise without scoring it.
 4. **Ledger growth:** runtime, count, bytes, and incremental reads are measured; no
-   Phase 1 index is introduced.
+   Phase 1 index is introduced. Content-bound locators enlarge every
+   repository-scoped node descriptor; the same measurements cover the cost.
 5. **Static grammar:** unsupported exports, re-exports, dynamic symbol flow, and
    indirect semantic references are not inferred. Imports terminating at modules are
    captured as `repository-file` facts rather than dropped; used named imports from a
@@ -916,7 +1021,8 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
    flagship test.
 6. **Self-signed identity:** an embedded ephemeral key proves internal consistency,
    not external authority. Clotho remains advisory and no durable-key policy is
-   introduced.
+   introduced. Manifest `implementation_refs` identify the mechanism bytes that made
+   each assertion; they do not confer external authority either.
 7. **Tail deletion:** the signed final coverage trailer makes deletion of complete
    tail records detectable in a completed weave; wholesale file replacement or a
    never-completed weave remains covered by the external snapshot checkpoint SHA-256
@@ -926,3 +1032,12 @@ weaver whose supplied manifest state is not `executed`. They do no I/O or mutati
    included. Acceptance, rejection, or supersession requires an explicit
    human-authored, human-authorized status record targeting the earlier edge; model
    self-adjudication is invalid, and no automatic promotion path exists in Phase 1.
+9. **Version-node churn:** because `code-symbol`, `test`, and `run-evidence`
+   locators are content-bound, any byte change to a defining file or summary mints
+   new version nodes across a re-weave. Cross-weave lineage is not inferred; it is
+   carried only by explicit evidenced `supersedes` assertions, and each immutable
+   per-weave ledger remains internally consistent.
+10. **Abort-on-failure availability:** a single throwing weaver yields no advisory
+    artifact at all rather than a partial one. This is the chosen Phase 1 contract;
+    the rejected alternative (publishing partial artifacts with `failed` states) is
+    recorded for provenance and may be revisited by a future authorized phase.

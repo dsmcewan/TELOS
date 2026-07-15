@@ -3,7 +3,7 @@
 > **SUPERSEDED historical artifact.** This first-workshop convergence was
 > cold-reviewed (`docs/clotho-phase-1-remediation.md`) and re-converged under the
 > challengeable spec v2 by the delta workshop. The canonical submission candidate
-> is **`docs/runs/clotho-daedalus-delta/matured-plan-v2.md`**. The extracted copy
+> is **`docs/runs/clotho-daedalus-delta2/matured-plan-v3.md`**. The extracted copy
 > below is unmodified apart from this banner; the signed round artifacts under
 > `artifacts/` are the content-addressed record.
 
