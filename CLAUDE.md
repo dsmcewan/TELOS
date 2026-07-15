@@ -11,6 +11,24 @@ from disk + signatures + provenance — **never** from a model's self-report. Th
 
 Read `README.md` for the full trust model before changing gate logic.
 
+## Mythological namespace — RESERVED (read before naming anything)
+
+**Greek mythology is a reserved namespace in this project. No ad hoc imports.** Mythological names,
+figures, places, objects, and concepts are reserved architectural identifiers — never casual metaphor,
+humor, shorthand, incident naming, or descriptive language. `docs/mythological-vocabulary.md` holds the
+policy and the registry of canonically-defined terms; read it before using any such name.
+
+- Registered terms retain EXACTLY their defined meaning — do not paraphrase, narrow, or extend them.
+- Unregistered terms must not be introduced without human approval. Unregistered ≠ available.
+- When no registered term applies, use plain descriptive language.
+- Do not infer ownership from mythological resemblance.
+
+This is a closed set, not a list of forbidden misuses — the same discipline as `NA_ALLOWED`,
+`EVIDENCE_KINDS`, and `check-registry.mjs`. Improvising a referent manufactures fake ownership (blame
+landing on a component that did nothing), which is the content-address rule one layer up: a mutable
+label must not stand where an identity belongs. (Discussing mythology as a subject is unaffected; this
+governs mythology used as project vocabulary.)
+
 ## Layout
 
 Each top-level directory is an independent, self-contained Node package:

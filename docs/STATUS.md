@@ -313,3 +313,14 @@ completed that composition and the remaining functions, so the opt-in layer now 
 The reorder (candidate compiled + written before council review) is landed and confirmed, so the
 "council gate first → compile" ordering earlier in this file and the retired contract nonconformance
 note describe the pre-reorder state. All package suites remain green.
+
+**Adversarial review of the SHIPPED code (not just the plan) found a real fail-open** that every green
+suite had missed: a mandatory `required_verification` attached to a NON-blocking concern was silently
+dropped, so a build could reach `merge_status: "ready"` with the required check never run. Fixed (a
+requested verification now forces a revise until it is actually minted) and pinned by a regression test
+that fails when the fix is reverted. See `docs/design-by-adversarial-review.md` § "The case study".
+
+**Integration state (2026-07-15).** Argo's completion is committed (`3c03b7f`) and open as **PR #84**
+(`argo/completion` → `daedalus/implementation`). Canonical integration is NOT complete: the stacked PR
+is still open, `daedalus/implementation` has yet to reach `contracts/proposal-lifecycle` (which remains
+the bare frozen contract at `c3767b2` on both local and origin), and neither has reached mainline.
