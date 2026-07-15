@@ -5,12 +5,13 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { canonicalize, sha256hex } from "../merkle-dag/vendor.mjs";
 import { recompute, readPlan } from "../merkle-dag/merkle.mjs";
-import { checkObligationAnchors } from "../merkle-dag/obligation.mjs";
+import { checkObligationAnchors, deriveExecutableRef } from "../merkle-dag/obligation.mjs";
 import {
   readProposalEvents, verifyProposalChain, computeReviewInputHash,
   readProposalArtifact, normalizeProvenance, lineageKey, PROPOSAL_KEY_ID
 } from "../merkle-dag/proposal-ledger.mjs";
-import { activeConcerns, evaluateConcernGate, expireHolds } from "./concerns.mjs";
+import { activeConcerns, evaluateConcernGate, expireHolds, reconstructProposalState, requiredVerificationRef, concernRef, latestDispositions } from "./concerns.mjs";
+import { resolve as resolveCheck, checkContractRef } from "./check-registry.mjs";
 
 // Inputs the review manifest is ALLOWED to contain (decision 13). Anything else — the proposal
 // ledger, Daedalus rounds, prior packets/decisions, consensus summaries — is contamination.
@@ -69,20 +70,33 @@ export function collectReviewLineage(events, packets) {
 // checkColdReview: creation ∩ review lineage must be empty (provider-scoped); each review event's
 // manifest must recompute its review_input_hash, bind the plan hash, re-derive evidence hashes from
 // disk, and contain ONLY allowlisted inputs.
-export function checkColdReview({ telosDir, events, packets, planHash, signed, baseDir }) {
+export function checkColdReview({ telosDir, events, packets, planHash, signed, baseDir, forceSignedDisjointness = false }) {
   const blockers = [], warnings = [];
   const creation = collectCreationLineage(events);
   const review = collectReviewLineage(events, packets);
   for (const k of review.keys) if (creation.keys.has(k)) blockers.push(`cold-review violation: lineage key ${k} appears in both creation and review`);
   const unver = [...creation.unverifiable, ...review.unverifiable];
-  if (unver.length) { const msg = `unverifiable lineage (missing provider / placeholder id) x${unver.length}`; signed ? blockers.push(msg) : warnings.push(msg); }
+  // Preventive under keyless (round-5): whenever the proposal lifecycle forces signed semantics,
+  // unverifiable lineage is a BLOCKER not a warning — a creation/review seat with a placeholder or
+  // missing response_id cannot slip the disjointness check just because trust_mode isn't "signed".
+  if (unver.length) { const msg = `unverifiable lineage (missing provider / placeholder id) x${unver.length}`; (signed || forceSignedDisjointness) ? blockers.push(msg) : warnings.push(msg); }
 
-  for (const e of events.filter((x) => x.stage === "review" && x.review_input_hash)) {
+  // Manifest binding REQUIRED (round-5): every review event must carry a review_input_hash that
+  // recomputes from its manifest, else a required approver bypasses cold-input verification. Under
+  // forceSignedDisjointness a review event WITHOUT the binding fails closed.
+  const reviewEvents = events.filter((x) => x.stage === "review");
+  for (const e of reviewEvents.filter((x) => !x.review_input_hash)) {
+    if (forceSignedDisjointness) blockers.push("review event missing review_input_hash (cold-input binding required)");
+  }
+  for (const e of reviewEvents.filter((x) => x.review_input_hash)) {
     const manifestRef = (e.artifact_refs || []).find((r) => r);
     const manifest = manifestRef ? readProposalArtifact(telosDir, manifestRef) : null;
     if (!manifest) { blockers.push("review event manifest missing/tampered"); continue; }
     if (computeReviewInputHash(manifest) !== e.review_input_hash) { blockers.push("review_input_hash does not recompute from manifest"); continue; }
-    if (manifest.plan_hash !== planHash) { blockers.push("review manifest plan_hash != candidate plan hash"); continue; }
+    // A review bound to a DIFFERENT plan hash is a review of a prior candidate in this proposal's
+    // revision history, not of the current candidate — skip it here (it does not contribute to THIS
+    // candidate's cold review). Reviews that bind to the current plan are validated below.
+    if (manifest.plan_hash !== planHash) continue;
     for (const ev of manifest.evidence || []) {
       if (ev.kind && !ALLOWED_EVIDENCE_KINDS.has(ev.kind)) { blockers.push(`review manifest contamination: disallowed input kind '${ev.kind}'`); continue; }
       if (String(ev.path || "").includes(".telos/") || String(ev.path || "").includes("proposal")) { blockers.push(`review manifest contamination: control-plane path '${ev.path}'`); continue; }
@@ -94,23 +108,12 @@ export function checkColdReview({ telosDir, events, packets, planHash, signed, b
 }
 
 // Reconstruct concern/hold/disposition records from the ledger events (no caller-supplied state).
-function reconstructProposalState(events) {
-  const concerns = [], holds = [], dispositions = [];
-  for (const e of events) {
-    const pid = e.proposal_id;
-    if (e.stage === "review" && Array.isArray(e.concerns)) for (const c of e.concerns) concerns.push({ ...c, proposal_id: pid });
-    if (e.stage === "hold" && e.hold) holds.push({ ...e.hold, proposal_id: pid });
-    if (e.stage === "disposition" && e.disposition) dispositions.push({ ...e.disposition, proposal_id: pid });
-  }
-  return { concerns, holds, dispositions };
-}
-
 /**
  * The load-bearing lifecycle check. Reconstructs everything from disk and returns pass/fail checks +
  * typed findings + blockers. The orchestrator turns these into the POLICY_CONTRACT certificate.
  * @returns { ok, plan_hash, proposal_id, checks, blockers, warnings, findings }
  */
-export function validateProposalLifecycle({ telosDir, packets = [], requiredModels = [], signed = false, baseDir, nowMs = 0 }) {
+export function validateProposalLifecycle({ telosDir, packets = [], requiredModels = [], signed = false, baseDir, nowMs = 0, forceSignedDisjointness = false }) {
   const checks = {
     written_plan: "pass", proposal_ref_binding: "pass", required_packets: "pass", packet_signatures: "n/a",
     provider_lineage: "pass", cold_review_inputs: "pass", required_approvals: "pass", required_edits: "pass",
@@ -140,7 +143,7 @@ export function validateProposalLifecycle({ telosDir, packets = [], requiredMode
     if (lcPid && proposal_id && lcPid !== proposal_id) { fail("proposal_chain"); blockers.push(`candidate proposal_id '${proposal_id}' != plan.lifecycle.proposal_id '${lcPid}'`); findings.push({ code: "PROPOSAL_ID", class: "protocol", reparable: false, requires_human: false, ref: null }); }
 
     // cold review
-    const cr = checkColdReview({ telosDir, events, packets, planHash, signed, baseDir });
+    const cr = checkColdReview({ telosDir, events, packets, planHash, signed, baseDir, forceSignedDisjointness });
     if (cr.blockers.length) { fail("cold_review_inputs"); fail("provider_lineage"); blockers.push(...cr.blockers); findings.push({ code: "COLD_REVIEW", class: "protocol", reparable: false, requires_human: false, ref: null }); }
     warnings.push(...cr.warnings);
 
@@ -161,10 +164,63 @@ export function validateProposalLifecycle({ telosDir, packets = [], requiredMode
     warnings.push(...cg.warnings);
   }
 
-  // obligation anchors
+  // obligation anchors (structural: node exists, test-ref, verifies-registered, plan-hash coverage)
   const oa = checkObligationAnchors(wp.plan, { recomputedPlanHash: planHash });
   if (!oa.ok) { fail("obligation_anchors"); blockers.push(...oa.failures.map((f) => `obligation ${f.obligation_id}: ${f.check}`)); findings.push({ code: "OBLIGATION_ANCHOR", class: "protocol", reparable: false, requires_human: false, ref: null }); }
 
+  // obligation<->concern reconciliation (decision 7 + 8b): bind each obligation's executable to the
+  // concern's check_contract via the check-registry, and require every verification-required-cleared
+  // concern to have a live, reconciling obligation. Folded into obligation_anchors (no new closed key).
+  const oc = reconcileObligations({ plan: wp.plan, events });
+  if (!oc.ok) { fail("obligation_anchors"); blockers.push(...oc.blockers); findings.push({ code: "OBLIGATION_RECONCILE", class: "protocol", reparable: false, requires_human: false, ref: null }); }
+
   const ok = blockers.length === 0;
   return { ok, plan_hash: planHash, proposal_id, checks, blockers, warnings, findings };
+}
+
+// reconcileObligations — the decision-7 concern<->obligation binding, living ONLY here (the gate
+// reconstructs concerns from the ledger). For each obligation tied to a reconstructed concern it
+// recomputes the concern identity from the body (a verified identity, not a stored ref), then binds:
+//   (i)  obligation.check_contract_ref === H(concern.check_contract) and required_result matches;
+//   (ii) deriveExecutableRef(discharge_node.test) === deriveExecutableRef(check-registry.resolve(...))
+//        — so a verify- node whose test was swapped for a passing no-op fails the gate. A resolve()
+//        throw/empty at gate time is CAUGHT and recorded as a reconciliation FAIL (fail-closed).
+// And (8b) every concern cleared by a terminal verification-required disposition MUST map to a live
+// obligation present in plan.obligations — else the concern reads cleared while nothing is enforced.
+function reconcileObligations({ plan, events }) {
+  const blockers = [];
+  const obligations = plan.obligations || [];
+  const { concerns, dispositions } = reconstructProposalState(events);
+  const nodeById = new Map((plan.nodes || []).map((n) => [n.id, n]));
+  const identityOf = (c) => concernRef({
+    plan_hash: c.plan_hash, scope: c.scope, claim: c.claim, judgment_class: c.judgment_class,
+    seat: c.raised_by && c.raised_by.seat, required_verification_ref: requiredVerificationRef(c.required_verification)
+  });
+  const concernByRef = new Map(concerns.map((c) => [identityOf(c), c]));
+  const obByRef = new Map(obligations.map((o) => [o.obligation_ref, o]));
+
+  for (const ob of obligations) {
+    const c = concernByRef.get(ob.concern_ref);
+    if (!c) continue; // no reconstructed concern -> inert (clears nothing); structure covered by anchors
+    const cc = (c.required_verification && c.required_verification.check_contract) || { kind: "", params_json: "" };
+    if (ob.check_contract_ref !== checkContractRef(cc)) blockers.push(`obligation ${ob.obligation_id}: check_contract_ref does not reconcile with concern`);
+    if (ob.required_result !== (c.required_verification && c.required_verification.required_result)) blockers.push(`obligation ${ob.obligation_id}: required_result != concern`);
+    const node = nodeById.get(ob.discharge_node_id);
+    if (!node || !node.test) { blockers.push(`obligation ${ob.obligation_id}: discharge node/test missing`); continue; }
+    let r;
+    try { r = resolveCheck(cc.kind, cc.params_json); } catch (e) { blockers.push(`obligation ${ob.obligation_id}: check-registry resolve threw`); continue; }
+    if (!r || !r.ok) { blockers.push(`obligation ${ob.obligation_id}: check-registry resolve failed (${r && r.error})`); continue; }
+    if (deriveExecutableRef(node.test) !== deriveExecutableRef(r.test)) blockers.push(`obligation ${ob.obligation_id}: discharge node executable != registry-resolved check (no-op swap?)`);
+  }
+
+  const latest = latestDispositions(dispositions);
+  for (const c of concerns) {
+    const d = latest.get(c.concern_ref);
+    if (!d || d.disposition !== "verification-required") continue;
+    const obRef = d.derived_from && d.derived_from.ref;
+    const ob = obRef && obByRef.get(obRef);
+    if (!ob) { blockers.push(`verification-required concern ${c.concern_id}: obligation '${obRef}' absent from plan.obligations`); continue; }
+    if (ob.concern_ref !== c.concern_ref) blockers.push(`verification-required concern ${c.concern_id}: obligation concern_ref mismatch`);
+  }
+  return { ok: blockers.length === 0, blockers };
 }

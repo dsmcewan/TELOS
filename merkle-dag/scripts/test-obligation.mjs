@@ -7,7 +7,8 @@ import { generateKeypair } from "../crypto.mjs";
 import { compileAndHashPlan } from "../planner.mjs";
 import {
   deriveObligationRef, deriveTestRef, normalizeVerifies,
-  attachObligations, checkObligationAnchors, undischargedObligations
+  attachObligations, checkObligationAnchors, undischargedObligations,
+  deriveExecutableRef, deriveVerifyNodeId, deriveObligationId
 } from "../obligation.mjs";
 
 const baseOb = { obligation_id: "verify-auth-001", concern_ref: "sha256:concernA", required_result: "pass", check_contract_ref: "sha256:cc1" };
@@ -142,6 +143,30 @@ function buildFixture(obOverride = {}) {
   const b = buildFixture({ concern_ref: "sha256:concernB" });
   assert.notEqual(a.plan.plan_hash, b.plan.plan_hash, "different concern_ref -> different plan_hash");
   console.log("Case 11 OK: obligation semantics bound into plan_hash");
+}
+
+// Case 12: deriveExecutableRef (round-8 B-A) — the gate binds a verify node's EXECUTABLE to the
+// registry-resolved check. It hashes ONLY {cmd,args,cwd}: INSENSITIVE to `verifies` (which
+// attachObligations injects), SENSITIVE to cwd. deriveTestRef stays H(whole test) and is unchanged.
+{
+  const bare = { cmd: "node", args: ["-e", "check"], cwd: "." };
+  const withVerifies = { ...bare, verifies: ["sha256:ob1", "sha256:ob2"] };
+  assert.equal(deriveExecutableRef(bare), deriveExecutableRef(withVerifies), "deriveExecutableRef is verifies-insensitive");
+  const otherCwd = { ...bare, cwd: "sub" };
+  assert.notEqual(deriveExecutableRef(bare), deriveExecutableRef(otherCwd), "deriveExecutableRef is cwd-sensitive");
+  const otherArgs = { ...bare, args: ["-e", "different"] };
+  assert.notEqual(deriveExecutableRef(bare), deriveExecutableRef(otherArgs), "deriveExecutableRef is args-sensitive");
+  // omitted cwd/args default to "."/[] (matching ledger-gate's `t.cwd || "."`), so an omitted field
+  // and its default hash identically on both sides of the gate comparison.
+  assert.equal(deriveExecutableRef({ cmd: "node", args: ["-e", "check"] }), deriveExecutableRef({ cmd: "node", args: ["-e", "check"], cwd: "." }), "omitted cwd == '.'");
+  // deriveTestRef (the SHIPPED primitive, 3 call sites) is unchanged: it still hashes the WHOLE test,
+  // so it DOES change with verifies — which is why it cannot serve the B-A binding.
+  assert.notEqual(deriveTestRef(bare), deriveTestRef(withVerifies), "deriveTestRef still hashes verifies (unchanged)");
+  // id derivations: full concern_ref hex for the node (no truncation collision); truncated label ok.
+  assert.equal(deriveVerifyNodeId("sha256:abc123"), "verify-abc123");
+  assert.notEqual(deriveVerifyNodeId("sha256:aaaa"), deriveVerifyNodeId("sha256:aaab"), "distinct concerns -> distinct node ids");
+  assert.ok(deriveObligationId("sha256:abc123").startsWith("obl-"));
+  console.log("Case 12 OK: deriveExecutableRef (verifies-insensitive, cwd-sensitive); deriveTestRef unchanged");
 }
 
 console.log("test-obligation.mjs OK");

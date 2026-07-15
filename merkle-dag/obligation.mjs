@@ -25,6 +25,34 @@ export function deriveTestRef(test) {
   return H(test);
 }
 
+// Content address of ONLY the execution-determining subset of a node's test —
+// {cmd, args, cwd}, EXCLUDING `verifies`. Used by the proposal gate to bind a
+// controller-minted verification node's executable to the concern's check_contract
+// (via the check-registry): deriveExecutableRef(node.test) must equal
+// deriveExecutableRef(registry.resolve(kind, params)). deriveTestRef canNOT serve
+// this purpose — attachObligations injects `verifies` into the node's test, so the
+// node's deriveTestRef never equals the bare registry spec's. `cwd` IS included
+// (execution-affecting: ledger-gate runs the test in `t.cwd || "."`); the `|| "."`
+// / `|| []` normalization matches that resolution so an omitted field and its
+// default hash identically on both sides.
+export function deriveExecutableRef(test) {
+  return H({ cmd: test.cmd, args: test.args || [], cwd: test.cwd || "." });
+}
+
+// Controller-derived, content-addressed identities for the dedicated verification
+// node and its obligation, both keyed on the concern's content address. The verify
+// NODE id uses the FULL concern_ref hex (no truncation) so two distinct concerns can
+// never collide into one DuplicateTaskId. The obligation_id is a human-readable
+// label with NO enforcement authority (obligation_ref carries identity and hashes
+// the full concern_ref), so a truncated slice is safe.
+const stripHash = (ref) => String(ref).replace(/^sha256:/, "");
+export function deriveVerifyNodeId(concernRef) {
+  return "verify-" + stripHash(concernRef);
+}
+export function deriveObligationId(concernRef) {
+  return "obl-" + stripHash(concernRef).slice(0, 16);
+}
+
 // Canonical form of a verifies list: deduped + sorted (canonicalize preserves array order,
 // so the ordering must be normalized here, at authoring time, to yield one stable hash).
 export function normalizeVerifies(verifies) {

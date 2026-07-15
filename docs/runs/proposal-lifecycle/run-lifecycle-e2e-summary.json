@@ -1,0 +1,32 @@
+{
+  "generated_by": "run-lifecycle-e2e.mjs",
+  "entry_point": "buildProject({ proposal_lifecycle: true })",
+  "keyless": true,
+  "variants": [
+    {
+      "variant": "discharged",
+      "decision": "authorized",
+      "merge_status": "ready",
+      "verify_node_settled": true,
+      "verify_node_obligation_check": "ok",
+      "revise_then_authorize": [
+        "revise",
+        "authorized"
+      ],
+      "minted_verify_node": true
+    },
+    {
+      "variant": "control",
+      "decision": "authorized",
+      "merge_status": "blocked",
+      "verify_node_settled": false,
+      "verify_node_obligation_check": "UNDISCHARGED_OBLIGATION",
+      "revise_then_authorize": [
+        "revise",
+        "authorized"
+      ],
+      "minted_verify_node": true
+    }
+  ],
+  "acceptance_ok": true
+}

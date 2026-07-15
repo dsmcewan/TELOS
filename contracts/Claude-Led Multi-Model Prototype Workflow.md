@@ -46,7 +46,7 @@ No model silently proceeds with a weaker setup.
 
 ## Dynamic-Workflow Council (2026-06-27 upgrade)
 
-The council step is now a dynamic workflow rather than hand-authored packets. `me/codex/build-gate/council.mjs` (staged in `me/claude-code/telos-upgrade/ENGINE.patch`, pending Codex merge) **sizes the council to the job**: `planSeats(dossier)` returns the required approval seats (claude/agy/codex) plus `grok` advisory, and — when the dossier is `market_bound` — one `market-lens` seat per required market workstream. A small prototype convenes a small council; a market-bound build convenes a larger one. The agent count is derived from the dossier, not fixed.
+The council step is now a dynamic workflow rather than hand-authored packets. `build-gate/council.mjs` **sizes the council to the job**: `planSeats(dossier)` returns the required approval seats (claude/agy/codex) plus `grok` advisory, and — when the dossier is `market_bound` — one `market-lens` seat per required market workstream. A small prototype convenes a small council; a market-bound build convenes a larger one. The agent count is derived from the dossier, not fixed.
 
 `runCouncil` executes those seats through a CPU-bounded pool (`min(requested, cores − 2)` concurrent) so a wide fan-out cannot thrash the host, and signs + provenance-stamps each seat's packet from the response that produced it. The adversarial breakout convergence remains the existing `breakout/` engine.
 

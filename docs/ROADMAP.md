@@ -84,10 +84,10 @@ Each phase is an independent spec → plan → build cycle. Build order A → B 
 
 | Phase | State | Spec | Plan | Built | Notes |
 | --- | --- | --- | --- | --- | --- |
-| A — substrate + RAG | ✅ done | [phase-a-design](specs/2026-06-29-ai-forge-phase-a-design.md) | — | [ai-forge-rag](runs/ai-forge-rag/) | all 7 workstreams converged; PRs #21–28 |
-| B — design stage | ✅ done | [phase-b-design](specs/2026-06-29-ai-forge-phase-b-design.md) | — | [ai-forge-rag](runs/ai-forge-rag/) | design workstream → DESIGN.md verified vs plan+ledger+build; PRs #33–35 |
-| C — TELOS pattern | ✅ done | [phase-c-design](specs/2026-06-29-ai-forge-phase-c-design.md) | — | [ai-forge-telos](runs/ai-forge-telos/) | 8 workstreams converge (7 spine-wrapping + design); PRs #38–43 |
-| C.2 — catalog breadth | ✅ done | [phase-c2-design](specs/2026-06-29-ai-forge-phase-c2-design.md) | — | [multiagent](runs/ai-forge-multiagent/) · [eval](runs/ai-forge-eval/) · [serving](runs/ai-forge-serving/) | three 8-workstream patterns converge; PRs #49–60 |
+| A — substrate + RAG | ✅ done | [phase-a-design](history/specs/2026-06-29-ai-forge-phase-a-design.md) | — | [ai-forge-rag](runs/ai-forge-rag/) | all 7 workstreams converged; PRs #21–28 |
+| B — design stage | ✅ done | [phase-b-design](history/specs/2026-06-29-ai-forge-phase-b-design.md) | — | [ai-forge-rag](runs/ai-forge-rag/) | design workstream → DESIGN.md verified vs plan+ledger+build; PRs #33–35 |
+| C — TELOS pattern | ✅ done | [phase-c-design](history/specs/2026-06-29-ai-forge-phase-c-design.md) | — | [ai-forge-telos](runs/ai-forge-telos/) | 8 workstreams converge (7 spine-wrapping + design); PRs #38–43 |
+| C.2 — catalog breadth | ✅ done | [phase-c2-design](history/specs/2026-06-29-ai-forge-phase-c2-design.md) | — | [multiagent](runs/ai-forge-multiagent/) · [eval](runs/ai-forge-eval/) · [serving](runs/ai-forge-serving/) | three 8-workstream patterns converge; PRs #49–60 |
 
 Legend: ⬜ not started · 🟡 in progress · ✅ done
 

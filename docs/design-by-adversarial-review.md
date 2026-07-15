@@ -125,6 +125,35 @@ the plan's; the active-concern reducer rejected a disposition from another
 proposal. Every one of those was the system enforcing an invariant against its
 own author. That is exactly what it is supposed to do.
 
+## The case study: green suites, zero findings, and a fail-open
+
+The completion pass ("Argo") composed the subsystem into the autonomous entry point. Every package
+suite was green. The whole thing was then put through the same adversarial review the *design* had
+survived — this time against the shipped code — and it found a real hole:
+
+A mandatory `required_verification` attached to a **non-blocking** concern was silently dropped. The
+build could reach `merge_status: "ready"` with the required check never run. No test combined those two
+conditions, so every suite passed over it:
+
+> The implementation satisfied every test that existed, while violating a requirement the tests had
+> failed to encode.
+
+That is the exact failure TELOS exists to catch, found in TELOS itself. A regression test now pins it —
+one that fails if the fix is reverted, and reproduces the precise authorize→ready drop rather than a
+near-miss.
+
+The second half of the lesson is sharper. The review harness's own summary reported **zero findings** —
+a bug in its aggregation had silently discarded them. Two independent automated signals, a green test
+suite and a clean tool report, both said "fine." The bug was found by reading the raw evidence the tool
+had collected and ignoring the headline it printed.
+
+> **Green suites and zero automated findings both missed the fail-open; adversarial reading of the
+> shipped code found it.**
+
+That is not a footnote about tooling. It is the thesis: a passing check is evidence, never a verdict.
+The same rule that forbids a model's self-report from satisfying the gate forbids a test suite's green
+from satisfying a reviewer.
+
 ## Why this matters
 
 The artifact isn't "the models agreed." It is: *a proposal survived adversarial

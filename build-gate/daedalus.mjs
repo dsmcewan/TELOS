@@ -26,7 +26,11 @@ export function objectionLedgerFrom(rounds) {
   const ledger = new Map();
   for (const r of rounds) {
     for (const o of r.objections || []) {
-      const hash = o.objection_hash || computeObjectionHash(o);
+      // Objection identity is ALWAYS controller-recomputed (round-7/8): a model-supplied
+      // objection_hash is never trusted. dispose() below then matches disposition records against
+      // this same recomputed key (and validateDispositions already binds a disposition to the
+      // objection's ORIGINATING seat), so a seat cannot forge either an objection or its reference.
+      const hash = computeObjectionHash(o);
       if (!ledger.has(hash)) ledger.set(hash, { objection: { ...o, objection_hash: hash }, status: "open", disposed_in: null, disposition_record: null });
     }
     const dispose = (rec, status) => {

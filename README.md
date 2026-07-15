@@ -258,24 +258,32 @@ Node ≥ 18, zero runtime dependencies. CI runs every package on ubuntu (Node 18
 
 ```bash
 cd build-gate            && npm test   # gate, sign, trust, council, teams, decompose,
-                                       #   build-orchestrator, schemas, situation, + breakout
+                                       #   build-orchestrator, schemas, situation, concerns,
+                                       #   proposal-gate, check-registry, proposal-orchestrator,
+                                       #   daedalus, proposal-lifecycle, standing, + breakout
 cd breakout              && npm test
 cd connectors/ai-peer-mcp && npm test  # provenance, structured requests, smoke
-cd merkle-dag            && npm test   # 8 suites + end-to-end harness
+cd merkle-dag            && npm test   # 10 suites incl. obligations + proposal-ledger + end-to-end harness
 cd saas-forge            && npm test   # 7 teams generate + breakout-survive + gate pass
 ```
 
 ## Docs & evidence
 
 - `docs/STATUS.md` — current status.
-- `docs/specs/` — design specs (agentic-teams, provider-native outputs, situational
-  awareness, the trust upgrade).
+- `docs/proposal-lifecycle-implementation.md` — implementation reference for the audited-judgment
+  proposal-lifecycle subsystem (composed flow, module map, enforcement mechanisms, trust boundaries).
+- `docs/history/` — superseded dated records (design specs, plans, apply-instructions) from earlier
+  phases, kept for provenance; not maintained against the shipping code.
 - `docs/runs/` — runnable evidence: `live-council/` (distinct per-seat provenance;
   fail-closed without a key; signed-mode pass), `agentic-teams/` +
   `agentic-teams-live/` + `agentic-teams-situational/` + `agentic-teams-market/`
-  (idea → `merge_status: "ready"` over the real gate + Ed25519 ledger + merkle-dag).
+  (idea → `merge_status: "ready"` over the real gate + Ed25519 ledger + merkle-dag),
+  and `proposal-lifecycle/` (keyless audited-judgment evidence: `run-lifecycle-e2e.mjs`
+  drives revise→authorize→discharge→ready through `buildProject`, with a negative
+  control proving the verification obligation is load-bearing at Rule 3).
 - `contracts/` — the human-readable protocols the gate enforces (build gate,
-  prototype workflow, hierarchical workflow, agentic-teams autonomous builder).
+  prototype workflow, hierarchical workflow, agentic-teams autonomous builder,
+  proposal lifecycle — audited judgment + cold review + verification obligations).
 
 ## Provenance / layout note
 

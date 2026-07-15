@@ -233,6 +233,15 @@ export const POLICY_CHECK_KEYS = [
 ];
 export const FINDING_CLASSES = ["protocol", "unrecoverable", "verified", "edit", "verification", "hold"];
 const CHECK_STATUSES = new Set(["pass", "fail", "n/a"]);
+// The ONLY checks whose "n/a" satisfies authorization: packet_signatures is verified in
+// validateRecords' required-model HMAC loop, so validateProposalLifecycle legitimately marks
+// it "n/a". Every OTHER key must be exactly "pass" — relaxing "n/a" globally would let a
+// cert marking cold_review_inputs / concerns / obligation_anchors "n/a" authorize (a mutable
+// status keying the decision). A check is SATISFIED iff pass, or n/a on an allowlisted key.
+export const NA_ALLOWED = new Set(["packet_signatures"]);
+export function checkSatisfied(checks, k) {
+  return checks[k] === "pass" || (NA_ALLOWED.has(k) && checks[k] === "n/a");
+}
 export const POLICY_CONTRACT_V1 = H({ version: 1, checks: [...POLICY_CHECK_KEYS].sort(), finding_classes: [...FINDING_CLASSES].sort() });
 
 // The frozen routing table. Fields come from deterministic policy + verified records, never model text.
@@ -242,8 +251,8 @@ export function deriveOutcome(checks, blockers = [], findings = [], revision = {
   if (f.some((x) => x.requires_human)) return "human-review-required";
   const reparableWork = f.some((x) => x.reparable || x.class === "edit" || x.class === "verification");
   if (reparableWork) return (revision.index < revision.maximum) ? "revise" : "human-review-required";
-  const allPass = POLICY_CHECK_KEYS.every((k) => checks[k] === "pass");
-  if (f.length === 0 && allPass && (blockers || []).length === 0) return "authorized";
+  const allSatisfied = POLICY_CHECK_KEYS.every((k) => checkSatisfied(checks, k));
+  if (f.length === 0 && allSatisfied && (blockers || []).length === 0) return "authorized";
   return "blocked"; // fail closed: blockers/failed checks without a typed finding
 }
 
@@ -284,7 +293,7 @@ export function verifyAuthorizationResult(artifact, { planHash } = {}) {
     if (artifact.outcome !== "authorized") errors.push(`outcome '${artifact.outcome}' != authorized`);
     if ((artifact.findings || []).length !== 0) errors.push("authorized certificate has findings");
     if ((artifact.blockers || []).length !== 0) errors.push("authorized certificate has blockers");
-    for (const k of POLICY_CHECK_KEYS) if (artifact.checks[k] !== "pass") errors.push(`check '${k}' != pass`);
+    for (const k of POLICY_CHECK_KEYS) if (!checkSatisfied(artifact.checks, k)) errors.push(`check '${k}' not satisfied (must be "pass", or "n/a" only for ${[...NA_ALLOWED].join(",")})`);
   }
   return { ok: errors.length === 0, errors };
 }

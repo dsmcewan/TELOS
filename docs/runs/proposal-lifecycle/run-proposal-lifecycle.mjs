@@ -25,6 +25,11 @@ import { validateProposalLifecycle } from "../../../build-gate/proposal-gate.mjs
 
 const allPass = () => Object.fromEntries(POLICY_CHECK_KEYS.map((k) => [k, "pass"]));
 
+// decision 6: runBuild's requireAuthorizedDecision path re-verifies ledger-reconstructable lifecycle
+// state at execution time (a hold appended after the authorized decision blocks). Injected because
+// merkle-dag must not import build-gate.
+const lifecycleVerify = ({ telosDir, nowMs }) => validateProposalLifecycle({ telosDir, requiredModels: [], packets: [], nowMs });
+
 function setup({ proposalId, obligations } = {}) {
   const ws = mkdtempSync(path.join(os.tmpdir(), "telos-run-pl-"));
   const telosDir = path.join(ws, ".telos");
@@ -57,7 +62,7 @@ async function variantAuthorized() {
   rec.recordCandidate({ planHash: plan.plan_hash });
   const pl = validateProposalLifecycle({ telosDir, packets: [], requiredModels: [], signed: false });
   rec.recordDecision({ planHash: plan.plan_hash, checks: allPass(), blockers: [], findings: [] });
-  const build = await runBuild({ telosDir, baseDir: ws, dispatch: dispatch(ws), verifyNode: verifyNode(), signerFor, requireAuthorizedDecision: true, maxRounds: 5 });
+  const build = await runBuild({ telosDir, baseDir: ws, dispatch: dispatch(ws), verifyNode: verifyNode(), signerFor, requireAuthorizedDecision: true, lifecycleVerify, maxRounds: 5 });
   return { variant: "authorized", plan_hash: plan.plan_hash, lifecycle_checks_ok: pl.checks.written_plan === "pass", merge_status: build.report ? build.report.merge_status : null, runBuild_error: build.error || null };
 }
 
@@ -69,7 +74,7 @@ async function variantObligation() {
   rec.recordCandidate({ planHash: plan.plan_hash });
   rec.recordDecision({ planHash: plan.plan_hash, checks: allPass(), blockers: [], findings: [] });
   // build only the impl node; the obligation's discharge node (auth-test) is left unsettled
-  await runBuild({ telosDir, baseDir: ws, dispatch: dispatch(ws, false), verifyNode: verifyNode(), signerFor, requireAuthorizedDecision: true, maxRounds: 5 });
+  await runBuild({ telosDir, baseDir: ws, dispatch: dispatch(ws, false), verifyNode: verifyNode(), signerFor, requireAuthorizedDecision: true, lifecycleVerify, maxRounds: 5 });
   const gate = verify(telosDir, { baseDir: ws });
   return { variant: "obligation", plan_hash: plan.plan_hash, merge_status: gate.merge_status, reason: gate.reason || null, safe_next_action: gate.safe_next_action };
 }
@@ -80,7 +85,7 @@ async function variantBlocked() {
   rec.recordDraft({ inputRefs: ["sha256:idea3"] });
   rec.recordCandidate({ planHash: plan.plan_hash });
   const { decision } = rec.recordDecision({ planHash: plan.plan_hash, checks: { ...allPass(), concerns: "fail" }, blockers: ["verified blocker: cross-tenant read"], findings: [{ code: "VERIFIED_BLOCKER", class: "protocol", reparable: false, requires_human: false, ref: null }] });
-  const build = await runBuild({ telosDir, baseDir: ws, dispatch: dispatch(ws), verifyNode: verifyNode(), signerFor, requireAuthorizedDecision: true, maxRounds: 5 });
+  const build = await runBuild({ telosDir, baseDir: ws, dispatch: dispatch(ws), verifyNode: verifyNode(), signerFor, requireAuthorizedDecision: true, lifecycleVerify, maxRounds: 5 });
   return { variant: "blocked", plan_hash: plan.plan_hash, decision, runBuild_error: build.error || null };
 }
 

@@ -119,4 +119,68 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 function require_sha(p) { return createHash("sha256").update(readFileSync(p)).digest("hex"); }
 
+// ---------------------------------------------------------------------------
+// B-A reconciliation red-team (decision 7 (ii) / round-8): the gate binds a verification obligation's
+// discharge-node EXECUTABLE to the concern's check_contract via the check-registry. A verify node
+// whose test is swapped for a passing no-op — while check_contract.kind is unchanged and the anchor
+// layer (deriveTestRef) stays self-consistent — MUST fail the gate.
+import { makeConcern } from "../concerns.mjs";
+import { mintVerificationNodes } from "../proposal-orchestrator.mjs";
+
+function verifyCandidate({ swapNoOp = false, mismatchContract = false } = {}) {
+  const ws = mkdtempSync(path.join(os.tmpdir(), "telos-ba-"));
+  const telosDir = path.join(ws, ".telos");
+  mkdirSync(telosDir, { recursive: true });
+  writeFileSync(path.join(ws, "a.txt"), "a\n");
+  const { privatePem, publicJwk } = generateKeypair();
+  const proposalId = "proposal-ba";
+  // A hold-request concern raised reviewing the PRIOR candidate (its plan_hash is that prior hash, so
+  // the concern_ref is stable regardless of the new candidate). The obligation minted at THIS compile
+  // references that stable concern_ref; the gate reconstructs the SAME concern and recomputes it.
+  const rv = { requested: true, check_contract: { kind: "assert-file-contains", params_json: JSON.stringify({ target: "a.txt", needle: "AUTH_GUARD" }) }, required_result: "pass" };
+  const concern = makeConcern({ planHash: "sha256:priorcandidate", scope: "plan", claim: "verify boundary", severity: "high", judgmentClass: "hold-request", requiredVerification: rv, raisedBy: { seat: "grok" } });
+  const req = { concern_ref: concern.concern_ref, scope: "plan", check_contract: mismatchContract ? { kind: "assert-path-absent", params_json: JSON.stringify({ target: "a.txt" }) } : rv.check_contract, required_result: "pass" };
+  const baseTasks = [{ id: "A", writes: ["a.txt"], reads: [], requirements: "a", test: { cmd: "node", args: ["-e", "0"] } }];
+  const minted = mintVerificationNodes([req], baseTasks);
+  // optionally SWAP the minted node's executable for a passing no-op (keeping the obligation's contract)
+  if (swapNoOp) minted.nodes[0].test = { cmd: "node", args: ["-e", "process.exit(0)"], cwd: "." };
+  const tasks = [...baseTasks, ...minted.nodes];
+  const defs = tasks.map((t) => ({ id: t.id, files: t.writes || [], requirements: t.requirements, test: t.test, dependencies: t.baseDependencies || [] }));
+  const lifecycle = { contract_ref: "sha256:c", proposal_id: proposalId, predecessor_plan_hash: null, ...assignNodeLineages(defs, { proposalId }) };
+  const { plan, errors } = compileAndHashPlan({ tasks, authorizedSigners: { [PROPOSAL_KEY_ID]: publicJwk }, repoRoot: ws, obligations: minted.obligationDefs, lifecycle });
+  if (errors) throw new Error("verifyCandidate compile failed: " + JSON.stringify(errors));
+  writePlan(telosDir, plan);
+  append(telosDir, privatePem, publicJwk, proposalId, "candidate", { plan_hash: plan.plan_hash });
+  append(telosDir, privatePem, publicJwk, proposalId, "review", { fields: { concerns: [concern] } });
+  return { telosDir, plan, concern };
+}
+
+// Case 7: matching verify node — the obligation reconciles; obligation_anchors passes.
+{
+  const { telosDir } = verifyCandidate({ swapNoOp: false });
+  const r = validateProposalLifecycle({ telosDir, packets: [], requiredModels: [], signed: false, nowMs: 0 });
+  assert.equal(r.checks.obligation_anchors, "pass", "matching discharge executable reconciles: " + JSON.stringify(r.blockers));
+  console.log("Case 7 OK: obligation<->concern reconciliation passes for a matching verify node");
+}
+
+// Case 8: NO-OP SWAP — the verify node's test is a passing no-op while check_contract.kind is
+// unchanged. The anchor layer is self-consistent, but deriveExecutableRef mismatch FAILS the gate.
+{
+  const { telosDir } = verifyCandidate({ swapNoOp: true });
+  const r = validateProposalLifecycle({ telosDir, packets: [], requiredModels: [], signed: false, nowMs: 0 });
+  assert.equal(r.checks.obligation_anchors, "fail", "no-op-swapped discharge executable is rejected");
+  assert.ok(r.blockers.some((b) => /executable != registry-resolved/.test(b)), "blocked via deriveExecutableRef reconciliation, not the anchor layer");
+  console.log("Case 8 OK: B-A red-team — a no-op-swapped verify node FAILS the gate");
+}
+
+// Case 9: check_contract mismatch — the obligation's check_contract_ref does not reconcile with the
+// concern's required_verification. FAILS the gate.
+{
+  const { telosDir } = verifyCandidate({ mismatchContract: true });
+  const r = validateProposalLifecycle({ telosDir, packets: [], requiredModels: [], signed: false, nowMs: 0 });
+  assert.equal(r.checks.obligation_anchors, "fail", "check_contract mismatch is rejected");
+  assert.ok(r.blockers.some((b) => /check_contract_ref does not reconcile/.test(b)), "blocked on check_contract_ref reconciliation");
+  console.log("Case 9 OK: obligation check_contract mismatch FAILS the gate");
+}
+
 console.log("test-proposal-gate.mjs OK");
