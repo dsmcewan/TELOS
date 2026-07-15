@@ -79,8 +79,9 @@ export function isPreferredRole(model, role) {
 // seat's own max-effort default applies); adversaries hunt real defects
 // (high); the reviewer judges proposals against blockers (high); the referee
 // judges only exchange DYNAMICS — repetition detection needs no xhigh
-// deliberation (medium). Seats that ignore the arg (ai-peer claude_ask) are
-// unaffected. Env-overridable per role: TELOS_EFFORT_<ROLE>.
+// deliberation (medium). Every ai-peer ask tool honors the arg, clamping to
+// what the target model supports and dropping it for models without a
+// thinking-depth control. Env-overridable per role: TELOS_EFFORT_<ROLE>.
 export const EFFORT_TIERS = {
   builder: null,        // seat default (max) — artifacts deserve the full budget
   challenger: "high",

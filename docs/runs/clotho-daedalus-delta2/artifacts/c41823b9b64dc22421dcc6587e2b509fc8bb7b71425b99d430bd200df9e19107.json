@@ -1,0 +1,22 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:618cd5a2f2ee347be164c378f6588ecc1a88fb52af798a2457852e2c93db43ee",
+  "output_plan_artifact_hash": "sha256:7b23319616a960611fe1702e0626945c21228fde69fc8dee63962246057fbc40",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:127b300e9030936c9a2e09d862ba62c0179435c1eded813ae4ea033d61eaffac",
+    "provenance_key": "anthropic:msg_011Cd3mXxfn5feu98vtz34Yo"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:7f50afc55fa5bc5df9364ff546d8af8cc344f694783c5b977d351302572868f4",
+    "provenance_key": "openai:chatcmpl-E1sBnTvbCh7Opiwdb2NHsPlcT1r6j",
+    "bound_hash": "sha256:7b23319616a960611fe1702e0626945c21228fde69fc8dee63962246057fbc40"
+  },
+  "objections": [],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

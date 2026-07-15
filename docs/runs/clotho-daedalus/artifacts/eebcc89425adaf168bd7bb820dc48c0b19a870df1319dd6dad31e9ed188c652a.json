@@ -1,0 +1,71 @@
+{
+  "record_type": "daedalus-round",
+  "round": 2,
+  "input_plan_artifact_hash": "sha256:aa41cfecea7ca91bac66181bef00959e5968f2196f25f6923112611f8ea71760",
+  "output_plan_artifact_hash": "sha256:bca25c8688de54f06f987e7d9d845fc3d751c1e96dd03316b31838a3b4c2b22f",
+  "author": {
+    "seat": "codex",
+    "provenance_ref": "sha256:6917e0591fcd0133dd2662929734c6ce5699c1909f34102239f8754ef339d580",
+    "provenance_key": "openai:chatcmpl-E1qt0GKN1eiwjqERSFvT7AQZKadqI"
+  },
+  "reviewer": {
+    "seat": "claude",
+    "provenance_ref": "sha256:3623871bbaf870e3523cc5f407839baf613693c33137079ad7be3dd6ba1b8048",
+    "provenance_key": "anthropic:msg_011Cd3g9HBnN7fu3pG9D1moH",
+    "bound_hash": "sha256:bca25c8688de54f06f987e7d9d845fc3d751c1e96dd03316b31838a3b4c2b22f"
+  },
+  "objections": [],
+  "resolutions": [
+    {
+      "record_type": "objection-resolved",
+      "objection_hash": "sha256:5161e1938046d331d2881755278aa26aa986b1d3554729e5950cef8b83bb2537",
+      "actor": {
+        "seat": "codex",
+        "provenance_key": "openai:chatcmpl-E1qt0GKN1eiwjqERSFvT7AQZKadqI"
+      }
+    },
+    {
+      "record_type": "objection-resolved",
+      "objection_hash": "sha256:443a0745acc1fe9c6d984d5226a96fe50a7cae6bb14fddf31a577288751a886a",
+      "actor": {
+        "seat": "codex",
+        "provenance_key": "openai:chatcmpl-E1qt0GKN1eiwjqERSFvT7AQZKadqI"
+      }
+    },
+    {
+      "record_type": "objection-resolved",
+      "objection_hash": "sha256:31c1f84f6758219470c52fb52b5c0e88ef32ecec354201e33c57aae371a57f91",
+      "actor": {
+        "seat": "codex",
+        "provenance_key": "openai:chatcmpl-E1qt0GKN1eiwjqERSFvT7AQZKadqI"
+      }
+    },
+    {
+      "record_type": "objection-resolved",
+      "objection_hash": "sha256:7add90f06ce0ab5b667ab6ef43e340c0657ccca20102a4c6de40527b8263cc52",
+      "actor": {
+        "seat": "codex",
+        "provenance_key": "openai:chatcmpl-E1qt0GKN1eiwjqERSFvT7AQZKadqI"
+      }
+    },
+    {
+      "record_type": "objection-resolved",
+      "objection_hash": "sha256:a282c941d6cfebc712904998111cf2c3daff7f79e8436e4dc59a313c068a62b7",
+      "actor": {
+        "seat": "codex",
+        "provenance_key": "openai:chatcmpl-E1qt0GKN1eiwjqERSFvT7AQZKadqI"
+      }
+    },
+    {
+      "record_type": "objection-resolved",
+      "objection_hash": "sha256:0f78472901ad757a44ebc04696397af61753fef9f7ddfb78c4ce541132376e55",
+      "actor": {
+        "seat": "codex",
+        "provenance_key": "openai:chatcmpl-E1qt0GKN1eiwjqERSFvT7AQZKadqI"
+      }
+    }
+  ],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

@@ -1,0 +1,51 @@
+{
+  "mode": "live",
+  "state": "converged-for-submission",
+  "reason": "all-objections-accounted",
+  "terminal": "submit",
+  "rounds": 2,
+  "final_candidate_ref": "sha256:bca25c8688de54f06f987e7d9d845fc3d751c1e96dd03316b31838a3b4c2b22f",
+  "unresolved_objections": [],
+  "creation_lineage": [
+    {
+      "seat": "claude",
+      "round": 1,
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd3ee2TqE9WHMwVwMXVjh",
+        "source": "ai-peer-mcp/claude_ask"
+      }
+    },
+    {
+      "seat": "codex",
+      "round": 1,
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E1qkrM8WwLjxmhSl0qRvZzJtDiEEv",
+        "source": "ai-peer-mcp/codex_ask"
+      }
+    },
+    {
+      "seat": "codex",
+      "round": 2,
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E1qt0GKN1eiwjqERSFvT7AQZKadqI",
+        "source": "ai-peer-mcp/codex_ask"
+      }
+    },
+    {
+      "seat": "claude",
+      "round": 2,
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd3g9HBnN7fu3pG9D1moH",
+        "source": "ai-peer-mcp/claude_ask"
+      }
+    }
+  ]
+}

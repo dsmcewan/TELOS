@@ -1,0 +1,71 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:d6cc31bdc8f7cdf747b9028e52e2fe5a334594eeb741701655322e1abcb1ef47",
+  "output_plan_artifact_hash": "sha256:dcb84f728a270a96d012a95857272d2d7431a8f8d130253fe838dd70df5281c0",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:5752e564bf561299e3c92a73f5cc4d1b09eae6501d53cdf2e4a7f754b1e66b2d",
+    "provenance_key": "anthropic:msg_011Cd3ee2TqE9WHMwVwMXVjh"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:2c32c11943596a48d7622b124e82894a0a31dbbae2207790732ac4bc59177f99",
+    "provenance_key": "openai:chatcmpl-E1qkrM8WwLjxmhSl0qRvZzJtDiEEv",
+    "bound_hash": "sha256:aa41cfecea7ca91bac66181bef00959e5968f2196f25f6923112611f8ea71760"
+  },
+  "objections": [
+    {
+      "claim": "`Object.freeze(new Set(...))` does not freeze a Set's internal membership, so `.add()` will not throw as required. The additional exit criterion that kind literals appear only in `registry.mjs` is also impossible because records, weavers, and tests must name those kinds.",
+      "scope": "Task 2 registries and identity",
+      "objection_hash": "sha256:5161e1938046d331d2881755278aa26aa986b1d3554729e5950cef8b83bb2537",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The code-weaver permits a `file` endpoint even though no file node kind exists, leaving `depends-on` records unconstructable under the closed registry. Separately, `git log -S<symbol>` is not restricted to the symbol's path, so an unrelated earlier occurrence can be falsely recorded as that symbol's introduction.",
+      "scope": "Task 4a code-weaver and git-weaver edge construction",
+      "objection_hash": "sha256:443a0745acc1fe9c6d984d5226a96fe50a7cae6bb14fddf31a577288751a886a",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The shared weaver interface returns only an edge array, but the ledger-weaver and driver require deterministic warnings. It also defines `edgeInput` as the record minus signature/chain, which still includes time-varying `woven_at`, contradicting the required byte-equal output across repeated weaver runs.",
+      "scope": "Tasks 3, 4a, and 4b record ownership and weaver contract",
+      "objection_hash": "sha256:31c1f84f6758219470c52fb52b5c0e88ef32ecec354201e33c57aae371a57f91",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "`why()` is specified to return only `introduced-by`, `motivated-by`, and `discharges`, while flagship acceptance searches `why()` plus `blastRadius()` for `documented-in` and `evidenced-by` records. Its signature also accepts neither `expectedKinds` nor `currentDocs`, so the skipped doc-weaver cannot cause the asserted missing-edge gap and the documented drift call cannot be implemented as written. Edge directions through concerns, obligations, and contract clauses are likewise undefined.",
+      "scope": "Task 5 query semantics and Task 6 flagship acceptance",
+      "objection_hash": "sha256:7add90f06ce0ab5b667ab6ef43e340c0657ccca20102a4c6de40527b8263cc52",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "Running `readEdges()` on a completed generator-fed temporary file does not establish that the implementation yields incrementally rather than buffering the whole file, so the D4 memory invariant lacks an executable test.",
+      "scope": "Task 3 streaming-read verification",
+      "objection_hash": "sha256:a282c941d6cfebc712904998111cf2c3daff7f79e8436e4dc59a313c068a62b7",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The final grep checks only `from` imports in four directories. It misses bare imports, re-exports, dynamic imports, and any other package, so it does not prove the repository-wide structural advisory invariant.",
+      "scope": "Task 7 advisory-posture verification",
+      "objection_hash": "sha256:0f78472901ad757a44ebc04696397af61753fef9f7ddfb78c4ce541132376e55",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
