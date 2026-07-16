@@ -121,11 +121,28 @@ function isPlainObject(value) {
 // any enumerable field inherited from a polluted prototype.
 function requireExactKeys(obj, expected, label) {
   if (!isPlainObject(obj)) throw new TypeError(`${label}: expected a plain object`);
-  for (const k of Object.keys(obj)) {
+  if (Object.getOwnPropertySymbols(obj).length > 0) {
+    throw new TypeError(`${label}: symbol-keyed fields are not permitted`);
+  }
+  // No own field (enumerable OR not) outside the expected set.
+  for (const k of Object.getOwnPropertyNames(obj)) {
     if (!expected.includes(k)) throw new TypeError(`${label}: unexpected field '${k}'`);
   }
+  // Every expected field must be present as an OWN, ENUMERABLE property — so it
+  // is exactly the set canonicalJson (own enumerable keys) will encode. A
+  // non-enumerable "required" field would validate but be omitted from the node
+  // id, letting distinct content bindings collide (D13).
   for (const k of expected) {
-    if (!Object.prototype.hasOwnProperty.call(obj, k)) throw new TypeError(`${label}: missing field '${k}'`);
+    const desc = Object.getOwnPropertyDescriptor(obj, k);
+    if (!desc) throw new TypeError(`${label}: missing field '${k}'`);
+    if (!desc.enumerable) throw new TypeError(`${label}: field '${k}' must be own-enumerable`);
+  }
+  // Reject any enumerable property inherited through the prototype chain
+  // (e.g. Object.prototype pollution).
+  for (const k in obj) {
+    if (!Object.prototype.hasOwnProperty.call(obj, k)) {
+      throw new TypeError(`${label}: inherited enumerable field '${k}' is not permitted`);
+    }
   }
 }
 
@@ -406,14 +423,19 @@ function stripTerminalNewline(s) {
   return s;
 }
 
+function requireGitString(value, label) {
+  if (typeof value !== "string") throw new Error(`deriveRepositoryRef: non-string ${label} output`);
+  return value;
+}
+
 export function deriveRepositoryRef(git) {
   if (typeof git !== "function") throw new TypeError("deriveRepositoryRef: git runner must be a function");
-  const shallow = stripTerminalNewline(String(git(["rev-parse", "--is-shallow-repository"])));
+  const shallow = stripTerminalNewline(requireGitString(git(["rev-parse", "--is-shallow-repository"]), "is-shallow-repository"));
   if (shallow === "true") throw new ShallowRepositoryError();
   if (shallow !== "false") {
     throw new Error(`deriveRepositoryRef: malformed is-shallow-repository output ${JSON.stringify(shallow)}`);
   }
-  const root = stripTerminalNewline(String(git(["rev-list", "--max-parents=0", "HEAD"])));
+  const root = stripTerminalNewline(requireGitString(git(["rev-list", "--max-parents=0", "HEAD"]), "rev-list"));
   if (root.includes("\n")) throw new Error("deriveRepositoryRef: expected exactly one root commit");
   if (!HEX40.test(root)) throw new Error(`deriveRepositoryRef: malformed root commit ${JSON.stringify(root)}`);
   return `git-root:${root}`;

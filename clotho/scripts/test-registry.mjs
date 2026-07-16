@@ -158,6 +158,29 @@ for (const [kind, base] of Object.entries(LOCATORS)) {
   assert.throws(() => validateLocator("run-evidence", { repository_ref: REPO, path: "elsewhere/x", summary_sha256: HEX64A }, { repositoryRef: REPO }), /docs\/runs/);
 }
 
+// ---- 5b. requireExactKeys is truly exact: pollution / non-enumerable / symbol
+{
+  const base = { repository_ref: REPO, path: "a", blob_sha: HEX40A };
+  // inherited enumerable field via Object.prototype pollution is rejected
+  Object.defineProperty(Object.prototype, "__evil__", { value: 1, enumerable: true, configurable: true });
+  try {
+    assert.throws(() => validateLocator("repository-file", { ...base }, { repositoryRef: REPO }), /inherited enumerable/);
+  } finally {
+    delete Object.prototype.__evil__;
+  }
+  // a non-enumerable required field cannot pass, and therefore cannot mint a
+  // colliding node id (canonicalJson would omit it — D13 content binding).
+  const hidden = { repository_ref: REPO, path: "a" };
+  Object.defineProperty(hidden, "blob_sha", { value: HEX40A, enumerable: false });
+  assert.throws(() => validateLocator("repository-file", hidden, { repositoryRef: REPO }), /own-enumerable/);
+  assert.throws(() => deriveNodeId({ kind: "repository-file", locator: hidden }), /own-enumerable/);
+  // symbol-keyed field rejected
+  assert.throws(() => validateLocator("repository-file", { ...base, [Symbol("x")]: 1 }, { repositoryRef: REPO }), /symbol/);
+  // NUL byte in a path is rejected (constructed at runtime; no literal NUL in source)
+  const nulPath = "a" + String.fromCharCode(0) + "b";
+  assert.throws(() => validateLocator("repository-file", { repository_ref: REPO, path: nulPath, blob_sha: HEX40A }, { repositoryRef: REPO }), /canonical POSIX/);
+}
+
 // ---- 6. deriveNodeId: stability, content-bound distinctness, exact outer schema
 {
   const a = deriveNodeId({ kind: "code-symbol", locator: LOCATORS["code-symbol"] });
@@ -200,6 +223,19 @@ for (const [kind, base] of Object.entries(LOCATORS)) {
   assert.throws(() => validateAssertionStatus(" human", "human-authorized"), /trimmed/);
   assert.throws(() => validateAssertionStatus("a".repeat(129), "deterministic-extraction"), /128/);
   assert.throws(() => validateAssertionStatus("bad id", "human-authorized"), /stable identifier/);
+  // table-driven: every assertor category x every status in the closed set
+  const couplings = [
+    { by: "clotho-git-weaver", ok: "deterministic-extraction" },
+    { by: "human", ok: "human-authorized" },
+    { by: "model:codex", ok: "model-proposal" }
+  ];
+  const allStatuses = ["deterministic-extraction", "human-authorized", "model-proposal", "rejected", "superseded"];
+  for (const { by, ok } of couplings) {
+    for (const st of allStatuses) {
+      if (st === ok) validateAssertionStatus(by, st);
+      else assert.throws(() => validateAssertionStatus(by, st), /requires/, `${by} x ${st} must be rejected`);
+    }
+  }
 }
 
 // ---- 9. edges: explicit id + locator, endpoint matrix -----------------------
@@ -234,7 +270,10 @@ validateEdgeInput(edge("depends-on", cs, rf, W, DET, SR), { repositoryRef: REPO 
 validateEdgeInput(edge("depends-on", rf, cs, W, DET, SR), { repositoryRef: REPO });
 validateEdgeInput(edge("depends-on", rf, rf, W, DET, SR), { repositoryRef: REPO });
 validateEdgeInput(edge("verified-by", cs, tst, "clotho-test-weaver", DET, SR), { repositoryRef: REPO });
+validateEdgeInput(edge("verified-by", rf, tst, "clotho-test-weaver", DET, SR), { repositoryRef: REPO });
 validateEdgeInput(edge("documented-in", cs, docSec, "clotho-doc-weaver", DET, SR), { repositoryRef: REPO });
+validateEdgeInput(edge("documented-in", cs, clause, "clotho-doc-weaver", DET, SR), { repositoryRef: REPO });
+validateEdgeInput(edge("documented-in", rf, docSec, "clotho-doc-weaver", DET, SR), { repositoryRef: REPO });
 validateEdgeInput(edge("documented-in", rf, clause, "clotho-doc-weaver", DET, SR), { repositoryRef: REPO });
 validateEdgeInput(edge("motivated-by", cs, concern, "clotho-ledger-weaver", DET, SR), { repositoryRef: REPO });
 validateEdgeInput(edge("evidenced-by", cs, runEv, "clotho-ledger-weaver", DET, SR), { repositoryRef: REPO });
@@ -298,6 +337,9 @@ assert.throws(() => validateEdgeInput(edge("depends-on", cs, cs, W, "human-autho
   assert.throws(() => deriveRepositoryRef((a) => a[0] === "rev-parse" ? "false " : ""), /malformed is-shallow/, "trailing space is malformed, not trimmed");
   assert.throws(() => deriveRepositoryRef((a) => a[0] === "rev-parse" ? "false" : `${HEX40A}\n${HEX40B}\n`), /exactly one root/);
   assert.throws(() => deriveRepositoryRef((a) => a[0] === "rev-parse" ? "false" : "not-a-sha\n"), /malformed root/);
+  // non-string runner outputs are malformed, never coerced
+  assert.throws(() => deriveRepositoryRef((a) => a[0] === "rev-parse" ? false : ""), /non-string is-shallow/);
+  assert.throws(() => deriveRepositoryRef((a) => a[0] === "rev-parse" ? "false" : {}), /non-string rev-list/);
   assert.throws(() => deriveRepositoryRef("not a function"), /must be a function/);
 }
 
