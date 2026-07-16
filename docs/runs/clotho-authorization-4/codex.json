@@ -1,0 +1,40 @@
+{
+  "build_id": "clotho-phase-1-authz-004",
+  "use_case": "clotho-phase-1",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/clotho-daedalus-delta10/matured-plan-v11.md",
+    "docs/clotho-phase-1-design.md"
+  ],
+  "proposal_ref": "sha256:f5d9cd52f12ec9abb4c613c469437d0079af7fdf249c5a842f94c451d55fc30c",
+  "decision": "revise",
+  "required_edits": [
+    "Route a specification amendment through The Eye and revise D23/D30 and accepted risk 18 with enforceable replacement text covering present loader-construction and executable-code routes in both directions. Implement fail-closed handling and synthetic rejection tests for, at minimum, aliased createRequire outside Clotho, outside use of process.getBuiltinModule to acquire a loader, Function/eval-family generated import or require code, and computed or aliased variants that the scanner cannot classify safely; unsupported loader-relevant syntax must be fatal rather than ignored.",
+    "Require a validated manifest for threadsOf and blastRadius, as already required for expected-kind gap claims, or conservatively report all relevant producer coverage as unknown when no manifest is supplied. Do not return an empty coverageUnknown array when coverage was not established. Update interfaces and missing-manifest tests accordingly.",
+    "In weave.mjs, derive each weaver and orchestrator accepted module-load closure from the actual on-disk bytes with the shared classifier and resolver, compare it exactly with the committed inventories, and verify that the hashes used in implementation_refs and orchestrator_refs still match immediately before close/publication. Abort on any drift. Add driver tests where an on-disk source gains a re-export, literal dynamic import, or accepted require-style edge absent from its inventory and prove that no ledger is closed or published.",
+    "Before appending any weaver result, require every edge to have asserted_by exactly equal to the invoked weaver id and assertion_status equal to deterministic-extraction; likewise require warning.weaver to equal that id. Reject cross-weaver, human, or model attribution from a weaver result and add driver-level tests for those cases."
+  ],
+  "hard_stops": [
+    "The advisory-boundary scanner does not cover current executable loader-evasion routes, so it cannot establish the claimed inbound or outbound isolation.",
+    "The query API treats an omitted coverage manifest as an empty coverage-unknown set for threadsOf and blastRadius, allowing incomplete results to appear complete.",
+    "The complete-weave driver does not derive and enforce module-load closure equality at publication time, allowing a changed worktree mechanism to publish provenance that omits newly reachable files.",
+    "The driver does not require each returned edge's asserted_by value to equal the weaver that produced it, permitting false mechanism attribution."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T00:09:23.733Z",
+  "rationale": "Execution as written would leave several fail-open paths. An outside package can acquire createRequire under an alias, or through process.getBuiltinModule, and load clotho/ without presenting a direct require/module.require call recognized by the proposed scanner. Inside or outside Clotho, executable strings passed through Function/eval-family mechanisms can perform imports while the scanner intentionally ignores string lookalikes. These are present Node mechanisms, not hypothetical future APIs, and conflict with D23/D30 and accepted risk 18's assertion that unsupported ambiguous loader construction fails closed. Separately, D11 requires absence to remain classifiable, but manifest omission currently yields coverageUnknown: [] from two public queries. D33's closure guarantee is also only established by committed tests and later acceptance evidence; weave.mjs computes provenance from committed path lists rather than rejecting an on-disk closure that has drifted from those lists. Finally, coverage provenance is per weaver, yet the orchestration contract permits one executed weaver to return records attributed to another executed weaver. These defects affect the trust claims carried by published ledgers and therefore block as-is authorization.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E23xGdiOzKpBSLmsIpPnN2WAtXezd",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T00:17:33.758Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "1a59b3f6765223cc2339bdddbb13d9228fc333a7061197c3ad06c64622b4d8bc",
+    "signed_fields": "canonical-minus-signature"
+  }
+}
