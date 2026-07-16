@@ -424,6 +424,30 @@ try {
     await expectFail(p);
   }
   {
+    // a signed status record whose status_of references a STATUS hash (not an
+    // edge) is rejected: the back-reference scope is closed to edges only.
+    const p = newPath();
+    const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+    const pub = publicKey.export({ type: "spki", format: "der" }).toString("base64");
+    let prev = canonicalJson({ clotho_weave_header: { pub_key: pub, woven_at: WOVEN, repo_head: REPO_HEAD, repository_ref: REPO, weave_version: 1 } });
+    const lines = [prev];
+    const sign = (payload) => { const prev_hash = hexOf(prev); const record_hash = hexOf(canonicalJson({ ...payload, prev_hash })); const signature = edSign(null, Buffer.from(record_hash, "hex"), privateKey).toString("base64"); prev = canonicalJson({ ...payload, prev_hash, record_hash, signature }); lines.push(prev); return record_hash; };
+    const eh = sign({ ...anEdge(), woven_at: WOVEN });
+    const sh = sign({ status_of: eh, new_status: "rejected", asserted_by: "human", assertion_status: "human-authorized", source_ref: SR, woven_at: WOVEN });
+    sign({ status_of: sh, new_status: "rejected", asserted_by: "human", assertion_status: "human-authorized", source_ref: SR, woven_at: WOVEN }); // refs a status hash
+    sign({ clotho_weave_trailer: coverage(), woven_at: WOVEN });
+    writeFileSync(p, lines.join("\n") + "\n");
+    assert.equal((await verifyLedger(p)).ok, false, "status referencing a status hash is rejected");
+  }
+  {
+    // a non-canonical (whitespace-padded) signature is rejected even though it
+    // decodes to the same bytes
+    const { p, lines } = build3();
+    const t = JSON.parse(lines[2]); t.signature = " " + t.signature;
+    lines[2] = canonicalJson(t); writeFileSync(p, lines.join("\n") + "\n");
+    assert.ok((await expectFail(p)).errors.some((x) => /signature/.test(x)));
+  }
+  {
     // verifyLedger consumes an injected stream incrementally (no whole-file buffering)
     const { p, lines } = build3();
     async function* s() { for (const ln of lines) yield ln + "\n"; }

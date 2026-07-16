@@ -52,6 +52,15 @@ const REQUIRED_INVENTORY_IDS = {
 const hexOf = (str) => createHash("sha256").update(Buffer.from(str, "utf8")).digest("hex");
 const publicKeyB64 = (pub) => pub.export({ type: "spki", format: "der" }).toString("base64");
 const publicKeyFromB64 = (b64) => createPublicKey({ key: Buffer.from(b64, "base64"), format: "der", type: "spki" });
+// Decode `str` only if it is CANONICAL standard base64 of exactly `expectedLen`
+// bytes (Buffer.from is lenient — it silently ignores whitespace and accepts
+// non-canonical encodings), else null.
+function decodeCanonicalB64(str, expectedLen) {
+  if (typeof str !== "string") return null;
+  const buf = Buffer.from(str, "base64");
+  if (buf.length !== expectedLen || buf.toString("base64") !== str) return null;
+  return buf;
+}
 
 function defaultGit(args) {
   return execFileSync("git", args, { shell: false, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
@@ -300,8 +309,9 @@ export async function verifyLedger(ledgerPath, { openReadStream } = {}) {
     try { expectHash = hexOf(canonicalJson({ ...payload, prev_hash })); } catch { /* payload not canonicalizable */ }
     if (typeof record_hash !== "string" || record_hash !== expectHash) bad(`line ${i + 1}: record_hash mismatch`);
     let sigOk = false;
-    try { sigOk = typeof signature === "string" && !!pubKey && edVerify(null, Buffer.from(record_hash || "", "hex"), pubKey, Buffer.from(signature, "base64")); } catch { sigOk = false; }
-    if (!sigOk) bad(`line ${i + 1}: invalid signature`);
+    const sigBuf = decodeCanonicalB64(signature, 64); // Ed25519 sig = 64 bytes, canonical base64
+    try { sigOk = !!sigBuf && !!pubKey && edVerify(null, Buffer.from(record_hash || "", "hex"), pubKey, sigBuf); } catch { sigOk = false; }
+    if (!sigOk) bad(`line ${i + 1}: invalid or non-canonical signature`);
     if (payload.woven_at !== header.woven_at) bad(`line ${i + 1}: woven_at does not equal the header woven_at`);
 
     if (obj.clotho_weave_trailer) {
