@@ -1,0 +1,42 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:70e74c009f152bf9a12cb4c168a6818fbb516aee18025476475138387017b1eb",
+  "decision": "revise",
+  "required_edits": [
+    "readEdges MUST skip only the header and yield signed records including status records AND the trailer; current code and test both exclude status/trailer (contradicts frozen interface).",
+    "readEdges MUST use fs.createReadStream (or injected openReadStream) with an incremental line splitter and MUST NOT buffer the complete file before yielding; default path currently uses readFileSync; injected path accumulates all chunks first.",
+    "Add the required gated injected-stream proof: release only complete header + first complete edge; race iterator.next() vs short timeout and require the edge before ending stream/releasing later chunks; then release remainder and require complete ordered output (D4).",
+    "verifyLedger.records MUST contain only trusted signed edge and status records — never header or trailer; currently trailer is pushed into records.",
+    "On first failing line or trailer-level invariant, verifyLedger MUST stop conferring trust: return only records before that point and never append a failing/suffix record to records (currently continues parsing and still pushes after hash/sig failures).",
+    "verifyLedger MUST enforce weaver-assertor consistency with manifest states: track asserted_by for deterministic-extraction edges while parsing and pass that set into validateCoverage; currently validateCoverage(manifest, new Set()) disables the check so skipped-weaver-with-edges fixtures can falsely verify ok.",
+    "validateCoverage/close/verify: enforce exactly the five weaver ids in the stable declared order (generic integrity, not inventory equality).",
+    "verifyLedger header validation MUST check repository_ref shape (git-root:<40-hex>) in addition to repo_head/woven_at/weave_version.",
+    "Add independently signed verification fixtures required by the unit list: edge from a skipped weaver; manifest with failed state; skipped weaver with nonzero inspected_source_counts — all must fail verification (close-time-only coverage is insufficient).",
+    "Prove D22 descriptor closure on append failure, close failure, and explicit abort via an injected file handle; prove append/close after abort throw; abort after successful close remains no-op.",
+    "Expand unit coverage to the frozen Task 3 list still missing (noncanonical lines; signed unknown kinds; mismatched ids; every permitted depends-on including repository-file->code-symbol; wrong endpoint kinds/timestamp; altered signature/record_hash; middle-line byte tamper/removal; partial final line; removal of trailer and of tail+trailer; human supersedes; missing/duplicate/misplaced headers; missing/duplicate/non-final trailers; full D24 rejection matrix as signed tamper fixtures; etc.).",
+    "If close is intended to be idempotent after a successful first close, make a second close() a no-op rather than throwing 'ledger is closed' (append rejection after close remains required)."
+  ],
+  "hard_stops": [
+    "readEdges semantics are non-normative: buffers whole file; does not yield status records or trailer; does not prove incremental yield-before-EOF (D4 / interface text).",
+    "verifyLedger does not implement required trust boundary: records include trailer; failures do not cut records at first bad line; weaver-assertor vs manifest-state consistency is not checked (empty Set), so required independent verification fixtures cannot hold.",
+    "Required independently signed verification fixtures and descriptor-injection proofs for D22 are absent; test suite is not the frozen Task 3 unit surface even though the deterministic gate is green on the sparse suite."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T18:46:09.638Z",
+  "rationale": "createLedger core (wx exclusive create, ephemeral/injected Ed25519, single woven_at/repo_head/repository_ref, immediate header, LF lines, prev_hash=sha256(prior line sans LF), record_hash=sha256(canonicalJson(payload+prev_hash)), Ed25519 over raw 32-byte digest, human-only appendStatus, D24 structural counts, poison/abort closeFd, zero runtime deps, no spine) is largely aligned with Task 3 and D5/D19/D22 intent. I will not stake an approve signature: readEdges and verifyLedger diverge from the frozen contract in ways that change trust and streaming semantics, and the unit list’s independent tamper/incremental/descriptor proofs are not present. Atomic publication (D20/D28) correctly left out. Revise to restore exact interface/chain/trust/streaming behavior and the required fixture matrix; then re-gate.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5",
+    "response_id": "64723439-592b-9b58-bf3b-169027eebe7e",
+    "source": "ai-peer-mcp/grok_ask",
+    "answered_at": "2026-07-16T18:47:08.604Z",
+    "tool": "grok_ask"
+  }
+}

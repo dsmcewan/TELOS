@@ -1,0 +1,31 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:f673f28cec7371db835f59df897f3206b9af49bb9f712a12b968995d22598e6d",
+  "decision": "revise",
+  "required_edits": [
+    "Validate repository_ref shape as git-root:<40-hex> in createLedger (injected and derived) so capture is a validated repositoryRef per Task 3, not a free-form string.",
+    "validate the same repository_ref shape on the first header in verifyLedger (header must include repository_ref shape; locators already agree with whatever is stored).",
+    "Extend test-ledger.mjs to the frozen unit surface still missing: appendEdge rejection when a locator repository_ref differs from the header; malformed/missing/duplicate/misplaced headers; missing/duplicate/non-final trailers; noncanonical lines; altered signature; altered record_hash; middle-line removal; removal of a complete tail record plus trailer; signed unknown kinds; mismatched endpoint ids; wrong endpoint kinds; malformed inventories_consumed refs; missing orchestrator_refs; close() without coverage / undefined coverage as a distinct case."
+  ],
+  "hard_stops": [
+    "createLedger does not validate repositoryRef (spec: capture one validated repositoryRef); verifyLedger does not validate header repository_ref shape (spec: header including its repository_ref shape). These are normative Task 3 validation obligations, not optional polish."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T19:07:32.354Z",
+  "rationale": "Core Task 3 mechanics are largely faithful and in-scope: exclusive wx create; single weave-owned woven_at/keypair/envelope (D5); chain bytes (prev_hash over prior line excluding LF; record_hash over canonicalJson(payload+prev_hash); Ed25519 over raw 32-byte digest; LF lines); header/edge/status/trailer shapes; appendStatus human-only adjudication with edge-only status_of; close/verify structure-only coverage against injected fixtures with frozen weaver order + D24 inspected_source_counts and skipped-zero / skipped-with-edge rules (D19/D24/D29 at this layer); D22 abort/poison closes the fd on every failure path tested via injected handle; readEdges is incremental and skips only the header; node:/clotho-relative only; no spine change; no committed-inventory dependency. I will not approve AS-IS: repository_ref is not validated at create or on the verify header path, which is an explicit frozen requirement, and the unit file still under-covers the mandated adversarial/lifecycle surface even though several of those checks exist in code. Atomic no-replace publication correctly left to Task 5. Fix the validations and close the listed test gaps; then this is approvable without redesign.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5",
+    "response_id": "c2092397-569e-9977-b5aa-cf9ee78991c5",
+    "source": "ai-peer-mcp/grok_ask",
+    "answered_at": "2026-07-16T19:09:33.005Z",
+    "tool": "grok_ask"
+  }
+}

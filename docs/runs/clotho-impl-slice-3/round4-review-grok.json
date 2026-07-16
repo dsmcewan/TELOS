@@ -1,0 +1,27 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:1896b106e7788b7a0720b800cdabbfcc34d39cd94de0ab09cc8a3a6ce916b5e6",
+  "decision": "revise",
+  "required_edits": [
+    "After a successful first close(coverage), subsequent close() calls must be no-ops (Task 3: \"make close idempotent only after a successful first close\"), not throw \"ledger is closed\". Preserve D22: close after abort/poison must still throw; abort() after successful close remains a no-op."
+  ],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-16T19:17:39.899Z",
+  "rationale": "PR #115 (head f7eb391) is a substantially faithful Task 3 ledger within frozen v12 scope. Interfaces match (createLedger/verifyLedger/readEdges); header/edge/status/trailer envelopes, chain (prev_hash over prior full line excluding LF; record_hash over canonicalJson(payload+prev_hash); Ed25519 over the raw 32-byte digest; LF-only lines), exclusive wx create, single-fd serialize, D5 ownership of time/key/envelope, D19 injected-fixture-only coverage (no committed inventory), D24 inspected_source_counts schema with exact weaver order + required inventory ids, human-only status adjudication, status_of edge-only back-refs, trailer-final + trust-truncation on first failure, D22 abort/poison always closing the fd (proven via injected handle), D29 limited to structure + skipped-nonzero rejection, zero runtime deps, ESM, node:/clotho-relative only, no spine change. Gate finalStatus=meets is consistent with the artifact.\n\nThe sole written-contract defect blocking AS-IS approval: createLedger.close() currently hits guard() and throws once state.closed is set. Task 3 explicitly requires close to be idempotent after a successful first close (distinct from D22’s post-poison “later closes throw”). Fix is local: if (state.closed) return; before guard, without rewriting the trailer or reopening the fd.\n\nNo hard stops: no scope expansion into Task 5 publication/inventory equality, no wrong crypto/chain bytes, no spine edits, no weaver-emitted time/counts. Unit surface is broad and green (happy path, status transitions, D24 close+adversarial fixtures, descriptor lifecycle, gated incremental readEdges); residual unlisted unit cases are not material enough alone to reject once the close idempotency contract is corrected.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5",
+    "response_id": "c9e91e8e-9001-99b7-8973-335e09638aa5",
+    "source": "ai-peer-mcp/grok_ask",
+    "answered_at": "2026-07-16T19:19:06.238Z",
+    "tool": "grok_ask"
+  }
+}

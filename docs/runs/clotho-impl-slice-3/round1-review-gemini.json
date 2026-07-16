@@ -1,0 +1,39 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "gemini",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:70e74c009f152bf9a12cb4c168a6818fbb516aee18025476475138387017b1eb",
+  "decision": "revise",
+  "required_edits": [
+    "Rewrite `readEdges` to use `fs.createReadStream` (when `openReadStream` is omitted) and a genuine incremental line-splitting async iterator that yields as lines are completed, explicitly without buffering the complete file into memory.",
+    "Fix `readEdges` to yield status records and the trailer as mandated by the scope ('yields signed records including status records and the trailer'). Currently, it explicitly skips them.",
+    "Add the mandated gated-stream test for `readEdges` to `test-ledger.mjs`: 'Prove incremental reading with a gated injected stream: release only a complete header and first complete edge; race iterator.next() against a short timeout...'",
+    "Fix `verifyLedger` to accumulate `asserted_by` IDs from valid edges (where `assertion_status` is `deterministic-extraction`) and pass that populated set to `validateCoverage()`, instead of passing a hardcoded `new Set()`. This is required to enforce the 'consistency of weaver assertors with manifest states' during verification.",
+    "Fix `verifyLedger` so that it does not push the trailer object into the returned `records` array (the scope mandates: '`records` contains only trusted signed edge and status records, not the header or trailer').",
+    "Add tests using independently signed verification fixtures (e.g., properly chained and signed bytes written directly to disk without using the `createLedger().close()` guard) to prove that `verifyLedger` correctly rejects a manifest with a 'failed' state, a 'skipped' weaver with a nonzero count, and a 'skipped' weaver that asserted an edge."
+  ],
+  "hard_stops": [
+    "`readEdges` aggressively buffers the entire file into memory as a string and uses `.split()`, directly violating the requirement for an incremental line splitter 'without buffering the complete file'.",
+    "`readEdges` incorrectly excludes status records and the trailer, directly violating 'yields signed records including status records and the trailer'.",
+    "`verifyLedger` passes an empty `new Set()` to `validateCoverage`, completely failing to verify that a weaver marked 'skipped' in the manifest did not assert edges in the ledger.",
+    "`verifyLedger` incorrectly includes the trailer in its `records` array output.",
+    "Missing required test proving gated/incremental iteration for `readEdges`.",
+    "Missing independently signed verification fixtures for `verifyLedger` (the current tests only prove that `createLedger.close()` correctly throws on invalid coverage, but fails to prove `verifyLedger` guards against invalid coverage on disk)."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T18:46:09.638Z",
+  "rationale": "The implementation generally achieves the correct cryptographic chaining and D24 coverage schema enforcement at creation time. However, there are significant oversights in read operations and validation. `readEdges` buffers everything into memory and skips required record types, ignoring the strict streaming requirement. `verifyLedger` includes the trailer in its records output, and crucially, it bypasses the 'skipped weavers assert no edges' validation by feeding an empty set to `validateCoverage`. Finally, the test suite is missing the required gated-stream incremental reading proof and the independent on-disk verification fixtures. These must be corrected to faithfully fulfill the v12 Task 3 specification.",
+  "provenance": {
+    "provider": "google",
+    "model": "gemini-3.1-pro-preview",
+    "response_id": "8yZZap6QDqTrz7IPrduPiA8",
+    "source": "ai-peer-mcp/gemini_ask",
+    "answered_at": "2026-07-16T18:46:52.027Z",
+    "tool": "gemini_ask"
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "review_ref": "sha256:355be20b3b3f54fee50ba373ecab9b46323bd663e8c2cd34faba83d7a8bedb83",
+  "pr": 115,
+  "pr_head": "160cbf492a68e16c8d4579ff2b7a6a80e01b0f92",
+  "plan_ref": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3",
+  "authorization": "authz-005",
+  "timestamp": "2026-07-16T18:57:17.355Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6FKo4GRH4YTs6v6UcCw",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-16T18:58:07.033Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2LYmqJvVPebx4HJiRYEDru797WwA",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-16T19:02:56.207Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "62f87ca4-4d46-9115-9098-be606b21c3b9",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-16T18:58:47.479Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "jilZao2wL-W7mtkPl7r_-A8",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-16T18:57:43.349Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "claude decision is 'revise', not 'approve'.",
+      "claude has required edits: verifyLedger: validate every record's `woven_at` exactly equals the header's `woven_at` (edges, status records, and the trailer), and reject records missing `woven_at`; add the corresponding 'wrong timestamp' unit and adversarial signed fixture.; verifyLedger: enforce the closed header schema — exactly the five fields {pub_key, woven_at, repo_head, repository_ref, weave_version}, no extras, none missing — and validate repository_ref shape as `git-root:<40-hex>`; add malformed/missing-field header units.; verifyLedger: explicitly reject signed records of unknown kind (neither edge payload, status payload, nor trailer) with a distinct error rather than relying on validateEdgeInput's incidental failure; add the 'signed unknown kinds' fixture test.; createLedger: validate injected `wovenAt` canonicalizes losslessly (reject an invalid date producing 'Invalid Date' -> toISOString throws is acceptable, but a non-canonical injected string is silently rewritten; acceptable only if documented) and validate injected `repositoryRef` shape (`git-root:` + 40-hex) — currently an arbitrary injected repositoryRef string is accepted into the header unchecked, letting a test or driver construct a header that verifyLedger's shape check (once added) would reject.; Add the missing frozen-list units: altered signature; altered record hash; middle-line byte tamper is present but middle-line REMOVAL is not — add it; removal of a complete tail record plus the trailer; duplicate and non-final trailer; misplaced/duplicate header mid-file; mismatched ids (from_node/to_node not equal to re-derived locator ids at verify time); every permitted depends-on endpoint pairing including repository-file -> code-symbol; wrong endpoint kinds; D24 rejections for extra entry fields, duplicate entries, non-integer and unsafe counts, missing/extra inventory ids at close AND as signed tamper fixtures; malformed inventories_consumed refs; malformed/missing orchestrator_refs variants; append rejection for a locator whose repository_ref differs from the header (explicit unit); an independently signed fixture containing an edge asserted by a weaver the manifest marks skipped is present — keep it — but add the signed unknown-kind and skipped-weaver-edge-record variants named in the list.; readEdges: the frozen streaming proof requires racing iterator.next() against a short timeout; the current test awaits next() directly, which would deadlock rather than fail on a buffering regression — wrap the first next() in a Promise.race with a timeout so a non-incremental implementation fails rather than hangs.; close(): after writeLine of the trailer the descriptor is closed, but the spec requires 'writes the signed trailer as the final chained record, flushes, closes the descriptor, and only then reports success' — the injected-handle contract must document/require flush-on-write or close() must call a flush; the default handle fsyncs per write so this is satisfied by default, but state.closed is set BEFORE closeHandle(), so if handle.close() throws, the ledger is marked closed yet poisoned-and-closed handling is bypassed (the catch poisons, good, but state.closed remains true, so abort() becomes a no-op on a ledger whose close FAILED — violating 'close idempotent only after a SUCCESSFUL first close' and D22's abort-after-failure path). Set state.closed only after closeHandle() succeeds.",
+      "claude has hard stops: verifyLedger validates NO trailer-level or payload-level structure once trustBroken is set only for `records` gating, but more critically it does NOT validate the trailer's `woven_at`, and does NOT validate edge/status `woven_at` equality with the header's `woven_at` — the spec requires the ledger to capture ONE canonical timestamp used for the header and every record, and verifyLedger must validate 'timestamps'; a signed ledger whose edge carries a different woven_at than the header verifies ok:true, breaking D5's one-timestamp invariant at the verification layer.; verifyLedger does not enforce the header field schema as closed: it never checks for missing or extra header fields (e.g. a header lacking `repository_ref` yields repoRef=undefined and only fails downstream via locator checks; a header with extraneous fields passes), and it does not validate the `repository_ref` SHAPE (`git-root:` + 40-hex) as explicitly required ('the single first header including its repository_ref shape', 'verification recomputes its shape'); a header with repository_ref 'git-root:XYZ' or any arbitrary string verifies ok as long as locators agree with it.; Missing required unit coverage that the frozen test list mandates: no 'signed unknown kinds' fixture (a properly signed record that is neither edge, status, nor trailer — note verifyLedger would currently accept a signed unknown-kind object as an edge candidate only via validateEdgeInput failure, but this is untested), no 'wrong timestamp' test, no 'altered signature' test, no 'altered record hash' test, no 'middle-line removal' test (only trailer-drop and corrupt-line are tested; removing a complete middle record is a distinct chain case), no 'removal of a complete tail record plus the trailer' test, no 'misplaced header' (duplicate-header-mid-file) test, no 'duplicate trailer'/'non-final trailer' test, no 'mismatched ids' (re-derived endpoint id disagreement) test, no 'every permitted depends-on endpoint including repository-file -> code-symbol' enumeration (only one depends-on shape is exercised), no 'wrong endpoint kinds' test, no D24 tests for extra-entry-fields/duplicate-entries/non-integer/unsafe counts, no 'malformed inventories_consumed refs' test, no 'missing implementation_refs'/empty-refs distinction tests, no generated-key vs injected-key distinction beyond one injected case (generated-key path only exercised implicitly), and no 'signed edge from a skipped weaver' independent fixture distinct from the manifest-contradiction case. The task's unit list is frozen and explicit; substantial enumerated items are absent.",
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Add a Task-3-local frozen per-weaver inventory-ID table and require exactly those sorted IDs, with no missing or extra entries, at both close and verification. Keep this generic and independent of committed inventories; do not add Task 5 cardinality or closure checks.; Implement exact validators for the header and every signed record envelope. Validate injected and verified `repository_ref` as `git-root:<40-lower-hex>`; require exact header fields; require canonical base64 Ed25519 SPKI and signatures; require an Ed25519 public key; and require every edge, status, and trailer `woven_at` to be present, canonical, and equal to the header timestamp. Reject extra or missing trailer-envelope fields.; Replace the `FILE_REF` regex-only check with validation of a nonempty normalized repository-relative file path plus lowercase 40-hex blob SHA, rejecting absolute, escaping, backslash, and malformed forms for all three manifest reference collections.; Make successful `close()` idempotent, preserving and returning the successful trailer result. Mark the ledger closed only after flushing and descriptor closure succeed; on any append or close failure, poison it and run the common abort/closure path. Ensure the default writer handles short writes so each complete LF-terminated line is actually written.; Rework `verifyLedger` around an incremental exact-line stream/splitter. Hash exact prior line bytes, reject malformed framing and strict UTF-8/canonical encoding, never parse an unterminated residual buffer as a trusted record, and preserve only records preceding the first failing line or trailer invariant.; Complete the frozen unit checklist, including independently signed tamper fixtures and every D24 rejection. Update the incremental `readEdges` proof to race `iterator.next()` against a short timeout before releasing the gated suffix, rather than allowing a nonincremental implementation to hang the test indefinitely.",
+      "codex has hard stops: D24/D26 manifest validation is incomplete: `inspected_source_counts` accepts arbitrary nonempty IDs and even an empty array instead of requiring each weaver's exact frozen inventory-ID set. The current happy fixture is itself invalid for the ledger weaver, which requires `contract-files`, `ledger-sources`, and `run-sources`.; Exact schema verification is not implemented. Header key sets, canonical Ed25519 SPKI base64, Ed25519 key type, and `repository_ref` shape are not enforced; injected `repositoryRef` is not validated; edge/status/trailer `woven_at` is discarded without requiring presence or equality to the header; canonical signature base64 is not checked; and signed trailers with extra envelope fields are accepted.; Content-address validation is too weak. `FILE_REF` accepts absolute, escaping, backslash, and otherwise non-repository-relative paths, contrary to the required valid `file:<repo-relative-path>@<40-hex>` shape for implementation, orchestrator, and inventory references.; The close/descriptor state machine violates D22 and the explicit idempotence rule. A second `close()` after successful closure throws instead of being idempotent. `state.closed` is also set before descriptor closure succeeds, so a throwing `handle.close()` leaves a poisoned ledger whose `abort()` returns as though close had succeeded and cannot retry closure.; `verifyLedger` buffers the complete file with `readFileSync` rather than incrementally parsing exact lines. It also parses and can return a non-LF-terminated final edge/status as trusted despite reporting the framing error, violating the first-failure trust boundary.; The mandatory Task 3 proof surface is substantially absent. Among the omissions are exact inventory-ID rejection cases, exact header/trailer shape cases, wrong timestamps, locator repository-ref mismatch, malformed inventory refs, close idempotence and close-after-abort, independently signed signature/hash/chain/endpoint fixtures, and the required timeout race for incremental `readEdges`."
+    ],
+    "warnings": [
+      "Grok advisory decision is 'revise'. Required models must explicitly resolve any concerns."
+    ]
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

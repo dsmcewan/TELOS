@@ -1,0 +1,43 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:70e74c009f152bf9a12cb4c168a6818fbb516aee18025476475138387017b1eb",
+  "decision": "revise",
+  "required_edits": [
+    "Implement the frozen coverage schema locally without importing future committed inventories: exact five weaver ids in stable order, each weaver's exact required inventory-id set, exact D24 count entries, published states, edge/assertor-state consistency, and normalized repository-relative `file:<path>@<blob-sha>` references at both close and verification.",
+    "Rework `verifyLedger` around an incremental LF line reader. Enforce exact header, edge, status, envelope, and trailer shapes; canonical Ed25519 key/signature encodings; repository-ref agreement; timestamp equality; hashes, signatures, and chain links; human-only status back-references; and exactly one final trailer. Stop at the first failure and return only trusted preceding edge/status records.",
+    "Implement `readEdges` with default `fs.createReadStream` and an incremental splitter. Skip only the header and yield complete parsed edge, status, and trailer records as soon as each line arrives; do not buffer the complete stream or silently filter required record kinds.",
+    "Validate injected repository references and private-key type during creation, make repeated `close()` idempotent only after a genuinely successful flush and descriptor close, and restructure poisoning/abort so every post-open failure closes the descriptor through one reliable path. Add a test-injectable file-handle layer and handle or reject short writes.",
+    "Replace the abbreviated tests with the complete frozen Task 3 matrix, including independently signed malformed fixtures and the gated-stream proof. Correct the current `readEdges` test to expect status records and the trailer as well as edges. Keep Task 5 inventory equality, counted-iterator runtime proof, and atomic no-replace publication out of this PR."
+  ],
+  "hard_stops": [
+    "`readEdges` contradicts the frozen interface: it buffers the entire file, does not use `fs.createReadStream` by default, cannot yield before input completion, and suppresses status records and the trailer. Task 3 requires incremental splitting, skipping only the header, and yielding edge, status, and trailer records in order.",
+    "`verifyLedger` violates the trust-boundary semantics. It continues after failing lines, unconditionally adds invalid records to `records`, and includes the trailer. The contract requires stopping trust at the first failing line or trailer invariant and returning only previously trusted edge/status records.",
+    "Coverage validation does not enforce the frozen manifest schema. It accepts any five unique weaver ids in any order, accepts arbitrary or empty inventory-id sets, and does not enforce each weaver's exact D24/D26/D31 inventory ids. Its `file:` regex also accepts absolute, traversal, and otherwise non-repository-relative paths. During verification it passes an empty assertor set to `validateCoverage`, so a signed manifest can mark an edge-producing weaver `skipped` and still verify.",
+    "Exact record validation is incomplete. Header field sets, canonical base64 Ed25519 SPKI, and `repository_ref` shape are not enforced; injected `repositoryRef` is not validated by creation. Edge, status, and trailer timestamps are not checked against the header timestamp. Signed status records do not receive exact-shape or `source_ref` validation, trailer top-level shape is not exact, and canonical signature base64 is not enforced.",
+    "Descriptor/lifecycle requirements are not fully implemented or proven. A second `close()` after successful closure throws rather than being idempotent. `state.closed` is set before descriptor closure succeeds, and `closeFd` marks the descriptor non-open even when `closeSync` throws. There is no injected file-handle test surface proving closure after header/write/append/close failures, and complete writes are not checked for short `writeSync` results.",
+    "The test suite is materially below the frozen Task 3 exit criteria and even asserts the wrong `readEdges` behavior. It lacks the required gated incremental test, generated-versus-injected key coverage, exact header/trailer placement fixtures, independently signed verifier fixtures, exact inventory-id/count rejection matrix, descriptor-closure injection tests, repository-ref and timestamp checks, comprehensive status adjudication, endpoint cases, signature/hash/chain mutations, and first-failure trusted-prefix assertions."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T18:46:09.638Z",
+  "rationale": "The writer's central cryptographic construction appears aligned: it uses exclusive `wx`, canonical JSON, hashes the prior full line without LF, hashes canonical payload plus `prev_hash`, signs the raw 32-byte digest with Ed25519, emits LF, owns timestamp/key/envelopes, and introduces no Task 5 publication mechanism or committed-inventory dependency. Those positives are insufficient for approval because several externally observable interfaces and integrity guarantees are implemented differently from the frozen text, especially `readEdges`, verifier trust-prefix behavior, and the closed coverage schema. These are substantive Task 3 faithfulness defects, not optional hardening.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2LO0nFDB3wWUUYPIFu8mtber4S7f",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T18:50:17.912Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "b49712e813b3dc083f49e6a043fcb9f46a1c70c603e9ecec8a685febe392fea1",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

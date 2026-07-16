@@ -1,0 +1,40 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:a35b3ab4977af5919e0651c235c3bdb8fc62702dcb7122630ea33592bd8c1b32",
+  "decision": "revise",
+  "required_edits": [
+    "Refactor close() so the trailer write, flush, and descriptor close all succeed before state.closed/state.closeResult are committed. Any close failure must leave the object permanently poisoned, make all later append/close calls throw, and allow abort/poison cleanup rather than returning a cached success.",
+    "Make default writes all-or-error: encode the complete canonical line plus LF to bytes, loop until every byte is written, reject zero/short-write failure, fsync, and let the common poisoning path close the descriptor.",
+    "Process verification lines byte-exactly. Split on LF in raw bytes, reject invalid UTF-8 rather than accepting replacement decoding, compare canonical text only after strict decoding, and compute prev_hash from the exact prior line bytes. Apply compatible strict structural decoding to readEdges.",
+    "Validate version according to the frozen integer schema rather than imposing the D24 count-only safe-integer restriction, and add boundary fixtures demonstrating the distinction.",
+    "Expand test-ledger.mjs to cover every case enumerated in the frozen Units and incremental-reading bullets, including independently signed fixtures for every D24 schema rejection and Promise.race against a short timeout for the gated readEdges proof. Add regression tests for failed descriptor close state, actual write failure/short write cleanup, and invalid UTF-8/raw-byte chain handling."
+  ],
+  "hard_stops": [
+    "D22 close semantics are incorrect when descriptor closure fails: close() sets state.closed and state.closeResult before handle.close() succeeds. The catch poisons the ledger, but subsequent close() returns the cached trailer and abort() becomes a no-op because both check state.closed first. Thus an unsuccessful first close can masquerade as a successful idempotent close.",
+    "The exact-line guarantee is not fully implemented. defaultOpenFile.write() ignores writeSync()'s returned byte count, so a short write can be treated as a successful complete LF-terminated record. Verification also decodes input as UTF-8 strings before hashing; replacement decoding of malformed UTF-8 can cause hashes to be checked against re-encoded text rather than the prior raw line bytes.",
+    "The submitted test does not provide the explicitly required frozen Task 3 unit coverage. Material omissions include the full append-rejection matrix, locator repository_ref mismatch, missing/empty manifest fields and malformed inventories_consumed refs, every D24 rejection at close and in independently signed fixtures, close-after-abort, descriptor closure on an actual write failure, noncanonical JSON lines, the permitted depends-on endpoint matrix and wrong endpoint kinds, a genuinely truncated final record, removal of a complete tail record plus trailer, and the mandated timeout race in the gated incremental-read proof."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T19:51:22.602Z",
+  "rationale": "The implementation is substantially aligned in its main design: it uses canonical JSONL, hashes the previous signed line, hashes payload plus prev_hash, signs the raw 32-byte digest with Ed25519, captures one timestamp/keypair, enforces human-only status transitions, keeps D19 repository-inventory equality out of the primitive, uses exclusive wx creation, and does not implement Task 5 publication. Those strengths are not sufficient for AS-IS approval. The close-state ordering directly violates the frozen idempotent-close and poisoning contract, and the write/verification paths do not fully guarantee the normative raw-byte line semantics. In addition, validateCoverage uses Number.isSafeInteger for version even though the frozen schema requires an integer and reserves the explicit safe-integer restriction for inspected counts; that is an unauthorized narrowing. Finally, the deterministic gate passing does not replace the exhaustive tests expressly required by Task 3.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2MP7ThQ1Kcgz8AMTBnJeAHmFU7AX",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T20:04:18.589Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "3753d3cd2d34f06e01f1564279ff4eae237c85a02cee46971ba51e7f98b03da9",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

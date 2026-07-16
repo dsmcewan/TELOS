@@ -1,0 +1,37 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:2f755417f61283a7126c054656f6545a783e04b7daeb46b1c3f399f9c1af14eb",
+  "decision": "revise",
+  "required_edits": [
+    "Validate signKey.type === \"private\" as well as asymmetricKeyType === \"ed25519\" before deriving the public key, creating directories, opening the path, or writing the header.",
+    "Add a regression using an Ed25519 public KeyObject that proves createLedger rejects it immediately and does not call the injected openFile or create the requested ledger; retain proof that an injected Ed25519 private KeyObject succeeds.",
+    "Add close-time and independently signed verifyLedger fixtures with implementation_refs absent, and equivalent fixtures with orchestrator_refs absent, asserting rejection."
+  ],
+  "hard_stops": [
+    "createLedger does not prove that an injected signKey is private. An Ed25519 public KeyObject satisfies the asymmetricKeyType check, and createPublicKey accepts it; the ledger can therefore be created and its header written before signing later fails. Task 3 requires invalid/non-private signing keys to be refused at creation.",
+    "The frozen unit matrix explicitly requires missing implementation_refs and missing orchestrator_refs cases. The suite tests malformed and empty arrays, but never removes either required property, at close time or in an independently signed verification fixture."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T20:55:39.790Z",
+  "rationale": "The chain construction, raw-digest Ed25519 signing, canonical JSONL/LF discipline, single timestamp, repository-reference agreement, human-only status transitions, generic D19 manifest validation, D24 counts, D29 verifier boundary, wx creation, poisoning/descriptor lifecycle, and incremental readEdges behavior otherwise appear faithful and properly exclude Task 5 publication responsibilities. Approval is blocked by the private-key validation defect and the explicit frozen test-matrix omissions.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2NPJcSYt1ELgnW3Akz6YIQOdnsvv",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T21:06:56.364Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "7de22a4aef29853199505d3f999dafd0fee6345c1ea2569a121e126080ea44f2",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

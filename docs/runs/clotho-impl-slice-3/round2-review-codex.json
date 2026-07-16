@@ -1,0 +1,44 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:355be20b3b3f54fee50ba373ecab9b46323bd663e8c2cd34faba83d7a8bedb83",
+  "decision": "revise",
+  "required_edits": [
+    "Add a Task-3-local frozen per-weaver inventory-ID table and require exactly those sorted IDs, with no missing or extra entries, at both close and verification. Keep this generic and independent of committed inventories; do not add Task 5 cardinality or closure checks.",
+    "Implement exact validators for the header and every signed record envelope. Validate injected and verified `repository_ref` as `git-root:<40-lower-hex>`; require exact header fields; require canonical base64 Ed25519 SPKI and signatures; require an Ed25519 public key; and require every edge, status, and trailer `woven_at` to be present, canonical, and equal to the header timestamp. Reject extra or missing trailer-envelope fields.",
+    "Replace the `FILE_REF` regex-only check with validation of a nonempty normalized repository-relative file path plus lowercase 40-hex blob SHA, rejecting absolute, escaping, backslash, and malformed forms for all three manifest reference collections.",
+    "Make successful `close()` idempotent, preserving and returning the successful trailer result. Mark the ledger closed only after flushing and descriptor closure succeed; on any append or close failure, poison it and run the common abort/closure path. Ensure the default writer handles short writes so each complete LF-terminated line is actually written.",
+    "Rework `verifyLedger` around an incremental exact-line stream/splitter. Hash exact prior line bytes, reject malformed framing and strict UTF-8/canonical encoding, never parse an unterminated residual buffer as a trusted record, and preserve only records preceding the first failing line or trailer invariant.",
+    "Complete the frozen unit checklist, including independently signed tamper fixtures and every D24 rejection. Update the incremental `readEdges` proof to race `iterator.next()` against a short timeout before releasing the gated suffix, rather than allowing a nonincremental implementation to hang the test indefinitely."
+  ],
+  "hard_stops": [
+    "D24/D26 manifest validation is incomplete: `inspected_source_counts` accepts arbitrary nonempty IDs and even an empty array instead of requiring each weaver's exact frozen inventory-ID set. The current happy fixture is itself invalid for the ledger weaver, which requires `contract-files`, `ledger-sources`, and `run-sources`.",
+    "Exact schema verification is not implemented. Header key sets, canonical Ed25519 SPKI base64, Ed25519 key type, and `repository_ref` shape are not enforced; injected `repositoryRef` is not validated; edge/status/trailer `woven_at` is discarded without requiring presence or equality to the header; canonical signature base64 is not checked; and signed trailers with extra envelope fields are accepted.",
+    "Content-address validation is too weak. `FILE_REF` accepts absolute, escaping, backslash, and otherwise non-repository-relative paths, contrary to the required valid `file:<repo-relative-path>@<40-hex>` shape for implementation, orchestrator, and inventory references.",
+    "The close/descriptor state machine violates D22 and the explicit idempotence rule. A second `close()` after successful closure throws instead of being idempotent. `state.closed` is also set before descriptor closure succeeds, so a throwing `handle.close()` leaves a poisoned ledger whose `abort()` returns as though close had succeeded and cannot retry closure.",
+    "`verifyLedger` buffers the complete file with `readFileSync` rather than incrementally parsing exact lines. It also parses and can return a non-LF-terminated final edge/status as trusted despite reporting the framing error, violating the first-failure trust boundary.",
+    "The mandatory Task 3 proof surface is substantially absent. Among the omissions are exact inventory-ID rejection cases, exact header/trailer shape cases, wrong timestamps, locator repository-ref mismatch, malformed inventory refs, close idempotence and close-after-abort, independently signed signature/hash/chain/endpoint fixtures, and the required timeout race for incremental `readEdges`."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T18:57:17.355Z",
+  "rationale": "The implementation has the correct overall architecture and several faithful elements: production creation uses exclusive `wx`; append ownership follows D5; the chain uses the prior full canonical line, canonical payload-plus-`prev_hash`, and Ed25519 over the raw digest; status transitions are edge-only and human-only; published states exclude `failed`; skipped entries with present counts must be zero; and the change remains zero-dependency, ESM, Clotho-confined, and free of committed-inventory coupling. D20/D28 publication behavior is correctly absent from this primitive. Those strengths do not overcome the concrete schema, trust-boundary, lifecycle, and required-test defects above. The deterministic gate confirms only coarse existence/build checks and does not establish frozen Task 3 faithfulness.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2LYmqJvVPebx4HJiRYEDru797WwA",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T19:02:56.207Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "371fc61cd150429526f58a7f3fe664d89af373b63a76195d9f2dd485f1825bff",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

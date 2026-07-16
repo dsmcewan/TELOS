@@ -1,0 +1,30 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:355be20b3b3f54fee50ba373ecab9b46323bd663e8c2cd34faba83d7a8bedb83",
+  "decision": "revise",
+  "required_edits": [
+    "verifyLedger must validate header.repository_ref shape (normative git-root:<40-hex>); current path only stores the field and never checks shape.",
+    "verifyLedger must reject edge/status/trailer records whose woven_at differs from the header's captured woven_at (unit surface requires wrong-timestamp rejection; D5 single-timestamp ownership is write-only today).",
+    "Complete the frozen Task 3 unit surface that is still missing: append rejection for locator repository_ref ≠ header; independently signed fixtures for altered signature, altered record_hash, middle-line removal, removal of a complete tail record + trailer, signed unknown kinds, mismatched endpoint ids, wrong endpoint kinds, noncanonical lines; malformed/missing/duplicate/misplaced headers; duplicate and non-final trailers; close without coverage; remaining D24 close+verify cases (extra count-entry fields, non-integer/unsafe counts, duplicate inventory_id entries).",
+    "Keep close/abort/descriptor lifecycle as-is only if second successful close is intentionally non-idempotent; if the clause 'make close idempotent only after a successful first close' is read as API idempotence, make post-success close() a no-op like abort()."
+  ],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-16T18:57:17.355Z",
+  "rationale": "Core primitive is largely faithful and in-scope: createLedger/verifyLedger/readEdges exist with the required handle surface; wx exclusive create + parent-dir creation; one weave-owned timestamp/keypair/envelope (D5); chain is prev_hash=sha256(prior line excl. LF), record_hash=sha256(canonicalJson(payload+prev_hash)), Ed25519 over raw 32-byte digest, LF-terminated lines; node:crypto with explicit non-reuse of merkle-dag envelopes; status is human-only with edge-hash back-refs; close validates injected coverage structure, published executed|skipped only, D24 structural counts + zero-on-skipped, skipped-but-asserted rejection; abort/poison closes fd (D22); verify trust boundary drops suffix and excludes header/trailer from records; readEdges streams and proves yield-before-EOF; D19 (no committed inventory), zero deps, ESM node:/clotho-relative only, no spine change, Task 5 publication left out. Gate green is necessary but not sufficient. I will not stake approve AS-IS while (1) header repository_ref shape is unchecked, (2) wrong-timestamp is not enforced, and (3) a large slice of the frozen unit checklist that proves chain/signature/header/trailer/D24 adversarial integrity is absent. Those are faithfulness gaps inside Task 3, not Task 5 work. No hard-stop redesign: fixable with targeted verify invariants + test completion.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5",
+    "response_id": "62f87ca4-4d46-9115-9098-be606b21c3b9",
+    "source": "ai-peer-mcp/grok_ask",
+    "answered_at": "2026-07-16T18:58:47.479Z",
+    "tool": "grok_ask"
+  }
+}

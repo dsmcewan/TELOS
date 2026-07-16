@@ -1,0 +1,40 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:dfa617324cb0f47ed731c76f5eab8b2d9b92f06400996452d1a2eb691e7f5ecb",
+  "decision": "revise",
+  "required_edits": [
+    "Require typeof repo_head === \"string\" and typeof repository_ref === \"string\" before applying their regular expressions in createLedger; require a string repo_head in verifyLedger as well. Add creation and independently signed verification tests using coercible non-string values.",
+    "Validate version with the frozen integer semantics rather than Number.isSafeInteger, while retaining nonnegative safe-integer enforcement exclusively for inspected counts. Add close and independently signed verification coverage demonstrating the distinction.",
+    "Restore the exact exported verifyLedger(path) interface and always obtain its production stream internally with fs.createReadStream. Remove the public verifier stream-injection behavior and its out-of-scope test.",
+    "Complete the frozen Task 3 unit checklist, including the specifically missing cases identified above. Independently signed D24 fixtures must isolate every rejection using otherwise valid manifests and the correct required inventory IDs; injected write failures must prove poisoning and descriptor closure."
+  ],
+  "hard_stops": [
+    "Header validation is not type-strict. createLedger applies HEX40/REPO_REF regular expressions without first requiring primitive strings, so values such as [repoHead] or [repositoryRef] pass coercively and can be written into a nonconforming header. verifyLedger likewise accepts a signed header whose repo_head is a one-element array because HEX40.test coerces it to a string.",
+    "Manifest version validation narrows the frozen schema from integer to safe integer. D24 explicitly requires safe integers for counts, but Task 3 specifies only an integer version label; valid generic ledgers with an integral version outside the safe range are incorrectly rejected by both close and verification.",
+    "verifyLedger exposes and honors an unauthorized second-argument openReadStream hook, while the frozen interface is verifyLedger(path). The stream-injection option is authorized only for readEdges; this is exported-surface expansion.",
+    "The unit suite does not satisfy the frozen mandatory coverage matrix. Concrete omissions include append-time locator repository_ref disagreement, edge assertion-status coupling cases, a missing-header fixture, close() with absent coverage, missing implementation_refs/orchestrator_refs fields, write-failure descriptor closure, and independently signed verifier fixtures for each D24 rejection such as extra entry fields, unsorted/duplicate entries, negative, non-integer, and unsafe counts."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T20:11:38.910Z",
+  "rationale": "The central ledger mechanics are otherwise substantially faithful: production creation uses recursive parent creation followed by exclusive wx opening; records are synchronously serialized, LF-terminated, chained from the exact prior line, hashed over canonical payload plus prev_hash, and signed over the raw digest; one timestamp/keypair owns the envelope; status transitions are human-only and edge-back-referenced; coverage remains generic and inventory-independent; skipped/count and skipped-assertor contradictions are checked; poisoning and successful-close idempotence are implemented; and readEdges is incremental. The deterministic gate therefore supports the implementation's broad direction, but it does not cure the exact header-schema acceptance bug, the version-schema reinterpretation, the extra verifier API, or the expressly required missing tests. The PR is not acceptable as-is.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2MijL82rM2nROwQmrAKzbMCCUtVH",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T20:19:01.533Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "036c38f6b62c88cf6c13430278582bd5eb932151dcbbd1966957d000ec8081b6",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

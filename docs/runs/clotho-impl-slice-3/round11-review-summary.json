@@ -1,0 +1,116 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "review_ref": "sha256:bd5ff92b3950eafcdf5f40e9c3e540647205b109aa2d99cc0cfcea7c0dd63263",
+  "pr": 115,
+  "pr_head": "082347ed421aa96995613e12d29731e04ac53b3e",
+  "plan_ref": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3",
+  "authorization": "authz-005",
+  "timestamp": "2026-07-16T20:32:32.382Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6Nb831NxmymNVC8jcdY",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-16T20:33:07.093Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2N2xlTDVLSRciOBODvpibX8iuFZY",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-16T20:42:48.286Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "e14f1eec-1e9b-9c12-aa9e-a5d5ad766296",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-16T20:33:10.175Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "4j9ZaqndFt6Hz7IPk46QaQ",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-16T20:32:47.973Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Replace the affected `in`-based shape checks in status and coverage validation with exact own-enumerable key-set checks for the coverage object, each weaver entry, every count entry, and every `inventories_consumed` entry. Sign a normalized snapshot containing exactly the values that were validated, so getters/prototypes/non-enumerable properties cannot make emitted bytes diverge from validation. Add regressions proving malformed inherited/non-enumerable inputs cannot produce a successfully closed but unverifiable ledger.; Validate `version` according to the frozen integer requirement without adding the D24 safe-integer constraint; add close-time and independently signed verification coverage for that boundary.; Complete the missing frozen tests, including missing reference fields, header/trailer `status_of` rejection, byte-truncated final-line handling, independently signed semantic edge defects, and exact ordered completion of the gated streaming test.; Add a regression proving an injected Ed25519 public key is rejected as `signKey` before file creation, ensuring the accepted injected-key path is specifically a private key.",
+      "codex has hard stops: The local closed-schema validators do not require required fields to be own enumerable properties. They use `in`, and the count/inventory-entry checks combine key-count tests with inherited-property lookup. Consequently, inherited or non-enumerable status/coverage fields can pass validation but be omitted by object spread or canonical JSON serialization, allowing `appendStatus()` or `close()` to report success while writing a ledger that `verifyLedger()` rejects.; `version` is constrained with `Number.isSafeInteger`, but frozen Task 3 specifies an integer version label; unlike D24 counts, it does not specify a safe-integer restriction. This is an unauthorized tightening of the manifest schema.; The test does not complete the explicitly frozen unit matrix. Concrete omissions include missing-field cases for `implementation_refs` and `orchestrator_refs`, explicit status references to header/trailer records, a genuinely truncated partial final line, independently signed mismatched-id/wrong-endpoint fixtures for verifier behavior, and an exact complete-and-ordered assertion after releasing the gated `readEdges` stream."
+    ],
+    "warnings": []
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

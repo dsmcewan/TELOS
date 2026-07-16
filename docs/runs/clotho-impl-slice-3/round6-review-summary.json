@@ -1,0 +1,119 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "review_ref": "sha256:781db291690071be54840fafbdf4459b1fb2bf8b2bea7214462c6dbcf058b843",
+  "pr": 115,
+  "pr_head": "31682c1682686a164d00915f38987b592648e504",
+  "plan_ref": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3",
+  "authorization": "authz-005",
+  "timestamp": "2026-07-16T19:34:38.157Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6JAzh6t6NLXSvYECnNV",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-16T19:35:29.827Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2M8uyJ5cbkKO9GvYVhNRlCF2RirF",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-16T19:40:43.901Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "e73a0eb8-ba17-9617-94a6-2659ce2281da",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-16T19:35:40.005Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "TzJZapuwJ_fqz7IPjo302AE",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-16T19:34:56.404Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "claude decision is 'revise', not 'approve'.",
+      "claude has required edits: verifyLedger: the header validation accepts any pub_key that createPublicKey() can parse but never checks that h.pub_key is canonical base64 (i.e. re-export of the parsed key equals the input string). A ledger whose header carries non-canonical base64 (padding/whitespace variants) of the same SPKI bytes would verify, violating 'pub_key is canonical base64 SPKI'. Add: publicKeyB64(pubKey) === h.pub_key check and a unit test with a whitespace/alternate-encoding pub_key fixture.; verifyLedger: woven_at equality for edge/status/trailer records is checked (payload.woven_at !== header.woven_at) but the spec's chain rule failure mode 'wrong timestamp' is only exercised in test 10 via a full independently-signed fixture; there is no test for a status record with mismatched woven_at nor for a trailer with mismatched woven_at. Add both fixtures.; verifyLedger: after a mid-ledger failure, processLine continues parsing subsequent lines and can push errors for them, but trailerSeen is still set by a post-failure trailer, which suppresses the 'ledger has no final trailer' error even though no trusted trailer exists. Result is still ok:false so trust is not conferred, but the error surface misreports the ledger state. Either stop processing at first failure or do not set trailerSeen/manifest from untrusted lines; add a test asserting a tampered-then-trailer ledger reports the missing-trusted-trailer condition coherently.; Task list requires 'every permitted depends-on endpoint including repository-file -> code-symbol' — the test exercises exactly one depends-on pairing (repository-file -> code-symbol) and one introduced-by. The enumeration of every permitted depends-on endpoint pairing is delegated entirely to validateEdgeInput's own suite in registry.mjs, which is outside this PR's diff. Either add the endpoint-matrix cases here or state in the test header that registry.mjs's suite owns the matrix and add at least one wrong-endpoint-kind rejection through the ledger appendEdge path (currently only tested indirectly via signed unknown-kind fixture at verify time, not at append time).; Task list requires 'wrong endpoint kinds' and 'mismatched ids' as verification fixtures: mismatched from_node is tested at append time (6b) but not as an independently-signed verification fixture; add a buildSignedLedger fixture with a from_node that does not match the derived locator id and assert verifyLedger fails.; createLedger: the git default path is exercised in no test (all tests inject repoHead/repositoryRef). The spec permits injection, but 'obtain the head with exact arguments git rev-parse HEAD' is unproven — add a unit with an injected git spy asserting exact args ['rev-parse','HEAD'] and that deriveRepositoryRef receives the same git function.; close(coverage) validates inventories_consumed entries but permits an empty array (spec says 'nonempty well-formed orchestrator_refs and content-addressed inventories_consumed entries' — orchestrator_refs nonemptiness is enforced; inventories_consumed emptiness is not). Confirm intended reading; if nonempty is required, enforce and test; if empty is legal at Task 3, add a comment citing the D19 deferral.; readEdges silently skips unparseable JSON lines (catch { continue; }) — spec says it 'performs structural parsing but does not confer trust'; silently dropping a malformed line means a caller iterating readEdges after a successful verifyLedger can never hit it, but on an unverified file it under-reports. Prefer yielding nothing but also not continuing silently: either document the skip in the test with a malformed-line fixture or propagate a structural marker. Minimal fix: add a test pinning the current skip behavior so it is a decided semantic, not an accident.",
+      "claude has hard stops: verifyLedger accepts a header whose pub_key round-trip is not canonical base64 and, more critically, verifies every record signature against the ledger's own embedded pub_key with no external trust anchor while ALSO treating chain+signature failure as non-fatal for trailerSeen: a line that fails prev_hash/record_hash/signature checks still sets trailerSeen=true and prevLine=line, so subsequent structurally-valid records chained off the tampered line are measured against the tampered bytes; combined with 'records.push' gating on !trustBroken this is currently safe for `records`, but `manifest` is assigned when `lineOk && !trustBroken` and then only nulled at the end if errors.length>0 — however the empty-`buf` early-return path `return {ok:false, header, manifest: null, ...}` on stream read failure is inconsistent with the final-path nulling; verify no path can return a non-null manifest alongside ok:false. Trace and add an explicit invariant test: for every ok:false result, manifest===null and records contains no record at-or-after the first failing line, including the stream-throw path.; requireInspectedSourceCounts checks `state === 'skipped'` per-entry BEFORE the exact-id-set comparison, but the zero-count check is skipped entirely when counts is an empty array or when an entry fails an earlier structural check — confirm ordering cannot admit a skipped weaver whose nonzero count sits in an entry that also fails the sorted/unique check in a way that reports the wrong error class; more importantly the D24 requirement 'inventory_id from the closed inventory-id set' is only enforced as equality with REQUIRED_INVENTORY_IDS after per-entry validation — an entry set like [{inventory_id:'package-files',count:0},{inventory_id:'package-symbols',count:0}] with state 'skipped' passes, which is correct, but the frozen table itself (REQUIRED_INVENTORY_IDS / WEAVER_ORDER) is duplicated in the test file rather than imported from one source; the spec says the table is committed in inventory.mjs (D24/D26) which does not exist yet per D17 — duplication inside Task 3 is acceptable, but ledger and test each hand-write the table with no equality assertion between them. Add a unit that imports or re-declares the table once and asserts the ledger's accepted ids equal the test's table verbatim, so a silent divergence cannot pass green.",
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Replace requireFileRef with a shared strict validator that enforces canonical, normalized repository-relative file paths and a lowercase 40-hex blob SHA; use it uniformly in close and verification, with signed fixtures for absolute, traversal, backslash, empty-segment, and otherwise malformed paths.; Require canonical base64 by decoding and re-encoding pub_key and every signature for exact textual equality, validate the 64-byte Ed25519 signature length, and compare the parsed public key's canonical SPKI export with the header text. Decode ledger bytes incrementally with a stateful fatal UTF-8 decoder in verifyLedger; preserve multibyte boundaries in readEdges as well.; Require signKey.type === \"private\" and asymmetricKeyType === \"ed25519\" before opening or writing the ledger, covering KeyObject and supported serialized-key inputs.; Implement full-write looping over a UTF-8 Buffer until every byte including LF has been written, treating zero or incomplete writes as fatal before advancing state.prevLine.; Move closeResult/state.closed assignment until after trailer write, flush, and descriptor close all succeed. On any failure leave the ledger poisoned rather than closed, ensure later append/close throws, and retain idempotent abort behavior without falsely reporting successful closure.; Complete the authoritative Task 3 test matrix, including every listed append/schema/status/header/trailer/D24/tamper/descriptor-lifecycle case and a gated readEdges test that races iterator.next() against a finite timeout before releasing the remaining stream.",
+      "codex has hard stops: Coverage content-reference validation is not faithful: requireFileRef only checks /^file:(.+)@<40-hex>$/ and therefore accepts absolute paths, traversal paths, backslashes, NULs, and other non-repository-relative forms. Task 3 requires valid repository-relative file content addresses for implementation_refs, orchestrator_refs, and inventories_consumed.source_ref.; Canonical encoding is not fully verified. Buffer.from(..., \"base64\") permissively accepts unpadded and otherwise noncanonical pub_key/signature spellings, and the exported canonical representation is never compared. In addition, createReadStream's UTF-8 replacement behavior can turn malformed bytes into a valid JavaScript string which is then compared and hashed as if it were the original canonical line.; The successful-close state transition violates D22: closeResult and state.closed are assigned before handle.close(). If descriptor closure throws, the ledger is poisoned but a later close() returns the cached trailer as though the first close succeeded, and abort() becomes a no-op.; Injected key validation checks only asymmetricKeyType. An Ed25519 public KeyObject passes that check, so createLedger writes a header instead of rejecting it immediately as not being an Ed25519 private key.; defaultOpenFile ignores writeSync's byte count. A short write can leave an incomplete line while fsync succeeds and state.prevLine advances to the full intended line, violating complete LF-terminated writes and exact chaining.; The submitted unit suite does not provide the frozen required coverage. Missing cases include repository_ref locator mismatch, edge-only rejection of a status-record back-reference, malformed/empty/missing coverage refs, malformed inventory refs, the complete D24 close-time and independently signed rejection matrix, all permitted depends-on endpoint pairs and wrong endpoint kinds, close-after-abort, partial-tail removal cases, and the required timeout race in the gated incremental-read proof."
+    ],
+    "warnings": []
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

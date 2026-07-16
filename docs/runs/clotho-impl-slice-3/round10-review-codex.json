@@ -1,0 +1,37 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:5d557e8e82bf731aaef2fa58ea8325de57e177833eb3296b9abb89105989d04c",
+  "decision": "revise",
+  "required_edits": [
+    "Add append and independently signed verification tests for locator repository_ref disagreement, plus the omitted assertion-status/producer coupling and status_of header/trailer rejection cases.",
+    "Add the missing schema and framing cases: close() with no coverage, missing implementation_refs and orchestrator_refs, a ledger with no header, and a directly noncanonical JSON line. Add any other explicitly enumerated frozen cases not currently exercised.",
+    "Add independently signed verification fixtures for each D24 rejection separately: missing and extra inventory ids, extra entry fields, unsorted entries, duplicates, negative, non-integer, unsafe counts, and skipped nonzero counts.",
+    "Prove descriptor closure with injected handles across each distinct failure stage, including header write, edge/status/trailer write, append validation, close validation, and explicit abort; fix thread-ledger.mjs if any added test exposes a lifecycle defect."
+  ],
+  "hard_stops": [
+    "The frozen Task 3 unit/exit matrix is not satisfied by test-ledger.mjs, so the implementation is not acceptable AS-IS despite the deterministic gate passing."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T20:21:27.119Z",
+  "rationale": "The runtime implementation appears substantially aligned with Task 3: exclusive wx creation, captured timestamp/keypair, canonical LF-terminated chaining, raw-digest Ed25519 signatures, exact envelope validation, human-only status transitions, D19/D24/D29 coverage checks, descriptor poisoning, and incremental reading are present without inventory or publication scope expansion. However, the authoritative scope makes the listed tests and descriptor-failure proofs part of exit. Several explicitly required cases are absent, including locator repository_ref disagreement, close with omitted coverage, missing header/schema fields, header/trailer status_of references, independently signed fixtures for every inspected_source_counts rejection, a direct noncanonical-JSON-line fixture, and exhaustive injected descriptor-closure proofs. Therefore approval cannot be signed yet.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2MsENQYVKnkL3s7picUZC7sAb1NX",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T20:27:21.193Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "5687810f9014a5093a61b29ae16400289fcf65082cc2b3ec933922788cbd979e",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

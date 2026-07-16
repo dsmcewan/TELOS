@@ -1,0 +1,45 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:f673f28cec7371db835f59df897f3206b9af49bb9f712a12b968995d22598e6d",
+  "decision": "revise",
+  "required_edits": [
+    "Add shared exact-shape validation for the header and every signed record kind. Require exactly the normative header fields; validate `repository_ref` as `git-root:<40-lowercase-hex>` even in edge-free ledgers; require canonical base64 Ed25519 SPKI; require canonical base64 Ed25519 signatures; reject all extra or missing outer trailer/envelope fields and signed unknown combinations.",
+    "Validate injected `repositoryRef` during creation and require an injected `signKey` to be an Ed25519 private key, not merely any key object whose asymmetric type happens to be Ed25519.",
+    "Replace `requireFileRef` with validation of a normalized, nonempty repository-relative file path plus a lowercase 40-hex blob SHA. Apply it uniformly to `implementation_refs`, `orchestrator_refs`, and `inventories_consumed[].source_ref`.",
+    "Reimplement `verifyLedger` over an incremental stream/line splitter while preserving exact UTF-8 line bytes, LF-only framing, canonical encoding checks, first-failure trust-prefix behavior, and final-trailer requirements.",
+    "Make `close()` return the original successful result on subsequent calls. Mark the ledger closed only after trailer write, flush, and descriptor closure all succeed. Preserve a retryable/open state when closure itself throws, poison through the common abort path, and write each complete line with a short-write-safe loop.",
+    "Make `readEdges` fail on malformed complete lines or a trailing partial line rather than silently dropping them, verify that the skipped first record is structurally a header, and structurally distinguish edge, status, and trailer records without performing trust adjudication.",
+    "Complete the tests against every case enumerated in the frozen Task 3 unit checklist, including independently signed adversarial fixtures and injected descriptor failures. Change the gated-stream proof to race `iterator.next()` against a short timeout before releasing later chunks."
+  ],
+  "hard_stops": [
+    "`verifyLedger` does not enforce the exact normative header and trailer shapes. Header top-level/nested extra fields are accepted, `repository_ref` is not shape-validated, and the public key is neither required to be Ed25519 nor checked for canonical base64 SPKI encoding. Signed trailers with extra outer payload fields are also accepted. Signature strings likewise are decoded permissively rather than required to be canonical base64.",
+    "Manifest content-reference validation is insufficient: `FILE_REF` accepts absolute, traversal, backslash, and otherwise non-repository-relative paths such as `file:../../x@<sha>`, contrary to the required valid repo-relative `file:` form.",
+    "`verifyLedger` uses `readFileSync` and buffers the complete artifact, directly violating the requirement that verification incrementally parse exact lines.",
+    "Successful `close()` is not idempotent: a second call throws `ledger is closed`. Descriptor-state handling also marks `open` false even when `handle.close()` throws, and marks `closed` before closure succeeds, preventing a meaningful abort/retry path. A single unchecked `writeSync` can also report a short write as success, violating complete LF-terminated record writes and D22 lifecycle guarantees.",
+    "`readEdges` silently discards malformed complete JSON lines and trailing partial lines and skips the first line without establishing that it is a header. That is not faithful structural parsing and can silently omit records.",
+    "The test suite does not provide the frozen mandatory proof surface. Missing coverage includes exact/malformed/duplicate/misplaced headers and trailers; canonical key/signature and exact-field rejection; repository-ref mismatch; the complete append-edge and endpoint matrix; status back-references to non-edge records; malformed/missing coverage refs; the full D24 close-time and independently signed verification matrix; altered signatures/hashes and specified removal/tamper cases; injected write/close failure lifecycle cases; close-after-abort and successful-close idempotence; and the required timeout race for incremental reading."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T19:07:32.354Z",
+  "rationale": "The implementation has the correct core chain formula, signs the raw 32-byte digest with generated Ed25519 keys, emits LF-terminated canonical JSON on the ordinary path, uses exclusive `wx`, enforces human-only status transitions, implements the central D24 state/count checks, and correctly avoids committed-inventory and Task 5 publication dependencies. However, the verifier currently accepts several non-normative schemas and content references, verification is not incremental, successful close has the wrong semantics, and the required conformance tests are materially incomplete. These are frozen Task 3 faithfulness defects, not Task 5 concerns, so the PR is not acceptable as-is.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2Ligzm7zSQIZ7mQ4Qhx3Pel3hLSI",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T19:13:19.825Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "b2e422c047abd84d10b4c0b910b53e7660aaba83a467989de4b9642eb08362ee",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "review_ref": "sha256:f673f28cec7371db835f59df897f3206b9af49bb9f712a12b968995d22598e6d",
+  "pr": 115,
+  "pr_head": "ec77e2d75bdf160812a186fb7c6621b7ed0419d1",
+  "plan_ref": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3",
+  "authorization": "authz-005",
+  "timestamp": "2026-07-16T19:07:32.354Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6G78nBUZLvyXWwkSp7x",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-16T19:08:17.946Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2Ligzm7zSQIZ7mQ4Qhx3Pel3hLSI",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-16T19:13:19.825Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "c2092397-569e-9977-b5aa-cf9ee78991c5",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-16T19:09:33.005Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "9StZava0MbDEqtsPs9uvmQ8",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-16T19:08:04.001Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "claude decision is 'revise', not 'approve'.",
+      "claude has required edits: In verifyLedger, freeze ALL trust-conferring state (edgeHashes, weaverEdgeIds, and manifest acceptance) at the first failing line: guard edgeHashes.add/weaverEdgeIds.add and manifest assignment with !trustBroken, so no suffix record or trailer validation consumes state derived from untrusted lines.; In verifyLedger, validate the header repository_ref shape (exactly /^git-root:[0-9a-f]{40}$/) and pub_key base64-SPKI shape explicitly, adding tests for a malformed header repository_ref and malformed pub_key.; In createLedger, validate an injected repositoryRef against the same git-root:<40-hex> shape used for the derived value, with a rejection test.; Add the missing mandated unit tests enumerated in hard_stops: altered-signature and altered-record_hash middle-line tampers; middle-line removal; tail-record+trailer removal; signed unknown-kind record; duplicate/misplaced header fixtures and duplicate/non-final trailer fixtures; the full inspected_source_counts rejection matrix (extra entry fields, duplicate entries, non-integer and unsafe counts) at close time AND as independently signed verification fixtures; malformed inventories_consumed source_ref; close() with no argument; mismatched re-derived endpoint ids; wrong endpoint kinds plus the permitted depends-on endpoint matrix including repository-file -> code-symbol as distinct assertions; a generated-key (no signKey) ledger verified end-to-end.; Either enforce trailer-must-be-final by refusing to return a manifest when any record follows the trailer (return manifest only if the trailer is the last line), or document precisely why the flagged-error path satisfies 'requires exactly one trailer as the final record' — the current code sets manifest and reports errors, which is ambiguous for callers that read manifest without checking ok.",
+      "claude has hard stops: verifyLedger does not require exactly one trailer as the FINAL record in the failure-accounting sense required by spec: a record appearing after the trailer is flagged, but the manifest from the non-final trailer is still returned and processing continues; more critically, verifyLedger continues full trust-boundary processing after chain breaks, so `records` truncation depends on the trustBroken flag ordering — records are pushed only when `lineOk && !trustBroken`, but edgeHashes/weaverEdgeIds are still mutated for lines AFTER a failure (edgeHashes.add is guarded only by lineOk, not trustBroken), allowing a status record after a broken-chain edge to validate against an untrusted edge hash and the trailer's skipped-weaver check to consult untrusted weaverEdgeIds. The spec requires: 'On a failure it returns only records before the first failing line or trailer-level invariant... and never confers trust on a suffix' — internal validation state must also stop conferring trust, not just the records array.; verifyLedger does not validate the header's repository_ref SHAPE. Spec: 'validates ... the single first header including its repository_ref shape'. The code assigns repoRef = header.repository_ref with no `git-root:<40-hex>` shape check, and pub_key shape is only implicitly checked via createPublicKey throwing. A header with repository_ref: 'banana' verifies ok as long as all locators carry the same string — this defeats the D16 shape contract at the verification layer and is untested.; createLedger validates repoHead but NOT an injected repositoryRef's shape. Spec: 'Capture one canonical wovenAt, one validated repoHead, and one validated repositoryRef'. `repositoryRef ?? deriveRepositoryRef(git)` accepts any injected string unvalidated, so a test/driver typo produces a structurally invalid header that (combined with the verifier gap above) round-trips as ok.; Missing mandated tests from the frozen unit list: (1) altered signature and altered record hash as targeted middle-line tampers (only a source_ref byte-tamper is tested); (2) middle-line REMOVAL and removal of a complete tail record plus the trailer (only trailer-drop and corrupt-line are tested); (3) signed unknown kinds (a signed record that is neither header/edge/status/trailer); (4) duplicate and misplaced headers, and duplicate/non-final trailers as fixtures; (5) every inspected_source_counts rejection as independently signed VERIFICATION fixtures (only close-time is covered for most: extra-entry-fields, non-integer/unsafe counts, duplicate entries are untested at BOTH close and verify); (6) mismatched ids (re-derived endpoint id disagreement); (7) wrong endpoint kinds and 'every permitted depends-on endpoint including repository-file -> code-symbol' as an exhaustive matrix (only one depends-on case is exercised); (8) malformed inventories_consumed refs; (9) close without coverage (close() with undefined) — close({bad:true}) is close-with-invalid, not close-without; (10) generated-key path is never verified end-to-end with an explicitly asserted distinct pub_key. The task's test list is frozen and itemized; these are scope-mandated, not optional.",
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Add shared exact-shape validation for the header and every signed record kind. Require exactly the normative header fields; validate `repository_ref` as `git-root:<40-lowercase-hex>` even in edge-free ledgers; require canonical base64 Ed25519 SPKI; require canonical base64 Ed25519 signatures; reject all extra or missing outer trailer/envelope fields and signed unknown combinations.; Validate injected `repositoryRef` during creation and require an injected `signKey` to be an Ed25519 private key, not merely any key object whose asymmetric type happens to be Ed25519.; Replace `requireFileRef` with validation of a normalized, nonempty repository-relative file path plus a lowercase 40-hex blob SHA. Apply it uniformly to `implementation_refs`, `orchestrator_refs`, and `inventories_consumed[].source_ref`.; Reimplement `verifyLedger` over an incremental stream/line splitter while preserving exact UTF-8 line bytes, LF-only framing, canonical encoding checks, first-failure trust-prefix behavior, and final-trailer requirements.; Make `close()` return the original successful result on subsequent calls. Mark the ledger closed only after trailer write, flush, and descriptor closure all succeed. Preserve a retryable/open state when closure itself throws, poison through the common abort path, and write each complete line with a short-write-safe loop.; Make `readEdges` fail on malformed complete lines or a trailing partial line rather than silently dropping them, verify that the skipped first record is structurally a header, and structurally distinguish edge, status, and trailer records without performing trust adjudication.; Complete the tests against every case enumerated in the frozen Task 3 unit checklist, including independently signed adversarial fixtures and injected descriptor failures. Change the gated-stream proof to race `iterator.next()` against a short timeout before releasing later chunks.",
+      "codex has hard stops: `verifyLedger` does not enforce the exact normative header and trailer shapes. Header top-level/nested extra fields are accepted, `repository_ref` is not shape-validated, and the public key is neither required to be Ed25519 nor checked for canonical base64 SPKI encoding. Signed trailers with extra outer payload fields are also accepted. Signature strings likewise are decoded permissively rather than required to be canonical base64.; Manifest content-reference validation is insufficient: `FILE_REF` accepts absolute, traversal, backslash, and otherwise non-repository-relative paths such as `file:../../x@<sha>`, contrary to the required valid repo-relative `file:` form.; `verifyLedger` uses `readFileSync` and buffers the complete artifact, directly violating the requirement that verification incrementally parse exact lines.; Successful `close()` is not idempotent: a second call throws `ledger is closed`. Descriptor-state handling also marks `open` false even when `handle.close()` throws, and marks `closed` before closure succeeds, preventing a meaningful abort/retry path. A single unchecked `writeSync` can also report a short write as success, violating complete LF-terminated record writes and D22 lifecycle guarantees.; `readEdges` silently discards malformed complete JSON lines and trailing partial lines and skips the first line without establishing that it is a header. That is not faithful structural parsing and can silently omit records.; The test suite does not provide the frozen mandatory proof surface. Missing coverage includes exact/malformed/duplicate/misplaced headers and trailers; canonical key/signature and exact-field rejection; repository-ref mismatch; the complete append-edge and endpoint matrix; status back-references to non-edge records; malformed/missing coverage refs; the full D24 close-time and independently signed verification matrix; altered signatures/hashes and specified removal/tamper cases; injected write/close failure lifecycle cases; close-after-abort and successful-close idempotence; and the required timeout race for incremental reading.",
+      "Grok hard stop is unresolved in dossier: createLedger does not validate repositoryRef (spec: capture one validated repositoryRef); verifyLedger does not validate header repository_ref shape (spec: header including its repository_ref shape). These are normative Task 3 validation obligations, not optional polish."
+    ],
+    "warnings": [
+      "Grok advisory decision is 'revise'. Required models must explicitly resolve any concerns."
+    ]
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

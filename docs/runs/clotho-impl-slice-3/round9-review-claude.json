@@ -1,0 +1,30 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:dfa617324cb0f47ed731c76f5eab8b2d9b92f06400996452d1a2eb691e7f5ecb",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-16T20:11:38.910Z",
+  "rationale": "Faithful within frozen v12 Task 3 scope; approving as-is.\n\nNORMATIVE BYTES / CHAIN: prev_hash = sha256 of exact prior full line bytes excluding LF (hexOf on prevLine; verifier hashes raw lineBuf bytes so the chain covers the complete signed prior line including record_hash/signature); record_hash = sha256(canonicalJson(payload+prev_hash)); signature = Ed25519 over the raw 32-byte digest (edSign(null, Buffer.from(record_hash,'hex'))); every line LF-terminated with all-or-error short-write loop + fsync. CRLF and missing final LF are verification errors, tested. Canonical-encoding enforcement (canonicalJson(obj) === line), strict fatal UTF-8 decode, and canonical-base64 checks for both pub_key and signature (decodeCanonicalB64 defends against Buffer.from leniency) are correct and tested with non-canonical fixtures.\n\nINTERFACES: createLedger/verifyLedger/readEdges match the frozen signatures; header {pub_key, woven_at, repo_head, repository_ref, weave_version:1} with exact-field checks; edge and status payloads carry ledger-owned woven_at/prev_hash/record_hash/signature. D5 honored: one wovenAt, one keypair, envelope fields added only by the ledger; appendEdge takes only the weaver payload.\n\nCREATION/LIFECYCLE (D22): wx is the sole existence gate (no TOCTOU pre-check), EEXIST refused, parent mkdir only for the requested file and only for the default handle. Injected-handle tests prove descriptor closure on append failure, close failure, explicit abort (idempotent, exactly one close), and successful close; close idempotent only after success (failed close stays poisoned — tested); append/close after abort throw; abort after close is a no-op. Poison path is shared (poison() closes via the same closeHandle).\n\nverifyLedger: incremental byte splitter; single first header; duplicate/misplaced header, records-after-trailer, exactly-one-final-trailer, empty ledger, missing trailer all rejected; records contains only edge+status (never header/trailer); trust frozen at first failure (records only-before-first-failing-line, tested via tamper truncation); manifest nulled whenever any error exists. status_of back-references closed to earlier EDGE hashes only (status-hash reference rejected by an independently signed fixture). Human-only adjudication enforced at append and verify. woven_at must equal header woven_at (tested adversarially).\n\nD19/D24/D29 SCOPE DISCIPLINE: coverage validated structurally against injected fixtures only; the REQUIRED_INVENTORY_IDS table is transcribed as frozen constants, not imported from any committed inventory — no committed-inventory dependency. D24 schema fully enforced (exact ids, sorted/unique, no extra fields, nonnegative safe integers, all-zero for skipped) at close AND at verify, plus independently signed fixtures for failed-state manifest, skipped-with-nonzero-count, and skipped-weaver-with-edge. The verifier makes no iterator-exhaustion claim (D29 boundary respected). Cardinality equality correctly deferred to Task 5.\n\nreadEdges: createReadStream/injected stream, incremental splitter, skips only the header, yields status records and trailer, structural-only. The gated-stream race test matches the spec (release header+edge, race next() vs timeout, then release the rest and check ordered completeness).\n\nSPINE/DEPS: node: + ./registry.mjs imports only; comment names merkle-dag envelope mismatch and the proposal-ledger pattern source as required; deterministic gate confirms zero deps, no spine change, diff confined to clotho/.\n\nTEST MATRIX: the frozen unit list is covered — exclusive creation, generated+injected keys, all D24 rejections at close time and as signed verification fixtures, endpoint matrix incl. repository-file->code-symbol, wrong endpoint kinds, wrong timestamp, altered signature/record_hash, middle-line tamper/removal, partial final line, trailer removal, tail-record+trailer removal, valid human supersedes edge, signed unknown kind, mismatched ids (re-derivation via validateEdgeInput with explicit mismatch test), noncanonical lines (non-canonical sig/pub_key, invalid UTF-8, null record).\n\nMINOR (non-blocking, within reviewer tolerance): (1) verifyLedger accepts an undocumented {openReadStream} option — a strict-superset test seam consistent with readEdges' documented seam and used only for injected-stream tests; not a semantic reinterpretation. (2) createLedger accepts injected git/openFile test seams — necessary for the mandated D22 injected-handle proofs and consistent with 'unless a test injects them'. (3) requireInspectedSourceCounts checks skipped-zero during iteration before the exact-id check, so error precedence can vary — behaviorally correct in all cases. None of these alter normative bytes, scope, or trust semantics.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011Cd6Lzk8pM1YZLPzCpfJFE",
+    "source": "ai-peer-mcp/claude_ask",
+    "answered_at": "2026-07-16T20:12:15.592Z",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "3746904938b1946d757ad4beda827f56b727007d13225cde1372c07b73534b30",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

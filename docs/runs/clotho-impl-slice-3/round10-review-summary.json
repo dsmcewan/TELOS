@@ -1,0 +1,119 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "review_ref": "sha256:5d557e8e82bf731aaef2fa58ea8325de57e177833eb3296b9abb89105989d04c",
+  "pr": 115,
+  "pr_head": "93c652f2883d1981709954db43385ef4329ba4be",
+  "plan_ref": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3",
+  "authorization": "authz-005",
+  "timestamp": "2026-07-16T20:21:27.119Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "medium",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6Mk5HT6sv9RDCrcmxGh",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-16T20:22:24.101Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2MsENQYVKnkL3s7picUZC7sAb1NX",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-16T20:27:21.193Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "e4840309-e7dc-9779-93d7-02b57fa54ecf",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-16T20:22:25.790Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "ST1ZarOkEKfoz7IP1NKSWQ",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-16T20:21:53.537Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "claude decision is 'revise', not 'approve'.",
+      "claude has required edits: Unify verifyLedger's error/trust model: make stream-level post-loop defects (missing final LF, CRLF, empty, missing trailer) flow through the same fail() channel, and explicitly document (in a comment and in the test) which records remain in `records` for each tail-defect class — the frozen text 'returns only records before the first failing line or trailer-level invariant' must be demonstrably true for: partial final line, missing trailer, CRLF, and record-after-trailer. Add an assertion in the missing-final-LF test and the trailer-removal test checking `v.records` content, not just `v.ok === false`.; In verifyLedger, move CRLF detection from the chunk level (`b.includes(0x0d)` anywhere in the stream) to the line level: a CR byte anywhere in file content that is NOT part of a line ending currently also triggers the CRLF error — a canonical-JSON line can never contain a raw CR, so behavior is coincidentally correct, but the check as written misattributes the failure; detect CR-before-LF at the splitter and fail the specific line, preserving the first-failing-line trust boundary.; createLedger: validate `wovenAt` explicitly — reject values for which `new Date(v).toISOString()` throws or yields an invalid date, with a stable createLedger-prefixed error, and add the corresponding unit ('wrong timestamp' at creation). Currently an invalid wovenAt escapes as a bare RangeError before any descriptor is opened.; Add the missing enumerated units: (a) appendStatus after close throws (only appendEdge is covered); (b) to_node id mismatch rejection (only from_node covered); (c) generated-key path asserts header.pub_key is valid canonical SPKI base64 and differs between two generated ledgers; (d) an explicit 'record precedes a valid header' fixture (malformed first line followed by valid records) asserting records stay empty — the 'misplaced header' obligation is only covered as duplicate-header, not as missing-first-header.; Document or fix the mkdirSync guard `if (openFile === defaultOpenFile)`: parent-directory creation silently does not occur for injected handles, which is fine for tests, but the identity comparison means any wrapper around defaultOpenFile loses directory creation; at minimum add a comment that injected openFile owns directory pre-existence, and a unit proving createLedger creates parents for its requested file (the frozen checklist line 'creates parent directories only for its requested file' has no test).",
+      "claude has hard stops: verifyLedger conflates local line validity with global trust state: `bad()` sets the ledger-wide `trustBroken` flag via `fail()`, but the code separately gates record admission on `lineOk && !trustBroken` — yet `trustBroken` is set by ANY prior error including non-record errors, while structural errors recorded after the loop (missing final LF, CRLF, missing trailer) are pushed directly to `errors` WITHOUT setting trustBroken, creating two inconsistent error channels; specifically, `sawCR` detection happens per-chunk BEFORE line processing, but the CRLF error is only appended AFTER the whole stream is consumed — a CRLF-containing ledger will first fail prev_hash/canonicality checks per-line rather than being rejected for CRLF as such, and a ledger whose ONLY defect is a trailing CR before LF on some line may pass canonicalJson equality? No — the CR stays in the line buffer and breaks canonicality — but the CR error itself never truncates trust: records admitted before the post-loop CRLF error remain in `records` while ok:false, so `records` is NOT strictly 'only records before the first failing line' for stream-level defects (missing final LF, CRLF, missing trailer). The spec requires 'on a failure it returns only records before the first failing line or trailer-level invariant... and never confers trust on a suffix'; here a ledger with a valid header+edge+trailer followed by a partial final line returns the edge in `records` with ok:false — arguably records before the failure, but a missing-trailer ledger (truncated tail) also returns all prior edges as 'trusted signed records' in `records` while ok:false; the spec text permits records before the first failing invariant, so this needs an explicit ruling — flagged as a hard stop because trust semantics are the core of the primitive and the two-channel error design makes the boundary unauditable.; The trailer chain check can accept a trailer whose line-level envelope failed but whose coverage validated: `manifest` is assigned when `lineOk && !trustBroken`, but `trailerSeen = true` is set unconditionally — meaning a ledger whose trailer has a BROKEN SIGNATURE still satisfies the 'has a trailer' structural check and reports only the signature error; correct outcome (ok:false) but the null-manifest guarantee relies solely on the final `if (errors.length > 0) manifest = null` sweep — fragile but presently correct. However, the reverse hazard is real: `validateStatusInput` inside verifyLedger checks `edgeHashes.has(status_of)` where `edgeHashes` only accumulates hashes of TRUSTED edges (`lineOk && !trustBroken`); after any earlier failure, a structurally valid status record referencing a genuinely earlier valid edge will fail with a misleading 'must reference an earlier edge' error — cascading false errors are acceptable post-failure, but it means error lists past the first failure are unreliable diagnostics; document or gate.; Missing test evidence for two explicitly enumerated unit obligations: (1) 'wrong endpoint kinds' is tested only for depends-on via `dep(csLoc, commitLoc)` — the enumerated matrix item 'every permitted depends-on endpoint including repository-file -> code-symbol' is covered, but 'mismatched ids' is tested only for from_node, not to_node; (2) the enumerated obligation 'middle-line byte tamper' is tested via source_ref string replacement in test 2 (acceptable) but 'wrong timestamp' at the LEDGER-CREATION layer (createLedger given an invalid wovenAt, e.g. non-date string producing 'Invalid Date' -> toISOString throws RangeError uncontrolled) is unhandled: `new Date(wovenAt ?? Date.now()).toISOString()` will throw a raw RangeError with no ledger-specific message and — critically — this occurs BEFORE openFile, so no descriptor exists; not a leak, but the error contract is unspecified and untested. Also untested: appendStatus after close (only appendEdge-after-close is asserted), and generated-key happy path is exercised implicitly (opts without signKey) but never asserts a distinct pub_key per ledger.",
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Add append and independently signed verification tests for locator repository_ref disagreement, plus the omitted assertion-status/producer coupling and status_of header/trailer rejection cases.; Add the missing schema and framing cases: close() with no coverage, missing implementation_refs and orchestrator_refs, a ledger with no header, and a directly noncanonical JSON line. Add any other explicitly enumerated frozen cases not currently exercised.; Add independently signed verification fixtures for each D24 rejection separately: missing and extra inventory ids, extra entry fields, unsorted entries, duplicates, negative, non-integer, unsafe counts, and skipped nonzero counts.; Prove descriptor closure with injected handles across each distinct failure stage, including header write, edge/status/trailer write, append validation, close validation, and explicit abort; fix thread-ledger.mjs if any added test exposes a lifecycle defect.",
+      "codex has hard stops: The frozen Task 3 unit/exit matrix is not satisfied by test-ledger.mjs, so the implementation is not acceptable AS-IS despite the deterministic gate passing."
+    ],
+    "warnings": []
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

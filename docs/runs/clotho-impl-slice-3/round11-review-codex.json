@@ -1,0 +1,39 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:bd5ff92b3950eafcdf5f40e9c3e540647205b109aa2d99cc0cfcea7c0dd63263",
+  "decision": "revise",
+  "required_edits": [
+    "Replace the affected `in`-based shape checks in status and coverage validation with exact own-enumerable key-set checks for the coverage object, each weaver entry, every count entry, and every `inventories_consumed` entry. Sign a normalized snapshot containing exactly the values that were validated, so getters/prototypes/non-enumerable properties cannot make emitted bytes diverge from validation. Add regressions proving malformed inherited/non-enumerable inputs cannot produce a successfully closed but unverifiable ledger.",
+    "Validate `version` according to the frozen integer requirement without adding the D24 safe-integer constraint; add close-time and independently signed verification coverage for that boundary.",
+    "Complete the missing frozen tests, including missing reference fields, header/trailer `status_of` rejection, byte-truncated final-line handling, independently signed semantic edge defects, and exact ordered completion of the gated streaming test.",
+    "Add a regression proving an injected Ed25519 public key is rejected as `signKey` before file creation, ensuring the accepted injected-key path is specifically a private key."
+  ],
+  "hard_stops": [
+    "The local closed-schema validators do not require required fields to be own enumerable properties. They use `in`, and the count/inventory-entry checks combine key-count tests with inherited-property lookup. Consequently, inherited or non-enumerable status/coverage fields can pass validation but be omitted by object spread or canonical JSON serialization, allowing `appendStatus()` or `close()` to report success while writing a ledger that `verifyLedger()` rejects.",
+    "`version` is constrained with `Number.isSafeInteger`, but frozen Task 3 specifies an integer version label; unlike D24 counts, it does not specify a safe-integer restriction. This is an unauthorized tightening of the manifest schema.",
+    "The test does not complete the explicitly frozen unit matrix. Concrete omissions include missing-field cases for `implementation_refs` and `orchestrator_refs`, explicit status references to header/trailer records, a genuinely truncated partial final line, independently signed mismatched-id/wrong-endpoint fixtures for verifier behavior, and an exact complete-and-ordered assertion after releasing the gated `readEdges` stream."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T20:32:32.382Z",
+  "rationale": "The principal implementation is substantially aligned: it uses the normative hash chain and raw-digest Ed25519 signature, canonical LF-terminated JSONL, one captured timestamp/keypair, exclusive `wx` creation, human-only status transitions, D24 count validation, D19's generic-integrity boundary, D29's enforceable skipped-count semantics, and poisoned descriptor lifecycle handling. It also correctly leaves D20/D28 publication to Task 5. Approval is nevertheless not supportable AS-IS because exact-shape validation can certify bytes different from the values it validated, the version schema is reinterpreted, and required proof cases are absent. The passing deterministic gate does not exercise these defects.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2N2xlTDVLSRciOBODvpibX8iuFZY",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T20:42:48.286Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "892c48dbf853127c35a36ae056a8bed27cf47314327d71260ec40b93969bbbb6",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

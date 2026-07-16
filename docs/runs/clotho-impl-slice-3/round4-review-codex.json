@@ -1,0 +1,44 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:1896b106e7788b7a0720b800cdabbfcc34d39cd94de0ab09cc8a3a6ce916b5e6",
+  "decision": "revise",
+  "required_edits": [
+    "Refactor verifyLedger to consume a stream incrementally with exact byte/UTF-8 and LF line handling. Reject every malformed line without throwing, never trust an unterminated final record, and preserve the records-before-first-failure rule.",
+    "Replace the coverage file-reference regex with strict validation of the complete file:<normalized repository-relative path>@<lowercase 40-hex blob SHA> form, rejecting absolute, traversal, backslash, empty, and otherwise invalid paths at both close and verification time.",
+    "Retain the successfully written trailer and make repeated close() calls after successful closure idempotent without another write; keep close() throwing after abort, poisoning, or a failed first close.",
+    "Require an actual Ed25519 private KeyObject for signing after accepted key conversion, enforce string repo_head/repository_ref values, and round-trip-check canonical Ed25519 SPKI base64 and canonical 64-byte signature base64 during verification.",
+    "Implement a write-all loop for the default descriptor so each canonical line plus LF is completely written before fsync/success is reported.",
+    "Expand test-ledger.mjs to cover every case enumerated by the frozen Task 3 unit checklist, including isolated independently signed verification fixtures and descriptor closure on injected write/close failure paths. Implement the incremental readEdges proof using Promise.race against a short timeout before releasing later chunks."
+  ],
+  "hard_stops": [
+    "verifyLedger does not incrementally parse the ledger: it buffers the entire file with readFileSync. It can also throw instead of returning {ok:false} for canonical JSON primitives such as a null header/record, and it may include an unterminated final edge in records despite that line failing the mandatory LF framing rule.",
+    "Manifest content-reference validation is not faithful. FILE_REF only checks /^file:(.+)@<sha>$/ and therefore accepts absolute paths, traversal paths, backslashes, and other non-repository-relative forms in implementation_refs, orchestrator_refs, and inventories_consumed.",
+    "close() is not idempotent after a successful first close; guard() makes every subsequent close throw, contrary to the explicit successful-close idempotence requirement.",
+    "Exact key and envelope encoding is under-validated. createLedger does not require signKey.type === \"private\" or strict string types for repoHead/repositoryRef, while verifyLedger accepts non-string repo_head values through RegExp coercion and accepts noncanonical base64 encodings of pub_key and signature.",
+    "defaultOpenFile performs a single unchecked writeSync call. A short write can produce a partial line while being treated as success, violating the complete LF-terminated-line requirement.",
+    "The test file omits substantial mandatory frozen coverage, including much of the malformed header/trailer matrix, locator repository_ref mismatch, complete append/status rejection coverage, isolated content-reference and D24 close/verification mutations, signed unknown-kind/id/endpoint/hash/signature fixtures, required removal/tail cases, close-after-abort and additional descriptor-failure paths. Its incremental-reader test also awaits iterator.next() without the required short-timeout race."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T19:17:39.899Z",
+  "rationale": "The central happy-path construction is substantially aligned: it uses exclusive wx creation, one captured timestamp and keypair, canonical chained records, SHA-256 of the prior signed line, SHA-256 of payload plus prev_hash, Ed25519 over the raw digest, human-only status transitions, injected generic coverage without committed-inventory coupling, skipped/count consistency checks, and no Task 5 publication mechanism. However, the verifier, exact schema validation, successful-close lifecycle, write completeness, and required proof suite have concrete frozen-scope defects, so the implementation is not acceptable as-is.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2LsUyqpf7pPWEAdxIg9r7lwWQebx",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T19:23:11.596Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "abfd4b9a617ef8ea1bfd7ed8e797a5ee276361da6b536fc4d2dbfc7bd15fb840",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:931a213e0d5b3f63ea8df94f496b545e8a6b3df28da640a65737708e6fd9c172",
+  "decision": "revise",
+  "required_edits": [
+    "Validate every record signature as canonical standard base64 with the exact Ed25519 signature length before verification; add an independently signed/non-resigned noncanonical-signature rejection test.",
+    "Parse ledger input incrementally as bytes, split on LF bytes, reject malformed UTF-8 with a fatal decoder, compare canonical JSON UTF-8 bytes exactly, and compute chain hashes from the exact prior line bytes. Add an invalid-UTF-8 signed fixture.",
+    "Rework descriptor state so closed/successful is committed only after handle.close() returns successfully; a close failure must leave the ledger poisoned and must not make close() or abort() report/no-op as if successful. Prove validation, write/fsync, and injected close-failure paths close or retry the descriptor as required.",
+    "Write each complete encoded line with a loop that handles short writeSync results and treats zero/failed progress as a poisoning write failure.",
+    "Complete the exact frozen Task 3 test inventory, including the mandated gated Promise.race timeout proof for readEdges and independently signed fixtures that isolate each verifier invariant."
+  ],
+  "hard_stops": [
+    "verifyLedger does not enforce canonical base64 for record signatures. Buffer.from(signature, \"base64\") accepts noncanonical encodings such as embedded whitespace; a final trailer signature can therefore be textually altered, canonically reserialized, and still verify without resigning.",
+    "verifyLedger decodes the stream lossily as UTF-8 strings and then re-encodes strings for chain hashing. Invalid UTF-8 bytes can decode to U+FFFD and be accepted as a canonically signed record, so prev_hash is not necessarily checked against the exact prior on-disk line bytes required by Task 3.",
+    "The D22 close lifecycle is incorrect when handle.close() throws: closeHandle marks the handle not open in finally, successful-close state is set before close returns, later close() can return the cached trailer as though closure succeeded, and abort() cannot retry closure. This violates poisoning, successful-close idempotence, and descriptor-closure requirements.",
+    "defaultOpenFile.write ignores the byte count returned by writeSync. A short write can be treated as a successful complete LF-terminated line and subsequently reported as a successful close.",
+    "The test file does not implement the frozen Task 3 unit matrix. Missing coverage includes many append/schema and repository_ref rejections, malformed/missing coverage fields and the full D24 rejection matrix at close and independently signed verification, close-after-abort and I/O-failure descriptor paths, malformed/missing headers, signed mismatched IDs and endpoint cases, noncanonical JSON, partial/tail-removal cases, and the required timeout race for incremental readEdges."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T19:43:34.500Z",
+  "rationale": "The implementation follows the intended architecture—exclusive wx creation, one ledger-owned timestamp/keypair, chained Ed25519 records, generic injected-fixture coverage, human-only status transitions, and no committed-inventory or spine dependency—but the remaining defects are normative rather than stylistic. In particular, signature encoding and exact-byte verification are part of the frozen envelope, and the close-state behavior directly violates D22. The deterministic gate is green but does not exercise the authoritative adversarial matrix, so it cannot establish Task 3 exit as written.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2MHYz2ieRNijAwdHDck9kqLePcC3",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T19:48:48.083Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "6635e730fa37b6395b1d1111c5dc4360d65416ad6d85f6aa6eb5645433943a17",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

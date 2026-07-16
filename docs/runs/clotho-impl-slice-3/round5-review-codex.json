@@ -1,0 +1,45 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:9cf141221d5af0606daca86f860e807f92ff5197e3933362abb9f13f4aaf5539",
+  "decision": "revise",
+  "required_edits": [
+    "Make a second and subsequent `close()` after a successful first close return idempotently without writing again, while preserving throwing behavior after an aborted or failed close. Store the completed trailer/result as needed, and mark the ledger successfully closed only after flush and descriptor close complete. Add a regression test.",
+    "Replace `FILE_REF` with validation of the frozen content-address grammar, including a normalized, nonempty repository-relative path and lowercase 40-hex blob SHA. Apply it uniformly to `implementation_refs`, `orchestrator_refs`, and `inventories_consumed[].source_ref`; add close-time and independently signed verification fixtures for absolute, traversal, malformed, empty, and missing references.",
+    "Require exact canonical base64 by decode-and-reencode equality. For `pub_key`, also require that re-exporting the parsed Ed25519 key as SPKI DER reproduces exactly the decoded bytes; for signatures require the canonical encoding of the expected Ed25519 signature length. Add independently signed noncanonical public-key and signature fixtures.",
+    "Validate exact own enumerable field sets for status inputs, coverage objects, weaver entries, count entries, and inventory entries. Do not allow inherited/non-enumerable values to satisfy required fields; ensure the serialized snapshot is the same structure that was validated. Add regression coverage.",
+    "Implement a write-all loop over the UTF-8 line buffer, including its LF, checking each `writeSync()` result and poisoning/closing on zero, short-write failure, fsync failure, or close failure.",
+    "Make `readEdges()` surface malformed complete lines instead of silently dropping them, structurally confirm that the skipped first record is a header, and yield only structurally parsed signed records/trailer without performing trust adjudication.",
+    "Complete the authoritative frozen unit matrix, including all specifically enumerated append, status, header/trailer, coverage-reference, D24, lifecycle, independently signed tamper, endpoint, chain-removal, and partial-line cases. Implement the incremental proof using `Promise.race` or equivalent with a short timeout before releasing the gated stream."
+  ],
+  "hard_stops": [
+    "`close()` is not idempotent after a successful close: its initial `guard()` throws whenever `state.closed` is true, contrary to the explicit requirement that only a successfully completed close be idempotent.",
+    "Content-address validation is incomplete. `FILE_REF` accepts absolute paths, traversal paths, backslashes, NULs, and other strings that are not valid repository-relative `file:<path>@<40-hex>` references. Such references can currently pass both `close()` and `verifyLedger()`.",
+    "`verifyLedger()` does not enforce canonical base64 for either the header SPKI public key or record signatures. Node's permissive base64 decoder accepts alternate encodings, such as omitted padding or ignored characters, so independently signed noncanonical ledgers can verify successfully.",
+    "Exact-shape validation can accept inherited or non-enumerable required properties because several validators use `in` rather than exact own enumerable key sets. `appendStatus()` or `close()` can consequently report success after signing a serialized record that omits fields used during validation; the resulting ledger then fails verification.",
+    "The default writer ignores the byte count returned by `writeSync()`. A short write can be treated as a successful complete LF-terminated line, violating the complete-line chain and descriptor-failure requirements.",
+    "The submitted tests do not cover the frozen Task 3 unit matrix. Material omissions include repeated successful-close idempotence, invalid edge appends and repository-ref disagreement, status-to-status back-reference rejection, the complete header/trailer cases, malformed/empty/missing coverage references, all D24 rejection classes at close and in independently signed fixtures, mismatched endpoint IDs and endpoint-kind combinations, and the mandated short-timeout race for incremental reading."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T19:27:36.259Z",
+  "rationale": "The central approach is substantially aligned with Task 3: it uses exclusive `wx` creation, one captured timestamp and Ed25519 keypair, the required hash/signature chain, LF output, human-only status transitions, poisoned-ledger descriptor closure for ordinary append/coverage failures, generic injected coverage without committed-inventory coupling, and an incremental reader. D20/D28 publication behavior was correctly left out. However, the defects above are directly observable violations of frozen schema, canonical-encoding, lifecycle, and test-proof requirements. The deterministic gate establishes that the files and broad tests pass, but it does not exercise these semantic cases. The implementation is therefore not acceptable AS-IS.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2M25g6zCj56hqAVqDtj5uBt79f7j",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T19:32:32.208Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "f694afea305159c4eb837280686e21b52cfee70537a9cd942a540fbef36ced20",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

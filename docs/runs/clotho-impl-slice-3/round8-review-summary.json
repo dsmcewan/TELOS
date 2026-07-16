@@ -1,0 +1,119 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "review_ref": "sha256:a35b3ab4977af5919e0651c235c3bdb8fc62702dcb7122630ea33592bd8c1b32",
+  "pr": 115,
+  "pr_head": "c8a8d6d809277a3ad9851d96fe721129d31ebc77",
+  "plan_ref": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3",
+  "authorization": "authz-005",
+  "timestamp": "2026-07-16T19:51:22.602Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "medium",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6KT28ynuhGQFCjo58gi",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-16T19:52:15.140Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2MP7ThQ1Kcgz8AMTBnJeAHmFU7AX",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-16T20:04:18.589Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "d7d0cf6f-e35f-9104-a093-45695668f37f",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-16T19:52:55.589Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "PDZZapWkDcGUmtkP37yZwQY",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-16T19:51:46.544Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "claude decision is 'revise', not 'approve'.",
+      "claude has required edits: thread-ledger.mjs close(): reorder so `state.closed = true` and `state.closeResult = record` are assigned only AFTER closeHandle() succeeds (write trailer -> closeHandle() -> then mark closed). Currently a closeSync failure poisons the ledger but leaves state.closed=true, so a second close() returns the trailer record as a successful idempotent close and abort() becomes a no-op on a ledger whose descriptor close failed — violating 'closes the descriptor, and only then reports success' and 'idempotent only after a successful first close'. Note the closeHandle try/finally sets state.open=false even on throw, so the fd is not leaked, but the success-reporting contract is still breached.; test-ledger.mjs: add the D22 test for descriptor-close failure during close() (injected handle whose close() throws) proving close() throws, the ledger is poisoned, and a retry close() throws rather than returning the trailer.; verifyLedger: on the first failing line, stop conferring ANY derived state from subsequent lines or short-circuit further processing beyond error collection; today `trailerSeen`, `prevLine`, and error attribution continue to evolve across the trust boundary. Minimal edit: after trustBroken, skip semantic validation and never set trailerSeen/manifest (manifest already guarded). Alternatively document that post-failure errors are advisory. The returned records/manifest gating is presently correct; this edit is for fidelity to 'returns only records before the first failing line or trailer-level invariant'.; test-ledger.mjs: the frozen unit list requires exercising EVERY permitted depends-on endpoint including repository-file -> code-symbol; only repository-file -> code-symbol is exercised (dependsEdge). Add the remaining permitted depends-on endpoint combinations per registry's edge table, plus a wrong-endpoint-kinds rejection case for depends-on (current suite has no wrong-endpoint test).; test-ledger.mjs: add missing D24 close-time rejection cases from the frozen list: non-integer count (e.g. 1.5), unsafe count (2**53), extra entry fields ({inventory_id, count, extra}), and duplicate entries with equal inventory_id (the sorted check covers <= but a dedicated duplicate fixture is enumerated in scope); also add malformed inventories_consumed ref and missing/empty implementation_refs (empty array) cases — currently only a non-file: ref is tested.; test-ledger.mjs: add a 'misplaced header' fixture (valid records first, header later than line 1 — distinct from duplicate-header) and a 'signed unknown kind' assertion that names the error, and a wrong-timestamp test at close level if distinct from the woven_at fixture already present. Add removal of a complete tail record PLUS the trailer (current tests drop trailer only or middle line only).",
+      "claude has hard stops: verifyLedger accepts a ledger whose FIRST predecessor is not the header only if chain check passes coincidentally — more precisely: after a mid-ledger failure, `edgeHashes`/`weaverEdgeIds`/`records` are frozen (good) but `prevLine` continues to advance and subsequent lines can still validate individually; combined with `manifest = obj.clotho_weave_trailer` guarded by `!trustBroken` this is safe for trust, BUT the spec-critical gap is different: `records` returned on failure may include records at indexes BEFORE the failing line even when the failing line is the header-adjacent line 2 — acceptable — however verifyLedger DOES NOT reject a woven_at in the header that is canonical ISO but does not match record timestamps only when the header itself failed: if the header fails validation, `header===null` causes every subsequent line to fail with 'precedes a valid header', which conforms. Withdrawn as hard stop after re-check — see required_edits for the real defects.; REAL HARD STOP 1 — verifyLedger records-truncation semantics deviate from spec: on a failing line, the spec requires returning 'only records before the first failing line'; the implementation freezes trust state via `!trustBroken` but CONTINUES processing and can still set `trailerSeen=true` and record errors from later lines while `prevLine` advances over an invalid line, meaning chain validation of subsequent lines is computed against a tampered predecessor and may 'pass' locally; trust is not conferred (records/manifest gated), so integrity holds, but the returned `errors` can misattribute later-line failures. This is a fidelity deviation, not an exploitable trust leak — demoted to required edit.; HARD STOP (genuine) — appendStatus records are added to neither `edgeHashes` nor any status-hash set in createLedger, and in verifyLedger status records push to `records` but their hashes are correctly NOT added to edgeHashes (spec-conforming). In createLedger, however, a status record CAN reference an edge that a LATER status record superseded — permitted (append-only). Withdrawn. The one defect I will stake the seat on: `close(coverage)` writes the trailer, sets closeResult/closed, then calls closeHandle() — if closeSync throws, poison() is invoked via catch, but `state.closed` is ALREADY true, so the poisoned+closed ledger's subsequent `close()` returns state.closeResult as if successful and `abort()` is a no-op — a close that FAILED to flush/close the descriptor reports success on retry. Spec: 'flushes, closes the descriptor, and only then reports success' and 'make close idempotent only after a SUCCESSFUL first close'. The ordering `state.closed = true; closeHandle();` violates this: descriptor-close failure yields a ledger that claims successful closure.",
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Refactor close() so the trailer write, flush, and descriptor close all succeed before state.closed/state.closeResult are committed. Any close failure must leave the object permanently poisoned, make all later append/close calls throw, and allow abort/poison cleanup rather than returning a cached success.; Make default writes all-or-error: encode the complete canonical line plus LF to bytes, loop until every byte is written, reject zero/short-write failure, fsync, and let the common poisoning path close the descriptor.; Process verification lines byte-exactly. Split on LF in raw bytes, reject invalid UTF-8 rather than accepting replacement decoding, compare canonical text only after strict decoding, and compute prev_hash from the exact prior line bytes. Apply compatible strict structural decoding to readEdges.; Validate version according to the frozen integer schema rather than imposing the D24 count-only safe-integer restriction, and add boundary fixtures demonstrating the distinction.; Expand test-ledger.mjs to cover every case enumerated in the frozen Units and incremental-reading bullets, including independently signed fixtures for every D24 schema rejection and Promise.race against a short timeout for the gated readEdges proof. Add regression tests for failed descriptor close state, actual write failure/short write cleanup, and invalid UTF-8/raw-byte chain handling.",
+      "codex has hard stops: D22 close semantics are incorrect when descriptor closure fails: close() sets state.closed and state.closeResult before handle.close() succeeds. The catch poisons the ledger, but subsequent close() returns the cached trailer and abort() becomes a no-op because both check state.closed first. Thus an unsuccessful first close can masquerade as a successful idempotent close.; The exact-line guarantee is not fully implemented. defaultOpenFile.write() ignores writeSync()'s returned byte count, so a short write can be treated as a successful complete LF-terminated record. Verification also decodes input as UTF-8 strings before hashing; replacement decoding of malformed UTF-8 can cause hashes to be checked against re-encoded text rather than the prior raw line bytes.; The submitted test does not provide the explicitly required frozen Task 3 unit coverage. Material omissions include the full append-rejection matrix, locator repository_ref mismatch, missing/empty manifest fields and malformed inventories_consumed refs, every D24 rejection at close and in independently signed fixtures, close-after-abort, descriptor closure on an actual write failure, noncanonical JSON lines, the permitted depends-on endpoint matrix and wrong endpoint kinds, a genuinely truncated final record, removal of a complete tail record plus trailer, and the mandated timeout race in the gated incremental-read proof."
+    ],
+    "warnings": []
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "review_ref": "sha256:1896b106e7788b7a0720b800cdabbfcc34d39cd94de0ab09cc8a3a6ce916b5e6",
+  "pr": 115,
+  "pr_head": "f7eb391e3cd21773df11b9d5738bada2b9018fc0",
+  "plan_ref": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3",
+  "authorization": "authz-005",
+  "timestamp": "2026-07-16T19:17:39.899Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "medium",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6GsuyzpsgSPyzoZqz8g",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-16T19:18:38.078Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2LsUyqpf7pPWEAdxIg9r7lwWQebx",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-16T19:23:11.596Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "c9e91e8e-9001-99b7-8973-335e09638aa5",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-16T19:19:06.238Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "VS5Zaq_KHMjQz7IPjJaioAI",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-16T19:18:09.632Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "claude decision is 'revise', not 'approve'.",
+      "claude has required edits: Add the frozen checklist's missing unit tests to clotho/scripts/test-ledger.mjs: duplicate header (second clotho_weave_header line mid-ledger) and misplaced header; duplicate trailer (two trailer lines); middle-line byte tamper is present via source_ref replacement — add explicit middle-line REMOVAL and removal of a complete tail record plus the trailer; altered signature (flip bytes in signature field, re-serialize canonically); altered record_hash; noncanonical line (valid JSON, non-canonical key order or whitespace); signed unknown kind (independently signed record that is neither edge, status, nor trailer shaped); mismatched ids (from_node/to_node not equal to re-derived locator ids) as a signed verification fixture; wrong endpoint kinds for a permitted edge_kind; every permitted depends-on endpoint pairing including repository-file -> code-symbol as distinct cases; wrong timestamp at appendEdge level if edgeInput may not carry woven_at (assert ledger strips/rejects caller-supplied woven_at per D5); non-integer count (e.g. 1.5), unsafe count (2**53), and extra field in a count entry; malformed inventories_consumed source_ref and non-object entry; malformed (non-array) and missing orchestrator_refs; close() with no argument; generated-key (no signKey) happy path through verifyLedger.; D5 tightening: appendEdge spreads edgeInput into the payload ({...edgeInput, woven_at}), so a caller-supplied woven_at, prev_hash, record_hash, or signature field in edgeInput would be silently overwritten or, worse, extra unknown fields would flow into the signed payload if validateEdgeInput tolerates them. Explicitly reject edgeInput containing any ledger-owned field (woven_at, prev_hash, record_hash, signature) rather than relying on spread-order overwrite, and add a unit proving weaver-supplied envelope fields are rejected (D5: weavers never emit time/signatures/hashes/chain fields).; verifyLedger: after the first fail(), the loop continues and later structurally-valid lines chained off tampered bytes produce no additional errors while prevLine advances; this is acceptable for trust (records are withheld) but consider (and test) that a tamper in line 2 of a 5-line ledger still yields ok:false with records:[] and manifest:null — add an assertion that NO suffix record after an early failure ever lands in records even when the suffix is internally chain-consistent.; Minor: defaultOpenFile writes line+LF then fsyncs per write — fine; but createLedger calls mkdirSync for the parent unconditionally when using the default handle, satisfying 'creates parent directories only for its requested file' — confirm with a unit that a nested nonexistent parent path succeeds and that an injected openFile path does NOT create directories.",
+      "claude has hard stops: verifyLedger does not require exactly one trailer as the FINAL record in the failure mode where the trailer is missing entirely yet edges verify: it reports ok:false via the 'ledger has no final trailer' error, which is correct, BUT a duplicate-trailer ledger (second trailer line after the first) is only caught as 'record after trailer' via the trailerSeen flag — acceptable — while a ledger whose FIRST line is a trailer-shaped record (misplaced trailer with no header) is only rejected by the header check; these paths are handled. The genuine hard stop is different: verifyLedger continues processing lines after a broken chain/tamper (fail() sets trustBroken but the loop continues and sets prevLine = line each iteration), so a tampered middle line followed by records chained off the TAMPERED bytes still validates their prev_hash against the tampered line; errors accumulate only for the first divergent line, and later lines can appear internally consistent. Records are correctly withheld (trustBroken), so trust is not conferred, but the spec requires returning only records before the first failing line — satisfied — and never conferring trust on a suffix — satisfied. Downgrading this from hard stop: chain semantics remain sound because prev_hash is recomputed from actual prior line bytes. RETRACTED as hard stop; see required_edits for the true blocking items.; Missing mandated unit coverage (Task 3 checklist is explicit and frozen): no test for duplicate header line (a second {clotho_weave_header} line mid-ledger), no test for duplicate trailer, no middle-line REMOVAL test (only trailer-drop and corrupt-edge-line are exercised; removal of a complete tail record plus the trailer is untested), no altered-signature test, no altered-record_hash test, no wrong-endpoint-kinds test, no signed-unknown-kind test, no mismatched-ids (from_node/to_node not matching re-derived locator ids) test at verify level, no noncanonical-line test, no test for every permitted depends-on endpoint including repository-file -> code-symbol beyond the single dependsEdge, no malformed/missing orchestrator_refs beyond empty-array, no malformed inventories_consumed ref test, no non-integer/unsafe count tests (only negative), no close-without-coverage-argument test (close() with undefined), and no test that generated-key path verifies. The checklist says 'Units cover ... every ...' — these are frozen exit criteria, not suggestions.; appendStatus does not add status records' record_hash exclusion semantics per spec, but more critically: verifyLedger validates status records against edgeHashes accumulated ONLY from trusted edges — correct — however createLedger.appendStatus allows a status record referencing an edge, and a SECOND status record referencing the SAME edge is permitted (append-only follow-ups are legal per D10), fine; the actual defect: statusInput validation in verifyLedger uses payload_forStatus which strips woven_at, but validateStatusInput requires source_ref via validateSourceRef — if registry.mjs validateSourceRef enforces repository binding, status records with foreign source_ref would pass/fail opaquely; cannot confirm from provided artifacts — flagged for review, not a confirmed stop.",
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Refactor verifyLedger to consume a stream incrementally with exact byte/UTF-8 and LF line handling. Reject every malformed line without throwing, never trust an unterminated final record, and preserve the records-before-first-failure rule.; Replace the coverage file-reference regex with strict validation of the complete file:<normalized repository-relative path>@<lowercase 40-hex blob SHA> form, rejecting absolute, traversal, backslash, empty, and otherwise invalid paths at both close and verification time.; Retain the successfully written trailer and make repeated close() calls after successful closure idempotent without another write; keep close() throwing after abort, poisoning, or a failed first close.; Require an actual Ed25519 private KeyObject for signing after accepted key conversion, enforce string repo_head/repository_ref values, and round-trip-check canonical Ed25519 SPKI base64 and canonical 64-byte signature base64 during verification.; Implement a write-all loop for the default descriptor so each canonical line plus LF is completely written before fsync/success is reported.; Expand test-ledger.mjs to cover every case enumerated by the frozen Task 3 unit checklist, including isolated independently signed verification fixtures and descriptor closure on injected write/close failure paths. Implement the incremental readEdges proof using Promise.race against a short timeout before releasing later chunks.",
+      "codex has hard stops: verifyLedger does not incrementally parse the ledger: it buffers the entire file with readFileSync. It can also throw instead of returning {ok:false} for canonical JSON primitives such as a null header/record, and it may include an unterminated final edge in records despite that line failing the mandatory LF framing rule.; Manifest content-reference validation is not faithful. FILE_REF only checks /^file:(.+)@<sha>$/ and therefore accepts absolute paths, traversal paths, backslashes, and other non-repository-relative forms in implementation_refs, orchestrator_refs, and inventories_consumed.; close() is not idempotent after a successful first close; guard() makes every subsequent close throw, contrary to the explicit successful-close idempotence requirement.; Exact key and envelope encoding is under-validated. createLedger does not require signKey.type === \"private\" or strict string types for repoHead/repositoryRef, while verifyLedger accepts non-string repo_head values through RegExp coercion and accepts noncanonical base64 encodings of pub_key and signature.; defaultOpenFile performs a single unchecked writeSync call. A short write can produce a partial line while being treated as success, violating the complete LF-terminated-line requirement.; The test file omits substantial mandatory frozen coverage, including much of the malformed header/trailer matrix, locator repository_ref mismatch, complete append/status rejection coverage, isolated content-reference and D24 close/verification mutations, signed unknown-kind/id/endpoint/hash/signature fixtures, required removal/tail cases, close-after-abort and additional descriptor-failure paths. Its incremental-reader test also awaits iterator.next() without the required short-timeout race."
+    ],
+    "warnings": [
+      "Grok advisory decision is 'revise'. Required models must explicitly resolve any concerns."
+    ]
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

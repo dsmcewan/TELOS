@@ -1,0 +1,44 @@
+{
+  "build_id": "clotho-task-3-review",
+  "use_case": "clotho-phase-1-task-3",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/thread-ledger.mjs",
+    "clotho/scripts/test-ledger.mjs"
+  ],
+  "proposal_ref": "sha256:781db291690071be54840fafbdf4459b1fb2bf8b2bea7214462c6dbcf058b843",
+  "decision": "revise",
+  "required_edits": [
+    "Replace requireFileRef with a shared strict validator that enforces canonical, normalized repository-relative file paths and a lowercase 40-hex blob SHA; use it uniformly in close and verification, with signed fixtures for absolute, traversal, backslash, empty-segment, and otherwise malformed paths.",
+    "Require canonical base64 by decoding and re-encoding pub_key and every signature for exact textual equality, validate the 64-byte Ed25519 signature length, and compare the parsed public key's canonical SPKI export with the header text. Decode ledger bytes incrementally with a stateful fatal UTF-8 decoder in verifyLedger; preserve multibyte boundaries in readEdges as well.",
+    "Require signKey.type === \"private\" and asymmetricKeyType === \"ed25519\" before opening or writing the ledger, covering KeyObject and supported serialized-key inputs.",
+    "Implement full-write looping over a UTF-8 Buffer until every byte including LF has been written, treating zero or incomplete writes as fatal before advancing state.prevLine.",
+    "Move closeResult/state.closed assignment until after trailer write, flush, and descriptor close all succeed. On any failure leave the ledger poisoned rather than closed, ensure later append/close throws, and retain idempotent abort behavior without falsely reporting successful closure.",
+    "Complete the authoritative Task 3 test matrix, including every listed append/schema/status/header/trailer/D24/tamper/descriptor-lifecycle case and a gated readEdges test that races iterator.next() against a finite timeout before releasing the remaining stream."
+  ],
+  "hard_stops": [
+    "Coverage content-reference validation is not faithful: requireFileRef only checks /^file:(.+)@<40-hex>$/ and therefore accepts absolute paths, traversal paths, backslashes, NULs, and other non-repository-relative forms. Task 3 requires valid repository-relative file content addresses for implementation_refs, orchestrator_refs, and inventories_consumed.source_ref.",
+    "Canonical encoding is not fully verified. Buffer.from(..., \"base64\") permissively accepts unpadded and otherwise noncanonical pub_key/signature spellings, and the exported canonical representation is never compared. In addition, createReadStream's UTF-8 replacement behavior can turn malformed bytes into a valid JavaScript string which is then compared and hashed as if it were the original canonical line.",
+    "The successful-close state transition violates D22: closeResult and state.closed are assigned before handle.close(). If descriptor closure throws, the ledger is poisoned but a later close() returns the cached trailer as though the first close succeeded, and abort() becomes a no-op.",
+    "Injected key validation checks only asymmetricKeyType. An Ed25519 public KeyObject passes that check, so createLedger writes a header instead of rejecting it immediately as not being an Ed25519 private key.",
+    "defaultOpenFile ignores writeSync's byte count. A short write can leave an incomplete line while fsync succeeds and state.prevLine advances to the full intended line, violating complete LF-terminated writes and exact chaining.",
+    "The submitted unit suite does not provide the frozen required coverage. Missing cases include repository_ref locator mismatch, edge-only rejection of a status-record back-reference, malformed/empty/missing coverage refs, malformed inventory refs, the complete D24 close-time and independently signed rejection matrix, all permitted depends-on endpoint pairs and wrong endpoint kinds, close-after-abort, partial-tail removal cases, and the required timeout race in the gated incremental-read proof."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T19:34:38.157Z",
+  "rationale": "The central design is substantially aligned: it uses the prescribed hash chain and raw-digest Ed25519 signing, keeps envelope/time ownership in the ledger, enforces human-only status transitions, applies the D24 required-id table without committed-inventory dependency, uses exclusive creation by default, and does not absorb Task 5 publication work. However, the content-address schema, canonical-byte verification, private-key admission, complete-write guarantee, and successful-only close semantics contain concrete faithfulness defects. The explicitly frozen test obligations are also materially incomplete, so this cannot be accepted AS-IS despite the deterministic gate result.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2M8uyJ5cbkKO9GvYVhNRlCF2RirF",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T19:40:43.901Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "af4fbe532da872d60439d27a55b6a163e12a0eae9cbd6b6207879e4f5c5a3105",
+    "signed_fields": "canonical-minus-signature"
+  }
+}
