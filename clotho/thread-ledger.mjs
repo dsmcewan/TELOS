@@ -34,6 +34,17 @@ const STATUS_TRANSITIONS = new Set(["human-authorized", "rejected", "superseded"
 // The five weaver ids in their stable declared (inventory) order. Task 3's
 // coverage carries exactly these five, in this order (v12 Task 3).
 const WEAVER_ORDER = ["clotho-git-weaver", "clotho-code-weaver", "clotho-test-weaver", "clotho-doc-weaver", "clotho-ledger-weaver"];
+// The frozen per-weaver required inventory-id table (v12 D24/D26/D31), sorted.
+// Task 3 requires each weaver's inspected_source_counts to carry EXACTLY these
+// ids (structure only — count cardinalities and committed-inventory equality are
+// the Task 5 driver's job, D19/D26/D29).
+const REQUIRED_INVENTORY_IDS = {
+  "clotho-git-weaver": ["package-files", "package-symbols"],
+  "clotho-code-weaver": ["package-modules"],
+  "clotho-test-weaver": ["package-manifests", "test-files"],
+  "clotho-doc-weaver": ["doc-files"],
+  "clotho-ledger-weaver": ["contract-files", "ledger-sources", "run-sources"]
+};
 
 // ---- crypto + line helpers ---------------------------------------------------
 
@@ -67,7 +78,7 @@ function requireFileRef(ref, label) {
   if (typeof ref !== "string" || !FILE_REF.test(ref)) throw new TypeError(`${label}: expected 'file:<path>@<40-hex>', got ${JSON.stringify(ref)}`);
 }
 
-function requireInspectedSourceCounts(counts, state, label) {
+function requireInspectedSourceCounts(counts, state, requiredIds, label) {
   if (!Array.isArray(counts)) throw new TypeError(`${label}: inspected_source_counts must be an array`);
   let prevId = null;
   for (const entry of counts) {
@@ -79,6 +90,13 @@ function requireInspectedSourceCounts(counts, state, label) {
     if (prevId !== null && entry.inventory_id <= prevId) throw new TypeError(`${label}: inspected_source_counts must be sorted and unique by inventory_id`);
     prevId = entry.inventory_id;
     if (state === "skipped" && entry.count !== 0) throw new TypeError(`${label}: skipped weaver must carry zero counts`);
+  }
+  // Exactly the weaver's frozen required inventory ids — no missing, no extra
+  // (the ids are already proven sorted+unique above, so a length + positional
+  // match is exact). Count cardinalities remain out of scope here (Task 5).
+  const ids = counts.map((e) => e.inventory_id);
+  if (ids.length !== requiredIds.length || ids.some((id, i) => id !== requiredIds[i])) {
+    throw new TypeError(`${label}: inspected_source_counts must carry exactly [${requiredIds.join(", ")}], got [${ids.join(", ")}]`);
   }
 }
 
@@ -103,7 +121,7 @@ function validateCoverage(coverage, weaverEdgeIds) {
     if (!PUBLISHED_STATES.has(w.state)) throw new TypeError(`coverage weaver[${w.id}].state: must be executed|skipped, got ${JSON.stringify(w.state)}`);
     if (!Array.isArray(w.implementation_refs) || w.implementation_refs.length === 0) throw new TypeError(`coverage weaver[${w.id}].implementation_refs: nonempty array`);
     for (const r of w.implementation_refs) requireFileRef(r, `coverage weaver[${w.id}].implementation_refs`);
-    requireInspectedSourceCounts(w.inspected_source_counts, w.state, `coverage weaver[${w.id}]`);
+    requireInspectedSourceCounts(w.inspected_source_counts, w.state, REQUIRED_INVENTORY_IDS[w.id], `coverage weaver[${w.id}]`);
     if (w.state === "skipped" && weaverEdgeIds.has(w.id)) throw new TypeError(`coverage weaver[${w.id}]: recorded 'skipped' but asserted an edge in this ledger`);
   }
   if (!Array.isArray(orchestrator_refs) || orchestrator_refs.length === 0) throw new TypeError("coverage.orchestrator_refs: nonempty array");
@@ -266,6 +284,8 @@ export async function verifyLedger(ledgerPath) {
     let sigOk = false;
     try { sigOk = typeof signature === "string" && !!pubKey && edVerify(null, Buffer.from(record_hash || "", "hex"), pubKey, Buffer.from(signature, "base64")); } catch { sigOk = false; }
     if (!sigOk) bad(`line ${i + 1}: invalid signature`);
+    // every record's woven_at must equal the header's single canonical timestamp
+    if (payload.woven_at !== header.woven_at) bad(`line ${i + 1}: woven_at does not equal the header woven_at`);
 
     if (obj.clotho_weave_trailer) {
       manifest = obj.clotho_weave_trailer;

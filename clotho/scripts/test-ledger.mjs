@@ -32,13 +32,18 @@ function anEdge() {
 function dependsEdge() {
   return { edge_kind: "depends-on", from_node: deriveNodeId(rfLoc), to_node: deriveNodeId(csLoc), from_locator: rfLoc, to_locator: csLoc, source_ref: SR, asserted_by: "clotho-code-weaver", assertion_status: "deterministic-extraction" };
 }
+const WEAVER_ORDER = ["clotho-git-weaver", "clotho-code-weaver", "clotho-test-weaver", "clotho-doc-weaver", "clotho-ledger-weaver"];
+const REQ = {
+  "clotho-git-weaver": ["package-files", "package-symbols"],
+  "clotho-code-weaver": ["package-modules"],
+  "clotho-test-weaver": ["package-manifests", "test-files"],
+  "clotho-doc-weaver": ["doc-files"],
+  "clotho-ledger-weaver": ["contract-files", "ledger-sources", "run-sources"]
+};
 function coverage({ gitState = "executed", codeState = "skipped" } = {}) {
-  const w = (id, state, invId) => ({ id, version: 1, implementation_refs: ["file:clotho/weavers/x.mjs@" + HEX40A], state, inspected_source_counts: [{ inventory_id: invId, count: state === "executed" ? 2 : 0 }] });
-  return {
-    weavers: [w("clotho-git-weaver", gitState, "git-sources"), w("clotho-code-weaver", codeState, "code-sources"), w("clotho-test-weaver", "skipped", "test-sources"), w("clotho-doc-weaver", "skipped", "doc-sources"), w("clotho-ledger-weaver", "skipped", "contract-files")],
-    orchestrator_refs: ["file:clotho/weave.mjs@" + HEX40A],
-    inventories_consumed: [{ id: "git-sources", source_ref: "file:clotho/inventory.mjs@" + HEX40A }]
-  };
+  const stateFor = (id) => id === "clotho-git-weaver" ? gitState : (id === "clotho-code-weaver" ? codeState : "skipped");
+  const w = (id) => { const state = stateFor(id); return { id, version: 1, implementation_refs: ["file:clotho/weavers/x.mjs@" + HEX40A], state, inspected_source_counts: REQ[id].map((inv) => ({ inventory_id: inv, count: state === "executed" ? 2 : 0 })) }; };
+  return { weavers: WEAVER_ORDER.map(w), orchestrator_refs: ["file:clotho/weave.mjs@" + HEX40A], inventories_consumed: [{ id: "git-sources", source_ref: "file:clotho/inventory.mjs@" + HEX40A }] };
 }
 
 // A minimal independent signer to build signed-but-adversarial fixtures.
@@ -58,7 +63,7 @@ function buildSignedLedger(p, { edges = [], statuses = [], manifest }) {
     lines.push(prevLine);
     return record_hash;
   };
-  for (const e of edges) hashes.push(sign({ ...e, woven_at: WOVEN }));
+  for (const e of edges) hashes.push(sign({ ...e, woven_at: e.woven_at ?? WOVEN }));
   for (const s of statuses) sign({ ...s, woven_at: WOVEN });
   if (manifest) sign({ clotho_weave_trailer: manifest, woven_at: WOVEN });
   writeFileSync(p, lines.join("\n") + "\n");
@@ -174,7 +179,9 @@ try {
     [(c) => { c.weavers[0].inspected_source_counts = [{ inventory_id: "a", count: -1 }]; }, /nonnegative/],
     [(c) => { c.weavers[0].implementation_refs = ["git:" + HEX40A]; }, /file:<path>@/],
     [(c) => { c.orchestrator_refs = []; }, /nonempty/],
-    [(c) => { c.weavers[0].extra = 1; }, /unexpected field/]
+    [(c) => { c.weavers[0].extra = 1; }, /unexpected field/],
+    [(c) => { c.weavers[0].inspected_source_counts = [{ inventory_id: "package-files", count: 1 }]; }, /carry exactly/],       // missing required id
+    [(c) => { c.weavers[3].inspected_source_counts = [{ inventory_id: "doc-files", count: 0 }, { inventory_id: "extra", count: 0 }]; }, /carry exactly/] // extra id
   ];
   for (const [mut, re] of covBad) {
     const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge());
@@ -294,6 +301,21 @@ try {
     const p = newPath();
     buildSignedLedger(p, { edges: [anEdge()], manifest: coverage({ gitState: "skipped" }) });
     assert.equal((await verifyLedger(p)).ok, false, "signed skipped-weaver-with-edge fails verify");
+  }
+  {
+    // a signed edge whose woven_at differs from the header fails verification
+    const p = newPath();
+    buildSignedLedger(p, { edges: [{ ...anEdge(), woven_at: "2020-01-01T00:00:00.000Z" }], manifest: coverage() });
+    const v = await verifyLedger(p);
+    assert.equal(v.ok, false, "wrong woven_at fails verify");
+    assert.ok(v.errors.some((x) => /woven_at/.test(x)));
+  }
+  {
+    // a signed manifest carrying the wrong inventory ids fails verification
+    const p = newPath();
+    const c = coverage(); c.weavers[0].inspected_source_counts = [{ inventory_id: "nope", count: 2 }, { inventory_id: "zzz", count: 2 }];
+    buildSignedLedger(p, { edges: [anEdge()], manifest: c });
+    assert.equal((await verifyLedger(p)).ok, false, "wrong inventory ids fail verify");
   }
   {
     // a signed ledger with a valid human supersedes edge verifies ok
