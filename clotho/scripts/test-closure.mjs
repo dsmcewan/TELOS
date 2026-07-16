@@ -2,13 +2,19 @@
 // test-closure.mjs — Task 4a. Proves the committed per-weaver implementation-file
 // inventories (D33) are EQUAL to the accepted relative module-load closures
 // derived from the real weaver modules with the SHARED classifier/resolver — the
-// inventories are proven, never trusted. Then hermetic fixtures prove: every
-// accepted load form contributes a closure edge; recursion, cycles, and an
-// apparently-unreachable literal dynamic import are handled; a permitted
-// merkle-dag helper is traversed; and missing/extra/nonexistent inventory
-// entries, unresolved/symlinked/escaping/forbidden targets, non-literal loads,
-// and comment/string lookalikes are all handled correctly (fatal or no-edge).
-// Directory symlinks use Windows junctions. Plain node:assert/strict.
+// inventories are proven, never trusted. The committed permitted-external policy
+// (PERMITTED_EXTERNAL_CLOSURE_FILES) is the SAME policy used in the normative
+// equality check. Then hermetic fixtures prove: every accepted load form
+// contributes a closure edge and cannot be omitted from the inventory; recursion,
+// cycles, and an apparently-unreachable literal dynamic import are handled; a
+// permitted merkle-dag helper is traversed; and every failure mode
+// (missing/extra/nonexistent inventory; unresolved/ambiguous-extension/symlinked/
+// non-regular/escaping/forbidden target; symlinked or out-of-scope entry;
+// non-literal loads; comment/string lookalikes) is handled correctly (fatal or
+// no-edge). The committed-inventory equality/existence check and the failure
+// fixtures share ONE harness. Directory symlinks use Windows junctions and must
+// RUN (a junction-creation failure fails the test, it is never skipped). Plain
+// node:assert/strict.
 
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync, symlinkSync, statSync, readFileSync } from "node:fs";
@@ -24,17 +30,32 @@ import { WEAVER_IMPL_FILES, WEAVER_ENTRY_MODULE, PERMITTED_EXTERNAL_CLOSURE_FILE
 const CLOTHO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const REPO_ROOT = path.resolve(CLOTHO, "..");
 
+// The ONE harness used for BOTH committed inventories and failure fixtures:
+// derive the closure, require exact set-and-order equality with the claimed
+// inventory, and require every claimed file to be a real regular file. Any
+// derivation-fatal condition, mismatch, or missing/non-regular entry -> false.
+function inventoryMatches(claimed, entryAbs, repoRoot, allowExternal = new Set()) {
+  let derived;
+  try { derived = deriveAcceptedClosure(entryAbs, { repoRoot, allowExternal }); }
+  catch { return false; }
+  if (claimed.length !== derived.length) return false;
+  for (let i = 0; i < claimed.length; i++) if (claimed[i] !== derived[i]) return false;
+  for (const rel of claimed) {
+    let st;
+    try { st = statSync(path.join(repoRoot, ...rel.split("/"))); } catch { return false; }
+    if (!st.isFile()) return false;
+  }
+  return true;
+}
+
 // ---- 1. committed inventories == derived closures (real weavers) -------------
+// Uses the SAME allowExternal policy the inventory commits.
 {
+  const allow = new Set(PERMITTED_EXTERNAL_CLOSURE_FILES);
   for (const id of Object.keys(WEAVER_ENTRY_MODULE)) {
     const entryAbs = path.join(REPO_ROOT, ...WEAVER_ENTRY_MODULE[id].split("/"));
-    const derived = deriveAcceptedClosure(entryAbs, { repoRoot: REPO_ROOT });
-    assert.deepEqual(WEAVER_IMPL_FILES[id], derived, `committed ${id} closure equals derived`);
-    // every committed file exists as a real regular file
-    for (const rel of WEAVER_IMPL_FILES[id]) {
-      const st = statSync(path.join(REPO_ROOT, ...rel.split("/")));
-      assert.ok(st.isFile(), `${rel} is a regular file`);
-    }
+    assert.ok(inventoryMatches(WEAVER_IMPL_FILES[id], entryAbs, REPO_ROOT, allow),
+      `committed ${id} inventory equals derived closure (with committed permitted-external policy)`);
   }
 }
 
@@ -59,6 +80,7 @@ const closureOf = (root, allowExternal = new Set()) =>
     "side-effect import": 'import "./helper.mjs";\n',
     "export {..} from": 'export { h } from "./helper.mjs";\n',
     "export * from": 'export * from "./helper.mjs";\n',
+    "export * as ns from": 'export * as ns from "./helper.mjs";\n',
     "dynamic import()": 'export const p = import("./helper.mjs");\n',
     "require()": 'export const r = require("./helper.mjs");\n',
     "module.require()": 'export const r = module.require("./helper.mjs");\n'
@@ -67,6 +89,9 @@ const closureOf = (root, allowExternal = new Set()) =>
     const root = mkRepo({ "clotho/entry.mjs": entrySrc, "clotho/helper.mjs": "export const h = 1;\n" });
     try {
       assert.deepEqual(closureOf(root), ["clotho/entry.mjs", "clotho/helper.mjs"], `form: ${label}`);
+      // an inventory OMITTING the form-only-reached member FAILS the harness
+      assert.equal(inventoryMatches(["clotho/entry.mjs"], entryOf(root), root), false,
+        `omission of a member reached only via ${label} fails equality`);
     } finally { rmSync(root, { recursive: true, force: true }); }
   }
 }
@@ -124,28 +149,44 @@ const closureOf = (root, allowExternal = new Set()) =>
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
 
-// ---- 5. inventory equality failures (missing / extra / nonexistent) ----------
+// ---- 5. inventory equality failures through the shared harness ---------------
 {
   const root = mkRepo({
     "clotho/entry.mjs": 'import { h } from "./helper.mjs";\n',
-    "clotho/helper.mjs": "export const h = 1;\n"
+    "clotho/helper.mjs": "export const h = 1;\n",
+    "clotho/extra.mjs": "export const x = 1;\n" // a real but unreachable file
   });
   try {
-    const derived = closureOf(root); // ["clotho/entry.mjs","clotho/helper.mjs"]
-    // an inventory missing a closure file fails equality
-    assert.notDeepEqual(["clotho/entry.mjs"], derived);
-    // an inventory listing an extra (unreachable) file fails equality
-    assert.notDeepEqual([...derived, "clotho/extra.mjs"].sort(), derived);
-    // an inventory naming a nonexistent file fails the existence check
-    assert.throws(() => statSync(path.join(root, "clotho", "nope.mjs")), /ENOENT/);
+    // exact match holds
+    assert.equal(inventoryMatches(["clotho/entry.mjs", "clotho/helper.mjs"], entryOf(root), root), true);
+    // missing a closure file fails
+    assert.equal(inventoryMatches(["clotho/entry.mjs"], entryOf(root), root), false, "missing member fails");
+    // an extra (real but unreachable) file fails
+    assert.equal(inventoryMatches(["clotho/entry.mjs", "clotho/extra.mjs", "clotho/helper.mjs"], entryOf(root), root), false, "extra file fails");
+    // a nonexistent claimed file fails (equality and/or existence)
+    assert.equal(inventoryMatches(["clotho/entry.mjs", "clotho/nope.mjs"], entryOf(root), root), false, "nonexistent file fails");
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
 
-// ---- 6. fatal targets: unresolved / symlink / escape / forbidden -------------
+// ---- 6. derivation-fatal targets --------------------------------------------
 {
   // unresolved (literal relative specifier to a missing file)
   let root = mkRepo({ "clotho/entry.mjs": 'import { h } from "./missing.mjs";\n' });
   try { assert.throws(() => closureOf(root), /unresolved/); }
+  finally { rmSync(root, { recursive: true, force: true }); }
+
+  // ambiguous extension: extensionless and non-.mjs relative specifiers are fatal
+  root = mkRepo({ "clotho/entry.mjs": 'import { h } from "./helper";\n', "clotho/helper.mjs": "export const h=1;\n" });
+  try { assert.throws(() => closureOf(root), /ambiguous-extension/); }
+  finally { rmSync(root, { recursive: true, force: true }); }
+  root = mkRepo({ "clotho/entry.mjs": 'import { h } from "./helper.js";\n', "clotho/helper.js": "export const h=1;\n" });
+  try { assert.throws(() => closureOf(root), /ambiguous-extension/); }
+  finally { rmSync(root, { recursive: true, force: true }); }
+
+  // non-regular target: a directory named like a module is fatal
+  root = mkRepo({ "clotho/entry.mjs": 'import { h } from "./dir.mjs";\n' });
+  mkdirSync(path.join(root, "clotho", "dir.mjs"), { recursive: true });
+  try { assert.throws(() => closureOf(root), /non-regular/); }
   finally { rmSync(root, { recursive: true, force: true }); }
 
   // physical escape (literal relative specifier leaving the repo)
@@ -161,17 +202,35 @@ const closureOf = (root, allowExternal = new Set()) =>
   try { assert.throws(() => closureOf(root), /forbidden/); }
   finally { rmSync(root, { recursive: true, force: true }); }
 
-  // symlinked component in the resolved chain (junction) is fatal
+  // symlinked component in the resolved chain (junction) is fatal — must run
   root = mkRepo({
     "clotho/entry.mjs": 'import { h } from "./linkdir/helper.mjs";\n',
     "clotho/realdir/helper.mjs": "export const h = 1;\n"
   });
-  let junctionsWork = true;
-  try { symlinkSync(path.join(root, "clotho", "realdir"), path.join(root, "clotho", "linkdir"), "junction"); }
-  catch { junctionsWork = false; }
+  symlinkSync(path.join(root, "clotho", "realdir"), path.join(root, "clotho", "linkdir"), "junction");
+  try { assert.throws(() => closureOf(root), /symlink/); }
+  finally { rmSync(root, { recursive: true, force: true }); }
+}
+
+// ---- 6b. the ENTRY undergoes the same checks as a resolved target -----------
+{
+  // entry reached through a symlinked directory component -> fatal (junction)
+  let root = mkRepo({ "clotho/realdir/entry.mjs": "export const e = 1;\n" });
+  symlinkSync(path.join(root, "clotho", "realdir"), path.join(root, "clotho", "linkdir"), "junction");
   try {
-    if (junctionsWork) assert.throws(() => closureOf(root), /symlink/);
-    else console.error("test-closure: NOTE junctions unavailable; symlink-target case skipped");
+    assert.throws(() => deriveAcceptedClosure(path.join(root, "clotho", "linkdir", "entry.mjs"), { repoRoot: root }), /symlink/);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+
+  // entry outside the admissible set (not under clotho/, not permitted) -> escape
+  root = mkRepo({ "other/entry.mjs": "export const e = 1;\n" });
+  try {
+    assert.throws(() => deriveAcceptedClosure(path.join(root, "other", "entry.mjs"), { repoRoot: root }), /escape/);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+
+  // a nonexistent entry -> fatal
+  root = mkRepo({ "clotho/keep.mjs": "export const k = 1;\n" });
+  try {
+    assert.throws(() => deriveAcceptedClosure(path.join(root, "clotho", "ghost.mjs"), { repoRoot: root }), /does not exist/);
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
 
@@ -208,24 +267,38 @@ const closureOf = (root, allowExternal = new Set()) =>
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
 
-// ---- 9. AM-34 test 19: a single shared classifier + resolver -----------------
-// The closure derivation consumes util's exported classifier and resolver; no
-// other clotho module defines a competing classifier/resolver, so the Task 5
-// advisory outbound scanner will import the SAME exports.
+// ---- 9. AM-34 test 19: ONE shared classifier + resolver, both consumers ------
+// The closure derivation consumes util's exported classifier and resolver; the
+// code weaver consumes the SAME exported resolver; no other clotho module defines
+// a competing classifier/resolver or a second relative-specifier resolution
+// (join+normalize+extension append). The Task 5 advisory scanner will import the
+// same exports.
 {
   assert.equal(typeof deriveAcceptedClosure, "function");
   assert.equal(typeof resolveRelativeSpecifier, "function");
   assert.equal(typeof classifyModuleLoads, "function");
+
   const defs = { classifyModuleLoads: [], resolveRelativeSpecifier: [] };
   for (const rel of walkFiles(REPO_ROOT, ["clotho"])) {
     if (!rel.endsWith(".mjs")) continue;
     const abs = path.join(REPO_ROOT, ...rel.split("/"));
-    const src = statSync(abs).isFile() ? readFileSync(abs, "utf8") : "";
+    const src = readFileSync(abs, "utf8");
     if (/function\s+classifyModuleLoads\s*\(/.test(src)) defs.classifyModuleLoads.push(rel);
     if (/function\s+resolveRelativeSpecifier\s*\(/.test(src)) defs.resolveRelativeSpecifier.push(rel);
+    // no clotho module other than util may append a `.mjs` extension itself (a
+    // second, closure-only resolver): the shared resolver is the sole authority.
+    if (rel !== "clotho/weavers/util.mjs") {
+      assert.ok(!/\+=\s*["']\.mjs["']/.test(src), `${rel} must not append a .mjs extension (only the shared resolver resolves specifiers)`);
+    }
   }
   assert.deepEqual(defs.classifyModuleLoads, ["clotho/weavers/util.mjs"], "one classifier, in util");
   assert.deepEqual(defs.resolveRelativeSpecifier, ["clotho/weavers/util.mjs"], "one resolver, in util");
+
+  // the code weaver consumes the SHARED resolver by name from util
+  const codeSrc = readFileSync(path.join(CLOTHO, "weavers", "code.mjs"), "utf8");
+  assert.match(codeSrc, /import\s*\{[^}]*\bresolveRelativeSpecifier\b[^}]*\}\s*from\s*["']\.\/util\.mjs["']/,
+    "code.mjs imports the shared resolveRelativeSpecifier from util");
+
   assert.ok(PERMITTED_EXTERNAL_CLOSURE_FILES.includes("merkle-dag/vendor.mjs"));
 }
 

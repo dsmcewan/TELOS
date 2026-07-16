@@ -104,9 +104,11 @@ try {
   // comments/strings do not count as a use (commentstr.mjs) -> no edge
   assert.equal(edges.filter((e) => e.from_node === cs("pkg-b/commentstr.mjs", "c")).length, 0, "comment/string is not a use");
 
-  // unrepresentable-consumer ONLY for the unresolvable specifier
+  // unrepresentable-consumer ONLY for the unresolvable specifier — structured,
+  // producer-attributed warning (D10/AM-39)
   assert.equal(warnings.length, 1);
-  assert.match(warnings[0], /unrepresentable-consumer: pkg-b\/unresolved\.mjs/);
+  assert.equal(warnings[0].weaver, "clotho-code-weaver");
+  assert.match(warnings[0].message, /unrepresentable-consumer: pkg-b\/unresolved\.mjs/);
 
   // byte-equal over two runs
   const run2 = weave(mkCtx().ctx);

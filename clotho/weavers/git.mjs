@@ -53,7 +53,7 @@ export function weave(ctx) {
     const { path, symbol, blob_sha } = sym;
     const out = git(["log", `-S${symbol}`, "--format=%H", "--reverse", "--", path]);
     const shas = parseShaLines(out);
-    if (shas.length === 0) { warnings.push(`git-weaver: no introducing commit for symbol ${symbol} in ${path}`); continue; }
+    if (shas.length === 0) { warnings.push({ weaver: WEAVER_ID, message: `no introducing commit for symbol ${symbol} in ${path}` }); continue; }
     pushEdge({ kind: "code-symbol", locator: { repository_ref: repositoryRef, path, symbol, blob_sha } }, shas[0]);
   }
 
@@ -62,7 +62,7 @@ export function weave(ctx) {
     const { path, blob_sha } = file;
     const out = git(["log", "--format=%H", "--reverse", "--", path]);
     const shas = parseShaLines(out);
-    if (shas.length === 0) { warnings.push(`git-weaver: no introducing commit for file ${path}`); continue; }
+    if (shas.length === 0) { warnings.push({ weaver: WEAVER_ID, message: `no introducing commit for file ${path}` }); continue; }
     pushEdge({ kind: "repository-file", locator: { repository_ref: repositoryRef, path, blob_sha } }, shas[0]);
   }
 

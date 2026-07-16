@@ -13,21 +13,9 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { deriveNodeId, validateEdgeInput } from "../registry.mjs";
-import { scanImports, identifierUsedOutside } from "./util.mjs";
+import { scanImports, identifierUsedOutside, resolveRelativeSpecifier } from "./util.mjs";
 
 const WEAVER_ID = "clotho-code-weaver";
-
-// Resolve a relative specifier to a repository-relative POSIX module path,
-// lexically (from the consuming module's directory). Only "./"/"../" specifiers
-// are candidates; a `.mjs` extension is appended when the specifier omits one.
-function resolveModulePath(fromRepoPath, specifier) {
-  if (!(specifier.startsWith("./") || specifier.startsWith("../"))) return null;
-  const dir = path.posix.dirname(fromRepoPath);
-  let target = path.posix.normalize(path.posix.join(dir, specifier));
-  if (target.startsWith("..") || target.startsWith("/")) return null; // escapes the tree
-  if (!path.posix.extname(target)) target += ".mjs";
-  return target;
-}
 
 export function weave(ctx) {
   const { repoRoot, repositoryRef, sources } = ctx;
@@ -68,8 +56,9 @@ export function weave(ctx) {
   for (const mod of sources["package-modules"]) {
     const modPath = mod.path;
     const modBlob = mod.blob_sha;
+    const modAbs = path.join(repoRoot, ...modPath.split("/"));
     const sourceRef = `file:${modPath}@${modBlob}`;
-    const source = readFileSync(path.join(repoRoot, ...modPath.split("/")), "utf8");
+    const source = readFileSync(modAbs, "utf8");
     const imports = scanImports(source);
     const importSpans = imports.map((i) => i.span);
 
@@ -82,13 +71,16 @@ export function weave(ctx) {
       : [repoFileLoc(modPath, modBlob)];
 
     for (const imp of imports) {
-      const targetPath = resolveModulePath(modPath, imp.specifier);
       // Only relative specifiers are file references; bare/node: are ignored.
       if (!(imp.specifier.startsWith("./") || imp.specifier.startsWith("../"))) continue;
-      if (targetPath === null || !fileBlob.has(targetPath)) {
-        warnings.push(`unrepresentable-consumer: ${modPath} imports ${JSON.stringify(imp.specifier)} (no seeded file below closed roots)`);
+      // Specifier -> path via the ONE shared resolver (D33); the seeded-file
+      // membership test below is the code weaver's own extraction-grammar filter.
+      const r = resolveRelativeSpecifier(modAbs, imp.specifier, { repoRoot });
+      if (!r.ok || !fileBlob.has(r.repoRelative)) {
+        warnings.push({ weaver: WEAVER_ID, message: `unrepresentable-consumer: ${modPath} imports ${JSON.stringify(imp.specifier)} (no seeded file below closed roots)` });
         continue;
       }
+      const targetPath = r.repoRelative;
       const targetBlob = fileBlob.get(targetPath);
       const targetExports = exportsByPath.get(targetPath) || new Map();
 

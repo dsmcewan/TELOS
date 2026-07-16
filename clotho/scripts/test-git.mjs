@@ -92,7 +92,23 @@ function ctxOf(git, symbols, files) {
   const { edges, warnings } = weave(ctx);
   assert.equal(edges.length, 0);
   assert.equal(warnings.length, 1);
-  assert.match(warnings[0], /no introducing commit for symbol gone/);
+  // structured, producer-attributed warning (D10/AM-39): weaver id + message
+  assert.equal(warnings[0].weaver, "clotho-git-weaver");
+  assert.match(warnings[0].message, /no introducing commit for symbol gone/);
+}
+
+// ---- 2b. -S<symbol> with a regex metacharacter is ONE verbatim argv token ----
+{
+  // `$` is a regex metacharacter AND a legal JS identifier char, so it is a
+  // seedable symbol; it must be passed as a single "-S<symbol>" token, verbatim,
+  // never re-interpreted (execFileSync, no shell — no metacharacter expansion).
+  const symbols = [{ path: "clotho/x.mjs", symbol: "a$b", blob_sha: BLOB }];
+  const { git, calls } = mockGit({ [`log -Sa$b --format=%H --reverse -- clotho/x.mjs`]: `${SHA1}\n` });
+  const { ctx } = ctxOf(git, symbols, []);
+  const { edges } = weave(ctx);
+  assert.equal(edges.length, 1);
+  assert.deepEqual(calls[0], ["log", "-Sa$b", "--format=%H", "--reverse", "--", "clotho/x.mjs"]);
+  assert.equal(calls[0][1], "-Sa$b");
 }
 
 // ---- 3. malformed git output is fatal ---------------------------------------

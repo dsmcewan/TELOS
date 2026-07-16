@@ -35,26 +35,47 @@ export function escapeRegExp(s) {
 // template specifier is treated as non-literal). Regex literals are not treated
 // as strings; they are masked as code (specifiers are never regexes).
 
+// Chars after which a `/` begins a REGEX literal (expression position) rather
+// than division. Conservative: after any value-terminating token (identifier,
+// `)`, `]`, string, template) a `/` is division; everywhere else it is a regex.
+const REGEX_PREFIX = new Set("([{,;=:?!&|^~+-*%<>".split(""));
+function regexAllowedAfter(prevSig) { return prevSig === "" || prevSig === "\n" || REGEX_PREFIX.has(prevSig); }
+
 export function lex(source) {
   const n = source.length;
   const keep = new Uint8Array(n); // 1 = code byte to preserve; 0 = blank to space
   const strings = new Map(); // openQuoteIndex -> { end, value, plain:true }
   const templates = new Set(); // opening-backtick index
+  // Mode stack. "code" frames are the top level OR a template `${ ... }`
+  // substitution (subst:true, `brace` = unmatched "{" opened since the "${").
+  // "template" frames blank literal text but yield to "code" inside "${...}".
+  const stack = [{ mode: "code", subst: false, brace: 0 }];
+  let prevSig = ""; // last significant (non-space) code char, for regex detection
   let i = 0;
   while (i < n) {
-    const c = source[i];
-    const c2 = source[i + 1];
-    if (c === "/" && c2 === "/") {
-      i += 2;
-      while (i < n && source[i] !== "\n") i++;
+    const top = stack[stack.length - 1];
+    if (top.mode === "template") {
+      const c = source[i];
+      if (c === "\\") { i += 2; continue; }                 // escaped template char: blanked
+      if (c === "`") { keep[i] = 1; i++; stack.pop(); prevSig = "`"; continue; }
+      if (c === "$" && source[i + 1] === "{") {              // enter substitution code
+        keep[i] = 1; keep[i + 1] = 1; i += 2;
+        stack.push({ mode: "code", subst: true, brace: 0 });
+        prevSig = "{";
+        continue;
+      }
+      i++;                                                   // ordinary template text: blanked
       continue;
     }
-    if (c === "/" && c2 === "*") {
-      i += 2;
-      while (i < n && !(source[i] === "*" && source[i + 1] === "/")) i++;
-      i += 2;
-      continue;
+    // ---- code mode ----
+    const c = source[i], c2 = source[i + 1];
+    if (c === "}" && top.subst && top.brace === 0) {         // close the "${...}"
+      keep[i] = 1; i++; stack.pop(); prevSig = "}"; continue;
     }
+    if (c === "{") { if (top.subst) top.brace++; keep[i] = 1; i++; prevSig = "{"; continue; }
+    if (c === "}") { if (top.subst && top.brace > 0) top.brace--; keep[i] = 1; i++; prevSig = "}"; continue; }
+    if (c === "/" && c2 === "/") { i += 2; while (i < n && source[i] !== "\n") i++; continue; }
+    if (c === "/" && c2 === "*") { i += 2; while (i < n && !(source[i] === "*" && source[i + 1] === "/")) i++; i += 2; continue; }
     if (c === '"' || c === "'") {
       const open = i;
       keep[open] = 1; // preserve the opening quote position
@@ -69,24 +90,37 @@ export function lex(source) {
       const closed = i < n && source[i] === c;
       if (closed) { keep[i] = 1; i++; }
       strings.set(open, { end: closed ? i : n, value, plain: true });
+      prevSig = c;
       continue;
     }
     if (c === "`") {
-      const open = i;
-      keep[open] = 1;
-      templates.add(open);
+      keep[i] = 1;
+      templates.add(i);
       i++;
-      let depth = 0;
+      stack.push({ mode: "template" });
+      prevSig = "`";
+      continue;
+    }
+    if (c === "/" && regexAllowedAfter(prevSig)) {
+      // Regex literal: blank the whole literal (interior + delimiters + flags) so
+      // a `from "x"` / `import(` inside a regex can never manufacture a load site.
+      i++; // consume opening "/"
+      let inClass = false;
       while (i < n) {
-        if (source[i] === "\\") { i += 2; continue; }
-        if (source[i] === "`" && depth === 0) { keep[i] = 1; i++; break; }
-        if (source[i] === "$" && source[i + 1] === "{") { depth++; i += 2; continue; }
-        if (source[i] === "}" && depth > 0) { depth--; i++; continue; }
+        const ch = source[i];
+        if (ch === "\\") { i += 2; continue; }
+        if (ch === "\n") break;                 // unterminated regex: bail
+        if (ch === "[") { inClass = true; i++; continue; }
+        if (ch === "]") { inClass = false; i++; continue; }
+        if (ch === "/" && !inClass) { i++; break; } // closing "/"
         i++;
       }
+      while (i < n && /[A-Za-z]/.test(source[i])) i++; // consume regex flags (blanked)
+      prevSig = "/"; // after a regex literal a following "/" is division
       continue;
     }
     keep[i] = 1; // ordinary code byte
+    if (!/\s/.test(c)) prevSig = c;
     i++;
   }
   let masked = "";
@@ -122,57 +156,64 @@ export function classifyModuleLoads(source) {
     while (k < masked.length && masked[k] === " ") k++;
     return masked[k] === ")" ? s.value : null;
   };
+  const fromClauseRe = /(?<![A-Za-z0-9_$])from\s*["']/;
 
-  // from-clauses: static import / export-from / export-star.
-  const fromRe = /(?<![A-Za-z0-9_$])from\s*["']/g;
-  for (let m; (m = fromRe.exec(masked)); ) {
-    const quoteIdx = m.index + m[0].length - 1;
-    const s = strings.get(quoteIdx);
+  // ---- statement forms: import ... / export ... --------------------------------
+  // Scan each import/export keyword (never a member `.import`/`.export`) and parse
+  // FORWARD, bounded by the next such keyword, so a from-clause is bound to its
+  // OWN governing keyword rather than the nearest one preceding it anywhere.
+  const kwRe = /(?<![A-Za-z0-9_$.])(import|export)(?![A-Za-z0-9_$])/g;
+  const kws = [];
+  for (let m; (m = kwRe.exec(masked)); ) kws.push({ idx: m.index, word: m[1], end: m.index + m[1].length });
+  for (let a = 0; a < kws.length; a++) {
+    const kw = kws[a];
+    const bound = a + 1 < kws.length ? kws[a + 1].idx : masked.length;
+    let p = kw.end;
+    while (p < bound && masked[p] === " ") p++;
+    if (kw.word === "import") {
+      if (masked[p] === "(") continue;        // dynamic import(): a call form, below
+      if (masked[p] === ".") continue;        // import.meta — not a module load
+      if (masked[p] === '"' || masked[p] === "'") {
+        const s = strings.get(p);             // side-effect: import "x"
+        if (s) sites.push({ form: "import-side-effect", specifier: s.value, literal: true });
+        continue;
+      }
+      const region = masked.slice(p, bound);  // static import: clause ... from "x"
+      const fm = fromClauseRe.exec(region);
+      if (fm) {
+        const s = strings.get(p + fm.index + fm[0].length - 1);
+        if (s) sites.push({ form: "import", specifier: s.value, literal: true });
+      }
+      continue;
+    }
+    // export: a module load only when the statement has a `from "x"` clause.
+    const region = masked.slice(kw.end, bound);
+    const fm = fromClauseRe.exec(region);
+    if (!fm) continue;                        // export const/function/class/default/{...} (no from)
+    const s = strings.get(kw.end + fm.index + fm[0].length - 1);
     if (!s) continue;
-    // The nearest preceding import/export keyword governs this from-clause.
-    const head = masked.slice(0, m.index);
-    const kwRe = /(?<![A-Za-z0-9_$])(import|export)(?![A-Za-z0-9_$])/g;
-    let last = null;
-    for (let mm; (mm = kwRe.exec(head)); ) last = mm;
-    if (!last) continue;
-    const region = head.slice(last.index);
-    let form;
-    if (last[1] === "import") form = "import";
-    else form = /\*/.test(region) ? "export-star" : "export-from";
-    sites.push({ form, specifier: s.value, literal: true });
+    const between = region.slice(0, fm.index); // `export * [as ns] from` -> export-star
+    sites.push({ form: /\*/.test(between) ? "export-star" : "export-from", specifier: s.value, literal: true });
   }
 
-  // side-effect imports: import "x"  (a quote directly after import, no `from`)
-  const sideRe = /(?<![A-Za-z0-9_$])import\s*["']/g;
-  for (let m; (m = sideRe.exec(masked)); ) {
-    const quoteIdx = m.index + m[0].length - 1;
-    const s = strings.get(quoteIdx);
-    if (s) sites.push({ form: "import-side-effect", specifier: s.value, literal: true });
-  }
-
-  // dynamic import: import( ... )
-  const dynRe = /(?<![A-Za-z0-9_$])import\s*\(/g;
+  // ---- call forms: dynamic import() / require() / module.require() -------------
+  // The lookbehind excludes a preceding "." so member calls (obj.import(...),
+  // a.module.require(...), o.require(...)) are NOT accepted loader forms.
+  const dynRe = /(?<![A-Za-z0-9_$.])import\s*\(/g;
   for (let m; (m = dynRe.exec(masked)); ) {
     const paren = m.index + m[0].length - 1;
     const value = literalAt(paren);
     sites.push({ form: "dynamic-import", specifier: value, literal: value !== null });
   }
-
-  // module.require( ... )
-  const modReqRe = /(?<![A-Za-z0-9_$])module\s*\.\s*require\s*\(/g;
-  const modReqParens = new Set();
+  const modReqRe = /(?<![A-Za-z0-9_$.])module\s*\.\s*require\s*\(/g;
   for (let m; (m = modReqRe.exec(masked)); ) {
     const paren = m.index + m[0].length - 1;
-    modReqParens.add(paren);
     const value = literalAt(paren);
     sites.push({ form: "module-require", specifier: value, literal: value !== null });
   }
-
-  // require( ... ) — standalone, NOT preceded by a dot (so not module.require)
   const reqRe = /(?<![A-Za-z0-9_$.])require\s*\(/g;
   for (let m; (m = reqRe.exec(masked)); ) {
     const paren = m.index + m[0].length - 1;
-    if (modReqParens.has(paren)) continue;
     const value = literalAt(paren);
     sites.push({ form: "require", specifier: value, literal: value !== null });
   }
@@ -210,48 +251,71 @@ function containmentReal(repoRootReal, absTarget) {
   return { ok: true, missing: false };
 }
 
-export function resolveRelativeSpecifier(fromFileAbs, specifier, { repoRoot, allowExternal = new Set() } = {}) {
+// The ONE relative-specifier resolver (D33), consumed by BOTH the closure
+// derivation and the code weaver. It performs only the SHARED mechanics — an
+// EXPLICIT `.mjs` extension (no appending, no other extension), resolution under
+// the importing file's directory, physical containment within the repo root, and
+// a real regular-file, non-symlink target — and returns the resolved
+// repository-relative POSIX path. The MEMBERSHIP policy (which resolved files a
+// consumer permits: clotho-only + allowExternal for the closure; the seeded file
+// set for the code weaver) belongs to the caller, not to this resolver.
+export function resolveRelativeSpecifier(fromFileAbs, specifier, { repoRoot } = {}) {
   if (typeof specifier !== "string" || !(specifier.startsWith("./") || specifier.startsWith("../"))) {
     return { ok: false, kind: "non-relative" };
   }
+  // Explicit `.mjs` only — an extensionless or other-extension specifier is
+  // ambiguous (fatal for the closure; no edge for the code weaver).
+  if (!specifier.endsWith(".mjs")) return { ok: false, kind: "ambiguous-extension", resolved: specifier };
   const repoRootReal = realpathSync(repoRoot);
-  const fromDir = path.dirname(fromFileAbs);
-  // Resolve as-is; if it has no extension and does not exist, try appending .mjs.
-  let abs = path.resolve(fromDir, specifier);
-  const candidates = [abs];
-  if (!path.extname(specifier)) candidates.push(abs + ".mjs");
-
-  for (const cand of candidates) {
-    const contain = containmentReal(repoRootReal, cand);
-    if (!contain.ok) return { ok: false, kind: contain.reason, resolved: toPosix(path.relative(repoRootReal, cand)) };
-    let st;
-    try { st = lstatSync(cand); } catch { continue; } // missing: try next candidate
-    if (st.isSymbolicLink()) return { ok: false, kind: "symlink", resolved: toPosix(path.relative(repoRootReal, cand)) };
-    if (!st.isFile()) return { ok: false, kind: "non-regular", resolved: toPosix(path.relative(repoRootReal, cand)) };
-    const relPosix = toPosix(path.relative(repoRootReal, cand));
-    const underClotho = relPosix === "clotho" || relPosix.startsWith("clotho/");
-    if (!underClotho) {
-      if (allowExternal.has(relPosix)) return { ok: true, repoRelative: relPosix, abs: cand };
-      if (relPosix.startsWith("merkle-dag/")) return { ok: false, kind: "forbidden", resolved: relPosix };
-      return { ok: false, kind: "escape", resolved: relPosix };
-    }
-    return { ok: true, repoRelative: relPosix, abs: cand };
-  }
-  return { ok: false, kind: "unresolved", resolved: toPosix(path.relative(repoRootReal, abs)) };
+  const abs = path.resolve(path.dirname(fromFileAbs), specifier);
+  const contain = containmentReal(repoRootReal, abs);
+  if (!contain.ok) return { ok: false, kind: contain.reason, resolved: toPosix(path.relative(repoRootReal, abs)) };
+  let st;
+  try { st = lstatSync(abs); } catch { return { ok: false, kind: "unresolved", resolved: toPosix(path.relative(repoRootReal, abs)) }; }
+  if (st.isSymbolicLink()) return { ok: false, kind: "symlink", resolved: toPosix(path.relative(repoRootReal, abs)) };
+  if (!st.isFile()) return { ok: false, kind: "non-regular", resolved: toPosix(path.relative(repoRootReal, abs)) };
+  return { ok: true, repoRelative: toPosix(path.relative(repoRootReal, abs)), abs };
 }
 
 // ---- accepted relative module-load closure (D33) -----------------------------
 // The entry module plus every file reachable through an accepted LITERAL RELATIVE
-// module-load edge, recursively. Fatal (throws) on: a symlink/non-regular/
-// escaping/forbidden target, or a literal relative specifier that does not
-// resolve to an existing file. Non-literal dynamic import/require/module.require
-// and non-relative specifiers create NO edge. Returns sorted repo-relative paths.
+// module-load edge, recursively. Fatal (throws) on: an ambiguous-extension /
+// symlink / non-regular / escaping / forbidden target, a literal relative
+// specifier that does not resolve to an existing file, or an entry that is
+// itself missing/symlinked/non-regular/outside the admissible set. Non-literal
+// dynamic import/require/module.require and non-relative specifiers create NO
+// edge. Returns sorted repo-relative paths. `allowExternal` is the set of
+// permitted non-clotho targets (permitted merkle-dag primitives).
 
 export function deriveAcceptedClosure(entryFileAbs, { repoRoot, allowExternal = new Set() } = {}) {
   const repoRootReal = realpathSync(repoRoot);
-  const entryRel = toPosix(path.relative(repoRootReal, realpathSync(entryFileAbs)));
+  // The entry undergoes the SAME containment / regular-file / symlink checks as a
+  // resolved target — an entry is not exempt from the closure discipline.
+  const entryContain = containmentReal(repoRootReal, entryFileAbs);
+  if (!entryContain.ok) throw new Error(`closure: entry is ${entryContain.reason}`);
+  let est;
+  try { est = lstatSync(entryFileAbs); } catch { throw new Error("closure: entry does not exist"); }
+  if (est.isSymbolicLink()) throw new Error("closure: entry is a symlink");
+  if (!est.isFile()) throw new Error("closure: entry is non-regular");
+  // Safe now (verified a real regular file, not a symlink): canonicalize for
+  // traversal so all path arithmetic shares the repo real-path base.
+  const entryReal = realpathSync(entryFileAbs);
+  const entryRel = toPosix(path.relative(repoRootReal, entryReal));
+
+  // Membership policy (the closure's, not the resolver's): a resolved target is
+  // admitted only if it is under clotho/ or an explicitly permitted external
+  // primitive; a merkle-dag target outside allowExternal is forbidden; anything
+  // else escapes. Admission failure is fatal.
+  const admit = (rel) => {
+    if (rel === "clotho" || rel.startsWith("clotho/")) return;
+    if (allowExternal.has(rel)) return;
+    if (rel.startsWith("merkle-dag/")) throw new Error(`closure: ${rel} is forbidden`);
+    throw new Error(`closure: ${rel} is escape`);
+  };
+  admit(entryRel);
+
   const seen = new Set([entryRel]);
-  const absOf = new Map([[entryRel, realpathSync(entryFileAbs)]]);
+  const absOf = new Map([[entryRel, entryReal]]);
   const work = [entryRel];
   while (work.length) {
     const rel = work.shift();
@@ -262,10 +326,11 @@ export function deriveAcceptedClosure(entryFileAbs, { repoRoot, allowExternal = 
       // creates no edge (but is still a recognized site).
       if (!site.literal || site.specifier === null) continue;
       if (!(site.specifier.startsWith("./") || site.specifier.startsWith("../"))) continue;
-      const r = resolveRelativeSpecifier(abs, site.specifier, { repoRoot: repoRootReal, allowExternal });
+      const r = resolveRelativeSpecifier(abs, site.specifier, { repoRoot: repoRootReal });
       if (!r.ok) {
         throw new Error(`closure: ${rel} -> ${JSON.stringify(site.specifier)} is ${r.kind}${r.resolved ? " (" + r.resolved + ")" : ""}`);
       }
+      admit(r.repoRelative);
       if (!seen.has(r.repoRelative)) {
         seen.add(r.repoRelative);
         absOf.set(r.repoRelative, r.abs);
@@ -283,13 +348,13 @@ export function deriveAcceptedClosure(entryFileAbs, { repoRoot, allowExternal = 
 
 export function scanExports(source) {
   const { masked } = lex(source);
+  // Every occurrence is reported (NOT de-duplicated): a repeated export name is a
+  // duplicate descriptor, which seedSourceDescriptors treats as fatal.
   const exportsFound = [];
   const warnings = [];
-  const seen = new Set();
-  const add = (name) => { if (!seen.has(name)) { seen.add(name); exportsFound.push(name); } };
 
   const declRe = /(?<![A-Za-z0-9_$])export\s+(?:(async)\s+function|function|const|class)\s+([A-Za-z_$][A-Za-z0-9_$]*)/g;
-  for (let m; (m = declRe.exec(masked)); ) add(m[2]);
+  for (let m; (m = declRe.exec(masked)); ) exportsFound.push(m[2]);
 
   // Unsupported forms -> warn, no inferred symbol.
   if (/(?<![A-Za-z0-9_$])export\s+default(?![A-Za-z0-9_$])/.test(masked)) warnings.push("export default is not a Phase 1 export");
@@ -410,7 +475,9 @@ function walkDir(dir, repoRootReal, out) {
     const full = path.join(dir, name);
     let st;
     try { st = lstatSync(full); } catch { continue; }
-    if (st.isSymbolicLink()) continue; // never follow a symlink
+    // Symlinked input is REJECTED (fail-closed), not silently skipped: a symlink
+    // beneath a configured root could otherwise omit a real input from the walk.
+    if (st.isSymbolicLink()) throw new Error(`walkFiles: symlinked entry is not permitted: ${toPosix(path.relative(repoRootReal, full))}`);
     if (st.isDirectory()) walkDir(full, repoRootReal, out);
     else if (st.isFile()) out.add(toPosix(path.relative(repoRootReal, full)));
   }
@@ -431,6 +498,7 @@ export function seedSourceDescriptors(repoRoot, packageRoots, git) {
   const walked = walkFiles(repoRoot, packageRoots);
   const files = [];
   const symbols = [];
+  const warnings = [];
   const seenSymbol = new Set();
   for (const rel of walked) {
     const raw = git(["hash-object", "--no-filters", "--", rel]);
@@ -439,8 +507,10 @@ export function seedSourceDescriptors(repoRoot, packageRoots, git) {
     files.push({ path: rel, blob_sha });
     if (rel.endsWith(".mjs")) {
       const source = readFileSync(path.join(repoRoot, ...rel.split("/")), "utf8");
-      for (const symbol of scanExports(source).exports) {
-        const key = `${rel} ${symbol}`;
+      const scan = scanExports(source);
+      for (const w of scan.warnings) warnings.push({ path: rel, message: w });
+      for (const symbol of scan.exports) {
+        const key = `${rel} ${symbol}`;
         if (seenSymbol.has(key)) throw new Error(`seedSourceDescriptors: duplicate symbol descriptor ${rel}#${symbol}`);
         seenSymbol.add(key);
         symbols.push({ path: rel, symbol, blob_sha });
@@ -452,7 +522,7 @@ export function seedSourceDescriptors(repoRoot, packageRoots, git) {
     if (a.path !== b.path) return a.path < b.path ? -1 : 1;
     return a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0;
   });
-  return { files, symbols };
+  return { files, symbols, warnings };
 }
 
 // ---- counted-iterator constructor (D26/D29) ----------------------------------
@@ -492,20 +562,38 @@ export function makeCountedSource(inventoryId, list) {
 // beneath the repository's real path. Never follows a symlink to decide.
 
 export function physicalContainment(repoRoot, candidate) {
-  let repoRootReal;
-  try { repoRootReal = realpathSync(repoRoot); } catch { return false; }
-  const abs = path.resolve(repoRootReal, candidate);
-  const rel = path.relative(repoRootReal, abs);
+  // Do NOT realpath the allowed root first — that would silently FOLLOW a
+  // symlinked root. lstat it in place and reject a symlinked/non-directory root.
+  const absRepo = path.resolve(repoRoot);
+  let rootSt;
+  try { rootSt = lstatSync(absRepo); } catch { return false; }
+  if (rootSt.isSymbolicLink() || !rootSt.isDirectory()) return false;
+  const absCand = path.resolve(absRepo, candidate);
+  const rel = path.relative(absRepo, absCand);
   if (rel !== "" && (rel.startsWith("..") || path.isAbsolute(rel))) return false;
-  const contain = containmentReal(repoRootReal, abs);
-  return contain.ok === true;
+  // Walk every existing component from the root down; reject any symlink; track
+  // the deepest existing ancestor.
+  const segs = rel === "" ? [] : rel.split(path.sep);
+  let cur = absRepo;
+  let deepest = absRepo;
+  for (const seg of segs) {
+    cur = path.join(cur, seg);
+    let st;
+    try { st = lstatSync(cur); } catch { break; } // remaining tail is missing
+    if (st.isSymbolicLink()) return false;
+    deepest = cur;
+  }
+  // Resolve the deepest existing ancestor's real path (safe: no symlink components
+  // above it) and require it to remain beneath the repository's real path.
+  let repoReal, deepestReal;
+  try { repoReal = realpathSync(absRepo); deepestReal = realpathSync(deepest); } catch { return false; }
+  const relReal = path.relative(repoReal, deepestReal);
+  return relReal === "" || (!relReal.startsWith("..") && !path.isAbsolute(relReal));
 }
 
 // ---- weaver-facing git wrapper -----------------------------------------------
 // Permits ONLY the exact subcommands and argument shapes the weavers need, with
 // no shell. Any other shape is fatal.
-
-const GIT_LOG_FLAGS = new Set(["--format=%H", "--reverse"]);
 
 export function validateGitArgs(args) {
   if (!Array.isArray(args) || args.length === 0 || !args.every((a) => typeof a === "string")) {
@@ -526,17 +614,15 @@ export function validateGitArgs(args) {
     throw new Error(`git: disallowed hash-object shape ${JSON.stringify(args)}`);
   }
   if (sub === "log") {
-    // ["log", <flags...>, "--", <path>] ; flags are --format=%H, --reverse, or one -S<value>
-    const dd = args.indexOf("--");
-    if (dd < 1 || dd !== args.length - 2) throw new Error(`git: disallowed log shape ${JSON.stringify(args)}`);
-    const path_ = args[args.length - 1];
-    if (!isPathArg(path_)) throw new Error(`git: disallowed log path ${JSON.stringify(path_)}`);
-    let sawS = false;
-    for (const f of args.slice(1, dd)) {
-      if (f.startsWith("-S")) { if (f.length <= 2 || sawS) throw new Error("git: bad -S flag"); sawS = true; continue; }
-      if (!GIT_LOG_FLAGS.has(f)) throw new Error(`git: disallowed log flag ${JSON.stringify(f)}`);
-    }
-    return;
+    // EXACTLY the two frozen shapes, in their required order — missing, extra,
+    // duplicated, or reordered flags are all rejected:
+    //   log -S<symbol> --format=%H --reverse -- <path>
+    if (args.length === 6 && args[1].startsWith("-S") && args[1].length > 2 &&
+        args[2] === "--format=%H" && args[3] === "--reverse" && args[4] === "--" && isPathArg(args[5])) return;
+    //   log --format=%H --reverse -- <path>
+    if (args.length === 5 && args[1] === "--format=%H" && args[2] === "--reverse" &&
+        args[3] === "--" && isPathArg(args[4])) return;
+    throw new Error(`git: disallowed log shape ${JSON.stringify(args)}`);
   }
   throw new Error(`git: disallowed subcommand ${JSON.stringify(sub)}`);
 }
@@ -545,13 +631,20 @@ function isPathArg(p) {
   return typeof p === "string" && p.length > 0 && !p.startsWith("-") && !p.includes("\0");
 }
 
+// The FIXED, security-relevant spawn settings a caller cannot override: they are
+// spread LAST, so any caller-supplied cwd/shell/encoding is discarded.
+export function gitSpawnOptions(repoRoot, options = {}) {
+  return {
+    ...options,
+    cwd: repoRoot, shell: false, encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"], maxBuffer: 64 * 1024 * 1024
+  };
+}
+
 export function makeGitRunner(repoRoot) {
   return function git(args, options = {}) {
     validateGitArgs(args);
-    return execFileSync("git", args, {
-      cwd: repoRoot, shell: false, encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"], maxBuffer: 64 * 1024 * 1024, ...options
-    });
+    return execFileSync("git", args, gitSpawnOptions(repoRoot, options));
   };
 }
 
