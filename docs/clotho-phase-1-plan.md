@@ -4,7 +4,7 @@
 > (`docs/runs/clotho-daedalus/`), cold-reviewed
 > (`docs/clotho-phase-1-remediation.md`), and re-converged under the challengeable
 > spec v2 by the delta workshop. The canonical submission candidate is
-> **`docs/runs/clotho-daedalus-delta9/matured-plan-v10.md`**. Kept for provenance.
+> **`docs/runs/clotho-daedalus-delta10/matured-plan-v11.md`**. Kept for provenance.
 
 > **Status: draft skeleton.** Task boundaries, file structure, and exit criteria are
 > proposed; per-step detail (exact function signatures, fixture contents, edge-case

@@ -1,0 +1,141 @@
+{
+  "build_id": "clotho-phase-1-authz-003",
+  "use_case": "clotho-phase-1",
+  "objective": "Authorize Argo execution of the Clotho Phase 1 implementation plan v10 (content address sha256:a23da81a38c16cd1948875c104a8297cad7a092b8f088ea9f34c566e5ec19116; released by The Eye via PR #93, merge commit bc85873bb28bc21fa9ddc1aeea43f24cdbcf434d). The plan builds clotho/, an advisory zero-dependency knowledge-graph package proven by weaving TELOS itself. Approve ONLY if the plan is implementation-ready and consistent with its governing spec (v2.7), the repository's trust model (fail-closed, closed sets, spine read-only, advisory-only Clotho), and its own decisions and exit criteria.",
+  "plan_ref": "sha256:a23da81a38c16cd1948875c104a8297cad7a092b8f088ea9f34c566e5ec19116",
+  "merge_anchor": "bc85873bb28bc21fa9ddc1aeea43f24cdbcf434d",
+  "reviewed_head": "14b59188981c6277fa090b3ab9a285363f0b54ed",
+  "timestamp": "2026-07-15T23:15:53.005Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd4hEZudMrEkCcjkDdrSJ",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-15T23:16:15.181Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E237SI679zryc8MtVuWglMxjaEYcG",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-15T23:22:53.162Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "546088e1-3ace-9ff9-b78f-19fb88b9324a",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-15T23:16:05.086Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "qhRYaoC4AaDqz7IPlt2A6A8",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-15T23:16:04.632Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Amend D14, D27, the governing specification, and Tasks 4a/5 with replacement semantics equivalent to: \"For `implementation_refs`, `orchestrator_refs`, and the permitted `merkle-dag/` closure, the transitive closure includes every literal relative module-loading edge accepted by the outbound scanner: import declarations, side-effect imports, `export ... from`, `export * from`, literal dynamic `import()`, and any accepted literal `require()` or `module.require()` form. Each resolved target is traversed recursively and must appear in the applicable committed closure inventory.\"; Add closure tests proving that helpers reached through relative re-export, literal dynamic import, and each accepted require-style form cannot be omitted from the applicable inventory or manifest refs. Route the specification amendment to The Eye and release a newly content-addressed plan before authorization.",
+      "codex has hard stops: Mechanism provenance is not closed over every module-loading form permitted inside Clotho: D27 allows literal relative dynamic imports and require-style loads, while D14 and the closure tests specify only a static relative-import closure. Executed helper bytes could therefore be omitted from `implementation_refs` or `orchestrator_refs` while closure tests still pass."
+    ],
+    "warnings": [],
+    "provenance": [
+      {
+        "model": "claude",
+        "has_provenance": true,
+        "provider": "anthropic",
+        "response_model": "claude-fable-5",
+        "response_id": "msg_011Cd4hEZudMrEkCcjkDdrSJ",
+        "source": "ai-peer-mcp/claude_ask"
+      },
+      {
+        "model": "agy",
+        "has_provenance": true,
+        "provider": "local",
+        "response_model": "agy-checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "source": "ai-peer-mcp/agy_checkpoint"
+      },
+      {
+        "model": "codex",
+        "has_provenance": true,
+        "provider": "openai",
+        "response_model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E237SI679zryc8MtVuWglMxjaEYcG",
+        "source": "ai-peer-mcp/codex_ask"
+      }
+    ]
+  },
+  "authorized": false,
+  "authorization": {
+    "status": "NOT_AUTHORIZED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "build_id": "clotho-phase-1-authz-003",
+  "use_case": "clotho-phase-1",
+  "model": "agy",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/clotho-daedalus-delta9/matured-plan-v10.md",
+    "docs/clotho-phase-1-design.md"
+  ],
+  "proposal_ref": "sha256:a23da81a38c16cd1948875c104a8297cad7a092b8f088ea9f34c566e5ec19116",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-15T23:15:53.005Z",
+  "provenance": {
+    "provider": "local",
+    "model": "agy-checkpoint",
+    "source": "ai-peer-mcp/agy_checkpoint",
+    "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+    "answered_at": null,
+    "attestation": "local-deterministic",
+    "engine_version": "agy-checkpoint/1",
+    "tool": "agy_checkpoint"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "e5af80112acc046cb7499b2ea67a37c1e72e4fe025a096ed4a016870e0e6ae09",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

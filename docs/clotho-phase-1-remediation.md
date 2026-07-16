@@ -287,6 +287,36 @@ The Eye release → `authz-003` (new evidence directory, binds the v10 hash and
 its new merge anchor; required constituency unchanged — no seat removed or
 downgraded to escape dissent). Argo remains closed.
 
+## Tenth round — authz-003 dissent accepted; The Eye's delta-10 contract (2026-07-15)
+
+TELOS `authz-003` over released plan v10 (bound to `sha256:a23da81a…`,
+reviewed head `14b5918`, merge anchor `bc85873b`) returned
+**NOT_AUTHORIZED**. Attempt 1 was a preserved transient (codex
+`read ECONNRESET`, no packet, gate honest-blocked — a transport failure, not
+a verdict). Attempt 2: claude, agy (required) and grok, gemini (advisory)
+approved; **codex (required) dissented — revise, high confidence, ONE hard
+stop and two required edits**, accepted by The Eye as a genuine blocking
+contradiction. Failed-council record preserved at commit `d138a69`
+(`docs/runs/clotho-authorization-3/`, immutable; all three authorization
+directories now frozen). Resolved via spec v2.8 + amendment AM-34 — the sole
+accepted repair — (`docs/clotho-phase-1-plan-amendments-10.md`) and a tenth
+surgical delta workshop (`docs/runs/clotho-daedalus-delta10/`) whose draft
+carried the codex dissent packet verbatim and the remediation history as
+read-only context:
+
+| # | Codex hard stop | Resolution |
+|---|---|---|
+| 1 | Mechanism provenance not closed over every permitted module-loading form: D27 accepts literal relative dynamic imports and require-style loads while D14 and the closure tests specify only a static relative-import closure — executed helper bytes could be omitted from `implementation_refs`/`orchestrator_refs` while closure tests still pass | AM-34 + **spec v2.8** + D33: provenance uses the **accepted relative module-load closure** (static imports, side-effect imports, `export … from`, `export * from`, literal dynamic `import()`, accepted literal `require()`/`module.require()`), recursive, cycle-safe, deterministic, conservative on conditional literal loads; **one shared parser/classifier/resolver** for scanner and closure (no closure-only form list or resolver); committed inventories proven exactly equal to derived closures; 24 tests incl. per-form omission, tamper, and shared-grammar proofs; D14/D27 reference D33; nonliteral loads stay forbidden — the executable surface is NOT broadened |
+
+Delta-10: 1 round, 0 unresolved, reviewer bound the exact candidate,
+distinct real provenance; spec v2.8 survived challenge unamended.
+`matured-plan-v11.md` is the canonical submission candidate. Trajectory of
+required-seat dissent across councils: 6 hard stops → 2 → 1, each round
+confined to intersections of the newest mechanisms. Sequence: v11 cold
+review → held PR → The Eye release → `authz-004` (new evidence directory,
+binds the v11 hash and its new merge anchor; required constituency
+unchanged). Argo remains closed.
+
 ## Not accepted / needs no change
 
 - "Ledger cannot answer from itself" — true of the reviewed skeleton, already false

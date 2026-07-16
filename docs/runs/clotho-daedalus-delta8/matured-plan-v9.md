@@ -8,7 +8,7 @@
 > (`docs/runs/clotho-authorization-2/`, preserved at `016d0e5`;
 > `docs/clotho-phase-1-remediation.md` § Ninth round). Re-converged under spec
 > v2.7 by the ninth delta workshop. The canonical submission candidate is
-> **`docs/runs/clotho-daedalus-delta9/matured-plan-v10.md`**. The extracted
+> **`docs/runs/clotho-daedalus-delta10/matured-plan-v11.md`**. The extracted
 > copy below is unmodified apart from this banner; the content-addressed,
 > provenance-bearing round artifacts under `artifacts/` are the authoritative
 > record.

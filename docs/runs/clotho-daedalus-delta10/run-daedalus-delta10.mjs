@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Daedalus DELTA workshop: integrate the normative amendments (AM-32..AM-33) into
+// Daedalus DELTA workshop: integrate the normative amendments (AM-34) into
 // the previously converged Clotho Phase 1 plan, under spec v2 — which is
 // CHALLENGEABLE this time (process rule: a governing specification is normative,
 // not immune from challenge).
@@ -9,8 +9,8 @@
 // convergence.
 //
 // Usage:
-//   node docs/runs/clotho-daedalus-delta9/run-daedalus-delta9.mjs           # live
-//   node docs/runs/clotho-daedalus-delta9/run-daedalus-delta9.mjs --smoke   # keyless wiring proof
+//   node docs/runs/clotho-daedalus-delta10/run-daedalus-delta10.mjs           # live
+//   node docs/runs/clotho-daedalus-delta10/run-daedalus-delta10.mjs --smoke   # keyless wiring proof
 //
 // Outputs (under this directory): artifacts/<hash>.json, events.jsonl,
 // result.json, matured-plan-v10.md (final candidate).
@@ -32,25 +32,28 @@ const SMOKE = process.argv.includes("--smoke");
 const H = (v) => "sha256:" + sha256hex(canonicalize(v));
 
 // ---------- draft: matured plan + amendments; spec v2 as CHALLENGEABLE appendix ----------
-const MATURED = readFileSync(path.join(ROOT, "docs/runs/clotho-daedalus-delta8/matured-plan-v9.md"), "utf8");
-const AMENDMENTS = readFileSync(path.join(ROOT, "docs/clotho-phase-1-plan-amendments-9.md"), "utf8");
+const MATURED = readFileSync(path.join(ROOT, "docs/runs/clotho-daedalus-delta9/matured-plan-v10.md"), "utf8");
+const AMENDMENTS = readFileSync(path.join(ROOT, "docs/clotho-phase-1-plan-amendments-10.md"), "utf8");
 const SPEC_V2 = readFileSync(path.join(ROOT, "docs/clotho-phase-1-design.md"), "utf8");
 // The dissent that motivates this delta rides along verbatim: the codex seat's
-// two authz-002 objections (hard stops + required edits + rationale).
-const DISSENT = JSON.parse(readFileSync(path.join(ROOT, "docs/runs/clotho-authorization-2/codex.json"), "utf8"));
+// two authz-003 objections (hard stops + required edits + rationale).
+const DISSENT = JSON.parse(readFileSync(path.join(ROOT, "docs/runs/clotho-authorization-3/codex.json"), "utf8"));
 const dissentBrief = [
-  "# SOURCE DISSENT (codex required seat, TELOS authz-002 — accepted in full by The Eye)",
+  "# SOURCE DISSENT (codex required seat, TELOS authz-003 — accepted in full by The Eye)",
   "", "## Hard stops:", ...DISSENT.hard_stops.map((h, i) => `${i + 1}. ${h}`),
   "", "## Required edits:", ...DISSENT.required_edits.map((e, i) => `${i + 1}. ${e}`),
   "", "## Rationale:", DISSENT.rationale
 ].join("\n");
+const REMEDIATION = readFileSync(path.join(ROOT, "docs/clotho-phase-1-remediation.md"), "utf8");
 const draft = [
   MATURED,
-  "\n\n---\n\n# NORMATIVE AMENDMENTS TO INTEGRATE (AM-32..AM-33)\n",
+  "\n\n---\n\n# NORMATIVE AMENDMENTS TO INTEGRATE (AM-34)\n",
   AMENDMENTS,
   "\n\n---\n\n",
   dissentBrief,
-  "\n\n---\n\n# Appendix: governing spec v2.7 (CHALLENGEABLE — see workshop rules)\n",
+  "\n\n---\n\n# Appendix A: remediation history (READ-ONLY historical context)\n",
+  REMEDIATION,
+  "\n\n---\n\n# Appendix B: governing spec v2.8 (CHALLENGEABLE — see workshop rules)\n",
   SPEC_V2
 ].join("\n");
 
@@ -110,8 +113,8 @@ function seatPrompt({ role, candidateBody, openMenu, seat }) {
     ? openMenu.map((o) => `- ${o.objection_hash} (raised by ${o.raised_by_seat}): [${o.scope}] ${o.claim}`).join("\n")
     : "(none)";
   const roleBrief = role === "author"
-    ? "You are the AUTHOR this round. This is a DELTA workshop: the candidate contains an already-converged plan followed by NORMATIVE AMENDMENTS AM-32..AM-33. Integrate every amendment into the plan body (a single coherent implementation-ready plan; delete the amendment appendix once integrated), keeping every already-converged mechanism that the amendments reaffirm. Produce the COMPLETE revised plan in plan_revision. If you make no changes, return plan_revision as an empty string."
-    : "You are the REVIEWER this round. Review the exact candidate below: are all amendments AM-32..AM-33 faithfully integrated without regressing the converged mechanisms? If it is ready as-is, return plan_revision as an EMPTY STRING (this binds your approval to the author's exact artifact — required for convergence). Only include a non-empty plan_revision if a defect genuinely requires changing the text.";
+    ? "You are the AUTHOR this round. This is a DELTA workshop: the candidate contains an already-converged plan followed by NORMATIVE AMENDMENTS AM-34. Integrate every amendment into the plan body (a single coherent implementation-ready plan; delete the amendment appendix once integrated), keeping every already-converged mechanism that the amendments reaffirm. Produce the COMPLETE revised plan in plan_revision. If you make no changes, return plan_revision as an empty string."
+    : "You are the REVIEWER this round. Review the exact candidate below: are all amendments AM-34 faithfully integrated without regressing the converged mechanisms? If it is ready as-is, return plan_revision as an EMPTY STRING (this binds your approval to the author's exact artifact — required for convergence). Only include a non-empty plan_revision if a defect genuinely requires changing the text.";
   return [
     roleBrief,
     "",
@@ -185,7 +188,7 @@ if (!SMOKE) {
 }
 
 const callSeat = SMOKE ? makeSmokeCallSeat() : liveCallSeat;
-console.log(`Daedalus DELTA-9 workshop — ${SMOKE ? "SMOKE (stub seats)" : "LIVE (fable-5/high + gpt-5.6-sol/high)"}`);
+console.log(`Daedalus DELTA-10 workshop — ${SMOKE ? "SMOKE (stub seats)" : "LIVE (fable-5/high + gpt-5.6-sol/high)"}`);
 
 const result = await runDaedalusWorkshop({ draft, callSeat, writeArtifact, appendEvent });
 
@@ -205,7 +208,7 @@ writeFileSync(path.join(HERE, "result.json"), JSON.stringify(summary, null, 2));
 const finalFile = path.join(ARTIFACTS, String(result.final_candidate_ref).replace(/^sha256:/, "") + ".json");
 try {
   const finalArtifact = JSON.parse(readFileSync(finalFile, "utf8"));
-  if (typeof finalArtifact.plan === "string") writeFileSync(path.join(HERE, "matured-plan-v10.md"), finalArtifact.plan);
+  if (typeof finalArtifact.plan === "string") writeFileSync(path.join(HERE, "matured-plan-v11.md"), finalArtifact.plan);
 } catch { /* result.json still records the ref */ }
 
 console.log(`state=${summary.state} reason=${summary.reason} rounds=${summary.rounds}`);

@@ -10,7 +10,15 @@ creates and maintains knowledge-graph threads across artifacts and repositories.
 This phase builds exactly that and nothing else. Measurement of threads is Lachesis;
 retirement of threads is Atropos; both are explicitly out of scope here.
 
-**Status:** v2.7 — incorporates the codex seat's second authorization dissent
+**Status:** v2.8 — incorporates the codex seat's third authorization dissent
+(authz-003, the single hard stop accepted by The Eye): mechanism provenance
+closes over the **accepted relative module-load closure** — every literal
+relative module-loading form the outbound scanner permits (static imports,
+side-effect imports, static re-exports, literal dynamic `import()`, accepted
+literal `require()`/`module.require()`), recursively, with one shared parser
+and resolver deciding both enforcement and closure; the former static-only
+closure definition is retired. History: v2.7 —
+incorporates the codex seat's second authorization dissent
 (authz-002, both hard stops accepted by The Eye): the ledger weaver owns an
 independently counted `contract-files` inventory (required even when the
 doc-weaver is skipped; clause resolution reads no byte outside it), and the
@@ -245,21 +253,41 @@ manually-bumped integer versions identify nothing; the manifest binds the
 after signing — the implementation refs identify the algorithm that made its
 assertions.
 
-**Mechanism coverage is mechanical, not curated (v2.2):**
+**Mechanism coverage is mechanical, not curated (v2.2; closure completed
+v2.8):** provenance closes over the **accepted relative module-load closure**
+— every literal relative module-loading form the outbound scanner permits,
+not static imports alone. The closure of an entry point is the entry-point
+file itself plus every file recursively reachable through an accepted
+literal relative module-loading edge of exactly these forms: static `import`
+declarations with `from`; side-effect `import` declarations; static
+`export … from`; static `export * from` (including recognized namespace
+re-export variants); literal dynamic `import()`; accepted literal
+`require()`; accepted literal `module.require()`. Traversal is recursive,
+cycle-safe, deterministic, and sorted by normalized repository-relative
+path. Conditional or apparently unreachable literal loads are included
+conservatively — the closure describes bytes *capable of executing*, not
+observed branch coverage.
 
-- `implementation_refs` for each weaver = the **exact transitive static
-  relative-import closure** of that weaver's module — including shared substrate
-  (`weavers/util.mjs`, `registry.mjs`) and any permitted `merkle-dag` primitives
-  that participate in identity, canonicalization, or hashing.
-- The manifest additionally carries `orchestrator_refs` = content addresses of
-  the orchestration machinery (`weave.mjs`, `thread-ledger.mjs`,
-  registry/canonicalization code, and other shared machinery) — the driver
-  constructs the fact tables, applies skip policy, deduplicates, orders, and
-  decides what publishes; a changed driver changes the graph even when every
-  per-weaver ref is unchanged.
-- A test derives the static relative-import closure and **fails when the
-  committed implementation inventory omits or adds a file** — the list is proven
-  equal to the closure, never trusted.
+- `implementation_refs` for each weaver = the exact accepted relative
+  module-load closure of that weaver's entry module — including shared
+  substrate (`weavers/util.mjs`, `registry.mjs`) and any permitted
+  `merkle-dag` primitives that participate in identity, canonicalization, or
+  hashing, recursively traversed.
+- The manifest additionally carries `orchestrator_refs` = the corresponding
+  closure of the frozen orchestrator entry points (`weave.mjs`,
+  `thread-ledger.mjs`, registry/canonicalization code, and other shared
+  machinery) — the driver constructs the fact tables, applies skip policy,
+  deduplicates, orders, and decides what publishes; a changed driver changes
+  the graph even when every per-weaver ref is unchanged.
+- **Closure derivation and outbound enforcement share one parser, one
+  literal classifier, one resolver, and one accepted-form definition** —
+  there is no closure-only form list and no closure-only resolver. A
+  missing, unresolved, ambiguous, non-regular, symlinked, escaping, or
+  otherwise forbidden target fails closed.
+- A test derives the accepted relative module-load closure and **fails when
+  the committed implementation inventory omits or adds a file** — the list
+  is proven equal to the closure, never trusted. Nonliteral loads remain
+  forbidden; this closure does not broaden the executable surface.
 
 **The trailer schema is closed and normative (v2.4):** every manifest field
 validated by the ledger has an exact type, key set, and accuracy rule — in
@@ -401,6 +429,14 @@ The flagship query is `why()` + `blastRadius()` composed over the
 - **Advisory, never authorizing.** No gate, sign, or lifecycle decision keys off a
   Clotho record. Threads inform humans and future Lachesis analysis. This is
   structural: no package in the repo gains an import from `clotho/`.
+- **The outbound allowlist and the provenance closure are one grammar (v2.8).**
+  Inside `clotho/`, the accepted module-loading surface is the closed set of
+  literal relative forms enumerated in §"Mechanism coverage" (static imports,
+  side-effect imports, static re-exports, literal dynamic `import()`, accepted
+  literal `require()`/`module.require()`) plus Node built-ins under the frozen
+  loader mapping. **Every accepted relative module-loading edge participates in
+  the mechanism-provenance closure** — a form the scanner permits is a form the
+  closure traverses, with one shared parser and resolver deciding both.
 - **No constructed module loaders (v2.6, mapping frozen v2.7).** Clotho may not
   construct, obtain, alias, or invoke a general-purpose module loader.
   Loader-capable built-ins are governed by **one exhaustive normative
@@ -456,6 +492,12 @@ The flagship query is `why()` + `blastRadius()` composed over the
    `LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS` mapping committed in `inventory.mjs`
    deep-equals the normative mapping in this specification; any missing, extra,
    or mutated entry fails validation.
+7. **Exact complete closure equality (v2.8):** every committed implementation
+   and orchestrator inventory is proven exactly equal to the derived accepted
+   relative module-load closure of its entry point(s) — helpers reached through
+   re-export, literal dynamic import, or accepted require-style forms cannot be
+   omitted; extra, missing, unresolved, or forbidden targets are fatal; the
+   scanner and the closure demonstrably share one form classifier and resolver.
 
 ## Explicit non-goals (Phase 1)
 
