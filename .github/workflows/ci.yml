@@ -30,10 +30,15 @@ jobs:
           - saas-forge
           - ai-forge
           - forge
+          - clotho
     name: ${{ matrix.package }} (node ${{ matrix.node-version }})
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # clotho's deriveRepositoryRef (Task 2) rejects a shallow clone, so its
+          # job needs full history; every other package keeps the default depth.
+          fetch-depth: ${{ matrix.package == 'clotho' && '0' || '1' }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
