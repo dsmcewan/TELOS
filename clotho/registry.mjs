@@ -10,7 +10,9 @@ import { createHash } from "node:crypto";
 
 // ---- closed registries (read-only Set facades over private native Sets) ------
 // Not `Object.freeze(new Set(...))`: a frozen Set still mutates via add/delete.
-// The facade backs a private Set and makes every mutator throw.
+// The facade backs a private Set and makes every mutator throw. forEach passes
+// the FACADE (never the private set) as its third argument, so a callback cannot
+// reach the backing set to mutate it.
 
 function readonlySet(members) {
   const set = new Set(members);
@@ -22,7 +24,7 @@ function readonlySet(members) {
     keys: () => set.keys(),
     values: () => set.values(),
     entries: () => set.entries(),
-    forEach: (fn, thisArg) => set.forEach(fn, thisArg),
+    forEach: (fn, thisArg) => set.forEach((value) => { fn.call(thisArg, value, value, facade); }),
     add: deny("add"),
     delete: deny("delete"),
     clear: deny("clear"),
@@ -48,7 +50,8 @@ export const ASSERTION_STATUS = readonlySet([
 ]);
 
 // The five deterministic weaver ids (asserted_by => deterministic-extraction).
-export const WEAVER_IDS = readonlySet([
+// Module-private: not part of the frozen Task 2 public interface.
+const WEAVER_IDS = new Set([
   "clotho-git-weaver", "clotho-code-weaver", "clotho-test-weaver",
   "clotho-doc-weaver", "clotho-ledger-weaver"
 ]);
@@ -113,17 +116,16 @@ function isPlainObject(value) {
   return proto === Object.prototype || proto === null;
 }
 
-// Exactly the expected own keys, no missing, no extra, no inherited enumerable.
+// Exactly the expected own keys — no missing, no extra, no inherited enumerable.
+// The own-key count check plus per-field hasOwnProperty rejects both extras and
+// any enumerable field inherited from a polluted prototype.
 function requireExactKeys(obj, expected, label) {
   if (!isPlainObject(obj)) throw new TypeError(`${label}: expected a plain object`);
-  const keys = Object.keys(obj);
-  if (keys.length !== expected.length) {
-    throw new TypeError(`${label}: expected keys [${[...expected].sort().join(", ")}], got [${[...keys].sort().join(", ")}]`);
+  for (const k of Object.keys(obj)) {
+    if (!expected.includes(k)) throw new TypeError(`${label}: unexpected field '${k}'`);
   }
   for (const k of expected) {
-    if (!Object.prototype.hasOwnProperty.call(obj, k)) {
-      throw new TypeError(`${label}: missing field '${k}'`);
-    }
+    if (!Object.prototype.hasOwnProperty.call(obj, k)) throw new TypeError(`${label}: missing field '${k}'`);
   }
 }
 
@@ -166,6 +168,10 @@ function requireRepositoryRef(value, repositoryRef, label) {
   if (repositoryRef !== undefined && value !== repositoryRef) {
     throw new TypeError(`${label}: repository_ref ${JSON.stringify(value)} does not match derived ${JSON.stringify(repositoryRef)}`);
   }
+}
+
+function isModelAssertor(assertedBy) {
+  return typeof assertedBy === "string" && assertedBy.startsWith("model:") && assertedBy.length > "model:".length;
 }
 
 // ---- locator schemas ---------------------------------------------------------
@@ -242,9 +248,12 @@ export function validateLocator(kind, locator, { repositoryRef } = {}) {
 
 // ---- node identity -----------------------------------------------------------
 
-export function deriveNodeId({ kind, locator }) {
-  validateLocator(kind, locator);
-  return createHash("sha256").update(Buffer.from(canonicalJson({ kind, locator }), "utf8")).digest("hex");
+export function deriveNodeId(descriptor) {
+  requireExactKeys(descriptor, ["kind", "locator"], "deriveNodeId");
+  validateLocator(descriptor.kind, descriptor.locator);
+  return createHash("sha256")
+    .update(Buffer.from(canonicalJson({ kind: descriptor.kind, locator: descriptor.locator }), "utf8"))
+    .digest("hex");
 }
 
 // ---- source references -------------------------------------------------------
@@ -278,9 +287,7 @@ export function validateSourceRef(sourceRef) {
 // ---- assertor / status coupling ---------------------------------------------
 
 function requireAssertor(assertedBy) {
-  if (typeof assertedBy !== "string" || assertedBy.length === 0) {
-    throw new TypeError("asserted_by: must be a nonempty string");
-  }
+  if (typeof assertedBy !== "string" || assertedBy.length === 0) throw new TypeError("asserted_by: must be a nonempty string");
   if (assertedBy !== assertedBy.trim()) throw new TypeError("asserted_by: must be trimmed");
   if (assertedBy.length > 128) throw new TypeError("asserted_by: exceeds 128 characters");
   if (!STABLE_ID.test(assertedBy)) throw new TypeError(`asserted_by: not a stable identifier: ${JSON.stringify(assertedBy)}`);
@@ -294,7 +301,7 @@ export function validateAssertionStatus(assertedBy, assertionStatus) {
   let required;
   if (WEAVER_IDS.has(assertedBy)) required = "deterministic-extraction";
   else if (assertedBy === "human") required = "human-authorized";
-  else if (assertedBy.startsWith("model:")) required = "model-proposal";
+  else if (isModelAssertor(assertedBy)) required = "model-proposal";
   else throw new TypeError(`validateAssertionStatus: unrecognized assertor ${JSON.stringify(assertedBy)}`);
   if (assertionStatus !== required) {
     throw new TypeError(`validateAssertionStatus: ${assertedBy} requires ${required}, got ${assertionStatus}`);
@@ -317,36 +324,48 @@ const ENDPOINTS = {
   "motivated-by": [["code-symbol", "concern"]],
   "evidenced-by": [["code-symbol", "run-evidence"]],
   "discharges": [["code-symbol", "obligation"], ["obligation", "contract-clause"]]
-  // "supersedes" is handled specially: same-kind endpoints, human/model assertor.
+  // "supersedes" handled specially: same-kind endpoints, human/model assertor.
 };
 
-const EDGE_INPUT_FIELDS = ["edge_kind", "from_node", "to_node", "source_ref", "asserted_by", "assertion_status"];
-
-function requireNodeDescriptor(node, repositoryRef, label) {
-  requireExactKeys(node, ["kind", "locator"], label);
-  validateLocator(node.kind, node.locator, { repositoryRef });
-}
+// An edgeInput carries the signed-edge payload fields except woven_at: the two
+// stated node ids (from_node/to_node), the two locator descriptors
+// (from_locator/to_locator), edge_kind, source_ref, and the assertor/status.
+const EDGE_INPUT_FIELDS = ["edge_kind", "from_node", "to_node", "from_locator", "to_locator", "source_ref", "asserted_by", "assertion_status"];
 
 export function validateEdgeInput(edgeInput, { repositoryRef } = {}) {
   requireExactKeys(edgeInput, EDGE_INPUT_FIELDS, "edgeInput");
-  const { edge_kind, from_node, to_node, source_ref, asserted_by, assertion_status } = edgeInput;
+  const { edge_kind, from_node, to_node, from_locator, to_locator, source_ref, asserted_by, assertion_status } = edgeInput;
   if (!EDGE_KINDS.has(edge_kind)) throw new TypeError(`validateEdgeInput: unknown edge_kind ${JSON.stringify(edge_kind)}`);
 
-  requireNodeDescriptor(from_node, repositoryRef, "edgeInput.from_node");
-  requireNodeDescriptor(to_node, repositoryRef, "edgeInput.to_node");
+  // 1. locator descriptors validated as exact {kind, locator}
+  requireExactKeys(from_locator, ["kind", "locator"], "edgeInput.from_locator");
+  requireExactKeys(to_locator, ["kind", "locator"], "edgeInput.to_locator");
+  validateLocator(from_locator.kind, from_locator.locator, { repositoryRef });
+  validateLocator(to_locator.kind, to_locator.locator, { repositoryRef });
 
+  // 2. stated ids are lowercase 64-hex, and 3-4. must equal the derived ids
+  //    (mismatch is exactly what the validator must detect — never silently
+  //    replaced with the derived value).
+  requireHex(from_node, HEX64, "edgeInput.from_node");
+  requireHex(to_node, HEX64, "edgeInput.to_node");
+  const fromDerived = deriveNodeId(from_locator);
+  const toDerived = deriveNodeId(to_locator);
+  if (from_node !== fromDerived) throw new TypeError(`edgeInput.from_node ${from_node} does not match derived ${fromDerived}`);
+  if (to_node !== toDerived) throw new TypeError(`edgeInput.to_node ${to_node} does not match derived ${toDerived}`);
+
+  // 5. endpoint matrix applied using the locator kinds
   if (edge_kind === "supersedes") {
-    if (from_node.kind !== to_node.kind) {
-      throw new TypeError(`supersedes: endpoints must share a kind (${from_node.kind} -> ${to_node.kind})`);
+    if (from_locator.kind !== to_locator.kind) {
+      throw new TypeError(`supersedes: endpoints must share a kind (${from_locator.kind} -> ${to_locator.kind})`);
     }
-    if (!(asserted_by === "human" || asserted_by.startsWith("model:"))) {
-      throw new TypeError("supersedes: asserted_by must be 'human' or begin with 'model:'");
+    if (!(asserted_by === "human" || isModelAssertor(asserted_by))) {
+      throw new TypeError("supersedes: asserted_by must be 'human' or 'model:<seat>'");
     }
   } else {
     const allowed = ENDPOINTS[edge_kind];
-    const ok = allowed.some(([f, t]) => f === from_node.kind && t === to_node.kind);
+    const ok = allowed.some(([f, t]) => f === from_locator.kind && t === to_locator.kind);
     if (!ok) {
-      throw new TypeError(`validateEdgeInput: ${from_node.kind} -> ${to_node.kind} is not a valid ${edge_kind} endpoint`);
+      throw new TypeError(`validateEdgeInput: ${from_locator.kind} -> ${to_locator.kind} is not a valid ${edge_kind} endpoint`);
     }
   }
 
@@ -356,19 +375,24 @@ export function validateEdgeInput(edgeInput, { repositoryRef } = {}) {
 
 // ---- current-document address key -------------------------------------------
 
-export function docAddressKey({ path, heading_path }) {
-  requirePath(path, "docAddressKey.path");
-  requireHeadingPath(heading_path, "docAddressKey.heading_path");
-  return canonicalJson({ path, heading_path });
+export function docAddressKey(descriptor) {
+  requireExactKeys(descriptor, ["path", "heading_path"], "docAddressKey");
+  requirePath(descriptor.path, "docAddressKey.path");
+  requireHeadingPath(descriptor.heading_path, "docAddressKey.heading_path");
+  return canonicalJson({ path: descriptor.path, heading_path: descriptor.heading_path });
 }
 
 // ---- repository identity -----------------------------------------------------
 // `git` is an injected runner: git(argsArray) -> stdout string. This keeps the
-// module free of a git dependency (the no-shell runner lands in weavers/util.mjs
-// at Task 4a) and lets Task 2 prove the contract with both injected units and a
-// real-git fixture.
+// module free of a git dependency (the no-shell weaver-facing runner lands at
+// Task 4a) and lets Task 2 prove the contract with both injected units and a
+// real-git fixture (whose own test-only allowlist lives in the test).
+//
+// Output is parsed strictly: only the exact expected forms are accepted, with at
+// most one terminal line ending. No trimming, blank-line filtering, or extra
+// whitespace — malformed output is fatal and distinct from genuine shallowness.
 
-export class ShallowRepositoryError extends Error {
+class ShallowRepositoryError extends Error {
   constructor(message = "repository has shallow history; full history is required") {
     super(message);
     this.name = "ShallowRepositoryError";
@@ -376,17 +400,21 @@ export class ShallowRepositoryError extends Error {
   }
 }
 
+function stripTerminalNewline(s) {
+  if (s.endsWith("\r\n")) return s.slice(0, -2);
+  if (s.endsWith("\n")) return s.slice(0, -1);
+  return s;
+}
+
 export function deriveRepositoryRef(git) {
   if (typeof git !== "function") throw new TypeError("deriveRepositoryRef: git runner must be a function");
-  const shallow = String(git(["rev-parse", "--is-shallow-repository"])).trim();
-  if (shallow !== "false") throw new ShallowRepositoryError();
-  const roots = String(git(["rev-list", "--max-parents=0", "HEAD"]))
-    .trim().split(/\r?\n/).filter((line) => line.length > 0);
-  if (roots.length !== 1) {
-    throw new Error(`deriveRepositoryRef: expected exactly one root commit, got ${roots.length}`);
+  const shallow = stripTerminalNewline(String(git(["rev-parse", "--is-shallow-repository"])));
+  if (shallow === "true") throw new ShallowRepositoryError();
+  if (shallow !== "false") {
+    throw new Error(`deriveRepositoryRef: malformed is-shallow-repository output ${JSON.stringify(shallow)}`);
   }
-  if (!HEX40.test(roots[0])) {
-    throw new Error(`deriveRepositoryRef: malformed root commit ${JSON.stringify(roots[0])}`);
-  }
-  return `git-root:${roots[0]}`;
+  const root = stripTerminalNewline(String(git(["rev-list", "--max-parents=0", "HEAD"])));
+  if (root.includes("\n")) throw new Error("deriveRepositoryRef: expected exactly one root commit");
+  if (!HEX40.test(root)) throw new Error(`deriveRepositoryRef: malformed root commit ${JSON.stringify(root)}`);
+  return `git-root:${root}`;
 }
