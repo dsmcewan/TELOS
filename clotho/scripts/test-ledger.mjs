@@ -7,7 +7,7 @@
 // independently-signed adversarial fixtures, and incremental streaming readEdges.
 
 import assert from "node:assert/strict";
-import { generateKeyPairSync, sign as edSign, createHash } from "node:crypto";
+import { generateKeyPairSync, sign as edSign, createHash, createPublicKey } from "node:crypto";
 import { mkdtempSync, rmSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -91,6 +91,28 @@ try {
     assert.equal(v.records.length, 3);
     assert.ok(v.header && v.manifest);
     assert.ok(!v.records.some((r) => r.clotho_weave_header || r.clotho_weave_trailer));
+  }
+
+  // ---- 1b. signKey must be a PRIVATE Ed25519 key; a public KeyObject (same
+  // asymmetricKeyType) is refused at creation, BEFORE any file I/O -----------
+  {
+    const p = newPath();
+    const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+    // A public KeyObject reports asymmetricKeyType "ed25519" but type "public";
+    // it must be rejected immediately without touching the injected file handle.
+    let opened = 0;
+    const spyOpen = () => { opened++; return { write() { throw new Error("must not write"); }, close() {} }; };
+    assert.throws(() => createLedger(p, { ...opts, signKey: publicKey, openFile: spyOpen }), /Ed25519 private key/);
+    assert.equal(opened, 0, "createLedger must reject a public key before opening the file");
+    assert.throws(() => readFileSync(p), /ENOENT/, "no ledger file may be created on rejection");
+    // A DER-imported public key object is likewise refused.
+    const pubImported = createPublicKey({ key: publicKey.export({ type: "spki", format: "der" }), format: "der", type: "spki" });
+    assert.throws(() => createLedger(p, { ...opts, signKey: pubImported, openFile: spyOpen }), /Ed25519 private key/);
+    assert.equal(opened, 0);
+    // Positive control: an injected PRIVATE KeyObject is accepted and verifies.
+    const l = createLedger(p, { ...opts, signKey: privateKey });
+    l.appendEdge(anEdge()); l.close(coverage());
+    assert.equal((await verifyLedger(p)).ok, true, "injected private KeyObject must succeed");
   }
 
   // ---- 2. verify trust boundary: tamper -> ok:false, records truncated ------
@@ -189,6 +211,8 @@ try {
     [(c) => { c.weavers[0].inspected_source_counts[0].extra = 1; }, /unexpected field/], // extra count field
     [(c) => { c.weavers[0].inspected_source_counts = [{ inventory_id: "package-files", count: 1 }, { inventory_id: "package-files", count: 1 }]; }, /sorted and unique/], // duplicate
     [(c) => { c.weavers[0].implementation_refs = []; }, /nonempty array/],                             // empty implementation_refs
+    [(c) => { delete c.weavers[0].implementation_refs; }, /missing field 'implementation_refs'/],       // implementation_refs property ABSENT
+    [(c) => { delete c.orchestrator_refs; }, /missing field 'orchestrator_refs'/],                      // orchestrator_refs property ABSENT
     [(c) => { c.inventories_consumed = [{ id: "x", source_ref: "git:" + HEX40A }]; }, /'file:' content address/] // malformed inventories_consumed ref
   ];
   for (const [mut, re] of covBad) {
@@ -576,7 +600,9 @@ try {
     (c) => { c.weavers[1].inspected_source_counts[0].count = 3; },                                               // skipped nonzero
     (c) => { c.weavers[0].state = "failed"; },                                                                   // failed state
     (c) => { c.weavers[0].implementation_refs = []; },                                                           // empty impl_refs
-    (c) => { c.orchestrator_refs = []; }                                                                          // empty orchestrator_refs
+    (c) => { c.orchestrator_refs = []; },                                                                         // empty orchestrator_refs
+    (c) => { delete c.weavers[0].implementation_refs; },                                                          // implementation_refs property ABSENT
+    (c) => { delete c.orchestrator_refs; }                                                                        // orchestrator_refs property ABSENT
   ]) {
     assert.equal(await verifyBadCoverage(mut), false, "signed invalid-manifest fixture must fail verify");
   }

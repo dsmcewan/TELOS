@@ -189,7 +189,14 @@ export function createLedger(ledgerPath, { signKey, wovenAt, repoHead, repositor
   let privateKey;
   if (signKey !== undefined) {
     privateKey = (typeof signKey === "string" || Buffer.isBuffer(signKey)) ? createPrivateKey(signKey) : signKey;
-    if (!privateKey || privateKey.asymmetricKeyType !== "ed25519") throw new TypeError("createLedger: signKey must be an Ed25519 private key");
+    // `asymmetricKeyType` names the algorithm, not the role: a PUBLIC Ed25519
+    // KeyObject also reports "ed25519". Require `.type === "private"` too, so a
+    // non-private key is refused at creation — before deriving the public key,
+    // making directories, opening the path, or writing the header — rather than
+    // silently succeeding until the first sign().
+    if (!privateKey || typeof privateKey !== "object" || privateKey.type !== "private" || privateKey.asymmetricKeyType !== "ed25519") {
+      throw new TypeError("createLedger: signKey must be an Ed25519 private key");
+    }
   } else {
     privateKey = generateKeyPairSync("ed25519").privateKey;
   }
