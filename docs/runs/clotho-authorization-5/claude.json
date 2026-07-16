@@ -1,0 +1,30 @@
+{
+  "build_id": "clotho-phase-1-authz-005",
+  "use_case": "clotho-phase-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/clotho-daedalus-delta11/matured-plan-v12.md",
+    "docs/clotho-phase-1-design.md"
+  ],
+  "proposal_ref": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-16T14:48:06.351Z",
+  "rationale": "Judged v12 on its own advisory, non-sandboxed terms per The Eye's binding scope decision. The plan is internally consistent, implementation-ready, and faithful to the repository trust model. Key findings: (1) Scope honesty is thorough and uniform — every reference to the D23/D27/D30/D32 scanner and the D33 closure is consistently framed as a deterministic trusted-code review signal over a frozen lexical form set, never as isolation proof; the 'unclassified, not certified absent' distinction is carried into tests, evidence schemas (verification.json), and the published provenance statement, and risk 18 states the residual authority plainly. No overclaim survives that would contradict AM-35. (2) The three round-11 repairs are complete and mutually reinforcing: coverage honesty (D11/D35) now has a closed two-value schema with the critical fail-closed default — a missing manifest yields coverage:\"unverified\" with conservatively non-empty coverageUnknown, and the contradictory pairing (unverified + empty coverageUnknown with consulted producers) is explicitly a rejected schema violation with both positive and negative units enumerated; publication-time drift (D34) closes the real gap between committed-inventory tests and the published artifact by re-deriving closures and re-checking hashes from on-disk bytes immediately before the frozen D20/D28 commit point, with drift fixtures for re-export, dynamic-import, require-style, and hash-mismatch cases; producer==attribution (D10/AM-39) binds asserted_by to the invoked weaver id at append time, ordered before appendEdge so a violating result never touches the temporary ledger, with fixtures for cross-weaver, human, model, and warning.weaver mismatches. (3) The decision set composes without contradiction: D17's existence constraint is reconciled with D14/D33 closure equality via the staged Task 4a/4b/5 inventory landing; D19's split keeps Task 3 free of committed-inventory dependencies that cannot legally exist yet; D26/D29 driver-owned counting plus the normative edge-append ordering makes 'executed' behaviorally meaningful; D31 gives the ledger weaver independent counted contract reads so skipping the doc-weaver cannot silently starve clause resolution, proven by the doc-skipped flagship negative run. (4) Task 0/1 ordering resolves the absent-package-in-matrix problem, and fetch-depth: 0 is correctly load-bearing against the D16 shallow guard, proven against real git per D18 rather than only by workflow configuration. (5) The exit criteria are executable and fail-closed: flagship acceptance requires distinct one-to-one matching over eight audited groups, a review-set artifact that prevents silent over-threading (D3), coverage-field checks in both directions, and reproduction evidence that exits nonzero on drift, attribution violation, or unclean publication. (6) Accepted risks are honest about residual windows (symlink race 15, drift window 21, cleanup residue 16) and correctly scope them as OS-level races over advisory, git-ignored data. The 'Proposed spec amendments: None' section is legitimate: the spec v2.8 overclaim correction is already mandated by The Eye's own recorded round-11 lifecycle, so no new proposal from this workshop is required; the plan integrates the amendment's consequences without designing around a known spec defect. Residual concerns are minor and non-blocking: the plan's density creates execution-fidelity risk (mitigated by per-task exit criteria and frozen normative tables in the plan body), and Task 6's 120-second wall ceiling could flake on slow runners (an operational tuning matter, not a correctness defect). I would sign this: it does what it claims, claims only what it does, and every integrity property it asserts is backed by an enumerated enforcement point and test.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011Cd5vKh4eC515XyB6xegkK",
+    "source": "ai-peer-mcp/claude_ask",
+    "answered_at": "2026-07-16T14:48:33.063Z",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "f85ea739e7d19bca2f726283926aabaab02114983fbe65b4954d2e8c2cd59f1f",
+    "signed_fields": "canonical-minus-signature"
+  }
+}
