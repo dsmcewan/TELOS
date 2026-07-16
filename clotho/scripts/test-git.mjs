@@ -7,8 +7,12 @@
 
 import assert from "node:assert/strict";
 
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { weave } from "../weavers/git.mjs";
-import { makeCountedSource } from "../weavers/util.mjs";
+import { makeCountedSource, classifyModuleLoads } from "../weavers/util.mjs";
 import { canonicalJson, deriveNodeId } from "../registry.mjs";
 
 const HEX40 = (c) => c.repeat(40);
@@ -156,6 +160,49 @@ function ctxOf(git, symbols, files) {
   assert.equal(ok.warnings.length, 0);
   // A SHA with NO trailing newline also parses (the trailing LF is optional).
   assert.equal(run(SHA1).edges.length, 1);
+}
+
+// ---- 6. CRLF line terminators are accepted; bare CR is fatal ----------------
+{
+  const files = [{ path: "clotho/registry.mjs", blob_sha: BLOB }];
+  const run = (out) => {
+    const { git } = mockGit({ [`log --format=%H --reverse -- clotho/registry.mjs`]: out });
+    return weave(ctxOf(git, [], files).ctx);
+  };
+  // Single SHA with a CRLF terminator parses (platform line ending, not malformed).
+  assert.equal(run(`${SHA1}\r\n`).edges.length, 1);
+  // Multi-line CRLF: parses; the weaver takes the earliest (first) SHA.
+  const multi = run(`${SHA1}\r\n${SHA2}\r\n`);
+  assert.equal(multi.edges.length, 1);
+  assert.equal(multi.edges[0].to_locator.locator.sha, SHA1);
+  // A bare CR (not part of a CRLF) is malformed output: fatal.
+  assert.throws(() => run(`${SHA1}\r`), /bare carriage return/);
+  assert.throws(() => run(`${SHA1}\rgarbage`), /bare carriage return/);
+  // A CRLF-delimited blank line is still fatal (blank, non-SHA).
+  assert.throws(() => run("\r\n"), /malformed git output/);
+}
+
+// ---- 7. an EXECUTED weaver exhausts BOTH counted sources, one empty ----------
+{
+  // package-symbols empty-but-present, package-files nonempty: after weave() both
+  // accountings read exhausted:true (D29 — every handed iterable run to completion).
+  const files = [{ path: "clotho/registry.mjs", blob_sha: BLOB }];
+  const { git } = mockGit({ [`log --format=%H --reverse -- clotho/registry.mjs`]: `${SHA1}\n` });
+  const { ctx, acct } = ctxOf(git, [], files);
+  weave(ctx);
+  assert.equal(acct.sym().exhausted, true, "empty symbol source is still exhausted");
+  assert.equal(acct.sym().observed_count, 0);
+  assert.equal(acct.fil().exhausted, true, "file source exhausted");
+  assert.equal(acct.fil().observed_count, 1);
+}
+
+// ---- 8. git.mjs closure intent: it imports ONLY ../registry.mjs --------------
+{
+  // Redundant documentation of the committed {registry, git} closure: the git
+  // weaver must pull in no other clotho module (e.g. never drive-by import util).
+  const src = readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "weavers", "git.mjs"), "utf8");
+  const rel = classifyModuleLoads(src).filter((s) => s.literal && s.specifier && (s.specifier.startsWith("./") || s.specifier.startsWith("../")));
+  assert.deepEqual([...new Set(rel.map((s) => s.specifier))].sort(), ["../registry.mjs"]);
 }
 
 console.log("test-git: all assertions passed");

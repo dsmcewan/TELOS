@@ -12,18 +12,20 @@ import { deriveNodeId, validateEdgeInput } from "../registry.mjs";
 const HEX40 = /^[0-9a-f]{40}$/;
 const WEAVER_ID = "clotho-git-weaver";
 
-// Parse `git log --format=%H` output: strip a single trailing LF, split on LF.
-// EVERY line must be a full 40-hex SHA (malformed output is fatal, never
-// silently skipped). Returns the ordered SHAs (earliest first, --reverse).
+// Parse `git log --format=%H` output. Accepts LF or CRLF line terminators (a
+// full-SHA line carrying a platform CRLF terminator is NOT malformed), but a BARE
+// carriage return (a CR not paired with a following LF) is malformed. EVERY line
+// must be a full 40-hex SHA — a blank or non-SHA line is fatal, never silently
+// skipped. Returns the ordered SHAs (earliest first, --reverse).
 function parseShaLines(out) {
   if (typeof out !== "string") throw new Error("git-weaver: non-string git output");
   // ONLY genuinely empty output ("") is "no introducing commit" (warn/no-edge).
-  // Output that carries any content — including a lone "\n" (one blank line) or an
-  // internal blank line — is malformed: every output line must be a full SHA, so a
-  // blank/non-SHA line is fatal, never silently taken as no-result.
   if (out === "") return [];
-  const text = out.endsWith("\n") ? out.slice(0, -1) : out;
-  const lines = text.split("\n"); // out === "\n" -> text "" -> [""] -> blank line is fatal
+  // A bare CR (not part of a CRLF) is malformed output, never a line terminator.
+  if (/\r(?!\n)/.test(out)) throw new Error("git-weaver: bare carriage return in git output");
+  const normalized = out.replace(/\r\n/g, "\n"); // CRLF terminators -> LF
+  const text = normalized.endsWith("\n") ? normalized.slice(0, -1) : normalized;
+  const lines = text.split("\n"); // "\n"/"\r\n" -> text "" -> [""] -> blank line is fatal
   for (const ln of lines) {
     if (!HEX40.test(ln)) throw new Error(`git-weaver: malformed git output line ${JSON.stringify(ln)}`);
   }

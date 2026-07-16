@@ -201,4 +201,27 @@ try {
   }
 }
 
+// ---- non-.mjs relative specifier to a MISSING file is silent -----------------
+{
+  // Precedence pin: a relative NON-.mjs specifier is outside the extraction
+  // grammar (ambiguous-extension), which short-circuits BEFORE existence — so a
+  // missing `./x.json` yields no edge AND no unrepresentable-consumer warning.
+  const r = mkdtempSync(path.join(tmpdir(), "clotho-code-nonmjs-"));
+  try {
+    mkdirSync(path.join(r, "pkg"), { recursive: true });
+    writeFileSync(path.join(r, "pkg", "c.mjs"), 'import data from "./missing.json";\nexport const c = data;\n');
+    const src = makeCountedSource("package-modules", [{ path: "pkg/c.mjs", blob_sha: blob(70) }]);
+    const res = weave({
+      repoRoot: r, repositoryRef: REPO,
+      files: [{ path: "pkg/c.mjs", blob_sha: blob(70) }],
+      symbols: [{ path: "pkg/c.mjs", symbol: "c", blob_sha: blob(70) }],
+      sources: { "package-modules": src.source }
+    });
+    assert.equal(res.edges.length, 0, "non-.mjs relative specifier yields no edge");
+    assert.ok(!res.warnings.some((w) => /unrepresentable/.test(w.message || String(w))), "non-.mjs missing file is NOT unrepresentable-consumer");
+  } finally {
+    rmSync(r, { recursive: true, force: true });
+  }
+}
+
 console.log("test-code: all assertions passed");

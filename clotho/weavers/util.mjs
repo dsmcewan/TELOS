@@ -22,6 +22,16 @@ export function escapeRegExp(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+// The ONE canonical repository-relative POSIX path predicate, shared by the git
+// path-argument allowlist and asserted over walker / closure outputs: a nonempty
+// string with no NUL, no backslash, no leading "/", and no "."/".." segment.
+// This is what "validated repository-relative POSIX paths" means throughout.
+export function isCanonicalRepoRelPosix(p) {
+  if (typeof p !== "string" || p.length === 0) return false;
+  if (p.includes("\0") || p.includes("\\") || p.startsWith("/")) return false;
+  return p.split("/").every((seg) => seg.length > 0 && seg !== "." && seg !== "..");
+}
+
 // ---- lexical scanner ---------------------------------------------------------
 // Single pass over the source tracking code / line-comment / block-comment /
 // single- and double-quoted string / template-literal state. Produces a `masked`
@@ -36,14 +46,23 @@ export function escapeRegExp(s) {
 // as strings; they are masked as code (specifiers are never regexes).
 
 // Chars after which a `/` begins a REGEX literal (expression position) rather
-// than division. Conservative: after any value-terminating token (identifier,
-// `)`, `]`, string, template) a `/` is division; everywhere else it is a regex.
+// than division. After any value-terminating token (identifier, `)`, `]`, `}`,
+// string, template) a `/` is division; after a punctuator that cannot end an
+// expression it is a regex. `)`, `]`, `}` are deliberately EXCLUDED here and
+// handled as expression-enders — except a `)` that closes a control head (see
+// CONTROL_HEADS), which is resolved separately in regexAllowedAfter.
 const REGEX_PREFIX = new Set("([{,;=:?!&|^~+-*%<>".split(""));
-// Expression-introducing keywords after which a `/` begins a REGEX literal even
-// though the preceding significant char is an identifier char — e.g. the `/` in
-// `return /re/` or `case /re/`. Without this a binding appearing only inside such
-// a regex would be misread as an identifier use.
-const REGEX_KEYWORDS = new Set(["return", "throw", "case", "typeof", "instanceof", "in", "of", "new", "delete", "void", "do", "else", "yield", "await"]);
+// Keywords that cannot end an expression, so a following `/` begins a REGEX
+// literal even though the preceding significant char is an identifier char —
+// e.g. the `/` in `return /re/` or `case /re/`. Contextual identifiers such as
+// `of`/`as` are intentionally NOT here: treating `of` as regex-introducing would
+// mask a real division/dynamic-import after an `of`-named binding.
+const REGEX_KEYWORDS = new Set(["return", "throw", "case", "do", "else", "in", "instanceof", "typeof", "new", "delete", "void"]);
+// Keywords whose `(` opens a CONTROL head (`if (x) /re/` — the `)` is followed by
+// a regex, not division). An expression-group `)` (any other `(`) is followed by
+// division. Tracking which kind of `(` a `)` closes is what makes regex-vs-division
+// sound after `)`.
+const CONTROL_HEADS = new Set(["if", "while", "for", "switch", "catch", "with"]);
 function precedingWord(source, idx) {
   let j = idx - 1;
   while (j >= 0 && /\s/.test(source[j])) j--;
@@ -51,8 +70,15 @@ function precedingWord(source, idx) {
   while (j >= 0 && IDENT_CHAR.test(source[j])) j--;
   return source.slice(j + 1, end + 1);
 }
-function regexAllowedAfter(prevSig, prevWord) {
-  return prevSig === "" || prevSig === "\n" || REGEX_PREFIX.has(prevSig) || REGEX_KEYWORDS.has(prevWord);
+// `/` begins a regex when the previous significant token cannot end an
+// expression: statement start, an expression-introducing punctuator, a
+// non-expression-ending keyword, or a `)` that closes a control head. After an
+// identifier/literal/`]`/`}`/expression-`)` it is division.
+function regexAllowedAfter(prevSig, prevWord, lastParenKind) {
+  if (prevSig === "" || prevSig === "\n") return true;
+  if (prevSig === ")") return lastParenKind === "control";
+  if (REGEX_PREFIX.has(prevSig)) return true;
+  return REGEX_KEYWORDS.has(prevWord);
 }
 
 // Decode a single JS string escape beginning at source[i] === '\\'. Returns the
@@ -95,6 +121,11 @@ export function lex(source) {
   // "template" frames blank literal text but yield to "code" inside "${...}".
   const stack = [{ mode: "code", subst: false, brace: 0 }];
   let prevSig = ""; // last significant (non-space) code char, for regex detection
+  // Paren-kind stack: each "(" is "control" (opened by if/while/for/switch/catch/
+  // with) or "expr"; on ")" we remember the closed kind so a `/` after a control
+  // head is a regex while a `/` after an expression group is division.
+  const parenStack = [];
+  let lastParenKind = null;
   let i = 0;
   while (i < n) {
     const top = stack[stack.length - 1];
@@ -145,7 +176,15 @@ export function lex(source) {
       prevSig = "`";
       continue;
     }
-    if (c === "/" && regexAllowedAfter(prevSig, precedingWord(source, i))) {
+    if (c === "(") {
+      parenStack.push(CONTROL_HEADS.has(precedingWord(source, i)) ? "control" : "expr");
+      keep[i] = 1; i++; prevSig = "("; continue;
+    }
+    if (c === ")") {
+      lastParenKind = parenStack.length ? parenStack.pop() : "expr";
+      keep[i] = 1; i++; prevSig = ")"; continue;
+    }
+    if (c === "/" && regexAllowedAfter(prevSig, precedingWord(source, i), lastParenKind)) {
       // Regex literal: blank the whole literal (interior + delimiters + flags) so
       // a `from "x"` / `import(` inside a regex can never manufacture a load site.
       i++; // consume opening "/"
@@ -283,6 +322,32 @@ export function classifyModuleLoads(source) {
 // is in allowExternal, otherwise "forbidden"; anything else is "escape".
 
 function toPosix(p) { return p.split(path.sep).join("/"); }
+
+// Shared fail-closed chain-walk discipline (D21/D33). Three helpers implement the
+// SAME rule — lstat every existing component of a path, reject any symlink
+// component, and only then trust a realpath — for three shapes: an absolute path
+// including its repo-root ancestors (`componentsSymlinkFree`), a target beneath
+// the repo real root (`containmentReal`), and a candidate write path with its
+// deepest-existing-ancestor resolution (`physicalContainment`). They are kept as
+// focused variants rather than one over-parameterized walker to avoid drift-by-
+// generalization, but they never diverge in policy: a symlink component is always
+// fatal, and realpath is only consulted after the lstat pass proves the chain
+// symlink-free. TOCTOU posture: lstat and the later realpath are not atomic, so a
+// rename between them is theoretically observable; Phase 1 treats that as out of
+// scope (the walk still fails closed on any symlink it actually observes, and the
+// weave is a single-shot read of a quiescent tree). A missing INTERMEDIATE
+// component is reported as `missing` (there is nothing deeper to follow), never
+// silently treated as containment.
+
+// A repository-relative POSIX path that is PROVEN canonical (fail-closed): a
+// filesystem name containing a backslash or other noncanonical byte cannot pass
+// as a walker/closure output. Used wherever a validated repo-relative path is
+// emitted.
+function canonicalRel(repoRootReal, abs) {
+  const rel = toPosix(path.relative(repoRootReal, abs));
+  if (!isCanonicalRepoRelPosix(rel)) throw new Error(`noncanonical repository-relative path: ${JSON.stringify(rel)}`);
+  return rel;
+}
 
 // Walk EVERY existing component of an absolute path from the filesystem root down,
 // lstat-ing each; a symlink component is fatal. This covers a path's ANCESTORS
@@ -570,7 +635,7 @@ export function walkFiles(repoRoot, roots) {
     if (!chain.ok) throw new Error(`walkFiles: symlinked component in root: ${JSON.stringify(root)}`);
     if (chain.missing) continue;          // absent root: nothing to walk
     const rootStat = lstatSync(absRoot);  // symlink leaf already rejected above
-    if (rootStat.isFile()) { out.add(toPosix(path.relative(repoRootReal, absRoot))); continue; }
+    if (rootStat.isFile()) { out.add(canonicalRel(repoRootReal, absRoot)); continue; }
     walkDir(absRoot, repoRootReal, out);
   }
   return [...out].sort();
@@ -586,7 +651,7 @@ function walkDir(dir, repoRootReal, out) {
     // beneath a configured root could otherwise omit a real input from the walk.
     if (st.isSymbolicLink()) throw new Error(`walkFiles: symlinked entry is not permitted: ${toPosix(path.relative(repoRootReal, full))}`);
     if (st.isDirectory()) walkDir(full, repoRootReal, out);
-    else if (st.isFile()) out.add(toPosix(path.relative(repoRootReal, full)));
+    else if (st.isFile()) out.add(canonicalRel(repoRootReal, full));
   }
 }
 
@@ -639,6 +704,15 @@ export function seedSourceDescriptors(repoRoot, packageRoots, git) {
 // fatal error). Normal exhaustion is recorded only when the iterator completes.
 // A source that raises before completion is not counted. The accounting accessor
 // is returned separately; the weaver receives only `source`.
+//
+// RATIFIED Task-4a contract (do not read as an accidental divergence): counting
+// happens on the consumer's resume. A consumer that fully processes the LAST item
+// and then breaks WITHOUT resuming records observed_count = N-1, exhausted=false.
+// This is intended: D29 requires an `executed` weaver to run every handed iterable
+// to natural completion (`for...of` to the end), which counts all N and records
+// exhaustion. The driver-observed accounting semantics for a weaver that exits
+// early are settled by the Task 5 driver's post-return accounting check, not here;
+// pinned by a unit in test-util.mjs so it cannot silently change.
 
 export function makeCountedSource(inventoryId, list) {
   const items = Array.from(list);
@@ -738,8 +812,12 @@ export function validateGitArgs(args) {
   throw new Error(`git: disallowed subcommand ${JSON.stringify(sub)}`);
 }
 
+// A git `<path>` argument must be a canonical repository-relative POSIX path
+// (no absolute path, no ".."/"." segment, no backslash, no NUL) and must not be
+// option-shaped — so a caller can never smuggle an absolute path, a traversal,
+// or a flag through the path slot.
 function isPathArg(p) {
-  return typeof p === "string" && p.length > 0 && !p.startsWith("-") && !p.includes("\0");
+  return isCanonicalRepoRelPosix(p) && !p.startsWith("-");
 }
 
 // The FIXED, security-relevant spawn settings a caller cannot override: they are

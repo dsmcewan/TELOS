@@ -12,8 +12,10 @@ import { statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { readdirSync, statSync as statSyncFs } from "node:fs";
+
 import {
-  PACKAGE_ROOTS, DOC_ROOTS, DOC_WEAVER_EXCLUDE, GLOBAL_EXCLUDE, CONTRACT_FILES,
+  PACKAGE_ROOTS, PACKAGE_ROOTS_EXCLUDE, DOC_ROOTS, DOC_WEAVER_EXCLUDE, GLOBAL_EXCLUDE, CONTRACT_FILES,
   LEDGER_SOURCES, RUN_SOURCES, WEAVERS, REQUIRED_INVENTORY_IDS,
   LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS, WEAVER_IMPL_FILES, PERMITTED_EXTERNAL_CLOSURE_FILES
 } from "../inventory.mjs";
@@ -87,12 +89,54 @@ const abs = (rel) => path.join(REPO_ROOT, ...rel.split("/"));
     for (const f of list) assert.ok(statSync(abs(f)).isFile(), `impl file ${f} exists`);
   }
   for (const f of PERMITTED_EXTERNAL_CLOSURE_FILES) assert.ok(statSync(abs(f)).isFile(), `permitted external ${f} exists`);
-  // CONTRACT_FILES is sorted; LEDGER_SOURCES is empty at this PR (AM-17)
+  // CONTRACT_FILES is sorted; LEDGER_SOURCES is the EXACT reviewed set at this SHA.
   assert.deepEqual([...CONTRACT_FILES].sort(), [...CONTRACT_FILES]);
-  assert.deepEqual(LEDGER_SOURCES, []);
   // exclusions are the reviewed values
   assert.deepEqual(DOC_WEAVER_EXCLUDE, ["docs/runs"]);
   assert.deepEqual(GLOBAL_EXCLUDE, ["docs/runs/clotho-self-weave"]);
+}
+
+// ---- 6. LEDGER_SOURCES is a committed closed source inventory (exact-final) ---
+{
+  // Not a deferred placeholder: the exact reviewed set at this SHA is empty
+  // (Clotho weaves no committed ledger artifact). If a real entry is ever added
+  // it must carry the { id, path, adapter } shape and name an existing file.
+  assert.ok(Array.isArray(LEDGER_SOURCES) && Object.isFrozen(LEDGER_SOURCES));
+  assert.deepEqual(LEDGER_SOURCES, []);
+  for (const e of LEDGER_SOURCES) {
+    assert.deepEqual(Object.keys(e).sort(), ["adapter", "id", "path"]);
+    assert.ok(statSync(abs(e.path)).isFile(), `ledger source ${e.path} exists`);
+  }
+}
+
+// ---- 7. PACKAGE_ROOTS completeness: every package.json dir is accounted for ---
+{
+  // Enumerate EVERY package.json directory in the repository (excluding
+  // node_modules / .git / .telos / the self-weave output) and require each to be
+  // either a committed PACKAGE_ROOT or an explicitly excluded non-TELOS sibling
+  // — so "inventory every current package root once" is proven, not hand-claimed.
+  const SKIP = new Set(["node_modules", ".git", ".telos"]);
+  const pkgDirs = new Set();
+  const walk = (absDir, rel) => {
+    let entries;
+    try { entries = readdirSync(absDir, { withFileTypes: true }); } catch { return; }
+    if (entries.some((e) => e.isFile() && e.name === "package.json")) pkgDirs.add(rel);
+    for (const e of entries) {
+      if (!e.isDirectory() || SKIP.has(e.name)) continue;
+      if (rel === "docs/runs" && e.name === "clotho-self-weave") continue;
+      walk(path.join(absDir, e.name), rel === "" ? e.name : `${rel}/${e.name}`);
+    }
+  };
+  walk(REPO_ROOT, "");
+  pkgDirs.delete(""); // the repo root itself is not a weavable package root
+  const accounted = new Set([...PACKAGE_ROOTS, ...PACKAGE_ROOTS_EXCLUDE]);
+  // no package.json directory is silently missed
+  for (const d of pkgDirs) assert.ok(accounted.has(d), `package dir ${d} is committed or explicitly excluded`);
+  // and every committed/excluded root really is a package directory
+  for (const d of accounted) assert.ok(pkgDirs.has(d), `declared package root ${d} has a package.json`);
+  // included and excluded are disjoint
+  for (const d of PACKAGE_ROOTS) assert.ok(!PACKAGE_ROOTS_EXCLUDE.includes(d), `${d} not both included and excluded`);
+  assert.ok(statSyncFs(abs("clotho/package.json")).isFile()); // sanity: the walker sees real package.json
 }
 
 console.log("test-inventory: all assertions passed");

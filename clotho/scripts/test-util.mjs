@@ -14,7 +14,7 @@ import path from "node:path";
 import {
   makeCountedSource, physicalContainment, walkFiles, seedSourceDescriptors,
   classifyModuleLoads, scanExports, scanImports, identifierUsedOutside, escapeRegExp,
-  validateGitArgs, gitSpawnOptions, isFullSha
+  validateGitArgs, gitSpawnOptions, isFullSha, isCanonicalRepoRelPosix
 } from "../weavers/util.mjs";
 
 // ---- 1. counted-iterator (D26/D29) ------------------------------------------
@@ -366,6 +366,67 @@ import {
   } finally {
     rmSync(base, { recursive: true, force: true });
   }
+}
+
+// ---- 9. regex-vs-division soundness (shared lexer) --------------------------
+{
+  // A regex after a control-condition `)` must be recognized as a regex, so
+  // load-shaped text and an imported name inside it create NO closure edge / use.
+  const ctrl = 'if (x) /import("./evil.mjs") from "./evil2.mjs" binding/.test(y);\n';
+  const sites = classifyModuleLoads(ctrl);
+  assert.equal(sites.filter((s) => s.specifier === "./evil.mjs" || s.specifier === "./evil2.mjs").length, 0, "regex after control ) is not a load");
+  assert.equal(identifierUsedOutside(ctrl, "binding", []), false, "identifier only inside a control-) regex is not a use");
+  // A regex after `while (...)` likewise.
+  const wh = 'while (a) /b from "./z.mjs"/g;\n';
+  assert.equal(classifyModuleLoads(wh).filter((s) => s.specifier === "./z.mjs").length, 0);
+
+  // Division after an identifier named `of` must NOT be treated as a regex —
+  // otherwise it would mask a following real dynamic import / identifier use.
+  const ofDiv = 'const of = 1; const q = of / import("./real.mjs");\n';
+  const ofSites = classifyModuleLoads(ofDiv);
+  assert.equal(ofSites.filter((s) => s.form === "dynamic-import" && s.specifier === "./real.mjs").length, 1, "division after `of` does not mask a real dynamic import");
+  const ofUse = 'const of = 2; const r = of / weaverBinding;\n';
+  assert.equal(identifierUsedOutside(ofUse, "weaverBinding", []), true, "identifier after `of /` division is a real use");
+
+  // A regex in ordinary expression-start position still masks its interior.
+  const es = 'const re = /import("./no.mjs")/;\n';
+  assert.equal(classifyModuleLoads(es).filter((s) => s.specifier === "./no.mjs").length, 0);
+}
+
+// ---- 10. canonical repo-relative POSIX validator + git path-arg allowlist -----
+{
+  assert.equal(isCanonicalRepoRelPosix("clotho/weavers/util.mjs"), true);
+  assert.equal(isCanonicalRepoRelPosix(""), false);
+  assert.equal(isCanonicalRepoRelPosix("/abs/path"), false);          // absolute
+  assert.equal(isCanonicalRepoRelPosix("a/../b"), false);             // .. segment
+  assert.equal(isCanonicalRepoRelPosix("./a"), false);                // . segment
+  assert.equal(isCanonicalRepoRelPosix("a\\b"), false);               // backslash (POSIX name)
+  assert.equal(isCanonicalRepoRelPosix("a//b"), false);               // empty segment
+  assert.equal(isCanonicalRepoRelPosix("a" + String.fromCharCode(0) + "b"), false); // NUL
+  // git path-arg allowlist rejects the same noncanonical shapes.
+  assert.throws(() => validateGitArgs(["log", "--format=%H", "--reverse", "--", "/abs.mjs"]), /disallowed log shape/);
+  assert.throws(() => validateGitArgs(["log", "--format=%H", "--reverse", "--", "../escape.mjs"]), /disallowed log shape/);
+  assert.throws(() => validateGitArgs(["log", "--format=%H", "--reverse", "--", "a\\b.mjs"]), /disallowed log shape/);
+  assert.throws(() => validateGitArgs(["hash-object", "--no-filters", "--", "../x"]), /disallowed hash-object shape/);
+  // a canonical path is accepted.
+  assert.doesNotThrow(() => validateGitArgs(["log", "--format=%H", "--reverse", "--", "clotho/registry.mjs"]));
+}
+
+// ---- 11. `export const x = someCall()` is a seeded Phase-1 export -------------
+{
+  // Within the frozen grammar: `export const NAME = <expr>` binds one identifier,
+  // so it seeds a symbol even when the initializer is a call. Pinned as committed
+  // boundary behavior (NOT dynamic symbol flow, which is let/var/computed).
+  const scan = scanExports('export const alpha = someCall();\nexport const beta = 1;\n');
+  assert.deepEqual(scan.exports, ["alpha", "beta"]);
+  // let/var IS dynamic symbol flow: no symbol, a warning.
+  const dyn = scanExports("export let mutable = 1;\n");
+  assert.deepEqual(dyn.exports, []);
+  assert.ok(dyn.warnings.some((w) => /dynamic symbol flow|mutable/.test(w)));
+  // a computed/destructuring export warns too.
+  const comp = scanExports("export const { a, b } = obj;\n");
+  assert.deepEqual(comp.exports, []);
+  assert.ok(comp.warnings.length >= 1);
 }
 
 console.log("test-util: all assertions passed");

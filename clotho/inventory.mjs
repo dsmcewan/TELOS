@@ -11,14 +11,30 @@
 
 // ---- closed top-level inputs -------------------------------------------------
 
-// The reviewed core TELOS spine packages Clotho weaves. Sorted, exact; not a
-// runtime scan of every package.json in the tree.
+// The reviewed core TELOS spine packages Clotho weaves — exactly the packages of
+// the TELOS build-gate layout documented in CLAUDE.md. Sorted, exact; not a
+// runtime scan (D-"do not discover new top-level inputs at runtime"). "Inventory
+// every current package root once" is proven COMPLETE, not asserted by hand: the
+// closure test / test-inventory enumerate every package.json directory in the
+// repository and require each to be either committed here or listed in
+// PACKAGE_ROOTS_EXCLUDE — so no package root can be silently omitted.
 export const PACKAGE_ROOTS = Object.freeze([
   "breakout",
   "build-gate",
   "clotho",
   "connectors/ai-peer-mcp",
   "merkle-dag"
+]);
+
+// Package directories that exist in the repository but are NOT part of the TELOS
+// build-gate spine (they are sibling projects sharing the monorepo, absent from
+// the CLAUDE.md TELOS layout). Clotho deliberately does not weave them. Listed
+// explicitly so the completeness check accounts for every package.json directory
+// — inclusion and exclusion are both committed, reviewed decisions.
+export const PACKAGE_ROOTS_EXCLUDE = Object.freeze([
+  "ai-forge",
+  "forge",
+  "saas-forge"
 ]);
 
 // Reviewed documentation and contract roots. The doc-weaver excludes docs/runs/
@@ -37,10 +53,16 @@ export const CONTRACT_FILES = Object.freeze([
   "contracts/Proposal Lifecycle.md"
 ]);
 
-// Configured ledger files plus adapter ids (D31). Per AM-17 the ledger weaver's
-// sources are finalized with the ledger weaver in Task 4b; no committed signed
-// thread-ledger artifact exists at this PR, so this is empty here by design and
-// extended in Task 4b.
+// Configured ledger files plus adapter ids (D31) — a CLOSED top-level source
+// inventory, committed exactly at this PR (NOT a deferred per-weaver closure:
+// D17/AM-17 defers only per-weaver implementation-file lists and the orchestrator
+// list, not closed source inventories, per this plan's inventory.mjs description).
+// The EXACT reviewed set at this SHA is empty: Clotho weaves no committed ledger
+// artifact — runtime thread-ledgers are git-ignored `.telos/` files, and the
+// committed `docs/runs/**/events.jsonl` are the Daedalus subsystem's, not Clotho
+// ledger sources. Each entry, when present, is `{ id, path, adapter }`. This is
+// the final Task-4a value; if a real Clotho ledger source is later configured it
+// is a reviewed inventory change with tests, not a fill-in of a placeholder.
 export const LEDGER_SOURCES = Object.freeze([]);
 
 // Exact run directories plus their summary files (run-evidence). Only committed
