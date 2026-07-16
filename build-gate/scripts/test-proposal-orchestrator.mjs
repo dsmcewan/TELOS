@@ -8,7 +8,7 @@ import os from "node:os";
 import path from "node:path";
 import { buildProject, makeTeamKeyring } from "../build-orchestrator.mjs";
 import { planTeams } from "../teams.mjs";
-import { readProposalEvents } from "../../merkle-dag/proposal-ledger.mjs";
+import { readProposalEvents, readProposalArtifact } from "../../merkle-dag/proposal-ledger.mjs";
 
 const NEEDLE = "AUTH_GUARD", TARGET = "out.txt";
 
@@ -31,16 +31,19 @@ const verifyConcern = () => ({ scope: "plan", claim: "auth boundary must be veri
 function convergingWorkshop(prov) { return async ({ seat }) => ({ plan_revision: "", objections: [], dispositions: [], provenance: prov(seat === "claude" ? "anthropic" : "openai") }); }
 
 // Parallel-authorship callSeat (docs/daedalus-methodology.md): constraints=codex (openai provenance),
-// implementation=claude (anthropic provenance). Author phase -> a source plan; integrate -> echo the
-// frozen frame as the candidate body (so it deserializes) plus a COMPLETE five-field obligation matrix;
+// implementation=claude (anthropic provenance). Author phase -> a source plan; the constraints seat also
+// DECLARES the proof-obligation set it owns. integrate -> echo the frozen frame as the candidate body (so
+// it deserializes) plus an obligation matrix that EXACTLY covers the declared set (per-row obligation_id).
 // verify -> each seat confirms its own contract survived. With { conflict: true } the constraints seat
-// reports its invariant was violated by integration, driving deriveParallelState to needs-eye.
-const okObligationRow = () => Object.fromEntries(["invariant", "mechanism", "task", "negative_test", "exit_criterion"].map((f) => [f, `${f}-1`]));
+// reports its invariant was violated by integration, driving deriveParallelState to needs-eye. Every seat
+// call draws a fresh provenance id (prov()) so all five keys are real and pairwise distinct.
+const OBL_IDS = ["OBL-1"];
+const okObligationRow = (id) => ({ ...Object.fromEntries(["invariant", "mechanism", "task", "negative_test", "exit_criterion"].map((f) => [f, `${f}-${id}`])), obligation_id: id });
 function parallelWorkshop(prov, { conflict = false } = {}) {
   return async ({ seat, role, phase, frame }) => {
     const provenance = prov(seat === "claude" ? "anthropic" : "openai");
-    if (phase === "author") return { plan: `${role} source design`, provenance };
-    if (phase === "integrate") return { plan: frame, obligation_matrix: [okObligationRow()], provenance };
+    if (phase === "author") return { plan: `${role} source design`, ...(role === "constraints" ? { obligations: OBL_IDS } : {}), provenance };
+    if (phase === "integrate") return { plan: frame, obligation_matrix: OBL_IDS.map(okObligationRow), provenance };
     if (conflict && role === "constraints") return { verdict: "violated", conflicts: ["fail-closed weakened by integration"], provenance };
     return { verdict: "preserved", conflicts: [], provenance };
   };
@@ -247,9 +250,17 @@ const D = (dossier) => (fn) => (seatArg) => fn(seatArg, dossier);
   assert.equal(res.decision, "authorized", "(p1) parallel authorship authorizes");
   assert.equal(res.report.merge_status, "ready", "(p1) ready");
   // parallel-specific signature: an integration negotiation event descends from BOTH source nodes.
-  const negotiations = readProposalEvents(path.join(dir, ".telos")).events.filter((e) => e.stage === "negotiation");
-  assert.ok(negotiations.some((e) => e.policy_result && Array.isArray(e.policy_result.descends_from) && e.policy_result.descends_from.length === 2), "(p1) parallel path taken — integration descends from both source nodes");
-  console.log("Case (p1) OK: parallel authorship -> authorized -> ready");
+  const telosDir = path.join(dir, ".telos");
+  const negotiations = readProposalEvents(telosDir).events.filter((e) => e.stage === "negotiation");
+  const integEvent = negotiations.find((e) => e.policy_result && Array.isArray(e.policy_result.descends_from) && e.policy_result.descends_from.length === 2);
+  assert.ok(integEvent, "(p1) parallel path taken — integration event descends from both source nodes");
+  // The Eye's critique: the EVENT carrying two parent refs is not enough — the content-addressed
+  // integration candidate ARTIFACT itself must bind its parents. Read it back from the ledger and confirm
+  // descends_from is persisted INSIDE the artifact (so its ref commits to parentage, not just the event).
+  const candidateRef = integEvent.artifact_refs[0];
+  const integArtifact = readProposalArtifact(telosDir, candidateRef);
+  assert.ok(integArtifact && Array.isArray(integArtifact.descends_from) && integArtifact.descends_from.length === 2, "(p1) the persisted integration artifact binds both parents (content address commits to descent)");
+  console.log("Case (p1) OK: parallel authorship -> authorized -> ready; integration artifact binds parents");
 }
 
 // ---------------------------------------------------------------------------
@@ -267,15 +278,20 @@ const D = (dossier) => (fn) => (seatArg) => fn(seatArg, dossier);
 }
 
 // ---------------------------------------------------------------------------
-// Case (p3): backward-compat — authorship "parallel" declared but NO callParallelSeat injected falls
-// back to the serial workshop (the selector requires BOTH the flag and the injected seat).
+// Case (p3): FAIL-CLOSED selection — authorship "parallel" declared but NO callParallelSeat adapter
+// injected must NOT silently downgrade to the serial workshop. A caller that asked for the two-seat trust
+// structure and got the weaker single-track path unknowingly is exactly the fail-open the merge shipped.
 {
   const { prov } = fixture();
   const dossier = baseDossier({ authorship: "parallel" });
   const callSeat = D(dossier)(async ({ model }, d) => ({ packet: reviewPacket(model, d), provenance: prov(model === "agy" ? "agentic" : model === "claude" ? "anthropic" : "openai") }));
+  // callWorkshopSeat is present (serial adapter available) but callParallelSeat is NOT — the old code
+  // would have quietly run serial and authorized. It must block instead.
   const { res } = await drive({ dossier, tasks: baseTasks(), callSeat, callWorkshopSeat: convergingWorkshop(prov), callTeam: makeCallTeam() });
-  assert.equal(res.decision, "authorized", "(p3) missing callParallelSeat -> serial fallback still authorizes");
-  console.log("Case (p3) OK: parallel flag without callParallelSeat falls back to serial");
+  assert.notEqual(res.decision, "authorized", "(p3) parallel-without-adapter must NOT authorize via a silent serial downgrade");
+  assert.equal(res.ok, false, "(p3) blocked");
+  assert.ok((res.blocked || []).some((b) => /PARALLEL_AUTHORSHIP_UNAVAILABLE/.test(b)), "(p3) distinct documented fail-closed error");
+  console.log("Case (p3) OK: parallel requested without adapter FAILS CLOSED (no silent serial downgrade)");
 }
 
 console.log("test-proposal-orchestrator.mjs OK");

@@ -204,19 +204,50 @@ export function validateObligationMatrix(matrix) {
   return { complete: incompleteRows.length === 0, reason: incompleteRows.length ? "incomplete-rows" : null, incompleteRows };
 }
 
+// The structured proof-obligation set is OWNED by the constraints seat (GPT declares the invariants /
+// proof obligations — docs/daedalus-methodology.md). Coverage is a strict BIJECTION between the declared
+// obligation IDs and the integration matrix rows' obligation_id: every declared obligation is mapped by
+// exactly one row, none is dropped, none is invented, none is duplicated. Field-completeness (above) is
+// necessary but NOT sufficient — a matrix can have five non-blank fields per row yet silently omit or
+// fabricate an obligation. This is the check that makes "map every obligation" structural.
+export function validateObligationCoverage(matrix, declaredObligations) {
+  const declared = Array.isArray(declaredObligations) ? declaredObligations.map((o) => (typeof o === "string" ? o.trim() : "")) : [];
+  if (!declared.length || declared.some((o) => !o)) return { covered: false, reason: "no-declared-obligations", missing: [], extra: [] };
+  if (declared.length !== new Set(declared).size) return { covered: false, reason: "duplicate-declared-obligation", missing: [], extra: [] };
+  const rowIds = (Array.isArray(matrix) ? matrix : []).map((r) => (r && typeof r.obligation_id === "string" ? r.obligation_id.trim() : ""));
+  if (!rowIds.length || rowIds.some((id) => !id)) return { covered: false, reason: "row-missing-obligation-id", missing: [], extra: [] };
+  if (rowIds.length !== new Set(rowIds).size) return { covered: false, reason: "duplicate-row-obligation-id", missing: [], extra: [] };
+  const declaredSet = new Set(declared), rowSet = new Set(rowIds);
+  const missing = declared.filter((id) => !rowSet.has(id));
+  const extra = rowIds.filter((id) => !declaredSet.has(id));
+  if (missing.length || extra.length) return { covered: false, reason: "coverage-mismatch", missing, extra };
+  return { covered: true, reason: null, missing: [], extra: [] };
+}
+
 /**
- * Total, pure state machine for a parallel-authorship round. Convergence
- * requires: both source roles present with distinct real provenance; an
- * integration node that descends from BOTH source refs; a complete obligation
- * matrix; and both per-seat verifications passing (verdict "preserved", no
- * conflicts) with distinct real provenance. Any verifier reporting "violated"
- * or a non-empty conflict list is a stalemate routed to The Eye — never blended.
+ * Total, pure state machine for a parallel-authorship round. Convergence is
+ * FAIL-CLOSED and requires ALL of:
+ *   - both source roles present, each with a real provenance key, and the two distinct;
+ *   - an integration node with a real provenance key of its own (the integrator is a
+ *     genuine seat call, not a free rewrite);
+ *   - descent bound EXACTLY to the two real source refs (not merely a superset — no
+ *     missing parent, no smuggled extra), which the integration artifact commits to;
+ *   - a field-complete obligation matrix that EXACTLY covers the constraints-declared
+ *     obligation set (bijection: every obligation mapped once, none dropped/invented);
+ *   - all five seat-call provenance keys (2 authors, integrator, 2 verifiers) real and
+ *     pairwise distinct — no response id replayed across calls;
+ *   - both verifications AFFIRMATIVELY "preserved" (an unrecognized or missing verdict
+ *     cannot converge; it is not treated as tacit approval).
+ * Any verifier reporting "violated" or a non-empty conflict list is a conflict routed
+ * to The Eye (terminal needs-eye) — never blended. Every other shortfall is "continue"
+ * (non-terminal), which the orchestrator normalizes to a human-review stalemate.
  * @returns { state, reason, terminal, candidate_ref, conflicts }
  *   state: converged-parallel | conflict | continue
  *   terminal: submit | needs-eye | (undefined while continue)
  */
 export function deriveParallelState({ sources, integration, verifications } = {}) {
-  const bad = (reason) => ({ state: "continue", reason, terminal: undefined, candidate_ref: null, conflicts: [] });
+  const bad = (reason, extra = {}) => ({ state: "continue", reason, terminal: undefined, candidate_ref: null, conflicts: [], ...extra });
+  const cont = (reason, candidate_ref, extra = {}) => ({ state: "continue", reason, terminal: undefined, candidate_ref, conflicts: [], ...extra });
   const byRole = new Map((Array.isArray(sources) ? sources : []).map((s) => [s && s.role, s]));
   const cons = byRole.get("constraints");
   const impl = byRole.get("implementation");
@@ -224,20 +255,39 @@ export function deriveParallelState({ sources, integration, verifications } = {}
   const consKey = cons.provenance_key, implKey = impl.provenance_key;
   if (!isRealProvenanceKey(consKey) || !isRealProvenanceKey(implKey) || consKey === implKey) return bad("invalid-source-provenance");
   if (!integration || !integration.candidate_ref) return bad("no-integration-node");
-  const descends = new Set(integration.descends_from || []);
-  if (!descends.has(cons.artifact_ref) || !descends.has(impl.artifact_ref)) return bad("integration-not-descended-from-both");
+  // The integrator provenance was previously stored but never validated — a null/placeholder
+  // integrator could carry a candidate to convergence. It must be a real seat call.
+  if (!isRealProvenanceKey(integration.provenance_key)) return bad("invalid-integration-provenance");
+  // Parentage is bound EXACTLY to the two real source nodes. Previously the check accepted any
+  // superset AND the candidate ref committed to nothing, making it vacuous; now the integration
+  // artifact commits to descends_from and we require it to be precisely {constraints, implementation}.
+  const declaredParents = Array.isArray(integration.descends_from) ? integration.descends_from : [];
+  const parentSet = new Set(declaredParents);
+  if (declaredParents.length !== 2 || parentSet.size !== 2 || !parentSet.has(cons.artifact_ref) || !parentSet.has(impl.artifact_ref)) return cont("integration-not-descended-from-both", integration.candidate_ref);
   const matrix = validateObligationMatrix(integration.obligation_matrix);
-  if (!matrix.complete) return { state: "continue", reason: "incomplete-obligation-matrix", terminal: undefined, candidate_ref: integration.candidate_ref, conflicts: [], incompleteRows: matrix.incompleteRows };
+  if (!matrix.complete) return cont("incomplete-obligation-matrix", integration.candidate_ref, { incompleteRows: matrix.incompleteRows });
+  // Exact coverage of the constraints-declared obligation set — field-completeness alone let a matrix
+  // silently drop or fabricate obligations.
+  const coverage = validateObligationCoverage(integration.obligation_matrix, cons.obligations);
+  if (!coverage.covered) return cont(`obligation-${coverage.reason}`, integration.candidate_ref, { coverage });
 
   const vByRole = new Map((Array.isArray(verifications) ? verifications : []).map((v) => [v && v.role, v]));
   const vc = vByRole.get("constraints"), vi = vByRole.get("implementation");
   if (!vc || !vi) return bad("missing-verification");
   if (!isRealProvenanceKey(vc.provenance_key) || !isRealProvenanceKey(vi.provenance_key) || vc.provenance_key === vi.provenance_key) {
-    return { state: "continue", reason: "invalid-verification-provenance", terminal: undefined, candidate_ref: integration.candidate_ref, conflicts: [] };
+    return cont("invalid-verification-provenance", integration.candidate_ref);
   }
+  // Every one of the FIVE seat calls must carry a real, pairwise-distinct provenance key — a single
+  // response id replayed across author/integrate/verify would otherwise satisfy the per-pair checks.
+  const callKeys = [consKey, implKey, integration.provenance_key, vc.provenance_key, vi.provenance_key];
+  if (new Set(callKeys).size !== callKeys.length) return cont("provenance-reused-across-calls", integration.candidate_ref);
+  // A verifier must AFFIRMATIVELY attest "preserved". Previously anything other than the literal string
+  // "violated" (including undefined, missing, or an arbitrary token) fell through to convergence.
+  const VERDICTS = new Set(["preserved", "violated"]);
+  if (!VERDICTS.has(vc.verdict) || !VERDICTS.has(vi.verdict)) return cont("invalid-verification-verdict", integration.candidate_ref);
   const conflicts = [
-    ...(vc.verdict === "violated" || (vc.conflicts || []).length ? [{ role: "constraints", detail: vc.conflicts || [] }] : []),
-    ...(vi.verdict === "violated" || (vi.conflicts || []).length ? [{ role: "implementation", detail: vi.conflicts || [] }] : [])
+    ...(vc.verdict !== "preserved" || (vc.conflicts || []).length ? [{ role: "constraints", detail: vc.conflicts || [] }] : []),
+    ...(vi.verdict !== "preserved" || (vi.conflicts || []).length ? [{ role: "implementation", detail: vi.conflicts || [] }] : [])
   ];
   if (conflicts.length) return { state: "conflict", reason: "verification-conflict", terminal: "needs-eye", candidate_ref: integration.candidate_ref, conflicts };
   return { state: "converged-parallel", reason: "both-contracts-preserved", terminal: "submit", candidate_ref: integration.candidate_ref, conflicts: [] };
@@ -257,18 +307,24 @@ export async function runParallelDaedalus({ frame, callSeat, writeArtifact, appe
   const authored = await Promise.all(["constraints", "implementation"].map(async (role) => {
     const seat = PARALLEL_ROLES[role];
     const resp = await callSeat({ seat, role, phase: "author", frame });
-    const artifact_ref = writeArtifact({ kind: "source-node", role, seat, body: resp.plan ?? "", provenance: resp.provenance }).ref;
-    return { role, seat, artifact_ref, body: resp.plan ?? "", provenance: resp.provenance, provenance_key: provKey(seat, resp.provenance) };
+    // The constraints seat OWNS the proof-obligation set; commit those IDs INTO the source-node content
+    // address so the obligation set the integrator must cover is content-bound, not caller-mutable.
+    const obligations = role === "constraints" ? (Array.isArray(resp.obligations) ? resp.obligations : []) : undefined;
+    const artifact_ref = writeArtifact({ kind: "source-node", role, seat, body: resp.plan ?? "", ...(obligations ? { obligations } : {}), provenance: resp.provenance }).ref;
+    return { role, seat, artifact_ref, body: resp.plan ?? "", obligations, provenance: resp.provenance, provenance_key: provKey(seat, resp.provenance) };
   }));
   const sources = authored.map(({ body, ...s }) => s);
   if (appendEvent) await appendEvent({ stage: "parallel-authorship", artifact_refs: sources.map((s) => s.artifact_ref), policy_result: { roles: sources.map((s) => s.role) } });
 
-  // 2. Integration: one candidate descending from both source nodes + the obligation matrix.
+  // 2. Integration: one candidate descending from both source nodes + the obligation matrix. descends_from
+  // is written INTO the artifact body so the candidate ref content-commits to its parentage (previously it
+  // was attached only in memory, leaving the ref parent-agnostic and the descent check vacuous).
   const integ = await callSeat({ seat: PARALLEL_ROLES.implementation, role: "integration", phase: "integrate", frame, sources: authored });
-  const candidate_ref = writeArtifact({ kind: "integration-candidate", plan: integ.plan ?? "", obligation_matrix: integ.obligation_matrix ?? [], provenance: integ.provenance }).ref;
+  const parentRefs = authored.map((s) => s.artifact_ref);
+  const candidate_ref = writeArtifact({ kind: "integration-candidate", plan: integ.plan ?? "", descends_from: parentRefs, obligation_matrix: integ.obligation_matrix ?? [], provenance: integ.provenance }).ref;
   const integration = {
     candidate_ref,
-    descends_from: authored.map((s) => s.artifact_ref),
+    descends_from: parentRefs,
     obligation_matrix: integ.obligation_matrix ?? [],
     seat: PARALLEL_ROLES.implementation,
     provenance: integ.provenance,
