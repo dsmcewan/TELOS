@@ -176,3 +176,112 @@ function provKey(seat, provenance) {
   if (typeof id !== "string" || PLACEHOLDER_RE.test(id) || !provider) return null;
   return provider.toLowerCase() + ":" + id;
 }
+
+// ---------------------------------------------------------------------------
+// Parallel authorship (docs/daedalus-methodology.md). The serial loop above is
+// retained for genuinely small deltas; real plan design splits into two seats
+// working IN PARALLEL from one frozen frame, not an author->reviewer sequence:
+//   - constraints seat (codex): invariants, trust boundaries, failure
+//     semantics, normative schemas, proof obligations, adversarial tests.
+//   - implementation seat (claude): architecture, interfaces, data flow, task
+//     decomposition, sequencing, integration, delivery.
+// Each output is a content-addressed source node; the integrated candidate must
+// descend from BOTH and map every obligation through the five-field matrix.
+// Each seat then verifies its own contract survived integration; a violation or
+// any conflict routes to The Eye rather than being silently blended. The target
+// is the smallest complete behavioral model that satisfies the invariant.
+export const PARALLEL_ROLES = { constraints: "codex", implementation: "claude" };
+export const OBLIGATION_FIELDS = ["invariant", "mechanism", "task", "negative_test", "exit_criterion"];
+
+// A matrix row is complete only when every field is a non-blank string.
+export function validateObligationMatrix(matrix) {
+  if (!Array.isArray(matrix) || matrix.length === 0) return { complete: false, reason: "empty-matrix", incompleteRows: [] };
+  const incompleteRows = [];
+  matrix.forEach((row, i) => {
+    const missing = OBLIGATION_FIELDS.filter((f) => typeof (row && row[f]) !== "string" || !row[f].trim());
+    if (missing.length) incompleteRows.push({ index: i, missing });
+  });
+  return { complete: incompleteRows.length === 0, reason: incompleteRows.length ? "incomplete-rows" : null, incompleteRows };
+}
+
+/**
+ * Total, pure state machine for a parallel-authorship round. Convergence
+ * requires: both source roles present with distinct real provenance; an
+ * integration node that descends from BOTH source refs; a complete obligation
+ * matrix; and both per-seat verifications passing (verdict "preserved", no
+ * conflicts) with distinct real provenance. Any verifier reporting "violated"
+ * or a non-empty conflict list is a stalemate routed to The Eye — never blended.
+ * @returns { state, reason, terminal, candidate_ref, conflicts }
+ *   state: converged-parallel | conflict | continue
+ *   terminal: submit | needs-eye | (undefined while continue)
+ */
+export function deriveParallelState({ sources, integration, verifications } = {}) {
+  const bad = (reason) => ({ state: "continue", reason, terminal: undefined, candidate_ref: null, conflicts: [] });
+  const byRole = new Map((Array.isArray(sources) ? sources : []).map((s) => [s && s.role, s]));
+  const cons = byRole.get("constraints");
+  const impl = byRole.get("implementation");
+  if (!cons || !impl) return bad("missing-source-node");
+  const consKey = cons.provenance_key, implKey = impl.provenance_key;
+  if (!isRealProvenanceKey(consKey) || !isRealProvenanceKey(implKey) || consKey === implKey) return bad("invalid-source-provenance");
+  if (!integration || !integration.candidate_ref) return bad("no-integration-node");
+  const descends = new Set(integration.descends_from || []);
+  if (!descends.has(cons.artifact_ref) || !descends.has(impl.artifact_ref)) return bad("integration-not-descended-from-both");
+  const matrix = validateObligationMatrix(integration.obligation_matrix);
+  if (!matrix.complete) return { state: "continue", reason: "incomplete-obligation-matrix", terminal: undefined, candidate_ref: integration.candidate_ref, conflicts: [], incompleteRows: matrix.incompleteRows };
+
+  const vByRole = new Map((Array.isArray(verifications) ? verifications : []).map((v) => [v && v.role, v]));
+  const vc = vByRole.get("constraints"), vi = vByRole.get("implementation");
+  if (!vc || !vi) return bad("missing-verification");
+  if (!isRealProvenanceKey(vc.provenance_key) || !isRealProvenanceKey(vi.provenance_key) || vc.provenance_key === vi.provenance_key) {
+    return { state: "continue", reason: "invalid-verification-provenance", terminal: undefined, candidate_ref: integration.candidate_ref, conflicts: [] };
+  }
+  const conflicts = [
+    ...(vc.verdict === "violated" || (vc.conflicts || []).length ? [{ role: "constraints", detail: vc.conflicts || [] }] : []),
+    ...(vi.verdict === "violated" || (vi.conflicts || []).length ? [{ role: "implementation", detail: vi.conflicts || [] }] : [])
+  ];
+  if (conflicts.length) return { state: "conflict", reason: "verification-conflict", terminal: "needs-eye", candidate_ref: integration.candidate_ref, conflicts };
+  return { state: "converged-parallel", reason: "both-contracts-preserved", terminal: "submit", candidate_ref: integration.candidate_ref, conflicts: [] };
+}
+
+/**
+ * Run one parallel-authorship round. Seat calls + artifact writes + event
+ * appends are INJECTED (keyless-testable), mirroring runDaedalusWorkshop.
+ * @param frame        the frozen design frame (spec + amendments) both seats author from
+ * @param callSeat     async ({ seat, role, phase, frame, sources? }) -> { plan?, obligation_matrix?, verdict?, conflicts?, provenance }
+ * @param writeArtifact (value) -> { ref }
+ * @param appendEvent  async (event) -> any
+ * @returns { state, reason, terminal, candidate_ref, sources, integration, verifications, conflicts }
+ */
+export async function runParallelDaedalus({ frame, callSeat, writeArtifact, appendEvent } = {}) {
+  // 1. Parallel authorship: two source nodes from the same frozen frame.
+  const authored = await Promise.all(["constraints", "implementation"].map(async (role) => {
+    const seat = PARALLEL_ROLES[role];
+    const resp = await callSeat({ seat, role, phase: "author", frame });
+    const artifact_ref = writeArtifact({ kind: "source-node", role, seat, body: resp.plan ?? "", provenance: resp.provenance }).ref;
+    return { role, seat, artifact_ref, body: resp.plan ?? "", provenance: resp.provenance, provenance_key: provKey(seat, resp.provenance) };
+  }));
+  const sources = authored.map(({ body, ...s }) => s);
+  if (appendEvent) await appendEvent({ stage: "parallel-authorship", artifact_refs: sources.map((s) => s.artifact_ref), policy_result: { roles: sources.map((s) => s.role) } });
+
+  // 2. Integration: one candidate descending from both source nodes + the obligation matrix.
+  const integ = await callSeat({ seat: PARALLEL_ROLES.implementation, role: "integration", phase: "integrate", frame, sources: authored });
+  const candidate_ref = writeArtifact({ kind: "integration-candidate", plan: integ.plan ?? "", obligation_matrix: integ.obligation_matrix ?? [], provenance: integ.provenance }).ref;
+  const integration = {
+    candidate_ref,
+    descends_from: authored.map((s) => s.artifact_ref),
+    obligation_matrix: integ.obligation_matrix ?? [],
+    provenance_key: provKey(PARALLEL_ROLES.implementation, integ.provenance)
+  };
+  if (appendEvent) await appendEvent({ stage: "integration", artifact_refs: [candidate_ref], policy_result: { descends_from: integration.descends_from } });
+
+  // 3. Parallel verification: each seat confirms its own contract survived integration.
+  const verifications = await Promise.all(["constraints", "implementation"].map(async (role) => {
+    const seat = PARALLEL_ROLES[role];
+    const v = await callSeat({ seat, role, phase: "verify", frame, sources: [authored.find((s) => s.role === role)], integration: { candidate_ref, plan: integ.plan ?? "", obligation_matrix: integration.obligation_matrix } });
+    return { role, seat, verdict: v.verdict, conflicts: v.conflicts || [], provenance_key: provKey(seat, v.provenance) };
+  }));
+
+  const state = deriveParallelState({ sources, integration, verifications });
+  if (appendEvent) await appendEvent({ stage: "parallel-verification", artifact_refs: [candidate_ref], policy_result: { state: state.state, terminal: state.terminal, conflicts: state.conflicts.length } });
+  return { ...state, sources, integration, verifications };
+}
