@@ -1,0 +1,591 @@
+{
+  "unverified_total": 339,
+  "sample_size": 39,
+  "sample": [
+    {
+      "id": "h-39",
+      "round": 1,
+      "finder": "codex",
+      "layer": "intersection",
+      "severity": "medium",
+      "scope": "Spec mechanism coverage and Queries; plan D14/D33, orchestrator entry points, and query.mjs",
+      "claim": "Query behavior has no mechanism provenance. `implementation_refs` cover weavers and `orchestrator_refs` cover weave/ledger machinery, but `query.mjs` is not included in either signed provenance set. The same verified ledger and manifest can produce a different `why` or `blastRadius` answer after query code changes without any manifest ref changing.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-59",
+      "round": 1,
+      "finder": "grok",
+      "layer": "intersection",
+      "severity": "medium",
+      "scope": "threadsOf coverageUnknown when manifest is supplied (Task 5 query coverage awareness) without expectedKinds",
+      "claim": "For why/reportGaps, consulted kinds come from expectedKinds; for threadsOf, the plan only says to report weaver ids for 'consulted' edge kinds without defining which kinds threadsOf consults (all EDGE_KINDS, kinds with edges present, kinds that could touch the node, etc.). Combined with the missing edge→weaver map, two correct-looking implementations can return different coverageUnknown sets for the same ledger—breaking D11's classifiable-absence guarantee for the primary threads API.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-49",
+      "round": 1,
+      "finder": "codex",
+      "layer": "normative-text",
+      "severity": "medium",
+      "scope": "Plan D22, inventory.mjs responsibilities, and Weaver warning contract",
+      "claim": "The plan never freezes the exact `FATAL_WARNING_CODES` membership even though fatality determines whether a ledger may publish. It gives examples “such as” structural failures and delegates the set to `inventory.mjs`; an implementation can classify an invalid configured ledger or root escape as nonfatal, publish an executed manifest with a gap, and still satisfy the generic rule that only codes present in the set abort.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-36",
+      "round": 1,
+      "finder": "codex",
+      "layer": "intersection",
+      "severity": "medium",
+      "scope": "Spec Assertion status; plan status-record model in Normative data model and Task 3",
+      "claim": "Published model proposals cannot be adjudicated by the Phase 1 status mechanism. Status records must target an earlier edge in the same ledger, but a successfully closed ledger is immutable and cross-ledger adjudication is out of scope. Once a proposal has been published and reviewed, no later acceptance or rejection can target its original record hash.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-92",
+      "round": 2,
+      "finder": "claude",
+      "layer": "intersection",
+      "severity": "low",
+      "scope": "D8 exclusion of docs/runs/clotho-self-weave/ 'from every inventory' vs Task 7 run.mjs publishing INTO docs/runs/clotho-self-weave/ while run-sources is a committed inventory including docs/runs/proposal-lifecycle/ — the run-evidence weaver re-weaving PRIOR committed evidence of OTHER runs that themselves mention clotho symbols",
+      "claim": "The self-weave directory is excluded, but after Task 7 lands, docs/runs/ contains committed clotho self-weave evidence naming every clotho symbol and mechanism file. Any FUTURE configured run source (or a future inventory change adding a run directory) that includes clotho-related evidence creates the recursive-reference problem D8 was written to prevent — the exclusion is pinned to one directory NAME, not to a property (evidence-about-clotho). More immediately: summary.json, review-set.json etc. contain full why chains and blast radius node descriptors with blob SHAs; doc-weaver excludes docs/runs/ entirely so documented-in is safe, but the LEDGER weaver's run-sources is 'configured run directories plus summary files' — nothing forbids a future inventory PR from configuring clotho-self-weave as a run source since the exclusion lives in prose ('excluded from every inventory') with no committed guard: no unit asserts inventory.mjs contains no path below docs/runs/clotho-self-weave/.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: OpenAI API error 429: {\"error\":{\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this erro",
+        "verifier": "codex"
+      }
+    },
+    {
+      "id": "h-89",
+      "round": 2,
+      "finder": "claude",
+      "layer": "runtime-enforcement",
+      "severity": "low",
+      "scope": "D29/Task 5 'rejects any count-shaped field returned by the weaver' — 'count-shaped' has no definition, making the rejection unimplementable-as-specified",
+      "claim": "The driver must abort when a weaver result contains a 'count-shaped field', but the weaver contract is exactly {edges, warnings}; the plan never defines 'count-shaped' (any extra key? any numeric-valued key? keys named count/total?). If the rule means 'any key other than edges/warnings', it should say so; if it means detecting numeric fields, warnings legitimately contain numeric-free {weaver, code, path, detail} but a detail string could embed numbers. Two implementers will build different rejectors and the listed unit ('a fixture weaver returning a count-shaped field must abort') pins nothing because the fixture author chooses what count-shaped means. An underdefined normative rejection with a mandated test is a hole: the test can pass while the intended protection (weavers cannot smuggle self-reported accounting) is absent for unanticipated shapes.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: OpenAI API error 429: {\"error\":{\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this erro",
+        "verifier": "codex"
+      }
+    },
+    {
+      "id": "h-130",
+      "round": 2,
+      "finder": "grok",
+      "layer": "intersection",
+      "severity": "medium",
+      "scope": "Task 4a/5 symbol/file seeding vs git-weaver package-symbols/package-files vs code-weaver package-modules inventories",
+      "claim": "Nothing requires ctx.symbols, ctx.files, package-symbols, package-files, and package-modules to be derived from one shared walk snapshot (same path set, same blob_sha epoch, same sort). Divergent construction can seed a symbol for git-weaver while code-weaver's package-modules list omits that module (introduced-by without depends-on topology), or the reverse, and both weavers still satisfy per-list D29 checks — cross-weaver graph coherence is not mechanized.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-97",
+      "round": 2,
+      "finder": "claude",
+      "layer": "runtime-enforcement",
+      "severity": "medium",
+      "scope": "Endpoint matrix `supersedes`: 'old node -> new node of the same kind' with asserted_by human or model: — no requirement that the OLD node ever existed in any ledger, that old != new, or that both locators differ only where version content differs",
+      "claim": "supersedes validation as specified checks kind equality and assertor only. A human can append `A supersedes A` (identical locators — nothing rejects a self-supersede), or link two nodes of the same kind that share NO path/symbol lineage (obligation X supersedes unrelated obligation Y), and both verify. Since queries treat supersedes as version lineage and status filtering (h-16) interacts with it, an unconstrained same-kind edge lets lineage assertions connect arbitrary artifacts with deterministic-looking validity. No unit rejects self-supersedes or requires from_node != to_node — a one-line check the matrix omits.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: OpenAI API error 429: {\"error\":{\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this erro",
+        "verifier": "codex"
+      }
+    },
+    {
+      "id": "h-88",
+      "round": 2,
+      "finder": "claude",
+      "layer": "normative-text",
+      "severity": "low",
+      "scope": "Task 6 Step 4 gap assertion: 'require exactly the expected coverage failure containing {gap: coverage-unknown, weaver: clotho-doc-weaver, expected_kind: documented-in}' vs why() defaults and Step 3's five expected kinds",
+      "claim": "Step 3 calls why 'with all five expected rationale/support kinds'. In Step 4 the same call with doc-weaver skipped must yield the documented-in coverage-unknown gap — but the doc-weaver produces documented-in edges to BOTH doc-section and contract-clause targets, while 'contract' group facts come via discharges (ledger-weaver, executed). The word 'containing' permits additional gaps, but the very next bullet says 'Any gap other than the asserted coverage-unknown fails the test' — these two sentences conflict if the query layer (per its own coverage-awareness rule: report gap records per (weaver, expected_kind) pair) emits one gap for documented-in only, or if any executed-weaver kind legitimately yields a second coverage-related record. More concretely: 'evidenced-by' and 'motivated-by' expectations traverse to nodes only the ledger-weaver produces — fine — but 'discharges' expected-kind evaluation 'requires every reached obligation to have at least one valid outgoing discharge': in the doc-skipped run this must pass; nothing in the unit list pins that exactly ONE gap record is produced, and the singular/containing wording gives implementers contradictory targets.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: OpenAI API error 429: {\"error\":{\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this erro",
+        "verifier": "codex"
+      }
+    },
+    {
+      "id": "h-93",
+      "round": 2,
+      "finder": "claude",
+      "layer": "test-sufficiency",
+      "severity": "medium",
+      "scope": "Task 5 blastRadius 'edges is the stable union of traversed depends-on records and evidence records' — no unit pins whether UNTRAVERSED depends-on edges beyond the depth cutoff appear in edges, and truncated interacts with the flagship depth-3 fact set",
+      "claim": "The flagship fact set is built from blastRadius.edges at depth 3. If the real repository's inverse dependency graph around deriveExecutableRef exceeds depth 3, truncated=true — and the plan never states whether Task 6 requires truncated to be false. A truncated closure means the fact set is silently smaller than the full neighborhood, the review set is computed against an incomplete universe, and 'every unexpected fact in the flagship neighborhood' is under-collected — yet no Step 3 assertion on truncated is listed. The acceptance test can pass with a truncated neighborhood, undermining the review-set completeness claim ('no unexpected edge is silently treated as validated' — a beyond-depth edge is silently NOT REVIEWED).",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: OpenAI API error 429: {\"error\":{\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this erro",
+        "verifier": "codex"
+      }
+    },
+    {
+      "id": "h-189",
+      "round": 3,
+      "finder": "codex",
+      "layer": "normative-text",
+      "severity": "medium",
+      "scope": "Task 4b canonical Markdown splitter",
+      "claim": "ATX heading recognition is named but its grammar is not frozen. For `## Binding ##`, one implementation can strip the optional closing hash sequence and derive heading `Binding`, while another can retain `Binding ##`; similarly `#NoSpace` may be accepted or rejected. These choices change `heading_path`, duplicate detection, clause lookup, and node ids for the same Markdown bytes, and no listed fixture pins them.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-177",
+      "round": 3,
+      "finder": "codex",
+      "layer": "test-sufficiency",
+      "severity": "high",
+      "scope": "Task 3 canonical signature validation and trailer tamper tests",
+      "claim": "The verifier has no explicit test or algorithm requiring decoded signatures to round-trip to the exact canonical base64 spelling. Node's base64 decoder accepts alternatives such as omitted padding; changing the final trailer signature from padded to unpadded base64 changes ledger bytes but yields the same raw Ed25519 signature. Because the trailer has no successor link and its own `record_hash` excludes `signature`, a permissive verifier can report `ok: true` after this byte tamper.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-173",
+      "round": 3,
+      "finder": "codex",
+      "layer": "security",
+      "severity": "high",
+      "scope": "Trust posture tail-deletion claim; Accepted risk 7; Task 7 reproduction evidence",
+      "claim": "The claimed external checkpoint does not detect wholesale ledger replacement because `summary.json`, which stores the snapshot SHA-256, is published beside the snapshot with no independent signature or immutable anchor. An attacker can replace `thread-ledger.snapshot.jsonl`, generate a new ephemeral ledger key, and update `summary.json` and `verification.json`; the complete bundle remains internally consistent and verifies.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-187",
+      "round": 3,
+      "finder": "codex",
+      "layer": "test-sufficiency",
+      "severity": "medium",
+      "scope": "Task 6 reviewed expectation artifact and Task 7 verification.json provenance",
+      "claim": "The final evidence does not content-address the reviewed `expected-flagship.json`, the matching implementation in `test-flagship.mjs`, or the reproduction script that emits the reports. Those files can be loosened to accept missing facts and regenerate a green `expected-match-report.json` without changing any manifest implementation/orchestrator refs, so the evidence does not prove it used the exact expectation artifact reviewed by The Eye.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-152",
+      "round": 3,
+      "finder": "claude",
+      "layer": "test-sufficiency",
+      "severity": "low",
+      "scope": "Task 4a 'Duplicate descriptors are an error' — error class unspecified (fatal warning? throw? which code?) and no unit listed",
+      "claim": "Duplicate seeded descriptors (same {path, symbol}) are declared 'an error', but seeding happens in the DRIVER before any weaver runs — outside the weaver warning contract and outside FATAL_WARNING_CODES's listed examples. Whether a duplicate descriptor throws (aborting via the weaver-failure path that hasn't started), emits a fatal warning (whose producer field must name a weaver that didn't produce it), or fails some other way is unspecified, and no unit in Task 4a's list covers duplicate-descriptor rejection. Since the Phase 1 export grammar can genuinely produce duplicates (a file with `export const x` twice is a syntax error node would catch, but `export function x` in two branches of the lexical scan across re-scanned bytes, or the same path walked twice via overlapping committed package roots — nothing forbids one root being a subdirectory of another), the unhandled path is reachable from a legal inventory configuration.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: OpenAI API error 429: {\"error\":{\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this erro",
+        "verifier": "codex"
+      }
+    },
+    {
+      "id": "h-196",
+      "round": 3,
+      "finder": "grok",
+      "layer": "runtime-enforcement",
+      "severity": "medium",
+      "scope": "D14/D33 implementation_refs/orchestrator_refs; Task 5 driver hash-object of committed inventories vs ESM module load time",
+      "claim": "Mechanism refs are computed with git hash-object over inventory paths at coverage-assembly time, after (or independent of) Node’s ESM evaluation of those modules at process start. Nothing binds the hashed worktree bytes to the bytes actually loaded into the module cache; a mid-process edit to a weaver or util file, or a long-lived process reusing cached modules after a disk change, yields a published manifest whose implementation_refs/orchestrator_refs name bytes that did not execute, while every structural check still passes.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-200",
+      "round": 3,
+      "finder": "grok",
+      "layer": "interface",
+      "severity": "low",
+      "scope": "Header pub_key / record signature “canonical base64”; Task 3 createLedger and verifyLedger",
+      "claim": "pub_key and signature must be “canonical base64” SPKI/signature bytes, but alphabet, padding, line-break rejection, and alphabet case rules are not frozen. Two verifiers can disagree on the same ledger (one accepts PEM-wrapped or unpadded base64, one does not), so “records verify” is not an interoperable predicate from the text alone.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-165",
+      "round": 3,
+      "finder": "claude",
+      "layer": "test-sufficiency",
+      "severity": "medium",
+      "scope": "Task 6 Step 4 'Require verification and the manifest-aware query validation to establish that no edge is asserted by clotho-doc-weaver' — but no test anywhere runs --skip with a POSITIVE assertion that the skipped weaver's expected EDGES are the exact delta",
+      "claim": "Step 4 asserts the doc-skipped run has no doc-weaver edges and seven groups still match — but never asserts that the full run's fact set MINUS the doc-skipped run's fact set equals exactly the doc-weaver's documented-in facts. Without that delta assertion, a doc-skip implementation that also silently suppresses SOME other weaver's edges (e.g., a driver bug where skipping reorders ctx construction and starves the ledger-weaver's run-sources) can pass: the seven groups' audited expectations still match (they are a subset), the review set shrinks silently (review-set completeness is only asserted against the CURRENT fact set, which is self-referentially smaller), and coverage counts still balance if the affected weaver's iterators were exhausted before its edges were dropped post-accounting (the aggregation step between accounting success and append is unobserved). The two runs' comparability — the determinism machinery's whole point ('payload set is comparable') — is never exploited by any test.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: OpenAI API error 429: {\"error\":{\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this erro",
+        "verifier": "codex"
+      }
+    },
+    {
+      "id": "h-283",
+      "round": 4,
+      "finder": "grok",
+      "layer": "runtime-enforcement",
+      "severity": "high",
+      "scope": "D26/D29 counted-iterator constructor ('increments only when consumer completes consumption') vs JS iteration protocol",
+      "claim": "The plan requires observed_count to increment only when the weaver completed open+read+process of a source, while weavers must not signal completion and the iterator 'observes consumption'. The JS iterator protocol only observes next() pulls and return/throw on exit; it cannot see that yielded bytes were processed, and the last element's successful process is indistinguishable from abandonment on loop exit. As written, the D29 completeness gate cannot be implemented from the stated interface without an unstated handle/completion protocol—so 'executed means complete source consumption' is not enforceable from the text.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-233",
+      "round": 4,
+      "finder": "claude",
+      "layer": "interface",
+      "severity": "medium",
+      "scope": "Task 5 blastRadius `{manifest?}` optional + 'A missing manifest leaves coverageUnknown empty for threadsOf/blastRadius' vs spec 'All default query results ... report coverage-unknown where the manifest shows the relevant weaver did not execute' — manifest-less blastRadius silently reports NOTHING unknown, indistinguishable from full coverage (adjacent to seed-2 but for the OMITTED-manifest case at blastRadius/threadsOf specifically, where the plan BLESSES the empty set)",
+      "claim": "seed-2 covers the omitted-manifest-as-empty-set defect for threadsOf/blastRadius as a query-API behavior; the additional unreported defect is the normative CONTRADICTION with the spec: spec §Queries says ALL default query results report coverage-unknown when the relevant weaver did not execute, but a caller omitting the manifest cannot receive that report, and the plan explicitly legitimizes the omission ('leaves coverageUnknown empty') instead of making manifest REQUIRED for all queries. The plan text and spec text assign opposite behavior to the same call: spec demands coverage classification always; plan permits an unclassified mode. This is a plan-vs-spec normative conflict, not just the evasion route.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: OpenAI API error 429: {\"error\":{\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this erro",
+        "verifier": "codex"
+      }
+    },
+    {
+      "id": "h-377",
+      "round": 4,
+      "finder": "grok",
+      "layer": "normative-text",
+      "severity": "medium",
+      "scope": "Task 2 Set facade forEach leaking mutable backing Set",
+      "claim": "The private-Set read-only facade can leak its mutable backing Set through forEach if implemented as backingSet.forEach(callback), which passes the Set as the callback's third argument, allowing callback to call add and mutate registry membership. Tests cover facade mutators but not this callback leak.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-287",
+      "round": 4,
+      "finder": "grok",
+      "layer": "normative-text",
+      "severity": "medium",
+      "scope": "Header schema vs Task 3 verifyLedger (extra keys / weave_version policy)",
+      "claim": "The header is only 'structurally equivalent to' {clotho_weave_header: {pub_key, woven_at, repo_head, repository_ref, weave_version:1}} without a closed key set, forbidden-extra-fields rule, or weave_version acceptance policy. An implementation can accept extra header keys (authority/policy claims) or other weave_version values and still return ok:true, so consumers cannot rely on the header as a fully validated fixed envelope.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-284",
+      "round": 4,
+      "finder": "grok",
+      "layer": "intersection",
+      "severity": "high",
+      "scope": "Task 5 ctx.sources counted iterators vs parallel uncounted ctx.symbols/files/contractFiles/packageRoots (D31)",
+      "claim": "The same inputs are exposed both as driver-owned counted iterators and as parallel uncounted ctx fields. D31 requires clause resolution solely from ctx.sources['contract-files'] and forbids uncounted fallback reads, but nothing removes or seals the parallel fields. A weaver can exhaust iterators for D29 while resolving edges from ctx.contractFiles, ctx.symbols, or a walk of packageRoots/docRoots, satisfying cardinality while violating exclusive counted consumption—the acceptance claim that skipped-doc clause resolution is self-accounted is then only a prose discipline.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-252",
+      "round": 4,
+      "finder": "codex",
+      "layer": "runtime-enforcement",
+      "severity": "medium",
+      "scope": "Task 4a git wrapper; Task 5 driver; Task 6 Step 1 process spawning",
+      "claim": "No timeout or cancellation boundary is specified for synchronous Git invocations or the spawned flagship weave. A hung `git log`, configured helper, or fixture child blocks inside `execFileSync`; D15/D22 cleanup never runs because no exception is delivered, and Task 6's 'below 120 seconds' assertion is never reached because the child never exits. CI can hang indefinitely while retaining the open ledger descriptor and temporary file.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-239",
+      "round": 4,
+      "finder": "claude",
+      "layer": "runtime-enforcement",
+      "severity": "medium",
+      "scope": "Task 5 driver 'computes every weaver's implementation_refs ... with git hash-object ... from the committed implementation-file ... lists' — hash-object on inventory-listed paths follows the WORKTREE, and a listed path that is currently a symlink or missing at weave time has unspecified behavior (inventory names committed files, worktree may differ)",
+      "claim": "Inventories name files that existed at commit time (D17), but the weave runs against the current worktree: a locally deleted or symlink-replaced weavers/util.mjs makes `git hash-object --no-filters -- <path>` either fail (missing) or hash the symlink TARGET's bytes (git hash-object follows symlinks when given a path... actually hashes the link target content via filesystem read), producing implementation_refs that content-address bytes OUTSIDE the repository with no symlink check specified on the mechanism-provenance hashing path — the physical-containment and symlink-rejection disciplines cover WRITE paths and weaver INPUT walks, but the driver's hash-object loop over inventory paths has no stated lstat/symlink guard. A symlinked inventory path yields a verifying manifest whose mechanism refs name foreign bytes.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: OpenAI API error 429: {\"error\":{\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this erro",
+        "verifier": "codex"
+      }
+    },
+    {
+      "id": "h-310",
+      "round": 4,
+      "finder": "grok",
+      "layer": "normative-text",
+      "severity": "medium",
+      "scope": "Task 4b Markdown ATX heading grammar (heading_path / text_sha256)",
+      "claim": "ATX heading recognition is named but not frozen. For `## Binding ##`, implementations may strip optional closing hashes or retain them; `#NoSpace` may be accepted or rejected. These choices change heading_path, duplicate detection, clause lookup, and node ids for the same Markdown bytes, and no listed fixture pins them—flagship clause resolution can diverge across correct-looking splitters.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-383",
+      "round": 4,
+      "finder": "grok",
+      "layer": "test-sufficiency",
+      "severity": "medium",
+      "scope": "Task 2 D18 fixture missing deterministic author/committer identity",
+      "claim": "The real-git fixture requires commits but does not require local user.name/user.email. On clean CI workers without global identity, git commit fails before shallow/full assertions—environment-dependent false failure.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-358",
+      "round": 4,
+      "finder": "grok",
+      "layer": "security",
+      "severity": "medium",
+      "scope": "git log -S / diff machinery vs diff textconv / attributes (Task 4a wrapper)",
+      "claim": "Running git via execFileSync without a shell does not prevent git from executing configured text-conversion helpers. log -S uses diff machinery and can honor diff attributes and diff.<driver>.textconv, so local git configuration can execute arbitrary helpers while git-weaver is advertised as only allowlisted no-shell commands.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-297",
+      "round": 4,
+      "finder": "grok",
+      "layer": "normative-text",
+      "severity": "medium",
+      "scope": "Assertion status transitions (Task 3/5) — no transition-state matrix",
+      "claim": "Verification allows any sequence whose new_status is human-authorized, rejected, or superseded, and queries use latest transition only. A later human record can resurrect a rejected or superseded edge as authorized, or cycle terminal states, contrary to usual rejection/supersession meaning—and no unit freezes forbidden transitions.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-341",
+      "round": 4,
+      "finder": "grok",
+      "layer": "interface",
+      "severity": "medium",
+      "scope": "Task 2 deriveRepositoryRef(git) callback shape vs Task 4a ctx.git(args, options?)",
+      "claim": "deriveRepositoryRef is typed only as deriveRepositoryRef(git) with no frozen arity, stdout encoding, rejection shape, or options. ctx.git is separately spelled git(args, options?)->stdout. Production composition onto the allowlisted wrapper is undefined; test doubles can pass while production disagrees on multi-line stdout, trailing newlines, or Buffer vs string—shallow-guard and root parsing stay unpinned across call sites.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-319",
+      "round": 4,
+      "finder": "grok",
+      "layer": "intersection",
+      "severity": "high",
+      "scope": "Task 6 Step 1 real-repository weave vs clotho/scripts/fixtures under package root clotho/",
+      "claim": "If clotho is a packageRoot, the flagship weave seeds and walks scripts/fixtures/ (symlink-escape, loader-construction, forbidden-specifier, miniature packages). Those fixtures are designed to trip FATAL symlink/input rules or flood unrepresentable warnings; the weave can abort on its own fixtures or pollute the flagship graph. Whether clotho is packageRoots is never stated—both answers are consequential and unspecified (self-weave of Clotho vs abort-on-fixtures).",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-213",
+      "round": 4,
+      "finder": "claude",
+      "layer": "runtime-enforcement",
+      "severity": "low",
+      "scope": "Task 5 driver `--out` validation vs Task 6 Step 1 'unique ignored path below .telos/clotho/' — .telos/clotho/ does not exist on a fresh clone and .gitignore ignores it, so destination parent creation semantics are load-bearing but unspecified",
+      "claim": "The driver must create destination parent directories ('before creating temporary files or destination parent directories' implies it creates them), but no task states WHO creates `.telos/` and `.telos/clotho/` on a fresh clone, with what permissions, or what happens if `.telos` exists as a FILE (not directory) — a pre-placed regular file named `.telos` at repo root makes every weave fail with ENOTDIR, an error class not in any specified stable-error list, so the flagship acceptance test fails with an unclassified error on any machine where the path was squatted, and the containment helper's behavior when the 'allowed root' itself does not exist (deepest-existing-ancestor = repo root) is only implicitly covered.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: OpenAI API error 429: {\"error\":{\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this erro",
+        "verifier": "codex"
+      }
+    },
+    {
+      "id": "h-294",
+      "round": 4,
+      "finder": "grok",
+      "layer": "normative-text",
+      "severity": "high",
+      "scope": "Task 4a DOC_ROOTS ('reviewed documentation and contract roots') never enumerated",
+      "claim": "DOC_ROOTS is set to 'the reviewed documentation and contract roots' with no path enumeration in the plan, unlike other exact sorted inventories. Whether docs/, contracts/, docs/history/, and design docs are included determines doc-files cardinality, whether Task 7 history moves change the graph, whether the governing design doc balloons the documentation neighborhood, and the flagship documentation audit universe—so doc-weaver behavior is not reproducible from the plan text alone.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-279",
+      "round": 4,
+      "finder": "grok",
+      "layer": "security",
+      "severity": "medium",
+      "scope": "All git invocations via bare name `git` on ambient PATH (Tasks 2–5)",
+      "claim": "Every git call resolves the executable name `git` through ambient PATH. A substituted binary can emit shape-valid 40-hex roots, HEADs, blob SHAs, and log lines while performing arbitrary writes; argument allowlists and output hex checks never prove the real Git binary ran. Ledgers can verify while binding entirely fabricated repository identity and introduction history.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-221",
+      "round": 4,
+      "finder": "claude",
+      "layer": "intersection",
+      "severity": "medium",
+      "scope": "D13/D9 content-bound locators vs git-weaver introduced-by TARGET commit locator — a weave over a dirty worktree emits edges FROM worktree-blob-identified version nodes TO commits, but the endpoint matrix and locator validation permit an introduced-by edge whose from-node blob_sha exists in NO commit, making the edge semantically unanchored while structurally valid",
+      "claim": "Beyond h-27 (first-result misattribution): for an uncommitted modified file, `git hash-object` yields a blob SHA present in no commit; the git-weaver still runs `git log -- <path>` and emits `repository-file(blob=worktree) introduced-by commit(first)` — a claim that a never-committed byte version was 'introduced by' a historical commit. No validation can catch this (verifyLedger has no repository), no warning is specified for 'from-locator blob not reachable from repo_head', and the flagship Step 3 audit hides it because audited blob SHAs match the (presumably clean) reviewed state. A dirty-worktree weave — explicitly supported per the plan's 'a changed worktree remains content-addressed' — thus systematically produces introduced-by facts that are false for every modified file, with deterministic-extraction status and no classifiable caveat. The plan should either mark such edges with a warning (blob-not-in-history) or emit no introduced-by edge for worktree-only blobs; currently neither is specified.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: OpenAI API error 429: {\"error\":{\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this erro",
+        "verifier": "codex"
+      }
+    },
+    {
+      "id": "h-234",
+      "round": 4,
+      "finder": "claude",
+      "layer": "test-sufficiency",
+      "severity": "low",
+      "scope": "Task 2 real-git fixture asserts shallow rejection and full-clone resolution — but never asserts that the FULL clone's deriveRepositoryRef equals the WORKING repository's own derived ref pipeline (fixture proves fixture semantics; no test derives the actual TELOS repo's repository_ref twice via independent paths to prove stability of the production value all later locator validation depends on)",
+      "claim": "Every locator validation in every weave depends on one derived repository_ref value for the real repository, but no listed unit derives it twice (e.g., via the Task 2 API and independently via raw git commands in the test) and asserts equality/40-hex shape against the live repo — the real-repo derivation is first exercised implicitly inside Task 5/6 integration flows where a wrong-but-stable value (e.g., derived in the wrong cwd per h-191, or affected by replace refs per h-110) would validate self-consistently: every locator carries the same wrong ref, the header matches, verification passes, and the flagship expectations (built with 'the derived repository_ref') are constructed by the SAME code path, so even the acceptance test cannot detect a systematically wrong ref. One cheap independent oracle (a test comparing deriveRepositoryRef output to `git rev-list --max-parents=0 HEAD` run directly by the test harness from the repo root) is absent.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: OpenAI API error 429: {\"error\":{\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this erro",
+        "verifier": "codex"
+      }
+    },
+    {
+      "id": "h-262",
+      "round": 4,
+      "finder": "grok",
+      "layer": "interface",
+      "severity": "medium",
+      "scope": "Task 4b currentDocs helper vs Task 5 why/reportGaps doc-drift comparison",
+      "claim": "reportGaps compares each reached doc-section/contract-clause woven hash to caller-supplied currentDocs (missing key, null, or changed hash → doc-drift), and util exposes an I/O helper that builds currentDocs via docAddressKey, but the plan never freezes the map's value type (raw text_sha256 string vs descriptor vs null sentinel), key exclusivity rules, or whether values are hashes of the same byte-slice definition as weave-time text_sha256. Two compliant helpers can produce maps that systematically false-positive or false-negative drift for identical files.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-281",
+      "round": 4,
+      "finder": "grok",
+      "layer": "interface",
+      "severity": "high",
+      "scope": "Task 3 verifyLedger(path) vs spec 'validators reject locators whose repository_ref does not match the derived value'",
+      "claim": "The spec requires validators to reject locators whose repository_ref differs from the derived value. verifyLedger(path) is the consumer-facing validator and only checks agreement with the header's repository_ref and shape—it has no repoRoot/git accessor and cannot re-derive. Even an honest driver that derived from the wrong cwd publishes a ledger that verifies ok:true; the spec-mandated derived-value check is not implementable in the shipped verifier signature and exists only as a Task 6 test-side assertion.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    },
+    {
+      "id": "h-357",
+      "round": 4,
+      "finder": "grok",
+      "layer": "security",
+      "severity": "medium",
+      "scope": "D16/D18 shallow guard vs partial clones (--filter=blob:none)",
+      "claim": "The shallow-history guard checks is-shallow-repository only. A partial clone can report is-shallow-repository=false yet lack historical blobs; git log -S may lazily fetch objects (network, subprocess, object-db writes) during a supposedly read-only weave—violating read-only and isolation assumptions without tripping the stable shallow error.",
+      "verdict": {
+        "refuted": null,
+        "disposition": "error",
+        "reason": "Error: Anthropic API error 400: {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. P",
+        "verifier": "claude"
+      }
+    }
+  ]
+}
