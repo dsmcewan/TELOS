@@ -416,9 +416,24 @@ function claudeEffort(model, requested) {
   return undefined;
 }
 
+// Claude auth: use a bearer OAuth token when one is present, else the metered
+// x-api-key. A bearer token (from a properly-scoped `ant auth login` profile,
+// exported as ANTHROPIC_AUTH_TOKEN) goes on Authorization: Bearer with the
+// `anthropic-beta: oauth-2025-04-20` header — never x-api-key. The token must
+// be scoped for Messages-API use by this application; a token scoped to a
+// different product is expected to fail auth, and that failure is left to
+// surface honestly rather than being worked around. Env: ANTHROPIC_AUTH_TOKEN
+// selects OAuth; ANTHROPIC_API_KEY is the fallback. A set bearer token wins so
+// the seat keeps running when the metered balance is exhausted.
+function claudeAuth() {
+  const bearer = process.env.ANTHROPIC_AUTH_TOKEN;
+  if (bearer) return { mode: "oauth", headers: { "authorization": `Bearer ${bearer}`, "anthropic-beta": "oauth-2025-04-20" } };
+  return { mode: "api-key", headers: { "x-api-key": requireEnv("ANTHROPIC_API_KEY") } };
+}
+
 export async function askClaude(args) {
   requireString(args.prompt, "prompt");
-  const apiKey = requireEnv("ANTHROPIC_API_KEY");
+  const auth = claudeAuth();
   const rawModel = args.model || process.env.ANTHROPIC_MODEL;
   if (!rawModel) {
     throw new Error("Missing Claude model. Pass model or set ANTHROPIC_MODEL.");
@@ -464,7 +479,7 @@ export async function askClaude(args) {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "x-api-key": apiKey,
+      ...auth.headers,
       "anthropic-version": process.env.ANTHROPIC_VERSION || DEFAULT_ANTHROPIC_VERSION
     },
     body: JSON.stringify(body)
