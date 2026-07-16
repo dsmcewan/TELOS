@@ -172,7 +172,7 @@ export function createLedger(ledgerPath, { signKey, wovenAt, repoHead, repositor
   if (openFile === defaultOpenFile) mkdirSync(path.dirname(path.resolve(ledgerPath)), { recursive: true });
   const handle = openFile(ledgerPath); // wx is the atomic existence gate
 
-  const state = { open: true, closed: false, poisoned: false, prevLine: null, edgeHashes: new Set(), weaverEdgeIds: new Set() };
+  const state = { open: true, closed: false, poisoned: false, closeResult: null, prevLine: null, edgeHashes: new Set(), weaverEdgeIds: new Set() };
 
   const closeHandle = () => { if (state.open) { try { handle.close(); } finally { state.open = false; } } };
   const poison = (err) => { state.poisoned = true; closeHandle(); return err; };
@@ -193,6 +193,9 @@ export function createLedger(ledgerPath, { signKey, wovenAt, repoHead, repositor
     appendEdge(edgeInput) {
       guard();
       try {
+        // validateEdgeInput re-derives from_node/to_node from the supplied
+        // locators via deriveNodeId and rejects any mismatch (never silently
+        // overwrites — the mismatch is the thing to detect).
         validateEdgeInput(edgeInput, { repositoryRef: repo_ref });
         const record = chainAndSign({ ...edgeInput, woven_at });
         writeLine(record);
@@ -211,11 +214,13 @@ export function createLedger(ledgerPath, { signKey, wovenAt, repoHead, repositor
       } catch (e) { throw poison(e); }
     },
     close(coverage) {
-      guard();
+      if (state.closed) return state.closeResult; // idempotent ONLY after a successful close
+      guard();                                    // still throws after abort/poison
       try {
         validateCoverage(coverage, state.weaverEdgeIds);
         const record = chainAndSign({ clotho_weave_trailer: coverage, woven_at });
         writeLine(record);
+        state.closeResult = record;
         state.closed = true;
         closeHandle();
         return record;

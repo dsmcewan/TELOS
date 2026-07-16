@@ -235,6 +235,22 @@ try {
     l.abort();
   }
 
+  // ---- 6b. appendEdge re-derives/checks endpoint ids; close() idempotency --
+  {
+    // a caller from_node that mismatches the locator-derived id is rejected
+    const p = newPath(); const l = createLedger(p, opts);
+    assert.throws(() => l.appendEdge({ ...anEdge(), from_node: "0".repeat(64) }), /from_node .* does not match derived/);
+  }
+  {
+    // close() is idempotent after a successful close: same trailer, no re-write
+    const p = newPath(); const l = createLedger(p, opts);
+    l.appendEdge(anEdge());
+    const r1 = l.close(coverage());
+    const r2 = l.close(coverage());
+    assert.equal(r2.record_hash, r1.record_hash, "second close returns the same trailer record");
+    assert.equal((await verifyLedger(p)).ok, true, "no duplicate trailer written");
+  }
+
   // ---- 7. descriptor closure via an INJECTED file handle (D22) -------------
   function spyFile() {
     const calls = { closes: 0 };
