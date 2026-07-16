@@ -189,9 +189,9 @@ export function createLedger(ledgerPath, { signKey, wovenAt, repoHead, repositor
 
   const woven_at = new Date(wovenAt ?? Date.now()).toISOString();
   const repo_head = repoHead ?? String(git(["rev-parse", "HEAD"])).trim();
-  if (!HEX40.test(repo_head)) throw new TypeError(`createLedger: repo_head must be a 40-hex commit, got ${JSON.stringify(repo_head)}`);
+  if (typeof repo_head !== "string" || !HEX40.test(repo_head)) throw new TypeError(`createLedger: repo_head must be a 40-hex commit string, got ${JSON.stringify(repo_head)}`);
   const repo_ref = repositoryRef ?? deriveRepositoryRef(git);
-  if (!REPO_REF.test(repo_ref)) throw new TypeError(`createLedger: repository_ref must be 'git-root:<40-hex>', got ${JSON.stringify(repo_ref)}`);
+  if (typeof repo_ref !== "string" || !REPO_REF.test(repo_ref)) throw new TypeError(`createLedger: repository_ref must be a 'git-root:<40-hex>' string, got ${JSON.stringify(repo_ref)}`);
 
   if (openFile === defaultOpenFile) mkdirSync(path.dirname(path.resolve(ledgerPath)), { recursive: true });
   const handle = openFile(ledgerPath); // wx is the atomic existence gate
@@ -300,13 +300,14 @@ export async function verifyLedger(ledgerPath, { openReadStream } = {}) {
       try {
         for (const k of Object.keys(h)) if (!HEADER_FIELDS.includes(k)) throw new Error(`unexpected field '${k}'`);
         for (const k of HEADER_FIELDS) if (!(k in h)) throw new Error(`missing field '${k}'`);
-        if (typeof h.repository_ref !== "string" || !REPO_REF.test(h.repository_ref)) throw new Error("repository_ref must be 'git-root:<40-hex>'");
+        if (typeof h.repository_ref !== "string" || !REPO_REF.test(h.repository_ref)) throw new Error("repository_ref must be a 'git-root:<40-hex>' string");
+        if (typeof h.pub_key !== "string") throw new Error("pub_key must be a string");
         pubKey = publicKeyFromB64(h.pub_key);
         if (pubKey.asymmetricKeyType !== "ed25519") throw new Error("pub_key must be an Ed25519 SPKI key");
         if (publicKeyB64(pubKey) !== h.pub_key) throw new Error("pub_key is not canonical SPKI base64");
         if (h.weave_version !== 1) throw new Error("weave_version must be 1");
-        if (!HEX40.test(h.repo_head)) throw new Error("repo_head must be 40-hex");
-        if (new Date(h.woven_at).toISOString() !== h.woven_at) throw new Error("woven_at not canonical ISO");
+        if (typeof h.repo_head !== "string" || !HEX40.test(h.repo_head)) throw new Error("repo_head must be a 40-hex string");
+        if (typeof h.woven_at !== "string" || new Date(h.woven_at).toISOString() !== h.woven_at) throw new Error("woven_at not canonical ISO");
         header = h; repoRef = h.repository_ref;
       } catch (e) { fail(`header: ${e.message}`); }
       prevBytes = lineBuf;

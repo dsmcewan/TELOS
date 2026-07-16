@@ -206,6 +206,19 @@ try {
   {
     // createLedger validates an injected repositoryRef
     assert.throws(() => createLedger(newPath(), { ...opts, repositoryRef: "not-a-ref" }), /git-root/);
+    // type-strict: a non-string repoHead/repositoryRef is rejected (no regex coercion of arrays)
+    assert.throws(() => createLedger(newPath(), { ...opts, repoHead: [REPO_HEAD] }), /repo_head/);
+    assert.throws(() => createLedger(newPath(), { ...opts, repositoryRef: [REPO] }), /repository_ref/);
+  }
+  for (const [field, value] of [["repo_head", 123], ["repository_ref", ["x"]], ["woven_at", 5], ["pub_key", 1]]) {
+    // verifyLedger rejects a non-string header field rather than coercing it
+    const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge()); l.close(coverage());
+    const lines = readFileSync(p, "utf8").replace(/\n$/, "").split("\n");
+    const h0 = JSON.parse(lines[0]).clotho_weave_header; h0[field] = value;
+    lines[0] = canonicalJson({ clotho_weave_header: h0 }); writeFileSync(p, lines.join("\n") + "\n");
+    const v = await verifyLedger(p);
+    assert.equal(v.ok, false);
+    assert.ok(v.errors.some((x) => new RegExp(`header|${field}`).test(x)), `non-string ${field} rejected`);
   }
   for (const mutate of [(h) => ({ ...h, extra: 1 }), (h) => ({ ...h, repository_ref: "git-root:xyz" })]) {
     const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge()); l.close(coverage());
