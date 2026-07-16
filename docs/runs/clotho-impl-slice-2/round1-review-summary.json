@@ -1,0 +1,146 @@
+{
+  "build_id": "clotho-task-2-review",
+  "use_case": "clotho-phase-1-task-2",
+  "objective": "Review the Clotho Task 2 implementation (clotho/registry.mjs + test, PR #113, head e304f0197fe2d377ac9fe1fb11be514ba1ddec09) for FAITHFUL implementation strictly within frozen v12 Task 2 scope. Authorized by The Eye's implementation decision (#109) against v12 (sha256:bdc93901..., authz-005). The deterministic gate passed (finalStatus meets). Approve ONLY if the code implements Task 2 as written with NO reinterpretation and NO scope expansion: the exact closed NODE_KINDS/EDGE_KINDS/ASSERTION_STATUS members as read-only facades; canonicalJson per the stated JSON/sort/reject rules; deriveNodeId over canonicalJson({kind,locator}); the exact per-kind locator schemas and content bindings; the endpoint matrix incl. the four depends-on rows and the discharges matrix; status/assertor coupling; deriveRepositoryRef shallow guard proven vs real git + injected units; zero runtime dependencies, ESM, node: stdlib only, no spine change. Reject or revise if anything exceeds Task 2, reinterprets it, or violates repo constraints.",
+  "review_ref": "sha256:4a720120eb477e2c8427737a7c691d0845c587742cb246344afd35ec1f6472f6",
+  "pr": 113,
+  "pr_head": "e304f0197fe2d377ac9fe1fb11be514ba1ddec09",
+  "plan_ref": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3",
+  "authorization": "authz-005",
+  "timestamp": "2026-07-16T17:10:32.308Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "medium",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd67BeVfefoEcTE84XpqC",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-16T17:11:22.122Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2JtSnPZ4izieDuwWMtHO4e56BvQJ",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-16T17:17:19.936Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "9fe89ddc-6437-90c6-8b24-0e7693c36d64",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-16T17:11:16.737Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "iRBZaq2vKuWOmtkP24SSsQ8",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-16T17:10:52.664Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "claude decision is 'revise', not 'approve'.",
+      "claude has required edits: Fix or justify the mutation-boundary hole in readonlySet: the facade is a plain object, not a real Set, and it is NOT actually immutable against the spec's stated threat model. `Object.freeze(facade)` freezes the facade's own properties, but the underlying private `set` is reachable via the bound closures only — however the facade itself can still be subverted via `Object.getPrototypeOf(facade)` (Object.prototype) pollution and, more importantly, the facade fails `instanceof Set` and `Set.prototype.has.call` interop. At minimum: (a) set the facade's prototype to null or Set.prototype-compatible shape, and (b) add a test asserting the underlying set cannot be reached/mutated (e.g., that `NODE_KINDS.size` is non-writable and mutators throw even after `Object.getPrototypeOf` manipulation). If the council deems plain-object facade acceptable, document the deliberate choice in a comment tied to the task line 'do not use Object.freeze(new Set(...))'.; deriveRepositoryRef violates the frozen shallow-guard specification's error semantics: the spec says 'require the output to be exactly `false`, otherwise throw the stable shallow-repository error'. The implementation conflates malformed output (e.g. 'yes', empty string) with genuine shallowness by throwing ShallowRepositoryError for both — this matches the letter of 'otherwise throw the stable shallow-repository error' so it is arguably compliant, BUT the task's unit list separately names 'malformed non-`false` output' as a distinct branch to cover, and the test at section 12 asserts ShallowRepositoryError for malformed output, cementing the conflation. Confirm with the spec owner that malformed-output => ShallowRepositoryError is intended; if malformed output must be a distinct fatal error, split the branch and update the test. Record the resolution either way.; The real-git fixture builder does not use 'the existing no-shell wrapper' as the task requires ('using only allowlisted `git` commands through the existing no-shell wrapper'). The test invokes execFileSync('git', ...) directly. execFileSync is no-shell in effect, but the task names an existing wrapper; either route the fixture's git calls through that wrapper (if it exists in the repo at this point) or record an explicit authorized deviation noting the wrapper lands in Task 4a (as the registry.mjs comment itself claims) and that direct execFileSync is the interim mechanism.; Add the missing spec-mandated locator/edge coverage: (1) a rejection test for missing `repository_ref` and missing content hash on EACH repository-scoped kind (the suite only exercises repository-file for missing-field cases; the task text demands 'missing `repository_ref` or content hash on each repository-scoped kind'); (2) 'empty provenance' rejection is listed in the task's reject list but no test exercises an empty/blank source_ref beyond the empty string — verify empty-provenance semantics are fully covered or add the case; (3) short-SHA rejection is tested only via blob_sha 'abc' on repository-file — add short-SHA cases for text_sha256/entry_hash/summary_sha256 bearing kinds or confirm the shared requireHex path makes per-kind repetition unnecessary and note that in the test comments.; validateAssertionStatus accepts any assertor matching STABLE_ID that starts with 'model:' — but 'model:' contains ':' which STABLE_ID permits mid-string, while requireAssertor runs BEFORE the coupling check, so 'model:' alone (trailing colon, no model name) passes STABLE_ID ('m' start, ':' allowed) and maps to model-proposal. Add a rejection (or explicit acceptance) test for degenerate assertors 'model:' and 'model: ' to pin the boundary; if 'model:' bare should be rejected, add the guard.",
+      "claude has hard stops: Scope expansion: registry.mjs exports WEAVER_IDS as a fourth public read-only registry. The frozen Task 2 interface list names exactly three registries (NODE_KINDS, EDGE_KINDS, ASSERTION_STATUS) plus nine functions; WEAVER_IDS is not in the interface. The five weaver ids are needed internally for status coupling, but exporting them as a public registry (and testing WEAVER_IDS.size===5 as if it were spec) creates a new authoritative membership surface not authorized by v12 Task 2. Make WEAVER_IDS module-private (non-exported) or obtain explicit scope authorization; the test must then stop importing it.; Reinterpretation of the endpoint matrix without exhibited authority: the frozen Task 2 text specifies the four depends-on rows and the exact discharges matrix, but does NOT enumerate the introduced-by, verified-by, documented-in, motivated-by, or evidenced-by rows in the excerpt provided to this review. The implementation hard-codes motivated-by as ONLY code-symbol->concern and evidenced-by as ONLY code-symbol->run-evidence, and documented-in/verified-by as code-symbol|repository-file sourced. If these rows come from spec v2.3 they must be cited; as reviewed, they are unverifiable against the frozen scope and a wrong row here silently forbids/permits graph edges. Provide the spec v2.3 matrix citation for every non-depends-on/non-discharges row, or the matrix cannot be certified as faithful.; Uncited validation semantics presented as spec: several concrete rules are not derivable from the frozen Task 2 text supplied — (a) run-evidence.path must start with 'docs/runs/'; (b) code-symbol.symbol must match a JavaScript identifier regex; (c) asserted_by max length 128 and STABLE_ID charset; (d) heading normalization = NFC+trim+whitespace-collapse; (e) supersedes requires same-kind endpoints and human/model-only assertor. Each of these may well be in spec v2.3 or elsewhere in v12, but none is exhibited to this council. Faithful-implementation certification requires the authoritative source for each rule; otherwise these are reinterpretations. Supply citations or strip/relax to what Task 2 states.",
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Rewrite the read-only facade so `forEach` invokes callbacks with the facade—not the private native `Set`—as the third argument, and ensure no other method exposes the backing set. Add mutation-through-callback regression tests for all three registries.; Implement the exact v12 node-reference schema in `validateEdgeInput`; derive each node ID from `canonicalJson({kind, locator})`, accept correctly matching IDs, and reject mismatches. Preserve exact endpoint and caller-owned-field rules.; Apply the frozen exact-key and inherited-enumerable rejection rules at every structured public-input boundary, including `deriveNodeId` and `docAddressKey`, and enforce the exact v12 identifier grammars for all identifier-bearing fields and assertor suffixes.; Replace permissive `trim()`/blank-line filtering in `deriveRepositoryRef` with parsing that accepts only the frozen command-output forms, while retaining the stable shallow-repository error. Add injected tests for whitespace, extra blank lines, malformed roots, and the exact stable error identity.; Build and run the real-git fixture through the required existing no-shell wrapper and fixture-only command allowlist; do not broaden the weaver-facing allowlist.; Complete the test suite to satisfy every frozen coverage item, especially per-kind missing repository/content fields, exact outer schemas and inherited fields, matching and mismatched node IDs, every allowed endpoint row and required forbidden cases, all initial status/assertor combinations, all specified path and malformed source-ref cases, exact git-output behavior, and iteration/mutation-boundary behavior.; Make weaver membership and the shallow-error implementation private unless the frozen interface explicitly exports them; remove the unauthorized `WEAVER_IDS` and `ShallowRepositoryError` named exports and test behavior through the authorized interfaces.",
+      "codex has hard stops: The registry facades are mutable through `forEach`: its third callback argument is the private native `Set`, so a caller can invoke `add`, `delete`, or `clear` on the backing registry.; `validateEdgeInput` does not implement the required node-ID consistency check. Endpoint descriptors contain only `{kind, locator}`, so matching IDs cannot be accepted and mismatched IDs cannot be detected as required by v12.; Fail-closed schema enforcement is incomplete: outer inputs to `deriveNodeId` and `docAddressKey` accept extra or inherited fields, `requireExactKeys` can miss inherited enumerable fields from `Object.prototype`, and identifier-bearing values such as `check-contract.contract_id` and an empty `model:` suffix are accepted without the frozen identifier grammar.; `deriveRepositoryRef` uses broad `trim()` and blank-line filtering, accepting malformed whitespace and additional blank-line forms rather than requiring the exact shallow and single-root output forms.; The real-git fixture invokes `execFileSync` directly through an unrestricted local runner instead of the required existing no-shell wrapper with fixture-only allowlisting.; The mandatory v12 test contract is incomplete, including no mismatched-node-ID test, no per-kind missing `repository_ref` and content-binding tests, incomplete allowed endpoint coverage, incomplete status-coupling/path/source-ref coverage, and no regression for mutation through the `forEach` callback argument.; The module exports `WEAVER_IDS` and `ShallowRepositoryError`, neither of which is in the frozen Task 2 interface. `WEAVER_IDS` in particular creates an unauthorized fourth public registry."
+    ],
+    "warnings": [],
+    "provenance": [
+      {
+        "model": "claude",
+        "has_provenance": true,
+        "provider": "anthropic",
+        "response_model": "claude-fable-5",
+        "response_id": "msg_011Cd67BeVfefoEcTE84XpqC",
+        "source": "ai-peer-mcp/claude_ask"
+      },
+      {
+        "model": "agy",
+        "has_provenance": true,
+        "provider": "local",
+        "response_model": "agy-checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "source": "ai-peer-mcp/agy_checkpoint"
+      },
+      {
+        "model": "codex",
+        "has_provenance": true,
+        "provider": "openai",
+        "response_model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2JtSnPZ4izieDuwWMtHO4e56BvQJ",
+        "source": "ai-peer-mcp/codex_ask"
+      }
+    ]
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

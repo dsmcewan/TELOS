@@ -1,0 +1,30 @@
+{
+  "build_id": "clotho-task-2-review",
+  "use_case": "clotho-phase-1-task-2",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/registry.mjs",
+    "clotho/scripts/test-registry.mjs"
+  ],
+  "proposal_ref": "sha256:623c770dec654f8ca5f60f5915a00736ab53bbdc2af703fef1e1047045a4d804",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-16T18:00:58.602Z",
+  "rationale": "Traced every frozen-scope requirement against the revised code; both prior rulings and all prior-review fixes are faithfully applied.\n\nRULING A (edge id-vs-locator): validateEdgeInput now takes the signed-edge payload shape — from_node/to_node as stated 64-hex ids plus from_locator/to_locator as exact {kind,locator} descriptors (requireExactKeys on both). Stated ids are checked with requireHex(HEX64) and compared to deriveNodeId(locator); mismatch throws with a distinct message and is never silently replaced. The endpoint matrix is applied to locator kinds, matching the v12 signed-edge shape. Tests cover from_node mismatch, to_node mismatch, and non-64-hex stated id.\n\nRULING B (fixture-only allowlist): the real-git fixture defines a PRIVATE allowlist inside the test (init -q, config, add, commit -q -m, rev-list --max-parents=0 HEAD, rev-parse --is-shallow-repository, clone -q [--depth 1] url dest), enforced shape-by-shape with negative tests (\"status\", \"rev-parse HEAD\" rejected). It uses execFileSync with shell:false (no shell), lives only in the test file, and does not touch any weaver-facing wrapper — correctly separated from Task 4a per the bundle context.\n\nPrior fixes verified: (1) forEach passes the facade as the third callback argument, proven by identity assertion plus a mutation attempt on it; (2) WEAVER_IDS and ShallowRepositoryError are module-private, not exported (test detects shallowness via the stable e.code === \"CLOTHO_SHALLOW_REPOSITORY\", which is the right stable-error contract without widening the public surface); (3) deriveNodeId and docAddressKey enforce exact outer schemas via requireExactKeys, with extra-field rejection tests; (4) model:<seat> requires a nonempty seat (isModelAssertor checks length > \"model:\".length; \"model:\" rejected in tests); (5) deriveRepositoryRef strips at most ONE terminal newline (\\r\\n or \\n), then requires exactly \"false\" — \"true\" throws the stable shallow error, anything else (including \"false \" with trailing space) throws a DISTINCT malformed-output error; multi-line and non-40-hex rev-list output are fatal. Injected units cover all four guard branches (true, malformed, multi-root, malformed root) per D18's complement requirement.\n\nFrozen-interface conformance: all 11 exported names match the Task 2 interface list exactly; nothing extra is exported. Registries are private-Set-backed read-only facades (not Object.freeze(new Set())) exposing size/has/iteration/keys/values/entries/forEach with throwing add/delete/clear. Membership lists match v12 exactly (11/8/5) and appear once. canonicalJson implements the exact acceptance/rejection rules (undefined, sparse, non-finite, bigint, symbol, function, cycle, non-plain prototype; code-unit key sort; array order preserved). Per-kind locator schemas match the v12 table field-for-field, including the commit globally-addressed exception, D13 content bindings (blob_sha/text_sha256/entry_hash/summary_sha256), heading normalization (NFC/trim/collapse), run-evidence docs/runs/ prefix, canonical-path rules, and repository_ref match against the derived value. Source-ref forms, status/assertor coupling (five weaver ids / human / model:<seat>), the endpoint matrix including all four depends-on rows and the exact v2.3 discharges matrix, and supersedes same-kind + human-or-model assertor are all implemented and tested. docAddressKey returns canonicalJson of exactly the two fields.\n\nReal-git D18 fixture: multi-commit temp origin, file:// --depth 1 clone asserted to throw the stable shallow error, full clone asserted to resolve exactly git-root:<origin root SHA>, temp dir removed in finally, runs in the normal suite. Deterministic gate is green across all checks (zero deps, node: stdlib only, diff confined to clotho/, no scaffold, tests pass).\n\nMinor non-blocking observations (not defects): the fixture's .trim() on originRoot is test-side plumbing followed by a strict 40-hex assert, not production parsing; validateLocator's default switch arm is unreachable defensive code; ENDPOINTS/LOCATOR_FIELDS are internal plain objects (record values/expectations are explicitly permitted; no second authoritative membership list exists). No scope expansion, no spine change. Faithful within frozen v12 Task 2 scope; I stake the seat's signature on approval as-is.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011Cd6B2jD9agchUrjrLdRSW",
+    "source": "ai-peer-mcp/claude_ask",
+    "answered_at": "2026-07-16T18:01:25.475Z",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "8b6121af1d05099ccf18d26853d715a311c8adfd05651e8ee53ec2c11a3d42ba",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

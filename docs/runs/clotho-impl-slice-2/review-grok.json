@@ -1,0 +1,25 @@
+{
+  "build_id": "clotho-task-2-review",
+  "use_case": "clotho-phase-1-task-2",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/registry.mjs",
+    "clotho/scripts/test-registry.mjs"
+  ],
+  "proposal_ref": "sha256:7089ed94d0dee271360dbc622918eecd1c0a383b241697a1551edf69f9861d49",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-16T18:12:14.005Z",
+  "rationale": "Faithful v12 Task 2 implementation within frozen scope. Private-Set facades (mutators throw; forEach third arg is the facade, not the backing set) for NODE_KINDS/EDGE_KINDS/ASSERTION_STATUS with exact closed membership. canonicalJson enforces plain/dense/finite/no-cycle rules with code-unit key sort. Per-kind locator schemas carry repository_ref + the correct content binding (blob_sha/text_sha256/entry_hash/summary_sha256) except the named commit exception; requireExactKeys rejects missing/extra/inherited-enumerable/symbol/non-enumerable-required fields. deriveNodeId/docAddressKey use exact outer schemas. validateEdgeInput requires explicit from_node/to_node (64-hex) AND from_locator/to_locator ({kind,locator}), validates locators, then REJECTS any stated-id vs deriveNodeId mismatch; endpoint matrix (incl. all four depends-on rows and the v2.3 discharges matrix) is applied from locator kinds; supersedes is same-kind + human/model. Status/assertor coupling uses private WEAVER_IDS (not exported); nonempty model:<seat> enforced. deriveRepositoryRef accepts only exact git-output forms (true→ShallowRepositoryError with CLOTHO_SHALLOW_REPOSITORY; non-false≠true→malformed distinct from shallow; multi-root and non-40-hex root fatal; no free-form trim). ShallowRepositoryError is module-private. Real-git D18 fixture uses a private fixture-only no-shell allowlist (init/config/add/commit/clone/rev-*) — not a Task 4a weaver wrapper — and proves shallow reject + full clone git-root:<origin root>. Injected units cover the complementary branches. Zero runtime deps, ESM, node: only, clotho/ confined, no spine change, no scope expansion. Deterministic gate meets. Accept AS-IS.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5",
+    "response_id": "9df20291-cd8d-9450-abde-3a5b5d50281d",
+    "source": "ai-peer-mcp/grok_ask",
+    "answered_at": "2026-07-16T18:12:40.398Z",
+    "tool": "grok_ask"
+  }
+}

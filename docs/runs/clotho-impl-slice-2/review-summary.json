@@ -1,0 +1,129 @@
+{
+  "build_id": "clotho-task-2-review",
+  "use_case": "clotho-phase-1-task-2",
+  "objective": "Review the REVISED Clotho Task 2 implementation (clotho/registry.mjs + test, PR #113, head 952087094e86fc92162a750bd74742b35ff73c8c) for FAITHFUL implementation strictly within frozen v12 Task 2 scope. Authorized by The Eye's implementation decision (#109) against v12 (sha256:bdc93901..., authz-005). The deterministic gate passed (finalStatus meets). This revision applies The Eye's two rulings and the prior review's fixes: (A) edgeInput carries explicit from_node/to_node (64-hex) AND from_locator/to_locator ({kind,locator}); stated ids are validated against deriveNodeId(locator) and a mismatch is REJECTED (the endpoint matrix uses the locator kinds) — see the v12 signed-edge shape in the bundle; (B) the real-git fixture runs through a PRIVATE, fixture-only, no-shell git allowlist in the test (not the Task 4a weaver-facing wrapper). Also: forEach passes the facade not the private set; WEAVER_IDS and ShallowRepositoryError are NOT public exports; exact outer schemas on deriveNodeId/docAddressKey; nonempty model:<seat>; deriveRepositoryRef accepts only exact git-output forms (malformed != shallow). Approve ONLY if the code faithfully implements v12 Task 2 within frozen scope (exact closed sets as read-only facades; canonicalJson; per-kind locator schemas + content bindings; the endpoint matrix; status/assertor coupling; explicit edge id-vs-locator validation; the shallow/full-clone contract vs real git + injected units), with zero runtime dependencies, ESM, node: stdlib only, no spine change, and no scope expansion. The bundle includes v12 Task 2, decisions D13/D16/D18, the identity/locator/source-ref/endpoint/signed-edge sections, and Task 4a context. Reject or revise only for genuine faithfulness/scope defects.",
+  "review_ref": "sha256:7089ed94d0dee271360dbc622918eecd1c0a383b241697a1551edf69f9861d49",
+  "pr": 113,
+  "pr_head": "952087094e86fc92162a750bd74742b35ff73c8c",
+  "plan_ref": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3",
+  "authorization": "authz-005",
+  "timestamp": "2026-07-16T18:12:14.005Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6BtXMeqwdB7BtoWnJSg",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-16T18:12:48.721Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2KrAwOm3Xztjae5K31Q9YrrPoQcd",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-16T18:19:06.386Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "9df20291-cd8d-9450-abde-3a5b5d50281d",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-16T18:12:40.398Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": false,
+      "reason": "Gemini API error 429: {\"error\":{\"code\":429,\"message\":\"Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/billing#prepay. \",\"status\":\"RESOURCE_EXHAUSTED\"}}"
+    }
+  ],
+  "gate": {
+    "gate_status": "pass",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [],
+    "warnings": [],
+    "provenance": [
+      {
+        "model": "claude",
+        "has_provenance": true,
+        "provider": "anthropic",
+        "response_model": "claude-fable-5",
+        "response_id": "msg_011Cd6BtXMeqwdB7BtoWnJSg",
+        "source": "ai-peer-mcp/claude_ask"
+      },
+      {
+        "model": "agy",
+        "has_provenance": true,
+        "provider": "local",
+        "response_model": "agy-checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "source": "ai-peer-mcp/agy_checkpoint"
+      },
+      {
+        "model": "codex",
+        "has_provenance": true,
+        "provider": "openai",
+        "response_model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2KrAwOm3Xztjae5K31Q9YrrPoQcd",
+        "source": "ai-peer-mcp/codex_ask"
+      }
+    ]
+  },
+  "review_passed": true,
+  "acceptance": {
+    "status": "REVIEW_PASSED",
+    "note": "Task 2 passed required-seat review + gate. Human acceptance (The Eye) is the remaining, separate step."
+  }
+}

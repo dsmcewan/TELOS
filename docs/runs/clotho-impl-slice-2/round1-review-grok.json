@@ -1,0 +1,25 @@
+{
+  "build_id": "clotho-task-2-review",
+  "use_case": "clotho-phase-1-task-2",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/registry.mjs",
+    "clotho/scripts/test-registry.mjs"
+  ],
+  "proposal_ref": "sha256:4a720120eb477e2c8427737a7c691d0845c587742cb246344afd35ec1f6472f6",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-16T17:10:32.308Z",
+  "rationale": "Faithful Task 2 implementation within frozen v12 scope, with no reinterpretation and no material scope expansion. registry.mjs is the sole membership authority: NODE_KINDS (11), EDGE_KINDS (8), ASSERTION_STATUS (5) are private-Set read-only facades (mutators throw; not Object.freeze(new Set)). canonicalJson implements sorted keys, array-order preservation, and the stated rejections (non-finite, bigint, sparse, cycles, non-plain, undefined/symbol/function). deriveNodeId = lowercase SHA-256 of canonicalJson({kind,locator}) after validateLocator. Per-kind locator schemas and content bindings match exactly (blob_sha / text_sha256 / entry_hash / summary_sha256; commit is the sole no-repository_ref exception); repository_ref is format-checked and matched to the derived value when provided. Endpoint matrix includes all four depends-on rows and the exact discharges pair set; supersedes is same-kind with human|model: assertor; status/assertor coupling enforces weaver→deterministic-extraction, human→human-authorized, model:*→model-proposal. deriveRepositoryRef uses exactly the two specified git invocations, rejects non-false shallow output via stable ShallowRepositoryError, and requires a single 40-hex root. Injected units cover true/malformed-shallow, multi-root, and malformed-root branches; the real-git D18 fixture builds a multi-commit origin, proves shallow clone rejection and full-clone git-root:<origin-root>, and cleans up in finally. Zero runtime deps, ESM, node: stdlib only, diff confined to clotho/, deterministic gate finalStatus=meets with green check/test-all. WEAVER_IDS and ShallowRepositoryError are supporting exports for required coupling/stable-error contracts, not Task 3+ surface or spine change. Accept AS-IS.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5",
+    "response_id": "9fe89ddc-6437-90c6-8b24-0e7693c36d64",
+    "source": "ai-peer-mcp/grok_ask",
+    "answered_at": "2026-07-16T17:11:16.737Z",
+    "tool": "grok_ask"
+  }
+}

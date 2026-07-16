@@ -1,0 +1,38 @@
+{
+  "build_id": "clotho-task-2-review",
+  "use_case": "clotho-phase-1-task-2",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/registry.mjs",
+    "clotho/scripts/test-registry.mjs"
+  ],
+  "proposal_ref": "sha256:623c770dec654f8ca5f60f5915a00736ab53bbdc2af703fef1e1047045a4d804",
+  "decision": "revise",
+  "required_edits": [
+    "Replace requireExactKeys semantics so schema fields must be exactly the expected own enumerable string fields, inherited enumerable fields are rejected even when inherited from Object.prototype, and non-enumerable required fields cannot pass. Add regressions for Object.prototype pollution and a non-enumerable content-hash field, including proof that such locators cannot mint colliding node ids.",
+    "Remove broad String coercion from deriveRepositoryRef. Require the injected runner's outputs to be strings before parsing; preserve the stable shallow error only for the exact textual true form and report all non-string or otherwise malformed values as malformed. Add injected tests for non-string shallow and root outputs.",
+    "Complete the frozen tests by adding the three missing allowed endpoint rows, a NUL-containing path rejection, and a table-driven assertion covering every valid and invalid initial status/assertor combination over the closed status set."
+  ],
+  "hard_stops": [
+    "Exact-object validation is not actually exact: requireExactKeys ignores enumerable properties inherited through Object.prototype and accepts required fields that are own but non-enumerable. A non-enumerable locator content hash therefore validates but is omitted by canonicalJson, allowing different validated content bindings to derive the same node id. This violates the inherited-field rejection, closed schemas, and D13 content-bound identity.",
+    "deriveRepositoryRef coerces runner results with String(...). Consequently non-string malformed outputs such as boolean false can be accepted as the exact shallow result, and arbitrary objects can masquerade as valid root output. This violates the exact git-output contract and malformed-output handling.",
+    "The committed unit suite does not satisfy frozen coverage requirements: it omits allowed repository-file -> test, code-symbol -> contract-clause, and repository-file -> doc-section endpoint rows; omits the explicit NUL path rejection; and does not cover each invalid initial status/assertor coupling across the closed status set."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T18:00:58.602Z",
+  "rationale": "The implementation otherwise closely follows the frozen scope: registries use private read-only facades with safe forEach behavior; public exports remain constrained; locator schemas, content hashes, repository-ref matching, source refs, endpoint directions, explicit node-id/locator consistency, supersedes provenance, and the private real-git shallow/full fixture are substantially faithful. The remaining defects are narrow and repairable within Task 2, but the exact-schema/content-identity hole is runtime-significant, and the output coercion and missing mandatory tests prevent acceptance AS-IS.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2KgJhvExiltpIu7vJ5b1hpbLltgN",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T18:06:10.504Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "80daf1dc7a384abd636decac6f69dd81178a45af7a85881c250a10829ad44266",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "workstream": "clotho-task-2-registry",
+  "claimedStatus": "meets",
+  "finalStatus": "meets",
+  "converged": true,
+  "verified_facts": [
+    {
+      "id": "registry",
+      "description": "file exists: C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho\\registry.mjs",
+      "ok": true,
+      "detail": "found C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho\\registry.mjs"
+    },
+    {
+      "id": "registry-test",
+      "description": "file exists: C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho\\scripts\\test-registry.mjs",
+      "ok": true,
+      "detail": "found C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho\\scripts\\test-registry.mjs"
+    },
+    {
+      "id": "has-node-kinds",
+      "description": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho\\registry.mjs contains \"export const NODE_KINDS\"",
+      "ok": true,
+      "detail": "found \"export const NODE_KINDS\""
+    },
+    {
+      "id": "has-derive-repo",
+      "description": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho\\registry.mjs contains \"export function deriveRepositoryRef\"",
+      "ok": true,
+      "detail": "found \"export function deriveRepositoryRef\""
+    },
+    {
+      "id": "test-realgit",
+      "description": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho\\scripts\\test-registry.mjs contains \"real-git\"",
+      "ok": true,
+      "detail": "found \"real-git\""
+    },
+    {
+      "id": "check",
+      "description": "clotho check",
+      "ok": true,
+      "detail": "exit=0 clotho check OK (4 files)"
+    },
+    {
+      "id": "test-all",
+      "description": "clotho test-all",
+      "ok": true,
+      "detail": "exit=0 clotho test-all OK (1 tests)"
+    },
+    {
+      "id": "zero-deps",
+      "description": "zero dependencies",
+      "ok": true,
+      "detail": "exit=0"
+    },
+    {
+      "id": "stdlib-only",
+      "description": "registry imports node: only",
+      "ok": true,
+      "detail": "exit=0"
+    },
+    {
+      "id": "no-scaffold",
+      "description": "scaffold placeholder replaced",
+      "ok": true,
+      "detail": "exit=0"
+    },
+    {
+      "id": "confined",
+      "description": "diff confined to clotho/",
+      "ok": true,
+      "detail": "exit=0"
+    }
+  ],
+  "checks": [
+    {
+      "type": "file_exists",
+      "path": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho\\registry.mjs",
+      "id": "registry"
+    },
+    {
+      "type": "file_exists",
+      "path": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho\\scripts\\test-registry.mjs",
+      "id": "registry-test"
+    },
+    {
+      "type": "file_contains",
+      "path": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho\\registry.mjs",
+      "needle": "export const NODE_KINDS",
+      "id": "has-node-kinds"
+    },
+    {
+      "type": "file_contains",
+      "path": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho\\registry.mjs",
+      "needle": "export function deriveRepositoryRef",
+      "id": "has-derive-repo"
+    },
+    {
+      "type": "file_contains",
+      "path": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho\\scripts\\test-registry.mjs",
+      "needle": "real-git",
+      "id": "test-realgit"
+    },
+    {
+      "type": "command",
+      "id": "check",
+      "description": "clotho check",
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "scripts/check.mjs"
+      ],
+      "cwd": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho",
+      "expectExit": 0
+    },
+    {
+      "type": "command",
+      "id": "test-all",
+      "description": "clotho test-all",
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "scripts/test-all.mjs"
+      ],
+      "cwd": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho",
+      "expectExit": 0
+    },
+    {
+      "type": "command",
+      "id": "zero-deps",
+      "description": "zero dependencies",
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "-e",
+        "const p=require('./package.json');process.exit(p.dependencies||p.devDependencies?1:0)"
+      ],
+      "cwd": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho",
+      "expectExit": 0
+    },
+    {
+      "type": "command",
+      "id": "stdlib-only",
+      "description": "registry imports node: only",
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "-e",
+        "const s=require('fs').readFileSync('registry.mjs','utf8');const m=[...s.matchAll(/^import[^\\n]*from\\s+[\\\"']([^\\\"']+)[\\\"']/gm)].map(x=>x[1]);process.exit(m.every(x=>x.startsWith('node:'))?0:1)"
+      ],
+      "cwd": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho",
+      "expectExit": 0
+    },
+    {
+      "type": "command",
+      "id": "no-scaffold",
+      "description": "scaffold placeholder replaced",
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "-e",
+        "const s=require('fs').readFileSync('scripts/test-registry.mjs','utf8');process.exit(s.includes('clotho scaffold OK')?1:0)"
+      ],
+      "cwd": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho",
+      "expectExit": 0
+    },
+    {
+      "type": "command",
+      "id": "confined",
+      "description": "diff confined to clotho/",
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "-e",
+        "const {execFileSync}=require('child_process');const out=execFileSync('git',['diff','--name-only','97e5239','HEAD'],{cwd:process.env.ROOTDIR,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(Boolean);process.exit(out.every(f=>f.startsWith('clotho/'))?0:1)"
+      ],
+      "cwd": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2",
+      "expectExit": 0
+    }
+  ],
+  "surviving_blockers": [],
+  "go_to_market_blockers": [],
+  "rounds": [
+    {
+      "round": 1,
+      "checks": [
+        {
+          "id": "registry",
+          "ok": true,
+          "detail": "found C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho\\registry.mjs"
+        },
+        {
+          "id": "registry-test",
+          "ok": true,
+          "detail": "found C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task2\\clotho\\scripts\\test-registry.mjs"
+        },
+        {
+          "id": "has-node-kinds",
+          "ok": true,
+          "detail": "found \"export const NODE_KINDS\""
+        },
+        {
+          "id": "has-derive-repo",
+          "ok": true,
+          "detail": "found \"export function deriveRepositoryRef\""
+        },
+        {
+          "id": "test-realgit",
+          "ok": true,
+          "detail": "found \"real-git\""
+        },
+        {
+          "id": "check",
+          "ok": true,
+          "detail": "exit=0 clotho check OK (4 files)"
+        },
+        {
+          "id": "test-all",
+          "ok": true,
+          "detail": "exit=0 clotho test-all OK (1 tests)"
+        },
+        {
+          "id": "zero-deps",
+          "ok": true,
+          "detail": "exit=0"
+        },
+        {
+          "id": "stdlib-only",
+          "ok": true,
+          "detail": "exit=0"
+        },
+        {
+          "id": "no-scaffold",
+          "ok": true,
+          "detail": "exit=0"
+        },
+        {
+          "id": "confined",
+          "ok": true,
+          "detail": "exit=0"
+        }
+      ]
+    }
+  ]
+}

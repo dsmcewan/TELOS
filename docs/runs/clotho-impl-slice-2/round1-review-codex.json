@@ -1,0 +1,46 @@
+{
+  "build_id": "clotho-task-2-review",
+  "use_case": "clotho-phase-1-task-2",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/registry.mjs",
+    "clotho/scripts/test-registry.mjs"
+  ],
+  "proposal_ref": "sha256:4a720120eb477e2c8427737a7c691d0845c587742cb246344afd35ec1f6472f6",
+  "decision": "revise",
+  "required_edits": [
+    "Rewrite the read-only facade so `forEach` invokes callbacks with the facade—not the private native `Set`—as the third argument, and ensure no other method exposes the backing set. Add mutation-through-callback regression tests for all three registries.",
+    "Implement the exact v12 node-reference schema in `validateEdgeInput`; derive each node ID from `canonicalJson({kind, locator})`, accept correctly matching IDs, and reject mismatches. Preserve exact endpoint and caller-owned-field rules.",
+    "Apply the frozen exact-key and inherited-enumerable rejection rules at every structured public-input boundary, including `deriveNodeId` and `docAddressKey`, and enforce the exact v12 identifier grammars for all identifier-bearing fields and assertor suffixes.",
+    "Replace permissive `trim()`/blank-line filtering in `deriveRepositoryRef` with parsing that accepts only the frozen command-output forms, while retaining the stable shallow-repository error. Add injected tests for whitespace, extra blank lines, malformed roots, and the exact stable error identity.",
+    "Build and run the real-git fixture through the required existing no-shell wrapper and fixture-only command allowlist; do not broaden the weaver-facing allowlist.",
+    "Complete the test suite to satisfy every frozen coverage item, especially per-kind missing repository/content fields, exact outer schemas and inherited fields, matching and mismatched node IDs, every allowed endpoint row and required forbidden cases, all initial status/assertor combinations, all specified path and malformed source-ref cases, exact git-output behavior, and iteration/mutation-boundary behavior.",
+    "Make weaver membership and the shallow-error implementation private unless the frozen interface explicitly exports them; remove the unauthorized `WEAVER_IDS` and `ShallowRepositoryError` named exports and test behavior through the authorized interfaces."
+  ],
+  "hard_stops": [
+    "The registry facades are mutable through `forEach`: its third callback argument is the private native `Set`, so a caller can invoke `add`, `delete`, or `clear` on the backing registry.",
+    "`validateEdgeInput` does not implement the required node-ID consistency check. Endpoint descriptors contain only `{kind, locator}`, so matching IDs cannot be accepted and mismatched IDs cannot be detected as required by v12.",
+    "Fail-closed schema enforcement is incomplete: outer inputs to `deriveNodeId` and `docAddressKey` accept extra or inherited fields, `requireExactKeys` can miss inherited enumerable fields from `Object.prototype`, and identifier-bearing values such as `check-contract.contract_id` and an empty `model:` suffix are accepted without the frozen identifier grammar.",
+    "`deriveRepositoryRef` uses broad `trim()` and blank-line filtering, accepting malformed whitespace and additional blank-line forms rather than requiring the exact shallow and single-root output forms.",
+    "The real-git fixture invokes `execFileSync` directly through an unrestricted local runner instead of the required existing no-shell wrapper with fixture-only allowlisting.",
+    "The mandatory v12 test contract is incomplete, including no mismatched-node-ID test, no per-kind missing `repository_ref` and content-binding tests, incomplete allowed endpoint coverage, incomplete status-coupling/path/source-ref coverage, and no regression for mutation through the `forEach` callback argument.",
+    "The module exports `WEAVER_IDS` and `ShallowRepositoryError`, neither of which is in the frozen Task 2 interface. `WEAVER_IDS` in particular creates an unauthorized fourth public registry."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T17:10:32.308Z",
+  "rationale": "The implementation gets several foundations right: initial membership and counts for the three required registries, recursive key sorting and array-order preservation, lowercase content-hash validation, the commit exception, the four declared `depends-on` rows, the two declared `discharges` rows, basic status coupling, SHA-256 derivation, zero runtime dependencies, ESM/stdlib use, and a functioning shallow/full real-git scenario. The deterministic gate only proves that the submitted implementation passes its current checks; it does not cover the explicit frozen acceptance requirements. The backing-Set escape and complete omission of node-ID validation are direct semantic failures, while the fixture, output parsing, public exports, and test omissions violate strict scope and proof requirements. The code therefore cannot be accepted AS-IS but is repairable within Task 2 scope.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2JtSnPZ4izieDuwWMtHO4e56BvQJ",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T17:17:19.936Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "a9dc9d6815bf478034979128f5d373bc33d6681d1e86f53894e3d81ea93ba331",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

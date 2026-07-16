@@ -1,0 +1,25 @@
+{
+  "build_id": "clotho-task-2-review",
+  "use_case": "clotho-phase-1-task-2",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/registry.mjs",
+    "clotho/scripts/test-registry.mjs"
+  ],
+  "proposal_ref": "sha256:623c770dec654f8ca5f60f5915a00736ab53bbdc2af703fef1e1047045a4d804",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-16T18:00:58.602Z",
+  "rationale": "Faithful v12 Task 2 implementation within frozen scope. Private-Set read-only facades for NODE_KINDS/EDGE_KINDS/ASSERTION_STATUS (mutators throw; forEach third arg is the facade, not the private Set). canonicalJson, per-kind locator schemas with D13 content bindings (blob_sha/text_sha256/entry_hash/summary_sha256; commit exception without repository_ref), validateSourceRef forms, status/assertor coupling (WEAVER_IDS private; nonempty model:<seat>), endpoint matrix including all four depends-on rows and exact discharges matrix, supersedes same-kind + human/model assertor, and explicit edgeInput shape (from_node/to_node 64-hex + from_locator/to_locator {kind,locator}) with mismatch REJECTED against deriveNodeId — all present and tested. Exact outer schemas on deriveNodeId/docAddressKey. deriveRepositoryRef uses exact commands, accepts only exact git-output forms (terminal-newline strip only; trailing space/malformed ≠ shallow), throws stable ShallowRepositoryError (not exported) on true. Injected units cover true/malformed/multi-root/malformed-root; real-git D18 fixture builds multi-commit origin via PRIVATE fixture-only no-shell allowlist (not Task 4a weaver wrapper), proves --depth 1 shallow reject and full clone git-root:<origin root>, cleans up in finally. Zero runtime deps, ESM, node: stdlib only, no spine change, no scope expansion. Gate finalStatus meets. Accept AS-IS.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5",
+    "response_id": "0b3cacd4-fad9-9d35-b500-d59a571ffe53",
+    "source": "ai-peer-mcp/grok_ask",
+    "answered_at": "2026-07-16T18:01:39.011Z",
+    "tool": "grok_ask"
+  }
+}
