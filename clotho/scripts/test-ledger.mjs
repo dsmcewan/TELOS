@@ -183,7 +183,13 @@ try {
     [(c) => { c.weavers[0].inspected_source_counts = [{ inventory_id: "package-files", count: 1 }]; }, /carry exactly/],       // missing required id
     [(c) => { c.weavers[3].inspected_source_counts = [{ inventory_id: "doc-files", count: 0 }, { inventory_id: "extra", count: 0 }]; }, /carry exactly/], // extra id
     [(c) => { c.orchestrator_refs = ["file:/abs@" + HEX40A]; }, /canonical POSIX/],                    // absolute path
-    [(c) => { c.weavers[0].implementation_refs = ["file:../escape.mjs@" + HEX40A]; }, /canonical POSIX/] // traversal
+    [(c) => { c.weavers[0].implementation_refs = ["file:../escape.mjs@" + HEX40A]; }, /canonical POSIX/], // traversal
+    [(c) => { c.weavers[0].inspected_source_counts[0].count = 1.5; }, /safe integer/],                 // non-integer count
+    [(c) => { c.weavers[0].inspected_source_counts[0].count = 2 ** 53; }, /safe integer/],             // unsafe integer count
+    [(c) => { c.weavers[0].inspected_source_counts[0].extra = 1; }, /exactly \{inventory_id, count\}/], // extra count field
+    [(c) => { c.weavers[0].inspected_source_counts = [{ inventory_id: "package-files", count: 1 }, { inventory_id: "package-files", count: 1 }]; }, /sorted and unique/], // duplicate
+    [(c) => { c.weavers[0].implementation_refs = []; }, /nonempty array/],                             // empty implementation_refs
+    [(c) => { c.inventories_consumed = [{ id: "x", source_ref: "git:" + HEX40A }]; }, /'file:' content address/] // malformed inventories_consumed ref
   ];
   for (const [mut, re] of covBad) {
     const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge());
@@ -329,9 +335,13 @@ try {
       for (let i = 2; i < allLines.length; i++) yield allLines[i] + "\n";
     }
     const it = readEdges(p, { openReadStream: () => gated() });
-    const first = await it.next(); // must resolve while the gate still blocks
+    // race iterator.next() against a short timeout: the edge must arrive first,
+    // proving readEdges yields before the stream ends (the gate is still open).
+    const timeout = new Promise((r) => { setTimeout(() => r("TIMEOUT"), 1000); });
+    const first = await Promise.race([it.next(), timeout]);
+    assert.notEqual(first, "TIMEOUT", "edge yielded before EOF (won the race vs timeout)");
     assert.equal(first.done, false);
-    assert.equal(first.value.edge_kind, "introduced-by", "edge yielded before EOF");
+    assert.equal(first.value.edge_kind, "introduced-by");
     release();
     const rest = [];
     for (let x = await it.next(); !x.done; x = await it.next()) rest.push(x.value);
@@ -453,6 +463,58 @@ try {
     async function* s() { for (const ln of lines) yield ln + "\n"; }
     const v = await verifyLedger(p, { openReadStream: () => s() });
     assert.equal(v.ok, true, "streamed verify ok: " + JSON.stringify(v.errors));
+  }
+
+  // ---- 12. D22 descriptor-close failure, endpoint matrix, misc -------------
+  {
+    // a descriptor-close failure poisons permanently (no idempotent success)
+    let closes = 0;
+    const openFile = () => ({ write() {}, close() { closes++; throw new Error("close boom"); } });
+    const l = createLedger(newPath(), { ...opts, openFile });
+    l.appendEdge(anEdge());
+    assert.throws(() => l.close(coverage()), /boom/);
+    assert.throws(() => l.close(coverage()), /poisoned/, "a failed close is never idempotent-success");
+    assert.throws(() => l.appendEdge(anEdge()), /poisoned/);
+    assert.equal(closes, 1, "descriptor closed once, not leaked or double-closed");
+  }
+  {
+    // close after abort throws
+    const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge()); l.abort();
+    assert.throws(() => l.close(coverage()), /poisoned/);
+  }
+  {
+    // every permitted depends-on endpoint verifies; a wrong one is rejected
+    const p = newPath(); const l = createLedger(p, opts);
+    const dep = (fromL, toL) => ({ edge_kind: "depends-on", from_node: deriveNodeId(fromL), to_node: deriveNodeId(toL), from_locator: fromL, to_locator: toL, source_ref: SR, asserted_by: "clotho-code-weaver", assertion_status: "deterministic-extraction" });
+    l.appendEdge(dep(csLoc, csLoc));
+    l.appendEdge(dep(csLoc, rfLoc));
+    l.appendEdge(dep(rfLoc, csLoc));
+    l.appendEdge(dep(rfLoc, rfLoc));
+    l.close(coverage({ codeState: "executed" }));
+    assert.equal((await verifyLedger(p)).ok, true, "depends-on matrix verifies");
+    const l2 = createLedger(newPath(), opts);
+    assert.throws(() => l2.appendEdge(dep(csLoc, commitLoc)), /valid depends-on endpoint/);
+  }
+  {
+    // misplaced/duplicate header (a header where a record belongs)
+    const { p, lines } = build3();
+    writeFileSync(p, [lines[0], lines[0], lines[2]].join("\n") + "\n");
+    assert.ok((await expectFail(p)).errors.some((x) => /duplicate header/.test(x)));
+  }
+  {
+    // removal of a complete tail record PLUS the trailer
+    const p = newPath(); const l = createLedger(p, opts);
+    l.appendEdge(anEdge()); l.appendEdge(dependsEdge()); l.close(coverage({ codeState: "executed" }));
+    const lines = readFileSync(p, "utf8").replace(/\n$/, "").split("\n"); // header, e1, e2, trailer
+    writeFileSync(p, lines.slice(0, 2).join("\n") + "\n"); // keep header + e1 only
+    assert.ok((await expectFail(p)).errors.some((x) => /no final trailer/.test(x)));
+  }
+  {
+    // an invalid-UTF-8 line is rejected (byte-exact verification)
+    const { p, lines } = build3();
+    const bad = Buffer.concat([Buffer.from(lines[0] + "\n", "utf8"), Buffer.from([0xff, 0x0a]), Buffer.from(lines[2] + "\n", "utf8")]);
+    writeFileSync(p, bad);
+    assert.ok((await expectFail(p)).errors.some((x) => /UTF-8/.test(x)));
   }
 
   console.log("test-ledger: all assertions passed");

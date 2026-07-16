@@ -50,6 +50,7 @@ const REQUIRED_INVENTORY_IDS = {
 // ---- crypto + line helpers ---------------------------------------------------
 
 const hexOf = (str) => createHash("sha256").update(Buffer.from(str, "utf8")).digest("hex");
+const hexOfBytes = (buf) => createHash("sha256").update(buf).digest("hex");
 const publicKeyB64 = (pub) => pub.export({ type: "spki", format: "der" }).toString("base64");
 const publicKeyFromB64 = (b64) => createPublicKey({ key: Buffer.from(b64, "base64"), format: "der", type: "spki" });
 // Decode `str` only if it is CANONICAL standard base64 of exactly `expectedLen`
@@ -77,7 +78,18 @@ function defaultOpenFile(ledgerPath) {
     throw e;
   }
   return {
-    write(line) { writeSync(fd, line + "\n"); fsyncSync(fd); },
+    write(line) {
+      // All-or-error: write every byte of the complete LF-terminated line (a
+      // short write is a failure, not a silently-truncated record), then fsync.
+      const buf = Buffer.from(line + "\n", "utf8");
+      let off = 0;
+      while (off < buf.length) {
+        const n = writeSync(fd, buf, off, buf.length - off);
+        if (!(n > 0)) throw new Error("short write to ledger");
+        off += n;
+      }
+      fsyncSync(fd);
+    },
     close() { closeSync(fd); }
   };
 }
@@ -231,10 +243,10 @@ export function createLedger(ledgerPath, { signKey, wovenAt, repoHead, repositor
       try {
         validateCoverage(coverage, state.weaverEdgeIds);
         const record = chainAndSign({ clotho_weave_trailer: coverage, woven_at });
-        writeLine(record);
-        state.closeResult = record;
-        state.closed = true;
-        closeHandle();
+        writeLine(record);   // write trailer + fsync
+        closeHandle();       // flush + close the descriptor — must succeed first
+        state.closeResult = record;   // report success ONLY after the close succeeds
+        state.closed = true;          // (a close failure leaves the ledger poisoned, never "closed")
         return record;
       } catch (e) { throw poison(e); }
     },
@@ -261,26 +273,30 @@ export async function verifyLedger(ledgerPath, { openReadStream } = {}) {
 
   let pubKey = null;
   let repoRef = null;
-  let prevLine = null;
+  let prevBytes = null;
   let lineIndex = 0;
   let sawCR = false;
   const edgeHashes = new Set();
   const weaverEdgeIds = new Set();
   let trailerSeen = false;
 
-  // Process exactly one complete line (no trailing LF). Never throws.
-  const processLine = (line) => {
+  // Process exactly one complete line as RAW BYTES (no trailing LF). Strict
+  // UTF-8 (no replacement); the chain hashes the exact prior line bytes. Never
+  // throws.
+  const processLine = (lineBuf) => {
     const i = lineIndex++;
+    let line;
+    try { line = new TextDecoder("utf-8", { fatal: true }).decode(lineBuf); } catch { fail(`line ${i + 1}: invalid UTF-8`); prevBytes = lineBuf; return; }
     let obj;
-    try { obj = JSON.parse(line); } catch { fail(`line ${i + 1}: not valid JSON`); prevLine = line; return; }
-    if (obj === null || typeof obj !== "object" || Array.isArray(obj)) { fail(`line ${i + 1}: record must be a JSON object`); prevLine = line; return; }
+    try { obj = JSON.parse(line); } catch { fail(`line ${i + 1}: not valid JSON`); prevBytes = lineBuf; return; }
+    if (obj === null || typeof obj !== "object" || Array.isArray(obj)) { fail(`line ${i + 1}: record must be a JSON object`); prevBytes = lineBuf; return; }
     let canon;
-    try { canon = canonicalJson(obj); } catch { fail(`line ${i + 1}: not canonicalizable`); prevLine = line; return; }
-    if (canon !== line) { fail(`line ${i + 1}: not canonical JSON`); prevLine = line; return; }
+    try { canon = canonicalJson(obj); } catch { fail(`line ${i + 1}: not canonicalizable`); prevBytes = lineBuf; return; }
+    if (canon !== line) { fail(`line ${i + 1}: not canonical JSON`); prevBytes = lineBuf; return; }
 
     if (i === 0) {
       const h = obj.clotho_weave_header;
-      if (Object.keys(obj).length !== 1 || h === null || typeof h !== "object" || Array.isArray(h)) { fail("line 1: header envelope must be exactly {clotho_weave_header:{...}}"); prevLine = line; return; }
+      if (Object.keys(obj).length !== 1 || h === null || typeof h !== "object" || Array.isArray(h)) { fail("line 1: header envelope must be exactly {clotho_weave_header:{...}}"); prevBytes = lineBuf; return; }
       try {
         for (const k of Object.keys(h)) if (!HEADER_FIELDS.includes(k)) throw new Error(`unexpected field '${k}'`);
         for (const k of HEADER_FIELDS) if (!(k in h)) throw new Error(`missing field '${k}'`);
@@ -293,18 +309,18 @@ export async function verifyLedger(ledgerPath, { openReadStream } = {}) {
         if (new Date(h.woven_at).toISOString() !== h.woven_at) throw new Error("woven_at not canonical ISO");
         header = h; repoRef = h.repository_ref;
       } catch (e) { fail(`header: ${e.message}`); }
-      prevLine = line;
+      prevBytes = lineBuf;
       return;
     }
 
-    if (header === null) { fail(`line ${i + 1}: record precedes a valid header`); prevLine = line; return; }
-    if (obj.clotho_weave_header) { fail(`line ${i + 1}: duplicate header`); prevLine = line; return; }
-    if (trailerSeen) { fail(`line ${i + 1}: record after trailer (trailer must be final)`); prevLine = line; return; }
+    if (header === null) { fail(`line ${i + 1}: record precedes a valid header`); prevBytes = lineBuf; return; }
+    if (obj.clotho_weave_header) { fail(`line ${i + 1}: duplicate header`); prevBytes = lineBuf; return; }
+    if (trailerSeen) { fail(`line ${i + 1}: record after trailer (trailer must be final)`); prevBytes = lineBuf; return; }
 
     const { prev_hash, record_hash, signature, ...payload } = obj;
     let lineOk = true;
     const bad = (m) => { fail(m); lineOk = false; };
-    if (typeof prev_hash !== "string" || prev_hash !== hexOf(prevLine)) bad(`line ${i + 1}: broken chain (prev_hash mismatch)`);
+    if (typeof prev_hash !== "string" || prev_hash !== hexOfBytes(prevBytes)) bad(`line ${i + 1}: broken chain (prev_hash mismatch)`);
     let expectHash = null;
     try { expectHash = hexOf(canonicalJson({ ...payload, prev_hash })); } catch { /* payload not canonicalizable */ }
     if (typeof record_hash !== "string" || record_hash !== expectHash) bad(`line ${i + 1}: record_hash mismatch`);
@@ -330,21 +346,22 @@ export async function verifyLedger(ledgerPath, { openReadStream } = {}) {
         records.push(obj);
       }
     }
-    prevLine = line;
+    prevBytes = lineBuf;
   };
 
-  // Consume the ledger incrementally; buffer only a partial line. Never throws.
-  let buf = "";
+  // Consume the ledger incrementally as raw bytes; split on the LF byte and
+  // buffer only a partial line. Never throws.
+  let buf = Buffer.alloc(0);
   try {
-    const stream = openReadStream ? openReadStream(ledgerPath) : createReadStream(ledgerPath, { encoding: "utf8" });
+    const stream = openReadStream ? openReadStream(ledgerPath) : createReadStream(ledgerPath);
     for await (const chunk of stream) {
-      const s = typeof chunk === "string" ? chunk : chunk.toString("utf8");
-      if (s.includes("\r")) sawCR = true;
-      buf += s;
+      const b = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, "utf8");
+      if (b.includes(0x0d)) sawCR = true;
+      buf = buf.length ? Buffer.concat([buf, b]) : b;
       let nl;
-      while ((nl = buf.indexOf("\n")) !== -1) {
-        processLine(buf.slice(0, nl));
-        buf = buf.slice(nl + 1);
+      while ((nl = buf.indexOf(0x0a)) !== -1) {
+        processLine(buf.subarray(0, nl));
+        buf = buf.subarray(nl + 1);
       }
     }
   } catch (e) {
@@ -380,17 +397,20 @@ function withoutWovenAt(payload) {
 // successful verifyLedger result.
 
 export async function* readEdges(ledgerPath, { openReadStream } = {}) {
-  const stream = openReadStream ? openReadStream(ledgerPath) : createReadStream(ledgerPath, { encoding: "utf8" });
-  let buf = "";
+  const stream = openReadStream ? openReadStream(ledgerPath) : createReadStream(ledgerPath);
+  let buf = Buffer.alloc(0);
   let lineNo = 0;
   for await (const chunk of stream) {
-    buf += typeof chunk === "string" ? chunk : chunk.toString("utf8");
+    const b = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, "utf8");
+    buf = buf.length ? Buffer.concat([buf, b]) : b;
     let nl;
-    while ((nl = buf.indexOf("\n")) !== -1) {
-      const line = buf.slice(0, nl);
-      buf = buf.slice(nl + 1);
+    while ((nl = buf.indexOf(0x0a)) !== -1) {
+      const lineBuf = buf.subarray(0, nl);
+      buf = buf.subarray(nl + 1);
       lineNo++;
       if (lineNo === 1) continue; // skip header
+      let line;
+      try { line = new TextDecoder("utf-8", { fatal: true }).decode(lineBuf); } catch { continue; }
       let obj;
       try { obj = JSON.parse(line); } catch { continue; }
       yield obj;
