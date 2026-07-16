@@ -1,0 +1,13 @@
+# Content-addressed artifacts — pin to LF.
+#
+# The Daedalus and TELOS-authorization runners recompute a plan's sha256 over
+# its RAW BYTES and fail closed on drift (the "PLAN DRIFT" guard). This repo runs
+# with core.autocrlf=true and no per-path override, so a fresh worktree checkout
+# silently rewrites LF -> CRLF and changes those bytes — breaking the content
+# address even though the file looks identical. authz-005 caught exactly this.
+#
+# Keep the run-evidence tree as text (diffable in review) but force LF on
+# checkout and commit so content-addressed artifacts cannot be silently
+# transformed. Scope is deliberately narrow: only docs/runs/** (matured plans,
+# round artifacts, packets, event logs) is content-addressed.
+docs/runs/** text eol=lf
