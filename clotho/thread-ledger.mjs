@@ -187,12 +187,16 @@ export function createLedger(ledgerPath, { signKey, wovenAt, repoHead, repositor
   }
   const pubB64 = publicKeyB64(createPublicKey(privateKey));
 
-  const woven_at = new Date(wovenAt ?? Date.now()).toISOString();
+  let woven_at;
+  try { woven_at = new Date(wovenAt ?? Date.now()).toISOString(); }
+  catch { throw new TypeError(`createLedger: invalid wovenAt ${JSON.stringify(wovenAt)}`); }
   const repo_head = repoHead ?? String(git(["rev-parse", "HEAD"])).trim();
   if (typeof repo_head !== "string" || !HEX40.test(repo_head)) throw new TypeError(`createLedger: repo_head must be a 40-hex commit string, got ${JSON.stringify(repo_head)}`);
   const repo_ref = repositoryRef ?? deriveRepositoryRef(git);
   if (typeof repo_ref !== "string" || !REPO_REF.test(repo_ref)) throw new TypeError(`createLedger: repository_ref must be a 'git-root:<40-hex>' string, got ${JSON.stringify(repo_ref)}`);
 
+  // Only the default handle owns filesystem I/O; it creates parent directories
+  // for its requested file. An injected openFile owns its own path pre-existence.
   if (openFile === defaultOpenFile) mkdirSync(path.dirname(path.resolve(ledgerPath)), { recursive: true });
   const handle = openFile(ledgerPath); // wx is the atomic existence gate
 
@@ -275,7 +279,6 @@ export async function verifyLedger(ledgerPath, { openReadStream } = {}) {
   let repoRef = null;
   let prevBytes = null;
   let lineIndex = 0;
-  let sawCR = false;
   const edgeHashes = new Set();
   const weaverEdgeIds = new Set();
   let trailerSeen = false;
@@ -285,6 +288,10 @@ export async function verifyLedger(ledgerPath, { openReadStream } = {}) {
   // throws.
   const processLine = (lineBuf) => {
     const i = lineIndex++;
+    // CR is detected at the line level (a canonical JSON line never contains a
+    // raw CR), so a CRLF/embedded-CR failure is attributed to its exact line and
+    // truncates trust at the first failing line like any other defect.
+    if (lineBuf.includes(0x0d)) { fail(`line ${i + 1}: contains a raw CR (CRLF not permitted; lines end in LF)`); prevBytes = lineBuf; return; }
     let line;
     try { line = new TextDecoder("utf-8", { fatal: true }).decode(lineBuf); } catch { fail(`line ${i + 1}: invalid UTF-8`); prevBytes = lineBuf; return; }
     let obj;
@@ -357,7 +364,6 @@ export async function verifyLedger(ledgerPath, { openReadStream } = {}) {
     const stream = openReadStream ? openReadStream(ledgerPath) : createReadStream(ledgerPath);
     for await (const chunk of stream) {
       const b = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, "utf8");
-      if (b.includes(0x0d)) sawCR = true;
       buf = buf.length ? Buffer.concat([buf, b]) : b;
       let nl;
       while ((nl = buf.indexOf(0x0a)) !== -1) {
@@ -369,12 +375,14 @@ export async function verifyLedger(ledgerPath, { openReadStream } = {}) {
     return { ok: false, header, manifest: null, records, errors: [...errors, `read failed: ${e.message}`] };
   }
 
-  if (sawCR) errors.push("CRLF is not permitted; lines must end in LF");
-  if (buf.length > 0) errors.push("ledger must end with a final LF"); // an unterminated final record is never trusted
-  if (lineIndex === 0 && buf.length === 0) errors.push("empty ledger");
-  if (!trailerSeen) errors.push("ledger has no final trailer");
-  // never confer trust on a manifest from an invalid ledger (non-final trailer,
-  // trailing garbage, any failure): null it whenever any error was recorded.
+  // Stream-level defects flow through the SAME fail() channel as per-line
+  // defects. `records` holds only the trusted edge/status records that appeared
+  // before the first failing line or trailer-level invariant; a tail defect
+  // (missing trailer, partial final line) leaves those prior trusted records in
+  // `records` with ok:false, per the spec's "or trailer-level invariant" clause.
+  if (buf.length > 0) fail("ledger must end with a final LF (unterminated final record is never trusted)");
+  if (lineIndex === 0 && buf.length === 0) fail("empty ledger");
+  if (!trailerSeen) fail("ledger has no final trailer");
   if (errors.length > 0) manifest = null;
   return { ok: errors.length === 0, header, manifest, records, errors };
 }

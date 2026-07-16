@@ -530,6 +530,107 @@ try {
     assert.ok((await expectFail(p)).errors.some((x) => /UTF-8/.test(x)));
   }
 
+  // ---- 13. frozen matrix completion ----------------------------------------
+  // Independently-signed D24 rejections (valid signature, invalid manifest).
+  const verifyBadCoverage = async (mut) => { const p = newPath(); const c = coverage(); mut(c); buildSignedLedger(p, { edges: [anEdge()], manifest: c }); return (await verifyLedger(p)).ok; };
+  for (const mut of [
+    (c) => { c.weavers[0].inspected_source_counts = [{ inventory_id: "package-files", count: 2 }]; },            // missing id
+    (c) => { c.weavers[0].inspected_source_counts.push({ inventory_id: "zz", count: 1 }); },                     // extra id
+    (c) => { c.weavers[0].inspected_source_counts[0].extra = 1; },                                               // extra field
+    (c) => { c.weavers[0].inspected_source_counts.reverse(); },                                                  // unsorted
+    (c) => { c.weavers[0].inspected_source_counts = [{ inventory_id: "package-files", count: 1 }, { inventory_id: "package-files", count: 1 }]; }, // duplicate
+    (c) => { c.weavers[0].inspected_source_counts[0].count = -1; },                                              // negative
+    (c) => { c.weavers[0].inspected_source_counts[0].count = 1.5; },                                             // non-integer
+    (c) => { c.weavers[0].inspected_source_counts[0].count = 2 ** 53; },                                         // unsafe
+    (c) => { c.weavers[1].inspected_source_counts[0].count = 3; },                                               // skipped nonzero
+    (c) => { c.weavers[0].state = "failed"; },                                                                   // failed state
+    (c) => { c.weavers[0].implementation_refs = []; },                                                           // empty impl_refs
+    (c) => { c.orchestrator_refs = []; }                                                                          // empty orchestrator_refs
+  ]) {
+    assert.equal(await verifyBadCoverage(mut), false, "signed invalid-manifest fixture must fail verify");
+  }
+  {
+    // locator repository_ref disagreement is rejected at append
+    const p = newPath(); const l = createLedger(p, opts);
+    const wrong = { kind: "code-symbol", locator: { ...csLoc.locator, repository_ref: "git-root:" + "a".repeat(40) } };
+    const e = { edge_kind: "introduced-by", from_node: deriveNodeId(wrong), to_node: deriveNodeId(commitLoc), from_locator: wrong, to_locator: commitLoc, source_ref: SR, asserted_by: "clotho-git-weaver", assertion_status: "deterministic-extraction" };
+    assert.throws(() => l.appendEdge(e), /does not match/);
+  }
+  {
+    // assertion-status/producer coupling enforced at append
+    const p = newPath(); const l = createLedger(p, opts);
+    assert.throws(() => l.appendEdge({ ...anEdge(), assertion_status: "human-authorized" }), /requires deterministic-extraction/);
+  }
+  {
+    // to_node id mismatch, appendStatus-after-close, close-with-no-coverage
+    const p = newPath(); const l = createLedger(p, opts);
+    assert.throws(() => l.appendEdge({ ...anEdge(), to_node: "0".repeat(64) }), /to_node .* does not match derived/);
+  }
+  {
+    const p = newPath(); const l = createLedger(p, opts); const e = l.appendEdge(anEdge()); l.close(coverage());
+    assert.throws(() => l.appendStatus({ status_of: e.record_hash, new_status: "rejected", asserted_by: "human", assertion_status: "human-authorized", source_ref: SR }), /closed/);
+  }
+  {
+    const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge());
+    assert.throws(() => l.close(undefined), /coverage/);
+    assert.throws(() => l.appendEdge(anEdge()), /poisoned/);
+  }
+  {
+    // a signed status referencing a non-edge (arbitrary) hash is rejected
+    const p = newPath();
+    buildSignedLedger(p, { edges: [anEdge()], statuses: [{ status_of: "a".repeat(64), new_status: "rejected", asserted_by: "human", assertion_status: "human-authorized", source_ref: SR }], manifest: coverage() });
+    assert.equal((await verifyLedger(p)).ok, false);
+  }
+  {
+    // no-header ledger, non-canonical line, and 'record precedes a valid header'
+    const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge()); l.close(coverage());
+    const lines = readFileSync(p, "utf8").replace(/\n$/, "").split("\n");
+    writeFileSync(p, lines.slice(1).join("\n") + "\n"); // drop the header
+    assert.ok((await expectFail(p)).errors.some((x) => /header/.test(x)));
+  }
+  {
+    const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge()); l.close(coverage());
+    const lines = readFileSync(p, "utf8").replace(/\n$/, "").split("\n");
+    lines[1] = lines[1].replace(/^\{/, "{ "); // valid JSON, non-canonical (leading space)
+    writeFileSync(p, lines.join("\n") + "\n");
+    assert.ok((await expectFail(p)).errors.some((x) => /not canonical/.test(x)));
+  }
+  {
+    const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge()); l.close(coverage());
+    const lines = readFileSync(p, "utf8").replace(/\n$/, "").split("\n");
+    lines[0] = "{}"; // malformed first line -> every later record 'precedes a valid header'
+    writeFileSync(p, lines.join("\n") + "\n");
+    const v = await verifyLedger(p);
+    assert.equal(v.ok, false);
+    assert.equal(v.records.length, 0, "no records trusted when the header is invalid");
+  }
+  {
+    // records-content on tail defects: prior trusted edge remains before the invariant
+    const p = newPath(); const l = createLedger(p, opts); const e = l.appendEdge(anEdge()); l.close(coverage());
+    const lines = readFileSync(p, "utf8").replace(/\n$/, "").split("\n");
+    writeFileSync(p, lines.slice(0, -1).join("\n") + "\n"); // drop trailer
+    const v = await verifyLedger(p);
+    assert.equal(v.ok, false);
+    assert.equal(v.records.length, 1, "the edge before the missing trailer is still returned");
+    assert.equal(v.manifest, null);
+  }
+  {
+    // createLedger: distinct generated keys, parent-dir creation, invalid wovenAt
+    const a = createLedger(newPath(), opts); const b = createLedger(newPath(), opts);
+    assert.notEqual(a.header.clotho_weave_header.pub_key, b.header.clotho_weave_header.pub_key, "distinct generated keypairs");
+    const sub = path.join(work, "nested", "deep", "l.jsonl");
+    const l = createLedger(sub, opts); l.appendEdge(anEdge()); l.close(coverage());
+    assert.equal((await verifyLedger(sub)).ok, true, "parent directories created for the requested file");
+    assert.throws(() => createLedger(newPath(), { ...opts, wovenAt: "not-a-date" }), /invalid wovenAt/);
+  }
+  {
+    // D22: descriptor closure across each write stage (header/edge/trailer)
+    const spy = (failOn) => { const s = { calls: 0, closes: 0 }; return { s, openFile: () => ({ write() { s.calls++; if (s.calls === failOn) throw new Error("write boom"); }, close() { s.closes++; } }) }; };
+    const hdr = spy(1); assert.throws(() => createLedger(newPath(), { ...opts, openFile: hdr.openFile }), /write boom/); assert.equal(hdr.s.closes, 1);
+    const edge = spy(2); const le = createLedger(newPath(), { ...opts, openFile: edge.openFile }); assert.throws(() => le.appendEdge(anEdge()), /write boom/); assert.equal(edge.s.closes, 1);
+    const trl = spy(3); const lt = createLedger(newPath(), { ...opts, openFile: trl.openFile }); lt.appendEdge(anEdge()); assert.throws(() => lt.close(coverage()), /write boom/); assert.equal(trl.s.closes, 1);
+  }
+
   console.log("test-ledger: all assertions passed");
 } finally {
   rmSync(work, { recursive: true, force: true });
