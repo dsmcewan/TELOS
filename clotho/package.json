@@ -1,0 +1,14 @@
+{
+  "name": "clotho",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Clotho — advisory deterministic knowledge-graph weaver (Phase 1 scaffold; Task 1 of plan v12).",
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "test": "npm run check && node scripts/test-all.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
