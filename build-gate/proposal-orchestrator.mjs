@@ -29,7 +29,7 @@ import {
 } from "./concerns.mjs";
 import { validateProposalLifecycle } from "./proposal-gate.mjs";
 import { makeProposalRecorder, buildReviewManifest, buildRevisionBrief } from "./proposal-recorder.mjs";
-import { runDaedalusWorkshop } from "./daedalus.mjs";
+import { runDaedalusWorkshop, runParallelDaedalus } from "./daedalus.mjs";
 import { resolve as resolveCheck, isRegistered, checkContractRef } from "./check-registry.mjs";
 import { loadRiskPolicy, evaluateRiskClass, holdPolicyFor } from "./risk-policy.mjs";
 import { compileAndHashPlan, assignNodeLineages } from "../merkle-dag/planner.mjs";
@@ -106,11 +106,39 @@ function blocked(phase, reasons, extra = {}) { return { phase, ok: false, decisi
  * Injected (keyless-testable): callSeat (review council), callWorkshopSeat (Daedalus adapter), callTeam
  * (execution). signerFor resolves team keys; the controller key is single-sourced here.
  */
+// Normalize a parallel-authorship result (docs/daedalus-methodology.md) to the
+// shape the revision loop consumes from the serial workshop: converged-parallel
+// -> converged-for-submission; conflict (needs-eye) or a non-converged round ->
+// stalemate (human review / The Eye). The integration candidate's artifact
+// carries `.plan`, so final_candidate_ref resolves the same way. creation_lineage
+// records every real seat call (both source authors, the integrator, both
+// verifiers) so cold review sees the true creators.
+function normalizeParallelWorkshop(result) {
+  const converged = result.state === "converged-parallel";
+  const lineage = [
+    ...(result.sources || []).map((s) => ({ seat: s.seat, round: 1, provenance: s.provenance, artifact_ref: s.artifact_ref })),
+    ...(result.integration && result.integration.seat ? [{ seat: result.integration.seat, round: 1, provenance: result.integration.provenance, artifact_ref: result.integration.candidate_ref }] : []),
+    ...(result.verifications || []).map((v) => ({ seat: v.seat, round: 1, provenance: v.provenance, artifact_ref: result.integration && result.integration.candidate_ref }))
+  ];
+  return {
+    state: converged ? "converged-for-submission" : "stalemate",
+    reason: result.reason,
+    terminal: result.terminal,
+    final_candidate_ref: result.candidate_ref,
+    creation_lineage: lineage,
+    conflicts: result.conflicts || []
+  };
+}
+
 export async function runProposalLifecycle({
-  dossier, taskList, teams, situation = null, callSeat, callWorkshopSeat, callTeam,
+  dossier, taskList, teams, situation = null, callSeat, callWorkshopSeat, callParallelSeat, callTeam,
   keyring, signerFor: injectedSignerFor, baseDir, telosDir, marketPackets = [], source,
   maxRepairRounds = 8, adaptAttempts = 2, concurrency, nowMs = 0, maxRevisions
 }) {
+  // Authorship mode (docs/daedalus-methodology.md): serial author->reviewer loop
+  // by default (small deltas, back-compatible); parallel constraint/implementation
+  // authorship when the dossier opts in AND a parallel seat caller is injected.
+  const useParallelAuthorship = dossier?.authorship === "parallel" && typeof callParallelSeat === "function";
   // 1. Controller key — single-sourced, pinned DIRECTLY into authorized_signers (decision 2, B1+B2).
   const envSk = process.env.TELOS_PROPOSAL_CONTROLLER_SK || null;
   let controllerPriv, controllerPubJwk, ephemeral = false;
@@ -159,18 +187,19 @@ export async function runProposalLifecycle({
     // a. Daedalus workshop refines the candidate (claude/codex negotiation).
     let workshop;
     try {
-      workshop = await runDaedalusWorkshop({
-        draft: candidateBody, callSeat: callWorkshopSeat,
-        writeArtifact: recorder.writeArtifact,
-        appendEvent: (ev) => recorder.record({ stage: "negotiation", artifact_refs: ev.artifact_refs, policy_result: ev.policy_result, recorded_at: nowMs })
-      });
+      const appendEvent = (ev) => recorder.record({ stage: "negotiation", artifact_refs: ev.artifact_refs, policy_result: ev.policy_result, recorded_at: nowMs });
+      workshop = useParallelAuthorship
+        ? normalizeParallelWorkshop(await runParallelDaedalus({ frame: candidateBody, callSeat: callParallelSeat, writeArtifact: recorder.writeArtifact, appendEvent }))
+        : await runDaedalusWorkshop({ draft: candidateBody, callSeat: callWorkshopSeat, writeArtifact: recorder.writeArtifact, appendEvent });
     } catch (e) { return blocked("plan", [`daedalus workshop error: ${e.message}`]); }
     // Record each workshop creation-lineage entry as a negotiation event with that seat's provenance,
     // so cold review sees the real plan creators (else a review seat reusing a workshop-author key slips).
     for (const cl of workshop.creation_lineage || []) recorder.recordCreationCall({ seat: cl.seat, provenance: cl.provenance, recordedAt: nowMs });
     if (workshop.state === "stalemate") {
-      const { decision } = recorder.recordDecision({ planHash: draftRef, checks: naChecks(), blockers: ["workshop stalemate"], findings: [{ code: "WORKSHOP_STALEMATE", class: "hold", reparable: false, requires_human: true, ref: null }], revision: { index, maximum } });
-      return blocked("approval", ["workshop stalemate — human review required"], { decision });
+      const needsEye = workshop.terminal === "needs-eye";
+      const label = needsEye ? "workshop conflict (parallel authorship) — routed to The Eye" : `workshop stalemate${workshop.reason ? ` (${workshop.reason})` : ""}`;
+      const { decision } = recorder.recordDecision({ planHash: draftRef, checks: naChecks(), blockers: [label], findings: [{ code: needsEye ? "WORKSHOP_CONFLICT" : "WORKSHOP_STALEMATE", class: "hold", reparable: false, requires_human: true, ref: null }], revision: { index, maximum } });
+      return blocked("approval", [`${label} — human review required`], { decision });
     }
     const finalArtifact = readProposalArtifact(telosDir, workshop.final_candidate_ref);
     const finalTasks = parseTasks(finalArtifact && finalArtifact.plan);

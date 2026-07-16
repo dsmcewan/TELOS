@@ -138,7 +138,7 @@ export function makeTeamKeyring(teams) {
  * to execution unless the council approval gate passed (fail-closed sequencing).
  *   { phase: "decompose"|"approval"|"plan"|"build", ok, ... }
  */
-export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, callWorkshopSeat, keyring, signerFor, baseDir, telosDir, marketPackets = [], source, maxRepairRounds = 8, adaptAttempts = 2, concurrency, nowMs = 0, maxRevisions }) {
+export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, callWorkshopSeat, callParallelSeat, keyring, signerFor, baseDir, telosDir, marketPackets = [], source, maxRepairRounds = 8, adaptAttempts = 2, concurrency, nowMs = 0, maxRevisions }) {
   const teams = planTeams(dossier);
 
   // PROJECT SENSE (conventions): read the real project BEFORE decompose so the
@@ -167,7 +167,7 @@ export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, 
   // advisory path below is byte-identical. runProposalLifecycle owns compile/review/decision/execution.
   if (dossier?.proposal_lifecycle === true) {
     return await runProposalLifecycle({
-      dossier, taskList, teams, situation, callSeat, callWorkshopSeat, callTeam,
+      dossier, taskList, teams, situation, callSeat, callWorkshopSeat, callParallelSeat, callTeam,
       keyring, signerFor, baseDir, telosDir, marketPackets, source,
       maxRepairRounds, adaptAttempts, concurrency, nowMs, maxRevisions
     });
