@@ -431,8 +431,26 @@ function claudeAuth() {
   return { mode: "api-key", headers: { "x-api-key": requireEnv("ANTHROPIC_API_KEY") } };
 }
 
+// Blacklisted: this seat is a third-party harness and must NEVER impersonate the
+// Claude Code product identity. Anthropic's Authentication and Credential Use
+// policy scopes Free/Pro/Max OAuth to Claude Code and claude.ai only; injecting
+// the "You are Claude Code" identity to make a subscription-OAuth token accept
+// this application's traffic is prohibited credential misuse. The guard makes the
+// prohibition structural — a system prompt asserting the reserved product
+// identity is rejected before any request is built — so the seat can only ever
+// authenticate as itself (plain bearer or api-key), never by pretending to be
+// the CLI. The plain-bearer path (a legitimately API-scoped token) is unaffected.
+const BLACKLISTED_PRODUCT_IDENTITY = /you are claude code,?\s+anthropic'?s official cli/i;
+function assertNoProductImpersonation(system) {
+  const text = Array.isArray(system) ? system.map((b) => (b && b.text) || "").join("\n") : (system || "");
+  if (BLACKLISTED_PRODUCT_IDENTITY.test(text)) {
+    throw new Error("Refusing to send the Claude Code product identity: this seat must not impersonate Claude Code to a subscription-scoped OAuth token (Anthropic Authentication and Credential Use policy). Use a legitimately API-scoped credential.");
+  }
+}
+
 export async function askClaude(args) {
   requireString(args.prompt, "prompt");
+  assertNoProductImpersonation(args.system);
   const auth = claudeAuth();
   const rawModel = args.model || process.env.ANTHROPIC_MODEL;
   if (!rawModel) {
