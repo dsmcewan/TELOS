@@ -18,7 +18,8 @@ const SELF = path.relative(ROOT, fileURLToPath(import.meta.url)).split(path.sep)
 // Committed ordered test list (POSIX-relative to clotho/). Grows one entry per
 // task as real tests land.
 const TESTS = [
-  "scripts/test-registry.mjs"
+  "scripts/test-registry.mjs",
+  "scripts/test-ledger.mjs"
 ];
 
 function collectTestFiles(dir) {
