@@ -1,0 +1,82 @@
+{
+  "mode": "live",
+  "state": "conflict",
+  "reason": "verification-conflict",
+  "terminal": "needs-eye",
+  "candidate_ref": "sha256:b1ef60b394be0288e482568486c1e55dbb57f03108ed343eff62cf82d327316d",
+  "declared_obligations": [
+    "LOAD-INV-1",
+    "LOAD-INV-2",
+    "LOAD-INV-3",
+    "LOAD-INV-4",
+    "LOAD-INV-5",
+    "LOAD-INV-6",
+    "LOAD-INV-7",
+    "LOAD-INV-8",
+    "LOAD-INV-9",
+    "LOAD-INV-10"
+  ],
+  "obligation_rows": 10,
+  "conflicts": [
+    {
+      "role": "constraints",
+      "detail": [
+        "LOAD-INV-3 is not established by the per-defining-module linker. A declared unit `v` can export `load = s => import(s)`; a unit `u` whose only direct edge targets `v` can import and invoke that function, and the callback resolves using `v.imports`, potentially loading `w` even though `w` is absent from `u.imports`. Thus `u` can obtain through an imported namespace an aliased loader value whose target domain exceeds `u`'s declared direct capability. The integrated spec provides no namespace membrane, capability tagging, or other positive construction preventing this transfer; freezing globals and excluding Node loaders does not satisfy the broader value-reachability obligation.",
+        "LOAD-INV-5 is weakened by treating a per-component `lstat` walk as `O_NOFOLLOW`-equivalent. With the repository filesystem declared mutable and untrusted, an attacker can replace a checked parent component between `lstat` and the subsequent path-based open. Pinned source bytes prevent later byte substitution, but they do not prove that validation traversed no symbolic link, particularly when the substituted target has the expected bytes. The specified mechanism therefore does not close the required symlink/validation race.",
+        "LOAD-INV-9's ledger is not methodology-compatible. It counts retired scanner distinctions individually while aggregating numerous introduced validation branches and failure modes into six broad labels—for example, unknown-field rejection, duplicate-key rejection, canonical-byte rejection, runtime mismatch, path containment, symlink rejection, regular-file checks, digest mismatch, duplicate identities, dangling targets, duplicate requests, reachability, and provenance mismatch are collapsed into a few entries. Calling these one fail-closed enumeration or one verdict does not eliminate their semantic distinctions. Consequently the asserted net −8 is unsupported and does not prove a strictly negative behavioral surface under the declared counting rules."
+      ]
+    },
+    {
+      "role": "implementation",
+      "detail": [
+        "Runtime-machinery prohibition breached: my design's §1.6 states 'Runtime: zero additions. No hook, no interception, no loader-capable code path exists in the gate or weaver' and §7 lists 'No runtime loader hook … ever, in this subsystem' as an explicit non-goal. The integrated spec (§0, §3 step 5, §8/CONFLICT-LDR-1) introduces a vm.SourceTextModule compartment with a link callback and importModuleDynamically handler that mediates the semantic load boundary during weaver EXECUTION. Relabeling it 'inside the gate' does not change its nature: it is a code path that resolves and links modules at load time — exactly the loader-capable machinery my contract forbids. The integrator itself acknowledges this is a live frame conflict (CONFLICT-LDR-1) rather than a preservation.",
+        "Static verification model deleted: §3 of the integrated spec 'explicitly retires' extractImportSurface and the extracted==declared set-equality check — the core of my design (§1.4, §2, §3 data-flow step 2, and the closed accepted-import grammar). My model decided authority entirely at gate time by static structural extraction plus set equality both directions; the integrated model replaces static verification with execution-time denial inside a compartment. This is not a realization of my intent; it inverts my enforcement point from pre-execution static proof to runtime mediation.",
+        "Gate-only enforcement posture violated: my design named the TELOS gate 'the only enforcement point' with 'RUNTIME: nothing' and data-flow step 4 stating 'No load-time enforcement exists because none is needed.' The integrated spec's step 5 makes load-time enforcement (exact-literal linker miss → RunInvalid at link time, dynamic-import handler denial during execution) the primary discharge mechanism for F3, require-style, dynamic, and side-effect cases — enforcement my contract asserted must not and need not exist.",
+        "BUILTIN_EXPORTS_PERMITTED contract deleted: my §1.3/§2 specified a frozen spec-level constant of exact module#export pairs as the two-level builtin bound, with S5 discharge via ordinary membership (node:module#builtinModules, node:module#isBuiltin as members). Integrated §5 declares this constant 'NOT adopted' and characterizes it as re-creating the retired allowlist (an LOAD-INV-8 orphan-authority path), replacing it with inert data units and compartment-injected services. Whatever the merits, my interface (BUILTIN_EXPORTS_PERMITTED, the builtins field, the two-level ⊆ check) did not survive.",
+        "Manifest schema replaced, not preserved: my clotho/load-closure/1 schema (§1.2) with per-module 'relative' and 'builtins' fields and <weaver>.load.json colocation is superseded by telos.clotho.loader-authority/v1 with the 'builtins' field REMOVED, imports restructured as request→target unit-key records, and a runtime-binding field my schema never had. My exactness property survives, but the declared artifact contract does not.",
+        "Set-equality-both-directions semantics weakened to a different property: my §7 non-goal 'No subset semantics: declared ⊇ actual is not enough; equality both directions or reject' was enforced by comparing extracted surface to declaration. The integrated spec claims this 'survives as the reachability rule,' but reachability-from-entry plus link-time denial is not the same obligation — there is no gate-time assertion that every declared edge corresponds to an actual static import in the source bytes, because static extraction was deleted. Over-declaration of an edge whose target is reachable via another edge is no longer detected pre-execution.",
+        "Behavioral-delta ledger altered: my §4 'Added' column (manifest schema 3 rules; set-equality 1; closed accepted grammar 1; BUILTIN_EXPORTS_PERMITTED bound 1 = 6) is replaced in integrated §6 with six different rules (JCS schema/digest, byte-pinning, graph validation, exact-edge resolution, compartment bound, atomic invalidation). The net −8 figure is preserved numerically, but three of my four added-rule mechanisms (set-equality check, accepted grammar, builtin-bound constant) were deleted and substituted — the ledger no longer accounts for my model.",
+        "Per my own conflict-routing clause (§6 T-conflict routing) and the integrated spec's own §8: this tension is frame-level and terminal: needs-eye. The integration correctly surfaced CONFLICT-LDR-1 rather than blending, but that surfacing is itself confirmation that my contract was not preserved intact — a preserved contract would have no live conflict to route."
+      ]
+    }
+  ],
+  "creation_lineage": [
+    {
+      "seat": "codex",
+      "role": "constraints",
+      "phase": "author",
+      "provenance_key": "openai:chatcmpl-E29y1wH9VMz35Mv7WQ6wEOpJZ965W"
+    },
+    {
+      "seat": "claude",
+      "role": "implementation",
+      "phase": "author",
+      "provenance_key": "anthropic:msg_011Cd5Gh1Yo6JFmi46fD7mYn"
+    },
+    {
+      "seat": "claude",
+      "role": "integration",
+      "phase": "integrate",
+      "provenance_key": "anthropic:msg_011Cd5HHpuKUzTULDsdeCP5V"
+    },
+    {
+      "seat": "codex",
+      "role": "constraints",
+      "phase": "verify",
+      "verdict": "violated",
+      "provenance_key": "openai:chatcmpl-E2A8GhYdKJIXD7RdEqPBivJZU7kdO"
+    },
+    {
+      "seat": "claude",
+      "role": "implementation",
+      "phase": "verify",
+      "verdict": "violated",
+      "provenance_key": "anthropic:msg_011Cd5HVjBcMArpQMiU7MVym"
+    }
+  ],
+  "independent_recheck": {
+    "state": "conflict",
+    "reason": "verification-conflict",
+    "terminal": "needs-eye"
+  }
+}

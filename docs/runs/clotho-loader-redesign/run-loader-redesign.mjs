@@ -173,6 +173,28 @@ function verifyPrompt(role, yourSource, integration) {
   ].join("\n");
 }
 
+// A provider error is TRANSIENT (worth retrying) only when it is a 5xx or a
+// network/timeout fault — never a 4xx (insufficient_quota, credit-too-low, auth
+// are permanent and must fail fast, not burn retries). Bounded, with backoff, so
+// one blip on a long high-effort call does not discard the whole workshop.
+function isTransient(err) {
+  const m = String(err && err.message || "");
+  if (/API error 4\d\d/.test(m)) return false; // any 4xx (quota/credit/auth) — permanent
+  return /API error 5\d\d/.test(m) || /fetch failed|ECONNRESET|ETIMEDOUT|socket hang up|network|timeout/i.test(m);
+}
+async function askWithRetry(ask, args, label) {
+  const backoffs = [5000, 15000, 45000];
+  for (let attempt = 0; ; attempt++) {
+    try { return await ask(args); }
+    catch (e) {
+      if (attempt >= backoffs.length || !isTransient(e)) throw e;
+      const wait = backoffs[attempt];
+      console.log(`[retry] ${label} transient error (attempt ${attempt + 1}/${backoffs.length}): ${String(e.message).slice(0, 160)} — retrying in ${wait / 1000}s`);
+      await new Promise((r) => setTimeout(r, wait));
+    }
+  }
+}
+
 async function liveCallParallelSeat({ seat, role, phase, sources, integration }) {
   const ask = askFor(seat);
   const provider = providerFor(seat);
@@ -191,12 +213,12 @@ async function liveCallParallelSeat({ seat, role, phase, sources, integration })
     schema = VERIFY_SCHEMA;
     schemaName = `loader_verify_${role}`;
   }
-  const r = await ask({
+  const r = await askWithRetry(ask, {
     prompt, system: SYSTEM, model: seat,
     effort: "high", // per the live-run mechanics: delta workshops run at high after the quota exhaustion
     max_tokens: 60000,
     response_schema: schema, schema_name: schemaName
-  });
+  }, `${seat}/${role}/${phase}`);
   let parsed;
   try { parsed = JSON.parse(r.text); }
   catch (e) {
