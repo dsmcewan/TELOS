@@ -18,7 +18,7 @@
 // driver's job.
 
 import { createHash, generateKeyPairSync, sign as edSign, verify as edVerify, createPublicKey, createPrivateKey } from "node:crypto";
-import { openSync, writeSync, fsyncSync, closeSync, readFileSync, mkdirSync, createReadStream } from "node:fs";
+import { openSync, writeSync, fsyncSync, closeSync, mkdirSync, createReadStream } from "node:fs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 
@@ -234,7 +234,7 @@ export function createLedger(ledgerPath, { signKey, wovenAt, repoHead, repositor
 // header or trailer). On the first failing line it stops conferring trust: no
 // record on or after that line is added, and ok is false.
 
-export async function verifyLedger(ledgerPath) {
+export async function verifyLedger(ledgerPath, { openReadStream } = {}) {
   const errors = [];
   const records = [];
   let header = null;
@@ -242,66 +242,64 @@ export async function verifyLedger(ledgerPath) {
   let trustBroken = false;
   const fail = (m) => { errors.push(m); trustBroken = true; };
 
-  let raw;
-  try { raw = readFileSync(ledgerPath, "utf8"); } catch (e) { return { ok: false, header: null, manifest: null, records, errors: [`read failed: ${e.message}`] }; }
-
-  if (raw.length === 0) return { ok: false, header: null, manifest: null, records, errors: ["empty ledger"] };
-  if (raw.includes("\r")) errors.push("CRLF is not permitted; lines must end in LF");
-  if (!raw.endsWith("\n")) errors.push("ledger must end with a final LF");
-  const lines = raw.replace(/\n$/, "").split("\n");
-
   let pubKey = null;
   let repoRef = null;
   let prevLine = null;
+  let lineIndex = 0;
+  let sawCR = false;
   const edgeHashes = new Set();
   const weaverEdgeIds = new Set();
   let trailerSeen = false;
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+  // Process exactly one complete line (no trailing LF). Never throws.
+  const processLine = (line) => {
+    const i = lineIndex++;
     let obj;
-    try { obj = JSON.parse(line); } catch { fail(`line ${i + 1}: not valid JSON`); continue; }
-    if (canonicalJson(obj) !== line) { fail(`line ${i + 1}: not canonical JSON`); continue; }
+    try { obj = JSON.parse(line); } catch { fail(`line ${i + 1}: not valid JSON`); prevLine = line; return; }
+    if (obj === null || typeof obj !== "object" || Array.isArray(obj)) { fail(`line ${i + 1}: record must be a JSON object`); prevLine = line; return; }
+    let canon;
+    try { canon = canonicalJson(obj); } catch { fail(`line ${i + 1}: not canonicalizable`); prevLine = line; return; }
+    if (canon !== line) { fail(`line ${i + 1}: not canonical JSON`); prevLine = line; return; }
 
     if (i === 0) {
-      if (Object.keys(obj).length !== 1 || !obj.clotho_weave_header) { fail("line 1: header envelope must be exactly {clotho_weave_header}"); break; }
-      header = obj.clotho_weave_header;
+      const h = obj.clotho_weave_header;
+      if (Object.keys(obj).length !== 1 || h === null || typeof h !== "object" || Array.isArray(h)) { fail("line 1: header envelope must be exactly {clotho_weave_header:{...}}"); prevLine = line; return; }
       try {
-        if (header === null || typeof header !== "object" || Array.isArray(header)) throw new Error("must be an object");
-        for (const k of Object.keys(header)) if (!HEADER_FIELDS.includes(k)) throw new Error(`unexpected field '${k}'`);
-        for (const k of HEADER_FIELDS) if (!(k in header)) throw new Error(`missing field '${k}'`);
-        if (typeof header.repository_ref !== "string" || !REPO_REF.test(header.repository_ref)) throw new Error("repository_ref must be 'git-root:<40-hex>'");
-        pubKey = publicKeyFromB64(header.pub_key);
+        for (const k of Object.keys(h)) if (!HEADER_FIELDS.includes(k)) throw new Error(`unexpected field '${k}'`);
+        for (const k of HEADER_FIELDS) if (!(k in h)) throw new Error(`missing field '${k}'`);
+        if (typeof h.repository_ref !== "string" || !REPO_REF.test(h.repository_ref)) throw new Error("repository_ref must be 'git-root:<40-hex>'");
+        pubKey = publicKeyFromB64(h.pub_key);
         if (pubKey.asymmetricKeyType !== "ed25519") throw new Error("pub_key must be an Ed25519 SPKI key");
-        repoRef = header.repository_ref;
-        if (header.weave_version !== 1) throw new Error("weave_version must be 1");
-        if (!HEX40.test(header.repo_head)) throw new Error("repo_head must be 40-hex");
-        if (new Date(header.woven_at).toISOString() !== header.woven_at) throw new Error("woven_at not canonical ISO");
+        if (h.weave_version !== 1) throw new Error("weave_version must be 1");
+        if (!HEX40.test(h.repo_head)) throw new Error("repo_head must be 40-hex");
+        if (new Date(h.woven_at).toISOString() !== h.woven_at) throw new Error("woven_at not canonical ISO");
+        header = h; repoRef = h.repository_ref;
       } catch (e) { fail(`header: ${e.message}`); }
       prevLine = line;
-      continue;
+      return;
     }
-    if (obj.clotho_weave_header) { fail(`line ${i + 1}: duplicate header`); continue; }
-    if (trailerSeen) { fail(`line ${i + 1}: record after trailer (trailer must be final)`); continue; }
+
+    if (header === null) { fail(`line ${i + 1}: record precedes a valid header`); prevLine = line; return; }
+    if (obj.clotho_weave_header) { fail(`line ${i + 1}: duplicate header`); prevLine = line; return; }
+    if (trailerSeen) { fail(`line ${i + 1}: record after trailer (trailer must be final)`); prevLine = line; return; }
 
     const { prev_hash, record_hash, signature, ...payload } = obj;
     let lineOk = true;
     const bad = (m) => { fail(m); lineOk = false; };
     if (typeof prev_hash !== "string" || prev_hash !== hexOf(prevLine)) bad(`line ${i + 1}: broken chain (prev_hash mismatch)`);
-    if (typeof record_hash !== "string" || record_hash !== hexOf(canonicalJson({ ...payload, prev_hash }))) bad(`line ${i + 1}: record_hash mismatch`);
+    let expectHash = null;
+    try { expectHash = hexOf(canonicalJson({ ...payload, prev_hash })); } catch { /* payload not canonicalizable */ }
+    if (typeof record_hash !== "string" || record_hash !== expectHash) bad(`line ${i + 1}: record_hash mismatch`);
     let sigOk = false;
     try { sigOk = typeof signature === "string" && !!pubKey && edVerify(null, Buffer.from(record_hash || "", "hex"), pubKey, Buffer.from(signature, "base64")); } catch { sigOk = false; }
     if (!sigOk) bad(`line ${i + 1}: invalid signature`);
-    // every record's woven_at must equal the header's single canonical timestamp
     if (payload.woven_at !== header.woven_at) bad(`line ${i + 1}: woven_at does not equal the header woven_at`);
 
     if (obj.clotho_weave_trailer) {
       if (Object.keys(payload).length !== 2 || !("clotho_weave_trailer" in payload) || !("woven_at" in payload)) bad(`line ${i + 1}: trailer envelope must be exactly {clotho_weave_trailer, woven_at}`);
       try { validateCoverage(obj.clotho_weave_trailer, weaverEdgeIds); } catch (e) { bad(`trailer: ${e.message}`); }
-      // trust is not conferred on a manifest that appears after a failing line
       if (lineOk && !trustBroken) manifest = obj.clotho_weave_trailer;
-      trailerSeen = true;
-      // the trailer is never added to `records`
+      trailerSeen = true; // the trailer is never added to `records`
     } else if ("status_of" in payload) {
       try { validateStatusInput(payload_forStatus(payload), edgeHashes); } catch (e) { bad(`line ${i + 1}: ${e.message}`); }
       if (lineOk && !trustBroken) records.push(obj);
@@ -314,11 +312,32 @@ export async function verifyLedger(ledgerPath) {
       }
     }
     prevLine = line;
+  };
+
+  // Consume the ledger incrementally; buffer only a partial line. Never throws.
+  let buf = "";
+  try {
+    const stream = openReadStream ? openReadStream(ledgerPath) : createReadStream(ledgerPath, { encoding: "utf8" });
+    for await (const chunk of stream) {
+      const s = typeof chunk === "string" ? chunk : chunk.toString("utf8");
+      if (s.includes("\r")) sawCR = true;
+      buf += s;
+      let nl;
+      while ((nl = buf.indexOf("\n")) !== -1) {
+        processLine(buf.slice(0, nl));
+        buf = buf.slice(nl + 1);
+      }
+    }
+  } catch (e) {
+    return { ok: false, header, manifest: null, records, errors: [...errors, `read failed: ${e.message}`] };
   }
 
+  if (sawCR) errors.push("CRLF is not permitted; lines must end in LF");
+  if (buf.length > 0) errors.push("ledger must end with a final LF"); // an unterminated final record is never trusted
+  if (lineIndex === 0 && buf.length === 0) errors.push("empty ledger");
   if (!trailerSeen) errors.push("ledger has no final trailer");
-  // never confer trust on a manifest from an invalid ledger (e.g. a non-final
-  // trailer): a record after the trailer breaks trust and nulls the manifest.
+  // never confer trust on a manifest from an invalid ledger (non-final trailer,
+  // trailing garbage, any failure): null it whenever any error was recorded.
   if (errors.length > 0) manifest = null;
   return { ok: errors.length === 0, header, manifest, records, errors };
 }

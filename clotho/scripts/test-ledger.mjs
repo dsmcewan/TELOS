@@ -353,6 +353,54 @@ try {
     assert.equal((await verifyLedger(p)).ok, true, "human supersedes verifies: " + JSON.stringify((await verifyLedger(p)).errors));
   }
 
+  // ---- 11. more adversarial on-disk tampering + incremental verify ---------
+  const build3 = () => { const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge()); l.close(coverage()); return { p, lines: readFileSync(p, "utf8").replace(/\n$/, "").split("\n") }; };
+  const expectFail = async (p) => { const v = await verifyLedger(p); assert.equal(v.ok, false); return v; };
+  {
+    const { p, lines } = build3(); // header, edge, trailer
+    writeFileSync(p, [lines[0], lines[0], ...lines.slice(1)].join("\n") + "\n");
+    assert.ok((await expectFail(p)).errors.some((x) => /duplicate header/.test(x)));
+  }
+  {
+    const { p, lines } = build3();
+    writeFileSync(p, [...lines, lines[2]].join("\n") + "\n"); // duplicate trailer
+    assert.equal((await expectFail(p)).manifest, null);
+  }
+  {
+    const { p, lines } = build3();
+    writeFileSync(p, [lines[0], lines[2]].join("\n") + "\n"); // middle edge removed -> chain breaks
+    await expectFail(p);
+  }
+  {
+    const { p, lines } = build3();
+    writeFileSync(p, [lines[0], "null", lines[2]].join("\n") + "\n"); // null record
+    assert.ok((await expectFail(p)).errors.some((x) => /JSON object/.test(x)));
+  }
+  {
+    const { p, lines } = build3(); // altered signature on the trailer (last line)
+    const t = JSON.parse(lines[2]); t.signature = (t.signature[0] === "A" ? "B" : "A") + t.signature.slice(1);
+    lines[2] = canonicalJson(t); writeFileSync(p, lines.join("\n") + "\n");
+    assert.ok((await expectFail(p)).errors.some((x) => /signature|record_hash/.test(x)));
+  }
+  {
+    const { p, lines } = build3(); // altered record_hash on the trailer
+    const t = JSON.parse(lines[2]); t.record_hash = "0".repeat(64);
+    lines[2] = canonicalJson(t); writeFileSync(p, lines.join("\n") + "\n");
+    assert.ok((await expectFail(p)).errors.some((x) => /record_hash|signature/.test(x)));
+  }
+  {
+    const p = newPath();
+    buildSignedLedger(p, { edges: [{ ...anEdge(), edge_kind: "references" }], manifest: coverage() }); // signed unknown kind
+    await expectFail(p);
+  }
+  {
+    // verifyLedger consumes an injected stream incrementally (no whole-file buffering)
+    const { p, lines } = build3();
+    async function* s() { for (const ln of lines) yield ln + "\n"; }
+    const v = await verifyLedger(p, { openReadStream: () => s() });
+    assert.equal(v.ok, true, "streamed verify ok: " + JSON.stringify(v.errors));
+  }
+
   console.log("test-ledger: all assertions passed");
 } finally {
   rmSync(work, { recursive: true, force: true });
