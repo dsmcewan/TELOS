@@ -96,6 +96,27 @@ function defaultOpenFile(ledgerPath) {
 
 // ---- schema validators -------------------------------------------------------
 
+function isPlainObject(v) {
+  if (v === null || typeof v !== "object" || Array.isArray(v)) return false;
+  const p = Object.getPrototypeOf(v);
+  return p === Object.prototype || p === null;
+}
+
+// Exactly the expected OWN ENUMERABLE string keys — rejects own symbols, own
+// non-enumerable fields, extra fields, and enumerable fields inherited through a
+// polluted prototype (matching registry.requireExactKeys' rigor).
+function requireExactOwnKeys(obj, expected, label) {
+  if (!isPlainObject(obj)) throw new TypeError(`${label}: expected a plain object`);
+  if (Object.getOwnPropertySymbols(obj).length > 0) throw new TypeError(`${label}: symbol-keyed fields are not permitted`);
+  for (const k of Object.getOwnPropertyNames(obj)) if (!expected.includes(k)) throw new TypeError(`${label}: unexpected field '${k}'`);
+  for (const k of expected) {
+    const d = Object.getOwnPropertyDescriptor(obj, k);
+    if (!d) throw new TypeError(`${label}: missing field '${k}'`);
+    if (!d.enumerable) throw new TypeError(`${label}: field '${k}' must be own-enumerable`);
+  }
+  for (const k in obj) if (!Object.prototype.hasOwnProperty.call(obj, k)) throw new TypeError(`${label}: inherited enumerable field '${k}' is not permitted`);
+}
+
 // A content-address ref must be a 'file:<repo-relative-path>@<40-hex>' with a
 // canonical POSIX path (no absolute/traversal/backslash/NUL) — delegated to
 // registry.validateSourceRef, the single authoritative source-ref validator.
@@ -108,9 +129,7 @@ function requireInspectedSourceCounts(counts, state, requiredIds, label) {
   if (!Array.isArray(counts)) throw new TypeError(`${label}: inspected_source_counts must be an array`);
   let prevId = null;
   for (const entry of counts) {
-    if (entry === null || typeof entry !== "object" || Array.isArray(entry)) throw new TypeError(`${label}: count entry must be an object`);
-    const keys = Object.keys(entry);
-    if (keys.length !== 2 || !("inventory_id" in entry) || !("count" in entry)) throw new TypeError(`${label}: count entry must be exactly {inventory_id, count}`);
+    requireExactOwnKeys(entry, ["inventory_id", "count"], `${label} count entry`);
     if (typeof entry.inventory_id !== "string" || entry.inventory_id.length === 0) throw new TypeError(`${label}: inventory_id must be a nonempty string`);
     if (!Number.isSafeInteger(entry.count) || entry.count < 0) throw new TypeError(`${label}: count must be a nonnegative safe integer`);
     if (prevId !== null && entry.inventory_id <= prevId) throw new TypeError(`${label}: inspected_source_counts must be sorted and unique by inventory_id`);
@@ -129,19 +148,13 @@ function requireInspectedSourceCounts(counts, state, requiredIds, label) {
 // Structure-only coverage validation (D19). `weaverEdgeIds` is the set of weaver
 // ids that asserted an edge; a weaver with edges may not be recorded 'skipped'.
 function validateCoverage(coverage, weaverEdgeIds) {
-  if (coverage === null || typeof coverage !== "object" || Array.isArray(coverage)) throw new TypeError("coverage: must be an object");
-  const expected = ["weavers", "orchestrator_refs", "inventories_consumed"];
-  for (const k of Object.keys(coverage)) if (!expected.includes(k)) throw new TypeError(`coverage: unexpected field '${k}'`);
-  for (const k of expected) if (!(k in coverage)) throw new TypeError(`coverage: missing field '${k}'`);
+  requireExactOwnKeys(coverage, ["weavers", "orchestrator_refs", "inventories_consumed"], "coverage");
 
   const { weavers, orchestrator_refs, inventories_consumed } = coverage;
   if (!Array.isArray(weavers) || weavers.length !== 5) throw new TypeError("coverage.weavers: must be exactly five entries");
   for (let i = 0; i < 5; i++) {
     const w = weavers[i];
-    if (w === null || typeof w !== "object" || Array.isArray(w)) throw new TypeError("coverage weaver: must be an object");
-    const wexpected = ["id", "version", "implementation_refs", "state", "inspected_source_counts"];
-    for (const k of Object.keys(w)) if (!wexpected.includes(k)) throw new TypeError(`coverage weaver: unexpected field '${k}'`);
-    for (const k of wexpected) if (!(k in w)) throw new TypeError(`coverage weaver: missing field '${k}'`);
+    requireExactOwnKeys(w, ["id", "version", "implementation_refs", "state", "inspected_source_counts"], "coverage weaver");
     if (w.id !== WEAVER_ORDER[i]) throw new TypeError(`coverage weaver[${i}]: expected id ${WEAVER_ORDER[i]}, got ${JSON.stringify(w.id)}`);
     if (!Number.isSafeInteger(w.version)) throw new TypeError(`coverage weaver[${w.id}].version: safe integer`);
     if (!PUBLISHED_STATES.has(w.state)) throw new TypeError(`coverage weaver[${w.id}].state: must be executed|skipped, got ${JSON.stringify(w.state)}`);
@@ -154,19 +167,14 @@ function validateCoverage(coverage, weaverEdgeIds) {
   for (const r of orchestrator_refs) requireFileRef(r, "coverage.orchestrator_refs");
   if (!Array.isArray(inventories_consumed)) throw new TypeError("coverage.inventories_consumed: must be an array");
   for (const inv of inventories_consumed) {
-    if (inv === null || typeof inv !== "object" || Array.isArray(inv)) throw new TypeError("inventories_consumed entry: object");
-    const ikeys = Object.keys(inv);
-    if (ikeys.length !== 2 || !("id" in inv) || !("source_ref" in inv)) throw new TypeError("inventories_consumed entry: exactly {id, source_ref}");
+    requireExactOwnKeys(inv, ["id", "source_ref"], "inventories_consumed entry");
     if (typeof inv.id !== "string" || inv.id.length === 0) throw new TypeError("inventories_consumed.id: nonempty string");
     requireFileRef(inv.source_ref, "inventories_consumed.source_ref");
   }
 }
 
 function validateStatusInput(statusInput, edgeHashes) {
-  if (statusInput === null || typeof statusInput !== "object" || Array.isArray(statusInput)) throw new TypeError("statusInput: object");
-  const expected = ["status_of", "new_status", "asserted_by", "assertion_status", "source_ref"];
-  for (const k of Object.keys(statusInput)) if (!expected.includes(k)) throw new TypeError(`statusInput: unexpected field '${k}'`);
-  for (const k of expected) if (!(k in statusInput)) throw new TypeError(`statusInput: missing field '${k}'`);
+  requireExactOwnKeys(statusInput, ["status_of", "new_status", "asserted_by", "assertion_status", "source_ref"], "statusInput");
   if (typeof statusInput.status_of !== "string" || !HEX64.test(statusInput.status_of)) throw new TypeError("statusInput.status_of: 64-hex record hash");
   if (!edgeHashes.has(statusInput.status_of)) throw new TypeError("statusInput.status_of: must reference an earlier edge record in this ledger");
   if (!STATUS_TRANSITIONS.has(statusInput.new_status)) throw new TypeError(`statusInput.new_status: must be one of ${[...STATUS_TRANSITIONS].join("|")}`);
@@ -339,7 +347,7 @@ export async function verifyLedger(ledgerPath, { openReadStream } = {}) {
     if (payload.woven_at !== header.woven_at) bad(`line ${i + 1}: woven_at does not equal the header woven_at`);
 
     if (obj.clotho_weave_trailer) {
-      if (Object.keys(payload).length !== 2 || !("clotho_weave_trailer" in payload) || !("woven_at" in payload)) bad(`line ${i + 1}: trailer envelope must be exactly {clotho_weave_trailer, woven_at}`);
+      try { requireExactOwnKeys(payload, ["clotho_weave_trailer", "woven_at"], `line ${i + 1}: trailer envelope`); } catch (e) { bad(e.message); }
       try { validateCoverage(obj.clotho_weave_trailer, weaverEdgeIds); } catch (e) { bad(`trailer: ${e.message}`); }
       if (lineOk && !trustBroken) manifest = obj.clotho_weave_trailer;
       trailerSeen = true; // the trailer is never added to `records`

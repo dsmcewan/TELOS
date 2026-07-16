@@ -186,7 +186,7 @@ try {
     [(c) => { c.weavers[0].implementation_refs = ["file:../escape.mjs@" + HEX40A]; }, /canonical POSIX/], // traversal
     [(c) => { c.weavers[0].inspected_source_counts[0].count = 1.5; }, /safe integer/],                 // non-integer count
     [(c) => { c.weavers[0].inspected_source_counts[0].count = 2 ** 53; }, /safe integer/],             // unsafe integer count
-    [(c) => { c.weavers[0].inspected_source_counts[0].extra = 1; }, /exactly \{inventory_id, count\}/], // extra count field
+    [(c) => { c.weavers[0].inspected_source_counts[0].extra = 1; }, /unexpected field/], // extra count field
     [(c) => { c.weavers[0].inspected_source_counts = [{ inventory_id: "package-files", count: 1 }, { inventory_id: "package-files", count: 1 }]; }, /sorted and unique/], // duplicate
     [(c) => { c.weavers[0].implementation_refs = []; }, /nonempty array/],                             // empty implementation_refs
     [(c) => { c.inventories_consumed = [{ id: "x", source_ref: "git:" + HEX40A }]; }, /'file:' content address/] // malformed inventories_consumed ref
@@ -528,6 +528,27 @@ try {
     const bad = Buffer.concat([Buffer.from(lines[0] + "\n", "utf8"), Buffer.from([0xff, 0x0a]), Buffer.from(lines[2] + "\n", "utf8")]);
     writeFileSync(p, bad);
     assert.ok((await expectFail(p)).errors.some((x) => /UTF-8/.test(x)));
+  }
+
+  // ---- 12b. strict own-enumerable schema (pollution / non-enumerable) ------
+  {
+    // close() coverage: an enumerable field inherited via Object.prototype is rejected
+    const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge());
+    Object.defineProperty(Object.prototype, "__evil__", { value: 1, enumerable: true, configurable: true });
+    try {
+      assert.throws(() => l.close(coverage()), /inherited enumerable/);
+    } finally { delete Object.prototype.__evil__; }
+  }
+  {
+    // close() coverage: a non-enumerable required field cannot pass
+    const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge());
+    const c = coverage(); Object.defineProperty(c, "weavers", { enumerable: false });
+    assert.throws(() => l.close(c), /own-enumerable/);
+  }
+  {
+    // appendStatus: a symbol-keyed status input is rejected
+    const p = newPath(); const l = createLedger(p, opts); const e = l.appendEdge(anEdge());
+    assert.throws(() => l.appendStatus({ status_of: e.record_hash, new_status: "rejected", asserted_by: "human", assertion_status: "human-authorized", source_ref: SR, [Symbol("x")]: 1 }), /symbol/);
   }
 
   // ---- 13. frozen matrix completion ----------------------------------------
