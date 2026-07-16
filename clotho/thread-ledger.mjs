@@ -29,7 +29,6 @@ import {
 const HEX40 = /^[0-9a-f]{40}$/;
 const HEX64 = /^[0-9a-f]{64}$/;
 const REPO_REF = /^git-root:[0-9a-f]{40}$/;
-const FILE_REF = /^file:(.+)@([0-9a-f]{40})$/;
 const HEADER_FIELDS = ["pub_key", "woven_at", "repo_head", "repository_ref", "weave_version"];
 const PUBLISHED_STATES = new Set(["executed", "skipped"]);
 const STATUS_TRANSITIONS = new Set(["human-authorized", "rejected", "superseded"]);
@@ -76,8 +75,12 @@ function defaultOpenFile(ledgerPath) {
 
 // ---- schema validators -------------------------------------------------------
 
+// A content-address ref must be a 'file:<repo-relative-path>@<40-hex>' with a
+// canonical POSIX path (no absolute/traversal/backslash/NUL) — delegated to
+// registry.validateSourceRef, the single authoritative source-ref validator.
 function requireFileRef(ref, label) {
-  if (typeof ref !== "string" || !FILE_REF.test(ref)) throw new TypeError(`${label}: expected 'file:<path>@<40-hex>', got ${JSON.stringify(ref)}`);
+  if (typeof ref !== "string" || !ref.startsWith("file:")) throw new TypeError(`${label}: expected a 'file:' content address, got ${JSON.stringify(ref)}`);
+  try { validateSourceRef(ref); } catch (e) { throw new TypeError(`${label}: ${e.message}`); }
 }
 
 function requireInspectedSourceCounts(counts, state, requiredIds, label) {
@@ -275,6 +278,7 @@ export async function verifyLedger(ledgerPath, { openReadStream } = {}) {
         if (typeof h.repository_ref !== "string" || !REPO_REF.test(h.repository_ref)) throw new Error("repository_ref must be 'git-root:<40-hex>'");
         pubKey = publicKeyFromB64(h.pub_key);
         if (pubKey.asymmetricKeyType !== "ed25519") throw new Error("pub_key must be an Ed25519 SPKI key");
+        if (publicKeyB64(pubKey) !== h.pub_key) throw new Error("pub_key is not canonical SPKI base64");
         if (h.weave_version !== 1) throw new Error("weave_version must be 1");
         if (!HEX40.test(h.repo_head)) throw new Error("repo_head must be 40-hex");
         if (new Date(h.woven_at).toISOString() !== h.woven_at) throw new Error("woven_at not canonical ISO");

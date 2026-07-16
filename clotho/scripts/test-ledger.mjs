@@ -177,11 +177,13 @@ try {
     [(c) => { c.weavers[1].inspected_source_counts = [{ inventory_id: "code-sources", count: 3 }]; }, /zero counts/],
     [(c) => { c.weavers[0].inspected_source_counts = [{ inventory_id: "z", count: 1 }, { inventory_id: "a", count: 1 }]; }, /sorted and unique/],
     [(c) => { c.weavers[0].inspected_source_counts = [{ inventory_id: "a", count: -1 }]; }, /nonnegative/],
-    [(c) => { c.weavers[0].implementation_refs = ["git:" + HEX40A]; }, /file:<path>@/],
+    [(c) => { c.weavers[0].implementation_refs = ["git:" + HEX40A]; }, /'file:' content address/],
     [(c) => { c.orchestrator_refs = []; }, /nonempty/],
     [(c) => { c.weavers[0].extra = 1; }, /unexpected field/],
     [(c) => { c.weavers[0].inspected_source_counts = [{ inventory_id: "package-files", count: 1 }]; }, /carry exactly/],       // missing required id
-    [(c) => { c.weavers[3].inspected_source_counts = [{ inventory_id: "doc-files", count: 0 }, { inventory_id: "extra", count: 0 }]; }, /carry exactly/] // extra id
+    [(c) => { c.weavers[3].inspected_source_counts = [{ inventory_id: "doc-files", count: 0 }, { inventory_id: "extra", count: 0 }]; }, /carry exactly/], // extra id
+    [(c) => { c.orchestrator_refs = ["file:/abs@" + HEX40A]; }, /canonical POSIX/],                    // absolute path
+    [(c) => { c.weavers[0].implementation_refs = ["file:../escape.mjs@" + HEX40A]; }, /canonical POSIX/] // traversal
   ];
   for (const [mut, re] of covBad) {
     const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge());
@@ -208,6 +210,18 @@ try {
     const v = await verifyLedger(p);
     assert.equal(v.ok, false);
     assert.ok(v.errors.some((x) => /header/.test(x)), "header shape error reported");
+  }
+  {
+    // a header pub_key that parses but is not canonical base64 is rejected
+    const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge()); l.close(coverage());
+    const lines = readFileSync(p, "utf8").replace(/\n$/, "").split("\n");
+    const h0 = JSON.parse(lines[0]).clotho_weave_header;
+    h0.pub_key = "\n" + h0.pub_key; // decodes to the same key but is non-canonical
+    lines[0] = canonicalJson({ clotho_weave_header: h0 });
+    writeFileSync(p, lines.join("\n") + "\n");
+    const v = await verifyLedger(p);
+    assert.equal(v.ok, false);
+    assert.ok(v.errors.some((x) => /pub_key/.test(x)), "non-canonical pub_key rejected");
   }
   {
     // a record after the trailer: not final -> manifest is not trusted
