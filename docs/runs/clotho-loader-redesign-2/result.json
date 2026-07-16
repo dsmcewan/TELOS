@@ -1,0 +1,129 @@
+{
+  "run": "loader-redesign-2 (Option C)",
+  "mode": "live",
+  "terminal": "needs-eye",
+  "terminal_reason": "unresolved:incomplete-obligation-matrix",
+  "spine_state": "continue",
+  "spine_reason": "incomplete-obligation-matrix",
+  "independent_recheck": {
+    "state": "continue",
+    "reason": "incomplete-obligation-matrix"
+  },
+  "implementation_feasibility": "infeasible",
+  "integration_feasibility": "infeasible",
+  "declared_obligations": [
+    "LOAD-C-INV-1",
+    "LOAD-C-INV-2",
+    "LOAD-C-INV-3",
+    "LOAD-C-INV-4",
+    "LOAD-C-INV-5",
+    "LOAD-C-INV-6",
+    "LOAD-C-INV-7",
+    "LOAD-C-INV-8",
+    "LOAD-C-INV-9",
+    "LOAD-C-INV-10",
+    "LOAD-C-INV-11",
+    "LOAD-C-INV-12"
+  ],
+  "obligation_rows": 0,
+  "verifier_verdicts": {
+    "constraints": "violated",
+    "implementation": "infeasible-under-frame"
+  },
+  "surface_delta": null,
+  "surface_counting": "one row per independently meaningful semantic distinction; net = added − retired; strictly negative required for submit",
+  "source_snapshot_mechanism": "Recorded from the strongest candidate (feasible in isolation; not the point of collapse): byte acquisition via a pinned Git commit OID — the trusted gate resolves the commit to its tree and reads each unit's blob directly from the Git object store (loose/packed object reads implementable in pure Node 18 stdlib, ~600 LoC, zero runtime deps; zlib + SHA verification of the object header binds content to OID). The Buffer obtained from the verified blob is the SINGLE object hashed for identity (SHA-256 over exact bytes + length + kind + commit/tree/blob provenance), used for graph derivation, and handed to any consumer — no pathname is ever re-resolved after trust establishment, so parent-symlink swap, rename, replacement, truncation, and concurrent-write schedules cannot substitute bytes (the working tree is never the source of truth). Fallback profile for non-Git artifacts: open once with O_NOFOLLOW descriptor-relative traversal (openat semantics via fs.open on each path component with O_NOFOLLOW|O_DIRECTORY, final component O_NOFOLLOW), fstat the descriptor, read fully into a retained Buffer, hash that Buffer, and consume only that Buffer; the descriptor/Buffer lineage — not the path — carries identity to the final consumer, and the recorded digest+length at derivation is byte-identical to that delivered to consumption. Failed snapshots close descriptors and publish nothing (atomic fail-closed).",
+  "snapshot_present": true,
+  "candidate_ref": "sha256:095309d35787287ef47e0acfd14b6b820c8d8cfb0622c4d4a9f885302479a1a9",
+  "infeasibility_basis": [
+    "C2 vs Node>=18 native ESM: dynamic import() and the Function/eval intrinsic-chain are host-ambient in every natively evaluated module; they cannot be removed 'by construction' without runtime interposition (forbidden) or source-form verification (forbidden scanner), and 'unit never evaluates a loader-capable expression' is undecidable (Rice), so every decidable static check is either a form recognizer or leaves Run 1's aliased-value residual.",
+    "C3/C5 vs proof case 6: the frame requires at least one cross-unit capability invocation to SUCCEED at runtime, so unit-authored executable behavior must run; confining loader-capable value flow through arbitrary heap paths (closures, proxies, thenables, exceptions, prototypes, callbacks) then requires either a runtime membrane (forbidden mediation) or whole-program static reachability analysis (undecidable; sound approximations are scanners or admit residuals). No third sound mechanism class exists in the capability-security literature.",
+    "Evaluator trichotomy exhaustion: any evaluator of unit code is (E1) native-realm ESM — violates C2 ambiently; (E2) compartment/realm/membrane interposition — is the expressly forbidden runtime loader mediation (Run 1's escape); or (E3) a bespoke restricted-language interpreter — is runtime mediation under honest classification AND is independently refused by C7.",
+    "C7/LOAD-C-INV-10 vs the restricted-language escape: a DSL + trusted interpreter adds parser, interpreter, grammar, capability-mint schema, invocation-check branch, and new failure outcomes — a strictly net-POSITIVE surface delta under one-row-per-distinction accounting (measured 9 added vs 4 removed in the attempted candidate), so proof case 12 mandates refusal of the only branch not already blocked by C2/C5.",
+    "C4 closes the remaining unsound family: manual effect labels/annotations/allowlists cannot substitute for the missing trusted construction, so no assertion-based recovery exists.",
+    "Not a failure of one design: C6 (race-free pinned-blob byte acquisition) and C1 (content-addressed transitive closure) were shown independently satisfiable; the contradiction is confined to the conjunction {C2, C3, C5-success-case} × {no runtime mediation} × {no form scanner} × {Turing-complete guest code on Node>=18 ESM}, which exhausts all known sound enforcement mechanism classes."
+  ],
+  "conflicts": {
+    "constraints": [
+      "The obligation matrix is empty. The contract requires an exact bijection of exactly twelve rows, one for each LOAD-C-INV-1 through LOAD-C-INV-12, even when supporting a terminal conclusion. This alone violates the frozen evidence-matrix requirement.",
+      "Assumption A0 is false. Mandatory case 1 is an attack vector that may have no admitted representation; it does not require execution of arbitrary author-controlled JavaScript. Case 6 requires modeled runtime success for a finite capability, but that can be supplied by trusted positive semantics over pre-established targets and does not force native evaluation of arbitrary unit-authored behavior.",
+      "Assumption A1 confuses language availability with authority reachable by an admitted program. Native ESM supports the import-expression grammar, but a deterministically generated module whose trusted positive construction never emits such an operation does not thereby execute or possess a callable dynamic-import value. Likewise, Function/eval reachability is not established merely by noting ordinary JavaScript intrinsic chains when the admitted representation cannot express arbitrary property traversal or global access.",
+      "A2 misapplies Rice's theorem. The frame does not require a sound and complete decision procedure for arbitrary JavaScript. It expressly permits a closed positive language or representation in which every accepted construct has authority-bounded semantics and no general-language fallback. A sound incomplete structural type system, restricted grammar, or constructive compiler is not necessarily a dangerous-form scanner.",
+      "The E1/E2/E3 partition is not exhaustive as stated. It omits, or incorrectly forces into E1, trusted deterministic compilation from a closed positive representation to fixed native ESM output. Such output can execute under unmodified Node semantics while author input cannot select arbitrary JavaScript syntax, globals, property operations, module requests, or generated code. Trusted transformation and binding of input and executable-output identities are explicitly contemplated by LOAD-C-INV-7, LOAD-C-INV-8, and C6.",
+      "The E3 mediation claim contradicts the frame's explicit finite-selection carve-out. An interpreter or generated state machine whose instruction set contains no module or generated-code request and whose sealed capabilities select only graph-established finite targets need not observe, trap, rewrite, approve, deny, resolve, or acquire a loader request. Execution of already admitted positive semantics is permitted trusted-base machinery; finite capability dispatch is not automatically runtime loader mediation. A closure check at each call is also not inherently required if capability construction already makes excess domains unrepresentable.",
+      "The LOAD-C-INV-10 impossibility claim is unsupported. The candidate supplies no symmetric atom ledger, no baseline evidence, no stable atom rows, and no independently reproducible counts. A claimed partial comparison of nine additions against four retirements cannot establish a lower bound for every possible E3 construction, especially when the actual number of independently meaningful legacy atoms is not inventoried. Therefore non-negative surface has not been proved unavoidable.",
+      "The only-escapes argument is incomplete because positive restricted interpretation, deterministic compilation, and finite sealed capability dispatch are not shown to require a residual hole, runtime loader mediation, scanning, manual assertions, a path race, or non-negative surface. The candidate rejects these classes by definitional relabeling rather than by proving a frozen-invariant violation.",
+      "No complete frame-wide impossibility proof is present: there is no exhaustive positive-construction partition, no valid elimination of closed positive representations, and no reproducible surface lower bound. Consequently the requested infeasible-under-frame terminal outcome is unavailable."
+    ],
+    "implementation": []
+  },
+  "creation_lineage": [
+    {
+      "seat": "codex",
+      "role": "constraints",
+      "phase": "author",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2B7gcK8VNb8E8qn2Syiv3tHLXW7F",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-16T07:54:24.028Z"
+      },
+      "provenance_key": "openai:chatcmpl-E2B7gcK8VNb8E8qn2Syiv3tHLXW7F"
+    },
+    {
+      "seat": "claude",
+      "role": "implementation",
+      "phase": "author",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd5NLWDLYCESGh1G1qrqK",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-16T07:50:02.430Z"
+      },
+      "provenance_key": "anthropic:msg_011Cd5NLWDLYCESGh1G1qrqK"
+    },
+    {
+      "seat": "claude",
+      "role": "integration",
+      "phase": "integrate",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd5Nmvot8CMs87rdWdsmG",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-16T07:55:26.464Z"
+      },
+      "provenance_key": "anthropic:msg_011Cd5Nmvot8CMs87rdWdsmG"
+    },
+    {
+      "seat": "codex",
+      "role": "constraints",
+      "phase": "verify",
+      "verdict": "violated",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2BEFfOoEimc4Ll1rvR4PHmcPgR1v",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-16T07:56:34.251Z"
+      },
+      "provenance_key": "openai:chatcmpl-E2BEFfOoEimc4Ll1rvR4PHmcPgR1v"
+    },
+    {
+      "seat": "claude",
+      "role": "implementation",
+      "phase": "verify",
+      "verdict": "infeasible-under-frame",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd5NrVLamrcXceDjhu644",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-16T07:55:31.890Z"
+      },
+      "provenance_key": "anthropic:msg_011Cd5NrVLamrcXceDjhu644"
+    }
+  ]
+}
