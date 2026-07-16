@@ -76,8 +76,24 @@ export function weave(ctx) {
       // Specifier -> path via the ONE shared resolver (D33); the seeded-file
       // membership test below is the code weaver's own extraction-grammar filter.
       const r = resolveRelativeSpecifier(modAbs, imp.specifier, { repoRoot });
-      if (!r.ok || !fileBlob.has(r.repoRelative)) {
-        warnings.push({ weaver: WEAVER_ID, message: `unrepresentable-consumer: ${modPath} imports ${JSON.stringify(imp.specifier)} (no seeded file below closed roots)` });
+      if (!r.ok) {
+        // Outside the explicit-.mjs extraction grammar: NOT unrepresentable — no
+        // edge and no warning (a non-.mjs import is simply not a code edge here).
+        if (r.kind === "ambiguous-extension") continue;
+        // A specifier that does not resolve to a real file below the closed roots
+        // is the ONLY genuinely unrepresentable-consumer case.
+        if (r.kind === "unresolved") {
+          warnings.push({ weaver: WEAVER_ID, message: `unrepresentable-consumer: ${modPath} imports ${JSON.stringify(imp.specifier)} (does not resolve to a real file below the closed roots)` });
+          continue;
+        }
+        // symlink / escape / non-regular target: a physical-policy violation —
+        // fail closed rather than downgrade to an advisory warning.
+        throw new Error(`code-weaver: ${modPath} imports ${JSON.stringify(imp.specifier)} — ${r.kind} target (physical-policy violation)`);
+      }
+      if (!fileBlob.has(r.repoRelative)) {
+        // Resolves to a real .mjs file, but not a seeded file below the closed
+        // package roots — genuinely unrepresentable in this weave.
+        warnings.push({ weaver: WEAVER_ID, message: `unrepresentable-consumer: ${modPath} imports ${JSON.stringify(imp.specifier)} (resolves outside the closed package roots)` });
         continue;
       }
       const targetPath = r.repoRelative;

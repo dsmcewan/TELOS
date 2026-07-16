@@ -299,6 +299,18 @@ const closureOf = (root, allowExternal = new Set()) =>
   assert.match(codeSrc, /import\s*\{[^}]*\bresolveRelativeSpecifier\b[^}]*\}\s*from\s*["']\.\/util\.mjs["']/,
     "code.mjs imports the shared resolveRelativeSpecifier from util");
 
+  // The closure-derivation consumer is proven EXPLICITLY: deriveAcceptedClosure's
+  // OWN body must call BOTH the shared classifier and the shared resolver by name,
+  // so the shared-consumer guarantee cannot silently regress when Task 5's advisory
+  // scanner lands (it must import these same exports, never fork a private copy).
+  const utilSrc = readFileSync(path.join(CLOTHO, "weavers", "util.mjs"), "utf8");
+  const dStart = utilSrc.indexOf("export function deriveAcceptedClosure");
+  assert.ok(dStart !== -1, "deriveAcceptedClosure is defined in util");
+  const dNext = utilSrc.indexOf("\nexport ", dStart + 1);
+  const dBody = utilSrc.slice(dStart, dNext === -1 ? utilSrc.length : dNext);
+  assert.match(dBody, /classifyModuleLoads\s*\(/, "deriveAcceptedClosure body calls classifyModuleLoads");
+  assert.match(dBody, /resolveRelativeSpecifier\s*\(/, "deriveAcceptedClosure body calls resolveRelativeSpecifier");
+
   assert.ok(PERMITTED_EXTERNAL_CLOSURE_FILES.includes("merkle-dag/vendor.mjs"));
 }
 

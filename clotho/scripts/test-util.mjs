@@ -98,8 +98,8 @@ import {
 
     // Directory symlink via junction — normative, must run (fail if unavailable).
     symlinkSync(path.join(repo, "pkg"), path.join(repo, "linkpkg"), "junction");
-    // a symlinked root is rejected outright
-    assert.throws(() => walkFiles(repo, ["linkpkg"]), /root is a symlink/);
+    // a symlinked root is rejected outright (as a symlinked component)
+    assert.throws(() => walkFiles(repo, ["linkpkg"]), /symlinked component in root/);
     // a symlinked ENTRY inside a walked root is REJECTED (fail-closed), not
     // silently skipped
     assert.throws(() => walkFiles(repo, ["."]), /symlinked entry is not permitted/);
@@ -285,6 +285,86 @@ import {
     assert.ok(warnings.some((w) => w.path === "pkg/re.mjs" && /export \*/.test(w.message)), "unsupported export warned");
   } finally {
     rmSync(repo, { recursive: true, force: true });
+  }
+}
+
+// ---- 6. classifier: whitespace/newline formatting + escaped-relative literals
+{
+  // A side-effect import whose specifier follows a newline is still recognized.
+  assert.deepEqual(
+    classifyModuleLoads('import\n"./side.mjs";').filter((s) => s.literal).map((s) => s.specifier),
+    ["./side.mjs"]
+  );
+  // import()/require() arguments preceded by a tab/newline are still literals.
+  assert.equal(classifyModuleLoads('const a = import(\n\t"./nl.mjs"\n);').find((s) => s.form === "dynamic-import").specifier, "./nl.mjs");
+  assert.equal(classifyModuleLoads('require(\t"./tab.mjs" );').find((s) => s.form === "require").specifier, "./tab.mjs");
+  // An escaped-relative literal ("\x2e/esc.mjs" decodes to "./esc.mjs") is decoded,
+  // never silently dropped from the closure.
+  assert.equal(classifyModuleLoads('import("\\x2e/esc.mjs");').find((s) => s.form === "dynamic-import").specifier, "./esc.mjs");
+  assert.equal(classifyModuleLoads('import("\\u002e/u.mjs");').find((s) => s.form === "dynamic-import").specifier, "./u.mjs");
+  // Whitespace-separated module.require is NOT double-classified as a bare require.
+  const dbl = classifyModuleLoads('const s = module . require("./m.mjs");');
+  assert.equal(dbl.filter((s) => s.form === "module-require").length, 1);
+  assert.equal(dbl.filter((s) => s.form === "require").length, 0);
+}
+
+// ---- 7. export scanner: every unsupported category warns (computed / dynamic) -
+{
+  const warns = (src) => scanExports(src).warnings.join(" | ");
+  assert.match(warns("export let mut = 1;"), /dynamic symbol flow/);
+  assert.match(warns("export var v = 1;"), /dynamic symbol flow/);
+  assert.match(warns("export const { a, b } = obj;"), /destructuring\/computed/);
+  assert.match(warns("export const [x] = arr;"), /destructuring\/computed/);
+  assert.match(warns("export default function () {}"), /default/);
+  assert.match(warns('export * from "./x.mjs";'), /re-export/);
+  assert.match(warns('export { y } from "./y.mjs";'), /list\/re-export/);
+  assert.match(warns("export {};"), /list\/re-export/);
+  // A Phase 1 const/function/class still yields a symbol with no warning.
+  const ok = scanExports("export const good = 1;\nexport function f() {}\nexport class C {}");
+  assert.deepEqual(ok.exports, ["C", "f", "good"]);
+  assert.equal(ok.warnings.length, 0);
+}
+
+// ---- 8. counted-source: final-item boundary is N-1 (run-to-completion contract)
+{
+  // A consumer that reads+processes the LAST item then breaks WITHOUT resuming the
+  // iterator past it records observed_count = N-1, exhausted=false. This is correct:
+  // D29 requires an `executed` weaver to run every handed iterable to natural
+  // completion (for...of to the end), so the driver contract is run-to-completion.
+  const { source, accounting } = makeCountedSource("inv", ["a", "b", "c"]);
+  const seen = [];
+  for (const it of source) { seen.push(it); if (it === "c") break; }
+  assert.deepEqual(seen, ["a", "b", "c"]);
+  assert.deepEqual(accounting(), { inventory_id: "inv", expected_cardinality: 3, observed_count: 2, exhausted: false });
+  // Run to natural completion: all counted, exhaustion recorded.
+  const c2 = makeCountedSource("inv2", ["x", "y"]);
+  for (const _ of c2.source) { /* consume fully */ }
+  assert.deepEqual(c2.accounting(), { inventory_id: "inv2", expected_cardinality: 2, observed_count: 2, exhausted: true });
+}
+
+// ---- 9. containment: symlinked ANCESTOR of repo root + intermediate walk-root --
+{
+  const base = mkdtempSync(path.join(tmpdir(), "clotho-anc-"));
+  try {
+    const realParent = path.join(base, "realparent");
+    mkdirSync(path.join(realParent, "repo", "pkg"), { recursive: true });
+    writeFileSync(path.join(realParent, "repo", "pkg", "a.mjs"), "");
+    // A symlinked ANCESTOR of the repository root is rejected, not followed.
+    const linkParent = path.join(base, "linkparent");
+    symlinkSync(realParent, linkParent, "junction");
+    const repoViaLink = path.join(linkParent, "repo");
+    assert.equal(physicalContainment(repoViaLink, "pkg/a.mjs"), false);
+    assert.throws(() => walkFiles(repoViaLink, ["pkg"]), /symlinked component/);
+    // A symlinked INTERMEDIATE component of a multi-segment configured root is rejected.
+    const repo2 = path.join(realParent, "repo");
+    mkdirSync(path.join(repo2, "realmid", "leaf"), { recursive: true });
+    writeFileSync(path.join(repo2, "realmid", "leaf", "b.mjs"), "");
+    symlinkSync(path.join(repo2, "realmid"), path.join(repo2, "linkmid"), "junction");
+    assert.throws(() => walkFiles(repo2, ["linkmid/leaf"]), /symlinked component in root/);
+    // Sanity: the real (non-symlinked) root walks fine.
+    assert.deepEqual(walkFiles(repo2, ["realmid/leaf"]), ["realmid/leaf/b.mjs"]);
+  } finally {
+    rmSync(base, { recursive: true, force: true });
   }
 }
 

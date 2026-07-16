@@ -39,7 +39,51 @@ export function escapeRegExp(s) {
 // than division. Conservative: after any value-terminating token (identifier,
 // `)`, `]`, string, template) a `/` is division; everywhere else it is a regex.
 const REGEX_PREFIX = new Set("([{,;=:?!&|^~+-*%<>".split(""));
-function regexAllowedAfter(prevSig) { return prevSig === "" || prevSig === "\n" || REGEX_PREFIX.has(prevSig); }
+// Expression-introducing keywords after which a `/` begins a REGEX literal even
+// though the preceding significant char is an identifier char — e.g. the `/` in
+// `return /re/` or `case /re/`. Without this a binding appearing only inside such
+// a regex would be misread as an identifier use.
+const REGEX_KEYWORDS = new Set(["return", "throw", "case", "typeof", "instanceof", "in", "of", "new", "delete", "void", "do", "else", "yield", "await"]);
+function precedingWord(source, idx) {
+  let j = idx - 1;
+  while (j >= 0 && /\s/.test(source[j])) j--;
+  const end = j;
+  while (j >= 0 && IDENT_CHAR.test(source[j])) j--;
+  return source.slice(j + 1, end + 1);
+}
+function regexAllowedAfter(prevSig, prevWord) {
+  return prevSig === "" || prevSig === "\n" || REGEX_PREFIX.has(prevSig) || REGEX_KEYWORDS.has(prevWord);
+}
+
+// Decode a single JS string escape beginning at source[i] === '\\'. Returns the
+// decoded value and the next index. Correctly interpreting escapes (rather than
+// dropping them) is required so a specifier whose runtime value is relative — e.g.
+// one written with a `\x2e`/`.` for '.' — is not silently omitted from the
+// closure. The NUL value is built at runtime (never a literal NUL byte in source).
+const SIMPLE_ESCAPES = { n: "\n", t: "\t", r: "\r", b: "\b", f: "\f", v: "\v", "0": String.fromCharCode(0), "\\": "\\", "'": "'", '"': '"', "`": "`" };
+function decodeEscape(source, i) {
+  const e = source[i + 1];
+  if (e === undefined) return { value: "", next: i + 2 };
+  if (e === "\n") return { value: "", next: i + 2 };                 // line continuation
+  if (e === "x") {
+    const hex = source.slice(i + 2, i + 4);
+    if (/^[0-9a-fA-F]{2}$/.test(hex)) return { value: String.fromCharCode(parseInt(hex, 16)), next: i + 4 };
+    return { value: "x", next: i + 2 };
+  }
+  if (e === "u") {
+    if (source[i + 2] === "{") {
+      const close = source.indexOf("}", i + 3);
+      const hx = close === -1 ? "" : source.slice(i + 3, close);
+      if (close !== -1 && /^[0-9a-fA-F]+$/.test(hx)) return { value: String.fromCodePoint(parseInt(hx, 16)), next: close + 1 };
+      return { value: "u", next: i + 2 };
+    }
+    const hex = source.slice(i + 2, i + 6);
+    if (/^[0-9a-fA-F]{4}$/.test(hex)) return { value: String.fromCharCode(parseInt(hex, 16)), next: i + 6 };
+    return { value: "u", next: i + 2 };
+  }
+  if (Object.prototype.hasOwnProperty.call(SIMPLE_ESCAPES, e)) return { value: SIMPLE_ESCAPES[e], next: i + 2 };
+  return { value: e, next: i + 2 };                                  // any other escaped char is itself
+}
 
 export function lex(source) {
   const n = source.length;
@@ -82,7 +126,7 @@ export function lex(source) {
       i++;
       let value = "";
       while (i < n && source[i] !== c) {
-        if (source[i] === "\\") { value += source[i + 1] ?? ""; i += 2; continue; }
+        if (source[i] === "\\") { const d = decodeEscape(source, i); value += d.value; i = d.next; continue; }
         if (source[i] === "\n") break; // unterminated line string; stop
         value += source[i];
         i++;
@@ -101,7 +145,7 @@ export function lex(source) {
       prevSig = "`";
       continue;
     }
-    if (c === "/" && regexAllowedAfter(prevSig)) {
+    if (c === "/" && regexAllowedAfter(prevSig, precedingWord(source, i))) {
       // Regex literal: blank the whole literal (interior + delimiters + flags) so
       // a `from "x"` / `import(` inside a regex can never manufacture a load site.
       i++; // consume opening "/"
@@ -146,14 +190,15 @@ export function classifyModuleLoads(source) {
   const sites = [];
 
   const literalAt = (parenIdx) => {
-    // parenIdx points at "("; find next non-space; if a plain string opens there
-    // and the call closes right after it, return its value, else null.
+    // parenIdx points at "("; find next non-whitespace (tabs/newlines included, not
+    // just U+0020); if a plain string opens there and the call closes right after
+    // it, return its value, else null.
     let j = parenIdx + 1;
-    while (j < masked.length && masked[j] === " ") j++;
+    while (j < masked.length && /\s/.test(masked[j])) j++;
     const s = strings.get(j);
     if (!s || !s.plain) return null;
     let k = s.end;
-    while (k < masked.length && masked[k] === " ") k++;
+    while (k < masked.length && /\s/.test(masked[k])) k++;
     return masked[k] === ")" ? s.value : null;
   };
   const fromClauseRe = /(?<![A-Za-z0-9_$])from\s*["']/;
@@ -169,7 +214,7 @@ export function classifyModuleLoads(source) {
     const kw = kws[a];
     const bound = a + 1 < kws.length ? kws[a + 1].idx : masked.length;
     let p = kw.end;
-    while (p < bound && masked[p] === " ") p++;
+    while (p < bound && /\s/.test(masked[p])) p++;
     if (kw.word === "import") {
       if (masked[p] === "(") continue;        // dynamic import(): a call form, below
       if (masked[p] === ".") continue;        // import.meta — not a module load
@@ -205,15 +250,21 @@ export function classifyModuleLoads(source) {
     const value = literalAt(paren);
     sites.push({ form: "dynamic-import", specifier: value, literal: value !== null });
   }
+  // `module.require(` is claimed as module-require; its inner `require(` (when the
+  // members are whitespace-separated, `module . require(`, the char before
+  // `require` is a space, not `.`) must NOT also be classified as a bare require.
+  const claimedParens = new Set();
   const modReqRe = /(?<![A-Za-z0-9_$.])module\s*\.\s*require\s*\(/g;
   for (let m; (m = modReqRe.exec(masked)); ) {
     const paren = m.index + m[0].length - 1;
+    claimedParens.add(paren);
     const value = literalAt(paren);
     sites.push({ form: "module-require", specifier: value, literal: value !== null });
   }
   const reqRe = /(?<![A-Za-z0-9_$.])require\s*\(/g;
   for (let m; (m = reqRe.exec(masked)); ) {
     const paren = m.index + m[0].length - 1;
+    if (claimedParens.has(paren)) continue; // already a module.require site
     const value = literalAt(paren);
     sites.push({ form: "require", specifier: value, literal: value !== null });
   }
@@ -232,6 +283,36 @@ export function classifyModuleLoads(source) {
 // is in allowExternal, otherwise "forbidden"; anything else is "escape".
 
 function toPosix(p) { return p.split(path.sep).join("/"); }
+
+// Walk EVERY existing component of an absolute path from the filesystem root down,
+// lstat-ing each; a symlink component is fatal. This covers a path's ANCESTORS
+// (not just components below the repo root), so a symlinked ancestor of the repo
+// root — or an intermediate component of a multi-segment configured root — is
+// rejected rather than silently followed. Returns { ok, missing } (missing=true
+// when a component does not yet exist; the caller checks target existence).
+function componentsSymlinkFree(absPath) {
+  const parsed = path.parse(absPath);
+  let cur = parsed.root;
+  const rest = absPath.slice(parsed.root.length).split(path.sep).filter(Boolean);
+  for (const seg of rest) {
+    cur = path.join(cur, seg);
+    let st;
+    try { st = lstatSync(cur); } catch { return { ok: true, missing: true }; }
+    if (st.isSymbolicLink()) return { ok: false };
+  }
+  return { ok: true, missing: false };
+}
+
+// Resolve a repository root to its real path only AFTER proving no component of
+// its absolute path (including ancestors) is a symlink — realpathSync alone would
+// silently FOLLOW a symlinked ancestor instead of rejecting it. Throws otherwise.
+function checkedRepoRootReal(repoRoot) {
+  const abs = path.resolve(repoRoot);
+  const c = componentsSymlinkFree(abs);
+  if (!c.ok) throw new Error(`repository root path has a symlinked component: ${abs}`);
+  if (c.missing) throw new Error(`repository root does not exist: ${abs}`);
+  return realpathSync(abs);
+}
 
 // Walk each existing component from repoRootReal down to `absTarget`; reject any
 // symlink component; return the deepest existing ancestor's real path (or null
@@ -266,7 +347,7 @@ export function resolveRelativeSpecifier(fromFileAbs, specifier, { repoRoot } = 
   // Explicit `.mjs` only — an extensionless or other-extension specifier is
   // ambiguous (fatal for the closure; no edge for the code weaver).
   if (!specifier.endsWith(".mjs")) return { ok: false, kind: "ambiguous-extension", resolved: specifier };
-  const repoRootReal = realpathSync(repoRoot);
+  const repoRootReal = checkedRepoRootReal(repoRoot);
   const abs = path.resolve(path.dirname(fromFileAbs), specifier);
   const contain = containmentReal(repoRootReal, abs);
   if (!contain.ok) return { ok: false, kind: contain.reason, resolved: toPosix(path.relative(repoRootReal, abs)) };
@@ -288,7 +369,7 @@ export function resolveRelativeSpecifier(fromFileAbs, specifier, { repoRoot } = 
 // permitted non-clotho targets (permitted merkle-dag primitives).
 
 export function deriveAcceptedClosure(entryFileAbs, { repoRoot, allowExternal = new Set() } = {}) {
-  const repoRootReal = realpathSync(repoRoot);
+  const repoRootReal = checkedRepoRootReal(repoRoot);
   // The entry undergoes the SAME containment / regular-file / symlink checks as a
   // resolved target — an entry is not exempt from the closure discipline.
   const entryContain = containmentReal(repoRootReal, entryFileAbs);
@@ -353,14 +434,34 @@ export function scanExports(source) {
   const exportsFound = [];
   const warnings = [];
 
-  const declRe = /(?<![A-Za-z0-9_$])export\s+(?:(async)\s+function|function|const|class)\s+([A-Za-z_$][A-Za-z0-9_$]*)/g;
-  for (let m; (m = declRe.exec(masked)); ) exportsFound.push(m[2]);
-
-  // Unsupported forms -> warn, no inferred symbol.
-  if (/(?<![A-Za-z0-9_$])export\s+default(?![A-Za-z0-9_$])/.test(masked)) warnings.push("export default is not a Phase 1 export");
-  if (/(?<![A-Za-z0-9_$])export\s*\{/.test(masked)) warnings.push("export { ... } list is not a Phase 1 export");
-  if (/(?<![A-Za-z0-9_$])export\s*\*/.test(masked)) warnings.push("export * re-export is not a Phase 1 export");
-  if (/(?<![A-Za-z0-9_$])export\s+(?:const|let|var)\s*[[{]/.test(masked)) warnings.push("destructuring/computed export is not a Phase 1 export");
+  // Dispatch EACH `export` keyword: it either yields a Phase 1 symbol (one of the
+  // four declaration forms) or emits a warning for its specific unsupported
+  // category. Every export keyword is accounted for, so no unsupported form —
+  // including computed exports and dynamic (let/var/reassigned) symbol flow — can
+  // slip through without a warning. Bounds a keyword's region at the next keyword.
+  const kwRe = /(?<![A-Za-z0-9_$.])export(?![A-Za-z0-9_$])/g;
+  const kws = [];
+  for (let m; (m = kwRe.exec(masked)); ) kws.push(m.index);
+  const phase1 = /^export\s+(?:async\s+function|function|const\s+[A-Za-z_$][A-Za-z0-9_$]*\s*=?|class)\s*/;
+  const declRe = /^export\s+(?:async\s+function|function|const|class)\s+([A-Za-z_$][A-Za-z0-9_$]*)/;
+  for (let a = 0; a < kws.length; a++) {
+    const start = kws[a];
+    const bound = a + 1 < kws.length ? kws[a + 1] : masked.length;
+    const region = masked.slice(start, bound);
+    const decl = declRe.exec(region);
+    // A Phase 1 declaration form binds a single identifier — but NOT a
+    // destructuring/computed pattern (`export const { a } = ...` / `export const [a]`).
+    if (decl && !/^export\s+const\s*[[{]/.test(region) && phase1.test(region)) {
+      exportsFound.push(decl[1]);
+      continue;
+    }
+    if (/^export\s+default(?![A-Za-z0-9_$])/.test(region)) { warnings.push("export default is not a Phase 1 export"); continue; }
+    if (/^export\s*\*/.test(region)) { warnings.push("export * re-export is not a Phase 1 export"); continue; }
+    if (/^export\s*\{/.test(region)) { warnings.push("export { ... } list/re-export is not a Phase 1 export"); continue; }
+    if (/^export\s+(?:const|let|var)\s*[[{]/.test(region)) { warnings.push("destructuring/computed export is not a Phase 1 export"); continue; }
+    if (/^export\s+(?:let|var)(?![A-Za-z0-9_$])/.test(region)) { warnings.push("mutable (let/var) export is dynamic symbol flow, not a Phase 1 export"); continue; }
+    warnings.push("unsupported/computed export form is not a Phase 1 export");
+  }
 
   exportsFound.sort();
   return { exports: exportsFound, warnings };
@@ -383,7 +484,7 @@ export function scanImports(source) {
     const start = m.index;
     // dynamic import() — skip (handled by classifyModuleLoads, not a static import)
     let after = m.index + "import".length;
-    while (after < masked.length && masked[after] === " ") after++;
+    while (after < masked.length && /\s/.test(masked[after])) after++;
     if (masked[after] === "(") continue;
     if (masked[after] === ".") continue; // import.meta
 
@@ -452,7 +553,7 @@ export function identifierUsedOutside(source, name, excludeSpans) {
 // repository-relative POSIX paths, sorted, deduplicated.
 
 export function walkFiles(repoRoot, roots) {
-  const repoRootReal = realpathSync(repoRoot);
+  const repoRootReal = checkedRepoRootReal(repoRoot);
   const out = new Set();
   for (const root of roots) {
     const absRoot = path.resolve(repoRootReal, root);
@@ -460,9 +561,15 @@ export function walkFiles(repoRoot, roots) {
     if (rel !== "" && (rel.startsWith("..") || path.isAbsolute(rel))) {
       throw new Error(`walkFiles: root escapes repository: ${JSON.stringify(root)}`);
     }
-    let rootStat;
-    try { rootStat = lstatSync(absRoot); } catch { continue; } // absent root: nothing to walk
-    if (rootStat.isSymbolicLink()) throw new Error(`walkFiles: root is a symlink: ${JSON.stringify(root)}`);
+    // Check EVERY component of the (possibly multi-segment) configured root's
+    // absolute path — a symlinked INTERMEDIATE or LEAF component (e.g. a symlinked
+    // `connectors/` in `connectors/ai-peer-mcp`, or a symlinked root itself) is
+    // rejected, not followed. componentsSymlinkFree also covers the "." root
+    // (== repo root) without the escape false-positive of a below-root walker.
+    const chain = componentsSymlinkFree(absRoot);
+    if (!chain.ok) throw new Error(`walkFiles: symlinked component in root: ${JSON.stringify(root)}`);
+    if (chain.missing) continue;          // absent root: nothing to walk
+    const rootStat = lstatSync(absRoot);  // symlink leaf already rejected above
     if (rootStat.isFile()) { out.add(toPosix(path.relative(repoRootReal, absRoot))); continue; }
     walkDir(absRoot, repoRootReal, out);
   }
@@ -563,8 +670,12 @@ export function makeCountedSource(inventoryId, list) {
 
 export function physicalContainment(repoRoot, candidate) {
   // Do NOT realpath the allowed root first — that would silently FOLLOW a
-  // symlinked root. lstat it in place and reject a symlinked/non-directory root.
+  // symlinked root or a symlinked ANCESTOR of it. Prove every component of the
+  // allowed-root's absolute path (ancestors included) is symlink-free, then lstat
+  // the root in place and require it to be a real directory.
   const absRepo = path.resolve(repoRoot);
+  const anc = componentsSymlinkFree(absRepo);
+  if (!anc.ok || anc.missing) return false;
   let rootSt;
   try { rootSt = lstatSync(absRepo); } catch { return false; }
   if (rootSt.isSymbolicLink() || !rootSt.isDirectory()) return false;

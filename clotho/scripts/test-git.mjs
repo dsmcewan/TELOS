@@ -134,4 +134,28 @@ function ctxOf(git, symbols, files) {
   assert.equal(canonicalJson(mk()), canonicalJson(mk()));
 }
 
+// ---- 5. empty vs blank/malformed git output --------------------------------
+{
+  const files = [{ path: "clotho/registry.mjs", blob_sha: BLOB }];
+  const run = (out) => {
+    const { git } = mockGit({ [`log --format=%H --reverse -- clotho/registry.mjs`]: out });
+    return weave(ctxOf(git, [], files).ctx);
+  };
+  // Genuinely EMPTY output -> no introducing commit: warn, no edge (no throw).
+  const empty = run("");
+  assert.equal(empty.edges.length, 0);
+  assert.equal(empty.warnings.length, 1);
+  assert.equal(empty.warnings[0].weaver, "clotho-git-weaver");
+  // A lone blank line ("\n") is NOT empty — it is a non-SHA line: fatal.
+  assert.throws(() => run("\n"), /malformed git output/);
+  // An INTERNAL blank line among SHAs is fatal.
+  assert.throws(() => run(`${SHA1}\n\n${SHA2}\n`), /malformed git output/);
+  // A single SHA with a valid trailing newline parses to one edge.
+  const ok = run(`${SHA1}\n`);
+  assert.equal(ok.edges.length, 1);
+  assert.equal(ok.warnings.length, 0);
+  // A SHA with NO trailing newline also parses (the trailing LF is optional).
+  assert.equal(run(SHA1).edges.length, 1);
+}
+
 console.log("test-git: all assertions passed");

@@ -17,9 +17,13 @@ const WEAVER_ID = "clotho-git-weaver";
 // silently skipped). Returns the ordered SHAs (earliest first, --reverse).
 function parseShaLines(out) {
   if (typeof out !== "string") throw new Error("git-weaver: non-string git output");
+  // ONLY genuinely empty output ("") is "no introducing commit" (warn/no-edge).
+  // Output that carries any content — including a lone "\n" (one blank line) or an
+  // internal blank line — is malformed: every output line must be a full SHA, so a
+  // blank/non-SHA line is fatal, never silently taken as no-result.
+  if (out === "") return [];
   const text = out.endsWith("\n") ? out.slice(0, -1) : out;
-  if (text === "") return [];
-  const lines = text.split("\n");
+  const lines = text.split("\n"); // out === "\n" -> text "" -> [""] -> blank line is fatal
   for (const ln of lines) {
     if (!HEX40.test(ln)) throw new Error(`git-weaver: malformed git output line ${JSON.stringify(ln)}`);
   }
