@@ -137,8 +137,15 @@ export async function runProposalLifecycle({
 }) {
   // Authorship mode (docs/daedalus-methodology.md): serial author->reviewer loop
   // by default (small deltas, back-compatible); parallel constraint/implementation
-  // authorship when the dossier opts in AND a parallel seat caller is injected.
-  const useParallelAuthorship = dossier?.authorship === "parallel" && typeof callParallelSeat === "function";
+  // authorship when the dossier opts in. Selection FAILS CLOSED: an explicit request
+  // for parallel authorship with no callParallelSeat adapter injected must NOT silently
+  // downgrade to serial — a caller that asked for the two-seat trust structure would
+  // otherwise get the weaker single-track path without knowing it. Block instead.
+  const parallelRequested = dossier?.authorship === "parallel";
+  if (parallelRequested && typeof callParallelSeat !== "function") {
+    return blocked("plan", ["PARALLEL_AUTHORSHIP_UNAVAILABLE: dossier.authorship === \"parallel\" but no callParallelSeat adapter was injected; refusing to silently downgrade to serial authorship"]);
+  }
+  const useParallelAuthorship = parallelRequested;
   // 1. Controller key — single-sourced, pinned DIRECTLY into authorized_signers (decision 2, B1+B2).
   const envSk = process.env.TELOS_PROPOSAL_CONTROLLER_SK || null;
   let controllerPriv, controllerPubJwk, ephemeral = false;

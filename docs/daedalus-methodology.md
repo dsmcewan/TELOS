@@ -90,13 +90,39 @@ lineage queryable so the methodology rules above can be enforced against
 evidence, not memory. It is out of scope for Clotho Phase 1 and does not gate
 it.
 
-## Implementation gap (for the delta that lifts this hold)
+## Enforcement (as implemented in `build-gate/daedalus.mjs`)
 
-`build-gate/daedalus.mjs` currently encodes only the serial loop. Realizing this
-note requires: parallel two-seat authorship with role specialization (GPT
-constraints / Claude implementation), two content-addressed source nodes plus an
-integration node that descends from both, the obligation-mapping requirement as
-a convergence gate, per-seat post-integration verification, explicit
-conflict-to-Eye routing, and a size threshold below which the serial loop still
-applies. That delta is itself subject to the proposal lifecycle; it is not an
-ad hoc edit.
+The parallel path is realized as `runParallelDaedalus` + the pure state machine
+`deriveParallelState`, wired into the proposal lifecycle (opt-in via
+`dossier.authorship === "parallel"`). Convergence is **fail-closed**: a candidate
+reaches `submit` only when ALL of these structural checks pass, and every other
+outcome is either `needs-eye` (an explicit contract violation, routed to The Eye)
+or a non-terminal `continue` the orchestrator normalizes to human-review stalemate.
+
+1. **Both source roles present, genuinely distinct.** Constraints (GPT) and
+   implementation (Claude) source nodes, each with a real provenance key, the two
+   distinct — one seat cannot author both halves.
+2. **The integrator is a real, distinct seat call.** Its provenance key is
+   validated (not merely stored), and all **five** seat calls — two authors, the
+   integrator, two verifiers — carry real, pairwise-distinct provenance keys, so no
+   response id is replayed across author/integrate/verify.
+3. **Parentage is content-bound and exact.** `descends_from` is written INSIDE the
+   integration candidate's content-addressed body, so the ref commits to its
+   parents; the state machine requires it to be *precisely* the two source refs —
+   no missing parent, no smuggled extra.
+4. **Exact obligation coverage.** The constraints seat OWNS and declares the
+   proof-obligation ID set (committed into its source-node content address). The
+   integration matrix must map each obligation via a per-row `obligation_id` in a
+   strict bijection — every obligation mapped once, none dropped, invented, or
+   duplicated — on top of five-field row completeness. "Map every obligation" is
+   structural, not advisory.
+5. **Affirmative preservation.** Each verifier must attest the literal verdict
+   `"preserved"`; an unrecognized or missing verdict cannot converge (it is not
+   read as tacit approval), and an explicit `"violated"` or any conflict list
+   routes to The Eye — never blended.
+
+Selection itself fails closed: an explicit `authorship: "parallel"` request with
+no `callParallelSeat` adapter injected **blocks** (`PARALLEL_AUTHORSHIP_UNAVAILABLE`)
+rather than silently downgrading to the serial loop. The serial author→reviewer
+loop is retained only for genuinely small deltas. This delta was itself carried
+through the proposal lifecycle; it is not an ad hoc edit.
