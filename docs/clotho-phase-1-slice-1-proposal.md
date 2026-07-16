@@ -39,6 +39,23 @@ mergeable, zero-dependency, self-testing, and touches nothing outside its declar
 files. It exercises every stage of the loop without requiring the weaver stack
 (Tasks 2–7).
 
+### What Slice 1 does NOT establish (anti-overstatement — locked before ratification)
+
+Slice 1 proves the **implementation-governance loop only**: frozen-scope
+authorship, traceable provenance, TELOS re-review, deterministic gating, and
+human acceptance. It **does not** validate any Clotho knowledge-graph capability.
+Specifically, a passing Slice 1 must **not** be cited as evidence for any of:
+
+- the correctness of the node/edge model, weavers, or query semantics (Tasks 2–5);
+- the advisory outbound scanner or closure/provenance mechanisms (D27/D33/D34);
+- coverage-honesty or attribution behavior (D11/D35/D10) — these ship in later
+  slices and are validated by their own tests;
+- that Clotho "works" in any functional sense.
+
+A green scaffold means **the governance chain works**, not that the design is
+sound. Design validation begins with Task 2 and accrues slice by slice, each
+under its own gate. Any summary of Slice 1 must state this boundary.
+
 ### Files (exactly v12 Task 1 — no more)
 
 - `clotho/package.json` — `name`, `private: true`, `type: module`,
