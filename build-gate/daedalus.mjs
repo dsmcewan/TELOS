@@ -270,6 +270,8 @@ export async function runParallelDaedalus({ frame, callSeat, writeArtifact, appe
     candidate_ref,
     descends_from: authored.map((s) => s.artifact_ref),
     obligation_matrix: integ.obligation_matrix ?? [],
+    seat: PARALLEL_ROLES.implementation,
+    provenance: integ.provenance,
     provenance_key: provKey(PARALLEL_ROLES.implementation, integ.provenance)
   };
   if (appendEvent) await appendEvent({ stage: "integration", artifact_refs: [candidate_ref], policy_result: { descends_from: integration.descends_from } });
@@ -278,7 +280,7 @@ export async function runParallelDaedalus({ frame, callSeat, writeArtifact, appe
   const verifications = await Promise.all(["constraints", "implementation"].map(async (role) => {
     const seat = PARALLEL_ROLES[role];
     const v = await callSeat({ seat, role, phase: "verify", frame, sources: [authored.find((s) => s.role === role)], integration: { candidate_ref, plan: integ.plan ?? "", obligation_matrix: integration.obligation_matrix } });
-    return { role, seat, verdict: v.verdict, conflicts: v.conflicts || [], provenance_key: provKey(seat, v.provenance) };
+    return { role, seat, verdict: v.verdict, conflicts: v.conflicts || [], provenance: v.provenance, provenance_key: provKey(seat, v.provenance) };
   }));
 
   const state = deriveParallelState({ sources, integration, verifications });

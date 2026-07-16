@@ -30,10 +30,26 @@ const verifyConcern = () => ({ scope: "plan", claim: "auth boundary must be veri
 // Default converging workshop; disjoint provenance per call.
 function convergingWorkshop(prov) { return async ({ seat }) => ({ plan_revision: "", objections: [], dispositions: [], provenance: prov(seat === "claude" ? "anthropic" : "openai") }); }
 
+// Parallel-authorship callSeat (docs/daedalus-methodology.md): constraints=codex (openai provenance),
+// implementation=claude (anthropic provenance). Author phase -> a source plan; integrate -> echo the
+// frozen frame as the candidate body (so it deserializes) plus a COMPLETE five-field obligation matrix;
+// verify -> each seat confirms its own contract survived. With { conflict: true } the constraints seat
+// reports its invariant was violated by integration, driving deriveParallelState to needs-eye.
+const okObligationRow = () => Object.fromEntries(["invariant", "mechanism", "task", "negative_test", "exit_criterion"].map((f) => [f, `${f}-1`]));
+function parallelWorkshop(prov, { conflict = false } = {}) {
+  return async ({ seat, role, phase, frame }) => {
+    const provenance = prov(seat === "claude" ? "anthropic" : "openai");
+    if (phase === "author") return { plan: `${role} source design`, provenance };
+    if (phase === "integrate") return { plan: frame, obligation_matrix: [okObligationRow()], provenance };
+    if (conflict && role === "constraints") return { verdict: "violated", conflicts: ["fail-closed weakened by integration"], provenance };
+    return { verdict: "preserved", conflicts: [], provenance };
+  };
+}
+
 function baseDossier(extra = {}) { return { build_id: "b1", use_case: "governance", objective: "add an auth boundary", proposal_lifecycle: true, write_targets: [TARGET], required_docs: [], ...extra }; }
 function baseTasks(writes = [TARGET]) { return [{ id: "A", writes, reads: [], requirements: "write the auth boundary", test: { cmd: "node", args: ["-e", "process.exit(0)"] } }]; }
 
-async function drive({ dossier, tasks, callSeat, callWorkshopSeat, callTeam, env }) {
+async function drive({ dossier, tasks, callSeat, callWorkshopSeat, callParallelSeat, callTeam, env }) {
   const dir = ws();
   const teams = planTeams({});
   const { keyring, signerFor } = makeTeamKeyring(teams);
@@ -41,7 +57,7 @@ async function drive({ dossier, tasks, callSeat, callWorkshopSeat, callTeam, env
   if (env && env.TELOS_PROPOSAL_CONTROLLER_SK) process.env.TELOS_PROPOSAL_CONTROLLER_SK = env.TELOS_PROPOSAL_CONTROLLER_SK;
   else delete process.env.TELOS_PROPOSAL_CONTROLLER_SK;
   try {
-    const res = await buildProject({ dossier, telos: "t", tasks, callSeat, callWorkshopSeat, callTeam, keyring, signerFor, baseDir: dir, telosDir: path.join(dir, ".telos"), nowMs: 1000, maxRevisions: 3 });
+    const res = await buildProject({ dossier, telos: "t", tasks, callSeat, callWorkshopSeat, callParallelSeat, callTeam, keyring, signerFor, baseDir: dir, telosDir: path.join(dir, ".telos"), nowMs: 1000, maxRevisions: 3 });
     return { res, dir };
   } finally {
     if (prevEnv === undefined) delete process.env.TELOS_PROPOSAL_CONTROLLER_SK; else process.env.TELOS_PROPOSAL_CONTROLLER_SK = prevEnv;
@@ -217,6 +233,49 @@ const D = (dossier) => (fn) => (seatArg) => fn(seatArg, dossier);
   const scoped = mintVerificationNodes([{ concern_ref: "sha256:bb", scope: "B", check_contract: cc, required_result: "pass" }], tasks);
   assert.deepEqual(scoped.nodes[0].baseDependencies, ["B"], "(mint) scope matching a live node -> depend on that node");
   console.log("Case (mint) OK: verification node run-last dependency derivation");
+}
+
+// ---------------------------------------------------------------------------
+// Case (p1): parallel authorship (dossier.authorship === "parallel" + injected callParallelSeat)
+// converges -> authorized -> ready. Proves the parallel workshop feeds a valid candidate through the
+// SAME downstream lifecycle (mint/compile/authorize/execute) as the serial path.
+{
+  const { prov } = fixture();
+  const dossier = baseDossier({ authorship: "parallel" });
+  const callSeat = D(dossier)(async ({ model }, d) => ({ packet: reviewPacket(model, d), provenance: prov(model === "agy" ? "agentic" : model === "claude" ? "anthropic" : "openai") }));
+  const { res, dir } = await drive({ dossier, tasks: baseTasks(), callSeat, callParallelSeat: parallelWorkshop(prov), callTeam: makeCallTeam() });
+  assert.equal(res.decision, "authorized", "(p1) parallel authorship authorizes");
+  assert.equal(res.report.merge_status, "ready", "(p1) ready");
+  // parallel-specific signature: an integration negotiation event descends from BOTH source nodes.
+  const negotiations = readProposalEvents(path.join(dir, ".telos")).events.filter((e) => e.stage === "negotiation");
+  assert.ok(negotiations.some((e) => e.policy_result && Array.isArray(e.policy_result.descends_from) && e.policy_result.descends_from.length === 2), "(p1) parallel path taken — integration descends from both source nodes");
+  console.log("Case (p1) OK: parallel authorship -> authorized -> ready");
+}
+
+// ---------------------------------------------------------------------------
+// Case (p2): a seat's contract is VIOLATED by integration -> deriveParallelState conflict (terminal
+// "needs-eye") -> normalized to stalemate -> routed to The Eye / human review, NO execution.
+{
+  const { prov } = fixture();
+  const dossier = baseDossier({ authorship: "parallel" });
+  const callSeat = D(dossier)(async ({ model }, d) => ({ packet: reviewPacket(model, d), provenance: prov("agentic") }));
+  const { res } = await drive({ dossier, tasks: baseTasks(), callSeat, callParallelSeat: parallelWorkshop(prov, { conflict: true }), callTeam: makeCallTeam() });
+  assert.equal(res.decision, "human-review-required", "(p2) parallel verification conflict -> human-review-required");
+  assert.notEqual(res.phase, "build", "(p2) no execution on conflict");
+  assert.ok((res.blocked || []).some((b) => /Eye|conflict/i.test(b)), "(p2) conflict routed to The Eye");
+  console.log("Case (p2) OK: parallel verification conflict -> The Eye / human review, no execution");
+}
+
+// ---------------------------------------------------------------------------
+// Case (p3): backward-compat — authorship "parallel" declared but NO callParallelSeat injected falls
+// back to the serial workshop (the selector requires BOTH the flag and the injected seat).
+{
+  const { prov } = fixture();
+  const dossier = baseDossier({ authorship: "parallel" });
+  const callSeat = D(dossier)(async ({ model }, d) => ({ packet: reviewPacket(model, d), provenance: prov(model === "agy" ? "agentic" : model === "claude" ? "anthropic" : "openai") }));
+  const { res } = await drive({ dossier, tasks: baseTasks(), callSeat, callWorkshopSeat: convergingWorkshop(prov), callTeam: makeCallTeam() });
+  assert.equal(res.decision, "authorized", "(p3) missing callParallelSeat -> serial fallback still authorizes");
+  console.log("Case (p3) OK: parallel flag without callParallelSeat falls back to serial");
 }
 
 console.log("test-proposal-orchestrator.mjs OK");
