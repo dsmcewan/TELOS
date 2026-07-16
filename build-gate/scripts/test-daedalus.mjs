@@ -2,8 +2,12 @@
 import assert from "node:assert/strict";
 import {
   DAEDALUS_MAX_ROUNDS, computeObjectionHash, objectionLedgerFrom,
-  deriveWorkshopState, validateDispositions, runDaedalusWorkshop
+  deriveWorkshopState, validateDispositions, runDaedalusWorkshop,
+  PARALLEL_ROLES, OBLIGATION_FIELDS, validateObligationMatrix, deriveParallelState, runParallelDaedalus
 } from "../daedalus.mjs";
+
+// A complete obligation-matrix row (all five fields non-blank).
+const okRow = (n) => Object.fromEntries(OBLIGATION_FIELDS.map((f) => [f, f + n]));
 
 // Build a round artifact with the fields deriveWorkshopState reads.
 function round({ n, inHash, outHash, aKey = "anthropic:a" + n, rKey = "openai:c" + n, bound = null, objections = [], resolutions = [] }) {
@@ -105,6 +109,121 @@ function round({ n, inHash, outHash, aKey = "anthropic:a" + n, rKey = "openai:c"
   assert.ok(events.length >= 2, "one negotiation event per round");
   assert.ok(res.creation_lineage.length >= 4, "creation lineage records every seat call");
   console.log("Case 8 OK: runDaedalusWorkshop converges after resolution");
+}
+
+// --- Parallel authorship (docs/daedalus-methodology.md) ---
+
+// Case 9: obligation-matrix completeness — every row needs all five fields.
+{
+  assert.equal(validateObligationMatrix([]).complete, false, "empty matrix incomplete");
+  assert.equal(validateObligationMatrix([okRow(1)]).complete, true, "full row complete");
+  const missing = validateObligationMatrix([{ ...okRow(1), negative_test: "" }]);
+  assert.equal(missing.complete, false, "blank field incomplete");
+  assert.deepEqual(missing.incompleteRows[0].missing, ["negative_test"]);
+  console.log("Case 9 OK: obligation-matrix completeness");
+}
+
+// Case 10: deriveParallelState converges only with both sources, dual descent, complete matrix, both verifications preserved + distinct provenance.
+{
+  const sources = [
+    { role: "constraints", artifact_ref: "sha:cons", provenance_key: "openai:c1" },
+    { role: "implementation", artifact_ref: "sha:impl", provenance_key: "anthropic:a1" }
+  ];
+  const integration = { candidate_ref: "sha:cand", descends_from: ["sha:cons", "sha:impl"], obligation_matrix: [okRow(1)], provenance_key: "anthropic:a1" };
+  const verifications = [
+    { role: "constraints", verdict: "preserved", conflicts: [], provenance_key: "openai:c2" },
+    { role: "implementation", verdict: "preserved", conflicts: [], provenance_key: "anthropic:a2" }
+  ];
+  const ok = deriveParallelState({ sources, integration, verifications });
+  assert.equal(ok.state, "converged-parallel");
+  assert.equal(ok.terminal, "submit");
+  console.log("Case 10 OK: parallel convergence -> submit");
+}
+
+// Case 11: a violated verification routes to The Eye (never blended).
+{
+  const sources = [
+    { role: "constraints", artifact_ref: "sha:cons", provenance_key: "openai:c1" },
+    { role: "implementation", artifact_ref: "sha:impl", provenance_key: "anthropic:a1" }
+  ];
+  const integration = { candidate_ref: "sha:cand", descends_from: ["sha:cons", "sha:impl"], obligation_matrix: [okRow(1)], provenance_key: "anthropic:a1" };
+  const verifications = [
+    { role: "constraints", verdict: "violated", conflicts: ["invariant X dropped in integration"], provenance_key: "openai:c2" },
+    { role: "implementation", verdict: "preserved", conflicts: [], provenance_key: "anthropic:a2" }
+  ];
+  const c = deriveParallelState({ sources, integration, verifications });
+  assert.equal(c.state, "conflict");
+  assert.equal(c.terminal, "needs-eye", "conflict routes to The Eye");
+  assert.equal(c.conflicts[0].role, "constraints");
+  console.log("Case 11 OK: verification conflict -> needs-eye");
+}
+
+// Case 12: integration must descend from BOTH sources; an incomplete matrix blocks convergence.
+{
+  const sources = [
+    { role: "constraints", artifact_ref: "sha:cons", provenance_key: "openai:c1" },
+    { role: "implementation", artifact_ref: "sha:impl", provenance_key: "anthropic:a1" }
+  ];
+  const verifications = [
+    { role: "constraints", verdict: "preserved", conflicts: [], provenance_key: "openai:c2" },
+    { role: "implementation", verdict: "preserved", conflicts: [], provenance_key: "anthropic:a2" }
+  ];
+  const oneParent = deriveParallelState({ sources, integration: { candidate_ref: "sha:cand", descends_from: ["sha:cons"], obligation_matrix: [okRow(1)] }, verifications });
+  assert.equal(oneParent.reason, "integration-not-descended-from-both");
+  const badMatrix = deriveParallelState({ sources, integration: { candidate_ref: "sha:cand", descends_from: ["sha:cons", "sha:impl"], obligation_matrix: [{ ...okRow(1), exit_criterion: "" }] }, verifications });
+  assert.equal(badMatrix.reason, "incomplete-obligation-matrix");
+  assert.notEqual(badMatrix.state, "converged-parallel");
+  console.log("Case 12 OK: dual-descent + complete-matrix gates");
+}
+
+// Case 13: shared source provenance can never converge (the two seats must be genuinely distinct).
+{
+  const sources = [
+    { role: "constraints", artifact_ref: "sha:cons", provenance_key: "same:x" },
+    { role: "implementation", artifact_ref: "sha:impl", provenance_key: "same:x" }
+  ];
+  const r = deriveParallelState({ sources, integration: { candidate_ref: "sha:cand", descends_from: ["sha:cons", "sha:impl"], obligation_matrix: [okRow(1)] }, verifications: [] });
+  assert.equal(r.reason, "invalid-source-provenance");
+  console.log("Case 13 OK: shared source provenance blocks convergence");
+}
+
+// Case 14: runParallelDaedalus driver — two source nodes, an integration descending from both, dual verification -> converged; events recorded.
+{
+  const seatResp = ({ seat, role, phase }) => {
+    const provenance = { provider: seat === "codex" ? "openai" : "anthropic", response_id: `${seat}-${role}-${phase}` };
+    if (phase === "author") return { plan: `${role}-design`, provenance };
+    if (phase === "integrate") return { plan: "integrated-candidate", obligation_matrix: [okRow(1), okRow(2)], provenance };
+    return { verdict: "preserved", conflicts: [], provenance }; // verify
+  };
+  const artifacts = [], events = [];
+  const writeArtifact = (v) => ({ ref: "sha256:" + (artifacts.push(v) - 1) });
+  const appendEvent = async (e) => { events.push(e); };
+  const res = await runParallelDaedalus({ frame: "frozen-frame", callSeat: seatResp, writeArtifact, appendEvent });
+  assert.equal(res.state, "converged-parallel", "driver converges: " + JSON.stringify(res.reason));
+  assert.equal(res.sources.length, 2, "two content-addressed source nodes");
+  assert.deepEqual(res.integration.descends_from.sort(), res.sources.map((s) => s.artifact_ref).sort(), "integration descends from both sources");
+  assert.equal(events.filter((e) => e.stage === "parallel-authorship").length, 1);
+  assert.equal(events.filter((e) => e.stage === "parallel-verification").length, 1);
+  console.log("Case 14 OK: runParallelDaedalus driver converges");
+}
+
+// Case 15: driver routes a real integration violation to The Eye.
+{
+  const seatResp = ({ seat, role, phase }) => {
+    const provenance = { provider: seat === "codex" ? "openai" : "anthropic", response_id: `${seat}-${role}-${phase}` };
+    if (phase === "author") return { plan: `${role}-design`, provenance };
+    if (phase === "integrate") return { plan: "integrated", obligation_matrix: [okRow(1)], provenance };
+    // constraints seat finds its invariant dropped; implementation is fine.
+    return role === "constraints"
+      ? { verdict: "violated", conflicts: ["fail-closed weakened during integration"], provenance }
+      : { verdict: "preserved", conflicts: [], provenance };
+  };
+  const writeArtifact = (v) => ({ ref: "sha256:" + JSON.stringify(v).length });
+  const res = await runParallelDaedalus({ frame: "f", callSeat: seatResp, writeArtifact, appendEvent: async () => {} });
+  assert.equal(res.state, "conflict");
+  assert.equal(res.terminal, "needs-eye");
+  assert.equal(res.conflicts[0].role, "constraints");
+  console.log("Case 15 OK: driver routes integration conflict to The Eye");
 }
 
 console.log("test-daedalus.mjs OK");
