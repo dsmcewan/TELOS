@@ -194,6 +194,32 @@ try {
     assert.throws(() => l.close(coverage({ gitState: "skipped" })), /asserted an edge/);
   }
 
+  // ---- 5c. header / repository_ref shape + non-final trailer ---------------
+  {
+    // createLedger validates an injected repositoryRef
+    assert.throws(() => createLedger(newPath(), { ...opts, repositoryRef: "not-a-ref" }), /git-root/);
+  }
+  for (const mutate of [(h) => ({ ...h, extra: 1 }), (h) => ({ ...h, repository_ref: "git-root:xyz" })]) {
+    const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge()); l.close(coverage());
+    const lines = readFileSync(p, "utf8").replace(/\n$/, "").split("\n");
+    const h0 = JSON.parse(lines[0]).clotho_weave_header;
+    lines[0] = canonicalJson({ clotho_weave_header: mutate(h0) });
+    writeFileSync(p, lines.join("\n") + "\n");
+    const v = await verifyLedger(p);
+    assert.equal(v.ok, false);
+    assert.ok(v.errors.some((x) => /header/.test(x)), "header shape error reported");
+  }
+  {
+    // a record after the trailer: not final -> manifest is not trusted
+    const p = newPath(); const l = createLedger(p, opts);
+    l.appendEdge(anEdge()); l.close(coverage());
+    const lines = readFileSync(p, "utf8").replace(/\n$/, "").split("\n"); // header, edge, trailer
+    writeFileSync(p, [...lines, lines[1]].join("\n") + "\n");            // stray record after trailer
+    const v = await verifyLedger(p);
+    assert.equal(v.ok, false);
+    assert.equal(v.manifest, null, "manifest not trusted when the trailer is not final");
+  }
+
   // ---- 6. lifecycle: exclusive creation, append-after-close, abort ---------
   {
     const p = newPath(); const l = createLedger(p, opts);

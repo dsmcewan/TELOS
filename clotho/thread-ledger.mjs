@@ -28,7 +28,9 @@ import {
 
 const HEX40 = /^[0-9a-f]{40}$/;
 const HEX64 = /^[0-9a-f]{64}$/;
+const REPO_REF = /^git-root:[0-9a-f]{40}$/;
 const FILE_REF = /^file:(.+)@([0-9a-f]{40})$/;
+const HEADER_FIELDS = ["pub_key", "woven_at", "repo_head", "repository_ref", "weave_version"];
 const PUBLISHED_STATES = new Set(["executed", "skipped"]);
 const STATUS_TRANSITIONS = new Set(["human-authorized", "rejected", "superseded"]);
 // The five weaver ids in their stable declared (inventory) order. Task 3's
@@ -165,6 +167,7 @@ export function createLedger(ledgerPath, { signKey, wovenAt, repoHead, repositor
   const repo_head = repoHead ?? String(git(["rev-parse", "HEAD"])).trim();
   if (!HEX40.test(repo_head)) throw new TypeError(`createLedger: repo_head must be a 40-hex commit, got ${JSON.stringify(repo_head)}`);
   const repo_ref = repositoryRef ?? deriveRepositoryRef(git);
+  if (!REPO_REF.test(repo_ref)) throw new TypeError(`createLedger: repository_ref must be 'git-root:<40-hex>', got ${JSON.stringify(repo_ref)}`);
 
   if (openFile === defaultOpenFile) mkdirSync(path.dirname(path.resolve(ledgerPath)), { recursive: true });
   const handle = openFile(ledgerPath); // wx is the atomic existence gate
@@ -261,14 +264,19 @@ export async function verifyLedger(ledgerPath) {
     if (canonicalJson(obj) !== line) { fail(`line ${i + 1}: not canonical JSON`); continue; }
 
     if (i === 0) {
-      if (!obj.clotho_weave_header) { fail("line 1: missing header"); break; }
+      if (Object.keys(obj).length !== 1 || !obj.clotho_weave_header) { fail("line 1: header envelope must be exactly {clotho_weave_header}"); break; }
       header = obj.clotho_weave_header;
       try {
+        if (header === null || typeof header !== "object" || Array.isArray(header)) throw new Error("must be an object");
+        for (const k of Object.keys(header)) if (!HEADER_FIELDS.includes(k)) throw new Error(`unexpected field '${k}'`);
+        for (const k of HEADER_FIELDS) if (!(k in header)) throw new Error(`missing field '${k}'`);
+        if (typeof header.repository_ref !== "string" || !REPO_REF.test(header.repository_ref)) throw new Error("repository_ref must be 'git-root:<40-hex>'");
         pubKey = publicKeyFromB64(header.pub_key);
+        if (pubKey.asymmetricKeyType !== "ed25519") throw new Error("pub_key must be an Ed25519 SPKI key");
         repoRef = header.repository_ref;
-        if (header.weave_version !== 1) fail("header: weave_version must be 1");
-        if (!HEX40.test(header.repo_head)) fail("header: repo_head must be 40-hex");
-        if (new Date(header.woven_at).toISOString() !== header.woven_at) fail("header: woven_at not canonical ISO");
+        if (header.weave_version !== 1) throw new Error("weave_version must be 1");
+        if (!HEX40.test(header.repo_head)) throw new Error("repo_head must be 40-hex");
+        if (new Date(header.woven_at).toISOString() !== header.woven_at) throw new Error("woven_at not canonical ISO");
       } catch (e) { fail(`header: ${e.message}`); }
       prevLine = line;
       continue;
@@ -288,28 +296,30 @@ export async function verifyLedger(ledgerPath) {
     if (payload.woven_at !== header.woven_at) bad(`line ${i + 1}: woven_at does not equal the header woven_at`);
 
     if (obj.clotho_weave_trailer) {
-      manifest = obj.clotho_weave_trailer;
-      try { validateCoverage(manifest, weaverEdgeIds); } catch (e) { bad(`trailer: ${e.message}`); }
+      if (Object.keys(payload).length !== 2 || !("clotho_weave_trailer" in payload) || !("woven_at" in payload)) bad(`line ${i + 1}: trailer envelope must be exactly {clotho_weave_trailer, woven_at}`);
+      try { validateCoverage(obj.clotho_weave_trailer, weaverEdgeIds); } catch (e) { bad(`trailer: ${e.message}`); }
+      // trust is not conferred on a manifest that appears after a failing line
+      if (lineOk && !trustBroken) manifest = obj.clotho_weave_trailer;
       trailerSeen = true;
-      // trailer is never added to `records`
+      // the trailer is never added to `records`
     } else if ("status_of" in payload) {
       try { validateStatusInput(payload_forStatus(payload), edgeHashes); } catch (e) { bad(`line ${i + 1}: ${e.message}`); }
       if (lineOk && !trustBroken) records.push(obj);
     } else {
-      try {
-        const edgeInput = withoutWovenAt(payload);
-        validateEdgeInput(edgeInput, { repositoryRef: repoRef });
-        if (lineOk) {
-          edgeHashes.add(record_hash);
-          if (payload.assertion_status === "deterministic-extraction") weaverEdgeIds.add(payload.asserted_by);
-        }
-      } catch (e) { bad(`line ${i + 1}: ${e.message}`); }
-      if (lineOk && !trustBroken) records.push(obj);
+      try { validateEdgeInput(withoutWovenAt(payload), { repositoryRef: repoRef }); } catch (e) { bad(`line ${i + 1}: ${e.message}`); }
+      if (lineOk && !trustBroken) {          // freeze ALL trust state at the first failure
+        edgeHashes.add(record_hash);
+        if (payload.assertion_status === "deterministic-extraction") weaverEdgeIds.add(payload.asserted_by);
+        records.push(obj);
+      }
     }
     prevLine = line;
   }
 
   if (!trailerSeen) errors.push("ledger has no final trailer");
+  // never confer trust on a manifest from an invalid ledger (e.g. a non-final
+  // trailer): a record after the trailer breaks trust and nulls the manifest.
+  if (errors.length > 0) manifest = null;
   return { ok: errors.length === 0, header, manifest, records, errors };
 }
 
