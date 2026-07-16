@@ -530,6 +530,16 @@ try {
     assert.ok((await expectFail(p)).errors.some((x) => /UTF-8/.test(x)));
   }
 
+  {
+    // version is any integer label (incl. beyond safe-integer); non-integer rejected
+    const p = newPath(); const l = createLedger(p, opts); l.appendEdge(anEdge());
+    const c = coverage(); c.weavers[0].version = 2 ** 53;
+    assert.doesNotThrow(() => l.close(c), "an integer version beyond safe-integer is accepted");
+    const p2 = newPath(); const l2 = createLedger(p2, opts); l2.appendEdge(anEdge());
+    const c2 = coverage(); c2.weavers[0].version = 1.5;
+    assert.throws(() => l2.close(c2), /must be an integer/);
+  }
+
   // ---- 12b. strict own-enumerable schema (pollution / non-enumerable) ------
   {
     // close() coverage: an enumerable field inherited via Object.prototype is rejected

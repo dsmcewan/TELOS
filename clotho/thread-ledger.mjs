@@ -156,7 +156,7 @@ function validateCoverage(coverage, weaverEdgeIds) {
     const w = weavers[i];
     requireExactOwnKeys(w, ["id", "version", "implementation_refs", "state", "inspected_source_counts"], "coverage weaver");
     if (w.id !== WEAVER_ORDER[i]) throw new TypeError(`coverage weaver[${i}]: expected id ${WEAVER_ORDER[i]}, got ${JSON.stringify(w.id)}`);
-    if (!Number.isSafeInteger(w.version)) throw new TypeError(`coverage weaver[${w.id}].version: safe integer`);
+    if (!Number.isInteger(w.version)) throw new TypeError(`coverage weaver[${w.id}].version: must be an integer`); // a human-readable label; not the D24 count's safe-integer restriction
     if (!PUBLISHED_STATES.has(w.state)) throw new TypeError(`coverage weaver[${w.id}].state: must be executed|skipped, got ${JSON.stringify(w.state)}`);
     if (!Array.isArray(w.implementation_refs) || w.implementation_refs.length === 0) throw new TypeError(`coverage weaver[${w.id}].implementation_refs: nonempty array`);
     for (const r of w.implementation_refs) requireFileRef(r, `coverage weaver[${w.id}].implementation_refs`);
