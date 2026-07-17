@@ -104,6 +104,28 @@
         "a pass is not a correctness proof beyond what the checks check",
         "the role is not the repo (AM-40)"
       ]
+    },
+    {
+      "name": "argo",
+      "role": "Argo",
+      "role_meaning": "carries an authorized plan through implementation, verification, and documentation",
+      "kind": "role module — a workflow with code touchpoints; NO autonomous Argo runner exists (system non-claim, preserved)",
+      "status": "active (slice 4a accepted by The Eye with a deferred backlog; 4b next; 4b/5/6/7 specified-pending)",
+      "code": ["docs/institutional-memory/comprehension-gate.mjs (the entry ritual)"],
+      "workflow_evidence": "docs/runs/clotho-impl-slice-4a/ (index: docs/institutional-memory/argo/EVIDENCE/impl-runs.json)",
+      "memory_dir": "docs/institutional-memory/argo/",
+      "comprehension_queries": "docs/institutional-memory/argo/comprehension-queries.json",
+      "claims": [
+        { "statement": "the accepted-slice ledger deep-equals CURRENT-AUTHORITY.implementation_authority (holder, governs, slices, next, pending) and every cited slice record (13-round signed review, gate meets, deferred backlog) exists and matches", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "docs/institutional-memory/argo/CONTRACTS/accepted-slices.json"] },
+        { "statement": "the entry ritual is real and fail-closed: verify-contracts EXECUTES the comprehension gate — the correct example reader exits 0 (GRANTED) and the hallucinating reader exits 3 (DENIED)", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "docs/institutional-memory/comprehension-gate.mjs"] }
+      ],
+      "non_claims": [
+        "no autonomous Argo runner exists",
+        "a passing gate artifact is a precondition, not implementation authority (The Eye grants)",
+        "the comprehension gate is open-book (proves record-reading + authority resolution, not deep understanding)",
+        "acceptance is not a zero-defect claim (slice 4a carries a deferred backlog)",
+        "Argo does not choose scope (ambiguities escalate; never designed around)"
+      ]
     }
   ]
 }

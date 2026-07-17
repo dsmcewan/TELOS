@@ -1,0 +1,42 @@
+{
+  "kind": "contract",
+  "component": "argo",
+  "id": "implementation-protocol",
+  "title": "Argo implementation protocol — how an authorized plan becomes accepted code",
+  "authority": {
+    "vocabulary": "docs/mythological-vocabulary.md#Argo (carries an authorized plan through implementation, verification, and documentation)",
+    "schema": "docs/institutional-memory/SCHEMA.md (reading != understanding; comprehension gate)",
+    "system_non_claim": "docs/institutional-memory/NON-CLAIMS.md (no autonomous Argo runner exists)"
+  },
+  "entry_ritual": {
+    "steps": [
+      "load the records in AI-START-HERE.md order (authority -> manifest -> active plan -> invariants/non-claims -> decisions)",
+      "answer the component's comprehension queries",
+      "run docs/institutional-memory/comprehension-gate.mjs and reach exit 0"
+    ],
+    "rule": "no implementation authority until the comprehension gate exits 0 — and a passing artifact is the PRECONDITION for authority, not the authority itself; The Eye grants"
+  },
+  "slice_path": [
+    "bounded slice scoped by the frozen, authorized plan",
+    "deterministic slice gate must reach 'meets' (disk-verified facts, fail-closed)",
+    "signed required-seat review (claude/agy/codex required, grok/gemini advisory; trust_mode signed) — as many rounds as The Eye directs",
+    "The Eye's acceptance (may bound a lone dissent with a stopping rule + a recorded deferred minor-fix backlog)",
+    "merge, with merge_anchor + reviewed_head recorded in the accepted-slice ledger"
+  ],
+  "dissent_asymmetry": {
+    "at_authorization": "a required seat's 'revise' BLOCKS (fail-closed model gate; authz-007)",
+    "at_slice_acceptance": "The Eye MAY accept over a lone dissent with a stopping rule + deferred backlog (slice 4a)",
+    "why_both_are_consistent": "the model gate is fail-closed because models never outrank The Eye; slice acceptance is The Eye exercising the human authority the gate exists to protect. Neither direction lets a model outrank the human."
+  },
+  "no_autonomous_runner": "Argo names a role and its protocol. There is no Argo daemon or service; every implementation slice is human-initiated work carried by whichever implementer holds a passing reader-validation artifact and The Eye's go-ahead.",
+  "why": "The protocol makes succession safe: a memoryless future implementer cannot start from a confident guess (comprehension gate), cannot self-certify (slice gate + signed review re-derive from disk), and cannot land without The Eye. The asymmetry entry exists because it is the single most likely inference error about this workflow.",
+  "change_rule": "Changing the entry ritual, slice path, or dissent rules is a governance change: Eye ruling -> Daedalus delta -> TELOS re-authorization (docs/institutional-memory/CHANGE-PROTOCOL.md); this contract must be updated in the same change or verify-contracts fails.",
+  "oracle": {
+    "source_of_truth": "docs/institutional-memory/comprehension-gate.mjs + the slice-4a review records",
+    "test": "docs/institutional-memory/verify-contracts.mjs (EXECUTES the comprehension gate: the correct example reader must exit 0 and the hallucinating reader must exit 3; asserts the recorded slice review ran signed with the required trio and the slice gate converged at meets)",
+    "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs"
+  },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

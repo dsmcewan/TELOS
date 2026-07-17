@@ -1,0 +1,23 @@
+{
+  "kind": "evidence",
+  "component": "argo",
+  "id": "impl-runs",
+  "title": "Index of implementation-slice evidence (navigation aid)",
+  "note": "ADVISORY navigation index for an agentic reader. The NORMATIVE ledger lives in ../CONTRACTS/accepted-slices.json; do not treat this index as authority.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "runs": [
+    {
+      "dir": "docs/runs/clotho-impl-slice-4a/",
+      "task": "4a",
+      "contents": {
+        "review_rounds": "round1..round13 — per round: review-{claude,agy,codex,grok,gemini}.json + roundN-review-summary.json (final round also mirrored as review-*.json)",
+        "slice_gate": "gate.mjs (the slice's deterministic gate) + gate-result.json (finalStatus meets, converged)",
+        "deferred_backlog": "DEFERRED-MINOR-FIXES.md (The Eye's stopping-rule acceptance)",
+        "runner": "run-slice-4a-review.mjs (signed council review harness; does NOT merge)"
+      }
+    }
+  ],
+  "earlier_precedent": "Slice 1 (Task 1 scaffold) was accepted via PR #110 ('The Eye accepts Clotho Phase 1 Slice 1'); its review evidence predates the per-slice run-directory convention",
+  "pending_substrate": "clotho/memory/ — SPECIFIED-PENDING-IMPLEMENTATION records + comprehension-queries.{4b,5,6,7}.json for the remaining slices"
+}

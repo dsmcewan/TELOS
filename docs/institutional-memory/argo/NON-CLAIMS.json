@@ -1,0 +1,27 @@
+[
+  {
+    "id": "no-autonomous-argo-runner",
+    "statement": "No autonomous Argo runner exists. Argo names an implementation role (carries an authorized plan through implementation, verification, and documentation), not a deployed service or daemon. Every slice is human-initiated.",
+    "authority": { "system": "docs/institutional-memory/NON-CLAIMS.md", "vocabulary": "docs/mythological-vocabulary.md#Argo" }
+  },
+  {
+    "id": "argo-gate-pass-is-not-implementation-authority",
+    "statement": "The comprehension gate's 'implementation_authority: GRANTED' artifact is the PRECONDITION for authority, not the authority. The Eye grants implementation authority; the schema's wording is 'exit 0 => implementation authority MAY be granted'. Wiring the artifact formally in front of TELOS authority is a recorded open question, not an implemented rule.",
+    "authority": { "schema": "docs/institutional-memory/SCHEMA.md", "open_question": "docs/institutional-memory/OPEN-QUESTIONS.md" }
+  },
+  {
+    "id": "argo-comprehension-gate-is-open-book",
+    "statement": "Passing the comprehension gate proves the reader resolved the ACTIVE authority, excluded superseded records, and read the record set — it does NOT prove deep understanding. Expected answers are stored in-band in the queries file (a deliberate determinism trade: the gate forces reading the right records without introducing model-graded judgment). Do not present a passing artifact as a proof of comprehension beyond this.",
+    "authority": { "code": "docs/institutional-memory/comprehension-gate.mjs (deterministic grading against in-band expected facts)" }
+  },
+  {
+    "id": "argo-acceptance-is-not-correctness",
+    "statement": "The Eye's acceptance of a slice is not a zero-defect claim: slice 4a was accepted WITH a deferred minor-fix backlog and a lone codex 'revise' bounded by a stopping rule. The backlog is part of the acceptance record, not a contradiction of it.",
+    "authority": { "record": "docs/runs/clotho-impl-slice-4a/DEFERRED-MINOR-FIXES.md" }
+  },
+  {
+    "id": "argo-does-not-choose-scope",
+    "statement": "Argo implements bounded slices of the frozen, authorized plan. It does not choose or reinterpret scope: a genuine ambiguity or defect in the plan is escalated to The Eye (change protocol), matured by Daedalus, and re-authorized by TELOS — never designed around in the implementation.",
+    "authority": { "doc": "docs/institutional-memory/CHANGE-PROTOCOL.md", "precedents": ["AM-40", "AM-41"] }
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "kind": "contract",
+  "component": "argo",
+  "id": "accepted-slices",
+  "title": "Argo accepted-slice ledger — what has actually landed, under whose acceptance",
+  "authority": {
+    "pointer": "CURRENT-AUTHORITY.json#implementation_authority",
+    "vocabulary": "docs/mythological-vocabulary.md#Argo"
+  },
+  "holder": "The Eye",
+  "governs": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+  "accepted": [
+    {
+      "task": "4a",
+      "pr": 117,
+      "merge_anchor": "git:f12e5d2",
+      "reviewed_head": "git:0e73ca6",
+      "review_dir": "docs/runs/clotho-impl-slice-4a/",
+      "review_rounds": 13,
+      "final_review_record": "docs/runs/clotho-impl-slice-4a/round13-review-summary.json",
+      "slice_gate_result": "docs/runs/clotho-impl-slice-4a/gate-result.json",
+      "deferred_backlog": "docs/runs/clotho-impl-slice-4a/DEFERRED-MINOR-FIXES.md",
+      "acceptance_note": "accepted by The Eye with a deferred minor-fix backlog per the stopping rule ('finish the round it's on; start a minor-fix artifact list to revisit outside feature development'); codex remained a lone 'revise' after 13 rounds mining an asymptotically-shrinking tail",
+      "review_context": "review judged against plan v13 under authz-006 (the governing authority at review time); v15/authz-008 later extended authz-006 without re-reviewing 4a"
+    }
+  ],
+  "next_slice": "4b",
+  "specified_pending_slices": ["4b", "5", "6", "7"],
+  "design_substrate": "clotho/memory/ (SPECIFIED-PENDING-IMPLEMENTATION records + per-task comprehension queries clotho/memory/comprehension-queries.<task>.json)",
+  "why": "The Argo ledger is the honest answer to 'what has actually been implemented and accepted' — one slice (4a), 13 signed review rounds, a deterministic slice gate at meets, and an acceptance that DEFERRED known minors rather than pretending zero defects. A future model must read the backlog as part of the acceptance, not as contradicting it.",
+  "change_rule": "A new accepted slice appends an entry (slice gate meets -> signed required-seat review -> The Eye's acceptance -> merge; update CURRENT-AUTHORITY.json + this contract in the same change or verify-contracts fails). Entries are never rewritten.",
+  "oracle": {
+    "source_of_truth": "CURRENT-AUTHORITY.json#implementation_authority + the review records on disk",
+    "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (deep-equals holder/governs/accepted/next/pending against CURRENT-AUTHORITY; asserts the final review record, slice gate meets, and the deferred backlog exist and match; asserts per-task query files exist for every pending slice)"
+  },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

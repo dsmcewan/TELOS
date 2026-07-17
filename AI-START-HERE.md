@@ -56,6 +56,7 @@ comprehension queries — load it before touching that role's code or workflow.
 |---|---|---|
 | **Daedalus** | collaboratively matures implementation plans | `docs/institutional-memory/daedalus/` |
 | **TELOS** | governs review, evidence, authorization, execution boundaries | `docs/institutional-memory/telos/` |
+| **Argo** | carries an authorized plan through implementation, verification, documentation | `docs/institutional-memory/argo/` |
 
 ## Hard rules
 

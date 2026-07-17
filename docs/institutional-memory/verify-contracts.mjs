@@ -10,6 +10,7 @@
 //   exit 0 => every checked contract == system reality; exit 2 => drift found.
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 
@@ -266,6 +267,49 @@ try {
   check("telos:authz-007-dissent-blocker", refusal.gate && refusal.gate.gate_status === "blocked" && dissent,
     `gate_status=${refusal.gate && refusal.gate.gate_status} codex-revise-blocker=${!!dissent}`);
 } catch (e) { check("telos:authorization-protocol", false, e.message); }
+
+// ---- 6a. argo: accepted-slices contract == CURRENT-AUTHORITY + slice evidence --
+try {
+  const c = readJson("docs/institutional-memory/argo/CONTRACTS/accepted-slices.json");
+  const ia = readJson("CURRENT-AUTHORITY.json").implementation_authority;
+  check("argo:holder==authority.holder", c.holder === ia.holder, `contract=${c.holder} authority=${ia.holder}`);
+  check("argo:governs==authority.governs", c.governs === ia.governs, `contract=${c.governs.slice(0, 24)}… authority=${ia.governs.slice(0, 24)}…`);
+  check("argo:next_slice==authority.next_slice", c.next_slice === ia.next_slice, `contract=${c.next_slice} authority=${ia.next_slice}`);
+  check("argo:pending==authority.pending", eqArr(c.specified_pending_slices, ia.specified_pending_slices), `contract=${JSON.stringify(c.specified_pending_slices)} authority=${JSON.stringify(ia.specified_pending_slices)}`);
+  const authByTask = new Map((ia.accepted_slices || []).map((s) => [s.task, s]));
+  check("argo:accepted-count==authority", c.accepted.length === (ia.accepted_slices || []).length, `contract=${c.accepted.length} authority=${(ia.accepted_slices || []).length}`);
+  for (const slice of c.accepted) {
+    const a = authByTask.get(slice.task);
+    check(`argo:slice-${slice.task}==authority`, !!a && a.pr === slice.pr && a.merge_anchor === slice.merge_anchor && a.reviewed_head === slice.reviewed_head && a.deferred_backlog === slice.deferred_backlog,
+      a ? `authority pr=${a.pr} merge=${a.merge_anchor} head=${a.reviewed_head}` : "task missing from CURRENT-AUTHORITY.accepted_slices");
+    check(`argo:slice-${slice.task}-backlog-exists`, existsSync(path.join(ROOT, slice.deferred_backlog)), slice.deferred_backlog);
+    try {
+      const rev = readJson(slice.final_review_record);
+      const headOk = "git:" + (rev.pr_head || "").slice(0, 7) === slice.reviewed_head;
+      check(`argo:slice-${slice.task}-review-record`, rev.pr === slice.pr && headOk && rev.trust_mode === "signed" && eqArr(rev.ephemeral_signers, ["claude", "agy", "codex"]),
+        `pr=${rev.pr} head=${(rev.pr_head || "").slice(0, 7)} trust=${rev.trust_mode} signers=${JSON.stringify(rev.ephemeral_signers)}`);
+      const gateRes = readJson(slice.slice_gate_result);
+      check(`argo:slice-${slice.task}-gate-meets`, gateRes.finalStatus === "meets" && gateRes.converged === true, `finalStatus=${gateRes.finalStatus} converged=${gateRes.converged}`);
+    } catch (e) { check(`argo:slice-${slice.task}-records`, false, e.message); }
+  }
+  for (const task of c.specified_pending_slices) {
+    const q = `clotho/memory/comprehension-queries.${task}.json`;
+    check(`argo:pending-${task}-queries-exist`, existsSync(path.join(ROOT, q)), q);
+  }
+} catch (e) { check("argo:accepted-slices", false, e.message); }
+
+// ---- 6b. argo: implementation-protocol — EXECUTE the entry ritual both ways ----
+// The comprehension gate is not paraphrased; it is run. The correct example reader
+// must be GRANTED (exit 0) and the hallucinating reader DENIED (exit 3), proving
+// the fail-closed entry ritual a future implementer will actually face.
+try {
+  const gate = path.join(HERE, "comprehension-gate.mjs");
+  const run = (answers) => spawnSync(process.execPath, [gate, path.join(ROOT, "clotho/memory/comprehension-queries.json"), path.join(HERE, "examples", answers)], { encoding: "utf8" });
+  const ok = run("reader-correct.json");
+  check("argo:entry-ritual-grants-correct-reader", ok.status === 0, `exit=${ok.status} (expected 0)`);
+  const bad = run("reader-hallucinating.json");
+  check("argo:entry-ritual-denies-hallucinating-reader", bad.status === 3, `exit=${bad.status} (expected 3)`);
+} catch (e) { check("argo:implementation-protocol", false, e.message); }
 
 // ---- report -------------------------------------------------------------------
 for (const r of results) console.log(`  [${r.ok ? "PASS" : "FAIL"}] ${r.id}: ${r.detail}`);
