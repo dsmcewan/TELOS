@@ -1,0 +1,75 @@
+{
+  "kind": "evidence",
+  "id": "step-ledger",
+  "title": "Implementation step ledger — institutional-memory role modules (PR #126)",
+  "note": "ADVISORY, commit-anchored record of every implementation step in this delivery: what was built, the verification claimed in the commit log, and the CI outcome at each push head. The PRIMARY log is git history + the PR's per-commit CI checks; this record makes the lineage navigable in-repo, applying the Argo evidence discipline to the layer's own construction. Every step is re-verifiable: check out any commit and run its named oracles.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "branch": "institutional-memory-role-modules",
+  "pr": 126,
+  "base": "git:f3d8d41",
+  "steps": [
+    {
+      "step": 1,
+      "commit": "git:0c856cd",
+      "subject": "Daedalus role module (contracts probed against code)",
+      "verification_logged": "verify-contracts 59/59; comprehension gate correct GRANTED / hallucinating DENIED; build-gate npm test green"
+    },
+    {
+      "step": 2,
+      "commit": "git:e1935d2",
+      "subject": "chore: git-ignore .claude/ session artifacts",
+      "verification_logged": "hygiene only — no oracle claims; corrects an accidental gitlink staged by the prior commit (caught and amended before push)"
+    },
+    {
+      "step": 3,
+      "commit": "git:7ad8769",
+      "subject": "TELOS role module + restore dangling authz evidence (authz-006/007/008 run dirs recovered from origin branches)",
+      "verification_logged": "verify-contracts 91/91; gate correct 19/19 GRANTED / hallucinating DENIED"
+    },
+    {
+      "step": 4,
+      "commit": "git:081ea5f",
+      "subject": "Argo role module (entry ritual EXECUTED by the verifier, not paraphrased)",
+      "verification_logged": "verify-contracts 114/114; Argo readers GRANTED/DENIED"
+    },
+    {
+      "step": 5,
+      "commit": "git:7042029",
+      "subject": "Agentic navigation: route-by-intent table + machine memory-dir index",
+      "verification_logged": "full battery: verify-contracts 114/114; comprehension gate 8/8 (4 modules x 2 readers); clotho + build-gate npm test green",
+      "push_head": true,
+      "ci": "17/17 checks success"
+    },
+    {
+      "step": 6,
+      "commit": "git:98bf5de",
+      "subject": "Loadout capability module: seat-backend contracts (no-shadow probed) + per-task optimization reviews (4b/5/6/7)",
+      "verification_logged": "verify-contracts 144/144; loadout readers GRANTED/DENIED; build-gate npm test green",
+      "push_head": true,
+      "ci": "17/17 checks success"
+    },
+    {
+      "step": 7,
+      "commit": "git:8b81002",
+      "subject": "Env-surface contract (closed ambient context, 112 reads / 99 files) + direct advisory-absence gate test + CI institutional-memory job",
+      "verification_logged": "verify-contracts 149/149; mutation test 3/3 falsifications caught then reverted clean; the new advisory test surfaced and pinned the 'No Grok advisory packet present.' warning; build-gate npm test green",
+      "push_head": true,
+      "ci": "18/18 checks success — the count grows here because this commit ADDED the institutional-memory CI job, which passed on its first ubuntu run"
+    },
+    {
+      "step": 8,
+      "commit": "git:2017822",
+      "subject": "Seat-keyed model/prompt data: seats.json + prompts.json separated from script; prompts enhanced per purpose + model strength",
+      "verification_logged": "verify-contracts 175/175; seat-name guard mutation-tested (hardcoded 'claude' fails two checks); build-gate + saas-forge npm test green",
+      "push_head": true,
+      "ci": "18/18 checks success"
+    }
+  ],
+  "verification_growth": "29 (base) -> 59 -> 91 -> 114 -> 144 -> 149 -> 175 verifier checks — each step added its own oracles in the same commit as its claims",
+  "reverify": {
+    "head": "node docs/institutional-memory/verify-contracts.mjs   (continuous: the institutional-memory CI job runs this on every push/PR)",
+    "any_step": "git checkout <commit> && node docs/institutional-memory/verify-contracts.mjs && cd build-gate && npm test   (steps 1-6 predate the CI job; their claims re-verify locally and are covered cumulatively by the next push head's CI)",
+    "ci_log": "https://github.com/dsmcewan/TELOS/pull/126/checks (per-commit check runs are the machine log)"
+  }
+}
