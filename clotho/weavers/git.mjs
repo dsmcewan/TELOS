@@ -10,7 +10,23 @@
 import { deriveNodeId, validateEdgeInput } from "../registry.mjs";
 
 const HEX40 = /^[0-9a-f]{40}$/;
+const IDENT = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 const WEAVER_ID = "clotho-git-weaver";
+
+// The weaver validates its OWN inputs before splicing them into git argv, so its
+// contract does not depend on which runner the driver injects (a test mock may
+// bypass the wrapper's allowlist). These duplicate the canonical predicates in
+// registry/util deliberately: git.mjs's accepted closure is exactly
+// {registry.mjs, git.mjs}, so it must not import util.mjs.
+function requireIdentifier(symbol, path) {
+  if (typeof symbol !== "string" || !IDENT.test(symbol)) throw new Error(`git-weaver: symbol is not an identifier: ${JSON.stringify(symbol)} (${path})`);
+}
+function requireRepoRelPosix(p) {
+  if (typeof p !== "string" || p.length === 0 || p.includes("\0") || p.includes("\\") || p.startsWith("/") || p.startsWith("-") ||
+      !p.split("/").every((seg) => seg.length > 0 && seg !== "." && seg !== "..")) {
+    throw new Error(`git-weaver: not a canonical repository-relative path: ${JSON.stringify(p)}`);
+  }
+}
 
 // Parse `git log --format=%H` output. Accepts LF or CRLF line terminators (a
 // full-SHA line carrying a platform CRLF terminator is NOT malformed), but a BARE
@@ -57,6 +73,7 @@ export function weave(ctx) {
   // package-symbols -> code-symbol introduced-by commit
   for (const sym of sources["package-symbols"]) {
     const { path, symbol, blob_sha } = sym;
+    requireRepoRelPosix(path); requireIdentifier(symbol, path); // fail closed before argv splice
     const out = git(["log", `-S${symbol}`, "--format=%H", "--reverse", "--", path]);
     const shas = parseShaLines(out);
     if (shas.length === 0) { warnings.push({ weaver: WEAVER_ID, message: `no introducing commit for symbol ${symbol} in ${path}` }); continue; }
@@ -66,6 +83,7 @@ export function weave(ctx) {
   // package-files -> repository-file introduced-by commit
   for (const file of sources["package-files"]) {
     const { path, blob_sha } = file;
+    requireRepoRelPosix(path); // fail closed before argv splice
     const out = git(["log", "--format=%H", "--reverse", "--", path]);
     const shas = parseShaLines(out);
     if (shas.length === 0) { warnings.push({ weaver: WEAVER_ID, message: `no introducing commit for file ${path}` }); continue; }

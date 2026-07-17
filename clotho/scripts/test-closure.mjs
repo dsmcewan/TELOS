@@ -190,11 +190,10 @@ const closureOf = (root, allowExternal = new Set()) =>
   try { assert.throws(() => closureOf(root), /unresolved/); }
   finally { rmSync(root, { recursive: true, force: true }); }
 
-  // ambiguous extension: extensionless and non-.mjs relative specifiers are fatal
+  // ambiguous extension: an EXTENSIONLESS relative specifier is fatal (no explicit
+  // extension to resolve). (A non-.mjs EXPLICIT extension now participates in the
+  // closure per D33 — see section 13.)
   root = mkRepo({ "clotho/entry.mjs": 'import { h } from "./helper";\n', "clotho/helper.mjs": "export const h=1;\n" });
-  try { assert.throws(() => closureOf(root), /ambiguous-extension/); }
-  finally { rmSync(root, { recursive: true, force: true }); }
-  root = mkRepo({ "clotho/entry.mjs": 'import { h } from "./helper.js";\n', "clotho/helper.js": "export const h=1;\n" });
   try { assert.throws(() => closureOf(root), /ambiguous-extension/); }
   finally { rmSync(root, { recursive: true, force: true }); }
 
@@ -350,6 +349,13 @@ const closureOf = (root, allowExternal = new Set()) =>
   const regClosure = derive("clotho/registry.mjs");
   assert.deepEqual(regClosure, ["clotho/registry.mjs"],
     "registry.mjs is a closure leaf (derived: " + JSON.stringify(regClosure) + ")");
+
+  // inventory.mjs — the module this whole task exists to establish — is itself
+  // INSIDE the enforced source profile and closure discipline it freezes: its
+  // derivation succeeds (profile-clean) and it is a leaf (imports nothing relative).
+  const invClosure = derive("clotho/inventory.mjs");
+  assert.deepEqual(invClosure, ["clotho/inventory.mjs"],
+    "inventory.mjs is a profile-clean closure leaf (derived: " + JSON.stringify(invClosure) + ")");
 }
 
 // ---- 13. require-style edge to an existing non-.mjs target is INCLUDED (D33) ---
@@ -370,10 +376,25 @@ const closureOf = (root, allowExternal = new Set()) =>
   const miss = mkRepo({ "clotho/entry.mjs": 'export const r = require("./gone.cjs");\n' });
   try { assert.throws(() => closureOf(miss), /unresolved/, "require of a missing .cjs still fails closed"); }
   finally { rmSync(miss, { recursive: true, force: true }); }
-  // A require of an other-extension target (e.g. .json) remains ambiguous-extension.
+  // Any EXPLICIT extension beyond .cjs participates too (D33: .js, .json, …) —
+  // the closure covers whatever the code actually reaches, not a fixed whitelist.
   const other = mkRepo({ "clotho/entry.mjs": 'export const r = require("./data.json");\n', "clotho/data.json": "{}\n" });
-  try { assert.throws(() => closureOf(other), /ambiguous-extension/, "require of a non-.mjs/.cjs target is ambiguous-extension"); }
-  finally { rmSync(other, { recursive: true, force: true }); }
+  try {
+    const cl = closureOf(other);
+    assert.deepEqual(cl, ["clotho/data.json", "clotho/entry.mjs"],
+      `literal require of an existing .json target is included (derived: ${JSON.stringify(cl)})`);
+  } finally { rmSync(other, { recursive: true, force: true }); }
+  // A static import of an existing non-.mjs explicit target is likewise included.
+  const js = mkRepo({ "clotho/entry.mjs": 'import { h } from "./helper.js";\n', "clotho/helper.js": "export const h=1;\n" });
+  try {
+    const cl = closureOf(js);
+    assert.deepEqual(cl, ["clotho/entry.mjs", "clotho/helper.js"],
+      `static import of an existing .js target is included (derived: ${JSON.stringify(cl)})`);
+  } finally { rmSync(js, { recursive: true, force: true }); }
+  // An EXTENSIONLESS explicit relative specifier is still ambiguous (fatal).
+  const ambig = mkRepo({ "clotho/entry.mjs": 'export const r = require("./data");\n', "clotho/data.mjs": "export const d=1;\n" });
+  try { assert.throws(() => closureOf(ambig), /ambiguous-extension/, "extensionless relative require is ambiguous"); }
+  finally { rmSync(ambig, { recursive: true, force: true }); }
 }
 
 // ---- 14. AM-41: an out-of-profile closure entry fails closed (no result) ------

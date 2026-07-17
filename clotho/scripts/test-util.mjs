@@ -598,6 +598,28 @@ import {
   assert.ok(isProfile(() => classifyModuleLoads('const s = "unterminated;\n')), "b6 unterminated string");
   assert.ok(isProfile(() => classifyModuleLoads("const a = 1; /* unterminated comment\n")), "b6 unterminated block comment");
   assert.ok(isProfile(() => classifyModuleLoads("#!/usr/bin/env node")), "b6 unterminated leading shebang");
+  // b6: truncated accepted forms — each fails closed, never a successful edge or a
+  // silent no-edge.
+  assert.ok(isProfile(() => classifyModuleLoads('const r = import("./x.mjs",')), "b6 truncated dynamic import (unclosed)");
+  assert.ok(isProfile(() => classifyModuleLoads('const r = require("./x.mjs"')), "b6 truncated require (unclosed)");
+  assert.ok(isProfile(() => classifyModuleLoads('const r = module.require("./x.mjs"')), "b6 truncated module.require (unclosed)");
+  assert.ok(isProfile(() => classifyModuleLoads('import { x } from')), "b6 truncated static import (no specifier)");
+  assert.ok(isProfile(() => classifyModuleLoads('export * from')), "b6 truncated export * from (no specifier)");
+  assert.ok(isProfile(() => classifyModuleLoads('export { a } from')), "b6 truncated export-from (no specifier)");
+  assert.ok(isProfile(() => classifyModuleLoads("const t = `unterminated ${1}")), "b6 unterminated template literal");
+  // b6-adjacent: a string escape outside the frozen set is out-of-profile.
+  assert.ok(isProfile(() => classifyModuleLoads('const s = "\\q";\n')), "unsupported string escape \\q");
+  assert.ok(isProfile(() => classifyModuleLoads('const s = "a\\/b";\n')), "unsupported string escape \\/");
+  // closure derivation over an out-of-profile ENTRY fails closed (no result).
+  {
+    const root = mkdtempSync(path.join(tmpdir(), "clotho-oob-"));
+    try {
+      mkdirSync(path.join(root, "clotho"), { recursive: true });
+      writeFileSync(path.join(root, "clotho", "entry.mjs"), 'const r = require("./x.mjs"\n'); // truncated -> b6
+      assert.throws(() => deriveAcceptedClosure(path.join(root, "clotho", "entry.mjs"), { repoRoot: root, allowExternal: new Set() }),
+        (e) => e instanceof ProfileError, "closure over an out-of-profile entry fails closed");
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  }
 }
 
 // ---- 16. AM-41 (c) original-uncollapsed-component containment -----------------
@@ -613,10 +635,57 @@ import {
     const fromFile = path.join(base, "from.mjs");
     writeFileSync(fromFile, "export const f = 1;\n");
     symlinkSync(path.join(base, "real"), path.join(base, "link"), "junction");
+    // Rejected SPECIFICALLY because `link` is a symlink component (not by a
+    // coincidental containment failure): the kind must be exactly "symlink".
     const r = resolveRelativeSpecifier(fromFile, "./link/../real/target.mjs", { repoRoot: base });
     assert.equal(r.ok, false, "a symlink component erased by a later .. is still rejected");
-    assert.ok(r.kind === "symlink" || r.kind === "escape", `rejection kind is symlink/escape (got ${r.kind})`);
+    assert.equal(r.kind, "symlink", `rejection kind is symlink (got ${r.kind})`);
+    // A missing component BEFORE the symlink must not let the symlink escape
+    // inspection (`./missing/../link/../real/target.mjs`).
+    const r2 = resolveRelativeSpecifier(fromFile, "./missing/../link/../real/target.mjs", { repoRoot: base });
+    assert.equal(r2.ok, false, "a symlink after a missing component is still inspected + rejected");
+    assert.equal(r2.kind, "symlink", `rejection kind is symlink (got ${r2.kind})`);
+    // physicalContainment: the same original-order discipline (link/.. and
+    // missing/../link/..) rejects the symlink component.
+    assert.equal(physicalContainment(base, "link/../real/target.mjs"), false, "physicalContainment rejects link/.. symlink component");
+    assert.equal(physicalContainment(base, "missing/../link/../real/target.mjs"), false, "physicalContainment rejects symlink after a missing component");
   } finally { rmSync(base, { recursive: true, force: true }); }
+}
+
+// ---- 17. regex/division across comments + for...of (previous-significant-token)
+{
+  // A comment between the governing token and `/` must not break regex detection:
+  // `return /*c*/ /re/` and `if /*c*/ (a) /re/` are regexes, so load-shaped text
+  // inside them creates no edge.
+  const retC = 'function f(){ return /*c*/ /import(".\\/x.mjs")/; }\n';
+  assert.equal(classifyModuleLoads(retC).filter((s) => s.specifier === "./x.mjs").length, 0, "regex after return + comment is not a load");
+  const ifC = 'if /*c*/ (a) /import(".\\/y.mjs") binding/.test(z);\n';
+  assert.equal(classifyModuleLoads(ifC).filter((s) => s.specifier === "./y.mjs").length, 0, "regex after if + comment is not a load");
+  assert.equal(identifierUsedOutside(ifC, "binding", []), false, "binding inside a comment-preceded control regex is not a use");
+  // `for (const x of /re/)` — the `/re/` is a regex, not division.
+  const forOf = 'for (const x of /import(".\\/z.mjs")/g) {}\n';
+  assert.equal(classifyModuleLoads(forOf).filter((s) => s.specifier === "./z.mjs").length, 0, "regex in for...of head is not a load");
+}
+
+// ---- 18. git wrapper: caller spawn options cannot redirect the repository ------
+{
+  // gitSpawnOptions drops the caller-supplied bag entirely: env (GIT_DIR), argv0,
+  // and a cwd override cannot pass through the fixed, closed set.
+  const evil = { env: { GIT_DIR: "/tmp/evil.git", GIT_WORK_TREE: "/tmp" }, argv0: "not-git", cwd: "/tmp/elsewhere" };
+  const opts = gitSpawnOptions("/repo/root", evil);
+  assert.equal(opts.cwd, "/repo/root", "cwd is fixed to repoRoot, not the caller override");
+  assert.equal(opts.shell, false, "shell stays false");
+  assert.equal(opts.env, undefined, "caller env (GIT_DIR/GIT_WORK_TREE) is dropped");
+  assert.equal(opts.argv0, undefined, "caller argv0 is dropped");
+}
+
+// ---- 19. multi-declarator export declaration warns (no silent symbol drop) -----
+{
+  const multi = scanExports("export const x = 1, y = 2;\n");
+  assert.deepEqual(multi.exports, ["x"], "multi-declarator seeds the first identifier");
+  assert.ok(multi.warnings.some((w) => /multi-declarator/.test(w)), "the dropped declarator produces a warning");
+  const single = scanExports("export const only = 1;\n");
+  assert.deepEqual(single.warnings, [], "a single-declarator export const emits no multi-declarator warning");
 }
 
 console.log("test-util: all assertions passed");

@@ -219,4 +219,24 @@ function ctxOf(git, symbols, files) {
   assert.throws(() => git(["log", "-Sx", "--reverse", "--format=%H", "--", "clotho/x.mjs"]), /disallowed log shape/, "reordered flags rejected before spawn");
 }
 
+// ---- git.mjs validates its OWN inputs before splicing into argv --------------
+// The weaver's contract must not depend on which runner the driver injects: a
+// non-identifier symbol or a non-canonical path fails closed WITHOUT calling git
+// (a spy runner throws if reached).
+{
+  const spy = () => { throw new Error("git must not be called for invalid input"); };
+  {
+    const { ctx } = ctxOf(spy, [{ path: "clotho/x.mjs", symbol: "x --all", blob_sha: HEX40("b") }], []);
+    assert.throws(() => weave(ctx), /symbol is not an identifier/, "non-identifier symbol fails closed before spawn");
+  }
+  for (const bad of ["-Sinjected", "../escape.mjs", "clotho\\x.mjs"]) {
+    const { ctx } = ctxOf(spy, [{ path: bad, symbol: "sym", blob_sha: HEX40("b") }], []);
+    assert.throws(() => weave(ctx), /canonical repository-relative path/, `bad symbol path ${JSON.stringify(bad)} fails closed before spawn`);
+  }
+  {
+    const { ctx } = ctxOf(spy, [], [{ path: "../escape.mjs", blob_sha: HEX40("c") }]);
+    assert.throws(() => weave(ctx), /canonical repository-relative path/, "bad file path fails closed before spawn");
+  }
+}
+
 console.log("test-git: all assertions passed");

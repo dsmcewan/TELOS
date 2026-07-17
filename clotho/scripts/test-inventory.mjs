@@ -15,6 +15,18 @@ import { fileURLToPath } from "node:url";
 import { statSync as statSyncFs } from "node:fs";
 import { execFileSync } from "node:child_process";
 
+// Test-only git allowlist (like Task 2's fixture builder): this mechanically-
+// enforcing unit runs git itself, so it follows the same no-shell/closed-shape
+// discipline — EXACTLY one pinned `ls-files` invocation, nothing else.
+const TEST_GIT_LS_FILES = ["ls-files", "--", "*package.json", "package.json"];
+function testGitLsFiles(repoRoot) {
+  const args = TEST_GIT_LS_FILES;
+  if (!(args.length === 4 && args[0] === "ls-files" && args[1] === "--" && args[2] === "*package.json" && args[3] === "package.json")) {
+    throw new Error("test-inventory: disallowed git ls-files shape");
+  }
+  return execFileSync("git", args, { cwd: repoRoot, shell: false, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+}
+
 import {
   PACKAGE_ROOTS, PACKAGE_ROOTS_EXCLUDE, DOC_ROOTS, DOC_WEAVER_EXCLUDE, GLOBAL_EXCLUDE, CONTRACT_FILES,
   LEDGER_SOURCES, RUN_SOURCES, WEAVERS, REQUIRED_INVENTORY_IDS,
@@ -117,7 +129,7 @@ const abs = (rel) => path.join(REPO_ROOT, ...rel.split("/"));
   // untracked files). Enumerate them, then prove exact set equality with the
   // committed union and empty intersection — nothing silently omitted, no root
   // silently deleted, membership cannot drift.
-  const out = execFileSync("git", ["ls-files", "--", "*package.json", "package.json"], { cwd: REPO_ROOT, encoding: "utf8" });
+  const out = testGitLsFiles(REPO_ROOT);
   const pkgPaths = out.split(/\r?\n/).filter(Boolean)
     .filter((p) => p === "package.json" || p.endsWith("/package.json"))   // basename exactly package.json
     .filter((p) => !p.split("/").includes("node_modules"));

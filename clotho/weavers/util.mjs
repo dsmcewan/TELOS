@@ -72,27 +72,26 @@ const REGEX_KEYWORDS = new Set(["return", "throw", "case", "do", "else", "in", "
 // division. Tracking which kind of `(` a `)` closes is what makes regex-vs-division
 // sound after `)`.
 const CONTROL_HEADS = new Set(["if", "while", "for", "switch", "catch", "with"]);
-function precedingWord(source, idx) {
-  let j = idx - 1;
-  while (j >= 0 && /\s/.test(source[j])) j--;
-  const end = j;
-  while (j >= 0 && IDENT_CHAR.test(source[j])) j--;
-  return source.slice(j + 1, end + 1);
-}
-// `/` begins a regex when the previous significant token cannot end an
+// `/` begins a regex when the previous significant TOKEN cannot end an
 // expression: statement start, an expression-introducing punctuator, a
 // non-expression-ending keyword, or a `)` that closes a control head. After an
-// identifier/literal/`]`/`}`/expression-`)` it is division.
-function regexAllowedAfter(prevSig, prevWord, lastParenKind, prevSig2) {
+// identifier/literal/`]`/`}`/expression-`)` it is division. The previous
+// significant token (`prevSig` char + `prevWord`) is tracked by the lexer across
+// whitespace AND comments (both are blanked without updating it), so
+// `return /*c*/ /re/` and `if /*c*/ (...) /re/` classify soundly.
+function regexAllowedAfter(prevSig, prevWord, lastParenKind, prevSig2, inControlParen) {
   if (prevSig === "" || prevSig === "\n") return true;
   // Postfix `++`/`--` is an expression-ender, so a following `/` is DIVISION —
   // e.g. `x++ / import("./m.mjs")` must NOT mask the dynamic import as a regex.
-  // (`+`/`-` only ever become prevSig at the catch-all, where prevSig2 captures
-  // the char before, so a doubled operator is detected here.)
   if ((prevSig === "+" && prevSig2 === "+") || (prevSig === "-" && prevSig2 === "-")) return false;
   if (prevSig === ")") return lastParenKind === "control";
   if (REGEX_PREFIX.has(prevSig)) return true;
-  return REGEX_KEYWORDS.has(prevWord);
+  if (REGEX_KEYWORDS.has(prevWord)) return true;
+  // `of` introduces the iterable expression inside a for-head; a `/` there is a
+  // regex, not division. Restricted to INSIDE a control-head paren so a division
+  // after a binding named `of` elsewhere is unaffected. (`in` is already a keyword.)
+  if (prevWord === "of" && inControlParen) return true;
+  return false;
 }
 
 // Decode a single JS string escape beginning at source[i] === '\\'. Returns the
@@ -101,6 +100,10 @@ function regexAllowedAfter(prevSig, prevWord, lastParenKind, prevSig2) {
 // one written with a `\x2e`/`.` for '.' — is not silently omitted from the
 // closure. The NUL value is built at runtime (never a literal NUL byte in source).
 const SIMPLE_ESCAPES = { n: "\n", t: "\t", r: "\r", b: "\b", f: "\f", v: "\v", "0": String.fromCharCode(0), "\\": "\\", "'": "'", '"': '"', "`": "`" };
+// The EXACT in-profile string-escape initial chars (frozen AM-41 (a)):
+// \\ \" \' \n \r \t \b \f \v \0 \xHH \uHHHH \u{…}. Any other escaped char is
+// out-of-profile. (Line-continuation and legacy/octal are flagged separately as b4.)
+const STRING_ESCAPE_OK = new Set(["\\", '"', "'", "n", "r", "t", "b", "f", "v", "0", "x", "u"]);
 function decodeEscape(source, i) {
   const e = source[i + 1];
   if (e === undefined) return { value: "", next: i + 2 };
@@ -136,6 +139,8 @@ export function lex(source) {
   const stack = [{ mode: "code", subst: false, brace: 0 }];
   let prevSig = ""; // last significant (non-space) code char, for regex detection
   let prevSig2 = ""; // the significant code char before prevSig (postfix ++/-- detection)
+  let prevSigWord = ""; // last significant identifier word (comment/space-robust),
+  // for control-head detection and keyword-based regex detection
   // Paren-kind stack: each "(" is "control" (opened by if/while/for/switch/catch/
   // with) or "expr"; on ")" we remember the closed kind so a `/` after a control
   // head is a regex while a `/` after an expression group is division.
@@ -208,6 +213,9 @@ export function lex(source) {
           // followed by a digit), is out-of-profile.
           if (e === "\n" || e === "\r" || ec === 0x2028 || ec === 0x2029) flagProfile("string line-continuation");
           else if (e >= "0" && e <= "9" && !(e === "0" && !(source[i + 2] >= "0" && source[i + 2] <= "9"))) flagProfile("legacy/octal string escape");
+          // Only the frozen escape set is in-profile; any other escaped char
+          // (`\a`, `\/`, `` \` `` in a string, …) is out-of-profile (b6-adjacent).
+          else if (!STRING_ESCAPE_OK.has(e)) flagProfile("unsupported string escape");
           const d = decodeEscape(source, i); value += d.value; i = d.next; continue;
         }
         if (source[i] === "\n") break; // unterminated line string; stop
@@ -230,14 +238,15 @@ export function lex(source) {
       continue;
     }
     if (c === "(") {
-      parenStack.push(CONTROL_HEADS.has(precedingWord(source, i)) ? "control" : "expr");
-      keep[i] = 1; i++; prevSig = "("; continue;
+      parenStack.push(CONTROL_HEADS.has(prevSigWord) ? "control" : "expr");
+      keep[i] = 1; i++; prevSig = "("; prevSigWord = ""; continue;
     }
     if (c === ")") {
       lastParenKind = parenStack.length ? parenStack.pop() : "expr";
-      keep[i] = 1; i++; prevSig = ")"; continue;
+      keep[i] = 1; i++; prevSig = ")"; prevSigWord = ""; continue;
     }
-    if (c === "/" && regexAllowedAfter(prevSig, precedingWord(source, i), lastParenKind, prevSig2)) {
+    const inControlParen = parenStack.length > 0 && parenStack[parenStack.length - 1] === "control";
+    if (c === "/" && regexAllowedAfter(prevSig, prevSigWord, lastParenKind, prevSig2, inControlParen)) {
       // Regex literal: blank the whole literal (interior + delimiters + flags) so
       // a `from "x"` / `import(` inside a regex can never manufacture a load site.
       i++; // consume opening "/"
@@ -255,9 +264,22 @@ export function lex(source) {
       prevSig = "/"; // after a regex literal a following "/" is division
       continue;
     }
-    keep[i] = 1; // ordinary code byte
-    if (!/\s/.test(c)) { prevSig2 = prevSig; prevSig = c; }
+    // Identifier run: consume the whole token so `prevSigWord` holds the last
+    // identifier (comment/space-robust), used for control-head and keyword-regex
+    // detection. A number (starts with a digit) falls to the catch-all instead.
+    if (/[A-Za-z_$]/.test(c)) {
+      let q = i; while (q < n && IDENT_CHAR.test(source[q])) q++;
+      for (let k = i; k < q; k++) keep[k] = 1;
+      prevSig2 = prevSig; prevSig = source[q - 1]; prevSigWord = source.slice(i, q);
+      i = q; continue;
+    }
+    keep[i] = 1; // ordinary code byte (punctuator, digit, …)
+    if (!/\s/.test(c)) { prevSig2 = prevSig; prevSig = c; prevSigWord = ""; }
     i++;
+  }
+  // b6: an unterminated template literal (a template frame still open at EOF).
+  if (!profileError && stack.length > 1 && stack.some((f) => f.mode === "template")) {
+    flagProfile("unterminated template literal");
   }
   let masked = "";
   for (let k = 0; k < n; k++) masked += keep[k] ? source[k] : " ";
@@ -302,7 +324,7 @@ function parseModuleDecl(masked, strings, kwStart, kwWord) {
     return null;                                                // `export` as a property name
   }
   const clauseStart = p;
-  let isStar = false, first = true;
+  let isStar = false, first = true, sawFrom = false;
   while (p < n) {
     const c = masked[p];
     if (c === "{") {                                            // skip the whole specifier list
@@ -320,6 +342,7 @@ function parseModuleDecl(masked, strings, kwStart, kwWord) {
         // follows it. `from` used as a binding/namespace NAME (`import from from
         // "x"`, `import * as from from "x"`) is not followed by a string — keep
         // scanning so the REAL from-keyword (the one before the specifier) governs.
+        sawFrom = true;
         let r = q; while (r < n && /\s/.test(masked[r])) r++;
         const s = strings.get(r);
         if (s) {
@@ -335,6 +358,10 @@ function parseModuleDecl(masked, strings, kwStart, kwWord) {
     }
     p++;
   }
+  // b6: a `from` keyword appeared in from-clause position but no string specifier
+  // ever followed (`import { x } from`, `export * from` with the specifier
+  // truncated) — a truncated accepted form, out-of-profile (fail closed).
+  if (sawFrom) throw new ProfileError("truncated import/export from-clause (no specifier)");
   return null;                                                  // no from-clause (local re-export list)
 }
 
@@ -407,10 +434,24 @@ export function classifyModuleLoads(source) {
   // `obj ./*c*/require(...)`, `this.#require(...)`), which the lookbehind alone
   // (immediate-char only) would miss.
   const isMember = (idx) => { const p = prevSigChar(masked, idx); return p === "." || p === "#"; };
+  // b6: an accepted call form whose `(` never closes (`import("./x.mjs",`,
+  // `require("./x.mjs"`) is a truncated accepted form — fail closed. Returns the
+  // matching `)` index, or -1 when the paren is unbalanced to EOF (strings and
+  // comments are already blanked in `masked`, so their parens never count).
+  const matchingParen = (openIdx) => {
+    let depth = 0;
+    for (let k = openIdx; k < masked.length; k++) {
+      if (masked[k] === "(") depth++;
+      else if (masked[k] === ")") { depth--; if (depth === 0) return k; }
+    }
+    return -1;
+  };
+  const requireClose = (paren, form) => { if (matchingParen(paren) === -1) throw new ProfileError(`truncated ${form} form (unclosed call)`); };
   const dynRe = /(?<![A-Za-z0-9_$])import\s*\(/g;
   for (let m; (m = dynRe.exec(masked)); ) {
     if (isMember(m.index)) continue; // obj.import(...) / obj . import(...) is not a load
     const paren = m.index + m[0].length - 1;
+    requireClose(paren, "dynamic-import");
     const value = literalAt(paren);
     sites.push({ form: "dynamic-import", specifier: value, literal: value !== null });
   }
@@ -420,6 +461,7 @@ export function classifyModuleLoads(source) {
     if (isMember(m.index)) continue; // a.module.require(...) is a member call, not a load
     const paren = m.index + m[0].length - 1;
     claimedParens.add(paren);
+    requireClose(paren, "module-require");
     const value = literalAt(paren);
     sites.push({ form: "module-require", specifier: value, literal: value !== null });
   }
@@ -428,6 +470,7 @@ export function classifyModuleLoads(source) {
     const paren = m.index + m[0].length - 1;
     if (claimedParens.has(paren)) continue; // already a module.require site
     if (isMember(m.index)) continue; // obj.require(...) / obj . require(...) / this.#require(...) is not a load
+    requireClose(paren, "require");
     const value = literalAt(paren);
     sites.push({ form: "require", specifier: value, literal: value !== null });
   }
@@ -545,7 +588,11 @@ function originalChainSymlinkFree(fromDirAbs, specifier) {
     if (seg === "..") { cur = path.dirname(cur); continue; }
     cur = path.join(cur, seg);
     let st;
-    try { st = lstatSync(cur); } catch (e) { if (e && e.code === "ENOENT") return { ok: true }; throw e; }
+    // A component that does not yet exist is NOT trusted-and-returned: a later
+    // `..` can return to an existing chain, so keep walking so a symlink after a
+    // missing component (`./missing/../link/../x.mjs`) is still lstat-checked.
+    // Only genuine absence (ENOENT) is skipped; any other lstat error fails closed.
+    try { st = lstatSync(cur); } catch (e) { if (e && e.code === "ENOENT") continue; throw e; }
     if (st.isSymbolicLink()) return { ok: false };
   }
   return { ok: true };
@@ -555,12 +602,18 @@ export function resolveRelativeSpecifier(fromFileAbs, specifier, { repoRoot, ext
   if (typeof specifier !== "string" || !(specifier.startsWith("./") || specifier.startsWith("../"))) {
     return { ok: false, kind: "non-relative" };
   }
-  // Explicit accepted extension only — extensionless / other-extension is
-  // ambiguous. The code-weaver keeps its `.mjs`-only extraction rule (default);
-  // the D33 CLOSURE resolver additionally traverses accepted literal
-  // `require()`/`module.require()` targets that are not `.mjs` (e.g. `.cjs`) by
-  // passing extensions: [".mjs", ".cjs"] — the ONE resolver, configured per D33.
-  if (!extensions.some((x) => specifier.endsWith(x))) return { ok: false, kind: "ambiguous-extension", resolved: specifier };
+  // Extension rule (the ONE resolver, configured per consumer):
+  //   - code weaver (default `[".mjs"]`): only an explicit `.mjs` target — its
+  //     application-dependency extraction grammar is `.mjs`-only.
+  //   - D33 CLOSURE (`extensions: "any"`): EVERY accepted literal relative edge
+  //     whose target has an EXPLICIT extension participates (`.cjs` is only an
+  //     example; `.js`/`.json`/… also traverse) — mechanism provenance covers
+  //     whatever the code actually reaches. An extensionless specifier is still
+  //     ambiguous (out).
+  const hasAcceptedExt = extensions === "any"
+    ? path.posix.extname(specifier) !== ""
+    : extensions.some((x) => specifier.endsWith(x));
+  if (!hasAcceptedExt) return { ok: false, kind: "ambiguous-extension", resolved: specifier };
   const repoRootReal = checkedRepoRootReal(repoRoot);
   // Reject a symlink in the ORIGINAL uncollapsed chain before path.resolve below
   // normalizes any `..` away (AM-41 (c)).
@@ -631,7 +684,7 @@ export function deriveAcceptedClosure(entryFileAbs, { repoRoot, allowExternal = 
       // creates no edge (but is still a recognized site).
       if (!site.literal || site.specifier === null) continue;
       if (!(site.specifier.startsWith("./") || site.specifier.startsWith("../"))) continue;
-      const r = resolveRelativeSpecifier(abs, site.specifier, { repoRoot: repoRootReal, extensions: [".mjs", ".cjs"] });
+      const r = resolveRelativeSpecifier(abs, site.specifier, { repoRoot: repoRootReal, extensions: "any" });
       if (!r.ok) {
         throw new Error(`closure: ${rel} -> ${JSON.stringify(site.specifier)} is ${r.kind}${r.resolved ? " (" + r.resolved + ")" : ""}`);
       }
@@ -650,6 +703,20 @@ export function deriveAcceptedClosure(entryFileAbs, { repoRoot, allowExternal = 
 // Recognizes exactly `export function`, `export async function`, `export const`,
 // and `export class` followed by an identifier. Unsupported re-exports, computed
 // exports, default exports, and dynamic symbol flow warn and emit no symbol.
+
+// True when the declaration region (up to its first top-level `;`) has a `,` at
+// bracket depth 0 — a second declarator, e.g. `export const x = 1, y = 2;`.
+function hasTopLevelComma(region) {
+  let depth = 0;
+  for (let k = 0; k < region.length; k++) {
+    const ch = region[k];
+    if (ch === "(" || ch === "[" || ch === "{") depth++;
+    else if (ch === ")" || ch === "]" || ch === "}") depth--;
+    else if (ch === ";" && depth === 0) return false;
+    else if (ch === "," && depth === 0) return true;
+  }
+  return false;
+}
 
 export function scanExports(source) {
   const { masked, profileError } = lex(source); if (profileError) throw new ProfileError(profileError);
@@ -681,6 +748,12 @@ export function scanExports(source) {
     // destructuring/computed pattern (`export const { a } = ...` / `export const [a]`).
     if (decl && !/^export\s+const\s*[[{]/.test(region) && phase1.test(region)) {
       exportsFound.push(decl[1]);
+      // A multi-declarator `export const x = 1, y = 2;` seeds only the FIRST
+      // identifier; the remaining declarators would be silently dropped. Warn so
+      // the dropped symbol flow is accounted for, not unclassified.
+      if (/^export\s+(?:const|let|var)\b/.test(region) && hasTopLevelComma(region)) {
+        warnings.push("multi-declarator export declaration seeds only the first identifier");
+      }
       continue;
     }
     if (/^export\s+default(?![A-Za-z0-9_$])/.test(region)) { warnings.push("export default is not a Phase 1 export"); continue; }
@@ -933,11 +1006,26 @@ export function physicalContainment(repoRoot, candidate) {
   let rootSt;
   try { rootSt = lstatSync(absRepo); } catch { return false; }
   if (rootSt.isSymbolicLink() || !rootSt.isDirectory()) return false;
+  // AM-41 (c): inspect the ORIGINAL, uncollapsed candidate components in source
+  // order BEFORE any `path.resolve` collapse could erase a `..`-elided component —
+  // so `link/../x` where `link` is a symlink is rejected. A component that does
+  // not yet exist is skipped (a later `..` may return to an existing chain); any
+  // non-ENOENT lstat error fails closed.
+  const origSegs = String(candidate).split(/[\\/]/).filter(Boolean);
+  let walk = absRepo;
+  for (const seg of origSegs) {
+    if (seg === ".") continue;
+    if (seg === "..") { walk = path.dirname(walk); continue; }
+    walk = path.join(walk, seg);
+    let ws;
+    try { ws = lstatSync(walk); } catch (e) { if (e && e.code === "ENOENT") continue; return false; }
+    if (ws.isSymbolicLink()) return false;
+  }
   const absCand = path.resolve(absRepo, candidate);
   const rel = path.relative(absRepo, absCand);
   if (rel !== "" && (rel.startsWith("..") || path.isAbsolute(rel))) return false;
-  // Walk every existing component from the root down; reject any symlink; track
-  // the deepest existing ancestor.
+  // Walk every existing component of the COLLAPSED path from the root down; reject
+  // any symlink; track the deepest existing ancestor for the realpath check.
   const segs = rel === "" ? [] : rel.split(path.sep);
   let cur = absRepo;
   let deepest = absRepo;
@@ -1004,11 +1092,13 @@ function isPathArg(p) {
   return isCanonicalRepoRelPosix(p) && !p.startsWith("-");
 }
 
-// The FIXED, security-relevant spawn settings a caller cannot override: they are
-// spread LAST, so any caller-supplied cwd/shell/encoding is discarded.
-export function gitSpawnOptions(repoRoot, options = {}) {
+// The FIXED spawn settings — a CLOSED set. Caller-supplied options are DROPPED
+// entirely (not merged): forwarding an uncontrolled bag would let a caller
+// redirect which repository is inspected (`env` with GIT_DIR/GIT_WORK_TREE,
+// `argv0`, a `cwd` override) without violating the arg-shape allowlist. The
+// `options` parameter is accepted for call-site compatibility but never consulted.
+export function gitSpawnOptions(repoRoot, _options = {}) {
   return {
-    ...options,
     cwd: repoRoot, shell: false, encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"], maxBuffer: 64 * 1024 * 1024
   };
