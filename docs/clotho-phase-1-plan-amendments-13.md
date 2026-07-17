@@ -59,6 +59,10 @@ The amendment MUST integrate into the D33 shared-grammar clause (and the
    entirely of:
    - **Encoding/terminators:** UTF-8 text whose only line terminators are LF
      (U+000A) or CRLF (U+000D U+000A).
+   - **Optional leading shebang:** at most one shebang line, permitted ONLY when
+     `#!` begins at byte offset 0, is the first line, and terminates with LF or
+     CRLF; the scanner removes that one line before lexical classification
+     (Node's executable-module convention — e.g. Task 5's `weave.mjs`).
    - **Comments:** `//` line comments (ending at LF/CRLF or EOF) and `/* … */`
      block comments.
    - **Strings:** single- or double-quoted string literals using only these
@@ -79,7 +83,10 @@ The amendment MUST integrate into the D33 shared-grammar clause (and the
    set is EXACT and enumerable — the scanner MUST fail closed on each of:
    1. a bare CR (U+000D not immediately followed by LF), U+2028, or U+2029
       anywhere in the source;
-   2. a hashbang line (`#!`) anywhere;
+   2. a hashbang (`#!`) anywhere OTHER than the single permitted leading shebang
+      line above — a `#!` with any preceding whitespace, a `#!` not at byte
+      offset 0 / not on the first line, or a second `#!` line (a `#!` inside a
+      string or comment is not a hashbang);
    3. an HTML/legacy comment opener `<!--`, or a line-leading `-->`;
    4. a string line-continuation (a backslash immediately preceding a line
       terminator) or a legacy/octal escape (`\` followed by a decimal digit,
