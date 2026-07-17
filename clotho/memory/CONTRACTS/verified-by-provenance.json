@@ -4,17 +4,29 @@
   "task": "4b",
   "id": "verified-by-provenance",
   "title": "verified-by edge provenance (D25, spec v2.4)",
-  "authority": { "decision": "D25", "authorization": "authz-008", "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3" },
+  "authority": {
+    "decision": "D25",
+    "authorization": "authz-008",
+    "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3"
+  },
   "provenance_cases": {
-    "import_derived": { "when": "a verified-by edge inferred from a test-file's static named import resolving to a seeded symbol", "source_ref": "the TEST FILE's own blob (file:<test path>@<test blob_sha>)" },
-    "command_inferred": { "when": "a verified-by edge inferred from a package `check`/`test` command executing the target as a script", "source_ref": "the PACKAGE.JSON blob (file:<package.json path>@<package.json blob_sha>) — the manifest bytes that evidence execution, NOT the test file" }
+    "import_derived": {
+      "when": "a verified-by edge inferred from a test-file's static named import resolving to a seeded symbol",
+      "source_ref": "the TEST FILE's own blob (file:<test path>@<test blob_sha>)"
+    },
+    "command_inferred": {
+      "when": "a verified-by edge inferred from a package `check`/`test` command executing the target as a script",
+      "source_ref": "the PACKAGE.JSON blob (file:<package.json path>@<package.json blob_sha>) — the manifest bytes that evidence execution, NOT the test file"
+    }
   },
   "trap": "The command-inferred case is the recurring mistake: its source_ref is the package.json blob, not the test file. The same target verified once via import and once via package command yields TWO distinct records with distinct source refs, both retained by the payload identity key.",
   "non_claim": "No command is ever executed; package command strings are parsed only as text.",
   "change_rule": "plan amendment + re-authorization + implementation review.",
-  "oracle": null,
-  "becomes_normative_when": "clotho/scripts/test-test.mjs (Task 4b) proves both provenance cases by exact-output tests (two distinct records, distinct source refs).",
-  "normativity": "ADVISORY",
-  "status": "SPECIFIED-PENDING-IMPLEMENTATION",
+  "oracle": {
+    "test": "clotho/scripts/test-weaver-test.mjs",
+    "decision": "D25"
+  },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
   "must_not_govern_new_work": false
 }
