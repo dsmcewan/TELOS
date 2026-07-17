@@ -40,11 +40,19 @@
       "entry_ritual": "docs/runs/clotho-impl-slice-5/reader-validation-artifact.json",
       "acceptance_note": "three parallel disjoint-writer build agents (Q: query+oracle, W: driver+oracle+inventory+closure, A: advisory) per the LIVE Daedalus-matured approach; each oracle green in its worktree before merge; integration single-writer; first real-repository weave published as the Task 5 exit; oracles at landing: clotho 13/13, verify-contracts 203/203, build-gate green",
       "review_context": "approach extensively reviewed pre-implementation by the live slice-5 Daedalus workshop (claude-fable-5 authored, gpt-5.6-sol bound; docs/runs/clotho-slice5-daedalus/)"
+    },
+    {
+      "task": "6",
+      "pr": 126,
+      "merge_anchor": "git:ea6a15d",
+      "reviewed_head": "git:86793a3",
+      "entry_ritual": "docs/runs/clotho-impl-slice-6/reader-validation-artifact.json",
+      "acceptance_note": "single-writer agent per evaluation #2; ESCALATED mid-flight on genuine plan-vs-repository contradiction (three groups without ground truth), committed nothing, resumed after The Eye reviewed-data ruling and delivered green: 26 hand-audited expectations across all eight groups, published unscored 76-fact review set, both weaves under ceiling, mutation checks discriminating; oracles at landing: clotho 14/14, verify-contracts 207/207",
+      "review_context": "approach matured by the live slice-6 Daedalus workshop (converged r1); the escalation record and Eye ruling are docs/runs/clotho-impl-slice-6/ESCALATION.md + commit 1596767"
     }
   ],
-  "next_slice": "6",
+  "next_slice": "7",
   "specified_pending_slices": [
-    "6",
     "7"
   ],
   "design_substrate": "clotho/memory/ (SPECIFIED-PENDING-IMPLEMENTATION records + per-task comprehension queries clotho/memory/comprehension-queries.<task>.json)",

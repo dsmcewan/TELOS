@@ -55,6 +55,20 @@
       "pre_review": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-17-slice-5.json",
       "retrospective": "docs/institutional-memory/iliad/RETROSPECTIVES/slice-5.json",
       "maintained_by": "The Iliad umbrella; oracles in CI (clotho test-all 13 incl. test-query/test-weave/test-advisory; institutional-memory job)"
+    },
+    {
+      "name": "clotho-slice-6",
+      "kind": "Clotho Phase 1 slice: flagship acceptance in npm test; the escalation-path proof; Eye-ruled reviewed data (obligation ledger + flagship run evidence)",
+      "created_by": "PR #126 (delivery ea6a15d; agent 86793a3; ruling 1596767; escalation 774d5ef)",
+      "evidence": "docs/runs/clotho-impl-slice-6/reader-validation-artifact.json",
+      "memory_dirs": [
+        "clotho/memory/"
+      ],
+      "status": "delivered",
+      "post_protocol": true,
+      "pre_review": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-17-slice-6.json",
+      "retrospective": "docs/institutional-memory/iliad/RETROSPECTIVES/slice-6.json",
+      "maintained_by": "The Iliad umbrella; oracles in CI (clotho test-all 14 incl. test-flagship; institutional-memory job)"
     }
   ],
   "future_modules_registered_unimplemented": [

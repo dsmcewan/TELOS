@@ -1,0 +1,45 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "retrospective-slice-6",
+  "title": "Post-implementation review + SYSTEM EVALUATION #3 — Clotho slice 6",
+  "note": "ADVISORY evaluation anchored to commit-verified facts. The slice that proved the escalation path end-to-end.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "clotho slice 6 (escalation 774d5ef -> Eye ruling executed 1596767 -> agent delivery 86793a3 -> integrated ea6a15d; PR #126)",
+  "what_was_built": "test-flagship.mjs (522) + expected-flagship.json (548; 26 hand-audited expectations, all eight groups) + generator + published 76-fact review set; PLUS the Eye-ruled reviewed data: docs/ledgers/clotho-obligation-ledger.jsonl (hash-chained, real clause resolution) + docs/runs/clotho-flagship-evidence/ (real executed run) + the anticipated LEDGER_SOURCES/RUN_SOURCES inventory change with tests",
+  "verification_outcome": "clotho npm test 14/14 (flagship in-suite: two real weaves per run, ~25s/~19s under 120s ceilings); why.gaps EMPTY for the flagship target which now touches all seven kinds; verify-contracts 207/207; mutation checks discriminating; entry ritual 4/4 GRANTED before work",
+  "what_worked": [
+    "THE ESCALATION PATH, END TO END: the builder proved unsatisfiability from a real weave, refused to fabricate or weaken, committed NOTHING, and escalated with precise root causes — then resumed with full context after the ruling and delivered green. CHANGE-PROTOCOL's promise held under a real contradiction",
+    "the reviewed-data ruling stayed honest: run evidence that IS a run (the runner executes the symbol), an obligation ledger resolving a REAL contract clause by exact section hash, and the inventory comment's anticipated 'reviewed change with tests' fulfilled literally",
+    "agent resume-with-context (SendMessage) preserved the five-group audit across the escalation pause — zero rework",
+    "fail-closed mechanisms fired in ordinary use and were RIGHT: D20/D28 no-replace refused a leftover destination; test-all's unlisted guard caught a silent no-op wiring edit"
+  ],
+  "defects_found_during": [
+    "none in slice-5/6 code. Process: the integrator's inline node replace printed success unconditionally on a no-match (caught by the unlisted guard) — rule: never print success a mechanism did not verify; prefer the Edit tool for source edits",
+    "commit 1596767's message says verify-contracts 208/208; the true count was 207/207 (corrected here — commit messages are logs and must not overstate)"
+  ],
+  "process_mistakes_preserved": [
+    "repeated the PIPESTATUS-vs-$? misread once more during diagnosis before re-checking — the recorded rule works only when applied",
+    "probe scripts written against guessed record/API shapes (verifyLedger bytes-vs-path, from/to vs from_locator) cost three iterations — rule: read the signature and one real record BEFORE writing a probe"
+  ],
+  "system_evaluation": {
+    "redundancy": [
+      "generate-expectations.mjs and generate-obligation-ledger.mjs both re-derive section hashes via splitMarkdownSections — acceptable (evidence tooling, not shipped surface); do not promote to util without a shipped consumer",
+      "review-set.json (1,396 lines) is committed run evidence; future flagship regenerations replace it rather than accrete versions"
+    ],
+    "process_dependencies": {
+      "slice_7_needs": "6's flagship (reproduction re-derives from committed bytes; d8 self-weave exclusion flips via run.mjs + test-flagship)",
+      "conclusion": "slice 7 is the final slice; its two deliverables (reproduction evidence; documentation/README render) are disjoint-writer parallelizable as evaluated in #2"
+    },
+    "concurrency_opportunities_via_merkle_dag": [
+      "slice 7: agent-R (docs/runs/clotho-self-weave/ reproduction run + d8 flip evidence) and agent-D (clotho/memory/README.md renderer + drift gate, the OPEN-QUESTIONS candidate) — disjoint files, merge after green oracles",
+      "flagship suite cost is now ~45s of real weaving per clotho npm test — acceptable; revisit only if CI minutes matter"
+    ]
+  },
+  "optimizations_for_future_runs": [
+    { "optimization": "when an implementation is mid-flight and an escalation pauses it, resume the SAME agent with SendMessage rather than respawning — audits and context carry over", "lands_in": "agent-practice standard (proven this slice)" },
+    { "optimization": "read the target signature + one real datum before authoring any probe script", "lands_in": "integrator practice; preserved above" },
+    { "optimization": "slice 7 parallel split (reproduction | renderer) per evaluations #2/#3", "lands_in": "the slice-7 pre-review" }
+  ]
+}

@@ -53,11 +53,18 @@
         "reviewed_head": "git:321473a",
         "note": "built per the Daedalus-matured approach (three parallel disjoint-writer agents, oracles green in-worktree before merge); entry ritual GRANTED 13/13; TASK 5 EXIT MET: first real-repository weave published (3892 edges, five weavers executed); coverage-schema + d35/d34/d10 flipped NORMATIVE; acceptance path = PR #126 review + CI + The Eye standing directive",
         "entry_ritual": "docs/runs/clotho-impl-slice-5/reader-validation-artifact.json"
+      },
+      {
+        "task": "6",
+        "pr": 126,
+        "merge_anchor": "git:ea6a15d",
+        "reviewed_head": "git:86793a3",
+        "note": "the escalation slice: builder proved Task 6 unsatisfiable from a real weave and escalated per CHANGE-PROTOCOL; The Eye ruled the reviewed-data path (obligation ledger + real run evidence + anticipated inventory change with tests, 1596767); builder resumed and delivered the flagship green in npm test (14/14; all eight groups; 76-fact review set). Eye review artifacts at PR: expected-flagship.json + clotho-obligation-ledger.jsonl",
+        "entry_ritual": "docs/runs/clotho-impl-slice-6/reader-validation-artifact.json"
       }
     ],
-    "next_slice": "6",
+    "next_slice": "7",
     "specified_pending_slices": [
-      "6",
       "7"
     ],
     "specified_pending_note": "Frozen in v15 (authz-008); machine-first design substrate under clotho/memory/ (status SPECIFIED-PENDING-IMPLEMENTATION). An implementer loads it and passes clotho/memory/comprehension-queries.<task>.json via the comprehension gate before writing code; each record flips to NORMATIVE-CURRENT when its becomes_normative_when oracle passes."
