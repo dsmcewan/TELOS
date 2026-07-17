@@ -1,7 +1,7 @@
 {
   "kind": "clotho-self-weave-verification",
   "node_version": "v24.16.0",
-  "input_repo_head": "395c9719aa52306ae51b364747387fb191514c70",
+  "input_repo_head": "841208d6f16ed4b94b48a8556ab5392feac06dc9",
   "repository_ref": {
     "derived": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
     "ledger_header": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
@@ -10,7 +10,7 @@
   },
   "snapshot": {
     "path": "docs/runs/clotho-self-weave/thread-ledger.snapshot.jsonl",
-    "sha256": "d7db5bcf1295c75773e412220b6dae3f289bd651c0bb61a5fb230ef33df21901",
+    "sha256": "ea3ca462790c09ed3fe17463feb27b6983a24174e2632f9d72eb82298c2f769f",
     "ledger_verification": "ok",
     "errors": []
   },
@@ -21,58 +21,58 @@
         "id": "clotho-git-weaver",
         "state": "executed",
         "implementation_refs": [
-          "file:clotho/registry.mjs@15ae6c35927934906fc237b88065dc1763a6efec",
-          "file:clotho/weavers/git.mjs@cf90b8e969dbdd5c80b9de444a48f2d6b261977b"
+          "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
+          "file:clotho/weavers/git.mjs@b0f0a2ff9b07b9bf077a8b5b11c5597dfdc8ecbf"
         ]
       },
       {
         "id": "clotho-code-weaver",
         "state": "executed",
         "implementation_refs": [
-          "file:clotho/registry.mjs@15ae6c35927934906fc237b88065dc1763a6efec",
-          "file:clotho/weavers/code.mjs@6cb24ce642122930c781803c6a8a73aa8fed2786",
-          "file:clotho/weavers/util.mjs@15ba5636505fd2ad6b2472a14e7cf9e58a7af6a3"
+          "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
+          "file:clotho/weavers/code.mjs@b2c39cb694a5147b1ccd255146b7d12c81d2ebdf",
+          "file:clotho/weavers/util.mjs@32d1216715e38b447aa0f351bb89bd55e8185c7a"
         ]
       },
       {
         "id": "clotho-test-weaver",
         "state": "executed",
         "implementation_refs": [
-          "file:clotho/registry.mjs@15ae6c35927934906fc237b88065dc1763a6efec",
-          "file:clotho/weavers/test.mjs@ff8acda96da095c96cd619e98d62106c65edacd2",
-          "file:clotho/weavers/util.mjs@15ba5636505fd2ad6b2472a14e7cf9e58a7af6a3"
+          "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
+          "file:clotho/weavers/test.mjs@faa022a48e9dad50e22aed4edf76cdf05f7ff61f",
+          "file:clotho/weavers/util.mjs@32d1216715e38b447aa0f351bb89bd55e8185c7a"
         ]
       },
       {
         "id": "clotho-doc-weaver",
         "state": "executed",
         "implementation_refs": [
-          "file:clotho/registry.mjs@15ae6c35927934906fc237b88065dc1763a6efec",
-          "file:clotho/weavers/doc.mjs@f8f6e6261311c961c6e860b69b2eafdb3b06c8cc",
-          "file:clotho/weavers/util.mjs@15ba5636505fd2ad6b2472a14e7cf9e58a7af6a3"
+          "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
+          "file:clotho/weavers/doc.mjs@e89dd89cadfc9df31a6b3012c3d210783bba6eed",
+          "file:clotho/weavers/util.mjs@32d1216715e38b447aa0f351bb89bd55e8185c7a"
         ]
       },
       {
         "id": "clotho-ledger-weaver",
         "state": "executed",
         "implementation_refs": [
-          "file:clotho/registry.mjs@15ae6c35927934906fc237b88065dc1763a6efec",
-          "file:clotho/weavers/ledger.mjs@fc588192d64b8a2068bfdf32ee979dd30fd23ab4",
-          "file:clotho/weavers/util.mjs@15ba5636505fd2ad6b2472a14e7cf9e58a7af6a3"
+          "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
+          "file:clotho/weavers/ledger.mjs@eb3d34d58079ad19241b67e55643d23e58ebc1af",
+          "file:clotho/weavers/util.mjs@32d1216715e38b447aa0f351bb89bd55e8185c7a"
         ]
       }
     ],
     "orchestrator_refs": [
-      "file:clotho/inventory.mjs@964bb72c370c36f661ee37edd011eed4c3cf18f8",
-      "file:clotho/registry.mjs@15ae6c35927934906fc237b88065dc1763a6efec",
-      "file:clotho/thread-ledger.mjs@e19466185903ad011791d2987ae73e672bff3d16",
-      "file:clotho/weave.mjs@415990e6c6bf60c237d8eb8f5cf8cda270606d09",
-      "file:clotho/weavers/code.mjs@6cb24ce642122930c781803c6a8a73aa8fed2786",
-      "file:clotho/weavers/doc.mjs@f8f6e6261311c961c6e860b69b2eafdb3b06c8cc",
-      "file:clotho/weavers/git.mjs@cf90b8e969dbdd5c80b9de444a48f2d6b261977b",
-      "file:clotho/weavers/ledger.mjs@fc588192d64b8a2068bfdf32ee979dd30fd23ab4",
-      "file:clotho/weavers/test.mjs@ff8acda96da095c96cd619e98d62106c65edacd2",
-      "file:clotho/weavers/util.mjs@15ba5636505fd2ad6b2472a14e7cf9e58a7af6a3"
+      "file:clotho/inventory.mjs@c60a50dcd479aaa034a855eab01a6498037f8290",
+      "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
+      "file:clotho/thread-ledger.mjs@332821afc71c7776b022f7247aa33250592ef78c",
+      "file:clotho/weave.mjs@6e5870f60c389c452e15dcab96f26115ec02b954",
+      "file:clotho/weavers/code.mjs@b2c39cb694a5147b1ccd255146b7d12c81d2ebdf",
+      "file:clotho/weavers/doc.mjs@e89dd89cadfc9df31a6b3012c3d210783bba6eed",
+      "file:clotho/weavers/git.mjs@b0f0a2ff9b07b9bf077a8b5b11c5597dfdc8ecbf",
+      "file:clotho/weavers/ledger.mjs@eb3d34d58079ad19241b67e55643d23e58ebc1af",
+      "file:clotho/weavers/test.mjs@faa022a48e9dad50e22aed4edf76cdf05f7ff61f",
+      "file:clotho/weavers/util.mjs@32d1216715e38b447aa0f351bb89bd55e8185c7a"
     ],
     "consistency": "consistent"
   },
