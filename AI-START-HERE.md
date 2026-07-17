@@ -1,5 +1,12 @@
 # AI-START-HERE
 
+> **AI Systems Architects Best Practices Suite: Rapid Full Deployment and SDLC
+> Recursive Suite** — the suite's mantra (The Eye, 2026-07-17). Rapid full
+> deployment: policy as data, pinned loadout, harvest-first, parallel
+> disjoint-writer builds merged under the merkle-dag discipline. SDLC recursive:
+> the lifecycle applies to itself — this layer was built under the governance it
+> defines, and every record here proves it.
+
 You are a fresh model with no memory of this project. This file is your onboarding
 protocol. TELOS is a multi-model build-gate and a set of registered components; you are
 inheriting an institution, not just source code. **Do not begin from a confident guess —

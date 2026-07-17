@@ -1,5 +1,13 @@
 {
   "system": "TELOS",
+  "suite": {
+    "mantra": "AI Systems Architects Best Practices Suite: Rapid Full Deployment and SDLC Recursive Suite",
+    "named_by": "The Eye, 2026-07-17",
+    "pillars": {
+      "rapid_full_deployment": "seat-keyed models + purpose-keyed prompts as data; pinned loadout; harvest-first; parallel disjoint-writer builds merged under the merkle-dag discipline — idea to verified, enrolled sub-system in one governed pass",
+      "sdlc_recursive": "the lifecycle applies to itself: pre-review -> comprehension-gated implementation -> machine-verified records -> retrospective -> next-phase Daedalus review -> the next cycle's inputs. TELOS gated its own upgrade; the memory layer documents its own construction; the lifecycle governed the slice that built the lifecycle"
+    }
+  },
   "note": "Machine-readable system map. A repository scanner should build its architectural map from THIS file, not by ranking README language. Each claim carries a grade + evidence; a scanner verifies claims against evidence and rejects any claim contradicted by a NON-CLAIMS record. Roles are registered mythological terms (docs/mythological-vocabulary.md) — no coined names.",
   "as_of": "2026-07-17",
   "active_authority": { "pointer": "CURRENT-AUTHORITY.json" },
