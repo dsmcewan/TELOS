@@ -1,4 +1,4 @@
-// inventory.mjs — Clotho's CLOSED inventory of weave inputs (plan v12 Task 4a).
+// inventory.mjs — Clotho's CLOSED inventory of weave inputs (plan v13 (v12 + AM-40) Task 4a).
 // Zero dependencies: Node stdlib only. Everything here is a committed, exact,
 // hand-reviewed list — the weave does NOT discover new top-level inputs at
 // runtime. A future package or evidence source requires an edit here plus tests.

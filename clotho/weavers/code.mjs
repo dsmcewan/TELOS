@@ -1,4 +1,4 @@
-// weavers/code.mjs — Clotho's code weaver (plan v12 Task 4a). Zero dependencies:
+// weavers/code.mjs — Clotho's code weaver (plan v13 (v12 + AM-40) Task 4a). Zero dependencies:
 // Node stdlib only; imports clotho/registry.mjs and clotho/weavers/util.mjs (its
 // accepted relative module-load closure is {registry.mjs, code.mjs, util.mjs}).
 //

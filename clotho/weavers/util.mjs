@@ -1,4 +1,4 @@
-// weavers/util.mjs — Clotho's shared weaver substrate (plan v12 Task 4a). Zero
+// weavers/util.mjs — Clotho's shared weaver substrate (plan v13 (v12 + AM-40) Task 4a). Zero
 // dependencies: Node stdlib only.
 //
 // One lexical scanner (comment/string aware, never executes code), ONE
@@ -74,8 +74,13 @@ function precedingWord(source, idx) {
 // expression: statement start, an expression-introducing punctuator, a
 // non-expression-ending keyword, or a `)` that closes a control head. After an
 // identifier/literal/`]`/`}`/expression-`)` it is division.
-function regexAllowedAfter(prevSig, prevWord, lastParenKind) {
+function regexAllowedAfter(prevSig, prevWord, lastParenKind, prevSig2) {
   if (prevSig === "" || prevSig === "\n") return true;
+  // Postfix `++`/`--` is an expression-ender, so a following `/` is DIVISION —
+  // e.g. `x++ / import("./m.mjs")` must NOT mask the dynamic import as a regex.
+  // (`+`/`-` only ever become prevSig at the catch-all, where prevSig2 captures
+  // the char before, so a doubled operator is detected here.)
+  if ((prevSig === "+" && prevSig2 === "+") || (prevSig === "-" && prevSig2 === "-")) return false;
   if (prevSig === ")") return lastParenKind === "control";
   if (REGEX_PREFIX.has(prevSig)) return true;
   return REGEX_KEYWORDS.has(prevWord);
@@ -121,6 +126,7 @@ export function lex(source) {
   // "template" frames blank literal text but yield to "code" inside "${...}".
   const stack = [{ mode: "code", subst: false, brace: 0 }];
   let prevSig = ""; // last significant (non-space) code char, for regex detection
+  let prevSig2 = ""; // the significant code char before prevSig (postfix ++/-- detection)
   // Paren-kind stack: each "(" is "control" (opened by if/while/for/switch/catch/
   // with) or "expr"; on ")" we remember the closed kind so a `/` after a control
   // head is a regex while a `/` after an expression group is division.
@@ -184,7 +190,7 @@ export function lex(source) {
       lastParenKind = parenStack.length ? parenStack.pop() : "expr";
       keep[i] = 1; i++; prevSig = ")"; continue;
     }
-    if (c === "/" && regexAllowedAfter(prevSig, precedingWord(source, i), lastParenKind)) {
+    if (c === "/" && regexAllowedAfter(prevSig, precedingWord(source, i), lastParenKind, prevSig2)) {
       // Regex literal: blank the whole literal (interior + delimiters + flags) so
       // a `from "x"` / `import(` inside a regex can never manufacture a load site.
       i++; // consume opening "/"
@@ -203,7 +209,7 @@ export function lex(source) {
       continue;
     }
     keep[i] = 1; // ordinary code byte
-    if (!/\s/.test(c)) prevSig = c;
+    if (!/\s/.test(c)) { prevSig2 = prevSig; prevSig = c; }
     i++;
   }
   let masked = "";
@@ -262,6 +268,10 @@ export function classifyModuleLoads(source) {
         if (s) sites.push({ form: "import-side-effect", specifier: s.value, literal: true });
         continue;
       }
+      // A real static import clause starts with `{`, `*` (import * as), or a
+      // default-binding identifier. Anything else (`:`, `,`, `}`, …) means the
+      // `import` token is a PROPERTY NAME (`{ import: 1 }`), not a load statement.
+      if (!(masked[p] === "{" || masked[p] === "*" || /[A-Za-z_$]/.test(masked[p]))) continue;
       const region = masked.slice(p, bound);  // static import: clause ... from "x"
       const fm = fromClauseRe.exec(region);
       if (fm) {
@@ -270,6 +280,10 @@ export function classifyModuleLoads(source) {
       }
       continue;
     }
+    // A real export statement continues with `{`, `*`, or a declaration keyword/
+    // identifier. If `export` is followed by `:` (or another non-export char) it is
+    // a PROPERTY NAME (`{ export: 1 }`), not a statement — no load edge.
+    if (!(masked[p] === "{" || masked[p] === "*" || /[A-Za-z_$]/.test(masked[p]))) continue;
     // export: a module load only when the statement has a `from "x"` clause.
     const region = masked.slice(kw.end, bound);
     const fm = fromClauseRe.exec(region);
@@ -362,7 +376,9 @@ function componentsSymlinkFree(absPath) {
   for (const seg of rest) {
     cur = path.join(cur, seg);
     let st;
-    try { st = lstatSync(cur); } catch { return { ok: true, missing: true }; }
+    // Only genuine absence (ENOENT) is "missing"; any other lstat error
+    // (EACCES, ELOOP, …) must FAIL CLOSED rather than be read as absence.
+    try { st = lstatSync(cur); } catch (e) { if (e && e.code === "ENOENT") return { ok: true, missing: true }; throw e; }
     if (st.isSymbolicLink()) return { ok: false };
   }
   return { ok: true, missing: false };
@@ -391,7 +407,8 @@ function containmentReal(repoRootReal, absTarget) {
   for (const seg of segs) {
     cur = path.join(cur, seg);
     let st;
-    try { st = lstatSync(cur); } catch { return { ok: true, deepestExisting: null, missing: true }; }
+    // ENOENT is a missing component; any other lstat error fails closed.
+    try { st = lstatSync(cur); } catch (e) { if (e && e.code === "ENOENT") return { ok: true, deepestExisting: null, missing: true }; throw e; }
     if (st.isSymbolicLink()) return { ok: false, reason: "symlink" };
   }
   return { ok: true, missing: false };
@@ -417,10 +434,15 @@ export function resolveRelativeSpecifier(fromFileAbs, specifier, { repoRoot } = 
   const contain = containmentReal(repoRootReal, abs);
   if (!contain.ok) return { ok: false, kind: contain.reason, resolved: toPosix(path.relative(repoRootReal, abs)) };
   let st;
-  try { st = lstatSync(abs); } catch { return { ok: false, kind: "unresolved", resolved: toPosix(path.relative(repoRootReal, abs)) }; }
+  // ENOENT => the specifier does not resolve to a real file (unresolved); any
+  // other lstat error must fail closed rather than masquerade as "unresolved".
+  try { st = lstatSync(abs); } catch (e) { if (e && e.code === "ENOENT") return { ok: false, kind: "unresolved", resolved: toPosix(path.relative(repoRootReal, abs)) }; throw e; }
   if (st.isSymbolicLink()) return { ok: false, kind: "symlink", resolved: toPosix(path.relative(repoRootReal, abs)) };
   if (!st.isFile()) return { ok: false, kind: "non-regular", resolved: toPosix(path.relative(repoRootReal, abs)) };
-  return { ok: true, repoRelative: toPosix(path.relative(repoRootReal, abs)), abs };
+  // A successful resolution must yield a CANONICAL repository-relative POSIX path;
+  // canonicalRel throws (fatal) on a noncanonical name (backslash, absolute,
+  // "."/".." or empty segment, NUL), so such a name can never enter a closure.
+  return { ok: true, repoRelative: canonicalRel(repoRootReal, abs), abs };
 }
 
 // ---- accepted relative module-load closure (D33) -----------------------------
@@ -440,13 +462,13 @@ export function deriveAcceptedClosure(entryFileAbs, { repoRoot, allowExternal = 
   const entryContain = containmentReal(repoRootReal, entryFileAbs);
   if (!entryContain.ok) throw new Error(`closure: entry is ${entryContain.reason}`);
   let est;
-  try { est = lstatSync(entryFileAbs); } catch { throw new Error("closure: entry does not exist"); }
+  try { est = lstatSync(entryFileAbs); } catch (e) { if (e && e.code === "ENOENT") throw new Error("closure: entry does not exist"); throw e; }
   if (est.isSymbolicLink()) throw new Error("closure: entry is a symlink");
   if (!est.isFile()) throw new Error("closure: entry is non-regular");
   // Safe now (verified a real regular file, not a symlink): canonicalize for
   // traversal so all path arithmetic shares the repo real-path base.
   const entryReal = realpathSync(entryFileAbs);
-  const entryRel = toPosix(path.relative(repoRootReal, entryReal));
+  const entryRel = canonicalRel(repoRootReal, entryReal); // entry path must be canonical too (fatal otherwise)
 
   // Membership policy (the closure's, not the resolver's): a resolved target is
   // admitted only if it is under clotho/ or an explicitly permitted external
@@ -513,6 +535,10 @@ export function scanExports(source) {
     const start = kws[a];
     const bound = a + 1 < kws.length ? kws[a + 1] : masked.length;
     const region = masked.slice(start, bound);
+    // `export` as a PROPERTY NAME (`{ export: 1 }`, shorthand `{ export }`) is not
+    // an export declaration — emit no symbol AND no warning. A real export
+    // continues with `{`, `*`, or a declaration keyword, never `:`/`,`/`}`.
+    if (/^export\s*[:,}]/.test(region)) continue;
     const decl = declRe.exec(region);
     // A Phase 1 declaration form binds a single identifier — but NOT a
     // destructuring/computed pattern (`export const { a } = ...` / `export const [a]`).
@@ -544,6 +570,25 @@ export function scanExports(source) {
 export function scanImports(source) {
   const { masked, strings } = lex(source);
   const imports = [];
+  // Extend a declaration's end THROUGH a trailing import-attributes clause
+  // (`assert { type: "json" }` / `with { ... }`) so identifiers inside the clause
+  // fall INSIDE the import-declaration span and are never mistaken for a use of an
+  // imported local (which must occur OUTSIDE the declaration).
+  const spanEndAfter = (from) => {
+    let j = from;
+    while (j < masked.length && /\s/.test(masked[j])) j++;
+    const m = /^(assert|with)(?![A-Za-z0-9_$])/.exec(masked.slice(j));
+    if (!m) return from;
+    j += m[0].length;
+    while (j < masked.length && /\s/.test(masked[j])) j++;
+    if (masked[j] !== "{") return from;
+    let depth = 0;
+    for (; j < masked.length; j++) {
+      if (masked[j] === "{") depth++;
+      else if (masked[j] === "}") { depth--; if (depth === 0) return j + 1; }
+    }
+    return from;
+  };
   const importRe = /(?<![A-Za-z0-9_$])import(?![A-Za-z0-9_$])/g;
   for (let m; (m = importRe.exec(masked)); ) {
     const start = m.index;
@@ -556,7 +601,7 @@ export function scanImports(source) {
     // side-effect: import "x"
     if (masked[after] === '"' || masked[after] === "'") {
       const s = strings.get(after);
-      if (s) imports.push({ specifier: s.value, span: [start, s.end], bindings: [{ form: "side-effect" }] });
+      if (s) imports.push({ specifier: s.value, span: [start, spanEndAfter(s.end)], bindings: [{ form: "side-effect" }] });
       continue;
     }
     // clause ... from "x"
@@ -569,7 +614,7 @@ export function scanImports(source) {
     if (!s) continue;
     const clause = masked.slice(after, fm.index);
     const bindings = parseImportClause(clause);
-    imports.push({ specifier: s.value, span: [start, s.end], bindings });
+    imports.push({ specifier: s.value, span: [start, spanEndAfter(s.end)], bindings });
   }
   return imports;
 }
@@ -646,7 +691,9 @@ function walkDir(dir, repoRootReal, out) {
   for (const name of entries) {
     const full = path.join(dir, name);
     let st;
-    try { st = lstatSync(full); } catch { continue; }
+    // A vanished entry (ENOENT race) is skipped; any other lstat error fails
+    // closed (throws) so an inaccessible entry never silently omits a real input.
+    try { st = lstatSync(full); } catch (e) { if (e && e.code === "ENOENT") continue; throw e; }
     // Symlinked input is REJECTED (fail-closed), not silently skipped: a symlink
     // beneath a configured root could otherwise omit a real input from the walk.
     if (st.isSymbolicLink()) throw new Error(`walkFiles: symlinked entry is not permitted: ${toPosix(path.relative(repoRootReal, full))}`);
@@ -700,19 +747,24 @@ export function seedSourceDescriptors(repoRoot, packageRoots, git) {
 // ---- counted-iterator constructor (D26/D29) ----------------------------------
 // Given an inventory id and its ordered source list, returns an iterable that
 // yields each source and increments a PRIVATE count only when the consumer
-// COMPLETES consumption of that source (i.e. requests the next one without a
-// fatal error). Normal exhaustion is recorded only when the iterator completes.
-// A source that raises before completion is not counted. The accounting accessor
-// is returned separately; the weaver receives only `source`.
+// COMPLETES consumption of that source — i.e. resumes for the next item, or the
+// iterator reaches natural completion — without a fatal error. This is exactly
+// the frozen definition: "processing to edge-extraction eligibility WITHOUT fatal
+// error"; a source that raises before completion is not counted. The accounting
+// accessor is returned separately; the weaver receives only `source`.
 //
-// RATIFIED Task-4a contract (do not read as an accidental divergence): counting
-// happens on the consumer's resume. A consumer that fully processes the LAST item
-// and then breaks WITHOUT resuming records observed_count = N-1, exhausted=false.
-// This is intended: D29 requires an `executed` weaver to run every handed iterable
-// to natural completion (`for...of` to the end), which counts all N and records
-// exhaustion. The driver-observed accounting semantics for a weaver that exits
-// early are settled by the Task 5 driver's post-return accounting check, not here;
-// pinned by a unit in test-util.mjs so it cannot silently change.
+// Full consumption counts every item exactly once: iterating to NATURAL
+// COMPLETION (a `for...of` runs the loop body for each item and then makes the
+// final next() call that returns done) records observed_count = N and
+// exhausted = true. This is not a bespoke "contract" — it is the direct
+// consequence of the frozen "without fatal error" definition plus D29's
+// requirement that an `executed` weaver EXHAUST every handed iterable. A consumer
+// that abandons iteration early (break/throw before exhaustion) is PARTIAL
+// consumption: its unconsumed tail is not counted and exhausted stays false,
+// which is precisely what D29 forbids for an executed weaver — the Task 5 driver's
+// post-return accounting check is what turns an unexhausted source into a fatal
+// accounting failure. Pinned by units in test-util.mjs (full for...of counts N and
+// exhausts; a fatal mid-item is not counted).
 
 export function makeCountedSource(inventoryId, list) {
   const items = Array.from(list);
@@ -764,7 +816,11 @@ export function physicalContainment(repoRoot, candidate) {
   for (const seg of segs) {
     cur = path.join(cur, seg);
     let st;
-    try { st = lstatSync(cur); } catch { break; } // remaining tail is missing
+    // ENOENT => this component (and the rest of the tail) does not exist yet, so
+    // the deepest EXISTING ancestor found so far is authoritative. Any other error
+    // (EACCES, …) must fail closed — an uninspectable component cannot establish
+    // containment from an earlier ancestor.
+    try { st = lstatSync(cur); } catch (e) { if (e && e.code === "ENOENT") break; return false; }
     if (st.isSymbolicLink()) return false;
     deepest = cur;
   }

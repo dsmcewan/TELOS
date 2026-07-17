@@ -1,4 +1,4 @@
-// weavers/git.mjs — Clotho's git weaver (plan v12 Task 4a). Zero dependencies:
+// weavers/git.mjs — Clotho's git weaver (plan v13 (v12 + AM-40) Task 4a). Zero dependencies:
 // Node stdlib only; imports only clotho/registry.mjs (its accepted relative
 // module-load closure is exactly {registry.mjs, git.mjs}).
 //

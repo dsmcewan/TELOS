@@ -224,4 +224,53 @@ try {
   }
 }
 
+// ---- used named import whose name is NOT a seeded export -> file-level fallback
+{
+  // A USED named import whose target is a real SEEDED module but whose imported
+  // NAME is not a seeded export of that target threads at FILE level (not
+  // unrepresentable — the specifier resolves fine). With a Phase-1 export in the
+  // consumer the edge is code-symbol -> repository-file; without one it is
+  // repository-file -> repository-file.
+  const r = mkdtempSync(path.join(tmpdir(), "clotho-code-nsne-"));
+  try {
+    mkdirSync(path.join(r, "pkg"), { recursive: true });
+    writeFileSync(path.join(r, "pkg", "dep.mjs"), "export const alpha = 1;\n"); // seeds only `alpha`
+    // consumer HAS a Phase-1 export and USES an imported name absent from dep.
+    writeFileSync(path.join(r, "pkg", "cons.mjs"), 'import { notExported } from "./dep.mjs";\nexport const c = notExported + 1;\n');
+    // consumer2 has NO Phase-1 export and uses the same non-seeded name.
+    writeFileSync(path.join(r, "pkg", "cons2.mjs"), 'import { alsoNot } from "./dep.mjs";\nconsole.log(alsoNot);\n');
+    const files = [
+      { path: "pkg/dep.mjs", blob_sha: blob(80) },
+      { path: "pkg/cons.mjs", blob_sha: blob(81) },
+      { path: "pkg/cons2.mjs", blob_sha: blob(82) }
+    ];
+    const symbols = [
+      { path: "pkg/dep.mjs", symbol: "alpha", blob_sha: blob(80) },
+      { path: "pkg/cons.mjs", symbol: "c", blob_sha: blob(81) }
+    ];
+    const src = makeCountedSource("package-modules", [
+      { path: "pkg/cons.mjs", blob_sha: blob(81) },
+      { path: "pkg/cons2.mjs", blob_sha: blob(82) }
+    ]);
+    const { edges, warnings } = weave({ repoRoot: r, repositoryRef: REPO, files, symbols, sources: { "package-modules": src.source } });
+    const nid = (kind, locator) => deriveNodeId({ kind, locator });
+    const depFile = nid("repository-file", { repository_ref: REPO, path: "pkg/dep.mjs", blob_sha: blob(80) });
+    const consSym = nid("code-symbol", { repository_ref: REPO, path: "pkg/cons.mjs", symbol: "c", blob_sha: blob(81) });
+    const cons2File = nid("repository-file", { repository_ref: REPO, path: "pkg/cons2.mjs", blob_sha: blob(82) });
+    const has = (from, to) => edges.some((e) => e.edge_kind === "depends-on" && e.from_node === from && e.to_node === to);
+    // code-symbol(cons.c) -> repository-file(dep): named import not a seeded export, consumer has an export.
+    assert.ok(has(consSym, depFile), "used non-seeded named import (consumer WITH export) -> code-symbol -> repository-file");
+    // repository-file(cons2) -> repository-file(dep): same, consumer has no export.
+    assert.ok(has(cons2File, depFile), "used non-seeded named import (consumer WITHOUT export) -> repository-file -> repository-file");
+    // Locator fields carried through on the file-level fallback edge.
+    const fileEdge = edges.find((e) => e.from_node === consSym && e.to_node === depFile);
+    assert.equal(fileEdge.to_locator.locator.repository_ref, REPO);
+    assert.equal(fileEdge.to_locator.locator.blob_sha, blob(80));
+    // It is a fallback edge, NOT an unrepresentable-consumer warning.
+    assert.ok(!warnings.some((w) => /unrepresentable/.test(w.message || String(w))), "resolvable-but-non-seeded name is not unrepresentable-consumer");
+  } finally {
+    rmSync(r, { recursive: true, force: true });
+  }
+}
+
 console.log("test-code: all assertions passed");

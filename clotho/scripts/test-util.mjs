@@ -325,21 +325,26 @@ import {
   assert.equal(ok.warnings.length, 0);
 }
 
-// ---- 8. counted-source: final-item boundary is N-1 (run-to-completion contract)
+// ---- 8. counted-source: full consumption counts N; early break is partial ----
 {
-  // A consumer that reads+processes the LAST item then breaks WITHOUT resuming the
-  // iterator past it records observed_count = N-1, exhausted=false. This is correct:
-  // D29 requires an `executed` weaver to run every handed iterable to natural
-  // completion (for...of to the end), so the driver contract is run-to-completion.
+  // These semantics follow DIRECTLY from the frozen definition ("processing to
+  // edge-extraction eligibility WITHOUT fatal error") plus D29's requirement that
+  // an `executed` weaver EXHAUST every handed iterable — not from any bespoke
+  // "contract". Iterating to NATURAL COMPLETION counts every item exactly once and
+  // records exhaustion:
+  const full = makeCountedSource("inv2", ["x", "y", "z"]);
+  for (const _ of full.source) { /* consume fully */ }
+  assert.deepEqual(full.accounting(), { inventory_id: "inv2", expected_cardinality: 3, observed_count: 3, exhausted: true });
+  // A consumer that abandons iteration after the LAST item without letting the
+  // for...of make its final (done-returning) next() call has performed PARTIAL
+  // consumption: the tail is uncounted and exhausted stays false — exactly the
+  // state D29 turns into a fatal accounting failure at the Task 5 driver's
+  // post-return check.
   const { source, accounting } = makeCountedSource("inv", ["a", "b", "c"]);
   const seen = [];
   for (const it of source) { seen.push(it); if (it === "c") break; }
   assert.deepEqual(seen, ["a", "b", "c"]);
   assert.deepEqual(accounting(), { inventory_id: "inv", expected_cardinality: 3, observed_count: 2, exhausted: false });
-  // Run to natural completion: all counted, exhaustion recorded.
-  const c2 = makeCountedSource("inv2", ["x", "y"]);
-  for (const _ of c2.source) { /* consume fully */ }
-  assert.deepEqual(c2.accounting(), { inventory_id: "inv2", expected_cardinality: 2, observed_count: 2, exhausted: true });
 }
 
 // ---- 9. containment: symlinked ANCESTOR of repo root + intermediate walk-root --
@@ -391,6 +396,45 @@ import {
   // A regex in ordinary expression-start position still masks its interior.
   const es = 'const re = /import("./no.mjs")/;\n';
   assert.equal(classifyModuleLoads(es).filter((s) => s.specifier === "./no.mjs").length, 0);
+
+  // Postfix ++/-- is an expression-ender: the following `/` is DIVISION, so a
+  // literal dynamic import after `x++ /` must still be detected (not masked).
+  const inc = 'let x = 1; const q = x++ / import("./helper.mjs");\n';
+  assert.equal(classifyModuleLoads(inc).filter((s) => s.form === "dynamic-import" && s.specifier === "./helper.mjs").length, 1, "x++ / import(...) detects the dynamic import");
+  const dec = 'let y = 2; const r = y-- / import("./h2.mjs");\n';
+  assert.equal(classifyModuleLoads(dec).filter((s) => s.form === "dynamic-import" && s.specifier === "./h2.mjs").length, 1, "y-- / import(...) detects the dynamic import");
+}
+
+// ---- 9b. import/export as PROPERTY NAME create no load site / no warning ------
+{
+  // `import`/`export` used as an object property key or member are NOT statements:
+  // no load site, and no unsupported-export warning — even next to an unrelated
+  // `from "..."`/specifier that a naive keyword→from search would wrongly bind.
+  const objImp = 'const o = { import: 1 }; const p = load("./unrelated.mjs");\n';
+  assert.equal(classifyModuleLoads(objImp).filter((s) => s.literal && s.specifier === "./unrelated.mjs").length, 0, "{ import: 1 } is not a load statement");
+  const objExp = 'const o = { export: 1 };\nexport const real = 1;\n';
+  assert.deepEqual(scanExports(objExp).warnings, [], "{ export: 1 } property key emits no warning");
+  assert.deepEqual(scanExports(objExp).exports, ["real"], "the real export is still found");
+  const mem = 'const v = o.export; const w = o.import("./m.mjs");\n';
+  assert.deepEqual(scanExports(mem).warnings, [], "o.export member access is not an export");
+  assert.equal(classifyModuleLoads(mem).filter((s) => s.literal).length, 0, "o.import(...) member call is not a load");
+}
+
+// ---- 9c. import-attributes clause is inside the declaration span --------------
+{
+  // An imported local appearing ONLY inside its own declaration — including a
+  // trailing `assert {...}` / `with {...}` attributes clause — is NOT a use.
+  const withAssert = 'import data from "./d.mjs" assert { type: "json" };\nconst z = 1;\n';
+  const imps = scanImports(withAssert);
+  const imp = imps.find((i) => i.specifier === "./d.mjs");
+  assert.ok(imp, "the import is parsed");
+  // `type` and `json` appear only inside the assert clause, which is within the span.
+  assert.equal(identifierUsedOutside(withAssert, "type", [imp.span]), false, "assert-clause identifier `type` is inside the declaration span (not a use)");
+  assert.equal(identifierUsedOutside(withAssert, "json", [imp.span]), false, "assert-clause identifier `json` is inside the declaration span (not a use)");
+  // Sanity: a real use outside the declaration is still detected.
+  const used = 'import data from "./d.mjs" with { type: "json" };\nconsole.log(data);\n';
+  const uimp = scanImports(used).find((i) => i.specifier === "./d.mjs");
+  assert.equal(identifierUsedOutside(used, "data", [uimp.span]), true, "a genuine use outside the declaration is detected");
 }
 
 // ---- 10. canonical repo-relative POSIX validator + git path-arg allowlist -----

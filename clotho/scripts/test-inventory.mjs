@@ -12,7 +12,8 @@ import { statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { readdirSync, statSync as statSyncFs } from "node:fs";
+import { statSync as statSyncFs } from "node:fs";
+import { execFileSync } from "node:child_process";
 
 import {
   PACKAGE_ROOTS, PACKAGE_ROOTS_EXCLUDE, DOC_ROOTS, DOC_WEAVER_EXCLUDE, GLOBAL_EXCLUDE, CONTRACT_FILES,
@@ -109,34 +110,42 @@ const abs = (rel) => path.join(REPO_ROOT, ...rel.split("/"));
   }
 }
 
-// ---- 7. PACKAGE_ROOTS completeness: every package.json dir is accounted for ---
+// ---- 7. PACKAGE_ROOTS completeness over TRACKED package.json (AM-40) ----------
 {
-  // Enumerate EVERY package.json directory in the repository (excluding
-  // node_modules / .git / .telos / the self-weave output) and require each to be
-  // either a committed PACKAGE_ROOT or an explicitly excluded non-TELOS sibling
-  // — so "inventory every current package root once" is proven, not hand-claimed.
-  const SKIP = new Set(["node_modules", ".git", ".telos"]);
-  const pkgDirs = new Set();
-  const walk = (absDir, rel) => {
-    let entries;
-    try { entries = readdirSync(absDir, { withFileTypes: true }); } catch { return; }
-    if (entries.some((e) => e.isFile() && e.name === "package.json")) pkgDirs.add(rel);
-    for (const e of entries) {
-      if (!e.isDirectory() || SKIP.has(e.name)) continue;
-      if (rel === "docs/runs" && e.name === "clotho-self-weave") continue;
-      walk(path.join(absDir, e.name), rel === "" ? e.name : `${rel}/${e.name}`);
-    }
-  };
-  walk(REPO_ROOT, "");
-  pkgDirs.delete(""); // the repo root itself is not a weavable package root
-  const accounted = new Set([...PACKAGE_ROOTS, ...PACKAGE_ROOTS_EXCLUDE]);
-  // no package.json directory is silently missed
-  for (const d of pkgDirs) assert.ok(accounted.has(d), `package dir ${d} is committed or explicitly excluded`);
-  // and every committed/excluded root really is a package directory
-  for (const d of accounted) assert.ok(pkgDirs.has(d), `declared package root ${d} has a package.json`);
-  // included and excluded are disjoint
-  for (const d of PACKAGE_ROOTS) assert.ok(!PACKAGE_ROOTS_EXCLUDE.includes(d), `${d} not both included and excluded`);
-  assert.ok(statSyncFs(abs("clotho/package.json")).isFile()); // sanity: the walker sees real package.json
+  // AM-40 mandates the proof be over every directory holding a *tracked*
+  // package.json (git-tracked, NOT a filesystem scan that could see stray or
+  // untracked files). Enumerate them, then prove exact set equality with the
+  // committed union and empty intersection — nothing silently omitted, no root
+  // silently deleted, membership cannot drift.
+  const out = execFileSync("git", ["ls-files", "--", "*package.json", "package.json"], { cwd: REPO_ROOT, encoding: "utf8" });
+  const pkgPaths = out.split(/\r?\n/).filter(Boolean)
+    .filter((p) => p === "package.json" || p.endsWith("/package.json"))   // basename exactly package.json
+    .filter((p) => !p.split("/").includes("node_modules"));
+  // A tracked repo-root package.json would need an explicit ruling (it is not a
+  // weavable package root); assert none exists rather than silently dropping it.
+  assert.ok(!pkgPaths.includes("package.json"), "no tracked repo-root package.json to classify");
+  const discovered = new Set(pkgPaths.map((p) => p.slice(0, -"/package.json".length)));
+
+  const included = new Set(PACKAGE_ROOTS);
+  const excluded = new Set(PACKAGE_ROOTS_EXCLUDE);
+  const union = new Set([...included, ...excluded]);
+
+  // set equality BOTH directions
+  for (const d of discovered) assert.ok(union.has(d), `tracked package dir ${d} is classified (PACKAGE_ROOTS or _EXCLUDE)`);
+  for (const d of union) assert.ok(discovered.has(d), `classified root ${d} is a real tracked package dir`);
+  assert.equal(union.size, discovered.size, "discovered == PACKAGE_ROOTS ∪ PACKAGE_ROOTS_EXCLUDE (exact set equality)");
+
+  // disjointness: PACKAGE_ROOTS ∩ PACKAGE_ROOTS_EXCLUDE == ∅
+  for (const d of PACKAGE_ROOTS) assert.ok(!excluded.has(d), `${d} not both included and excluded`);
+  assert.equal(included.size + excluded.size, union.size, "PACKAGE_ROOTS ∩ PACKAGE_ROOTS_EXCLUDE == ∅");
+
+  // exact AM-40 arrays, sorted + unique
+  assert.deepEqual(PACKAGE_ROOTS, ["breakout", "build-gate", "clotho", "connectors/ai-peer-mcp", "merkle-dag"], "PACKAGE_ROOTS is exactly the five TELOS-spine packages (AM-40)");
+  assert.deepEqual(PACKAGE_ROOTS_EXCLUDE, ["ai-forge", "forge", "saas-forge"], "PACKAGE_ROOTS_EXCLUDE is exactly the three sibling products (AM-40)");
+  const sortedUnique = (a) => Array.isArray(a) && a.length === new Set(a).size && a.every((v, i) => i === 0 || a[i - 1] < v);
+  assert.ok(sortedUnique(PACKAGE_ROOTS), "PACKAGE_ROOTS sorted + unique");
+  assert.ok(sortedUnique(PACKAGE_ROOTS_EXCLUDE), "PACKAGE_ROOTS_EXCLUDE sorted + unique");
+  assert.ok(statSyncFs(abs("clotho/package.json")).isFile()); // sanity
 }
 
 console.log("test-inventory: all assertions passed");

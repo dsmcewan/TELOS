@@ -74,6 +74,16 @@ const closureOf = (root, allowExternal = new Set()) =>
   deriveAcceptedClosure(entryOf(root), { repoRoot: root, allowExternal });
 
 // ---- 2. every accepted load form contributes an edge ------------------------
+// This section IS the frozen "closure-equality failure fixtures where the omitted
+// member is reached ONLY through re-export / literal dynamic import / an accepted
+// require-style form": each `forms` entry reaches `helper.mjs` SOLELY via one
+// accepted form, and the `inventoryMatches([...entry only...])` assertion proves
+// that omitting that form-only-reached member FAILS closure equality — through the
+// SAME `inventoryMatches` harness used for the committed inventories (section 1),
+// so the per-form omission coverage maps directly onto the frozen requirement:
+//   export {..} from / export * from / export * as ns from  -> re-export forms
+//   dynamic import()                                        -> literal dynamic import
+//   require() / module.require()                            -> require-style forms
 {
   const forms = {
     "named static import": 'import { h } from "./helper.mjs";\n',
