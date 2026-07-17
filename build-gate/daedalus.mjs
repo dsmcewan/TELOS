@@ -1,14 +1,20 @@
 // daedalus.mjs — the bounded claude/codex planning workshop. Objection hashes are controller-computed;
 // convergence requires every prior objection EXPLICITLY resolved/superseded/withdrawn (absence is not
 // a disposition); the state machine is total and candidate-hash-driven.
+import { readFileSync } from "node:fs";
 import { canonicalize, sha256hex } from "../merkle-dag/vendor.mjs";
 
 const H = (v) => "sha256:" + sha256hex(canonicalize(v));
 const PLACEHOLDER_RE = /^$|_self$|^self$|placeholder/i;
 
+// Seat and role->seat bindings are DATA (seats.json): a future model takes the
+// workshop or a parallel-authorship role by data change, not a script edit.
+// DAEDALUS_MAX_ROUNDS stays code — it is a protocol constant, not a seat binding.
+const SEATS = JSON.parse(readFileSync(new URL("./seats.json", import.meta.url), "utf8"));
+
 export const DAEDALUS_MAX_ROUNDS = 6;
-export const DAEDALUS_SEATS = ["claude", "codex"];
-const PROVIDER_BY_SEAT = { claude: "anthropic", codex: "openai" };
+export const DAEDALUS_SEATS = SEATS.workshop_seats;
+const PROVIDER_BY_SEAT = Object.fromEntries(Object.entries(SEATS.seats).map(([m, s]) => [m, s.provider]));
 
 // Controller-computed objection identity (a model-asserted objection_hash is discarded + recomputed).
 export function computeObjectionHash(objection) {
@@ -190,7 +196,7 @@ function provKey(seat, provenance) {
 // Each seat then verifies its own contract survived integration; a violation or
 // any conflict routes to The Eye rather than being silently blended. The target
 // is the smallest complete behavioral model that satisfies the invariant.
-export const PARALLEL_ROLES = { constraints: "codex", implementation: "claude" };
+export const PARALLEL_ROLES = SEATS.parallel_authorship;
 export const OBLIGATION_FIELDS = ["invariant", "mechanism", "task", "negative_test", "exit_criterion"];
 
 // A matrix row is complete only when every field is a non-blank string.

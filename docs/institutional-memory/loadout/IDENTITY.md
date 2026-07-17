@@ -50,5 +50,7 @@ a genuinely missing external capability graduates into gate-enforced
 | multi-server router (fail-closed) | `breakout/seat_router.mjs` |
 | registry/router oracles | `build-gate/scripts/test-seat-registry.mjs`, `breakout/scripts/test-seat-router.mjs` |
 | capability packet fixtures | `build-gate/examples/{capability-blocked,prototype-pass}/` |
-| machine contracts | `CONTRACTS/seat-backends.json`, `CONTRACTS/capability-packet.json` |
+| seat identity + role bindings (data) | `build-gate/seats.json` (provider, strengths, preferred roles, frames, parallel-authorship + workshop bindings, effort tiers) |
+| prompt templates (data, purpose-keyed) | `build-gate/prompts.json` (approval, review, daedalus, team/node build, decompose — `{seat}`-bound, seat-name-free) |
+| machine contracts | `CONTRACTS/seat-backends.json`, `CONTRACTS/capability-packet.json`, `CONTRACTS/env-surface.json`, `CONTRACTS/seat-prompt-separation.json` |
 | per-task reviews | `TASK-LOADOUTS/task-{4b,5,6,7}.json` |

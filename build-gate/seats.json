@@ -1,0 +1,89 @@
+{
+  "note": "Seat identity as DATA, separate from script (policy-as-data): each council seat's provider, durable strengths/weaknesses, preferred team roles, and prompt framing live here so a future model can take a seat by editing this file — no orchestration script changes. model-profiles.mjs, teamPrompts.mjs, and daedalus.mjs load this file; docs/institutional-memory/verify-contracts.mjs proves their exports equal it. Model IDS stay env/per-call (ANTHROPIC_MODEL, OPENAI_MODEL, XAI_MODEL, GEMINI_MODEL) — a seat names a ROLE-SHAPED slot, never a snapshot id.",
+  "seats": {
+    "claude": {
+      "provider": "anthropic",
+      "kind": "chat",
+      "strengths": [
+        "long-horizon agentic coding",
+        "careful structured reasoning and instruction-following",
+        "system architecture and code quality",
+        "clear writing and UX / brand voice",
+        "safety and adversarial robustness"
+      ],
+      "weaknesses": ["can be verbose / over-cautious", "no live/real-time data"],
+      "preferred_roles": ["planning", "architecture", "frontend", "evals"],
+      "frame": {
+        "prefix": "<task>\n",
+        "suffix": "\n</task>\n<approach>Architect and reason carefully; own the design end-to-end. Surface trade-offs and unknowns explicitly instead of smoothing them over. Be rigorous and concise.</approach>"
+      }
+    },
+    "codex": {
+      "provider": "openai",
+      "kind": "chat",
+      "strengths": [
+        "strong code generation and refactoring",
+        "broad API / library knowledge",
+        "best-in-class tool-calling and strict structured outputs",
+        "deep logic and step-by-step planning (reasoning models)"
+      ],
+      "weaknesses": ["terse", "occasionally over-confident"],
+      "preferred_roles": ["backend", "evals", "ops", "architecture", "security", "integrity"],
+      "frame": {
+        "prefix": "",
+        "suffix": "\n\n# Approach\nImplement precisely and correctly. Prefer the smallest correct construction; check edge cases and failure paths before emitting. The output schema is enforced — fill every field honestly."
+      }
+    },
+    "grok": {
+      "provider": "xai",
+      "kind": "chat",
+      "strengths": [
+        "real-time web / X search for live market and threat intel",
+        "contrarian, multi-agent adversarial reasoning",
+        "genuine red-teaming (less filtered)",
+        "large context"
+      ],
+      "weaknesses": ["less-proven code correctness", "favors freshness over rigor"],
+      "preferred_roles": ["breakout", "security", "business"],
+      "frame": {
+        "prefix": "",
+        "suffix": "\n\nApproach: challenge it — you are the adversary. Attack the strongest version of the claim, hunt the failure modes everyone else is incentivized to miss, and draw on the live landscape you know. An empty objection list must mean you genuinely found nothing, never that you went easy."
+      }
+    },
+    "gemini": {
+      "provider": "google",
+      "kind": "chat",
+      "strengths": [
+        "very large context",
+        "deep-think verification and cross-checking",
+        "strong factual grounding",
+        "structured output"
+      ],
+      "weaknesses": ["newer agentic tooling", "response id not always provided"],
+      "preferred_roles": ["integrity"],
+      "frame": {
+        "prefix": "",
+        "suffix": "\n\nApproach: independently verify. Don't trust — re-derive: recompute every checkable quantity from the material given, cross-check it against first principles, and flag anything you could not reconstruct yourself."
+      }
+    },
+    "agy": {
+      "provider": "local",
+      "kind": "structured",
+      "strengths": [
+        "deterministic, reproducible, content-addressed governance",
+        "cannot hallucinate — verdicts are computed, not generated"
+      ],
+      "weaknesses": ["no generative ability"],
+      "preferred_roles": ["ops", "backend", "planning"]
+    }
+  },
+  "workshop_seats": ["claude", "codex"],
+  "parallel_authorship": { "constraints": "codex", "implementation": "claude" },
+  "effort_tiers": {
+    "builder": null,
+    "challenger": "high",
+    "reviewer": "high",
+    "referee": "medium",
+    "approver": null
+  }
+}

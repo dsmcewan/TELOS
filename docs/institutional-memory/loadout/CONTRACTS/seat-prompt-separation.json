@@ -1,0 +1,30 @@
+{
+  "kind": "contract",
+  "component": "loadout",
+  "id": "seat-prompt-separation",
+  "title": "Models and prompts live as seat-keyed DATA, separate from script",
+  "authority": {
+    "principle": "docs/ROADMAP.md#core-principle (mechanism stays; policy becomes data)",
+    "data": ["build-gate/seats.json", "build-gate/prompts.json"],
+    "mechanism": ["build-gate/model-profiles.mjs", "build-gate/teamPrompts.mjs", "build-gate/daedalus.mjs"]
+  },
+  "rules": [
+    "seat identity (provider, durable strengths/weaknesses, preferred roles, prompt framing) lives in seats.json — a future model takes a seat by editing DATA, never a script",
+    "prompt text lives in prompts.json keyed by PURPOSE (approval, review, daedalus, team_build, node_build, decompose), binding by {seat}/{role} placeholders",
+    "no council/workshop prompt template may contain a literal seat name — the seat is always a variable, so role-strength placement survives model succession",
+    "role->seat bindings (parallel_authorship, workshop_seats) are data in seats.json; the daedalus module exports them from there",
+    "model IDS stay env/per-call (ANTHROPIC_MODEL, OPENAI_MODEL, XAI_MODEL, GEMINI_MODEL) — a seat names a role-shaped slot, never a snapshot id",
+    "load-bearing contract language inside a prompt (review check-registry rules, daedalus no-objection-hash rule) changes only with its governing decision (CHANGE-PROTOCOL)"
+  ],
+  "purposes": ["approval", "review", "daedalus", "team_build", "node_build", "decompose"],
+  "why": "The council's value is placing each model where it is strongest. If prompts or role bindings hardcode a model name in script, succession requires code review of orchestration logic; as seat-keyed data, a stronger future model slots into constraints/implementation/adversary/verifier seats by a reviewed data edit, and every prompt it inherits already invokes the seat's purpose.",
+  "change_rule": "Adding a seat, moving a role binding, or changing prompt text is a data change to seats.json/prompts.json reviewed on its own terms; changing HOW templates are loaded/interpolated is a mechanism change. The two must not be mixed in one edit without calling it out.",
+  "oracle": {
+    "source_of_truth": "build-gate/seats.json + build-gate/prompts.json",
+    "test": "build-gate npm test (test-teams: leads placed by preferred_roles; test-team-prompts: frames/instructions reach the wire; test-daedalus: seat/role bindings drive the workshop)",
+    "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (MODEL_PROFILES/EFFORT_TIERS/PARALLEL_ROLES/DAEDALUS_SEATS exports deep-equal the JSON; profileFor probed against every seat frame; seat set equals the seat-registry council seats; every council-purpose template is seat-name-free and carries the {seat} placeholder)"
+  },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

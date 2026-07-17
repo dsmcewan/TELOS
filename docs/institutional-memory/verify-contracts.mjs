@@ -442,6 +442,50 @@ try {
     staleDyn.length || staleWhole.length ? `stale allowances: ${[...staleDyn, ...staleWhole].join(", ")}` : "every file allowance corresponds to a real use");
 } catch (e) { check("loadout:env-surface", false, e.message); }
 
+// ---- 7e. loadout: seat-prompt separation — models/prompts are seat-keyed data --
+try {
+  const c = readJson("docs/institutional-memory/loadout/CONTRACTS/seat-prompt-separation.json");
+  const seatsJson = readJson("build-gate/seats.json");
+  const promptsJson = readJson("build-gate/prompts.json");
+  const mp = await imp("build-gate/model-profiles.mjs");
+  const tp = await imp("build-gate/teamPrompts.mjs");
+  const dd = await imp("build-gate/daedalus.mjs");
+  const sr = await imp("build-gate/seat-registry.mjs");
+
+  // the seat set in the data == the council seats the registry routes
+  const registrySeats = [...new Set(Object.keys(sr.defaultSeatRegistry({ dir: "__PROBE__" }).tools).map((t) => t.replace(/_(ask|checkpoint)$/, "")))].sort();
+  const dataSeats = Object.keys(seatsJson.seats).sort();
+  check("seat-prompts:seat-set==registry-seats", eqArr(dataSeats, registrySeats), `data=${JSON.stringify(dataSeats)} registry=${JSON.stringify(registrySeats)}`);
+
+  // code exports ARE the data (proves the modules load JSON, not shadow literals)
+  const derivedProfiles = Object.fromEntries(Object.entries(seatsJson.seats).map(([m, s]) => [m, { provider: s.provider, strengths: s.strengths, weaknesses: s.weaknesses, preferred_roles: s.preferred_roles }]));
+  check("seat-prompts:MODEL_PROFILES==seats.json", deepEq(mp.MODEL_PROFILES, derivedProfiles), "compared canonical JSON");
+  check("seat-prompts:EFFORT_TIERS==seats.json", deepEq(mp.EFFORT_TIERS, seatsJson.effort_tiers), "compared canonical JSON");
+  check("seat-prompts:PARALLEL_ROLES==seats.json", deepEq(dd.PARALLEL_ROLES, seatsJson.parallel_authorship), "compared canonical JSON");
+  check("seat-prompts:DAEDALUS_SEATS==seats.json", eqArr(dd.DAEDALUS_SEATS, seatsJson.workshop_seats), `code=${JSON.stringify(dd.DAEDALUS_SEATS)} data=${JSON.stringify(seatsJson.workshop_seats)}`);
+
+  // every seat frame is applied verbatim by profileFor (probe); agy has no frame
+  for (const [seat, s] of Object.entries(seatsJson.seats)) {
+    const framed = tp.profileFor(seat).frame("PROBE_BODY");
+    const expected = s.frame ? `${s.frame.prefix}PROBE_BODY${s.frame.suffix}` : "PROBE_BODY";
+    check(`seat-prompts:frame-${seat}`, framed === expected, framed === expected ? (s.frame ? "frame applied verbatim" : "no frame — identity") : "profileFor output != seats.json frame");
+  }
+
+  // every declared purpose exists; council/workshop templates bind by {seat} and
+  // contain NO literal seat name — the seat is always a variable
+  const seatName = new RegExp(`\\b(${dataSeats.join("|")})\\b`, "i");
+  for (const purpose of c.purposes) {
+    const p = promptsJson.purposes[purpose];
+    check(`seat-prompts:purpose-${purpose}-present`, !!p, p ? "present" : "missing from prompts.json");
+    if (!p) continue;
+    const strings = JSON.stringify(p);
+    check(`seat-prompts:purpose-${purpose}-seat-name-free`, !seatName.test(strings), seatName.test(strings) ? `template hardcodes a seat name: ${strings.match(seatName)[0]}` : "no literal seat names");
+    if (["approval", "review", "daedalus"].includes(purpose)) {
+      check(`seat-prompts:purpose-${purpose}-binds-by-seat`, p.system.includes("{seat}"), p.system.includes("{seat}") ? "{seat} placeholder present" : "system template missing {seat} placeholder");
+    }
+  }
+} catch (e) { check("seat-prompts:separation", false, e.message); }
+
 // ---- report -------------------------------------------------------------------
 for (const r of results) console.log(`  [${r.ok ? "PASS" : "FAIL"}] ${r.id}: ${r.detail}`);
 const failed = results.filter((r) => !r.ok);

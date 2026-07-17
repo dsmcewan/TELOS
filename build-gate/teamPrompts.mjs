@@ -8,25 +8,32 @@
 // the gate honest-blocks), mirroring the existing `smoke` scripts. The pure
 // prompt/parse helpers are unit-tested without a network.
 
+import { readFileSync } from "node:fs";
 import { agyApprovalPacket, agyCheckpointArgs, agyLifecycleCheckpointArgs } from "./council.mjs";
 import { SCHEMAS, validateAgainstSchema, PROPOSAL_REVIEW_PACKET_SCHEMA, DAEDALUS_RESPONSE_SCHEMA } from "./schemas.mjs";
 
+// Seat identity and prompt TEXT live as data (seats.json / prompts.json) —
+// templates bind by {seat}/{role} placeholders so a future model inherits a
+// purpose's prompt by taking the seat, never by a script edit. This module is
+// the mechanism: it loads, interpolates, frames, and parses.
+const SEATS = JSON.parse(readFileSync(new URL("./seats.json", import.meta.url), "utf8"));
+const PROMPTS = JSON.parse(readFileSync(new URL("./prompts.json", import.meta.url), "utf8")).purposes;
+
+// Single-pass {token} interpolation over KNOWN vars only — literal braces in the
+// contract text ({"files":..., {scope, claim, ...}) never match, and inserted
+// values are not re-scanned.
+const fill = (template, vars) => template.replace(/\{([a-zA-Z_]+)\}/g, (m, k) => (k in vars ? vars[k] : m));
+
 // Chat seats expose an `<model>_ask` tool; agy is structured (no code generation).
-const ASK_MODELS = new Set(["claude", "grok", "codex", "gemini"]);
+const ASK_MODELS = new Set(Object.entries(SEATS.seats).filter(([, s]) => s.kind === "chat").map(([m]) => m));
 const VALID_DECISIONS = new Set(["approve", "revise", "reject", "advisory-note"]);
 
-// Per-provider prompt framing that LEANS INTO each model's strength (see
-// model-profiles.mjs) — the schema now carries the JSON contract, so the prompt is
-// free to invoke what the model is best at, not just repeat a format instruction.
-const PROVIDER_PROFILES = {
-  claude: { frame: (body) => `<task>\n${body}\n</task>\n<approach>Architect and reason carefully; own the design. Be rigorous and concise.</approach>` },
-  codex: { frame: (body) => `${body}\n\n# Approach\nImplement precisely and correctly. The output schema is enforced.` },
-  grok: { frame: (body) => `${body}\n\nApproach: challenge it — find what's wrong, draw on the live landscape you know, be the adversary.` },
-  gemini: { frame: (body) => `${body}\n\nApproach: independently verify. Cross-check the claim against first principles; don't trust — re-derive.` }
-};
-
+// Per-seat prompt framing that LEANS INTO each model's strength (seats.json#frame)
+// — the schema carries the JSON contract, so the frame is free to invoke what the
+// model is best at, not just repeat a format instruction.
 export function profileFor(model) {
-  return PROVIDER_PROFILES[model] || { frame: (b) => b };
+  const f = SEATS.seats[model] && SEATS.seats[model].frame;
+  return f ? { frame: (body) => `${f.prefix}${body}${f.suffix}` } : { frame: (b) => b };
 }
 const VALID_CONFIDENCE = new Set(["low", "medium", "high"]);
 
@@ -52,34 +59,21 @@ export function buildableSeat(team) {
 
 // System prompt for a team: mission + the strict JSON contract the builder parses.
 export function promptForTeam(team) {
-  const mission = team && team.mission ? team.mission : "build the requested node";
-  return [
-    `You are the TELOS "${team?.id ?? "build"}" team. Mission: ${mission}.`,
-    "You implement EXACTLY one task node. You see only its spec — never the wider plan.",
-    "Return ONLY a JSON object of the form {\"files\":[{\"path\":\"<one of the node's declared files>\",\"content\":\"<file contents>\"}]}.",
-    "Write every file the node declares and no others. No prose, no markdown fences."
-  ].join(" ");
+  const vars = { team_id: team?.id ?? "build", mission: team && team.mission ? team.mission : "build the requested node" };
+  return PROMPTS.team_build.system_lines.map((l) => fill(l, vars)).join(" ");
 }
 
 // Build the per-node user prompt from the injected spec (Rule 1: spec only).
 // On a retry, `priorFailure` carries THIS node's OWN previous test failure so the
 // team can self-correct — still own-node-only, no plan/other-node leak.
 export function nodeBuildPrompt(node, priorFailure = null) {
-  const lines = [
-    `Task id: ${node.id}`,
-    `Requirements: ${node.requirements}`,
-    `Files to write (exactly these): ${JSON.stringify(node.files)}`
-  ];
+  const vars = { id: node.id, requirements: node.requirements, files: JSON.stringify(node.files) };
+  const lines = PROMPTS.node_build.lines.map((l) => fill(l, vars));
   if (priorFailure) {
-    lines.push(
-      "",
-      `Your previous attempt FAILED its own test (exit ${priorFailure.status}).`,
-      "Test output (truncated):",
-      (priorFailure.stderr || priorFailure.stdout || priorFailure.detail || "").trim(),
-      "Fix the files so the test passes."
-    );
+    const rv = { status: priorFailure.status, output: (priorFailure.stderr || priorFailure.stdout || priorFailure.detail || "").trim() };
+    lines.push(...PROMPTS.node_build.retry_lines.map((l) => fill(l, rv)));
   }
-  lines.push("Emit the JSON {files:[...]} now.");
+  lines.push(PROMPTS.node_build.final_line);
   return lines.join("\n");
 }
 
@@ -126,10 +120,8 @@ export function makeLiveCallTeam({ client }) {
   };
 }
 
-// The schema now carries the JSON contract (response_schema), so this is a light
-// hint, not the load-bearing format spec it used to be.
-const PACKET_INSTRUCTION =
-  "Provide your judgment as the structured fields: decision, confidence, required_edits, hard_stops, rationale.";
+// The schema carries the JSON contract (response_schema); the instruction text
+// lives in prompts.json per purpose.
 
 /**
  * Build a promptFor(model, role, dossier, workstream) for liveSeatCaller
@@ -145,13 +137,14 @@ export function approvalPromptFor(dossier, { models = {} } = {}) {
       // not asserted — so agy can actually dissent (see council.agyCheckpointArgs).
       return { tool: "agy_checkpoint", args: agyCheckpointArgs(dossier, dossier?.use_case) };
     }
-    const lens = workstream ? `, workstream lens: ${workstream}` : "";
+    const P = PROMPTS.approval;
+    const vars = { seat: model, role, lens: workstream ? `, workstream lens: ${workstream}` : "", instruction: P.instruction, objective: dossier?.objective ?? "" };
     return {
       tool: `${model}_ask`,
       model: models[model],
       // profileFor leans the framing into the model's strength; the schema enforces shape.
-      system: profileFor(model).frame(`You are ${model}, a council ${role} for TELOS${lens}. Judge the objective on the merits. ${PACKET_INSTRUCTION}`),
-      prompt: `Objective:\n${dossier?.objective ?? ""}\n\n${PACKET_INSTRUCTION}`,
+      system: profileFor(model).frame(fill(P.system, vars)),
+      prompt: fill(P.user, vars),
       response_schema: SCHEMAS.approval.schema,
       schema_name: SCHEMAS.approval.schema_name
     };
@@ -199,19 +192,6 @@ export function parseReviewPacket(text, model, dossier, meta = {}) {
   };
 }
 
-const REVIEW_INSTRUCTION =
-  "Review the compiled candidate plan. Provide: decision (approve/revise/reject), confidence, required_edits, " +
-  "considerations, and concerns. Each concern is typed {scope, claim, severity, judgment_class, evidence_refs, " +
-  "required_verification}. To require a post-build verification, set required_verification.requested=true and name " +
-  "ONLY a check_contract.kind (from the repo's closed check-registry) + params_json — never a node id; the " +
-  "controller mints the discharge node.";
-
-const DAEDALUS_INSTRUCTION =
-  "You are negotiating an implementation plan. Return {plan_revision, objections, dispositions, rationale}. " +
-  "plan_revision is the full candidate task list as canonical JSON (or \"\" to keep it). Each objection is " +
-  "{scope, claim, evidence_refs} — do NOT include an objection_hash; identity is computed by the controller. " +
-  "Dispositions resolve/supersede/withdraw an OPEN objection from the menu by its objection_hash.";
-
 /** Live REVIEW prompt (mirrors approvalPromptFor but emits a proposal-lifecycle review packet). The
  *  agy branch derives its checkpoint from the RECOMPUTED plan via agyLifecycleCheckpointArgs. */
 export function reviewPromptFor(dossier, { models = {}, plan = null } = {}) {
@@ -220,12 +200,13 @@ export function reviewPromptFor(dossier, { models = {}, plan = null } = {}) {
       const args = plan ? agyLifecycleCheckpointArgs(plan, dossier, dossier?.use_case) : agyCheckpointArgs(dossier, dossier?.use_case);
       return { tool: "agy_checkpoint", args };
     }
-    const lens = workstream ? `, workstream lens: ${workstream}` : "";
+    const P = PROMPTS.review;
+    const vars = { seat: model, role, lens: workstream ? `, workstream lens: ${workstream}` : "", instruction: P.instruction, objective: dossier?.objective ?? "" };
     return {
       tool: `${model}_ask`,
       model: models[model],
-      system: profileFor(model).frame(`You are ${model}, a council ${role} for TELOS${lens}. Judge the candidate plan on the merits. ${REVIEW_INSTRUCTION}`),
-      prompt: `Objective:\n${dossier?.objective ?? ""}\n\n${REVIEW_INSTRUCTION}`,
+      system: profileFor(model).frame(fill(P.system, vars)),
+      prompt: fill(P.user, vars),
       response_schema: SCHEMAS.review.schema,
       schema_name: SCHEMAS.review.schema_name
     };
@@ -236,14 +217,14 @@ export function reviewPromptFor(dossier, { models = {}, plan = null } = {}) {
  *  contract; the parser (parseDaedalusResponse) strips any model-supplied objection_hash so objection
  *  identity is unconditionally controller-recomputed (round-7/8). */
 export function daedalusPromptFor({ seat, candidateBody, openMenu = [], model }) {
-  const menu = openMenu.length
-    ? `\n\nOPEN objections you may dispose (by objection_hash, only those you raised):\n${JSON.stringify(openMenu)}`
-    : "\n\nNo open objections yet.";
+  const P = PROMPTS.daedalus;
+  const menu = openMenu.length ? fill(P.menu_open, { menu: JSON.stringify(openMenu) }) : P.menu_empty;
+  const vars = { seat, instruction: P.instruction, candidate: candidateBody, menu };
   return {
     tool: `${seat}_ask`,
     model,
-    system: profileFor(seat).frame(`You are ${seat}, negotiating a TELOS implementation plan. ${DAEDALUS_INSTRUCTION}`),
-    prompt: `Current candidate (canonical JSON task body):\n${candidateBody}${menu}\n\n${DAEDALUS_INSTRUCTION}`,
+    system: profileFor(seat).frame(fill(P.system, vars)),
+    prompt: fill(P.user, vars),
     response_schema: SCHEMAS.daedalus.schema,
     schema_name: SCHEMAS.daedalus.schema_name
   };
@@ -287,17 +268,11 @@ export function parseApprovalPacket(text, model, dossier, meta = {}) {
 // The Planning team's decompose prompt: ask for a strict JSON task list whose
 // nodes carry the footprints + test the merkle-dag planner needs.
 export function decomposePrompt(dossier, telos, conventions = null) {
-  const system = [
-    "You are the TELOS Planning team. Decompose the objective into a build plan.",
-    'Return an object {"tasks":[ ... ]} where each task has id, writes[], reads[], requirements,',
-    'test{cmd,args[]}, and workstream (backend-schema|frontend-brand-experience|security-trust|scale-operations|product-architecture).',
-    "One writer per file. Declare reads for cross-file dependencies."
-  ].join(" ");
+  const P = PROMPTS.decompose;
+  const system = P.system_lines.join(" ");
   // Project sense: if the real project has a test command, steer node tests toward it.
-  const conventionLine = conventions?.testCmd
-    ? `\n\nThis is an existing project; its real test command is "${conventions.testCmd}". Prefer node tests that invoke it (e.g. {"cmd":"npm","args":["test"]}) over a no-op.`
-    : "";
-  const prompt = `Objective:\n${dossier?.objective ?? ""}\n\nTelos statement:\n${telos ?? ""}${conventionLine}\n\nEmit the task plan now.`;
+  const conventionLine = conventions?.testCmd ? fill(P.convention_line, { testCmd: conventions.testCmd }) : "";
+  const prompt = fill(P.user, { objective: dossier?.objective ?? "", telos: telos ?? "", convention: conventionLine });
   return { system, prompt, response_schema: SCHEMAS.decompose.schema, schema_name: SCHEMAS.decompose.schema_name };
 }
 

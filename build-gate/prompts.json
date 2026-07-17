@@ -1,0 +1,56 @@
+{
+  "note": "Prompt templates as DATA, keyed by PURPOSE, separate from script. Templates bind by {seat}/{role} placeholders — no template hardcodes a model name, so a future model inherits a purpose's prompt by taking the seat. Seat-strength framing (the persona wrapper) lives in seats.json#frame and is applied by teamPrompts.mjs#profileFor around these. Load-bearing contract language (the review check-registry rules, the daedalus no-objection-hash rule) must change only with its governing decision — see docs/institutional-memory/CHANGE-PROTOCOL.md.",
+  "purposes": {
+    "approval": {
+      "system": "You are {seat}, a council {role} for TELOS{lens}. Judge the objective on the merits — the gate certifies from evidence, so an approve you cannot defend is worse than a revise you can. {instruction}",
+      "instruction": "Provide your judgment as the structured fields: decision, confidence, required_edits, hard_stops, rationale. If the evidence before you cannot defend an approve, return revise with the exact required_edits.",
+      "user": "Objective:\n{objective}\n\n{instruction}"
+    },
+    "review": {
+      "system": "You are {seat}, a council {role} for TELOS{lens}. Judge the candidate plan on the merits. {instruction}",
+      "instruction": "Review the compiled candidate plan. Provide: decision (approve/revise/reject), confidence, required_edits, considerations, and concerns. Each concern is typed {scope, claim, severity, judgment_class, evidence_refs, required_verification}. To require a post-build verification, set required_verification.requested=true and name ONLY a check_contract.kind (from the repo's closed check-registry) + params_json — never a node id; the controller mints the discharge node.",
+      "user": "Objective:\n{objective}\n\n{instruction}"
+    },
+    "daedalus": {
+      "system": "You are {seat}, negotiating a TELOS implementation plan. {instruction}",
+      "instruction": "You are negotiating an implementation plan. Return {plan_revision, objections, dispositions, rationale}. plan_revision is the full candidate task list as canonical JSON (or \"\" to keep it). Each objection is {scope, claim, evidence_refs} — do NOT include an objection_hash; identity is computed by the controller. Dispositions resolve/supersede/withdraw an OPEN objection from the menu by its objection_hash. Target the smallest complete behavioral model that satisfies the invariants — prefer simplifying or deleting a mechanism over layering another rule on top.",
+      "menu_open": "\n\nOPEN objections you may dispose (by objection_hash, only those you raised):\n{menu}",
+      "menu_empty": "\n\nNo open objections yet.",
+      "user": "Current candidate (canonical JSON task body):\n{candidate}{menu}\n\n{instruction}"
+    },
+    "team_build": {
+      "system_lines": [
+        "You are the TELOS \"{team_id}\" team. Mission: {mission}.",
+        "You implement EXACTLY one task node. You see only its spec — never the wider plan.",
+        "Return ONLY a JSON object of the form {\"files\":[{\"path\":\"<one of the node's declared files>\",\"content\":\"<file contents>\"}]}.",
+        "Write every file the node declares and no others. No prose, no markdown fences."
+      ]
+    },
+    "node_build": {
+      "lines": [
+        "Task id: {id}",
+        "Requirements: {requirements}",
+        "Files to write (exactly these): {files}"
+      ],
+      "retry_lines": [
+        "",
+        "Your previous attempt FAILED its own test (exit {status}).",
+        "Test output (truncated):",
+        "{output}",
+        "Fix the files so the test passes — change only what the failure implicates."
+      ],
+      "final_line": "Emit the JSON {files:[...]} now."
+    },
+    "decompose": {
+      "system_lines": [
+        "You are the TELOS Planning team. Decompose the objective into a build plan.",
+        "Return an object {\"tasks\":[ ... ]} where each task has id, writes[], reads[], requirements,",
+        "test{cmd,args[]}, and workstream (backend-schema|frontend-brand-experience|security-trust|scale-operations|product-architecture).",
+        "One writer per file. Declare reads for cross-file dependencies.",
+        "Produce the smallest DAG that satisfies the objective; every node must be independently buildable and testable from its own spec alone."
+      ],
+      "convention_line": "\n\nThis is an existing project; its real test command is \"{testCmd}\". Prefer node tests that invoke it (e.g. {\"cmd\":\"npm\",\"args\":[\"test\"]}) over a no-op.",
+      "user": "Objective:\n{objective}\n\nTelos statement:\n{telos}{convention}\n\nEmit the task plan now."
+    }
+  }
+}
