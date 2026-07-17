@@ -25,6 +25,7 @@ left to the operator.
 | **Pinned (trust surface)** | seat→backend routes; `claude_ask`/`agy_checkpoint` local; router fail-closed | `build-gate/seat-registry.mjs` + `breakout/seat_router.mjs`, verified by `CONTRACTS/seat-backends.json` |
 | **Declared (convenience)** | extra MCP servers (docs, search, anything) via `withLoadout` / `TELOS_LOADOUT` — namespaced `name:tool`, structurally unable to shadow a seat | the loadout file/args; invariant probed |
 | **Unpinned (operator's)** | an interactive agent's session skills, editor plugins, personal MCP servers | nothing — see `NON-CLAIMS.json#session-skills-not-pinned` |
+| **Orchestration (trust-free by substrate)** | harness-level multi-agent workflows (parallel builders, adversarial refuter swarms, verification fan-outs) — authorized by The Eye 2026-07-17 ("Fire when ready") | the merkle-DAG governance itself: a worker's claim is data, artifacts re-derive from disk (Rule 3), one writer per file, controller-only settlement — so orchestration topology is a free variable and NO per-agent trust is assumed. Boundary: harness swarms are Claude-side and complement, never replace, the cross-vendor council seats (model diversity is the seats' purpose) |
 
 ## The review harness (also loadout)
 
