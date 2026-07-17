@@ -1,8 +1,13 @@
 #!/usr/bin/env node
-// test-closure.mjs — Task 4a. Proves the committed per-weaver implementation-file
-// inventories (D33) are EQUAL to the accepted relative module-load closures
-// derived from the real weaver modules with the SHARED classifier/resolver — the
-// inventories are proven, never trusted. The committed permitted-external policy
+// test-closure.mjs — Task 4a, extended at Task 5. Proves the committed per-weaver
+// implementation-file inventories (D33) are EQUAL to the accepted relative
+// module-load closures derived from the real weaver modules with the SHARED
+// classifier/resolver — the inventories are proven, never trusted. Task 5
+// extends the SAME harness to the ORCHESTRATOR entry points (weave.mjs +
+// thread-ledger.mjs): the committed orchestrator-file inventory must equal the
+// derived union closure exactly, and any omitted or extra file — including an
+// orchestrator helper reached only through a re-export, a literal dynamic
+// import, or an accepted require-style form — fails equality. The committed permitted-external policy
 // (PERMITTED_EXTERNAL_CLOSURE_FILES) is the SAME policy used in the normative
 // equality check. Then hermetic fixtures prove: every accepted load form
 // contributes a closure edge and cannot be omitted from the inventory; recursion,
@@ -25,7 +30,10 @@ import { fileURLToPath } from "node:url";
 import {
   deriveAcceptedClosure, resolveRelativeSpecifier, classifyModuleLoads, walkFiles
 } from "../weavers/util.mjs";
-import { WEAVER_IMPL_FILES, WEAVER_ENTRY_MODULE, PERMITTED_EXTERNAL_CLOSURE_FILES } from "../inventory.mjs";
+import {
+  WEAVER_IMPL_FILES, WEAVER_ENTRY_MODULE, PERMITTED_EXTERNAL_CLOSURE_FILES,
+  ORCHESTRATOR_FILES, ORCHESTRATOR_ENTRY_MODULES
+} from "../inventory.mjs";
 
 const CLOTHO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const REPO_ROOT = path.resolve(CLOTHO, "..");
@@ -435,6 +443,98 @@ const closureOf = (root, allowExternal = new Set()) =>
       /escape/,
       "allowExternal cannot admit a non-merkle-dag target"
     );
+  } finally { rmSync(root, { recursive: true, force: true }); }
+}
+
+// ---- 16. ORCHESTRATOR closure equality (D33, Task 5) --------------------------
+// The committed orchestrator-file inventory equals the accepted relative
+// module-load closure of the frozen orchestrator entry points, derived as the
+// UNION of per-entry closures with the SAME shared classifier/resolver
+// (deriveAcceptedClosure) and the SAME committed permitted-external policy.
+// Sorted-set-and-order equality plus real-regular-file existence — the same
+// harness discipline as the per-weaver inventories.
+function unionClosure(entryRels, repoRoot, allowExternal) {
+  const union = new Set();
+  for (const rel of entryRels) {
+    const entryAbs = path.join(repoRoot, ...rel.split("/"));
+    for (const m of deriveAcceptedClosure(entryAbs, { repoRoot, allowExternal })) union.add(m);
+  }
+  return [...union].sort();
+}
+function orchestratorInventoryMatches(claimed, entryRels, repoRoot, allowExternal = new Set()) {
+  let derived;
+  try { derived = unionClosure(entryRels, repoRoot, allowExternal); }
+  catch { return false; }
+  if (claimed.length !== derived.length) return false;
+  for (let i = 0; i < claimed.length; i++) if (claimed[i] !== derived[i]) return false;
+  for (const rel of claimed) {
+    let st;
+    try { st = statSync(path.join(repoRoot, ...rel.split("/"))); } catch { return false; }
+    if (!st.isFile()) return false;
+  }
+  return true;
+}
+{
+  const allow = new Set(PERMITTED_EXTERNAL_CLOSURE_FILES);
+
+  // the committed inventory names both frozen entry points
+  assert.deepEqual([...ORCHESTRATOR_ENTRY_MODULES].sort(),
+    ["clotho/thread-ledger.mjs", "clotho/weave.mjs"],
+    "the frozen orchestrator entry points are weave.mjs + thread-ledger.mjs");
+  for (const e of ORCHESTRATOR_ENTRY_MODULES) {
+    assert.ok(ORCHESTRATOR_FILES.includes(e), `orchestrator inventory contains entry ${e}`);
+  }
+  // committed inventory is sorted + unique (the derived closure is)
+  assert.deepEqual([...ORCHESTRATOR_FILES].sort(), [...ORCHESTRATOR_FILES], "orchestrator inventory sorted");
+  assert.equal(new Set(ORCHESTRATOR_FILES).size, ORCHESTRATOR_FILES.length, "orchestrator inventory unique");
+
+  // committed == derived, through the shared harness
+  assert.ok(orchestratorInventoryMatches(ORCHESTRATOR_FILES, ORCHESTRATOR_ENTRY_MODULES, REPO_ROOT, allow),
+    "committed orchestrator inventory equals derived union closure (shared classifier/resolver)");
+
+  // DIRECT equality with the derived list shown on failure (like section 12)
+  const derived = unionClosure(ORCHESTRATOR_ENTRY_MODULES, REPO_ROOT, allow);
+  assert.deepEqual(derived, [...ORCHESTRATOR_FILES],
+    "orchestrator derived closure equals committed inventory (derived: " + JSON.stringify(derived) + ")");
+
+  // ANY omitted member fails equality; any extra file fails equality
+  for (const omit of ORCHESTRATOR_FILES) {
+    const tampered = ORCHESTRATOR_FILES.filter((f) => f !== omit);
+    assert.equal(orchestratorInventoryMatches(tampered, ORCHESTRATOR_ENTRY_MODULES, REPO_ROOT, allow), false,
+      `omission of ${omit} fails orchestrator closure equality`);
+  }
+  const extra = [...ORCHESTRATOR_FILES, "clotho/scripts/test-closure.mjs"].sort();
+  assert.equal(orchestratorInventoryMatches(extra, ORCHESTRATOR_ENTRY_MODULES, REPO_ROOT, allow), false,
+    "an extra (real but orchestrator-unreachable) file fails orchestrator closure equality");
+}
+
+// ---- 17. orchestrator omission via re-export / dynamic import / require ------
+// Hermetic two-entry fixture: each helper is reached ONLY through one accepted
+// form from one entry; omitting that form-only-reached member from the claimed
+// orchestrator inventory fails equality through the same union harness.
+{
+  const root = mkRepo({
+    "clotho/orch-a.mjs": 'export { h } from "./helper-reexport.mjs";\n',
+    "clotho/helper-reexport.mjs": "export const h = 1;\n",
+    "clotho/orch-b.mjs": 'export const p = import("./helper-dyn.mjs");\nexport const r = require("./helper-req.cjs");\n',
+    "clotho/helper-dyn.mjs": "export const d = 1;\n",
+    "clotho/helper-req.cjs": "module.exports = 1;\n"
+  });
+  const entries = ["clotho/orch-a.mjs", "clotho/orch-b.mjs"];
+  const full = [
+    "clotho/helper-dyn.mjs", "clotho/helper-reexport.mjs", "clotho/helper-req.cjs",
+    "clotho/orch-a.mjs", "clotho/orch-b.mjs"
+  ];
+  try {
+    assert.equal(orchestratorInventoryMatches(full, entries, root), true, "full two-entry union closure matches");
+    for (const [omit, label] of [
+      ["clotho/helper-reexport.mjs", "re-export"],
+      ["clotho/helper-dyn.mjs", "literal dynamic import"],
+      ["clotho/helper-req.cjs", "accepted require-style form"]
+    ]) {
+      assert.equal(orchestratorInventoryMatches(full.filter((f) => f !== omit), entries, root), false,
+        `omitting the member reached only via ${label} fails orchestrator closure equality`);
+    }
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
 
