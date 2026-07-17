@@ -12,7 +12,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { weave } from "../weavers/git.mjs";
-import { makeCountedSource, classifyModuleLoads } from "../weavers/util.mjs";
+import { makeCountedSource, classifyModuleLoads, makeGitRunner } from "../weavers/util.mjs";
 import { canonicalJson, deriveNodeId } from "../registry.mjs";
 
 const HEX40 = (c) => c.repeat(40);
@@ -203,6 +203,20 @@ function ctxOf(git, symbols, files) {
   const src = readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "weavers", "git.mjs"), "utf8");
   const rel = classifyModuleLoads(src).filter((s) => s.literal && s.specifier && (s.specifier.startsWith("./") || s.specifier.startsWith("../")));
   assert.deepEqual([...new Set(rel.map((s) => s.specifier))].sort(), ["../registry.mjs"]);
+}
+
+// ---- makeGitRunner validates BEFORE spawning ---------------------------------
+// A disallowed arg shape throws the VALIDATION error and never reaches
+// execFileSync — proven by pointing the runner at a nonexistent repoRoot: if it
+// spawned first it would raise a spawn/ENOENT error, but validation fails first,
+// so the thrown message is the "disallowed …" validation error. A refactor that
+// moved validation after the spawn would surface a different error and fail here.
+{
+  const git = makeGitRunner("/clotho-nonexistent-repo-root-xyz");
+  assert.throws(() => git(["log", "--oneline"]), /disallowed log shape/, "reordered/short log shape rejected before spawn");
+  assert.throws(() => git(["status"]), /disallowed subcommand/, "unknown subcommand rejected before spawn");
+  assert.throws(() => git(["hash-object", "--no-filters", "--", "/etc/passwd"]), /disallowed hash-object shape/, "absolute path rejected before spawn");
+  assert.throws(() => git(["log", "-Sx", "--reverse", "--format=%H", "--", "clotho/x.mjs"]), /disallowed log shape/, "reordered flags rejected before spawn");
 }
 
 console.log("test-git: all assertions passed");

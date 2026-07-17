@@ -41,6 +41,12 @@ export const PACKAGE_ROOTS_EXCLUDE = Object.freeze([
 // (run evidence has a separate owner); every inventory excludes the self-weave
 // output directory (D8).
 export const DOC_ROOTS = Object.freeze(["contracts", "docs"]);
+// DOC_WEAVER_EXCLUDE / GLOBAL_EXCLUDE are committed here (this is the closed
+// inventory), but no Task 4a code path consumes them yet: the git and code
+// weavers walk only PACKAGE_ROOTS. DOC_WEAVER_EXCLUDE is wired into the doc-file
+// walk when the doc weaver lands (Task 4b); GLOBAL_EXCLUDE (D8 self-weave
+// exclusion) is wired into every inventory walk by the complete-weave driver
+// (Task 5). They are intentionally deferred, not decorative.
 export const DOC_WEAVER_EXCLUDE = Object.freeze(["docs/runs"]);
 export const GLOBAL_EXCLUDE = Object.freeze(["docs/runs/clotho-self-weave"]);
 

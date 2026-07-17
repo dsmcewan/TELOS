@@ -230,6 +230,75 @@ export function lex(source) {
 // A dynamic import / require / module.require whose argument is not a plain
 // string literal is reported with literal:false and specifier:null (no edge).
 
+// Parse ONE statement-position import/export declaration starting at `kwStart`
+// (the keyword's index) to its true end, brace-matching the specifier list so a
+// keyword used as a specifier/alias NAME inside `{ ... }` (`export { h as import }
+// from "x"`) or as an object property (`{ import: 1 }`) never truncates or
+// fabricates a declaration. Returns null when the keyword is not a real
+// load-bearing declaration (property/member name, a local export declaration with
+// no `from`, or a dynamic `import(`/`import.meta`). Otherwise returns
+// { kwWord, kwStart, form, specifier, clauseStart, fromKwStart, fromEnd }.
+function parseModuleDecl(masked, strings, kwStart, kwWord) {
+  const n = masked.length;
+  let p = kwStart + kwWord.length;
+  while (p < n && /\s/.test(masked[p])) p++;
+  if (kwWord === "import") {
+    if (masked[p] === "(" || masked[p] === ".") return null;   // dynamic import() / import.meta
+    if (masked[p] === '"' || masked[p] === "'") {
+      const s = strings.get(p);                                 // side-effect: import "x"
+      return s ? { kwWord, kwStart, form: "import-side-effect", specifier: s.value, clauseStart: p, fromKwStart: -1, fromEnd: s.end } : null;
+    }
+    // A real static import clause starts with `{`, `*`, or a default-binding
+    // identifier; anything else means `import` is a property NAME.
+    if (!(masked[p] === "{" || masked[p] === "*" || /[A-Za-z_$]/.test(masked[p]))) return null;
+  } else if (!(masked[p] === "{" || masked[p] === "*" || /[A-Za-z_$]/.test(masked[p]))) {
+    return null;                                                // `export` as a property name
+  }
+  const clauseStart = p;
+  let isStar = false, first = true;
+  while (p < n) {
+    const c = masked[p];
+    if (c === "{") {                                            // skip the whole specifier list
+      let d = 1; p++;
+      while (p < n && d > 0) { if (masked[p] === "{") d++; else if (masked[p] === "}") d--; p++; }
+      first = false; continue;
+    }
+    if (c === "*") { isStar = true; first = false; p++; continue; }
+    if (c === ";") break;                                       // statement end, no from-clause
+    if (/[A-Za-z_$]/.test(c)) {
+      let q = p; while (q < n && /[A-Za-z0-9_$]/.test(masked[q])) q++;
+      const word = masked.slice(p, q);
+      if (word === "from") {                                    // the governing from-clause
+        let r = q; while (r < n && /\s/.test(masked[r])) r++;
+        const s = strings.get(r);
+        if (!s) return null;
+        const form = kwWord === "import" ? "import" : (isStar ? "export-star" : "export-from");
+        return { kwWord, kwStart, form, specifier: s.value, clauseStart, fromKwStart: p, fromEnd: s.end };
+      }
+      // An export whose FIRST clause token is a declaration keyword is a local
+      // export (`export const/function/class/default/...`) — never a module load.
+      if (kwWord === "export" && first && ["const", "let", "var", "function", "class", "default", "async"].includes(word)) return null;
+      first = false; p = q; continue;
+    }
+    p++;
+  }
+  return null;                                                  // no from-clause (local re-export list)
+}
+
+// Yield every REAL statement-position import/export declaration, in source order,
+// each parsed to its true end. A keyword occurrence inside an already-parsed
+// declaration's span (an `as`-alias like `export { h as import }`) is skipped, so
+// it can never start a spurious declaration.
+function* moduleDecls(masked, strings) {
+  const kwRe = /(?<![A-Za-z0-9_$.])(import|export)(?![A-Za-z0-9_$])/g;
+  let consumedUntil = 0;
+  for (let m; (m = kwRe.exec(masked)); ) {
+    if (m.index < consumedUntil) continue;
+    const decl = parseModuleDecl(masked, strings, m.index, m[1]);
+    if (decl) { yield decl; consumedUntil = decl.fromEnd; }
+  }
+}
+
 export function classifyModuleLoads(source) {
   const { masked, strings } = lex(source);
   const sites = [];
@@ -246,52 +315,12 @@ export function classifyModuleLoads(source) {
     while (k < masked.length && /\s/.test(masked[k])) k++;
     return masked[k] === ")" ? s.value : null;
   };
-  const fromClauseRe = /(?<![A-Za-z0-9_$])from\s*["']/;
-
   // ---- statement forms: import ... / export ... --------------------------------
-  // Scan each import/export keyword (never a member `.import`/`.export`) and parse
-  // FORWARD, bounded by the next such keyword, so a from-clause is bound to its
-  // OWN governing keyword rather than the nearest one preceding it anywhere.
-  const kwRe = /(?<![A-Za-z0-9_$.])(import|export)(?![A-Za-z0-9_$])/g;
-  const kws = [];
-  for (let m; (m = kwRe.exec(masked)); ) kws.push({ idx: m.index, word: m[1], end: m.index + m[1].length });
-  for (let a = 0; a < kws.length; a++) {
-    const kw = kws[a];
-    const bound = a + 1 < kws.length ? kws[a + 1].idx : masked.length;
-    let p = kw.end;
-    while (p < bound && /\s/.test(masked[p])) p++;
-    if (kw.word === "import") {
-      if (masked[p] === "(") continue;        // dynamic import(): a call form, below
-      if (masked[p] === ".") continue;        // import.meta — not a module load
-      if (masked[p] === '"' || masked[p] === "'") {
-        const s = strings.get(p);             // side-effect: import "x"
-        if (s) sites.push({ form: "import-side-effect", specifier: s.value, literal: true });
-        continue;
-      }
-      // A real static import clause starts with `{`, `*` (import * as), or a
-      // default-binding identifier. Anything else (`:`, `,`, `}`, …) means the
-      // `import` token is a PROPERTY NAME (`{ import: 1 }`), not a load statement.
-      if (!(masked[p] === "{" || masked[p] === "*" || /[A-Za-z_$]/.test(masked[p]))) continue;
-      const region = masked.slice(p, bound);  // static import: clause ... from "x"
-      const fm = fromClauseRe.exec(region);
-      if (fm) {
-        const s = strings.get(p + fm.index + fm[0].length - 1);
-        if (s) sites.push({ form: "import", specifier: s.value, literal: true });
-      }
-      continue;
-    }
-    // A real export statement continues with `{`, `*`, or a declaration keyword/
-    // identifier. If `export` is followed by `:` (or another non-export char) it is
-    // a PROPERTY NAME (`{ export: 1 }`), not a statement — no load edge.
-    if (!(masked[p] === "{" || masked[p] === "*" || /[A-Za-z_$]/.test(masked[p]))) continue;
-    // export: a module load only when the statement has a `from "x"` clause.
-    const region = masked.slice(kw.end, bound);
-    const fm = fromClauseRe.exec(region);
-    if (!fm) continue;                        // export const/function/class/default/{...} (no from)
-    const s = strings.get(kw.end + fm.index + fm[0].length - 1);
-    if (!s) continue;
-    const between = region.slice(0, fm.index); // `export * [as ns] from` -> export-star
-    sites.push({ form: /\*/.test(between) ? "export-star" : "export-from", specifier: s.value, literal: true });
+  // Each REAL declaration is delimited by parseModuleDecl (brace-matched), so a
+  // keyword used as a specifier/alias name inside `{ ... }` or as a property key
+  // never truncates a declaration or fabricates a load site.
+  for (const d of moduleDecls(masked, strings)) {
+    sites.push({ form: d.form, specifier: d.specifier, literal: true });
   }
 
   // ---- call forms: dynamic import() / require() / module.require() -------------
@@ -589,32 +618,18 @@ export function scanImports(source) {
     }
     return from;
   };
-  const importRe = /(?<![A-Za-z0-9_$])import(?![A-Za-z0-9_$])/g;
-  for (let m; (m = importRe.exec(masked)); ) {
-    const start = m.index;
-    // dynamic import() — skip (handled by classifyModuleLoads, not a static import)
-    let after = m.index + "import".length;
-    while (after < masked.length && /\s/.test(masked[after])) after++;
-    if (masked[after] === "(") continue;
-    if (masked[after] === ".") continue; // import.meta
-
-    // side-effect: import "x"
-    if (masked[after] === '"' || masked[after] === "'") {
-      const s = strings.get(after);
-      if (s) imports.push({ specifier: s.value, span: [start, spanEndAfter(s.end)], bindings: [{ form: "side-effect" }] });
+  // Only REAL static import declarations (parseModuleDecl brace-matches, so a
+  // property key `{ import: 1 }` or a keyword-named specifier never starts a
+  // spurious declaration nor swallows a later real `from` clause).
+  for (const d of moduleDecls(masked, strings)) {
+    if (d.kwWord !== "import") continue;
+    if (d.form === "import-side-effect") {
+      imports.push({ specifier: d.specifier, span: [d.kwStart, spanEndAfter(d.fromEnd)], bindings: [{ form: "side-effect" }] });
       continue;
     }
-    // clause ... from "x"
-    const fromRe = /(?<![A-Za-z0-9_$])from\s*["']/g;
-    fromRe.lastIndex = after;
-    const fm = fromRe.exec(masked);
-    if (!fm) continue;
-    const quoteIdx = fm.index + fm[0].length - 1;
-    const s = strings.get(quoteIdx);
-    if (!s) continue;
-    const clause = masked.slice(after, fm.index);
+    const clause = masked.slice(d.clauseStart, d.fromKwStart); // clause between the keyword and `from`
     const bindings = parseImportClause(clause);
-    imports.push({ specifier: s.value, span: [start, spanEndAfter(s.end)], bindings });
+    imports.push({ specifier: d.specifier, span: [d.kwStart, spanEndAfter(d.fromEnd)], bindings });
   }
   return imports;
 }
@@ -720,6 +735,11 @@ export function seedSourceDescriptors(repoRoot, packageRoots, git) {
   const warnings = [];
   const seenSymbol = new Set();
   for (const rel of walked) {
+    // ONE hash per walked file: this exact `rel` is both hash-objected and (for
+    // .mjs) read for export scanning, and the single `blob_sha` is stamped onto
+    // the file descriptor AND every symbol descriptor for the same path — so
+    // "symbol and file descriptors for the same path carry the same blob_sha" is
+    // true BY CONSTRUCTION (one variable, one file), not by later reconciliation.
     const raw = git(["hash-object", "--no-filters", "--", rel]);
     const blob_sha = typeof raw === "string" ? raw.replace(/\r?\n$/, "") : "";
     if (!HEX40.test(blob_sha)) throw new Error(`seedSourceDescriptors: bad blob_sha for ${rel}: ${JSON.stringify(blob_sha)}`);

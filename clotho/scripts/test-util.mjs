@@ -498,4 +498,42 @@ import {
   assert.equal(typeof source.inspected, "undefined");
 }
 
+// ---- 13. declaration-boundary parsing: keyword-name aliases + property keys ----
+// A real import/export declaration is delimited by brace-matching, so a keyword
+// used as a specifier/alias NAME inside `{ ... }` or as a property key never
+// truncates a declaration or fabricates/absorbs a load site (round-6 codex).
+{
+  // export { h as import } from "./helper.mjs" — the keyword-named alias must NOT
+  // terminate the export region; the file IS reached.
+  const s1 = classifyModuleLoads(`export { h as import } from "./helper.mjs";`);
+  assert.deepEqual(s1, [{ form: "export-from", specifier: "./helper.mjs", literal: true }]);
+  // other keyword-named aliases still reach their targets
+  for (const [src, spec] of [
+    [`export { x as default } from "./d.mjs";`, "./d.mjs"],
+    [`export { a as export } from "./e.mjs";`, "./e.mjs"],
+    [`export { from as x } from "./f.mjs";`, "./f.mjs"],
+    [`export { x as from } from "./g.mjs";`, "./g.mjs"]
+  ]) {
+    const sites = classifyModuleLoads(src);
+    assert.ok(sites.some((x) => x.specifier === spec && x.form === "export-from"), `alias re-export must reach ${spec}: ${JSON.stringify(sites)}`);
+  }
+  // property / member / meta lookalikes create NO load site
+  assert.equal(classifyModuleLoads(`const o = { import: 1, export: 2 };`).length, 0);
+  assert.equal(classifyModuleLoads(`o.export; const m = import.meta; o.import;`).length, 0);
+
+  // scanImports: a property key `{ import: 1 }` must not start a spurious import
+  // nor absorb the real later import; a use of the imported binding that appears
+  // BEFORE the real declaration is detected (edge emitted, not suppressed).
+  const src2 = `const o = { import: 1 };\nconsole.log(alpha);\nimport { alpha } from "./dep.mjs";\nexport const c = 1;`;
+  const imps = scanImports(src2);
+  assert.equal(imps.length, 1, "exactly one real import declaration");
+  assert.equal(imps[0].specifier, "./dep.mjs");
+  assert.equal(identifierUsedOutside(src2, "alpha", imps.map((i) => i.span)), true, "pre-declaration use of alpha must count (edge not suppressed)");
+  // an imported local appearing ONLY inside its own declaration (a with/assert
+  // attribute) remains unused
+  const src3 = `import data from "./m.mjs" with { type: "json" };\nexport const z = 1;`;
+  const imps3 = scanImports(src3);
+  assert.equal(identifierUsedOutside(src3, "type", imps3.map((i) => i.span)), false, "identifier inside the import's with-clause is not a use");
+}
+
 console.log("test-util: all assertions passed");

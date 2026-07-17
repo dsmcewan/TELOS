@@ -93,7 +93,12 @@ const closureOf = (root, allowExternal = new Set()) =>
     "export * as ns from": 'export * as ns from "./helper.mjs";\n',
     "dynamic import()": 'export const p = import("./helper.mjs");\n',
     "require()": 'export const r = require("./helper.mjs");\n',
-    "module.require()": 'export const r = module.require("./helper.mjs");\n'
+    "module.require()": 'export const r = module.require("./helper.mjs");\n',
+    // keyword-named alias inside the specifier list must NOT truncate the export
+    // region — the file is still reached (round-6 codex).
+    "export { h as import } from": 'export { h as import } from "./helper.mjs";\n',
+    // whitespace-separated member spelling still resolves at closure level.
+    "module . require() (whitespace)": 'export const r = module . require("./helper.mjs");\n'
   };
   for (const [label, entrySrc] of Object.entries(forms)) {
     const root = mkRepo({ "clotho/entry.mjs": entrySrc, "clotho/helper.mjs": "export const h = 1;\n" });
