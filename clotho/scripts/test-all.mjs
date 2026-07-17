@@ -30,7 +30,8 @@ const TESTS = [
   "scripts/test-closure.mjs",
   "scripts/test-advisory.mjs",
   "scripts/test-query.mjs",
-  "scripts/test-weave.mjs"
+  "scripts/test-weave.mjs",
+  "scripts/test-flagship.mjs"
 ];
 
 function collectTestFiles(dir) {
