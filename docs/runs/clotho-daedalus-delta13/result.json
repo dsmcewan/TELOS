@@ -1,0 +1,31 @@
+{
+  "mode": "live",
+  "state": "converged-for-submission",
+  "reason": "all-objections-accounted",
+  "terminal": "submit",
+  "rounds": 1,
+  "final_candidate_ref": "sha256:f152f1663234a393aa8a0dd441d2631a9cf4a6d50773d719178f38f483da3426",
+  "unresolved_objections": [],
+  "creation_lineage": [
+    {
+      "seat": "claude",
+      "round": 1,
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6s6wfmZrbjPPnKjwsRL",
+        "source": "ai-peer-mcp/claude_ask"
+      }
+    },
+    {
+      "seat": "codex",
+      "round": 1,
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2Sst2Rs51DscrRmrM6d5eiUkLdp0",
+        "source": "ai-peer-mcp/codex_ask"
+      }
+    }
+  ]
+}
