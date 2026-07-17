@@ -18,7 +18,7 @@
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "path": "merkle-dag/obligation.mjs",
         "symbol": "deriveExecutableRef",
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0"
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0"
       }
     },
     {
@@ -27,19 +27,19 @@
       "edge_kind": "depends-on",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
         "path": "build-gate/proposal-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "checkColdReview"
       },
       "to_kind": "code-symbol",
       "to_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
       },
-      "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
     },
     {
       "source_group": "consumers",
@@ -47,19 +47,19 @@
       "edge_kind": "depends-on",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
         "path": "build-gate/proposal-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "checkProposalRefBinding"
       },
       "to_kind": "code-symbol",
       "to_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
       },
-      "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
     },
     {
       "source_group": "consumers",
@@ -67,19 +67,19 @@
       "edge_kind": "depends-on",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
         "path": "build-gate/proposal-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "collectCreationLineage"
       },
       "to_kind": "code-symbol",
       "to_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
       },
-      "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
     },
     {
       "source_group": "consumers",
@@ -87,19 +87,19 @@
       "edge_kind": "depends-on",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
         "path": "build-gate/proposal-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "collectReviewLineage"
       },
       "to_kind": "code-symbol",
       "to_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
       },
-      "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
     },
     {
       "source_group": "consumers",
@@ -107,19 +107,19 @@
       "edge_kind": "depends-on",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
         "path": "build-gate/proposal-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "validateProposalLifecycle"
       },
       "to_kind": "code-symbol",
       "to_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
       },
-      "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
     },
     {
       "source_group": "consumers",
@@ -127,19 +127,19 @@
       "edge_kind": "depends-on",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
         "path": "build-gate/proposal-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "verifyWrittenPlan"
       },
       "to_kind": "code-symbol",
       "to_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
       },
-      "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
     },
     {
       "source_group": "consumers",
@@ -147,18 +147,18 @@
       "edge_kind": "depends-on",
       "from_kind": "repository-file",
       "from_locator_match": {
-        "blob_sha": "65a836011c0efb535401a3e896a3fce0c25f0d7c",
+        "blob_sha": "93e7786476ba3a74d8abc03c85073e89f97100a7",
         "path": "merkle-dag/scripts/test-obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
       "to_kind": "code-symbol",
       "to_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
       },
-      "source_ref": "file:merkle-dag/scripts/test-obligation.mjs@65a836011c0efb535401a3e896a3fce0c25f0d7c"
+      "source_ref": "file:merkle-dag/scripts/test-obligation.mjs@93e7786476ba3a74d8abc03c85073e89f97100a7"
     },
     {
       "source_group": "tests",
@@ -166,18 +166,18 @@
       "edge_kind": "verified-by",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
       },
       "to_kind": "test",
       "to_locator_match": {
-        "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
         "path": "build-gate/proposal-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
-      "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
     },
     {
       "source_group": "tests",
@@ -185,18 +185,18 @@
       "edge_kind": "verified-by",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
       },
       "to_kind": "test",
       "to_locator_match": {
-        "blob_sha": "65a836011c0efb535401a3e896a3fce0c25f0d7c",
+        "blob_sha": "93e7786476ba3a74d8abc03c85073e89f97100a7",
         "path": "merkle-dag/scripts/test-obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
-      "source_ref": "file:merkle-dag/scripts/test-obligation.mjs@65a836011c0efb535401a3e896a3fce0c25f0d7c"
+      "source_ref": "file:merkle-dag/scripts/test-obligation.mjs@93e7786476ba3a74d8abc03c85073e89f97100a7"
     },
     {
       "source_group": "tests",
@@ -204,17 +204,17 @@
       "edge_kind": "verified-by",
       "from_kind": "repository-file",
       "from_locator_match": {
-        "blob_sha": "65a836011c0efb535401a3e896a3fce0c25f0d7c",
+        "blob_sha": "93e7786476ba3a74d8abc03c85073e89f97100a7",
         "path": "merkle-dag/scripts/test-obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
       "to_kind": "test",
       "to_locator_match": {
-        "blob_sha": "65a836011c0efb535401a3e896a3fce0c25f0d7c",
+        "blob_sha": "93e7786476ba3a74d8abc03c85073e89f97100a7",
         "path": "merkle-dag/scripts/test-obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
-      "source_ref": "file:merkle-dag/package.json@81e1169536c75639aa4af0a1ac7f605168b18179"
+      "source_ref": "file:merkle-dag/package.json@6bf995a946b8950f1d43fa086b9a129a5f7d729d"
     },
     {
       "source_group": "introduction",
@@ -222,7 +222,7 @@
       "edge_kind": "introduced-by",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
@@ -239,7 +239,7 @@
       "edge_kind": "documented-in",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
@@ -252,9 +252,9 @@
         ],
         "path": "docs/ROADMAP.md",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-        "text_sha256": "87a85ce1a86d8d18c9920dcbaee1b0beb2084709a693a5fccd4e511ebff4c6df"
+        "text_sha256": "dddbbe3832931c0443777a6a9c6ac6b1e9b82cb64c4b5844c162e54178b99438"
       },
-      "source_ref": "file:docs/ROADMAP.md@e1822d234e13e97389a693dd200fddc02dba2b40"
+      "source_ref": "file:docs/ROADMAP.md@0a312f516760a21a1032eda6987cb57203ed1706"
     },
     {
       "source_group": "documentation",
@@ -262,7 +262,7 @@
       "edge_kind": "documented-in",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
@@ -276,9 +276,9 @@
         ],
         "path": "docs/STATUS.md",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-        "text_sha256": "3893602aa6b8fe10cc8b5d414ca395dc72658455a4d3f79e6822631b72c6a2ca"
+        "text_sha256": "40344cd408bef1049f417c4a470d148523a4393fddf7bc5fee6f929926d8290b"
       },
-      "source_ref": "file:docs/STATUS.md@1e5a203c871a09ab011224f3d5d2b798b644a47d"
+      "source_ref": "file:docs/STATUS.md@19288f6b71da9abf4f08a3ecb5f4e5fc9b610b67"
     },
     {
       "source_group": "documentation",
@@ -286,7 +286,7 @@
       "edge_kind": "documented-in",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
@@ -299,9 +299,9 @@
         ],
         "path": "docs/clotho-phase-1-design.md",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-        "text_sha256": "0c3b36749f1965952b98b688940b1a65f50e1b02e82db27d55bc3885ec49db51"
+        "text_sha256": "d7065e06ccf1730354a1f16488a7fb0904ebb46791abb33bcbbfd0d3f480ad67"
       },
-      "source_ref": "file:docs/clotho-phase-1-design.md@b59da93ecd6491719fc5583fa376a57f19751628"
+      "source_ref": "file:docs/clotho-phase-1-design.md@1be19fbb52a4b877a0fffbdb5577e6710d544cf8"
     },
     {
       "source_group": "documentation",
@@ -309,7 +309,7 @@
       "edge_kind": "documented-in",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
@@ -322,9 +322,9 @@
         ],
         "path": "docs/clotho-phase-1-design.md",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-        "text_sha256": "8b2f35bf1a8658f67e3250ab6e21e5cffd327c592c6ff02d8e7ab0cb122ede2a"
+        "text_sha256": "49bb0229d20208724e0aefe5d16fe76ef89273503258b5ae621e7dd4ee133408"
       },
-      "source_ref": "file:docs/clotho-phase-1-design.md@b59da93ecd6491719fc5583fa376a57f19751628"
+      "source_ref": "file:docs/clotho-phase-1-design.md@1be19fbb52a4b877a0fffbdb5577e6710d544cf8"
     },
     {
       "source_group": "documentation",
@@ -332,7 +332,7 @@
       "edge_kind": "documented-in",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
@@ -345,9 +345,9 @@
         ],
         "path": "docs/clotho-phase-1-design.md",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-        "text_sha256": "7e3f923a4ece6be626481f2c98404ca94144fd4c6a8eeed4dc4944dba5bb85be"
+        "text_sha256": "b6e2a2f89e806e6d2126c27a741368fc95e2be0f275855806a84ab37b7d0474e"
       },
-      "source_ref": "file:docs/clotho-phase-1-design.md@b59da93ecd6491719fc5583fa376a57f19751628"
+      "source_ref": "file:docs/clotho-phase-1-design.md@1be19fbb52a4b877a0fffbdb5577e6710d544cf8"
     },
     {
       "source_group": "documentation",
@@ -355,7 +355,7 @@
       "edge_kind": "documented-in",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
@@ -369,9 +369,9 @@
         ],
         "path": "docs/clotho-phase-1-plan.md",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-        "text_sha256": "f0f832c7b3541db0caee596fc492140ed55ba7a168d0ccd26330efb30d99521c"
+        "text_sha256": "f27f9dfe659846d625cce7767ef2a96a5ea37cc87d0a5adb294f1771286b8315"
       },
-      "source_ref": "file:docs/clotho-phase-1-plan.md@8a3c169f9834802f835cfa591e13499f668c53b5"
+      "source_ref": "file:docs/clotho-phase-1-plan.md@dde487caa460bfb24b4bd2052cfdc629f038910a"
     },
     {
       "source_group": "documentation",
@@ -379,7 +379,7 @@
       "edge_kind": "documented-in",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
@@ -393,9 +393,9 @@
         ],
         "path": "docs/clotho-phase-1-plan.md",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-        "text_sha256": "38256ee736762f481400313e41c6508ce4332719c43820d79c79a9579e570bf1"
+        "text_sha256": "1f6ed62efcbb7fa55a1bb6d7e64557cfbeb41957ad45921106fc5e75e2cb310f"
       },
-      "source_ref": "file:docs/clotho-phase-1-plan.md@8a3c169f9834802f835cfa591e13499f668c53b5"
+      "source_ref": "file:docs/clotho-phase-1-plan.md@dde487caa460bfb24b4bd2052cfdc629f038910a"
     },
     {
       "source_group": "documentation",
@@ -403,7 +403,7 @@
       "edge_kind": "documented-in",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
@@ -416,9 +416,9 @@
         ],
         "path": "docs/clotho-phase-1-plan.md",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-        "text_sha256": "4ebfa2bf4b2f9958bd47f4e9636e963a55568d066983bc8fe8bfbf1787229043"
+        "text_sha256": "72d98a27dd8fba264516a7a884863ce7ca5585d9a2febe9de1c7adc66af9a08f"
       },
-      "source_ref": "file:docs/clotho-phase-1-plan.md@8a3c169f9834802f835cfa591e13499f668c53b5"
+      "source_ref": "file:docs/clotho-phase-1-plan.md@dde487caa460bfb24b4bd2052cfdc629f038910a"
     },
     {
       "source_group": "documentation",
@@ -426,7 +426,7 @@
       "edge_kind": "documented-in",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
@@ -438,9 +438,9 @@
         ],
         "path": "docs/clotho-phase-1-plan.md",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-        "text_sha256": "e9b6622074955f0fc196de1a4c63cb2ee05c31ea494e36629cc510556f213db4"
+        "text_sha256": "e47ee811e8bf19d8bb56eae054303132daf8f75f14e97c4752742d29f122b019"
       },
-      "source_ref": "file:docs/clotho-phase-1-plan.md@8a3c169f9834802f835cfa591e13499f668c53b5"
+      "source_ref": "file:docs/clotho-phase-1-plan.md@dde487caa460bfb24b4bd2052cfdc629f038910a"
     },
     {
       "source_group": "documentation",
@@ -448,7 +448,7 @@
       "edge_kind": "documented-in",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
@@ -461,9 +461,9 @@
         ],
         "path": "docs/history/STATUS-2026-06-28.md",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-        "text_sha256": "c23f35b25dd8ab7a62e68236d28f314672f554a0dd7c82bc61b16c1fe486f431"
+        "text_sha256": "25887360a607404b1e31c29de983a89c9dd88a8839448bc16674e710730b0b5b"
       },
-      "source_ref": "file:docs/history/STATUS-2026-06-28.md@ff8a7923d8b69068a5c321e1229a3aeb9fa8f40a"
+      "source_ref": "file:docs/history/STATUS-2026-06-28.md@1003a617cd25485ec6b16cf3803a8c1b3c554c19"
     },
     {
       "source_group": "documentation",
@@ -471,7 +471,7 @@
       "edge_kind": "documented-in",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
@@ -484,9 +484,9 @@
         ],
         "path": "docs/proposal-lifecycle-implementation.md",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-        "text_sha256": "4b0c47be778935c8471db895556e3ac2b6c35d3a10dd124f6e4e07dde330d6c2"
+        "text_sha256": "e47973e8b1b52cdfce0c8ba217404273903f8c410802c32bfd285961970d63fd"
       },
-      "source_ref": "file:docs/proposal-lifecycle-implementation.md@e44394a17034f04837684dd1fb9b6ced0a23550c"
+      "source_ref": "file:docs/proposal-lifecycle-implementation.md@ee5eaeee637d53f326f456b8fa3e923f3344c700"
     },
     {
       "source_group": "documentation",
@@ -494,7 +494,7 @@
       "edge_kind": "documented-in",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
@@ -508,9 +508,9 @@
         ],
         "path": "docs/proposal-lifecycle-implementation.md",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-        "text_sha256": "a9ea06ca9b94133eed6badc3fd5e19817af64dad19530f4fa86456e40ae7b37f"
+        "text_sha256": "62e76c344983a8d92769520533b9b54664fa89e6f09c986bcebe1f66e32d568d"
       },
-      "source_ref": "file:docs/proposal-lifecycle-implementation.md@e44394a17034f04837684dd1fb9b6ced0a23550c"
+      "source_ref": "file:docs/proposal-lifecycle-implementation.md@ee5eaeee637d53f326f456b8fa3e923f3344c700"
     },
     {
       "source_group": "concern",
@@ -518,7 +518,7 @@
       "edge_kind": "motivated-by",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
@@ -537,7 +537,7 @@
       "edge_kind": "evidenced-by",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
@@ -556,18 +556,18 @@
       "edge_kind": "discharges",
       "from_kind": "code-symbol",
       "from_locator_match": {
-        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0",
         "path": "merkle-dag/obligation.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "deriveExecutableRef"
       },
       "to_kind": "obligation",
       "to_locator_match": {
-        "entry_hash": "a5367b2f824183262c7a20a45526c8d43be9c38f9f36d100607aa67c844388b5",
+        "entry_hash": "8f1dac766bae488b733f1881f9a54699f0c7dea760ae08d1fda36446326a503e",
         "ledger_path": "docs/ledgers/clotho-obligation-ledger.jsonl",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
-      "source_ref": "ledger:docs/ledgers/clotho-obligation-ledger.jsonl#a5367b2f824183262c7a20a45526c8d43be9c38f9f36d100607aa67c844388b5"
+      "source_ref": "ledger:docs/ledgers/clotho-obligation-ledger.jsonl#8f1dac766bae488b733f1881f9a54699f0c7dea760ae08d1fda36446326a503e"
     },
     {
       "source_group": "contract",
@@ -575,7 +575,7 @@
       "edge_kind": "discharges",
       "from_kind": "obligation",
       "from_locator_match": {
-        "entry_hash": "a5367b2f824183262c7a20a45526c8d43be9c38f9f36d100607aa67c844388b5",
+        "entry_hash": "8f1dac766bae488b733f1881f9a54699f0c7dea760ae08d1fda36446326a503e",
         "ledger_path": "docs/ledgers/clotho-obligation-ledger.jsonl",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
@@ -587,9 +587,9 @@
         ],
         "path": "contracts/Proposal Lifecycle.md",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-        "text_sha256": "f6da2b30fa2bc75073527b4835821d92eefb3d94ba6758c62b32ca66d9ea861c"
+        "text_sha256": "9698889d5323b48798c4817c73cd02ef36d286e6c1d59b3ce76e9f57f13a5922"
       },
-      "source_ref": "ledger:docs/ledgers/clotho-obligation-ledger.jsonl#a5367b2f824183262c7a20a45526c8d43be9c38f9f36d100607aa67c844388b5"
+      "source_ref": "ledger:docs/ledgers/clotho-obligation-ledger.jsonl#8f1dac766bae488b733f1881f9a54699f0c7dea760ae08d1fda36446326a503e"
     }
   ]
 }
