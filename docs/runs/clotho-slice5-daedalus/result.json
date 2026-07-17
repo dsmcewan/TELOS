@@ -1,0 +1,25 @@
+{
+  "run": "clotho-slice5-daedalus (next-phase evaluation, Iliad lifecycle)",
+  "mode": "live",
+  "state": "converged-for-submission",
+  "reason": "all-objections-accounted",
+  "terminal": "submit",
+  "rounds": 1,
+  "final_candidate_ref": "sha256:198df41cd5f0835b42f98de36582432889fc472f2cc9595270b7b94112e2b3df",
+  "creation_lineage": [
+    {
+      "seat": "claude",
+      "round": 1,
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011Cd7boRN9wmL8ncRe2KYfP"
+    },
+    {
+      "seat": "codex",
+      "round": 1,
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2bdL1YGSL0g7UJMxS8mjlJT909TD"
+    }
+  ]
+}

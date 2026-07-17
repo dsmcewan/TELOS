@@ -33,7 +33,8 @@
       "steps": [
         "retrospective evaluation recorded as RETROSPECTIVES/<run>.json: what was built, verification outcome, what worked, defects found during the work (including process mistakes), and optimizations for future runs",
         "each optimization FEEDS FORWARD: it lands in the relevant TASK-LOADOUTS review, a PRE-REVIEWS template update, or a proposed data/contract change — so the next run's pre-review reads it",
-        "an enrollment entry is not 'delivered' without its retrospective (verify-contracts enforces)"
+        "NEXT-PHASE EVALUATION VIA DAEDALUS (The Eye's direction, 2026-07-17): the next phase's implementation APPROACH is drafted and matured through a Daedalus workflow — real seats, objection ledger, controller-computed identity — before the next pre-review. The workshop reviews the approach, never the frozen plan (a plan defect still escalates to The Eye); terminal 'submit' makes the matured approach an input to the next pre-review; a stalemate routes to The Eye",
+        "an enrollment entry is not 'delivered' without its retrospective (verify-contracts enforces); from slice 5 on, the next pre-review must cite the matured approach (next_phase_workshop)"
       ]
     }
   ],
