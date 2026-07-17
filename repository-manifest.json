@@ -57,5 +57,31 @@
     { "name": "connectors/ai-peer-mcp", "role": null, "status": "in use", "purpose": "MCP server exposing model backends with real per-seat provenance", "trust_domain": "provider-native structured output; provenance != HMAC signature" },
     { "name": "merkle-dag", "role": null, "status": "in use", "purpose": "content-addressed planning, Ed25519 verified delegation, append-only signed ledger, pure done() gate", "trust_domain": "content-address + signature" },
     { "name": "contracts", "role": null, "status": "reference", "purpose": "the human-readable protocol the gate enforces", "trust_domain": "normative protocol text" }
+  ],
+  "role_modules": [
+    {
+      "name": "daedalus",
+      "role": "Daedalus",
+      "role_meaning": "collaboratively matures implementation plans",
+      "kind": "role module — a registered role realized by code + protocol + run lineage, not a top-level package",
+      "status": "active (serial loop for small deltas; parallel authorship HELD by The Eye 2026-07-15, implemented fail-closed)",
+      "code": ["build-gate/daedalus.mjs"],
+      "methodology": "docs/daedalus-methodology.md",
+      "workflow_evidence": "docs/runs/clotho-daedalus*/ (index: docs/institutional-memory/daedalus/EVIDENCE/delta-chain.json)",
+      "memory_dir": "docs/institutional-memory/daedalus/",
+      "comprehension_queries": "docs/institutional-memory/daedalus/comprehension-queries.json",
+      "claims": [
+        { "statement": "workshop protocol constants and every claimed state-machine terminal equal what build-gate/daedalus.mjs enforces (terminals probed, not paraphrased)", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "build-gate/scripts/test-daedalus.mjs", "docs/institutional-memory/daedalus/CONTRACTS/workshop-protocol.json"] },
+        { "statement": "the plan-maturation chain v11-v15 re-hashes from disk and matches CURRENT-AUTHORITY.json exactly (one active version; the two authorization refusals preserved)", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "docs/institutional-memory/daedalus/CONTRACTS/plan-version-chain.json"] },
+        { "statement": "a parallel-authorship request without an adapter blocks (PARALLEL_AUTHORSHIP_UNAVAILABLE) rather than silently downgrading to serial", "grade": "executable", "evidence": ["build-gate/scripts/test-proposal-orchestrator.mjs"] }
+      ],
+      "non_claims": [
+        "does not authorize (TELOS does; convergence is not authorization)",
+        "does not implement (Argo's role)",
+        "does not validate plan content truth (process structure only)",
+        "no autonomous Daedalus service exists",
+        "cannot amend an Eye ruling (fixed input)"
+      ]
+    }
   ]
 }

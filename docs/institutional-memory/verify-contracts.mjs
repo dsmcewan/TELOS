@@ -9,7 +9,7 @@
 //   node docs/institutional-memory/verify-contracts.mjs
 //   exit 0 => every checked contract == system reality; exit 2 => drift found.
 
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 
@@ -94,6 +94,123 @@ try {
     }
   }
 } catch (e) { check("discipline:invariants", false, e.message); }
+
+// ---- 4. role modules (docs/institutional-memory/<role>/) -----------------------
+// Role modules are enumerated FROM DISK (readdirSync), not a hand-list — any
+// institutional-memory subdirectory carrying a CONTRACTS/ dir is swept, so a new
+// module or a new contract file cannot be silently skipped.
+const IM_DIR = path.join(ROOT, "docs/institutional-memory");
+const roleModules = readdirSync(IM_DIR, { withFileTypes: true })
+  .filter((d) => d.isDirectory() && existsSync(path.join(IM_DIR, d.name, "CONTRACTS")))
+  .map((d) => d.name);
+for (const mod of roleModules) {
+  const cdir = path.join(IM_DIR, mod, "CONTRACTS");
+  for (const f of readdirSync(cdir).filter((n) => n.endsWith(".json"))) {
+    try {
+      const c = JSON.parse(readFileSync(path.join(cdir, f), "utf8"));
+      const name = `${mod}/${f}`;
+      if (c.status === "SPECIFIED-PENDING-IMPLEMENTATION") {
+        const ok = typeof c.becomes_normative_when === "string" && c.becomes_normative_when.length > 0;
+        check(`discipline:pending-has-becomes-normative-when(${name})`, ok, ok ? `becomes NORMATIVE when: ${c.becomes_normative_when}` : "SPECIFIED-PENDING but no becomes_normative_when");
+      } else {
+        const hasOracle = c.normativity === "NORMATIVE" ? (c.oracle && Object.keys(c.oracle).length > 0) : true;
+        check(`discipline:normative-has-oracle(${name})`, !!hasOracle, `${c.normativity} oracle=${c.oracle ? "present" : "MISSING"}`);
+      }
+    } catch (e) { check(`discipline:contract(${mod}/${f})`, false, e.message); }
+  }
+  const invPath = path.join(IM_DIR, mod, "INVARIANTS.json");
+  if (existsSync(invPath)) {
+    try {
+      for (const inv of JSON.parse(readFileSync(invPath, "utf8"))) {
+        if (inv.status === "SPECIFIED-PENDING-IMPLEMENTATION") {
+          const ok = typeof inv.becomes_normative_when === "string" && inv.becomes_normative_when.length > 0;
+          check(`discipline:pending-invariant(${mod}/${inv.id})`, ok, ok ? `becomes NORMATIVE when: ${inv.becomes_normative_when}` : "SPECIFIED-PENDING but no becomes_normative_when");
+        } else if (inv.normativity === "NORMATIVE") {
+          const ok = inv.oracle && Object.keys(inv.oracle).length > 0;
+          check(`discipline:normative-invariant(${mod}/${inv.id})`, !!ok, ok ? "oracle present" : "NORMATIVE but no oracle");
+        }
+      }
+    } catch (e) { check(`discipline:invariants(${mod})`, false, e.message); }
+  }
+}
+
+// ---- 4a. daedalus: workshop-protocol contract == build-gate/daedalus.mjs -------
+// The constants are deep-equaled and the state machine is PROBED (each claimed
+// terminal is reached through the real deriveWorkshopState/deriveParallelState),
+// so the contract cannot describe a protocol the code does not enforce.
+try {
+  const c = readJson("docs/institutional-memory/daedalus/CONTRACTS/workshop-protocol.json");
+  const dd = await imp("build-gate/daedalus.mjs");
+  check("daedalus:serial.seats==DAEDALUS_SEATS", eqArr(c.serial.seats, dd.DAEDALUS_SEATS), `contract=${JSON.stringify(c.serial.seats)} code=${JSON.stringify(dd.DAEDALUS_SEATS)}`);
+  check("daedalus:serial.max_rounds==DAEDALUS_MAX_ROUNDS", c.serial.max_rounds === dd.DAEDALUS_MAX_ROUNDS, `contract=${c.serial.max_rounds} code=${dd.DAEDALUS_MAX_ROUNDS}`);
+  check("daedalus:parallel.roles==PARALLEL_ROLES", deepEq(c.parallel.roles, dd.PARALLEL_ROLES), "compared canonical JSON");
+  check("daedalus:parallel.obligation_fields==OBLIGATION_FIELDS", eqArr(c.parallel.obligation_fields, dd.OBLIGATION_FIELDS), "compared arrays");
+
+  const cleanRound = {
+    round: 1, input_plan_artifact_hash: "c0", output_plan_artifact_hash: "c1",
+    author: { seat: "claude", provenance_key: "anthropic:probe-a1" },
+    reviewer: { seat: "codex", provenance_key: "openai:probe-b1", bound_hash: "c1" },
+    objections: [], resolutions: [], supersessions: [], withdrawals: []
+  };
+  const conv = dd.deriveWorkshopState({ rounds: [cleanRound], maxRounds: dd.DAEDALUS_MAX_ROUNDS, initialCandidateRef: "c0" });
+  check("daedalus:probe-converged-terminal", conv.state === "converged-for-submission" && conv.terminal === c.serial.terminals["converged-for-submission"],
+    `state=${conv.state} terminal=${conv.terminal} contract=${c.serial.terminals["converged-for-submission"]}`);
+  const obj = { scope: "probe", claim: "unresolved", evidence_refs: [] };
+  const stale = dd.deriveWorkshopState({
+    rounds: [
+      { ...cleanRound, objections: [obj] },
+      { ...cleanRound, round: 2, input_plan_artifact_hash: "c1", output_plan_artifact_hash: "c1", author: { seat: "codex", provenance_key: "openai:probe-b2" }, reviewer: { seat: "claude", provenance_key: "anthropic:probe-a2", bound_hash: "c1" } }
+    ], maxRounds: dd.DAEDALUS_MAX_ROUNDS, initialCandidateRef: "c0"
+  });
+  check("daedalus:probe-stalemate-terminal", stale.state === "stalemate" && stale.terminal === c.serial.terminals.stalemate,
+    `state=${stale.state} terminal=${stale.terminal} contract=${c.serial.terminals.stalemate}`);
+
+  const row = { invariant: "i", mechanism: "m", task: "t", negative_test: "n", exit_criterion: "e", obligation_id: "OBL-1" };
+  const sources = [
+    { role: "constraints", seat: "codex", artifact_ref: "s1", obligations: ["OBL-1"], provenance_key: "openai:probe-k1" },
+    { role: "implementation", seat: "claude", artifact_ref: "s2", provenance_key: "anthropic:probe-k2" }
+  ];
+  const integration = { candidate_ref: "cand", descends_from: ["s1", "s2"], obligation_matrix: [row], provenance_key: "anthropic:probe-k3" };
+  const verify = (vc, vi, viKey = "anthropic:probe-k5") => dd.deriveParallelState({ sources, integration, verifications: [
+    { role: "constraints", verdict: vc, conflicts: vc === "violated" ? ["probe"] : [], provenance_key: "openai:probe-k4" },
+    { role: "implementation", verdict: vi, conflicts: [], provenance_key: viKey }
+  ] });
+  const par = verify("preserved", "preserved");
+  check("daedalus:probe-parallel-converged-terminal", par.state === "converged-parallel" && par.terminal === c.parallel.terminals["converged-parallel"],
+    `state=${par.state} terminal=${par.terminal} contract=${c.parallel.terminals["converged-parallel"]}`);
+  const con = verify("violated", "preserved");
+  check("daedalus:probe-conflict-terminal", con.state === "conflict" && con.terminal === c.parallel.terminals.conflict,
+    `state=${con.state} terminal=${con.terminal} contract=${c.parallel.terminals.conflict}`);
+  // replaying the integrator's key on a verifier must refuse convergence (the 5-distinct rule, probed)
+  const reused = verify("preserved", "preserved", "anthropic:probe-k3");
+  check("daedalus:probe-provenance-reuse-refused", reused.state === "continue" && reused.reason === "provenance-reused-across-calls",
+    `state=${reused.state} reason=${reused.reason}`);
+} catch (e) { check("daedalus:workshop-protocol", false, e.message); }
+
+// ---- 4b. daedalus: plan-version-chain contract == disk + CURRENT-AUTHORITY -----
+try {
+  const c = readJson("docs/institutional-memory/daedalus/CONTRACTS/plan-version-chain.json");
+  const auth = readJson("CURRENT-AUTHORITY.json");
+  const hashOf = (rel) => "sha256:" + sha256hex(canonicalize({ kind: "candidate", plan: readFileSync(path.join(ROOT, rel), "utf8") }));
+  for (const entry of c.chain) {
+    const real = hashOf(entry.path);
+    check(`daedalus:chain-${entry.version}-hash`, real === entry.sha256, `disk=${real} contract=${entry.sha256}`);
+  }
+  const active = c.chain.filter((e) => e.active);
+  check("daedalus:chain-exactly-one-active", active.length === 1, `active entries=${active.length}`);
+  check("daedalus:chain-head==authority.active_plan", active.length === 1 && active[0].sha256 === auth.active_plan.sha256 && active[0].path === auth.active_plan.path,
+    active.length === 1 ? `chain=${active[0].sha256} authority=${auth.active_plan.sha256}` : "no single active entry");
+  const superByVersion = new Map((auth.superseded || []).map((s) => [s.plan_version, s]));
+  for (const entry of c.chain.filter((e) => !e.active)) {
+    const s = superByVersion.get(entry.version);
+    check(`daedalus:chain-${entry.version}==superseded-record`,
+      !!s && s.sha256 === entry.sha256 && s.authorization === entry.authorization && s.authz_status === entry.authz_status,
+      s ? `authority=${s.sha256} ${s.authorization}/${s.authz_status}` : "no matching superseded record in CURRENT-AUTHORITY");
+  }
+  const chainVersions = new Set(c.chain.map((e) => e.version));
+  const missing = [auth.active_plan.version, ...(auth.superseded || []).map((s) => s.plan_version)].filter((v) => !chainVersions.has(v));
+  check("daedalus:chain-covers-authority", missing.length === 0, missing.length ? `missing versions: ${missing.join(",")}` : "every authority-named version present");
+} catch (e) { check("daedalus:plan-version-chain", false, e.message); }
 
 // ---- report -------------------------------------------------------------------
 for (const r of results) console.log(`  [${r.ok ? "PASS" : "FAIL"}] ${r.id}: ${r.detail}`);

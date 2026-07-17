@@ -1,0 +1,27 @@
+[
+  {
+    "id": "daedalus-does-not-authorize",
+    "statement": "Daedalus matures plans; it does NOT authorize them. Authorization is TELOS's (council gate, authz-N records) and implementation authority is The Eye's. A converged workshop grants submission only — and the chain preserves two real refusals of converged output (authz-004, authz-007) as proof the separation is load-bearing.",
+    "authority": { "doc": "docs/convergence-is-not-authorization.md", "vocabulary": "docs/mythological-vocabulary.md", "precedents": ["authz-004", "authz-007"] }
+  },
+  {
+    "id": "daedalus-does-not-implement",
+    "statement": "Daedalus does not carry a plan through implementation, verification, or documentation — that is Argo's registered role. Daedalus output is a frozen plan candidate, not code.",
+    "authority": { "vocabulary": "docs/mythological-vocabulary.md#Argo" }
+  },
+  {
+    "id": "daedalus-does-not-validate-plan-truth",
+    "statement": "The workshop state machine verifies PROCESS structure — objections accounted, provenance real and distinct, descent exact, obligation coverage bijective — not that the plan's content is correct or that its design will work. Content correctness is established downstream: TELOS review seats, implementation oracles, and The Eye.",
+    "authority": { "code": "build-gate/daedalus.mjs (state machines are structural checks)" }
+  },
+  {
+    "id": "no-autonomous-daedalus-service",
+    "statement": "No autonomous Daedalus runner or daemon exists. Workshops are explicitly invoked runs (docs/runs/clotho-daedalus*/run-*.mjs) driven by a human-initiated process; 'Daedalus' names the registered role and its protocol, not a deployed service.",
+    "authority": { "vocabulary": "docs/mythological-vocabulary.md", "pattern": "docs/institutional-memory/NON-CLAIMS.md (same rule as 'No autonomous Argo runner exists')" }
+  },
+  {
+    "id": "daedalus-cannot-amend-eye-rulings",
+    "statement": "An Eye ruling entering a delta is a FIXED, non-challengeable input — the workshop integrates it faithfully with cold review; it does not weaken, reinterpret, or negotiate it. Seats verify the ruling was applied exactly; they cannot vote it down.",
+    "authority": { "precedent": "docs/runs/clotho-daedalus-delta14/run-daedalus-delta14.mjs (THE EYE'S MATURATION DIRECTIVES — FIXED, NON-CHALLENGEABLE)", "invariant": "eye-authority-non-delegable (docs/institutional-memory/INVARIANTS.md)" }
+  }
+]

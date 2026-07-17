@@ -45,6 +45,17 @@ Also confirm reality matches the records:
 node docs/institutional-memory/verify-contracts.mjs   # every NORMATIVE contract == the code; plan hashes == disk
 ```
 
+## Role modules (registered roles with their own memory)
+
+Some registered roles are realized by **code + protocol + run lineage** rather than a
+top-level package. Each has a memory dir with the same record set and its own
+comprehension queries — load it before touching that role's code or workflow.
+`repository-manifest.json#role_modules` is the machine index.
+
+| role | registered meaning | memory dir |
+|---|---|---|
+| **Daedalus** | collaboratively matures implementation plans | `docs/institutional-memory/daedalus/` |
+
 ## Hard rules
 
 - Do **not** treat superseded plans/authorizations as normative.

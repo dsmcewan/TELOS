@@ -1,0 +1,30 @@
+{
+  "kind": "evidence",
+  "component": "daedalus",
+  "id": "delta-chain",
+  "title": "Index of every Daedalus run directory (navigation aid)",
+  "note": "ADVISORY navigation index for an agentic reader — one entry per run directory that exists on disk, with the matured plan it produced where one exists. The NORMATIVE, hash-verified tail (v11-v15) lives in ../CONTRACTS/plan-version-chain.json; do not treat this index as authority.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "runs": [
+    { "dir": "docs/runs/clotho-daedalus/", "produced": "matured-plan.md (v1)" },
+    { "dir": "docs/runs/clotho-daedalus-delta/", "produced": "matured-plan-v2.md" },
+    { "dir": "docs/runs/clotho-daedalus-delta2/", "produced": "matured-plan-v3.md" },
+    { "dir": "docs/runs/clotho-daedalus-delta3/", "produced": "matured-plan-v4.md" },
+    { "dir": "docs/runs/clotho-daedalus-delta4/", "produced": "matured-plan-v5.md" },
+    { "dir": "docs/runs/clotho-daedalus-delta5/", "produced": "matured-plan-v6.md" },
+    { "dir": "docs/runs/clotho-daedalus-delta6/", "produced": "matured-plan-v7.md" },
+    { "dir": "docs/runs/clotho-daedalus-delta7/", "produced": "matured-plan-v8.md" },
+    { "dir": "docs/runs/clotho-daedalus-delta8/", "produced": "matured-plan-v9.md" },
+    { "dir": "docs/runs/clotho-daedalus-delta9/", "produced": "matured-plan-v10.md" },
+    { "dir": "docs/runs/clotho-daedalus-delta10/", "produced": "matured-plan-v11.md", "authorization": "authz-004 NOT_AUTHORIZED" },
+    { "dir": "docs/runs/clotho-daedalus-delta11/", "produced": "matured-plan-v12.md", "authorization": "authz-005 AUTHORIZED" },
+    { "dir": "docs/runs/clotho-daedalus-delta12/", "produced": "matured-plan-v13.md", "authorization": "authz-006 AUTHORIZED (AM-40)" },
+    { "dir": "docs/runs/clotho-daedalus-delta13/", "produced": "matured-plan-v14.md", "authorization": "authz-007 NOT_AUTHORIZED (AM-41 contradiction)" },
+    { "dir": "docs/runs/clotho-daedalus-delta14/", "produced": "matured-plan-v15.md", "authorization": "authz-008 AUTHORIZED (AM-41 shebang carve-out)", "active": true }
+  ],
+  "lineage_studies": [
+    "docs/runs/clotho-harvest-1/root-cause-study.md",
+    "docs/runs/clotho-harvest-1/surface-expansion-study.md"
+  ]
+}
