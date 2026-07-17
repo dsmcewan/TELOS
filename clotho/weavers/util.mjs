@@ -63,10 +63,21 @@ export function isCanonicalRepoRelPosix(p) {
 const REGEX_PREFIX = new Set("([{,;=:?!&|^~+-*%<>".split(""));
 // Keywords that cannot end an expression, so a following `/` begins a REGEX
 // literal even though the preceding significant char is an identifier char —
-// e.g. the `/` in `return /re/` or `case /re/`. Contextual identifiers such as
-// `of`/`as` are intentionally NOT here: treating `of` as regex-introducing would
-// mask a real division/dynamic-import after an `of`-named binding.
-const REGEX_KEYWORDS = new Set(["return", "throw", "case", "do", "else", "in", "instanceof", "typeof", "new", "delete", "void", "await", "yield"]);
+// e.g. the `/` in `return /re/` or `case /re/`. Regex-vs-division after a WORD is
+// the canonical tokenizer DENY rule (not a hand-maintained allow-list): a `/`
+// after a word is DIVISION only when the word produces a value — a VALUE keyword
+// (`this`/`super`/`true`/`false`/`null`) or a plain non-keyword identifier; after
+// any OTHER reserved keyword (which cannot end an expression as a value) a `/`
+// begins a REGEX. This is the COMPLETE ES reserved-word set, so `default`,
+// `extends`, etc. are covered. `of` stays contextual (regex only inside a control
+// head) so a division after an `of`-named binding elsewhere is unaffected.
+const VALUE_KEYWORDS = new Set(["this", "super", "true", "false", "null"]);
+const RESERVED_KEYWORDS = new Set([
+  "await", "break", "case", "catch", "class", "const", "continue", "debugger",
+  "default", "delete", "do", "else", "enum", "export", "extends", "finally",
+  "for", "function", "if", "import", "in", "instanceof", "new", "return",
+  "switch", "throw", "try", "typeof", "var", "void", "while", "with", "yield"
+]);
 // Keywords whose `(` opens a CONTROL head (`if (x) /re/` — the `)` is followed by
 // a regex, not division). An expression-group `)` (any other `(`) is followed by
 // division. Tracking which kind of `(` a `)` closes is what makes regex-vs-division
@@ -89,11 +100,15 @@ function regexAllowedAfter(prevSig, prevWord, lastParenKind, prevSig2, inControl
   // object/expression `}` it is DIVISION.
   if (prevSig === "}") return lastBraceKind === "block";
   if (REGEX_PREFIX.has(prevSig)) return true;
-  if (REGEX_KEYWORDS.has(prevWord)) return true;
-  // `of` introduces the iterable expression inside a for-head; a `/` there is a
-  // regex, not division. Restricted to INSIDE a control-head paren so a division
-  // after a binding named `of` elsewhere is unaffected. (`in` is already a keyword.)
-  if (prevWord === "of" && inControlParen) return true;
+  // Previous token was a WORD (prevSig is an identifier char) or a numeric literal
+  // (prevSig is a digit, prevWord ""). `of` inside a control head introduces the
+  // iterable expression → regex; a value keyword or a plain identifier/number →
+  // division; any other reserved keyword → regex.
+  if (IDENT_CHAR.test(prevSig)) {
+    if (prevWord === "of" && inControlParen) return true;
+    if (VALUE_KEYWORDS.has(prevWord)) return false;
+    return RESERVED_KEYWORDS.has(prevWord);
+  }
   return false;
 }
 
@@ -131,6 +146,12 @@ function decodeEscape(source, i) {
   }
   if (Object.prototype.hasOwnProperty.call(SIMPLE_ESCAPES, e)) return { value: SIMPLE_ESCAPES[e], next: i + 2 };
   return { value: e, next: i + 2 };                                  // any other escaped char is itself
+}
+
+// Horizontal (non-line-terminator) whitespace, complete set: TAB, VT, FF, SPACE,
+// NBSP, BOM/ZWNBSP. Line terminators (LF/CR/U+2028/U+2029) are handled separately.
+function isHorizontalWs(cc) {
+  return cc === 0x09 || cc === 0x0b || cc === 0x0c || cc === 0x20 || cc === 0xa0 || cc === 0xfeff;
 }
 
 export function lex(source) {
@@ -217,11 +238,12 @@ export function lex(source) {
     if (c === "<" && source[i + 1] === "!" && source[i + 2] === "-" && source[i + 3] === "-") { flagProfile("HTML comment opener <!--"); i += 4; continue; } // b3
     if (c === "-" && c2 === "-" && source[i + 2] === ">") {
       // b3: a line-leading `-->` closes an HTML comment (Annex B). "Line-leading"
-      // permits only whitespace (space/tab) between the previous LF (or BOF) and
-      // the `-->`, matching the ECMAScript SingleLineHTMLCloseComment rule.
+      // permits only horizontal whitespace between the previous line terminator (or
+      // BOF) and the `-->` — the COMPLETE set (space, tab, VT, FF, NBSP, BOM), not
+      // just space/tab — matching the ECMAScript SingleLineHTMLCloseComment rule.
       let s = i - 1;
-      while (s >= 0 && (source[s] === " " || source[s] === "\t")) s--;
-      if (s < 0 || source[s] === "\n") { flagProfile("line-leading HTML comment -->"); i += 3; continue; }
+      while (s >= 0 && isHorizontalWs(source.charCodeAt(s))) s--;
+      if (s < 0 || source[s] === "\n" || source[s] === "\r") { flagProfile("line-leading HTML comment -->"); i += 3; continue; }
     }
     if (c === "/" && c2 === "/") { i += 2; while (i < n && source[i] !== "\n") i++; continue; }
     if (c === "/" && c2 === "*") {
@@ -374,6 +396,10 @@ function parseModuleDecl(masked, strings, kwStart, kwWord) {
       const s = strings.get(p);                                 // side-effect: import "x"
       return s ? { kwWord, kwStart, form: "import-side-effect", specifier: s.value, clauseStart: p, fromKwStart: -1, fromEnd: s.end } : null;
     }
+    // A bare `import` at statement position terminated with `;` or EOF (not a
+    // dynamic `import(`, `import.meta`, side-effect `import "x"`, or a real clause)
+    // is a TRUNCATED accepted module-load form — b6, fail closed.
+    if (p >= n || masked[p] === ";") throw new ProfileError("truncated static import (bare import)");
     // A real static import clause starts with `{`, `*`, or a default-binding
     // identifier; anything else means `import` is a property NAME.
     if (!(masked[p] === "{" || masked[p] === "*" || /[A-Za-z_$]/.test(masked[p]))) return null;

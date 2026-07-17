@@ -829,4 +829,30 @@ import {
   assert.deepEqual(specs('const p = import("./x.mjs",);\n', "dynamic-import"), ["./x.mjs"], "trailing-comma dynamic import still literal");
 }
 
+{
+  // ---- round-12 (codex): complete regex-keyword DENY rule, whitespace set, bare import ----
+  const specs12 = (src, form) => classifyModuleLoads(src).filter((s) => s.form === form && s.specifier).map((s) => s.specifier);
+  const throws12 = (fn) => { try { fn(); return false; } catch (e) { return e instanceof ProfileError; } };
+  // A load-lookalike inside a regex after ANY reserved keyword that cannot end an
+  // expression — default / extends / case (not just the earlier allow-list) —
+  // creates NO edge. `\x2e\x2f` keeps a literal "/" out of the regex body so it
+  // does not terminate early.
+  const ghost = 'import("\\x2e\\x2fghost.mjs")';
+  assert.equal(classifyModuleLoads("export default /" + ghost + "/;\n").filter((s) => s.specifier).length, 0, "regex after `default` => no edge");
+  assert.equal(classifyModuleLoads("x = class extends /" + ghost + "/ {}\n").filter((s) => s.specifier).length, 0, "regex after `extends` => no edge");
+  assert.equal(classifyModuleLoads("switch(x){ case /" + ghost + "/.source: break; }\n").filter((s) => s.specifier).length, 0, "regex after `case` => no edge");
+  // Division after a VALUE (value keyword / identifier / number / `)`) keeps a real
+  // division-adjacent dynamic import visible.
+  assert.deepEqual(specs12('this / import("./x.mjs")\n', "dynamic-import"), ["./x.mjs"], "division after `this` keeps the import");
+  assert.deepEqual(specs12('f(a) / import("./x.mjs")\n', "dynamic-import"), ["./x.mjs"], "division after `)` keeps the import");
+  // fix 2: the complete horizontal-whitespace set — a FORM-FEED before a
+  // line-leading `-->` is still b3, fail closed.
+  assert.ok(throws12(() => classifyModuleLoads("a = 1;\n" + String.fromCharCode(0x0c) + "--> tail\n")), "b3 form-feed-prefixed line-leading -->");
+  // fix 3: a bare `import` (terminated by `;` or EOF) is a truncated accepted form
+  // (b6); an object property key named `import` is NOT.
+  assert.ok(throws12(() => classifyModuleLoads("import;\n")), "b6 bare `import;`");
+  assert.ok(throws12(() => classifyModuleLoads("import")), "b6 bare `import` at EOF");
+  assert.doesNotThrow(() => classifyModuleLoads("const o = { import: 1 };\n"), "{ import: 1 } property key is not truncated");
+}
+
 console.log("test-util: all assertions passed");
