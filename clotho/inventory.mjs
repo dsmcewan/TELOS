@@ -159,6 +159,55 @@ export const PERMITTED_EXTERNAL_CLOSURE_FILES = Object.freeze([
   "merkle-dag/vendor.mjs"
 ]);
 
+// ---- orchestrator-file inventory (D17/AM-17/D33, Task 5) ---------------------
+// The frozen orchestrator entry points and their committed accepted relative
+// module-load closure — the complete-weave driver, the thread ledger, and the
+// shared registry/canonicalization machinery their closures reach (the driver
+// statically imports the five weaver modules it drives, so those and their
+// shared substrate are orchestrator-reachable bytes). Committed in the SAME PR
+// that creates weave.mjs, so no inventory names a file that does not yet exist.
+// Proven equal to the derived closure by scripts/test-closure.mjs — never
+// trusted; the driver re-derives and re-checks it at publication time (D34).
+
+export const ORCHESTRATOR_ENTRY_MODULES = Object.freeze([
+  "clotho/thread-ledger.mjs",
+  "clotho/weave.mjs"
+]);
+
+export const ORCHESTRATOR_FILES = Object.freeze([
+  "clotho/inventory.mjs",
+  "clotho/registry.mjs",
+  "clotho/thread-ledger.mjs",
+  "clotho/weave.mjs",
+  "clotho/weavers/code.mjs",
+  "clotho/weavers/doc.mjs",
+  "clotho/weavers/git.mjs",
+  "clotho/weavers/ledger.mjs",
+  "clotho/weavers/test.mjs",
+  "clotho/weavers/util.mjs"
+]);
+
+// ---- closed fatal-warning code set (D22/AM-23, Task 5) -----------------------
+// A weaver warning carrying one of these codes aborts the weave before close and
+// publication (abort/remove/nonzero discipline); it can never coexist with a
+// published artifact. Includes the D29 accounting codes, the AM-39 attribution
+// code, and the D34 publication-time drift code. Sorted, closed, frozen.
+
+export const FATAL_WARNING_CODES = Object.freeze([
+  "attribution-violation",
+  "chain-failure",
+  "duplicate-heading-address",
+  "incomplete-source-consumption",
+  "invalid-content-address",
+  "invalid-ledger-entry",
+  "publication-time-drift",
+  "root-escape",
+  "source-count-mismatch",
+  "symlink-input",
+  "unexpected-source-consumption",
+  "unsupported-ledger-format"
+]);
+
 // ---- deep freeze -------------------------------------------------------------
 
 function deepFreeze(value) {
