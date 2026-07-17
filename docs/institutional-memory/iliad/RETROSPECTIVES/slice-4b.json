@@ -1,0 +1,47 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "retrospective-slice-4b",
+  "title": "Post-implementation review + SYSTEM EVALUATION #1 — Clotho slice 4b",
+  "note": "ADVISORY evaluation anchored to commit-verified facts. First retrospective produced by the full lifecycle (pre-review -> entry ritual GRANTED -> harvest -> verify -> enroll -> this).",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "clotho slice 4b (harvest merge git:af64b88 of origin/clotho-task4b head git:15de463; PR #126)",
+  "what_was_built": "test/doc/ledger weavers (clotho/weavers/{test,doc,ledger}.mjs + util additions) with isolating oracles (test-weaver-{test,doc,ledger}.mjs, incl. 6 gauntlet-found coverage gaps and the H1/H2 council hard-stop resolutions); D25 + D31 and their contracts flipped SPECIFIED-PENDING-IMPLEMENTATION -> NORMATIVE-CURRENT with passing oracles",
+  "verification_outcome": "clotho npm test: 10 tests green (7 -> 10); verify-contracts 188/188 (flipped records pass the NORMATIVE-has-oracle discipline); build-gate regression green; entry ritual 13/13 GRANTED before any work",
+  "what_worked": [
+    "HARVEST-FIRST paid exactly as the loadout review predicted: 13 files / +949 landed by one clean merge with lineage preserved — zero reimplementation",
+    "the documentation-first substrate worked end-to-end: the frozen records named their oracles in advance, the harvest satisfied them, and the flip to NORMATIVE was mechanical",
+    "the pre-review + entry ritual cost minutes and front-loaded the two traps (D25 provenance split, D31 independence) the queries encode",
+    "keeping OUR readdirSync verifier sweep meant the 4b-era hand-list defect never landed"
+  ],
+  "defects_found_during": [
+    "the original substrate's becomes_normative_when named test-test.mjs / test-ledger-weaver.mjs while the implementation shipped test-weaver-{test,ledger}.mjs — the harvest's own record flips resolved the drift; lesson: name oracles by final filename in future substrates"
+  ],
+  "process_mistakes_preserved": [
+    "mutation-tested an UNCOMMITTED file and reverted with git checkout — which restored the last committed version, wiping the legitimate uncommitted edits along with the mutation (caught by the verifier staying red at 202/203) -> rule: commit or stash before mutation tests, or revert the mutation with a targeted counter-edit, never a whole-file checkout"
+  ],
+  "system_evaluation": {
+    "redundancy": [
+      "none deleted this slice: the weavers share clotho/weavers/util.mjs (single D33 scanner) as designed — no duplicated scanner logic found",
+      "WATCH: doc.mjs and ledger.mjs each split canonical Markdown (D31 requires the ledger's OWN counted split — the duplication is a frozen decision, not accidental redundancy; do not 'fold' it)",
+      "candidate: examples/ now carries reader-4b-{argo,correct,hallucinating} plus the slice's committed implementer artifact — one worked pair per module is the convention; prune extras at slice-7 documentation pass"
+    ],
+    "process_dependencies": {
+      "slice_5_needs": "4b weavers (query.mjs reads their products; the complete-weave driver orchestrates git+code+test+doc+ledger)",
+      "slice_6_needs": "5's driver (flagship acceptance runs a complete weave)",
+      "slice_7_needs": "6's flagship run (reproduction evidence re-derives it from committed bytes)",
+      "conclusion": "slices are SEQUENTIAL at the slice level — no cross-slice concurrency available"
+    },
+    "concurrency_opportunities_via_merkle_dag": [
+      "WITHIN slice 5: the five per-package weaver runs (breakout, build-gate, clotho, connectors/ai-peer-mcp, merkle-dag) are independent by construction (one-writer-per-file over disjoint package trees) — the complete-weave driver can dispatch them concurrently and merge products under the merkle-dag discipline (content-addressed nodes, Rule-3 re-derivation, controller-only settle), exactly runBuild's DAG shape",
+      "WITHIN slice 5 implementation: query.mjs and weave.mjs are separate files with separate oracles (test-query.mjs / test-weave.mjs) — buildable by parallel agents in worktrees and merged conflict-free (one writer per file)",
+      "test execution: clotho test-all is already sequential-fast (10 tests); parallelism not worth the harness complexity yet — revisit if the suite passes ~30s"
+    ]
+  },
+  "optimizations_for_future_runs": [
+    { "optimization": "name becomes_normative_when oracles by their FINAL intended filename when freezing a substrate (the 4b naming drift cost a reconciliation check)", "lands_in": "clotho/memory design-substrate authoring practice; applies to any future SPECIFIED-PENDING record" },
+    { "optimization": "slice 5: implement query.mjs and weave.mjs as two parallel worktree agents (disjoint files, separate oracles), merge after both oracles pass — the merkle-dag one-writer discipline applied to our own workflow", "lands_in": "the slice-5 pre-review" },
+    { "optimization": "slice 5's driver should expose per-package weave as independently-dispatchable units so the runtime concurrency (five packages) mirrors the implementation concurrency", "lands_in": "the slice-5 pre-review + D34 driver design" }
+  ]
+}

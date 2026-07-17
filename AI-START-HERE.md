@@ -59,6 +59,16 @@ comprehension queries — load it before touching that role's code or workflow.
 | **Argo** | carries an authorized plan through implementation, verification, documentation | `docs/institutional-memory/argo/` |
 | **The Iliad** | lifecycle umbrella for enrolled sub-systems (pre-review → enroll → retrospective) | `docs/institutional-memory/iliad/` |
 
+**Future modules (registered, UNIMPLEMENTED)** — names reserved WITH meaning; no code
+exists. Do not coin them for other purposes, and do not assume the components exist:
+**Hermes** (API management & inter-system communication) · **Medusa** (defensive edge
+enforcement) · **Narcissus** (iterative UI rendering & visual review) · **Lachesis**
+(dependencies/relevance/risk/blast-radius) · **Atropos** (retirement of obsolete
+artifacts — discipline partially expressed today via supersession records). Machine
+index: `repository-manifest.json#future_modules` (verify-contracts cross-checks it
+against the vocabulary verbatim). Implementing one: CHANGE-PROTOCOL + the Iliad
+lifecycle.
+
 **Route by what you are about to do** (load that module's memory dir FIRST, then
 pass its `comprehension-queries.json` through the gate):
 

@@ -26,10 +26,11 @@
     "holder": "The Eye",
     "governs": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
     "accepted_slices": [
-      { "task": "4a", "pr": 117, "merge_anchor": "git:f12e5d2", "reviewed_head": "git:0e73ca6", "note": "accepted with a deferred minor-fix backlog per The Eye's stopping rule", "deferred_backlog": "docs/runs/clotho-impl-slice-4a/DEFERRED-MINOR-FIXES.md" }
+      { "task": "4a", "pr": 117, "merge_anchor": "git:f12e5d2", "reviewed_head": "git:0e73ca6", "note": "accepted with a deferred minor-fix backlog per The Eye's stopping rule", "deferred_backlog": "docs/runs/clotho-impl-slice-4a/DEFERRED-MINOR-FIXES.md" },
+      { "task": "4b", "pr": 126, "merge_anchor": "git:af64b88", "reviewed_head": "git:15de463", "note": "harvested from origin/clotho-task4b under The Eye's 'finish Clotho' directive (2026-07-17); entry ritual GRANTED (13/13) before work; D25/D31 + contracts flipped NORMATIVE with passing oracles; acceptance path = PR #126 review + CI + The Eye's merge decision", "entry_ritual": "docs/runs/clotho-impl-slice-4b/reader-validation-artifact.json" }
     ],
-    "next_slice": "4b",
-    "specified_pending_slices": ["4b", "5", "6", "7"],
+    "next_slice": "5",
+    "specified_pending_slices": ["5", "6", "7"],
     "specified_pending_note": "Frozen in v15 (authz-008); machine-first design substrate under clotho/memory/ (status SPECIFIED-PENDING-IMPLEMENTATION). An implementer loads it and passes clotho/memory/comprehension-queries.<task>.json via the comprehension gate before writing code; each record flips to NORMATIVE-CURRENT when its becomes_normative_when oracle passes."
   },
   "amendments_in_force": [

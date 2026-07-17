@@ -282,15 +282,29 @@ try {
     const a = authByTask.get(slice.task);
     check(`argo:slice-${slice.task}==authority`, !!a && a.pr === slice.pr && a.merge_anchor === slice.merge_anchor && a.reviewed_head === slice.reviewed_head && a.deferred_backlog === slice.deferred_backlog,
       a ? `authority pr=${a.pr} merge=${a.merge_anchor} head=${a.reviewed_head}` : "task missing from CURRENT-AUTHORITY.accepted_slices");
-    check(`argo:slice-${slice.task}-backlog-exists`, existsSync(path.join(ROOT, slice.deferred_backlog)), slice.deferred_backlog);
-    try {
-      const rev = readJson(slice.final_review_record);
-      const headOk = "git:" + (rev.pr_head || "").slice(0, 7) === slice.reviewed_head;
-      check(`argo:slice-${slice.task}-review-record`, rev.pr === slice.pr && headOk && rev.trust_mode === "signed" && eqArr(rev.ephemeral_signers, ["claude", "agy", "codex"]),
-        `pr=${rev.pr} head=${(rev.pr_head || "").slice(0, 7)} trust=${rev.trust_mode} signers=${JSON.stringify(rev.ephemeral_signers)}`);
-      const gateRes = readJson(slice.slice_gate_result);
-      check(`argo:slice-${slice.task}-gate-meets`, gateRes.finalStatus === "meets" && gateRes.converged === true, `finalStatus=${gateRes.finalStatus} converged=${gateRes.converged}`);
-    } catch (e) { check(`argo:slice-${slice.task}-records`, false, e.message); }
+    if (slice.deferred_backlog) {
+      check(`argo:slice-${slice.task}-backlog-exists`, existsSync(path.join(ROOT, slice.deferred_backlog)), slice.deferred_backlog);
+    }
+    // Acceptance evidence: a signed-council slice review (4a shape) OR a harvest
+    // with the entry-ritual artifact (4b shape). One of the two is REQUIRED.
+    if (slice.final_review_record) {
+      try {
+        const rev = readJson(slice.final_review_record);
+        const headOk = "git:" + (rev.pr_head || "").slice(0, 7) === slice.reviewed_head;
+        check(`argo:slice-${slice.task}-review-record`, rev.pr === slice.pr && headOk && rev.trust_mode === "signed" && eqArr(rev.ephemeral_signers, ["claude", "agy", "codex"]),
+          `pr=${rev.pr} head=${(rev.pr_head || "").slice(0, 7)} trust=${rev.trust_mode} signers=${JSON.stringify(rev.ephemeral_signers)}`);
+        const gateRes = readJson(slice.slice_gate_result);
+        check(`argo:slice-${slice.task}-gate-meets`, gateRes.finalStatus === "meets" && gateRes.converged === true, `finalStatus=${gateRes.finalStatus} converged=${gateRes.converged}`);
+      } catch (e) { check(`argo:slice-${slice.task}-records`, false, e.message); }
+    } else if (slice.entry_ritual) {
+      try {
+        const artifact = readJson(slice.entry_ritual);
+        check(`argo:slice-${slice.task}-entry-ritual`, artifact.result === "COMPREHENSION_PASSED" && artifact.implementation_authority === "GRANTED",
+          `result=${artifact.result} authority=${artifact.implementation_authority}`);
+      } catch (e) { check(`argo:slice-${slice.task}-entry-ritual`, false, e.message); }
+    } else {
+      check(`argo:slice-${slice.task}-acceptance-evidence`, false, "neither final_review_record nor entry_ritual recorded — an accepted slice must carry acceptance evidence");
+    }
   }
   for (const task of c.specified_pending_slices) {
     const q = `clotho/memory/comprehension-queries.${task}.json`;
@@ -531,6 +545,26 @@ try {
     check("iliad:model-review==mapModelName", bad === 0, bad ? `${bad} stale mappings` : `${Object.keys(review.mappings || {}).length} aliases probed against the live mapper`);
   }
 } catch (e) { check("iliad:model-review", false, e.message); }
+
+// ---- 8c. iliad: future modules — registered, verbatim, and genuinely unbuilt ---
+// The future-modules registry must match docs/mythological-vocabulary.md VERBATIM
+// (registered terms keep exactly their defined meaning), must not overlap any
+// implemented memory dir, and the manifest + Iliad copies must be identical.
+try {
+  const manifest = readJson("repository-manifest.json");
+  const enr = readJson("docs/institutional-memory/iliad/CONTRACTS/enrollment.json");
+  const vocab = readFileSync(path.join(ROOT, "docs/mythological-vocabulary.md"), "utf8");
+  const bullets = new Map();
+  for (const m of vocab.matchAll(/^- \*\*(.+?)\*\* — (.+)$/gm)) bullets.set(m[1], m[2].trim());
+  check("iliad:future-modules-manifest==registry", deepEq(manifest.future_modules, enr.future_modules_registered_unimplemented), "compared canonical JSON");
+  const implemented = new Set(Object.keys(manifest.entry_points.memory_dirs || {}));
+  for (const fm of enr.future_modules_registered_unimplemented || []) {
+    const text = bullets.get(fm.role);
+    check(`iliad:future-${fm.name}-registered-verbatim`, text === fm.role_meaning,
+      text === fm.role_meaning ? "meaning verbatim from the vocabulary" : `vocabulary='${(text || "TERM NOT REGISTERED").slice(0, 60)}…' record='${fm.role_meaning.slice(0, 60)}…'`);
+    check(`iliad:future-${fm.name}-unimplemented`, !implemented.has(fm.name), implemented.has(fm.name) ? "has a memory dir — not future" : "no memory dir (genuinely unbuilt)");
+  }
+} catch (e) { check("iliad:future-modules", false, e.message); }
 
 // ---- report -------------------------------------------------------------------
 for (const r of results) console.log(`  [${r.ok ? "PASS" : "FAIL"}] ${r.id}: ${r.detail}`);
