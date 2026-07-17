@@ -44,7 +44,10 @@ function loadWin32Env() {
 }
 loadWin32Env();
 
-function mapModelName(model) {
+// Exported so docs/institutional-memory/verify-contracts.mjs can probe the
+// standing model review (iliad/MODEL-REVIEWS/) against the live mapping —
+// model documentation cannot silently lag this function.
+export function mapModelName(model) {
   if (!model) return model;
   const lower = model.trim().toLowerCase();
   if (lower === "claude fable" || lower === "fable" || lower === "claude") {

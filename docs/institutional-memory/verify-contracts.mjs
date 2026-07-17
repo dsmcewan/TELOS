@@ -512,6 +512,26 @@ try {
   }
 } catch (e) { check("iliad:enrollment", false, e.message); }
 
+// ---- 8b. iliad: model currency — the LATEST model review == the live mapper ----
+// The lexicographically-latest MODEL-REVIEWS record is auto-probed, so future
+// reviews inherit the check and model documentation can never silently lag
+// connectors/ai-peer-mcp/server.mjs#mapModelName.
+try {
+  const mrDir = path.join(IM_DIR, "iliad", "MODEL-REVIEWS");
+  const files = readdirSync(mrDir).filter((f) => /^\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort();
+  check("iliad:model-review-exists", files.length > 0, files.length ? `latest: ${files[files.length - 1]}` : "no dated MODEL-REVIEWS record");
+  if (files.length) {
+    const review = JSON.parse(readFileSync(path.join(mrDir, files[files.length - 1]), "utf8"));
+    const { mapModelName } = await imp("connectors/ai-peer-mcp/server.mjs");
+    let bad = 0;
+    for (const [alias, id] of Object.entries(review.mappings || {})) {
+      const real = mapModelName(alias);
+      if (real !== id) { bad++; check(`iliad:model-map-${alias}`, false, `review=${id} mapper=${real}`); }
+    }
+    check("iliad:model-review==mapModelName", bad === 0, bad ? `${bad} stale mappings` : `${Object.keys(review.mappings || {}).length} aliases probed against the live mapper`);
+  }
+} catch (e) { check("iliad:model-review", false, e.message); }
+
 // ---- report -------------------------------------------------------------------
 for (const r of results) console.log(`  [${r.ok ? "PASS" : "FAIL"}] ${r.id}: ${r.detail}`);
 const failed = results.filter((r) => !r.ok);

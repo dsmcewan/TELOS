@@ -8,6 +8,7 @@
   "run": "<run name / PR>",
   "model_review": {
     "note": "which model id will fill each seat THIS run (env-resolved over build-gate/seats.json role bindings); note newly-available models worth a seat change — a seat change is a reviewed edit to seats.json, not a script change",
+    "baseline": "read the LATEST docs/institutional-memory/iliad/MODEL-REVIEWS/*.json first (machine-probed against the connector's mapModelName)",
     "seats": {
       "claude": "<ANTHROPIC_MODEL or server default>",
       "codex": "<OPENAI_MODEL or server default>",

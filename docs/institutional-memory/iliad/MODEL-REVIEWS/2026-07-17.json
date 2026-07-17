@@ -1,0 +1,53 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "model-review-2026-07-17",
+  "title": "Standing model review — current seat model bindings, verified against the connector",
+  "note": "The lifecycle's model-currency record: per-seat alias -> current mapped id, machine-probed against connectors/ai-peer-mcp/server.mjs#mapModelName by verify-contracts (the LATEST file in MODEL-REVIEWS/ is auto-probed, so this documentation cannot silently lag the mapper). Model ids are env-resolved per run with NO silent defaults — a seat with no model fails closed ('Missing <seat> model'). Which model ACTUALLY answered any run is proven by per-seat provenance, not by this record.",
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "reviewed": "2026-07-17",
+  "mappings": {
+    "claude": "claude-fable-5",
+    "fable": "claude-fable-5",
+    "claude fable": "claude-fable-5",
+    "opus": "claude-opus-4-8",
+    "claude opus": "claude-opus-4-8",
+    "sonnet": "claude-sonnet-4-6",
+    "claude sonnet": "claude-sonnet-4-6",
+    "grok": "grok-4.5",
+    "codex": "gpt-5.6-sol",
+    "gpt": "gpt-5.6-sol",
+    "sol": "gpt-5.6-sol",
+    "gemini": "gemini-3.1-pro-preview",
+    "gemini pro": "gemini-3.1-pro-preview",
+    "gemini flash": "gemini-3.5-flash"
+  },
+  "env_requirements": {
+    "claude": "ANTHROPIC_MODEL (required; fail-closed)",
+    "grok": "XAI_MODEL (required; fail-closed)",
+    "codex": "OPENAI_MODEL (required; fail-closed)",
+    "gemini": "GEMINI_MODEL (required; fail-closed)",
+    "agy": "no model — local deterministic governance"
+  },
+  "effort_gates": {
+    "claude": "Fable: effort low|medium|high|xhigh|max (seat default max); Opus 4.7-4.8 as requested; Opus 4.6 clamps xhigh->high; Opus 4.5 clamps xhigh/max->high",
+    "codex": "reasoning_effort gated to gpt-5.6*; default xhigh; max clamps to xhigh",
+    "grok": "reasoning_effort gated to grok-4.5; caps at high",
+    "gemini": "thinkingLevel gated to gemini-3*; default high"
+  },
+  "provenance_anchors": {
+    "claude-fable-5": "docs/runs/clotho-authorization-8/authorization-summary.json (seat provenance)",
+    "gpt-5.6-sol": "docs/runs/clotho-daedalus-delta14/run-daedalus-delta14.mjs (seat header)",
+    "grok": "grok-4.3 in frozen 2026-06/07 evidence; grok-4.5 is the current alias default — noted, not contradictory (evidence records the id at its moment)",
+    "gemini": "advisory packets recorded in docs/runs/clotho-authorization-{6,7,8}/gemini.json"
+  },
+  "stale_docs_fixed_this_review": [
+    "connectors/ai-peer-mcp/README.md: added missing gemini_ask (tool list, GEMINI_API_KEY/GEMINI_MODEL requirements, env + config examples, args example); fixed 'codex -> gpt-4o' to gpt-5.6-sol; five->six tools; vault-era absolute paths made repo-relative"
+  ],
+  "frozen_mentions_untouched": [
+    "docs/runs/** (all), docs/STATUS.md, docs/history/sdd-progress.md, docs/ENGINE-APPLY.md — historical ids (gpt-4o-2024-08-06, grok-4.3, claude-sonnet-4-6) are correct-for-their-moment provenance",
+    "test fixtures (test-standing, test-council-orchestrator, test-provenance, test-council) use old ids as mocks — they test mechanics, not currency; left as-is"
+  ],
+  "next_review": "at the next slice pre-review, or when a provider ships a model generation worth a seat change (a reviewed edit to build-gate/seats.json)"
+}
