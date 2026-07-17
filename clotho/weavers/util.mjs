@@ -10,7 +10,12 @@
 
 import { readFileSync, readdirSync, lstatSync, realpathSync } from "node:fs";
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import path from "node:path";
+
+// SHA-256 hex of exact bytes (Buffer or string). A `node:` import is not a
+// relative module-load edge, so it does not enter the accepted closure (D33).
+const sha256hex = (buf) => createHash("sha256").update(buf).digest("hex");
 
 const IDENT_CHAR = /[A-Za-z0-9_$]/;
 const IDENT = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
@@ -1298,3 +1303,71 @@ export function makeGitRunner(repoRoot) {
 }
 
 export function isFullSha(s) { return typeof s === "string" && HEX40.test(s); }
+
+// ---- canonical Markdown section splitter (Task 4b) ---------------------------
+// Recognizes ATX (`#`..`######`) and Setext (=/- underline) headings OUTSIDE
+// fenced code (``` / ~~~). A section is the exact byte slice from its heading
+// through the byte before the next heading of ANY level; the preamble is the
+// slice before the first heading. Section hashes are SHA-256 of those exact
+// bytes. Heading-level stacks form normalized heading paths. Two sections in one
+// file with the same heading_path are a fatal `duplicate-heading-path`: both are
+// recorded in `duplicatePaths` so the caller marks that address absent and emits
+// no edge to either. Shared by the doc-weaver and the ledger-weaver (D31) — ONE
+// splitter, no duplicate implementation. Operates on exact bytes (Buffer or
+// UTF-8 string).
+const SETEXT_UNDERLINE = /^ {0,3}(=+|-+)[ \t]*$/;
+const ATX_HEADING = /^ {0,3}(#{1,6})(?:[ \t]+.*)?$/;
+const FENCE = /^ {0,3}(```+|~~~+)/;
+
+export function splitMarkdownSections(input) {
+  const buf = Buffer.isBuffer(input) ? input : Buffer.from(String(input), "utf8");
+  // Line records: byte [start, end) where end includes the trailing LF if any.
+  const lines = [];
+  let ls = 0;
+  for (let i = 0; i < buf.length; i++) if (buf[i] === 0x0a) { lines.push({ start: ls, end: i + 1 }); ls = i + 1; }
+  if (ls < buf.length) lines.push({ start: ls, end: buf.length });
+  const textOf = (ln) => buf.toString("utf8", ln.start, ln.end).replace(/\r?\n$/, "");
+
+  const headings = []; // { start (byte), level, text }
+  let inFence = false, fenceChar = null;
+  for (let li = 0; li < lines.length; li++) {
+    const line = textOf(lines[li]);
+    const fm = FENCE.exec(line);
+    if (fm) { const ch = fm[1][0]; if (!inFence) { inFence = true; fenceChar = ch; } else if (ch === fenceChar) { inFence = false; fenceChar = null; } continue; }
+    if (inFence) continue;
+    const atx = ATX_HEADING.exec(line);
+    if (atx) {
+      const text = line.replace(/^ {0,3}#{1,6}[ \t]*/, "").replace(/[ \t]+#+[ \t]*$/, "").trim();
+      headings.push({ start: lines[li].start, level: atx[1].length, text });
+      continue;
+    }
+    // Setext: a non-blank, non-underline, non-ATX text line whose NEXT non-fence
+    // line is an underline. The underline is consumed (skipped) by advancing li.
+    if (line.trim() !== "" && !SETEXT_UNDERLINE.test(line) && li + 1 < lines.length) {
+      const next = textOf(lines[li + 1]);
+      if (!FENCE.test(next) && SETEXT_UNDERLINE.test(next)) {
+        const level = next.trim()[0] === "=" ? 1 : 2;
+        headings.push({ start: lines[li].start, level, text: line.trim() });
+        li++; // consume the underline
+      }
+    }
+  }
+
+  const firstStart = headings.length ? headings[0].start : buf.length;
+  const preamble = { startByte: 0, endByte: firstStart };
+  const sections = [];
+  const stack = [];
+  const seen = new Map(); // heading_path key -> count
+  for (let h = 0; h < headings.length; h++) {
+    const { start, level, text } = headings[h];
+    const end = h + 1 < headings.length ? headings[h + 1].start : buf.length;
+    while (stack.length && stack[stack.length - 1].level >= level) stack.pop();
+    stack.push({ level, text });
+    const heading_path = stack.map((s) => s.text);
+    const key = JSON.stringify(heading_path);
+    seen.set(key, (seen.get(key) || 0) + 1);
+    sections.push({ heading_path, startByte: start, endByte: end, text_sha256: sha256hex(buf.subarray(start, end)) });
+  }
+  const duplicatePaths = new Set([...seen].filter(([, n]) => n > 1).map(([k]) => k));
+  return { preamble, sections, duplicatePaths };
+}

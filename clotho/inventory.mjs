@@ -112,7 +112,8 @@ export const LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS = deepFreeze({
 // ---- per-weaver implementation-file inventories (D33) ------------------------
 // Committed accepted-relative-module-load closures (repository-relative POSIX,
 // sorted). Proven equal to the derived closures by scripts/test-closure.mjs —
-// never trusted. Only git and code exist at this PR (AM-17).
+// never trusted. Task 4a committed git + code; Task 4b adds test, doc, and ledger
+// (D17/AM-17) — every named file exists at this PR.
 export const WEAVER_IMPL_FILES = deepFreeze({
   "clotho-git-weaver": [
     "clotho/registry.mjs",
@@ -122,6 +123,21 @@ export const WEAVER_IMPL_FILES = deepFreeze({
     "clotho/registry.mjs",
     "clotho/weavers/code.mjs",
     "clotho/weavers/util.mjs"
+  ],
+  "clotho-test-weaver": [
+    "clotho/registry.mjs",
+    "clotho/weavers/test.mjs",
+    "clotho/weavers/util.mjs"
+  ],
+  "clotho-doc-weaver": [
+    "clotho/registry.mjs",
+    "clotho/weavers/doc.mjs",
+    "clotho/weavers/util.mjs"
+  ],
+  "clotho-ledger-weaver": [
+    "clotho/registry.mjs",
+    "clotho/weavers/ledger.mjs",
+    "clotho/weavers/util.mjs"
   ]
 });
 
@@ -129,7 +145,10 @@ export const WEAVER_IMPL_FILES = deepFreeze({
 // the closure derivation), mapped to their repository-relative module path.
 export const WEAVER_ENTRY_MODULE = Object.freeze({
   "clotho-git-weaver": "clotho/weavers/git.mjs",
-  "clotho-code-weaver": "clotho/weavers/code.mjs"
+  "clotho-code-weaver": "clotho/weavers/code.mjs",
+  "clotho-test-weaver": "clotho/weavers/test.mjs",
+  "clotho-doc-weaver": "clotho/weavers/doc.mjs",
+  "clotho-ledger-weaver": "clotho/weavers/ledger.mjs"
 });
 
 // Permitted external (non-clotho) closure targets — merkle-dag primitives that
