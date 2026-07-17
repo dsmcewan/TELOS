@@ -67,6 +67,7 @@ pass its `comprehension-queries.json` through the gate):
 | touch the gate, council, signing, or an authz run | `telos/` | required trio vs advisory; one dissent blocks; refusals are the system working |
 | implement a slice, review, or merge | `argo/` | comprehension gate first; The Eye accepts; the dissent asymmetry |
 | touch `clotho/` code | `clotho/memory/` | AM-40 roots; AM-41 profile; advisory/non-sandboxed posture |
+| choose tools/seats for a run, or START any task | `loadout/` (+ your task's `TASK-LOADOUTS/task-<id>.json`) | seat routes are pinned; a loadout server can never shadow a seat; missing capabilities must be surfaced, never worked around |
 
 One command re-proves the whole record set against reality (runs the Argo entry
 ritual both ways, probes the Daedalus state machine, re-hashes both lineages):

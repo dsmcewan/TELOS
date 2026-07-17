@@ -1,0 +1,83 @@
+{
+  "component": "loadout",
+  "note": "Authority-anchored comprehension queries for the loadout capability module. These encode the likely hallucinations about tooling: that a loadout server can substitute for a seat, that agy approval is a model call, that the repo verifies plugin bytes, that an advisory review enforces anything.",
+  "governing_authority": {
+    "plan": "docs/runs/clotho-daedalus-delta14/matured-plan-v15.md",
+    "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+    "authorization": "authz-008"
+  },
+  "required_invariants": ["loadout-cannot-shadow-seats", "loadout-trust-routes-local", "loadout-router-fail-closed"],
+  "required_non_claims": ["plugin-bytes-not-verified", "task-loadout-reviews-are-advisory"],
+  "queries": [
+    {
+      "id": "loadout-can-shadow-seat",
+      "query": "Can a TELOS_LOADOUT server shadow a council seat route?",
+      "answer_kind": "boolean",
+      "expected": false,
+      "authority_anchor": { "code": "build-gate/seat-registry.mjs#withLoadout", "invariant": "loadout-cannot-shadow-seats" }
+    },
+    {
+      "id": "agy-approval-backend",
+      "query": "What is the agy APPROVAL seat (agy_checkpoint)? (enum: local-governance-on-ai-peer | plugin-model-call | remote-api)",
+      "answer_kind": "enum",
+      "expected": "local-governance-on-ai-peer",
+      "authority_anchor": { "code": "build-gate/seat-registry.mjs (BY DESIGN comment)", "oracle": "build-gate/scripts/test-seat-registry.mjs" }
+    },
+    {
+      "id": "chat-seat-servers",
+      "query": "Which seats route to out-of-repo plugin servers?",
+      "answer_kind": "set",
+      "expected": ["grok_ask", "gemini_ask", "codex_ask", "agy_ask"],
+      "authority_anchor": { "contract": "docs/institutional-memory/loadout/CONTRACTS/seat-backends.json" }
+    },
+    {
+      "id": "unrouted-tool-behavior",
+      "query": "What happens on an unrouted council tool? (enum: throws-before-spawn | falls-back-to-ai-peer | best-effort)",
+      "answer_kind": "enum",
+      "expected": "throws-before-spawn",
+      "authority_anchor": { "oracle": "breakout/scripts/test-seat-router.mjs" }
+    },
+    {
+      "id": "repo-verifies-plugin-bytes",
+      "query": "Does the repo verify the bytes of the plugin seat servers it routes to?",
+      "answer_kind": "boolean",
+      "expected": false,
+      "authority_anchor": { "non_claim": "plugin-bytes-not-verified" }
+    },
+    {
+      "id": "enforced-loadout-review-form",
+      "query": "What is the gate-ENFORCED form of a loadout review? (enum: capability-packets-on-dossier | TASK-LOADOUTS-record | a-checklist)",
+      "answer_kind": "enum",
+      "expected": "capability-packets-on-dossier",
+      "authority_anchor": { "contract": "docs/institutional-memory/loadout/CONTRACTS/capability-packet.json", "code": "build-gate/gate.mjs (--capabilities)" }
+    },
+    {
+      "id": "missing-capability-behavior",
+      "query": "Can a model silently proceed with a weaker setup when capabilities are missing?",
+      "answer_kind": "boolean",
+      "expected": false,
+      "authority_anchor": { "contract_doc": "contracts/Claude-Led Multi-Model Prototype Workflow.md", "invariant": "loadout-capability-gate-fail-closed" }
+    },
+    {
+      "id": "task-review-timing",
+      "query": "When is a task's loadout review read? (enum: at-slice-start-before-code | after-implementation | at-merge)",
+      "answer_kind": "enum",
+      "expected": "at-slice-start-before-code",
+      "authority_anchor": { "invariant": "loadout-per-task-review" }
+    },
+    {
+      "id": "session-skills-pinned",
+      "query": "Does the repo pin an interactive agent's session skills and personal plugins?",
+      "answer_kind": "boolean",
+      "expected": false,
+      "authority_anchor": { "non_claim": "session-skills-not-pinned" }
+    },
+    {
+      "id": "malformed-loadout-file",
+      "query": "What happens when ~/.telos/loadout.json is malformed? (enum: silent-programmatic-only | hard-error | seats-disabled)",
+      "answer_kind": "enum",
+      "expected": "silent-programmatic-only",
+      "authority_anchor": { "non_claim": "loadout-file-errors-are-silent", "code": "build-gate/seat-registry.mjs#withLoadout (catch)" }
+    }
+  ]
+}

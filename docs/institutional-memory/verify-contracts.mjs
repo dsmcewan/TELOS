@@ -311,6 +311,65 @@ try {
   check("argo:entry-ritual-denies-hallucinating-reader", bad.status === 3, `exit=${bad.status} (expected 3)`);
 } catch (e) { check("argo:implementation-protocol", false, e.message); }
 
+// ---- 7a. loadout: seat-backends contract == seat-registry.mjs ------------------
+try {
+  const c = readJson("docs/institutional-memory/loadout/CONTRACTS/seat-backends.json");
+  const sr = await imp("build-gate/seat-registry.mjs");
+  const reg = sr.defaultSeatRegistry({ dir: "__PROBE__" });
+  // every contract route == the built registry (server, tool, argMap presence) — both directions
+  const contractTools = Object.keys(c.tool_routes).sort();
+  const regTools = Object.keys(reg.tools).sort();
+  check("loadout:tool-set==registry", eqArr(contractTools, regTools), `contract=${JSON.stringify(contractTools)} registry=${JSON.stringify(regTools)}`);
+  for (const [tool, route] of Object.entries(c.tool_routes)) {
+    const r = reg.tools[tool];
+    const ok = r && r.server === route.server && r.tool === route.tool && (typeof r.argMap === "function") === route.arg_map;
+    check(`loadout:route-${tool}`, !!ok, r ? `registry=${r.server}:${r.tool} argMap=${typeof r.argMap === "function"}` : "tool missing from registry");
+  }
+  const contractServers = Object.keys(c.servers).sort();
+  const regServers = Object.keys(reg.servers).sort();
+  check("loadout:server-set==registry", eqArr(contractServers, regServers), `contract=${JSON.stringify(contractServers)} registry=${JSON.stringify(regServers)}`);
+  for (const [name, s] of Object.entries(c.servers)) {
+    const r = reg.servers[name];
+    check(`loadout:server-${name}-framing`, !!r && r.framing === s.framing, r ? `registry=${r.framing} contract=${s.framing}` : "server missing");
+  }
+  // no-shadow probe: a loadout server named like a seat server must NOT displace it,
+  // and tool routes must be untouched.
+  const shadowed = sr.withLoadout(reg, { "ai-peer": { command: "evil", serverPath: "evil.mjs", framing: "ndjson" } });
+  check("loadout:probe-no-shadow-server", shadowed.servers["ai-peer"].serverPath === reg.servers["ai-peer"].serverPath && shadowed.servers["ai-peer"].command !== "evil",
+    `ai-peer serverPath after shadow attempt: ${shadowed.servers["ai-peer"].serverPath.endsWith("server.mjs") ? "registry wins" : "SHADOWED"}`);
+  check("loadout:probe-tools-untouched", canonicalize(shadowed.tools) === canonicalize(reg.tools), "withLoadout must not alter council tool routes");
+  // a genuinely new loadout server IS admitted (the mechanism works)
+  const extended = sr.withLoadout(reg, { docs: { command: "node", serverPath: "docs.mjs", framing: "ndjson" } });
+  check("loadout:probe-extension-admitted", !!extended.servers.docs && !!extended.servers["ai-peer"], `docs server present=${!!extended.servers.docs}`);
+} catch (e) { check("loadout:seat-backends", false, e.message); }
+
+// ---- 7b. loadout: capability-packet contract == worked fixtures ----------------
+try {
+  const c = readJson("docs/institutional-memory/loadout/CONTRACTS/capability-packet.json");
+  const example = readJson("build-gate/examples/capability-blocked/capabilities/claude.json");
+  const exampleFields = Object.keys(example).sort();
+  const contractFields = [...c.fields].sort();
+  check("loadout:capability-fields==worked-example", eqArr(contractFields, exampleFields), `contract=${contractFields.length} fields, example=${exampleFields.length} fields${eqArr(contractFields, exampleFields) ? "" : ` diff=${JSON.stringify(contractFields.filter((f) => !exampleFields.includes(f)).concat(exampleFields.filter((f) => !contractFields.includes(f))))}`}`);
+  check("loadout:capability-blocked-fixture", existsSync(path.join(ROOT, "build-gate/examples/capability-blocked/dossier.json")), "fail-closed worked example present");
+  check("loadout:capability-pass-fixture", existsSync(path.join(ROOT, "build-gate/examples/prototype-pass/capabilities/claude.json")), "passing worked example present");
+} catch (e) { check("loadout:capability-packet", false, e.message); }
+
+// ---- 7c. loadout: a per-task review exists for every pending slice -------------
+try {
+  const ia = readJson("CURRENT-AUTHORITY.json").implementation_authority;
+  for (const task of ia.specified_pending_slices || []) {
+    const p = `docs/institutional-memory/loadout/TASK-LOADOUTS/task-${task}.json`;
+    let ok = existsSync(path.join(ROOT, p));
+    let detail = p;
+    if (ok) {
+      const rec = readJson(p);
+      ok = rec.task === task && rec.normativity === "ADVISORY" && typeof rec.entry_ritual === "string" && Array.isArray(rec.optimization_opportunities) && rec.optimization_opportunities.length > 0;
+      detail = `${p} task=${rec.task} advisory=${rec.normativity === "ADVISORY"} opportunities=${(rec.optimization_opportunities || []).length}`;
+    }
+    check(`loadout:task-review-${task}`, ok, detail);
+  }
+} catch (e) { check("loadout:task-reviews", false, e.message); }
+
 // ---- report -------------------------------------------------------------------
 for (const r of results) console.log(`  [${r.ok ? "PASS" : "FAIL"}] ${r.id}: ${r.detail}`);
 const failed = results.filter((r) => !r.ok);

@@ -1,0 +1,27 @@
+[
+  {
+    "id": "session-skills-not-pinned",
+    "statement": "The repo does NOT pin an interactive agent's session-level skills or plugins (harness skills, editor plugins, personal MCP servers). It pins what is trust-relevant: the seat->backend routes, the declared loadout mechanism, and the gate-enforced capability packets. Session tooling is the operator's; the trust surface is the repo's.",
+    "authority": { "code": "build-gate/seat-registry.mjs" }
+  },
+  {
+    "id": "loadout-names-backends-not-models",
+    "statement": "The seat registry names BACKENDS, not models. Model ids stay env/per-call, and per-model strengths/placement live in build-gate/model-profiles.mjs — do not read a route as a model pin.",
+    "authority": { "code": "build-gate/seat-registry.mjs (header comment)", "profiles": "build-gate/model-profiles.mjs" }
+  },
+  {
+    "id": "task-loadout-reviews-are-advisory",
+    "statement": "TASK-LOADOUTS records are ADVISORY planning reviews — optimization opportunities are judgments, not requirements, and nothing enforces them. The ENFORCED form of a loadout need is a capability packet on the dossier (--capabilities), which the gate fail-closes on.",
+    "authority": { "contract": "docs/institutional-memory/loadout/CONTRACTS/capability-packet.json" }
+  },
+  {
+    "id": "plugin-bytes-not-verified",
+    "statement": "Plugin seat servers live OUTSIDE the repo (<TELOS_PLUGINS_DIR>, default ~/claude-plugins). The repo verifies the ROUTES to them, not their bytes — it cannot content-address code it does not contain. Seat trust still rests on the provenance envelope + per-seat HMAC + the gate, not on the plugin server being honest.",
+    "authority": { "code": "build-gate/seat-registry.mjs#pluginsDir", "trust_model": "README.md#trust-model" }
+  },
+  {
+    "id": "loadout-file-errors-are-silent",
+    "statement": "A malformed TELOS_LOADOUT / ~/.telos/loadout.json is silently ignored (withLoadout catches and proceeds programmatic-only). This is deliberate for ADVISORY convenience servers — seats are unaffected — but it means a typo'd loadout file yields missing extra tools with no warning. Known behavior, recorded; a warning line is a candidate improvement, not a trust defect.",
+    "authority": { "code": "build-gate/seat-registry.mjs#withLoadout (catch block)" }
+  }
+]

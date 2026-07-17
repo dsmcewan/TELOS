@@ -13,7 +13,8 @@
       "clotho": "clotho/memory/",
       "daedalus": "docs/institutional-memory/daedalus/",
       "telos": "docs/institutional-memory/telos/",
-      "argo": "docs/institutional-memory/argo/"
+      "argo": "docs/institutional-memory/argo/",
+      "loadout": "docs/institutional-memory/loadout/"
     }
   },
   "normative_docs": [
@@ -132,6 +133,27 @@
         "the comprehension gate is open-book (proves record-reading + authority resolution, not deep understanding)",
         "acceptance is not a zero-defect claim (slice 4a carries a deferred backlog)",
         "Argo does not choose scope (ambiguities escalate; never designed around)"
+      ]
+    }
+  ],
+  "capability_modules": [
+    {
+      "name": "loadout",
+      "kind": "capability module — the development loadout (tools, seat backends, plugins, review harness, per-task optimization reviews); named from the code's own term seat-registry.mjs#withLoadout, not a mythological role",
+      "status": "active (seat routes pinned + probed; loadout extension declared; per-task reviews for slices 4b/5/6/7)",
+      "code": ["build-gate/seat-registry.mjs", "breakout/seat_router.mjs"],
+      "memory_dir": "docs/institutional-memory/loadout/",
+      "comprehension_queries": "docs/institutional-memory/loadout/comprehension-queries.json",
+      "claims": [
+        { "statement": "every seat route, server framing, and the no-shadow invariant equal what seat-registry.mjs builds (registry rebuilt and deep-checked; shadow attempt probed and refused; extension mechanism probed and admitted)", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "build-gate/scripts/test-seat-registry.mjs", "breakout/scripts/test-seat-router.mjs"] },
+        { "statement": "the capability-packet field set equals the committed worked example, and both fail-closed and passing fixtures exist; every pending slice carries an ADVISORY loadout+optimization review with a non-empty opportunities list", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "build-gate/examples/capability-blocked/", "docs/institutional-memory/loadout/TASK-LOADOUTS/"] }
+      ],
+      "non_claims": [
+        "session skills/plugins are not pinned by the repo",
+        "the registry names backends, not models",
+        "task-loadout reviews are advisory (capability packets are the enforced form)",
+        "plugin server bytes are not verified (routes are)",
+        "malformed loadout files fail silently (recorded; warning is a candidate improvement)"
       ]
     }
   ]

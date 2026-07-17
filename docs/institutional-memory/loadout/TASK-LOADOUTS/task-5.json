@@ -1,0 +1,21 @@
+{
+  "kind": "evidence",
+  "component": "loadout",
+  "id": "task-loadout-5",
+  "task": "5",
+  "subject": "queries + complete-weave driver + advisory invariant",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "note": "ADVISORY per-task loadout review. Facts cite records; items under optimization_opportunities are judgments to weigh at slice start, not requirements.",
+  "entry_ritual": "pass clotho/memory/comprehension-queries.5.json through docs/institutional-memory/comprehension-gate.mjs before any code",
+  "loadout": {
+    "oracles_to_flip": "clotho/memory/CONTRACTS/coverage-schema.json and invariants d35-closed-coverage-schema, d34-publication-time-drift-abort, d10-am39-producer-attribution flip NORMATIVE via clotho/scripts/test-query.mjs and test-weave.mjs (their becomes_normative_when strings)",
+    "reuse": ["merkle-dag/vendor.mjs canonicalize/sha256hex (the layer's single hashing convention)", "the D34 publication-time re-derivation discipline"],
+    "research": ["extra MCP servers via seat-registry.mjs#withLoadout (TELOS_LOADOUT) — e.g. a docs server — reached namespaced, structurally unable to shadow seats"],
+    "verification": ["docs/institutional-memory/verify-contracts.mjs", "clotho npm test"]
+  },
+  "optimization_opportunities": [
+    "DOGFOOD the weave: the complete-weave driver's first corpus could include the institutional-memory layer itself — docs/daedalus-methodology.md#corpus-level names Daedalus corpus-review as the Phase-2-class consumer, and weaving the record set makes the planning lineage queryable.",
+    "The advisory invariant lands here — keep it ADVISORY in records too (no oracle => no NORMATIVE), matching the layer's own discipline."
+  ]
+}

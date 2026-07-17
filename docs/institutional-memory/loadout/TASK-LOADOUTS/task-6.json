@@ -1,0 +1,20 @@
+{
+  "kind": "evidence",
+  "component": "loadout",
+  "id": "task-loadout-6",
+  "task": "6",
+  "subject": "flagship acceptance + skipped-source coverage failure",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "note": "ADVISORY per-task loadout review. Facts cite records; items under optimization_opportunities are judgments to weigh at slice start, not requirements.",
+  "entry_ritual": "pass clotho/memory/comprehension-queries.6.json through docs/institutional-memory/comprehension-gate.mjs before any code",
+  "loadout": {
+    "reuse": ["breakout/verifier.mjs verdict-on-facts (acceptance decided on disk facts, not claims)", "the per-slice deterministic gate pattern (docs/runs/clotho-impl-slice-4a/gate.mjs -> gate-result.json 'meets')"],
+    "review": ["the slice-4a per-round review convention (roundN-review-{seat}.json + summary) for the flagship run's evidence trail"],
+    "verification": ["docs/institutional-memory/verify-contracts.mjs", "clotho npm test"]
+  },
+  "optimization_opportunities": [
+    "If the flagship run needs external connectors or docs, graduate this review into gate-enforced capability packets on the slice dossier (--capabilities; see ../CONTRACTS/capability-packet.json) instead of ad hoc setup.",
+    "The skipped-source coverage failure is a designed fail-closed outcome — record it in the slice's FAILURE-MODES rather than treating the first occurrence as a bug."
+  ]
+}

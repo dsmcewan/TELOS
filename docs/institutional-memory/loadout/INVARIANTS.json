@@ -1,0 +1,44 @@
+[
+  {
+    "id": "loadout-cannot-shadow-seats",
+    "statement": "Council tool routes always win: a loadout server (programmatic or TELOS_LOADOUT file) can never shadow a seat server or a council tool route — registry servers spread last in withLoadout, and tool routes are untouched by it.",
+    "authority": { "code": "build-gate/seat-registry.mjs#withLoadout" },
+    "contract": "docs/institutional-memory/loadout/CONTRACTS/seat-backends.json",
+    "oracle": { "test": "breakout/scripts/test-seat-router.mjs (explicit council routes still win)", "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (probe: withLoadout attempts to shadow the ai-peer server; the registry must win)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "loadout-trust-routes-local",
+    "statement": "claude_ask and agy_checkpoint route to the in-repo ai-peer-mcp server, never a plugin — the agy APPROVAL seat is local governance derived from the dossier and must not become a model call (ask_agy is a separate ADVISORY seat).",
+    "authority": { "code": "build-gate/seat-registry.mjs (design comment)", "contracts": "contracts/" },
+    "oracle": { "test": "build-gate/scripts/test-seat-registry.mjs ('the agy APPROVAL seat is local governance — it must not become a model call')", "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (route deep-check)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "loadout-router-fail-closed",
+    "statement": "An unrouted tool throws BEFORE any backend spawn; a namespaced call to an unregistered server fails closed. No seat call silently lands on the wrong process.",
+    "authority": { "code": "breakout/seat_router.mjs" },
+    "oracle": { "test": "breakout/scripts/test-seat-router.mjs (no backend is contacted for an unrouted tool)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "loadout-capability-gate-fail-closed",
+    "statement": "A build that needs capabilities it does not have must surface them: a missing required capability packet blocks, missing_capabilities not presented to claude blocks, and an open must_request_user_or_install item blocks until resolved.",
+    "authority": { "contract_doc": "contracts/Claude-Led Multi-Model Prototype Workflow.md", "code": "build-gate/gate.mjs (--capabilities)" },
+    "contract": "docs/institutional-memory/loadout/CONTRACTS/capability-packet.json",
+    "oracle": { "test": "build-gate/scripts/test-gate.mjs + test-trust.mjs (capability paths); build-gate/examples/capability-blocked/ (worked fail-closed fixture)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "loadout-per-task-review",
+    "statement": "Every SPECIFIED-PENDING slice carries a per-task loadout review record (TASK-LOADOUTS/task-<id>.json) naming its entry ritual, the oracles it will flip, what to reuse, and its optimization opportunities — reviewed at slice start, before code.",
+    "authority": { "pointer": "CURRENT-AUTHORITY.json#implementation_authority.specified_pending_slices" },
+    "oracle": { "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (a TASK-LOADOUTS record exists for every pending slice)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  }
+]

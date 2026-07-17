@@ -1,0 +1,34 @@
+{
+  "kind": "contract",
+  "component": "loadout",
+  "id": "capability-packet",
+  "title": "Capability acquisition packet — the gate-enforced per-build loadout review",
+  "authority": {
+    "contract_doc": "contracts/Claude-Led Multi-Model Prototype Workflow.md#capability-acquisition-packet",
+    "code": "build-gate/gate.mjs (validate ... --capabilities <dir>)"
+  },
+  "fields": [
+    "build_id", "idea_id", "model", "telos",
+    "docs_needed", "skills_needed", "connectors_needed",
+    "available_now", "missing_capabilities",
+    "can_build_during_planning", "built_during_planning",
+    "must_request_user_or_install",
+    "presented_to_claude", "recommendation_to_claude", "timestamp"
+  ],
+  "blocking_rules": [
+    "a required capability packet missing -> gate blocks",
+    "missing_capabilities non-empty but presented_to_claude false -> gate blocks (no model silently proceeds with a weaker setup)",
+    "must_request_user_or_install non-empty -> blocked until the user completes setup or the architecture is changed to avoid the dependency"
+  ],
+  "relation_to_task_loadouts": "This packet is the ENFORCED form of a loadout review — attached to a dossier via --capabilities, validated by the gate. The per-task reviews in ../TASK-LOADOUTS/ are the ADVISORY planning form for the pending Clotho slices; a slice that needs new external tools should graduate its review into capability packets on the slice dossier.",
+  "why": "A loadout review that nothing enforces decays into a wish list. The packet form is fail-closed: an agent that needs a tool it does not have must surface that need and block until it is resolved — never quietly degrade.",
+  "change_rule": "Field or blocking-rule changes route through the contract doc + gate change together (docs/institutional-memory/CHANGE-PROTOCOL.md); this contract must be updated in the same change or verify-contracts fails.",
+  "oracle": {
+    "source_of_truth": "build-gate/gate.mjs capability validation + the worked fixtures",
+    "test": "build-gate/scripts/test-gate.mjs + build-gate/scripts/test-trust.mjs (capability packet paths); build-gate/examples/capability-blocked/ (fail-closed worked example) + examples/prototype-pass/capabilities/ (passing example)",
+    "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (field set deep-equals the committed worked example packet; the fail-closed example fixtures exist)"
+  },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}
