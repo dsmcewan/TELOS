@@ -19,7 +19,12 @@ const SELF = path.relative(ROOT, fileURLToPath(import.meta.url)).split(path.sep)
 // task as real tests land.
 const TESTS = [
   "scripts/test-registry.mjs",
-  "scripts/test-ledger.mjs"
+  "scripts/test-ledger.mjs",
+  "scripts/test-util.mjs",
+  "scripts/test-inventory.mjs",
+  "scripts/test-git.mjs",
+  "scripts/test-code.mjs",
+  "scripts/test-closure.mjs"
 ];
 
 function collectTestFiles(dir) {
