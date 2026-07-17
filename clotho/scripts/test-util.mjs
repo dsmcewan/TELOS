@@ -14,7 +14,7 @@ import path from "node:path";
 import {
   makeCountedSource, physicalContainment, walkFiles, seedSourceDescriptors,
   classifyModuleLoads, scanExports, scanImports, identifierUsedOutside, escapeRegExp,
-  validateGitArgs, gitSpawnOptions, isFullSha, isCanonicalRepoRelPosix,
+  validateGitArgs, gitSpawnOptions, makeGitRunner, isFullSha, isCanonicalRepoRelPosix,
   resolveRelativeSpecifier, deriveAcceptedClosure, ProfileError, PROFILE_DIAGNOSTIC
 } from "../weavers/util.mjs";
 
@@ -667,16 +667,62 @@ import {
   assert.equal(classifyModuleLoads(forOf).filter((s) => s.specifier === "./z.mjs").length, 0, "regex in for...of head is not a load");
 }
 
-// ---- 18. git wrapper: caller spawn options cannot redirect the repository ------
+// ---- 18. git wrapper: caller options + inherited env cannot redirect the repo --
 {
-  // gitSpawnOptions drops the caller-supplied bag entirely: env (GIT_DIR), argv0,
-  // and a cwd override cannot pass through the fixed, closed set.
+  // gitSpawnOptions drops the caller-supplied bag entirely (env/argv0/cwd override
+  // cannot pass through the fixed, closed set) AND passes a CONTROLLED env — a copy
+  // of process.env with every repository-redirecting GIT_* variable neutralized —
+  // so cwd alone determines which repository git inspects.
   const evil = { env: { GIT_DIR: "/tmp/evil.git", GIT_WORK_TREE: "/tmp" }, argv0: "not-git", cwd: "/tmp/elsewhere" };
-  const opts = gitSpawnOptions("/repo/root", evil);
-  assert.equal(opts.cwd, "/repo/root", "cwd is fixed to repoRoot, not the caller override");
-  assert.equal(opts.shell, false, "shell stays false");
-  assert.equal(opts.env, undefined, "caller env (GIT_DIR/GIT_WORK_TREE) is dropped");
-  assert.equal(opts.argv0, undefined, "caller argv0 is dropped");
+  const savedGitDir = process.env.GIT_DIR;
+  process.env.GIT_DIR = "/tmp/inherited-evil.git"; // simulate an inherited redirect
+  try {
+    const opts = gitSpawnOptions("/repo/root", evil);
+    assert.equal(opts.cwd, "/repo/root", "cwd is fixed to repoRoot, not the caller override");
+    assert.equal(opts.shell, false, "shell stays false");
+    assert.equal(opts.argv0, undefined, "caller argv0 is dropped");
+    assert.ok(opts.env && typeof opts.env === "object", "a controlled env is supplied");
+    assert.equal(opts.env.GIT_DIR, undefined, "inherited GIT_DIR is neutralized");
+    assert.equal(opts.env.GIT_WORK_TREE, undefined, "GIT_WORK_TREE is neutralized");
+    assert.equal(opts.env.GIT_OBJECT_DIRECTORY, undefined, "GIT_OBJECT_DIRECTORY is neutralized");
+    assert.notEqual(opts.env, evil.env, "the caller-supplied env is not used");
+  } finally {
+    if (savedGitDir === undefined) delete process.env.GIT_DIR; else process.env.GIT_DIR = savedGitDir;
+  }
+}
+
+// ---- 18b. git runner is repository-faithful under an inherited GIT_DIR ---------
+{
+  // With process.env.GIT_DIR pointing at repo B, makeGitRunner(A)(["rev-parse",
+  // "HEAD"]) must return A's HEAD (cwd wins), not B's.
+  const os = await import("node:os");
+  const cp = await import("node:child_process");
+  const fsm = await import("node:fs");
+  const base = fsm.mkdtempSync(path.join(os.tmpdir(), "clotho-gitenv-"));
+  const A = path.join(base, "A"), B = path.join(base, "B");
+  const initRepo = (dir, content) => {
+    fsm.mkdirSync(dir, { recursive: true });
+    const run = (args) => cp.execFileSync("git", args, { cwd: dir, stdio: ["ignore", "pipe", "ignore"] });
+    run(["init", "-q"]); run(["config", "user.email", "a@b.c"]); run(["config", "user.name", "t"]);
+    fsm.writeFileSync(path.join(dir, "f.txt"), content);
+    run(["add", "f.txt"]); run(["commit", "-q", "-m", content]);
+    return cp.execFileSync("git", ["rev-parse", "HEAD"], { cwd: dir, encoding: "utf8" }).trim();
+  };
+  try {
+    const headA = initRepo(A, "alpha");
+    initRepo(B, "beta");
+    const savedGitDir = process.env.GIT_DIR;
+    process.env.GIT_DIR = path.join(B, ".git");
+    try {
+      const gitA = makeGitRunner(A);
+      const got = String(gitA(["rev-parse", "HEAD"])).trim();
+      assert.equal(got, headA, "inherited GIT_DIR (repo B) cannot redirect makeGitRunner(A) away from A");
+    } finally {
+      if (savedGitDir === undefined) delete process.env.GIT_DIR; else process.env.GIT_DIR = savedGitDir;
+    }
+  } finally {
+    fsm.rmSync(base, { recursive: true, force: true });
+  }
 }
 
 // ---- 19. multi-declarator export declaration warns (no silent symbol drop) -----
@@ -686,6 +732,79 @@ import {
   assert.ok(multi.warnings.some((w) => /multi-declarator/.test(w)), "the dropped declarator produces a warning");
   const single = scanExports("export const only = 1;\n");
   assert.deepEqual(single.warnings, [], "a single-declarator export const emits no multi-declarator warning");
+}
+
+// ---- 20. round-10 lexer hardening (codex): supported-profile correctness + b1-b6 ----
+{
+  const specs = (src, form) => classifyModuleLoads(src).filter((s) => s.form === form && s.literal).map((s) => s.specifier);
+  const anyLoad = (src) => classifyModuleLoads(src).length;
+  const isProfile = (fn) => { try { fn(); return false; } catch (e) { return e instanceof ProfileError && e.diagnostic === PROFILE_DIAGNOSTIC; } };
+
+  // fix 1: await/yield introduce a regex; a load-shaped regex after them is NOT a load.
+  assert.equal(anyLoad('async function f(){ await /import(".\\/x.mjs")/; }\n'), 0, "await /re/ is a regex, not a load");
+  assert.equal(anyLoad('function* g(){ yield /require(".\\/x.mjs")/; }\n'), 0, "yield /re/ is a regex, not a load");
+  // block `}` then regex is a regex; object `}` then division-then-load stays visible.
+  assert.equal(anyLoad('if (a) { b; } /import(".\\/x.mjs")/;\n'), 0, "regex after a block } is a regex");
+  assert.deepEqual(specs('const o = { a: 1 } / import("./x.mjs");\n', "dynamic-import"), ["./x.mjs"], "division after object } keeps the load visible");
+
+  // fix 2: member call across whitespace/newline is not a load.
+  assert.equal(anyLoad('obj.\nimport("./x.mjs");\n'), 0, "obj.\\nimport(...) is a member call");
+  assert.equal(anyLoad('obj.\trequire("./x.mjs");\n'), 0, "obj.\\trequire(...) is a member call");
+  assert.equal(anyLoad('a.module.require("./x.mjs");\n'), 0, "a.module.require(...) is a member call");
+
+  // fix 3: function/method definitions named like loaders are not calls.
+  assert.equal(anyLoad('function require(x) {}\n'), 0, "function require(x){} is not a load");
+  assert.equal(anyLoad('const o = { require(x) {}, import(x) {} };\n'), 0, "object methods require/import are not loads");
+  assert.equal(anyLoad('class C { require() {} }\n'), 0, "class method require() is not a load");
+  // a real call still classifies.
+  assert.deepEqual(specs('require("./x.mjs");\n', "require"), ["./x.mjs"], "a real require call is a load");
+
+  // fix 4 (b5): a string-literal export/import NAME fails closed, with or without from.
+  assert.ok(isProfile(() => classifyModuleLoads('const x = 1; export { x as "public" };\n')), "b5 export { x as \"public\" }");
+  assert.ok(isProfile(() => classifyModuleLoads('export { "x" } from "./m.mjs";\n')), "b5 export { \"x\" } from");
+  assert.ok(isProfile(() => classifyModuleLoads('import { "a" as b } from "./m.mjs";\n')), "b5 import { \"a\" as b } from");
+  // an object property named `import` with an object value is NOT b5.
+  assert.doesNotThrow(() => classifyModuleLoads('const o = { import: { "k": 1 } };\n'), "{ import: { k } } is not a b5 name");
+
+  // fix 5 (b6): unterminated regex fails closed, and a following import is not recognized.
+  assert.ok(isProfile(() => classifyModuleLoads('const r = /unterminated\nimport("./x.mjs");\n')), "b6 unterminated regex (newline)");
+  assert.ok(isProfile(() => classifyModuleLoads('const r = /unterminated')), "b6 unterminated regex (EOF)");
+  assert.ok(isProfile(() => classifyModuleLoads('const r = /[abc/;\n')), "b6 unterminated regex char class");
+
+  // fix 6: property/member/private `export` occurrences produce no symbol and no warning.
+  for (const src of ['const v = obj.\n export;\n', 'const o = { export() {} };\n', 'class C { #export = 1; }\n']) {
+    const r = scanExports(src);
+    assert.deepEqual(r.exports, [], `no symbol for non-declaration export: ${JSON.stringify(src)}`);
+    assert.deepEqual(r.warnings, [], `no warning for non-declaration export: ${JSON.stringify(src)}`);
+  }
+
+  // fix 10: malformed escapes / whitespace-prefixed --> / truncated forms fail closed.
+  assert.ok(isProfile(() => classifyModuleLoads('const s = "\\xG0";\n')), "b malformed \\x escape");
+  assert.ok(isProfile(() => classifyModuleLoads('const s = "\\uZZZZ";\n')), "b malformed \\u escape");
+  assert.ok(isProfile(() => classifyModuleLoads('const s = "\\u{}";\n')), "b empty \\u{}");
+  assert.ok(isProfile(() => classifyModuleLoads('const s = "\\u{110000}";\n')), "b out-of-range \\u{...} (no RangeError leak)");
+  assert.ok(isProfile(() => classifyModuleLoads('const a = 1;\n   --> tail\nexport const z=1;\n')), "b3 whitespace-prefixed line-leading -->");
+  assert.ok(isProfile(() => classifyModuleLoads('import { x }\nexport const z = 1;\n')), "b6 truncated import (no from)");
+  assert.ok(isProfile(() => classifyModuleLoads('export *\n')), "b6 truncated export * (no from)");
+  assert.ok(isProfile(() => classifyModuleLoads('const p = import("./x.mjs",\n')), "b6 truncated dynamic import (unclosed)");
+  // a valid in-profile \u{...} and \xHH still lex.
+  assert.doesNotThrow(() => classifyModuleLoads('const s = "\\u{1F600}\\x2e";\n'), "valid \\u{...}/\\xHH are in-profile");
+
+  // export const single vs multi already covered (§19); a valid `export { a } from` still works.
+  assert.deepEqual(specs('export { a } from "./m.mjs";\n', "export-from"), ["./m.mjs"], "export { a } from still classifies");
+
+  // fix 9: a backslash in a relative specifier is rejected BEFORE any filesystem
+  // resolution (so `./link\..\x.mjs` can never erase the `link` symlink on Windows).
+  assert.equal(resolveRelativeSpecifier("/repo/a.mjs", "./link\\..\\x.mjs", { repoRoot: "/repo" }).kind, "backslash-in-specifier", "backslash specifier rejected pre-resolution");
+  assert.equal(resolveRelativeSpecifier("/repo/a.mjs", "..\\x.mjs", { repoRoot: "/repo" }).kind, "non-relative", "a bare backslash prefix is non-relative");
+
+  // fix 11: a default import binding named `from` is parsed (not dropped), and the
+  // governing from-clause is still detected.
+  const imps = scanImports('import from from "./dep.mjs";\nexport const use = from;\n');
+  assert.equal(imps.length, 1, "one import declaration");
+  assert.equal(imps[0].specifier, "./dep.mjs", "governing from-clause specifier resolved");
+  assert.deepEqual(imps[0].bindings, [{ form: "default", local: "from" }], "default binding named `from` is preserved");
+  assert.equal(identifierUsedOutside('import from from "./dep.mjs";\nexport const use = from;\n', "from", [imps[0].span]), true, "the used `from` binding is a real use outside the declaration");
 }
 
 console.log("test-util: all assertions passed");

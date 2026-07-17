@@ -410,4 +410,22 @@ const closureOf = (root, allowExternal = new Set()) =>
   finally { rmSync(root2, { recursive: true, force: true }); }
 }
 
+// ---- 15. allowExternal admits ONLY approved merkle-dag primitives ------------
+// A caller-supplied allowExternal entry that is NOT under merkle-dag/ can never
+// widen the closure: a non-clotho/non-merkle-dag target is an escape regardless
+// of allowExternal contents (fix: the one frozen external namespace).
+{
+  const root = mkRepo({
+    "clotho/entry.mjs": 'import "../other/x.mjs";\nexport const z = 1;\n',
+    "other/x.mjs": "export const a = 1;\n"
+  });
+  try {
+    assert.throws(
+      () => deriveAcceptedClosure(entryOf(root), { repoRoot: root, allowExternal: new Set(["other/x.mjs"]) }),
+      /escape/,
+      "allowExternal cannot admit a non-merkle-dag target"
+    );
+  } finally { rmSync(root, { recursive: true, force: true }); }
+}
+
 console.log("test-closure: all assertions passed");

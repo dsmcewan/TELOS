@@ -66,7 +66,7 @@ const REGEX_PREFIX = new Set("([{,;=:?!&|^~+-*%<>".split(""));
 // e.g. the `/` in `return /re/` or `case /re/`. Contextual identifiers such as
 // `of`/`as` are intentionally NOT here: treating `of` as regex-introducing would
 // mask a real division/dynamic-import after an `of`-named binding.
-const REGEX_KEYWORDS = new Set(["return", "throw", "case", "do", "else", "in", "instanceof", "typeof", "new", "delete", "void"]);
+const REGEX_KEYWORDS = new Set(["return", "throw", "case", "do", "else", "in", "instanceof", "typeof", "new", "delete", "void", "await", "yield"]);
 // Keywords whose `(` opens a CONTROL head (`if (x) /re/` — the `)` is followed by
 // a regex, not division). An expression-group `)` (any other `(`) is followed by
 // division. Tracking which kind of `(` a `)` closes is what makes regex-vs-division
@@ -79,12 +79,15 @@ const CONTROL_HEADS = new Set(["if", "while", "for", "switch", "catch", "with"])
 // significant token (`prevSig` char + `prevWord`) is tracked by the lexer across
 // whitespace AND comments (both are blanked without updating it), so
 // `return /*c*/ /re/` and `if /*c*/ (...) /re/` classify soundly.
-function regexAllowedAfter(prevSig, prevWord, lastParenKind, prevSig2, inControlParen) {
+function regexAllowedAfter(prevSig, prevWord, lastParenKind, prevSig2, inControlParen, lastBraceKind) {
   if (prevSig === "" || prevSig === "\n") return true;
   // Postfix `++`/`--` is an expression-ender, so a following `/` is DIVISION —
   // e.g. `x++ / import("./m.mjs")` must NOT mask the dynamic import as a regex.
   if ((prevSig === "+" && prevSig2 === "+") || (prevSig === "-" && prevSig2 === "-")) return false;
   if (prevSig === ")") return lastParenKind === "control";
+  // A `/` after a block `}` (statement/function/arrow body) is a REGEX; after an
+  // object/expression `}` it is DIVISION.
+  if (prevSig === "}") return lastBraceKind === "block";
   if (REGEX_PREFIX.has(prevSig)) return true;
   if (REGEX_KEYWORDS.has(prevWord)) return true;
   // `of` introduces the iterable expression inside a for-head; a `/` there is a
@@ -117,7 +120,9 @@ function decodeEscape(source, i) {
     if (source[i + 2] === "{") {
       const close = source.indexOf("}", i + 3);
       const hx = close === -1 ? "" : source.slice(i + 3, close);
-      if (close !== -1 && /^[0-9a-fA-F]+$/.test(hx)) return { value: String.fromCodePoint(parseInt(hx, 16)), next: close + 1 };
+      // Guard the codepoint range: an out-of-range \u{…} is flagged out-of-profile
+      // by the caller; here we must never throw a native RangeError.
+      if (close !== -1 && /^[0-9a-fA-F]+$/.test(hx) && parseInt(hx, 16) <= 0x10ffff) return { value: String.fromCodePoint(parseInt(hx, 16)), next: close + 1 };
       return { value: "u", next: i + 2 };
     }
     const hex = source.slice(i + 2, i + 6);
@@ -146,6 +151,19 @@ export function lex(source) {
   // head is a regex while a `/` after an expression group is division.
   const parenStack = [];
   let lastParenKind = null;
+  // Brace-kind stack (parallel to parenStack): each code-mode "{" is a BLOCK
+  // (statement/function/arrow/control body) or an OBJECT/expression; on "}" we
+  // remember the closed kind so a `/` after a block `}` is a regex while a `/`
+  // after an object/expression `}` is division. Kind is decided at "{" open from
+  // the previous significant token.
+  const braceStack = [];
+  let lastBraceKind = null;
+  const braceKindOf = (ps, ps2, pw) => {
+    if (ps === "" || ps === ")" || ps === ";" || ps === "{" || ps === "}") return "block";
+    if (ps === ">" && ps2 === "=") return "block";                 // arrow `=> {`
+    if (pw === "do" || pw === "else" || pw === "try" || pw === "finally") return "block";
+    return "expr";                                                 // after = ( , [ : return operator
+  };
   // AM-41 enforced source profile: `profileError` is set on the FIRST out-of-
   // profile construct (b1-b6); callers throw ProfileError (fail closed).
   let profileError = null;
@@ -188,11 +206,18 @@ export function lex(source) {
     if (c === "}" && top.subst && top.brace === 0) {         // close the "${...}"
       keep[i] = 1; i++; stack.pop(); prevSig = "}"; continue;
     }
-    if (c === "{") { if (top.subst) top.brace++; keep[i] = 1; i++; prevSig = "{"; continue; }
-    if (c === "}") { if (top.subst && top.brace > 0) top.brace--; keep[i] = 1; i++; prevSig = "}"; continue; }
+    if (c === "{") { braceStack.push(braceKindOf(prevSig, prevSig2, prevSigWord)); if (top.subst) top.brace++; keep[i] = 1; i++; prevSig = "{"; prevSigWord = ""; continue; }
+    if (c === "}") { lastBraceKind = braceStack.length ? braceStack.pop() : "block"; if (top.subst && top.brace > 0) top.brace--; keep[i] = 1; i++; prevSig = "}"; prevSigWord = ""; continue; }
     if (c === "#" && c2 === "!") { flagProfile("hashbang (#!) in code position"); i += 2; continue; } // b2 (non-leading)
     if (c === "<" && source[i + 1] === "!" && source[i + 2] === "-" && source[i + 3] === "-") { flagProfile("HTML comment opener <!--"); i += 4; continue; } // b3
-    if (c === "-" && c2 === "-" && source[i + 2] === ">" && (i === 0 || source[i - 1] === "\n")) { flagProfile("line-leading HTML comment -->"); i += 3; continue; } // b3
+    if (c === "-" && c2 === "-" && source[i + 2] === ">") {
+      // b3: a line-leading `-->` closes an HTML comment (Annex B). "Line-leading"
+      // permits only whitespace (space/tab) between the previous LF (or BOF) and
+      // the `-->`, matching the ECMAScript SingleLineHTMLCloseComment rule.
+      let s = i - 1;
+      while (s >= 0 && (source[s] === " " || source[s] === "\t")) s--;
+      if (s < 0 || source[s] === "\n") { flagProfile("line-leading HTML comment -->"); i += 3; continue; }
+    }
     if (c === "/" && c2 === "/") { i += 2; while (i < n && source[i] !== "\n") i++; continue; }
     if (c === "/" && c2 === "*") {
       i += 2;
@@ -216,6 +241,20 @@ export function lex(source) {
           // Only the frozen escape set is in-profile; any other escaped char
           // (`\a`, `\/`, `` \` `` in a string, …) is out-of-profile (b6-adjacent).
           else if (!STRING_ESCAPE_OK.has(e)) flagProfile("unsupported string escape");
+          // A supported-prefix but MALFORMED \x / \u escape is out-of-profile:
+          // \xHH requires exactly 2 hex; \uHHHH requires exactly 4 hex; \u{…}
+          // requires a nonempty hex codepoint <= U+10FFFF with a closing "}".
+          else if (e === "x") {
+            if (!/^[0-9a-fA-F]{2}$/.test(source.slice(i + 2, i + 4))) flagProfile("malformed \\x escape");
+          } else if (e === "u") {
+            if (source[i + 2] === "{") {
+              const close = source.indexOf("}", i + 3);
+              const hx = close === -1 ? "" : source.slice(i + 3, close);
+              if (close === -1 || !/^[0-9a-fA-F]+$/.test(hx) || parseInt(hx, 16) > 0x10ffff) flagProfile("malformed or out-of-range \\u{...} escape");
+            } else if (!/^[0-9a-fA-F]{4}$/.test(source.slice(i + 2, i + 6))) {
+              flagProfile("malformed \\u escape");
+            }
+          }
           const d = decodeEscape(source, i); value += d.value; i = d.next; continue;
         }
         if (source[i] === "\n") break; // unterminated line string; stop
@@ -246,20 +285,26 @@ export function lex(source) {
       keep[i] = 1; i++; prevSig = ")"; prevSigWord = ""; continue;
     }
     const inControlParen = parenStack.length > 0 && parenStack[parenStack.length - 1] === "control";
-    if (c === "/" && regexAllowedAfter(prevSig, prevSigWord, lastParenKind, prevSig2, inControlParen)) {
+    if (c === "/" && regexAllowedAfter(prevSig, prevSigWord, lastParenKind, prevSig2, inControlParen, lastBraceKind)) {
       // Regex literal: blank the whole literal (interior + delimiters + flags) so
       // a `from "x"` / `import(` inside a regex can never manufacture a load site.
       i++; // consume opening "/"
       let inClass = false;
+      let closedRegex = false;
       while (i < n) {
         const ch = source[i];
         if (ch === "\\") { i += 2; continue; }
-        if (ch === "\n") break;                 // unterminated regex: bail
+        // b6: an unterminated regex literal (a line terminator or EOF before the
+        // closing "/", or an unterminated character class) is out-of-profile. It
+        // must fail closed, NOT bail and then let the following `import(`/`from`
+        // text be recognized as a real load.
+        if (ch === "\n") { flagProfile("unterminated regex literal"); break; }
         if (ch === "[") { inClass = true; i++; continue; }
         if (ch === "]") { inClass = false; i++; continue; }
-        if (ch === "/" && !inClass) { i++; break; } // closing "/"
+        if (ch === "/" && !inClass) { i++; closedRegex = true; break; } // closing "/"
         i++;
       }
+      if (!closedRegex && i >= n) flagProfile("unterminated regex literal"); // EOF / unterminated char class
       while (i < n && /[A-Za-z]/.test(source[i])) i++; // consume regex flags (blanked)
       prevSig = "/"; // after a regex literal a following "/" is division
       continue;
@@ -328,8 +373,17 @@ function parseModuleDecl(masked, strings, kwStart, kwWord) {
   while (p < n) {
     const c = masked[p];
     if (c === "{") {                                            // skip the whole specifier list
+      const braceOpen = p;
       let d = 1; p++;
       while (p < n && d > 0) { if (masked[p] === "{") d++; else if (masked[p] === "}") d--; p++; }
+      // b5: a string-literal specifier/alias NAME inside the specifier list
+      // (`export { x as "public" }`, `import { "a" as b } from "x"`) is
+      // out-of-profile — whether or not a from-clause follows. This reuses the
+      // real-declaration detection above, so a property key (`{ import: {…} }`)
+      // never reaches here.
+      for (const openIdx of strings.keys()) {
+        if (openIdx > braceOpen && openIdx < p) throw new ProfileError("string-literal specifier/alias name in import/export clause");
+      }
       first = false; continue;
     }
     if (c === "*") { isStar = true; first = false; p++; continue; }
@@ -358,11 +412,19 @@ function parseModuleDecl(masked, strings, kwStart, kwWord) {
     }
     p++;
   }
-  // b6: a `from` keyword appeared in from-clause position but no string specifier
-  // ever followed (`import { x } from`, `export * from` with the specifier
-  // truncated) — a truncated accepted form, out-of-profile (fail closed).
+  // Reached the declaration end without a governing `from "…"` specifier.
+  // b6 (truncated accepted forms, out-of-profile — fail closed):
+  //  - a `from` keyword appeared but no string specifier followed
+  //    (`import { x } from`, `export * from` truncated);
+  //  - a real static import CLAUSE with no from-clause at all (`import { x }`,
+  //    `import d`, `import * as ns`) — every static import requires `from "…"`;
+  //  - `export *` / `export * as ns` with no from-clause — export-star requires it.
+  // An `export { … }` list with NO from is a VALID LOCAL export (no module-load
+  // edge): return null.
   if (sawFrom) throw new ProfileError("truncated import/export from-clause (no specifier)");
-  return null;                                                  // no from-clause (local re-export list)
+  if (kwWord === "import") throw new ProfileError("truncated static import (no from-clause)");
+  if (isStar) throw new ProfileError("truncated export * (no from-clause)");
+  return null;                                                  // local export list (no from-clause)
 }
 
 // Yield every REAL statement-position import/export declaration, in source order,
@@ -385,23 +447,21 @@ function* moduleDecls(masked, strings) {
 // resolve their preceding member/private token.
 function prevSigChar(masked, idx) {
   let j = idx - 1;
-  while (j >= 0 && masked[j] === " ") j--;
+  // Skip ALL lexical whitespace (space, tab, CR, LF, FF, VT), not just U+0020 —
+  // comments and strings are already blanked to U+0020 in `masked`, but real code
+  // whitespace (a tab or newline between `.` and the loader name) is preserved as
+  // itself, so `obj.\nimport(...)` / `obj.\trequire(...)` must skip it to reach `.`.
+  while (j >= 0 && /\s/.test(masked[j])) j--;
   return j >= 0 ? masked[j] : "";
 }
 
 export function classifyModuleLoads(source) {
   const { masked, strings, profileError } = lex(source);
   if (profileError) throw new ProfileError(profileError);
-  // b5: a string-literal specifier/alias NAME inside an import/export specifier
-  // clause (`import { "a" as b } from …`) is out-of-profile. A real declaration's
-  // from-target string is legitimate; a string appearing BEFORE the `from` keyword
-  // of a brace-clause declaration is a string name.
-  for (const d of moduleDecls(masked, strings)) {
-    if (d.fromKwStart == null) continue;
-    for (const openIdx of strings.keys()) {
-      if (openIdx >= d.kwStart && openIdx < d.fromKwStart) throw new ProfileError("string-literal specifier/alias name in import/export clause");
-    }
-  }
+  // (b5 — a string-literal specifier/alias name inside an import/export `{ … }`
+  // specifier list — is enforced inside parseModuleDecl's brace-match, so it
+  // covers both from and no-from declarations and can never misfire on a property
+  // key.)
   const sites = [];
 
   const literalAt = (parenIdx) => {
@@ -416,7 +476,29 @@ export function classifyModuleLoads(source) {
     if (!s || !s.plain) return null;
     let k = s.end;
     while (k < masked.length && /\s/.test(masked[k])) k++;
-    return (masked[k] === ")" || masked[k] === ",") ? s.value : null;
+    if (masked[k] === ")") return s.value;
+    if (masked[k] !== ",") return null;
+    // A trailing comma / options object follows. Require the remaining args, up to
+    // the call's matching ")", to be BRACE/BRACKET balanced — an unbalanced
+    // `import("./x.mjs", { )` is a malformed options structure and yields NO edge.
+    const close = matchingParenLA(parenIdx);
+    if (close === -1) return null;
+    let depth = 0;
+    for (let t = k; t < close; t++) {
+      const ch = masked[t];
+      if (ch === "{" || ch === "[") depth++;
+      else if (ch === "}" || ch === "]") { depth--; if (depth < 0) return null; }
+    }
+    return depth === 0 ? s.value : null;
+  };
+  // Matching ")" for a "(" at openIdx (parens in strings/comments are blanked).
+  const matchingParenLA = (openIdx) => {
+    let depth = 0;
+    for (let t = openIdx; t < masked.length; t++) {
+      if (masked[t] === "(") depth++;
+      else if (masked[t] === ")") { depth--; if (depth === 0) return t; }
+    }
+    return -1;
   };
   // ---- statement forms: import ... / export ... --------------------------------
   // Each REAL declaration is delimited by parseModuleDecl (brace-matched), so a
@@ -447,10 +529,25 @@ export function classifyModuleLoads(source) {
     return -1;
   };
   const requireClose = (paren, form) => { if (matchingParen(paren) === -1) throw new ProfileError(`truncated ${form} form (unclosed call)`); };
+  // The identifier word ending just before `idx` (whitespace/comment robust).
+  const wordBefore = (idx) => { let j = idx - 1; while (j >= 0 && /\s/.test(masked[j])) j--; let q = j; while (q >= 0 && IDENT_CHAR.test(masked[q])) q--; return masked.slice(q + 1, j + 1); };
+  const nextSigFrom = (idx) => { let j = idx; while (j < masked.length && /\s/.test(masked[j])) j++; return masked[j] || ""; };
+  // A loader word is a load site ONLY in CALL-EXPRESSION position — NOT the NAME
+  // of a function/method definition: `function require(x){}`, an object shorthand
+  // method `{ require(x){} }`, a class method / getter `require(){}` all have the
+  // shape `name(params){ body }`, so the matching `)` is followed by `{`; a
+  // definition name may also be preceded by the `function` keyword. A real call
+  // `require("x")` / `import("x")` is never followed by `{`.
+  const isDefinition = (nameIdx, paren) => {
+    if (wordBefore(nameIdx) === "function") return true;
+    const close = matchingParen(paren);
+    return close !== -1 && nextSigFrom(close + 1) === "{";
+  };
   const dynRe = /(?<![A-Za-z0-9_$])import\s*\(/g;
   for (let m; (m = dynRe.exec(masked)); ) {
     if (isMember(m.index)) continue; // obj.import(...) / obj . import(...) is not a load
     const paren = m.index + m[0].length - 1;
+    if (isDefinition(m.index, paren)) continue; // a method/function named `import` is not a load
     requireClose(paren, "dynamic-import");
     const value = literalAt(paren);
     sites.push({ form: "dynamic-import", specifier: value, literal: value !== null });
@@ -460,6 +557,7 @@ export function classifyModuleLoads(source) {
   for (let m; (m = modReqRe.exec(masked)); ) {
     if (isMember(m.index)) continue; // a.module.require(...) is a member call, not a load
     const paren = m.index + m[0].length - 1;
+    if (isDefinition(m.index, paren)) continue;
     claimedParens.add(paren);
     requireClose(paren, "module-require");
     const value = literalAt(paren);
@@ -470,6 +568,7 @@ export function classifyModuleLoads(source) {
     const paren = m.index + m[0].length - 1;
     if (claimedParens.has(paren)) continue; // already a module.require site
     if (isMember(m.index)) continue; // obj.require(...) / obj . require(...) / this.#require(...) is not a load
+    if (isDefinition(m.index, paren)) continue; // `function require(x){}` / `{ require(x){} }` is not a load
     requireClose(paren, "require");
     const value = literalAt(paren);
     sites.push({ form: "require", specifier: value, literal: value !== null });
@@ -602,6 +701,12 @@ export function resolveRelativeSpecifier(fromFileAbs, specifier, { repoRoot, ext
   if (typeof specifier !== "string" || !(specifier.startsWith("./") || specifier.startsWith("../"))) {
     return { ok: false, kind: "non-relative" };
   }
+  // A backslash in a module specifier is non-canonical and platform-unsafe:
+  // splitting on "/" then handing an embedded-backslash segment to path.join would
+  // let Windows normalize `link\..` and erase the `link` symlink component before
+  // it is lstat-checked. Reject it deterministically BEFORE any filesystem
+  // resolution (fatal for the closure, no-edge for the code weaver).
+  if (specifier.includes("\\")) return { ok: false, kind: "backslash-in-specifier", resolved: specifier };
   // Extension rule (the ONE resolver, configured per consumer):
   //   - code weaver (default `[".mjs"]`): only an explicit `.mjs` target — its
   //     application-dependency extraction grammar is `.mjs`-only.
@@ -664,10 +769,18 @@ export function deriveAcceptedClosure(entryFileAbs, { repoRoot, allowExternal = 
   // admitted only if it is under clotho/ or an explicitly permitted external
   // primitive; a merkle-dag target outside allowExternal is forbidden; anything
   // else escapes. Admission failure is fatal.
+  // A non-clotho target is admissible ONLY as an approved merkle-dag/ primitive
+  // that is ALSO in allowExternal. A merkle-dag target NOT in allowExternal is
+  // forbidden; ANY other non-clotho target is an escape — regardless of what the
+  // caller-supplied allowExternal set contains (a non-merkle-dag entry in
+  // allowExternal can never widen the closure beyond the one frozen external
+  // namespace).
   const admit = (rel) => {
     if (rel === "clotho" || rel.startsWith("clotho/")) return;
-    if (allowExternal.has(rel)) return;
-    if (rel.startsWith("merkle-dag/")) throw new Error(`closure: ${rel} is forbidden`);
+    if (rel.startsWith("merkle-dag/")) {
+      if (allowExternal.has(rel)) return;
+      throw new Error(`closure: ${rel} is forbidden`);
+    }
     throw new Error(`closure: ${rel} is escape`);
   };
   admit(entryRel);
@@ -739,6 +852,14 @@ export function scanExports(source) {
     const start = kws[a];
     const bound = a + 1 < kws.length ? kws[a + 1] : masked.length;
     const region = masked.slice(start, bound);
+    // A MEMBER / PRIVATE / METHOD occurrence of `export` is NOT an export
+    // declaration — emit NEITHER a symbol NOR a warning: `obj.export` /
+    // `obj . export` (preceding significant char `.`), `class C { #export = 1 }`
+    // (preceding `#`), and a method named `export` (`{ export() {} }` — followed
+    // by `(`).
+    const pc = prevSigChar(masked, start);
+    if (pc === "." || pc === "#") continue;
+    { let e = start + 6; while (e < masked.length && /\s/.test(masked[e])) e++; if (masked[e] === "(") continue; }
     // `export` as a PROPERTY NAME (`{ export: 1 }`, shorthand `{ export }`) is not
     // an export declaration — emit no symbol AND no warning. A real export
     // continues with `{`, `*`, or a declaration keyword, never `:`/`,`/`}`.
@@ -836,8 +957,12 @@ function parseImportClause(clause) {
   }
   // default: a leading identifier before any '{' or '*'
   const head = (braceStart === -1 ? clause : clause.slice(0, braceStart)).replace(/\*\s*as\s+[A-Za-z_$][A-Za-z0-9_$]*/g, "");
+  // The clause passed here is delimited by parseModuleDecl to EXCLUDE the governing
+  // `from` keyword, so a leading identifier here is a real default binding — even
+  // when it is the contextual word `from` (`import from from "./dep.mjs"` binds a
+  // default named `from`). Do NOT special-case `from` away.
   const defMatch = head.match(/^\s*([A-Za-z_$][A-Za-z0-9_$]*)\s*,?\s*$/);
-  if (defMatch && defMatch[1] !== "from") bindings.push({ form: "default", local: defMatch[1] });
+  if (defMatch) bindings.push({ form: "default", local: defMatch[1] });
   return bindings;
 }
 
@@ -1092,15 +1217,29 @@ function isPathArg(p) {
   return isCanonicalRepoRelPosix(p) && !p.startsWith("-");
 }
 
+// Repository-redirecting Git environment variables. Even with cwd=repoRoot and
+// the caller options dropped, an INHERITED GIT_DIR/GIT_WORK_TREE/... in
+// process.env would make git inspect a DIFFERENT repository. We pass a controlled
+// env with these neutralized so cwd alone determines the repository.
+const GIT_REDIRECT_ENV = [
+  "GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY",
+  "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_INDEX_FILE", "GIT_NAMESPACE",
+  "GIT_CEILING_DIRECTORIES", "GIT_DISCOVERY_ACROSS_FILESYSTEM", "GIT_PREFIX"
+];
+
 // The FIXED spawn settings — a CLOSED set. Caller-supplied options are DROPPED
 // entirely (not merged): forwarding an uncontrolled bag would let a caller
 // redirect which repository is inspected (`env` with GIT_DIR/GIT_WORK_TREE,
 // `argv0`, a `cwd` override) without violating the arg-shape allowlist. The
 // `options` parameter is accepted for call-site compatibility but never consulted.
+// `env` is a copy of process.env with every repository-redirecting GIT_* var
+// removed, so `cwd: repoRoot` alone determines which repository git inspects.
 export function gitSpawnOptions(repoRoot, _options = {}) {
+  const env = { ...process.env };
+  for (const k of GIT_REDIRECT_ENV) delete env[k];
   return {
     cwd: repoRoot, shell: false, encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"], maxBuffer: 64 * 1024 * 1024
+    stdio: ["ignore", "pipe", "pipe"], maxBuffer: 64 * 1024 * 1024, env
   };
 }
 

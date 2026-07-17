@@ -102,6 +102,12 @@ const abs = (rel) => path.join(REPO_ROOT, ...rel.split("/"));
     for (const f of list) assert.ok(statSync(abs(f)).isFile(), `impl file ${f} exists`);
   }
   for (const f of PERMITTED_EXTERNAL_CLOSURE_FILES) assert.ok(statSync(abs(f)).isFile(), `permitted external ${f} exists`);
+  // Every permitted external closure target must be a canonical merkle-dag/
+  // primitive — the ONE frozen external namespace; no other prefix may appear.
+  for (const f of PERMITTED_EXTERNAL_CLOSURE_FILES) {
+    assert.ok(typeof f === "string" && f.startsWith("merkle-dag/") && !f.includes("\\") && !f.includes(".."),
+      `permitted external ${JSON.stringify(f)} is a canonical merkle-dag/ path`);
+  }
   // CONTRACT_FILES is sorted; LEDGER_SOURCES is the EXACT reviewed set at this SHA.
   assert.deepEqual([...CONTRACT_FILES].sort(), [...CONTRACT_FILES]);
   // exclusions are the reviewed values
