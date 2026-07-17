@@ -7,7 +7,14 @@
     "onboarding": "AI-START-HERE.md",
     "schema": "docs/institutional-memory/SCHEMA.md",
     "comprehension_gate": "docs/institutional-memory/comprehension-gate.mjs",
-    "contract_verifier": "docs/institutional-memory/verify-contracts.mjs"
+    "contract_verifier": "docs/institutional-memory/verify-contracts.mjs",
+    "example_readers": "docs/institutional-memory/examples/ (reader-{component}-{correct|hallucinating}.json — worked pass/deny runs per module)",
+    "memory_dirs": {
+      "clotho": "clotho/memory/",
+      "daedalus": "docs/institutional-memory/daedalus/",
+      "telos": "docs/institutional-memory/telos/",
+      "argo": "docs/institutional-memory/argo/"
+    }
   },
   "normative_docs": [
     "docs/runs/clotho-daedalus-delta14/matured-plan-v15.md",

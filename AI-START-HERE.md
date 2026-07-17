@@ -58,6 +58,23 @@ comprehension queries — load it before touching that role's code or workflow.
 | **TELOS** | governs review, evidence, authorization, execution boundaries | `docs/institutional-memory/telos/` |
 | **Argo** | carries an authorized plan through implementation, verification, documentation | `docs/institutional-memory/argo/` |
 
+**Route by what you are about to do** (load that module's memory dir FIRST, then
+pass its `comprehension-queries.json` through the gate):
+
+| about to… | load | you must already know |
+|---|---|---|
+| change a plan, run a delta, amend a decision | `daedalus/` | convergence ≠ authorization; Eye rulings are fixed inputs |
+| touch the gate, council, signing, or an authz run | `telos/` | required trio vs advisory; one dissent blocks; refusals are the system working |
+| implement a slice, review, or merge | `argo/` | comprehension gate first; The Eye accepts; the dissent asymmetry |
+| touch `clotho/` code | `clotho/memory/` | AM-40 roots; AM-41 profile; advisory/non-sandboxed posture |
+
+One command re-proves the whole record set against reality (runs the Argo entry
+ritual both ways, probes the Daedalus state machine, re-hashes both lineages):
+
+```
+node docs/institutional-memory/verify-contracts.mjs
+```
+
 ## Hard rules
 
 - Do **not** treat superseded plans/authorizations as normative.
