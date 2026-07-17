@@ -247,14 +247,38 @@
       "to_kind": "doc-section",
       "to_locator_match": {
         "heading_path": [
-          "TELOS Upgrade — STATUS (final)",
-          "Addendum — Argo completion pass (2026-07-15 correction)"
+          "TELOS Roadmap",
+          "Clotho Phase 1 — provenance-aware knowledge-graph weaver (2026-07)"
+        ],
+        "path": "docs/ROADMAP.md",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "text_sha256": "87a85ce1a86d8d18c9920dcbaee1b0beb2084709a693a5fccd4e511ebff4c6df"
+      },
+      "source_ref": "file:docs/ROADMAP.md@e1822d234e13e97389a693dd200fddc02dba2b40"
+    },
+    {
+      "source_group": "documentation",
+      "subject": "edge",
+      "edge_kind": "documented-in",
+      "from_kind": "code-symbol",
+      "from_locator_match": {
+        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "path": "merkle-dag/obligation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "deriveExecutableRef"
+      },
+      "to_kind": "doc-section",
+      "to_locator_match": {
+        "heading_path": [
+          "TELOS — STATUS",
+          "Clotho Phase 1 — slice state (as of 2026-07-17)",
+          "Flagship acceptance runs in `npm test`"
         ],
         "path": "docs/STATUS.md",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-        "text_sha256": "c23f35b25dd8ab7a62e68236d28f314672f554a0dd7c82bc61b16c1fe486f431"
+        "text_sha256": "3893602aa6b8fe10cc8b5d414ca395dc72658455a4d3f79e6822631b72c6a2ca"
       },
-      "source_ref": "file:docs/STATUS.md@ff8a7923d8b69068a5c321e1229a3aeb9fa8f40a"
+      "source_ref": "file:docs/STATUS.md@1e5a203c871a09ab011224f3d5d2b798b644a47d"
     },
     {
       "source_group": "documentation",
@@ -417,6 +441,29 @@
         "text_sha256": "e9b6622074955f0fc196de1a4c63cb2ee05c31ea494e36629cc510556f213db4"
       },
       "source_ref": "file:docs/clotho-phase-1-plan.md@8a3c169f9834802f835cfa591e13499f668c53b5"
+    },
+    {
+      "source_group": "documentation",
+      "subject": "edge",
+      "edge_kind": "documented-in",
+      "from_kind": "code-symbol",
+      "from_locator_match": {
+        "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+        "path": "merkle-dag/obligation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "deriveExecutableRef"
+      },
+      "to_kind": "doc-section",
+      "to_locator_match": {
+        "heading_path": [
+          "TELOS Upgrade — STATUS (final)",
+          "Addendum — Argo completion pass (2026-07-15 correction)"
+        ],
+        "path": "docs/history/STATUS-2026-06-28.md",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "text_sha256": "c23f35b25dd8ab7a62e68236d28f314672f554a0dd7c82bc61b16c1fe486f431"
+      },
+      "source_ref": "file:docs/history/STATUS-2026-06-28.md@ff8a7923d8b69068a5c321e1229a3aeb9fa8f40a"
     },
     {
       "source_group": "documentation",

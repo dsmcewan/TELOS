@@ -8,8 +8,8 @@
     "symbol": "deriveExecutableRef",
     "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0"
   },
-  "fact_count": 102,
-  "matched_count": 26,
+  "fact_count": 104,
+  "matched_count": 28,
   "unmatched": [
     {
       "subject": "edge",
@@ -487,7 +487,7 @@
       "edge_kind": "depends-on",
       "from_kind": "repository-file",
       "from_locator": {
-        "blob_sha": "6bd7bd66fa13674169675f0805217a4f8eb94f41",
+        "blob_sha": "2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
         "path": "build-gate/scripts/test-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
@@ -498,14 +498,14 @@
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "validateGate"
       },
-      "source_ref": "file:build-gate/scripts/test-gate.mjs@6bd7bd66fa13674169675f0805217a4f8eb94f41"
+      "source_ref": "file:build-gate/scripts/test-gate.mjs@2bd02ef849e8f7ae218b50f3350e7366ed8973ac"
     },
     {
       "subject": "edge",
       "edge_kind": "depends-on",
       "from_kind": "repository-file",
       "from_locator": {
-        "blob_sha": "6bd7bd66fa13674169675f0805217a4f8eb94f41",
+        "blob_sha": "2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
         "path": "build-gate/scripts/test-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
@@ -516,14 +516,14 @@
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "validateRecords"
       },
-      "source_ref": "file:build-gate/scripts/test-gate.mjs@6bd7bd66fa13674169675f0805217a4f8eb94f41"
+      "source_ref": "file:build-gate/scripts/test-gate.mjs@2bd02ef849e8f7ae218b50f3350e7366ed8973ac"
     },
     {
       "subject": "edge",
       "edge_kind": "depends-on",
       "from_kind": "repository-file",
       "from_locator": {
-        "blob_sha": "803a2656bd6b0b13725c9022a5b7659d55e940a4",
+        "blob_sha": "4d6d54ee2449f9e249a3d877504189a68f3947af",
         "path": "build-gate/scripts/stress-test-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
@@ -534,7 +534,7 @@
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
         "symbol": "validateRecords"
       },
-      "source_ref": "file:build-gate/scripts/stress-test-gate.mjs@803a2656bd6b0b13725c9022a5b7659d55e940a4"
+      "source_ref": "file:build-gate/scripts/stress-test-gate.mjs@4d6d54ee2449f9e249a3d877504189a68f3947af"
     },
     {
       "subject": "edge",
@@ -1070,11 +1070,11 @@
       },
       "to_kind": "test",
       "to_locator": {
-        "blob_sha": "6bd7bd66fa13674169675f0805217a4f8eb94f41",
+        "blob_sha": "2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
         "path": "build-gate/scripts/test-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
-      "source_ref": "file:build-gate/scripts/test-gate.mjs@6bd7bd66fa13674169675f0805217a4f8eb94f41"
+      "source_ref": "file:build-gate/scripts/test-gate.mjs@2bd02ef849e8f7ae218b50f3350e7366ed8973ac"
     },
     {
       "subject": "edge",
@@ -1124,11 +1124,11 @@
       },
       "to_kind": "test",
       "to_locator": {
-        "blob_sha": "803a2656bd6b0b13725c9022a5b7659d55e940a4",
+        "blob_sha": "4d6d54ee2449f9e249a3d877504189a68f3947af",
         "path": "build-gate/scripts/stress-test-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
-      "source_ref": "file:build-gate/scripts/stress-test-gate.mjs@803a2656bd6b0b13725c9022a5b7659d55e940a4"
+      "source_ref": "file:build-gate/scripts/stress-test-gate.mjs@4d6d54ee2449f9e249a3d877504189a68f3947af"
     },
     {
       "subject": "edge",
@@ -1196,11 +1196,11 @@
       },
       "to_kind": "test",
       "to_locator": {
-        "blob_sha": "6bd7bd66fa13674169675f0805217a4f8eb94f41",
+        "blob_sha": "2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
         "path": "build-gate/scripts/test-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
-      "source_ref": "file:build-gate/scripts/test-gate.mjs@6bd7bd66fa13674169675f0805217a4f8eb94f41"
+      "source_ref": "file:build-gate/scripts/test-gate.mjs@2bd02ef849e8f7ae218b50f3350e7366ed8973ac"
     },
     {
       "subject": "edge",
@@ -1329,13 +1329,13 @@
       "edge_kind": "verified-by",
       "from_kind": "repository-file",
       "from_locator": {
-        "blob_sha": "6bd7bd66fa13674169675f0805217a4f8eb94f41",
+        "blob_sha": "2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
         "path": "build-gate/scripts/test-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
       "to_kind": "test",
       "to_locator": {
-        "blob_sha": "6bd7bd66fa13674169675f0805217a4f8eb94f41",
+        "blob_sha": "2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
         "path": "build-gate/scripts/test-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
@@ -1346,13 +1346,13 @@
       "edge_kind": "verified-by",
       "from_kind": "repository-file",
       "from_locator": {
-        "blob_sha": "803a2656bd6b0b13725c9022a5b7659d55e940a4",
+        "blob_sha": "4d6d54ee2449f9e249a3d877504189a68f3947af",
         "path": "build-gate/scripts/stress-test-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
       "to_kind": "test",
       "to_locator": {
-        "blob_sha": "803a2656bd6b0b13725c9022a5b7659d55e940a4",
+        "blob_sha": "4d6d54ee2449f9e249a3d877504189a68f3947af",
         "path": "build-gate/scripts/stress-test-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
