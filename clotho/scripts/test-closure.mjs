@@ -408,6 +408,16 @@ const closureOf = (root, allowExternal = new Set()) =>
   const root2 = mkRepo({ "clotho/entry.mjs": 'import "./bad.mjs";\nexport const z = 1;\n', "clotho/bad.mjs": 'const s = "\\101";\n' });
   try { assert.throws(() => closureOf(root2), /unsupported-module-lexical-profile/, "out-of-profile traversed member fails closed"); }
   finally { rmSync(root2, { recursive: true, force: true }); }
+  // round-11 (codex): a b5 string-literal namespace alias `export * as "ns"` in a
+  // closure member fails the whole closure (never fail-open including the target).
+  const root3 = mkRepo({ "clotho/entry.mjs": 'export * as "ns" from "./h.mjs";\n', "clotho/h.mjs": "export const q = 1;\n" });
+  try { assert.throws(() => closureOf(root3), /unsupported-module-lexical-profile/, "b5 export * as \"ns\" fails the closure closed"); }
+  finally { rmSync(root3, { recursive: true, force: true }); }
+  // round-11 (codex): a b6 truncated/unbalanced dynamic-import options structure in
+  // a closure member fails closed (not a nonliteral no-edge degrade).
+  const root4 = mkRepo({ "clotho/entry.mjs": 'const p = import("./h.mjs", { );\nexport const z = 1;\n', "clotho/h.mjs": "export const q = 1;\n" });
+  try { assert.throws(() => closureOf(root4), /unsupported-module-lexical-profile/, "b6 unbalanced dynamic-import options fails closed"); }
+  finally { rmSync(root4, { recursive: true, force: true }); }
 }
 
 // ---- 15. allowExternal admits ONLY approved merkle-dag primitives ------------

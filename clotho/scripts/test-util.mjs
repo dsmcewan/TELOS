@@ -805,6 +805,28 @@ import {
   assert.equal(imps[0].specifier, "./dep.mjs", "governing from-clause specifier resolved");
   assert.deepEqual(imps[0].bindings, [{ form: "default", local: "from" }], "default binding named `from` is preserved");
   assert.equal(identifierUsedOutside('import from from "./dep.mjs";\nexport const use = from;\n', "from", [imps[0].span]), true, "the used `from` binding is a real use outside the declaration");
+
+  // ---- round-11 (codex): significant-token staleness, b5 export*as, b6 options ----
+  // fix 1: a VALUE token (string/template/regex) makes a following `/` DIVISION —
+  // a stale keyword must not turn it into a regex and mask a real dynamic import.
+  assert.deepEqual(specs('function f(){ return "x" / import("./dep.mjs") / 1; }\n', "dynamic-import"), ["./dep.mjs"],
+    'string value => `/` is division; the dynamic import after `return "x" /` is visible');
+  assert.deepEqual(specs('const t = `y` / import("./d.mjs");\n', "dynamic-import"), ["./d.mjs"],
+    "template value => `/` division; dynamic import visible");
+  // a class-body `}` is a BLOCK end: a following `/…/` is a REGEX (not division),
+  // so load-shaped text inside it creates NO dynamic-import site.
+  assert.equal(classifyModuleLoads("class C {}\n/import(x)/.test(y);\n").filter((s) => s.form === "dynamic-import").length, 0,
+    "regex after a class body creates no dynamic-import site");
+  // fix 2: a string-literal name in `export * as \"ns\"` fails closed (b5); the
+  // identifier form still reaches its target.
+  assert.ok(isProfile(() => classifyModuleLoads('export * as "ns" from "./x.mjs";\n')), 'b5 export * as "ns" from');
+  assert.deepEqual(specs('export * as ns from "./x.mjs";\n', "export-star"), ["./x.mjs"], "export * as ns (identifier) still classifies");
+  // fix 3: a valid literal specifier with truncated/unbalanced options fails closed
+  // (b6), rather than degrading to a nonliteral no-edge site; valid options work.
+  assert.ok(isProfile(() => classifyModuleLoads('const p = import("./x.mjs", { );\n')), "b6 unbalanced dynamic-import options { )");
+  assert.ok(isProfile(() => classifyModuleLoads('const p = import("./x.mjs", { a: [ );\n')), "b6 unbalanced dynamic-import options { a: [ )");
+  assert.deepEqual(specs('const p = import("./x.mjs", { with: { type: "json" } });\n', "dynamic-import"), ["./x.mjs"], "valid dynamic-import options still literal");
+  assert.deepEqual(specs('const p = import("./x.mjs",);\n', "dynamic-import"), ["./x.mjs"], "trailing-comma dynamic import still literal");
 }
 
 console.log("test-util: all assertions passed");

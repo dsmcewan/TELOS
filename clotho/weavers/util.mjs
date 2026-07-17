@@ -158,6 +158,11 @@ export function lex(source) {
   // the previous significant token.
   const braceStack = [];
   let lastBraceKind = null;
+  // A `class`/`function` keyword makes the NEXT "{" a BLOCK body (class/function
+  // body), regardless of the immediately-preceding token (which is the class/
+  // function/super NAME, an identifier that braceKindOf would otherwise read as an
+  // object). Set when the keyword is lexed, consumed at the next "{".
+  let blockHeadPending = false;
   const braceKindOf = (ps, ps2, pw) => {
     if (ps === "" || ps === ")" || ps === ";" || ps === "{" || ps === "}") return "block";
     if (ps === ">" && ps2 === "=") return "block";                 // arrow `=> {`
@@ -191,7 +196,7 @@ export function lex(source) {
     if (top.mode === "template") {
       const c = source[i];
       if (c === "\\") { i += 2; continue; }                 // escaped template char: blanked
-      if (c === "`") { keep[i] = 1; i++; stack.pop(); prevSig = "`"; continue; }
+      if (c === "`") { keep[i] = 1; i++; stack.pop(); prevSig2 = prevSig; prevSig = "`"; prevSigWord = ""; continue; }  // closing backtick: value token
       if (c === "$" && source[i + 1] === "{") {              // enter substitution code
         keep[i] = 1; keep[i + 1] = 1; i += 2;
         stack.push({ mode: "code", subst: true, brace: 0 });
@@ -206,7 +211,7 @@ export function lex(source) {
     if (c === "}" && top.subst && top.brace === 0) {         // close the "${...}"
       keep[i] = 1; i++; stack.pop(); prevSig = "}"; continue;
     }
-    if (c === "{") { braceStack.push(braceKindOf(prevSig, prevSig2, prevSigWord)); if (top.subst) top.brace++; keep[i] = 1; i++; prevSig = "{"; prevSigWord = ""; continue; }
+    if (c === "{") { const bk = blockHeadPending ? "block" : braceKindOf(prevSig, prevSig2, prevSigWord); blockHeadPending = false; braceStack.push(bk); if (top.subst) top.brace++; keep[i] = 1; i++; prevSig = "{"; prevSigWord = ""; continue; }
     if (c === "}") { lastBraceKind = braceStack.length ? braceStack.pop() : "block"; if (top.subst && top.brace > 0) top.brace--; keep[i] = 1; i++; prevSig = "}"; prevSigWord = ""; continue; }
     if (c === "#" && c2 === "!") { flagProfile("hashbang (#!) in code position"); i += 2; continue; } // b2 (non-leading)
     if (c === "<" && source[i + 1] === "!" && source[i + 2] === "-" && source[i + 3] === "-") { flagProfile("HTML comment opener <!--"); i += 4; continue; } // b3
@@ -265,7 +270,10 @@ export function lex(source) {
       if (closed) { keep[i] = 1; i++; }
       else flagProfile("unterminated string literal"); // b6
       strings.set(open, { end: closed ? i : n, value, plain: true });
-      prevSig = c;
+      // A string literal is a VALUE token: a following `/` is DIVISION. Clear
+      // prevSigWord so a stale keyword (`return "x" / import(...)`) cannot make the
+      // `/` a false regex and mask a real dynamic import.
+      prevSig2 = prevSig; prevSig = c; prevSigWord = "";
       continue;
     }
     if (c === "`") {
@@ -273,7 +281,8 @@ export function lex(source) {
       templates.add(i);
       i++;
       stack.push({ mode: "template" });
-      prevSig = "`";
+      // A template literal is a VALUE token (division follows). Same reset.
+      prevSig2 = prevSig; prevSig = "`"; prevSigWord = "";
       continue;
     }
     if (c === "(") {
@@ -306,7 +315,9 @@ export function lex(source) {
       }
       if (!closedRegex && i >= n) flagProfile("unterminated regex literal"); // EOF / unterminated char class
       while (i < n && /[A-Za-z]/.test(source[i])) i++; // consume regex flags (blanked)
-      prevSig = "/"; // after a regex literal a following "/" is division
+      // A regex literal is a VALUE token: a following "/" is division. Clear
+      // prevSigWord so a stale keyword cannot make the next "/" a false regex.
+      prevSig2 = prevSig; prevSig = "/"; prevSigWord = "";
       continue;
     }
     // Identifier run: consume the whole token so `prevSigWord` holds the last
@@ -316,6 +327,7 @@ export function lex(source) {
       let q = i; while (q < n && IDENT_CHAR.test(source[q])) q++;
       for (let k = i; k < q; k++) keep[k] = 1;
       prevSig2 = prevSig; prevSig = source[q - 1]; prevSigWord = source.slice(i, q);
+      if (prevSigWord === "class" || prevSigWord === "function") blockHeadPending = true;
       i = q; continue;
     }
     keep[i] = 1; // ordinary code byte (punctuator, digit, …)
@@ -372,6 +384,12 @@ function parseModuleDecl(masked, strings, kwStart, kwWord) {
   let isStar = false, first = true, sawFrom = false;
   while (p < n) {
     const c = masked[p];
+    // b5: a string literal reached DIRECTLY in the clause is a specifier/alias
+    // NAME (`export * as "ns" from …`, `export "x"` …), not a from-specifier — a
+    // governing `from "…"` is consumed by the `from` branch's early return below,
+    // so it never reaches here. Fail closed. (Names inside `{ … }` are covered by
+    // the brace-match check.)
+    if ((c === '"' || c === "'") && strings.has(p)) throw new ProfileError("string-literal specifier/alias name in import/export clause");
     if (c === "{") {                                            // skip the whole specifier list
       const braceOpen = p;
       let d = 1; p++;
@@ -478,18 +496,21 @@ export function classifyModuleLoads(source) {
     while (k < masked.length && /\s/.test(masked[k])) k++;
     if (masked[k] === ")") return s.value;
     if (masked[k] !== ",") return null;
-    // A trailing comma / options object follows. Require the remaining args, up to
-    // the call's matching ")", to be BRACE/BRACKET balanced — an unbalanced
-    // `import("./x.mjs", { )` is a malformed options structure and yields NO edge.
+    // A trailing comma / options object follows a VALID literal specifier. The
+    // remaining args, up to the call's matching ")", must be BRACE/BRACKET
+    // balanced. An unbalanced/truncated options structure (`import("./x.mjs", { )`,
+    // `import("./x.mjs", { a: [ )`) is a truncated accepted form — b6, FAIL CLOSED
+    // with the stable diagnostic, NOT a degrade to literal:false / no edge.
     const close = matchingParenLA(parenIdx);
-    if (close === -1) return null;
+    if (close === -1) throw new ProfileError("truncated dynamic-import options (unclosed call)");
     let depth = 0;
     for (let t = k; t < close; t++) {
       const ch = masked[t];
       if (ch === "{" || ch === "[") depth++;
-      else if (ch === "}" || ch === "]") { depth--; if (depth < 0) return null; }
+      else if (ch === "}" || ch === "]") { depth--; if (depth < 0) throw new ProfileError("unbalanced dynamic-import options"); }
     }
-    return depth === 0 ? s.value : null;
+    if (depth !== 0) throw new ProfileError("truncated/unbalanced dynamic-import options");
+    return s.value;
   };
   // Matching ")" for a "(" at openIdx (parens in strings/comments are blanked).
   const matchingParenLA = (openIdx) => {
