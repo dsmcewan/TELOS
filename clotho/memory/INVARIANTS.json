@@ -2,51 +2,96 @@
   {
     "id": "d33-fail-closed-profile",
     "statement": "The shared D33 scanner is correct over a closed module-lexical source profile and FAILS CLOSED with the stable diagnostic 'unsupported-module-lexical-profile' on the exact out-of-profile set b1-b6; exactly one optional leading shebang (#! at byte 0, first line, LF/CRLF-terminated) is admitted and stripped before lexing.",
-    "authority": { "decision": "AM-41", "authorization": "authz-008" },
+    "authority": {
+      "decision": "AM-41",
+      "authorization": "authz-008"
+    },
     "contract": "clotho/memory/CONTRACTS/source-profile.json",
-    "oracle": { "test": "clotho/scripts/test-util.mjs + clotho/scripts/test-closure.mjs", "source_of_truth": "clotho/weavers/util.mjs" },
+    "oracle": {
+      "test": "clotho/scripts/test-util.mjs + clotho/scripts/test-closure.mjs",
+      "source_of_truth": "clotho/weavers/util.mjs"
+    },
     "normativity": "NORMATIVE",
     "status": "NORMATIVE-CURRENT"
   },
   {
     "id": "d33-deny-based-regex",
     "statement": "The regex-vs-division decision is made by previous-significant-token: a `/` is DIVISION only after a value token (identifier, numeric/string/template/regex literal, this/super/true/false/null, )/]/value-}/postfix), and a REGEX after every other token including every reserved keyword. It is not a hand-maintained keyword allow-list.",
-    "authority": { "decision": "AM-41", "authorization": "authz-008" },
-    "oracle": { "test": "clotho/scripts/test-util.mjs", "source_of_truth": "clotho/weavers/util.mjs#lex" },
+    "authority": {
+      "decision": "AM-41",
+      "authorization": "authz-008"
+    },
+    "oracle": {
+      "test": "clotho/scripts/test-util.mjs",
+      "source_of_truth": "clotho/weavers/util.mjs#lex"
+    },
     "normativity": "NORMATIVE",
     "status": "NORMATIVE-CURRENT"
   },
   {
     "id": "d21-original-order-containment",
     "statement": "The shared resolver and physicalContainment lstat every existing component of the ORIGINAL uncollapsed candidate path (original order) BEFORE any normalization that could collapse a `..` and erase a component; any symlink component is rejected; only genuine ENOENT is absence, every other lstat error fails closed. A backslash in a relative specifier is rejected before resolution.",
-    "authority": { "decisions": ["D21"], "amendment": "AM-41", "authorization": "authz-008" },
-    "oracle": { "test": "clotho/scripts/test-util.mjs (containment fixtures: link/.. and missing/../link/..)", "source_of_truth": "clotho/weavers/util.mjs" },
+    "authority": {
+      "decisions": [
+        "D21"
+      ],
+      "amendment": "AM-41",
+      "authorization": "authz-008"
+    },
+    "oracle": {
+      "test": "clotho/scripts/test-util.mjs (containment fixtures: link/.. and missing/../link/..)",
+      "source_of_truth": "clotho/weavers/util.mjs"
+    },
     "normativity": "NORMATIVE",
     "status": "NORMATIVE-CURRENT"
   },
   {
     "id": "inventory-id-table-frozen",
     "statement": "The per-weaver REQUIRED_INVENTORY_IDS table is exactly the frozen normative table and is proven equal to the ledger's coverage validator by a unit.",
-    "authority": { "decisions": ["D24", "D26", "D31"], "authorization": "authz-008" },
+    "authority": {
+      "decisions": [
+        "D24",
+        "D26",
+        "D31"
+      ],
+      "authorization": "authz-008"
+    },
     "contract": "clotho/memory/CONTRACTS/inventory-id-table.json",
-    "oracle": { "test": "clotho/scripts/test-inventory.mjs", "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs" },
+    "oracle": {
+      "test": "clotho/scripts/test-inventory.mjs",
+      "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs"
+    },
     "normativity": "NORMATIVE",
     "status": "NORMATIVE-CURRENT"
   },
   {
     "id": "d32-loader-safe-exports-frozen",
     "statement": "LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS is deeply frozen and exactly {module, node:module} -> [\"builtinModules\", \"isBuiltin\"]; mutation attempts fail or leave it unchanged.",
-    "authority": { "decision": "D32", "authorization": "authz-008" },
+    "authority": {
+      "decision": "D32",
+      "authorization": "authz-008"
+    },
     "contract": "clotho/memory/CONTRACTS/loader-safe-exports.json",
-    "oracle": { "test": "clotho/scripts/test-inventory.mjs (deep-equal/deep-freeze/mutation)", "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs" },
+    "oracle": {
+      "test": "clotho/scripts/test-inventory.mjs (deep-equal/deep-freeze/mutation)",
+      "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs"
+    },
     "normativity": "NORMATIVE",
     "status": "NORMATIVE-CURRENT"
   },
   {
     "id": "closure-equality-proven",
     "statement": "Each committed weaver implementation-file inventory is PROVEN equal to its derived accepted-relative-module-load closure (D33), never trusted. git -> {registry, git}; code -> {registry, code, util}.",
-    "authority": { "decisions": ["D33"], "authorization": "authz-008" },
-    "oracle": { "test": "clotho/scripts/test-closure.mjs (sections 1 and 12)", "source_of_truth": "clotho/inventory.mjs#WEAVER_IMPL_FILES + clotho/weavers/util.mjs#deriveAcceptedClosure" },
+    "authority": {
+      "decisions": [
+        "D33"
+      ],
+      "authorization": "authz-008"
+    },
+    "oracle": {
+      "test": "clotho/scripts/test-closure.mjs (sections 1 and 12)",
+      "source_of_truth": "clotho/inventory.mjs#WEAVER_IMPL_FILES + clotho/weavers/util.mjs#deriveAcceptedClosure"
+    },
     "normativity": "NORMATIVE",
     "status": "NORMATIVE-CURRENT"
   },
@@ -54,57 +99,96 @@
     "id": "d25-command-inferred-provenance",
     "task": "4b",
     "statement": "A verified-by edge inferred from a package check/test command carries source_ref = the package.json blob (the manifest bytes evidencing execution), NOT the test file. Import-derived verified-by keeps the test file's own blob. No command is executed.",
-    "authority": { "decision": "D25", "authorization": "authz-008" },
+    "authority": {
+      "decision": "D25",
+      "authorization": "authz-008"
+    },
     "contract": "clotho/memory/CONTRACTS/verified-by-provenance.json",
-    "normativity": "ADVISORY",
-    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
-    "becomes_normative_when": "clotho/scripts/test-test.mjs proves both provenance cases by exact-output tests."
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT",
+    "oracle": "clotho/scripts/test-weaver-test.mjs (both provenance cases proven by exact-output tests: two distinct records, distinct source refs)",
+    "effective_from_commit": "git:f12e5d2"
   },
   {
     "id": "d31-independent-contract-files",
     "task": "4b",
     "statement": "The ledger weaver builds its current-contract clause-resolution index SOLELY from its own counted contract-files source; it receives NO map from the doc-weaver and performs no uncounted fallback read. The iterator is consumed and exhausted whenever the ledger weaver executes — even when the doc-weaver is skipped, when no obligation produces a clause edge, and when every reference is stale.",
-    "authority": { "decision": "D31", "authorization": "authz-008" },
+    "authority": {
+      "decision": "D31",
+      "authorization": "authz-008"
+    },
     "contract": "clotho/memory/CONTRACTS/discharges-matrix.json",
-    "normativity": "ADVISORY",
-    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
-    "becomes_normative_when": "clotho/scripts/test-ledger-weaver.mjs proves clause resolution independent of any doc-weaver product, with full counted contract-files consumption recorded."
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT",
+    "oracle": "clotho/scripts/test-weaver-ledger.mjs (ledger builds its own contract index; contract-files consumed+exhausted even with no clause edge; stale/ambiguous refs emit no clause edge)",
+    "effective_from_commit": "git:f12e5d2"
   },
   {
     "id": "d35-closed-coverage-schema",
     "task": "5",
     "statement": "The query interface exposes a closed normative coverage field: coverage is exactly \"verified\"|\"unverified\", never optional, never defaulting to verified; coverageUnknown: [] is legal ONLY under a verified manifest proving every consulted producer executed; any other/contradictory value is a test failure.",
-    "authority": { "decisions": ["D35", "AM-37", "D11"], "authorization": "authz-008" },
+    "authority": {
+      "decisions": [
+        "D35",
+        "AM-37",
+        "D11"
+      ],
+      "authorization": "authz-008"
+    },
     "contract": "clotho/memory/CONTRACTS/coverage-schema.json",
-    "normativity": "ADVISORY",
-    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
-    "becomes_normative_when": "clotho/scripts/test-query.mjs proves the closed coverage schema + coverageUnknown legality + closed-schema rejection."
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT",
+    "oracle": {
+      "test": "clotho/scripts/test-query.mjs (80 units incl. every enumerated D35 positive/negative case)"
+    }
   },
   {
     "id": "d34-publication-time-drift-abort",
     "task": "5",
     "statement": "At publication time the driver RE-DERIVES the weave, re-reads and re-hashes the sources, exact-compares against the assembled result, and ABORTS on any drift before atomic no-replace publication (D28). The coverage claim is 'the supported statically-declared dependency model at publication time', never a claim of covering every module.",
-    "authority": { "decisions": ["D34", "AM-38", "D28"], "authorization": "authz-008" },
-    "normativity": "ADVISORY",
-    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
-    "becomes_normative_when": "clotho/scripts/test-weave.mjs proves publication-time re-derivation + hash recheck + abort-on-drift + atomic no-replace publish."
+    "authority": {
+      "decisions": [
+        "D34",
+        "AM-38",
+        "D28"
+      ],
+      "authorization": "authz-008"
+    },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT",
+    "oracle": {
+      "test": "clotho/scripts/test-weave.mjs (new-edge drift + hash-recheck drift, weaver AND orchestrator; atomic no-replace publish; published-cleanup-incomplete)"
+    }
   },
   {
     "id": "d10-am39-producer-attribution",
     "task": "5",
     "statement": "Before appending any weaver result the driver requires every edge to carry asserted_by == the invoked weaver id and assertion_status == deterministic-extraction, and every warning.weaver == that same id; a result attributing output to another weaver, human, or model is rejected and the weave aborts.",
-    "authority": { "decisions": ["D10", "AM-39"], "authorization": "authz-008" },
-    "normativity": "ADVISORY",
-    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
-    "becomes_normative_when": "clotho/scripts/test-weave.mjs proves producer==attribution rejection of mismatched edges/warnings."
+    "authority": {
+      "decisions": [
+        "D10",
+        "AM-39"
+      ],
+      "authorization": "authz-008"
+    },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT",
+    "oracle": {
+      "test": "clotho/scripts/test-weave.mjs (five attribution violations proven rejected before any appendEdge)"
+    }
   },
   {
     "id": "d8-self-weave-exclusion",
     "task": "7",
     "statement": "The self-weave output directory (docs/runs/clotho-self-weave/) is excluded from EVERY weaver's inventory (D8), so weaving TELOS never ingests its own prior output.",
-    "authority": { "decision": "D8", "authorization": "authz-008" },
-    "normativity": "ADVISORY",
-    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
-    "becomes_normative_when": "docs/runs/clotho-self-weave/run.mjs + clotho/scripts/test-flagship.mjs prove the self-weave exclusion and reproduction from committed bytes."
+    "authority": {
+      "decision": "D8",
+      "authorization": "authz-008"
+    },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT",
+    "oracle": {
+      "test": "docs/runs/clotho-self-weave/run.mjs (keyless reproduction from committed bytes; second-run identity proves prior snapshots are never consumed) + clotho/scripts/test-flagship.mjs; GLOBAL_EXCLUDE pinned by test-inventory"
+    }
   }
 ]

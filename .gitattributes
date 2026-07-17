@@ -8,6 +8,16 @@
 #
 # Keep the run-evidence tree as text (diffable in review) but force LF on
 # checkout and commit so content-addressed artifacts cannot be silently
-# transformed. Scope is deliberately narrow: only docs/runs/** (matured plans,
-# round artifacts, packets, event logs) is content-addressed.
+# transformed.
+#
+# SCOPE WIDENED AT PHASE 1 CLOSURE (2026-07-17): as of Clotho slices 5-7 the
+# weavers content-address EVERY tracked text file (blob_sha via
+# `git hash-object --no-filters` over working-tree bytes; doc-section
+# text_sha256 over raw section bytes), so the narrow docs/runs/** pin no longer
+# covers the content-addressed surface. CI caught the divergence exactly as
+# authz-005's precedent predicts: a Windows CRLF checkout hashed
+# merkle-dag/obligation.mjs to a different blob than the committed/Linux LF
+# bytes, failing the flagship's stale-hash re-audit trigger. Repo-wide LF makes
+# every content address platform-stable.
+* text=auto eol=lf
 docs/runs/** text eol=lf

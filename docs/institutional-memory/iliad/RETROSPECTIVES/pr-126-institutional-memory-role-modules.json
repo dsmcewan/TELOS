@@ -1,0 +1,37 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "retrospective-pr-126",
+  "title": "Post-implementation review — institutional-memory role modules (PR #126)",
+  "note": "ADVISORY evaluation anchored to commit-verified facts. Optimizations feed forward: each names where it lands so the next run's pre-review reads it.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "PR #126 (branch institutional-memory-role-modules, base git:f3d8d41)",
+  "what_was_built": "role modules daedalus/telos/argo + capability modules loadout/iliad; verifier growth 29 -> 175+ checks; env-surface closure; seat/prompt data separation; step ledger; CI institutional-memory job",
+  "verification_outcome": "all green at every push head (17/17, 17/17, 18/18, 18/18 CI checks); 3/3 + 2/2 verifier mutations caught; full evidence: docs/runs/institutional-memory-role-modules/STEP-LEDGER.json",
+  "what_worked": [
+    "behavioral PROBING over paraphrase — driving the real state machine / registry / gate and comparing terminals beats describing them (caught nothing drifting because nothing could)",
+    "disk ENUMERATION over hand-lists (readdirSync sweeps) — new modules/contracts joined verification with zero wiring",
+    "MUTATION-TESTING the verifier — proved the checks discriminate before trusting their green",
+    "writing the direct negative test FIRST surfaced unpinned behavior (the 'No Grok advisory packet present.' warning)",
+    "one module per commit with its own oracles in the same commit — claims could never outrun their checks"
+  ],
+  "defects_found_during": [
+    "dangling authority evidence on main: CURRENT-AUTHORITY cited docs/runs/clotho-authorization-8/ which did not exist (restored from origin branches; chain contract now fails closed on the class)",
+    "the unmerged clotho-task4b branch's hand-listed CONTRACT_FILES silently skips its own ledger-adapter-integrity.json (reconciliation flagged in TASK-LOADOUTS/task-4b)",
+    "advisory-absence gate behavior was unpinned until the negative test forced the question"
+  ],
+  "process_mistakes_preserved": [
+    "git add -A staged a session-worktree gitlink (caught, amended pre-push; .claude/ now git-ignored) -> rule: stage explicit paths",
+    "inline backticked text through bash mangled a PR body via command substitution (rebuilt via file) -> rule: file-based bodies for gh edits",
+    "a sed range mutation silently no-opped on JSON (redone via node) -> rule: mutate JSON with node/Edit, never sed",
+    "read tail's exit status as the test's ($? after a pipe) -> rule: PIPESTATUS[0], and re-run before reporting"
+  ],
+  "optimizations_for_future_runs": [
+    { "optimization": "run the PRE-REVIEW phase (models via env over seats.json; capabilities via TASK-LOADOUTS + prior retrospectives) before any implementation", "lands_in": "docs/institutional-memory/iliad/PRE-REVIEWS/TEMPLATE.json (instituted this delivery)" },
+    { "optimization": "HARVEST-FIRST for existing branches: reconcile origin/clotho-task4b instead of reimplementing 4b", "lands_in": "docs/institutional-memory/loadout/TASK-LOADOUTS/task-4b.json (already recorded)" },
+    { "optimization": "add a warning line for malformed TELOS_LOADOUT files (currently silent programmatic-only fallback)", "lands_in": "candidate data/mechanism change; recorded in loadout NON-CLAIMS; adopt via a reviewed edit when touched next" },
+    { "optimization": "when a new model generation ships, review build-gate/seats.json role bindings (constraints/implementation/adversary/verifier) against its strengths — a seat change is a data edit + this lifecycle's pre-review", "lands_in": "PRE-REVIEWS/TEMPLATE.json#model_review" },
+    { "optimization": "process rules from mistakes (explicit staging, file-based gh bodies, node-not-sed for JSON, PIPESTATUS) apply to every future run", "lands_in": "this retrospective; candidate for a harness-level CLAUDE.md note if repeated" }
+  ]
+}

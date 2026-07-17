@@ -1,0 +1,55 @@
+{
+  "kind": "contract",
+  "component": "daedalus",
+  "id": "workshop-protocol",
+  "title": "Daedalus plan-maturation workshop protocol (serial + parallel authorship)",
+  "authority": {
+    "vocabulary": "docs/mythological-vocabulary.md#Daedalus",
+    "methodology": "docs/daedalus-methodology.md (HELD by The Eye, 2026-07-15)",
+    "code": "build-gate/daedalus.mjs"
+  },
+  "serial": {
+    "note": "Retained ONLY for genuinely small deltas (methodology ruling). Alternating author/reviewer per round; author = claude on odd rounds.",
+    "seats": ["claude", "codex"],
+    "max_rounds": 6,
+    "states": ["continue", "converged-for-submission", "stalemate"],
+    "terminals": { "converged-for-submission": "submit", "stalemate": "needs-work" },
+    "convergence_requires": [
+      "zero unresolved objections (absence is NOT a disposition; only explicit resolved/superseded/withdrawn records retire an objection)",
+      "real, distinct author+reviewer provenance keys (provider:response_id; placeholder/self ids rejected)",
+      "reviewer bound_hash equals the round's output candidate hash (the reviewer binds the author's exact artifact)"
+    ]
+  },
+  "parallel": {
+    "note": "The forward methodology for real plan design: two seats author IN PARALLEL from one frozen frame; the integrated candidate must descend from both.",
+    "roles": { "constraints": "codex", "implementation": "claude" },
+    "obligation_fields": ["invariant", "mechanism", "task", "negative_test", "exit_criterion"],
+    "states": ["continue", "converged-parallel", "conflict"],
+    "terminals": { "converged-parallel": "submit", "conflict": "needs-eye" },
+    "distinct_provenance_keys_required": 5,
+    "convergence_requires": [
+      "both source roles present with real, distinct provenance keys",
+      "integrator is a real seat call (validated provenance key of its own)",
+      "descends_from is content-committed inside the candidate body and is EXACTLY the two source refs",
+      "obligation matrix is field-complete AND a strict bijection over the constraints-declared obligation id set",
+      "all five seat-call provenance keys (2 authors, integrator, 2 verifiers) pairwise distinct",
+      "both verifiers AFFIRMATIVELY attest the literal verdict 'preserved' (missing/unknown verdicts never converge)"
+    ],
+    "conflict_rule": "a 'violated' verdict or any non-empty conflict list routes to The Eye (terminal needs-eye) — never silently blended"
+  },
+  "selection": {
+    "parallel_opt_in": "dossier.authorship === \"parallel\"",
+    "missing_adapter": "blocked: PARALLEL_AUTHORSHIP_UNAVAILABLE (fail-closed; never silently downgrades to serial)"
+  },
+  "objection_identity": "controller-recomputed sha256 over {scope, claim, sorted evidence_refs}; a model-asserted objection_hash is discarded",
+  "why": "The serial author-reviewer loop optimizes the wrong objective (10 of 11 confirmed Clotho Phase 1 defects attacked repair-introduced behavior at ~1-delta lag). Parallel constraint/implementation authorship with structural obligation coverage targets the smallest complete behavioral model that satisfies the invariant.",
+  "change_rule": "Changing seats, states, terminals, obligation fields, or convergence rules requires an Eye ruling + a Daedalus delta + TELOS re-authorization (docs/institutional-memory/CHANGE-PROTOCOL.md); this contract must then be updated in the same change or verify-contracts fails.",
+  "oracle": {
+    "source_of_truth": "build-gate/daedalus.mjs#{DAEDALUS_SEATS,DAEDALUS_MAX_ROUNDS,PARALLEL_ROLES,OBLIGATION_FIELDS,deriveWorkshopState,deriveParallelState}",
+    "test": "build-gate/scripts/test-daedalus.mjs (state machine, objection ledger, coverage bijection, provenance distinctness); build-gate/scripts/test-proposal-orchestrator.mjs (PARALLEL_AUTHORSHIP_UNAVAILABLE fail-closed)",
+    "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (deep-equals the constants + probes each terminal behaviorally)"
+  },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

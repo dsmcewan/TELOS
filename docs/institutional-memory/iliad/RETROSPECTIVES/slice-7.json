@@ -1,0 +1,40 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "retrospective-slice-7",
+  "title": "Post-implementation review + SYSTEM EVALUATION #4 — Clotho slice 7 (PHASE 1 CLOSURE)",
+  "note": "ADVISORY evaluation anchored to commit-verified facts. The closure slice: the last pending record flipped; the reproduction is a fixed point.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "clotho slice 7 (workshop b38aaf4; agents 9571ff7/12394cc; integration 395c971 + evidence commit; PR #126)",
+  "what_was_built": "docs housekeeping (STATUS current, ROADMAP appended, 3 byte-identical history moves with full dispositions) + docs/runs/clotho-self-weave/run.mjs (916 lines) + the executed evidence: snapshot (sha256 d7db5bcf…), summary/expected-match-report/review-set/verification; expected-flagship.json re-bound to the integrated HEAD after the designed staleness trigger fired; d8-self-weave-exclusion flipped NORMATIVE — ZERO pending records remain in the design substrate",
+  "verification_outcome": "final reproduction exit 0 with package_tests FULL: 4001 edges / 4,536,722 bytes published clean in 17.7s at head 395c971; 28/28 expectations, 76-fact unscored review set, zero run warnings; d33 closure equal, d34 no-drift; every package suite green and recorded; second-run identity (agent-R proof) demonstrates the self-exclusion fixed point",
+  "what_worked": [
+    "the FIRST multi-round workshop (9 objections raised and resolved) earned its rounds: the path-sensitivity rule it added prevented moving live-verifier paths — agent-D then kept 12+ candidates with grep-backed dispositions and verify-contracts stayed green through every move",
+    "the designed staleness trigger fired in real life: the mandated STATUS rewrite invalidated exactly one flagship expectation; regeneration + re-audit against the integrated HEAD was a one-command act because slice 6 committed the generator",
+    "clause ordering held mechanically: housekeeping merged BEFORE the final evidence run; agent-R proved its script in-worktree but committed only the script, leaving canonical evidence to the single post-merge run",
+    "SESSION-LIMIT INTERRUPTION DRILL (live, unplanned): both builders were cut off ~10 tool-calls in and resumed from transcript with zero state loss and zero re-verification debt — the succession property demonstrated under real failure"
+  ],
+  "defects_found_during": [
+    "generate-expectations prints to stdout without --artifact; the integrator's first regeneration was a no-op until the flag was read from the source (cost: one suite run)",
+    "test-flagship.mjs executes at import and exports no helpers — agent-R had to reimplement the matcher byte-compatibly (noted in run.mjs header); refactor candidate: export the matcher for shared use"
+  ],
+  "process_mistakes_preserved": [
+    "derived the slice-7 workshop harness via a sed chain that silently produced an empty spec slice — the recorded node-not-sed rule exists and was not applied; caught by grep before the run"
+  ],
+  "system_evaluation": {
+    "redundancy": [
+      "flagship matcher now exists twice (test-flagship.mjs internal + run.mjs reimplementation, byte-compatible) — FIRST real dedup candidate: export the matcher from a shared module when either is next touched",
+      "three workshop harnesses (slice5/6/7) are near-copies — fold into one parameterized harness under docs/institutional-memory/iliad/ tooling at the next lifecycle improvement pass"
+    ],
+    "process_dependencies": { "conclusion": "PHASE 1 COMPLETE — no pending slices; next work enters via the Iliad lifecycle as new implementations (pre-review first)" },
+    "concurrency_opportunities_via_merkle_dag": [
+      "proven at scale this phase: 3-agent (slice 5) and 2-agent (slice 7) disjoint-writer builds merged conflict-free; the pattern is now the recorded default for multi-deliverable slices"
+    ]
+  },
+  "optimizations_for_future_runs": [
+    { "optimization": "export the flagship matcher for shared consumption (dedup with run.mjs)", "lands_in": "next clotho maintenance slice via the lifecycle" },
+    { "optimization": "parameterize the Daedalus next-phase workshop harness (one script, spec-slice + candidate as args)", "lands_in": "iliad module tooling; next lifecycle improvement pass" },
+    { "optimization": "Phase-2-class candidates queued in ROADMAP: corpus-level Daedalus review over the weave; README renderer + drift gate (OPEN-QUESTIONS); warning-shape harmonization amendment; future modules remain registered-unimplemented", "lands_in": "docs/ROADMAP.md (recorded by agent-D)" }
+  ]
+}

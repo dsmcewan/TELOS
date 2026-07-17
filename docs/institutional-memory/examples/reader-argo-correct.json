@@ -1,0 +1,21 @@
+{
+  "reader": "example-correct-argo",
+  "note": "A reader that resolved the authority chain and read the Argo role-module records. Passes the comprehension gate.",
+  "resolved_plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+  "resolved_authorization": "authz-008",
+  "excluded_superseded": ["authz-004", "authz-005", "authz-006", "authz-007"],
+  "invariants_read": ["argo-comprehension-before-implementation", "argo-eye-acceptance-required"],
+  "non_claims_read": ["no-autonomous-argo-runner", "argo-gate-pass-is-not-implementation-authority"],
+  "answers": {
+    "autonomous-runner-exists": false,
+    "implementation-authority-holder": "the-eye",
+    "entry-precondition": "comprehension-gate-exit-0",
+    "gate-granted-equals-authority": false,
+    "accepted-slices": ["4a"],
+    "next-slice": "4b",
+    "pending-slices": ["4b", "5", "6", "7"],
+    "slice-review-trust-mode": "signed",
+    "lone-dissent-at-slice-acceptance": "eye-may-accept-with-stopping-rule",
+    "lone-dissent-at-authorization": "blocks"
+  }
+}

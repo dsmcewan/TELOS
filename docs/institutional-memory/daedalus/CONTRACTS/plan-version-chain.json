@@ -1,0 +1,71 @@
+{
+  "kind": "contract",
+  "component": "daedalus",
+  "id": "plan-version-chain",
+  "title": "Daedalus plan-maturation chain — the authority-anchored lineage of Clotho Phase 1 plan versions",
+  "authority": {
+    "pointer": "CURRENT-AUTHORITY.json",
+    "vocabulary": "docs/mythological-vocabulary.md#Daedalus"
+  },
+  "note": "Each entry is a Daedalus product: a matured plan version, content-addressed with the SAME hashing rule the comprehension gate uses (sha256(canonicalize({kind:'candidate', plan:<bytes>}))). Only versions with hashes anchored in CURRENT-AUTHORITY.json appear here; earlier deltas (v1-v10) are indexed descriptively in ../EVIDENCE/delta-chain.json. Exactly one entry is active; every other entry must_not_govern_new_work.",
+  "chain": [
+    {
+      "version": "v11",
+      "path": "docs/runs/clotho-daedalus-delta10/matured-plan-v11.md",
+      "sha256": "sha256:f5d9cd52f12ec9abb4c613c469437d0079af7fdf249c5a842f94c451d55fc30c",
+      "matured_by": "docs/runs/clotho-daedalus-delta10/",
+      "authorization": "authz-004",
+      "authz_status": "NOT_AUTHORIZED",
+      "active": false
+    },
+    {
+      "version": "v12",
+      "path": "docs/runs/clotho-daedalus-delta11/matured-plan-v12.md",
+      "sha256": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3",
+      "matured_by": "docs/runs/clotho-daedalus-delta11/",
+      "authorization": "authz-005",
+      "authz_status": "AUTHORIZED",
+      "active": false
+    },
+    {
+      "version": "v13",
+      "path": "docs/runs/clotho-daedalus-delta12/matured-plan-v13.md",
+      "sha256": "sha256:f9368b5748de6c2670193558783b60b7f74fd94de9196c9664d42269f3d2bc04",
+      "matured_by": "docs/runs/clotho-daedalus-delta12/",
+      "authorization": "authz-006",
+      "authz_status": "AUTHORIZED",
+      "amendments": ["AM-40"],
+      "active": false
+    },
+    {
+      "version": "v14",
+      "path": "docs/runs/clotho-daedalus-delta13/matured-plan-v14.md",
+      "sha256": "sha256:f152f1663234a393aa8a0dd441d2631a9cf4a6d50773d719178f38f483da3426",
+      "matured_by": "docs/runs/clotho-daedalus-delta13/",
+      "authorization": "authz-007",
+      "authz_status": "NOT_AUTHORIZED",
+      "amendments": ["AM-41"],
+      "note": "authz-007 correctly blocked v14: AM-41's blanket hashbang exclusion contradicted Task 5's weave.mjs shebang. The block is the system working — convergence is not authorization.",
+      "active": false
+    },
+    {
+      "version": "v15",
+      "path": "docs/runs/clotho-daedalus-delta14/matured-plan-v15.md",
+      "sha256": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+      "matured_by": "docs/runs/clotho-daedalus-delta14/",
+      "authorization": "authz-008",
+      "authz_status": "AUTHORIZED",
+      "amendments": ["AM-41 shebang carve-out"],
+      "active": true
+    }
+  ],
+  "why": "A future model must be able to walk the maturation lineage without inferring authority from filenames or dates. Every hop is (delta run -> plan version -> authorization outcome), and two hops are honest blocks (v11, v14) preserved so the chain shows Daedalus output being REFUSED authorization — the separation this layer exists to teach.",
+  "change_rule": "A new plan version appends an entry (Daedalus delta -> TELOS authz -> update CURRENT-AUTHORITY.json + this contract in the same change). Entries are never rewritten; supersession is recorded, not erased.",
+  "oracle": {
+    "source_of_truth": "CURRENT-AUTHORITY.json (active + superseded plan hashes)",
+    "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (re-hashes every chain entry from disk; requires the active entry to equal active_plan and the superseded entries to match CURRENT-AUTHORITY.json exactly)"
+  },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

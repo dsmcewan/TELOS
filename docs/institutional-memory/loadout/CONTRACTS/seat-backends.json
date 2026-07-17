@@ -1,0 +1,45 @@
+{
+  "kind": "contract",
+  "component": "loadout",
+  "id": "seat-backends",
+  "title": "Development loadout — seat->backend routes, plugin servers, and the loadout extension mechanism",
+  "authority": {
+    "code": "build-gate/seat-registry.mjs (the code's own term: withLoadout)",
+    "router": "breakout/seat_router.mjs"
+  },
+  "servers": {
+    "ai-peer": { "framing": "content-length", "source": "connectors/ai-peer-mcp/server.mjs (in-repo)" },
+    "grok": { "framing": "ndjson", "source": "<TELOS_PLUGINS_DIR>/grok-plugin/servers/mcp-server.mjs (out-of-repo)" },
+    "gemini": { "framing": "ndjson", "source": "<TELOS_PLUGINS_DIR>/gemini-plugin/servers/mcp-server.mjs (out-of-repo)" },
+    "codex": { "framing": "ndjson", "source": "<TELOS_PLUGINS_DIR>/codex-api-plugin/servers/mcp-server.mjs (out-of-repo)" },
+    "agy": { "framing": "ndjson", "source": "<TELOS_PLUGINS_DIR>/agy-plugin/servers/mcp-server.mjs (out-of-repo)" }
+  },
+  "tool_routes": {
+    "claude_ask": { "server": "ai-peer", "tool": "claude_ask", "arg_map": false },
+    "agy_checkpoint": { "server": "ai-peer", "tool": "agy_checkpoint", "arg_map": false },
+    "grok_ask": { "server": "grok", "tool": "ask_grok", "arg_map": true },
+    "gemini_ask": { "server": "gemini", "tool": "ask_gemini", "arg_map": true },
+    "codex_ask": { "server": "codex", "tool": "ask_codex", "arg_map": true },
+    "agy_ask": { "server": "agy", "tool": "ask_agy", "arg_map": true }
+  },
+  "design_rules": [
+    "claude_ask stays on ai-peer-mcp (no plugin equivalent)",
+    "agy_checkpoint stays on ai-peer-mcp BY DESIGN — the agy APPROVAL seat is local governance derived from the dossier, not a model call; ask_agy is an additional ADVISORY model seat and does not replace the approver",
+    "plugin location is env-overridable (TELOS_PLUGINS_DIR, default ~/claude-plugins); the registry names BACKENDS, not models (model ids are env/per-call; strengths live in build-gate/model-profiles.mjs)"
+  ],
+  "loadout_extension": {
+    "mechanism": "seat-registry.mjs#withLoadout merges extra MCP plugin servers (docs research, search, anything MCP-shaped) reached via the router's namespaced form callTool('name:tool', args)",
+    "declaration": "programmatic servers, or a JSON file via TELOS_LOADOUT (default ~/.telos/loadout.json): { \"servers\": { name: { command, args|serverPath, framing } } }",
+    "invariant": "council tool routes ALWAYS win — a loadout server can never shadow a seat (registry servers spread last; tool routes untouched by withLoadout)"
+  },
+  "why": "The loadout is part of the trust surface: which process answers a seat call determines whose provenance lands in a packet. Trust-relevant routes are pinned in-repo; convenience servers are declared, namespaced, and structurally unable to displace them.",
+  "change_rule": "Re-routing a seat, adding a seat tool, or changing the shadow rule is a trust-surface change: Eye ruling -> Daedalus delta -> TELOS re-authorization; this contract must be updated in the same change or verify-contracts fails.",
+  "oracle": {
+    "source_of_truth": "build-gate/seat-registry.mjs#{defaultSeatRegistry,withLoadout,mapAskArgs}",
+    "test": "build-gate/scripts/test-seat-registry.mjs (trust routes local; plugin routes + argMap; TELOS_PLUGINS_DIR honored); breakout/scripts/test-seat-router.mjs (explicit council routes win; unrouted tools fail closed before any spawn)",
+    "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (rebuilds defaultSeatRegistry and deep-checks every route/framing against this contract; probes withLoadout attempting to shadow a seat server and requires the registry to win)"
+  },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

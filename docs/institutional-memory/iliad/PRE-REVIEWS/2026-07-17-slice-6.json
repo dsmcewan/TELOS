@@ -1,0 +1,29 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "pre-review-2026-07-17-slice-6",
+  "note": "Pre-review for Clotho slice 6 per the amended lifecycle.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "clotho slice 6 (branch institutional-memory-role-modules, PR #126)",
+  "next_phase_workshop": "docs/runs/clotho-slice6-daedalus/matured-approach.md (LIVE workshop, converged-for-submission round 1: claude-fable-5 msg_011Cd7fscGp7qTTUzo6QfCmV authored a 200-line tightening, gpt-5.6-sol chatcmpl-E2cT5Wa3DEQTbyvZ872RKYG5jW4EZ bound; R2 review-set publication path settled, R3 dual-weave runtime accepted under the per-weave 120s ceiling. R1 CORRECTION per ESCALATE-2: the CONVERGED artifact resolves R1 as STORED audited repository_ref — the original note here transcribed the candidate's runtime-injection proposal instead of the matured resolution; the converged artifact governs. See docs/runs/clotho-impl-slice-6/ESCALATION.md)",
+  "model_review": {
+    "baseline": "docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-17.json (unchanged same-day; both workshop seats proven live again this slice)",
+    "seats": { "claude": "claude-fable-5", "codex": "gpt-5.6-sol", "build_agent": "session model (claude-opus-4-8), single writer" },
+    "newly_available_models_considered": ["none since the same-day review"],
+    "seat_changes_proposed": []
+  },
+  "capability_review": {
+    "task_loadout_read": "docs/institutional-memory/loadout/TASK-LOADOUTS/task-6.json",
+    "prior_retrospectives_read": ["docs/institutional-memory/iliad/RETROSPECTIVES/slice-5.json"],
+    "optimizations_adopted": [
+      "SINGLE-WRITER slice per System Evaluation #2 (the flagship's value is the integrated end-to-end path)",
+      "slice-5 integration contracts honored (currentDocs Map shape; kind->producer map) — carried into the workshop verify-spec verbatim",
+      "expected-flagship.json flagged for The Eye's review at PR (the clause's hand-audit requirement; generator is audit-assist evidence tooling only)"
+    ],
+    "optimizations_deferred_with_reason": [],
+    "missing_external_capabilities": [],
+    "capability_packets_required": false
+  },
+  "entry_ritual": "docs/runs/clotho-impl-slice-6/reader-validation-artifact.json"
+}

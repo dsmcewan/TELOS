@@ -1,0 +1,47 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "retrospective-slice-5",
+  "title": "Post-implementation review + SYSTEM EVALUATION #2 — Clotho slice 5",
+  "note": "ADVISORY evaluation anchored to commit-verified facts.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "clotho slice 5 (delivery git:321473a; agent branches merged at 723703a/3578efe/18c57dd; PR #126)",
+  "what_was_built": "query.mjs (524) + test-query.mjs (686, 80 units); weave.mjs (697) + test-weave.mjs (778, 106 assertions) + additive orchestrator inventory + closure extension; test-advisory.mjs (946, 72 units); R3 shared manifest validator in util.mjs (+103, closure-safe). coverage-schema + d35/d34/d10 flipped NORMATIVE-CURRENT.",
+  "verification_outcome": "clotho npm test 13/13; FIRST REAL-REPOSITORY WEAVE PUBLISHED (3892 edges, 4.4MB signed ledger, five weavers executed, publication 'published', 0 fatal warnings); verify-contracts 203/203; build-gate regression green; entry ritual 13/13 GRANTED before work",
+  "what_worked": [
+    "the Daedalus-matured three-agent decomposition delivered ~2,900 new lines in one parallel window, merged conflict-free by one-writer-per-file — the workshop's R1/R3 resolutions were followed exactly and cost nothing at merge",
+    "agents adopted the session's mutation-testing discipline UNPROMPTED: both Q and W falsified their own implementations to prove their oracles discriminate before reporting green",
+    "test-all's fail-closed unlisted-test guard forced clean incremental integration commits (one merge + wiring per agent), keeping the branch green at every push",
+    "the merge-first worktree instruction closed the isolation-base gap (worktrees base on origin/main, which lacks branch work)"
+  ],
+  "defects_found_during": [
+    "agent-W's first commit carried a raw NUL byte in a test fixture (git treated the file as binary) — the agent caught and fixed it itself (\\u0000 escape) before reporting",
+    "SPEC-SHAPE MISMATCH (in-envelope, recorded for future amendment): frozen v15 names the warning shape {weaver, code, path, detail} but the accepted 4a/4b weavers emit {weaver, message}; the driver bridges both shapes for attribution and fatal-code enforcement. Harmonization is an amendment candidate (Daedalus -> authz), NOT an implementation liberty"
+  ],
+  "process_mistakes_preserved": [],
+  "integration_contracts_recorded": [
+    "currentDocs is a Map<docAddressKey, text_sha256|null> (null = deleted/ambiguous) — the Task 6/7 flagship and any doc-drift caller must construct exactly this shape (agent-Q)",
+    "kind->producer map: git=introduced-by, code=depends-on, test=verified-by, doc=documented-in, ledger=motivated-by/evidenced-by/discharges; supersedes has no producing weaver (agent-Q)"
+  ],
+  "system_evaluation": {
+    "redundancy": [
+      "none introduced: advisory scanner, closure derivation, and the driver's D34 re-derivation all consume the ONE shared classifier/resolver in weavers/util.mjs — proven by a dedicated unit, three consumers zero forks",
+      "driver-local helpers (union-closure derivation, canonical comparators, count-shaped-field detection, D19 equality checker) are deliberately driver-owned, not util material — do not 'promote' them without a second consumer"
+    ],
+    "process_dependencies": {
+      "slice_6_needs": "5's driver + query surface (the flagship acceptance runs a real weave and queries it) — sequential",
+      "slice_7_needs": "6's flagship run (reproduction re-derives it from committed bytes) — sequential",
+      "conclusion": "slice-level sequencing unchanged; slice 6 is a single-deliverable slice (flagship test) with limited internal parallelism; slice 7 has TWO independent deliverables (reproduction evidence; documentation/README render) — parallelizable"
+    },
+    "concurrency_opportunities_via_merkle_dag": [
+      "slice 7: reproduction-evidence agent and documentation-render agent are disjoint writers (docs/runs/clotho-self-weave/ vs clotho/memory/README.md + renderer) — the slice-5 pattern applies directly",
+      "slice 6: keep single-writer; the flagship test's value is the INTEGRATED end-to-end path, which parallelism would only obscure"
+    ]
+  },
+  "optimizations_for_future_runs": [
+    { "optimization": "warning-shape harmonization ({weaver,code,path,detail} vs {weaver,message}) via a small Daedalus delta when the weavers are next touched — until then the driver's dual-shape bridge is the recorded behavior", "lands_in": "future amendment candidate; recorded here and in the driver's comments" },
+    { "optimization": "slice 7: two parallel disjoint-writer agents (reproduction; renderer) per the slice-5 pattern", "lands_in": "the slice-7 pre-review" },
+    { "optimization": "agent worktrees base on origin/main — keep the merge-first instruction in every agent prompt until isolation supports basing on the current branch", "lands_in": "agent-prompt practice (this session's standard)" }
+  ]
+}

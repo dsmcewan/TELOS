@@ -1,0 +1,31 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "pre-review-TEMPLATE",
+  "note": "Copy to PRE-REVIEWS/<run>.json and fill BEFORE implementation begins. Intent is recorded here; actuality is proven downstream by per-seat provenance in the run records.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "<run name / PR>",
+  "model_review": {
+    "note": "which model id will fill each seat THIS run (env-resolved over build-gate/seats.json role bindings); note newly-available models worth a seat change — a seat change is a reviewed edit to seats.json, not a script change",
+    "baseline": "read the LATEST docs/institutional-memory/iliad/MODEL-REVIEWS/*.json first (machine-probed against the connector's mapModelName)",
+    "seats": {
+      "claude": "<ANTHROPIC_MODEL or server default>",
+      "codex": "<OPENAI_MODEL or server default>",
+      "grok": "<XAI_MODEL or server default>",
+      "gemini": "<GEMINI_MODEL or server default>",
+      "agy": "local deterministic (no model id)"
+    },
+    "newly_available_models_considered": [],
+    "seat_changes_proposed": []
+  },
+  "capability_review": {
+    "task_loadout_read": "<docs/institutional-memory/loadout/TASK-LOADOUTS/task-<id>.json>",
+    "prior_retrospectives_read": ["<docs/institutional-memory/iliad/RETROSPECTIVES/...>"],
+    "optimizations_adopted": [],
+    "optimizations_deferred_with_reason": [],
+    "missing_external_capabilities": [],
+    "capability_packets_required": false
+  },
+  "entry_ritual": "comprehension gate passed for the governing component/module queries (artifact ref): <path>"
+}

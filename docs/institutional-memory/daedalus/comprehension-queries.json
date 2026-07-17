@@ -1,0 +1,83 @@
+{
+  "component": "daedalus",
+  "note": "Authority-anchored comprehension queries for the Daedalus role module. Every expected fact terminates in a stable identifier (a doc, a code export, an authz-N outcome) — never a model opinion. These encode the exact hallucinations a fresh model is most likely to produce about plan maturation: that convergence authorizes, that claude owns constraints, that silence retires an objection, that a missing verdict is tacit approval.",
+  "governing_authority": {
+    "plan": "docs/runs/clotho-daedalus-delta14/matured-plan-v15.md",
+    "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+    "authorization": "authz-008"
+  },
+  "required_invariants": ["daedalus-submission-not-authorization", "daedalus-absence-not-disposition", "daedalus-provenance-pairwise-distinct"],
+  "required_non_claims": ["daedalus-does-not-authorize", "daedalus-does-not-validate-plan-truth"],
+  "queries": [
+    {
+      "id": "workshop-seats",
+      "query": "Which seats run the serial Daedalus workshop?",
+      "answer_kind": "set",
+      "expected": ["claude", "codex"],
+      "authority_anchor": { "code": "build-gate/daedalus.mjs#DAEDALUS_SEATS", "contract": "docs/institutional-memory/daedalus/CONTRACTS/workshop-protocol.json" }
+    },
+    {
+      "id": "converged-terminal",
+      "query": "What terminal does a converged workshop reach? (enum: submit | authorize | merge)",
+      "answer_kind": "enum",
+      "expected": "submit",
+      "authority_anchor": { "oracle": "build-gate/scripts/test-daedalus.mjs", "doc": "docs/convergence-is-not-authorization.md" }
+    },
+    {
+      "id": "convergence-authorizes",
+      "query": "Does a converged Daedalus workshop itself authorize the plan?",
+      "answer_kind": "boolean",
+      "expected": false,
+      "authority_anchor": { "doc": "docs/convergence-is-not-authorization.md", "precedents": ["authz-004 NOT_AUTHORIZED", "authz-007 NOT_AUTHORIZED"] }
+    },
+    {
+      "id": "objection-identity-source",
+      "query": "Who computes an objection's identity hash? (enum: the-raising-seat | controller-recomputed | the-reviewer)",
+      "answer_kind": "enum",
+      "expected": "controller-recomputed",
+      "authority_anchor": { "code": "build-gate/daedalus.mjs#computeObjectionHash", "invariant": "daedalus-controller-computed-objection-identity" }
+    },
+    {
+      "id": "absence-retires-objection",
+      "query": "Can an objection be retired by simply not mentioning it in a later round?",
+      "answer_kind": "boolean",
+      "expected": false,
+      "authority_anchor": { "oracle": "build-gate/scripts/test-daedalus.mjs (silently-dropped objection blocks convergence)", "invariant": "daedalus-absence-not-disposition" }
+    },
+    {
+      "id": "constraints-seat",
+      "query": "In parallel authorship, which seat owns the constraint design? (enum: claude | codex | grok)",
+      "answer_kind": "enum",
+      "expected": "codex",
+      "authority_anchor": { "code": "build-gate/daedalus.mjs#PARALLEL_ROLES", "methodology": "docs/daedalus-methodology.md (GPT owns the constraint design)" }
+    },
+    {
+      "id": "obligation-fields",
+      "query": "Which five fields must every obligation-matrix row complete?",
+      "answer_kind": "set",
+      "expected": ["invariant", "mechanism", "task", "negative_test", "exit_criterion"],
+      "authority_anchor": { "code": "build-gate/daedalus.mjs#OBLIGATION_FIELDS" }
+    },
+    {
+      "id": "verification-conflict-routing",
+      "query": "Where does a parallel-verification conflict route? (enum: needs-eye | auto-blend | majority-vote)",
+      "answer_kind": "enum",
+      "expected": "needs-eye",
+      "authority_anchor": { "code": "build-gate/daedalus.mjs#deriveParallelState", "methodology": "docs/daedalus-methodology.md#cross-verification" }
+    },
+    {
+      "id": "parallel-without-adapter",
+      "query": "What happens when authorship is 'parallel' but no callParallelSeat adapter is injected? (enum: blocked-fail-closed | silent-serial-downgrade | best-effort)",
+      "answer_kind": "enum",
+      "expected": "blocked-fail-closed",
+      "authority_anchor": { "code": "build-gate/proposal-orchestrator.mjs (PARALLEL_AUTHORSHIP_UNAVAILABLE)", "oracle": "build-gate/scripts/test-proposal-orchestrator.mjs" }
+    },
+    {
+      "id": "refused-versions",
+      "query": "Which matured plan versions were REFUSED authorization?",
+      "answer_kind": "set",
+      "expected": ["v11", "v14"],
+      "authority_anchor": { "pointer": "CURRENT-AUTHORITY.json#superseded (authz_status NOT_AUTHORIZED)", "contract": "docs/institutional-memory/daedalus/CONTRACTS/plan-version-chain.json" }
+    }
+  ]
+}

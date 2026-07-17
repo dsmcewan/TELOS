@@ -48,3 +48,21 @@ jobs:
       - name: Run tests
         working-directory: ${{ matrix.package }}
         run: npm test
+
+  # The institutional-memory layer's own oracle: every NORMATIVE machine record
+  # (contracts, invariants, authority chains, env surface) must equal what the
+  # code and workflow artifacts actually are — re-derived from disk on every run.
+  institutional-memory:
+    runs-on: ubuntu-latest
+    name: institutional-memory (records == reality)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify contracts against code, workflows, and disk
+        run: node docs/institutional-memory/verify-contracts.mjs

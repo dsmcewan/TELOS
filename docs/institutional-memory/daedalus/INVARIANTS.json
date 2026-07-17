@@ -1,0 +1,60 @@
+[
+  {
+    "id": "daedalus-submission-not-authorization",
+    "statement": "A converged Daedalus workshop terminal is 'submit' — it permits SUBMISSION of the candidate to TELOS authorization, never authorization itself. Convergence is not authorization; two real refusals (authz-004 on v11, authz-007 on v14) are the preserved precedent.",
+    "authority": { "doc": "docs/convergence-is-not-authorization.md", "precedents": ["authz-004 NOT_AUTHORIZED", "authz-007 NOT_AUTHORIZED"], "vocabulary": "docs/mythological-vocabulary.md#Daedalus" },
+    "contract": "docs/institutional-memory/daedalus/CONTRACTS/workshop-protocol.json",
+    "oracle": { "test": "build-gate/scripts/test-daedalus.mjs (converged -> terminal 'submit')", "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (terminal probes)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "daedalus-controller-computed-objection-identity",
+    "statement": "Objection identity is ALWAYS controller-recomputed (sha256 over {scope, claim, sorted evidence_refs}); a model-supplied objection_hash is never trusted, and dispositions are matched against the recomputed key, so a seat can forge neither an objection nor its reference.",
+    "authority": { "code": "build-gate/daedalus.mjs#computeObjectionHash + #objectionLedgerFrom" },
+    "oracle": { "test": "build-gate/scripts/test-daedalus.mjs (deterministic, evidence-order-independent hash; ledger replay)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "daedalus-absence-not-disposition",
+    "statement": "ONLY an explicit validated resolution / supersession / withdrawal record changes an objection's status — a silently-dropped objection stays open and blocks convergence. Only the ORIGINATING seat may retire its own objection, and the disposing response must carry real provenance.",
+    "authority": { "code": "build-gate/daedalus.mjs#objectionLedgerFrom + #validateDispositions" },
+    "oracle": { "test": "build-gate/scripts/test-daedalus.mjs (silently-dropped objection blocks convergence; not-originating-seat and no-provenance dispositions rejected)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "daedalus-provenance-pairwise-distinct",
+    "statement": "Every seat call in a converging round carries a real provenance key (provider:response_id; placeholders rejected), and keys are pairwise distinct — serial rounds with invalid/shared provenance are burned (cannot converge), and in parallel authorship all FIVE calls (2 authors, integrator, 2 verifiers) must be distinct so no response id is replayed across calls.",
+    "authority": { "code": "build-gate/daedalus.mjs#provKey + #deriveWorkshopState + #deriveParallelState" },
+    "oracle": { "test": "build-gate/scripts/test-daedalus.mjs (invalid-provenance round discarded; provenance-reused-across-calls cannot converge)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "daedalus-exact-obligation-coverage",
+    "statement": "Parallel convergence requires the integration matrix to be field-complete AND a strict BIJECTION over the constraints-declared obligation id set — every declared obligation mapped by exactly one row, none dropped, none invented, none duplicated. The obligation set is content-committed into the constraints source node, so it is not caller-mutable.",
+    "authority": { "methodology": "docs/daedalus-methodology.md#enforcement (rule 4)", "code": "build-gate/daedalus.mjs#validateObligationCoverage" },
+    "contract": "docs/institutional-memory/daedalus/CONTRACTS/workshop-protocol.json",
+    "oracle": { "test": "build-gate/scripts/test-daedalus.mjs (coverage bijection: missing/extra/duplicate ids all refuse convergence)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "daedalus-conflict-routes-to-eye",
+    "statement": "A verifier reporting 'violated' or any non-empty conflict list is an explicit conflict routed to The Eye (terminal 'needs-eye') — never silently blended. A missing or unrecognized verdict cannot converge either; it is not read as tacit approval.",
+    "authority": { "methodology": "docs/daedalus-methodology.md#cross-verification", "code": "build-gate/daedalus.mjs#deriveParallelState" },
+    "oracle": { "test": "build-gate/scripts/test-daedalus.mjs (conflict -> needs-eye; invalid-verification-verdict cannot converge)", "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (conflict terminal probe)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "daedalus-no-silent-serial-downgrade",
+    "statement": "An explicit dossier.authorship === 'parallel' request with no callParallelSeat adapter injected BLOCKS with PARALLEL_AUTHORSHIP_UNAVAILABLE rather than silently downgrading to the serial loop.",
+    "authority": { "methodology": "docs/daedalus-methodology.md#enforcement (selection fails closed)", "code": "build-gate/proposal-orchestrator.mjs" },
+    "oracle": { "test": "build-gate/scripts/test-proposal-orchestrator.mjs (asserts the PARALLEL_AUTHORSHIP_UNAVAILABLE blocker)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  }
+]

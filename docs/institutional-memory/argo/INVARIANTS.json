@@ -1,0 +1,52 @@
+[
+  {
+    "id": "argo-comprehension-before-implementation",
+    "statement": "No implementation authority until the reader passes the comprehension gate (exit 0). The gate is fail-closed: it first re-hashes the active plan against CURRENT-AUTHORITY.json and refuses to certify anyone under authority drift; a wrong answer is DENIED.",
+    "authority": { "schema": "docs/institutional-memory/SCHEMA.md", "code": "docs/institutional-memory/comprehension-gate.mjs" },
+    "contract": "docs/institutional-memory/argo/CONTRACTS/implementation-protocol.json",
+    "oracle": { "test": "docs/institutional-memory/verify-contracts.mjs (executes the gate: correct reader exit 0, hallucinating reader exit 3)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "argo-eye-acceptance-required",
+    "statement": "A slice lands only via The Eye's acceptance; every accepted slice records its PR, merge anchor, and reviewed head in the accepted-slice ledger, which must equal CURRENT-AUTHORITY.json#implementation_authority exactly.",
+    "authority": { "pointer": "CURRENT-AUTHORITY.json#implementation_authority", "precedents": ["PR #110 (slice 1 scaffold)", "PR #117 (task 4a)"] },
+    "contract": "docs/institutional-memory/argo/CONTRACTS/accepted-slices.json",
+    "oracle": { "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (deep-eq with CURRENT-AUTHORITY)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "argo-slice-review-signed",
+    "statement": "Slice reviews run the signed council with the same required trio as authorization (claude/agy/codex; grok/gemini advisory) under trust_mode 'signed' — the 4a review's 13 rounds are all recorded per-seat.",
+    "authority": { "records": "docs/runs/clotho-impl-slice-4a/round*-review-summary.json" },
+    "oracle": { "evidence_probe": "docs/institutional-memory/verify-contracts.mjs (final review record: trust_mode signed, required signers, pr_head == reviewed_head)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "argo-slice-gate-meets-before-review",
+    "statement": "A slice's deterministic gate must converge at 'meets' on disk-verified facts before acceptance — a reviewer's approval never substitutes for the gate.",
+    "authority": { "record": "docs/runs/clotho-impl-slice-4a/gate-result.json" },
+    "oracle": { "evidence_probe": "docs/institutional-memory/verify-contracts.mjs (gate-result finalStatus 'meets' && converged)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "argo-deferred-backlog-recorded",
+    "statement": "An acceptance that defers known minors must record them in a committed backlog artifact — deferral is explicit and revisitable, never silent.",
+    "authority": { "record": "docs/runs/clotho-impl-slice-4a/DEFERRED-MINOR-FIXES.md", "ruling": "The Eye's stopping rule (2026-07-17)" },
+    "oracle": { "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (backlog file exists for every accepted slice that names one)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "argo-pending-slices-specified",
+    "statement": "Every pending slice has a frozen design substrate and per-task comprehension queries BEFORE implementation begins (documentation-first): an implementer of task N loads clotho/memory/ and passes comprehension-queries.<N>.json first.",
+    "authority": { "pointer": "CURRENT-AUTHORITY.json#implementation_authority.specified_pending_note" },
+    "oracle": { "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (per-task query files exist for every pending slice)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  }
+]

@@ -1,0 +1,131 @@
+{
+  "kind": "contract",
+  "component": "iliad",
+  "id": "enrollment",
+  "title": "The Iliad enrollment registry — sub-systems created by implementations, maintained under the umbrella",
+  "authority": {
+    "vocabulary": "docs/mythological-vocabulary.md#The-Iliad",
+    "deferral_precedent": "AM-40 (clotho/memory/CONTRACTS/package-roots.json — products deferred for conscious enrollment at the Iliad)"
+  },
+  "note": "Each implementation creates a sub-system recorded here. An entry is 'delivered' only with its retrospective; entries created after the lifecycle protocol was instituted (post_protocol: true) must also carry their pre-review. The spine packages themselves are governed directly by TELOS authorization (plan/authz chain), not through this registry — enrollment covers sub-systems that implementations CREATE, plus the consciously-deferred products awaiting enrollment.",
+  "enrolled": [
+    {
+      "name": "institutional-memory-role-modules",
+      "kind": "governance-layer extension: role modules (daedalus, telos, argo) + capability modules (loadout, iliad) with executable verification",
+      "created_by": "PR #126 (branch institutional-memory-role-modules)",
+      "evidence": "docs/runs/institutional-memory-role-modules/STEP-LEDGER.json",
+      "memory_dirs": [
+        "docs/institutional-memory/daedalus/",
+        "docs/institutional-memory/telos/",
+        "docs/institutional-memory/argo/",
+        "docs/institutional-memory/loadout/",
+        "docs/institutional-memory/iliad/"
+      ],
+      "status": "delivered",
+      "post_protocol": false,
+      "pre_review": null,
+      "pre_review_note": "this delivery INSTITUTED the lifecycle protocol at its end; no pre-review existed to run — recorded honestly rather than backdated. Every subsequent enrollment is post_protocol: true and must carry one.",
+      "retrospective": "docs/institutional-memory/iliad/RETROSPECTIVES/pr-126-institutional-memory-role-modules.json",
+      "maintained_by": "The Iliad umbrella: lifecycle records live in this module; the sub-system's own oracles run in CI (institutional-memory job)"
+    },
+    {
+      "name": "clotho-slice-4b",
+      "kind": "Clotho Phase 1 slice: test/doc/ledger weavers with isolating oracles; D25/D31 + contracts flipped NORMATIVE",
+      "created_by": "PR #126 (harvest merge git:af64b88 of origin/clotho-task4b head git:15de463)",
+      "evidence": "docs/runs/clotho-impl-slice-4b/reader-validation-artifact.json",
+      "memory_dirs": [
+        "clotho/memory/"
+      ],
+      "status": "delivered",
+      "post_protocol": true,
+      "pre_review": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-17-slice-4b.json",
+      "retrospective": "docs/institutional-memory/iliad/RETROSPECTIVES/slice-4b.json",
+      "maintained_by": "The Iliad umbrella; oracles run in CI (clotho job: test-all incl. test-weaver-{test,doc,ledger}; institutional-memory job: record discipline)"
+    },
+    {
+      "name": "clotho-slice-5",
+      "kind": "Clotho Phase 1 slice: query surface + complete-weave driver + advisory invariant; first real-repository weave published",
+      "created_by": "PR #126 (delivery git:321473a; agent merges 723703a/3578efe/18c57dd)",
+      "evidence": "docs/runs/clotho-impl-slice-5/reader-validation-artifact.json",
+      "memory_dirs": [
+        "clotho/memory/"
+      ],
+      "status": "delivered",
+      "post_protocol": true,
+      "pre_review": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-17-slice-5.json",
+      "retrospective": "docs/institutional-memory/iliad/RETROSPECTIVES/slice-5.json",
+      "maintained_by": "The Iliad umbrella; oracles in CI (clotho test-all 13 incl. test-query/test-weave/test-advisory; institutional-memory job)"
+    },
+    {
+      "name": "clotho-slice-6",
+      "kind": "Clotho Phase 1 slice: flagship acceptance in npm test; the escalation-path proof; Eye-ruled reviewed data (obligation ledger + flagship run evidence)",
+      "created_by": "PR #126 (delivery ea6a15d; agent 86793a3; ruling 1596767; escalation 774d5ef)",
+      "evidence": "docs/runs/clotho-impl-slice-6/reader-validation-artifact.json",
+      "memory_dirs": [
+        "clotho/memory/"
+      ],
+      "status": "delivered",
+      "post_protocol": true,
+      "pre_review": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-17-slice-6.json",
+      "retrospective": "docs/institutional-memory/iliad/RETROSPECTIVES/slice-6.json",
+      "maintained_by": "The Iliad umbrella; oracles in CI (clotho test-all 14 incl. test-flagship; institutional-memory job)"
+    },
+    {
+      "name": "clotho-slice-7-phase-1-closure",
+      "kind": "Clotho Phase 1 CLOSURE: docs current + self-weave reproduction evidence (fixed point proven); design substrate fully NORMATIVE",
+      "created_by": "PR #126 (integration 395c971 + evidence commit; agents 9571ff7/12394cc; workshop b38aaf4)",
+      "evidence": "docs/runs/clotho-self-weave/summary.json",
+      "memory_dirs": [
+        "clotho/memory/"
+      ],
+      "status": "delivered",
+      "post_protocol": true,
+      "pre_review": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-17-slice-7.json",
+      "retrospective": "docs/institutional-memory/iliad/RETROSPECTIVES/slice-7.json",
+      "maintained_by": "The Iliad umbrella; oracles in CI (clotho 14 tests; institutional-memory job); the reproduction re-verifies from committed bytes via run.mjs --verify-committed"
+    }
+  ],
+  "future_modules_registered_unimplemented": [
+    {
+      "name": "hermes",
+      "role": "Hermes",
+      "role_meaning": "API management and inter-system communication: routing, contracts, translation, and delivery."
+    },
+    {
+      "name": "medusa",
+      "role": "Medusa",
+      "role_meaning": "defensive edge enforcement; blocks or quarantines hostile and nonconforming traffic."
+    },
+    {
+      "name": "narcissus",
+      "role": "Narcissus",
+      "role_meaning": "iterative UI rendering and visual review through repeated reflection."
+    },
+    {
+      "name": "lachesis",
+      "role": "Lachesis",
+      "role_meaning": "measures dependencies, relevance, risk, and blast radius."
+    },
+    {
+      "name": "atropos",
+      "role": "Atropos",
+      "role_meaning": "retires obsolete relationships, artifacts, tools, and processes."
+    }
+  ],
+  "future_modules_note": "Registered myths with defined system responsibilities and NO implementation (meanings VERBATIM from docs/mythological-vocabulary.md; verify-contracts parses the registry and cross-checks each). Atropos's discipline is partially expressed today via supersession records (must_not_govern_new_work); Lachesis's risk measurement is explicitly non-claimed by Clotho Phase 1. Implementing one follows CHANGE-PROTOCOL + this lifecycle (pre-review -> enroll -> retrospective).",
+  "deferred_pending_conscious_enrollment": [
+    "ai-forge",
+    "forge",
+    "saas-forge"
+  ],
+  "deferred_note": "EXACTLY the AM-40 product exclusions (verify-contracts cross-checks this list against clotho/memory/CONTRACTS/package-roots.json#package_roots_exclude). Enrolling one requires a deliberate amendment — never absorption by proximity.",
+  "why": "The umbrella needs a ledger of what it maintains. Without a registry, 'each implementation creates a sub-system' decays into untracked artifacts; with it, every sub-system has evidence, memory, a retrospective, and (going forward) a pre-review — and the verifier fails any entry that skips them.",
+  "change_rule": "Appending an enrollment is the lifecycle operating. Removing or reclassifying one is retirement — Atropos discipline (supersession recorded, never erased), via CHANGE-PROTOCOL.",
+  "oracle": {
+    "source_of_truth": "this registry + the referenced records on disk",
+    "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (per-entry: evidence exists, every memory_dir exists, delivered => retrospective exists with non-empty optimizations, post_protocol => pre_review exists; deferred list == AM-40 exclusions)"
+  },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

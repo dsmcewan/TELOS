@@ -1,0 +1,38 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "pre-review-2026-07-17-slice-4b",
+  "note": "The lifecycle's first real pre-review, for Clotho slice 4b (test/doc/ledger weavers). Filled before implementation per docs/institutional-memory/iliad/CONTRACTS/implementation-lifecycle.json.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "clotho slice 4b (branch institutional-memory-role-modules, PR #126)",
+  "model_review": {
+    "note": "env-resolved seat ids over build-gate/seats.json role bindings; no silent defaults (fail-closed)",
+    "baseline": "docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-17.json (14 aliases machine-probed against mapModelName this review)",
+    "seats": {
+      "claude": "claude-fable-5 (alias default; ANTHROPIC_MODEL env per run)",
+      "codex": "gpt-5.6-sol (alias default; OPENAI_MODEL env per run)",
+      "grok": "grok-4.5 (alias default; XAI_MODEL env per run)",
+      "gemini": "gemini-3.1-pro-preview (alias default; GEMINI_MODEL env per run)",
+      "agy": "local deterministic (no model id)"
+    },
+    "newly_available_models_considered": ["none newly shipped since the 2026-07-17 model review; connector mapper current (claude-fable-5 / claude-opus-4-8 / claude-sonnet-4-6 / grok-4.5 / gpt-5.6-sol / gemini-3.x)"],
+    "seat_changes_proposed": []
+  },
+  "capability_review": {
+    "task_loadout_read": "docs/institutional-memory/loadout/TASK-LOADOUTS/task-4b.json",
+    "prior_retrospectives_read": ["docs/institutional-memory/iliad/RETROSPECTIVES/pr-126-institutional-memory-role-modules.json"],
+    "optimizations_adopted": [
+      "HARVEST-FIRST: origin/clotho-task4b carries the 4b work (13 files, +949: weavers test/doc/ledger + oracles test-weaver-{test,doc,ledger}.mjs + record flips); clean merge from shared base f3d8d41, zero overlap with this branch",
+      "keep OUR verify-contracts readdirSync sweep (the 4b branch does not touch it; its era's hand-list defect never lands)",
+      "CI already wired (institutional-memory job) — the flipped records are continuously proven from this slice on",
+      "process rules from PR-126 retrospective: explicit staging, node-not-sed for JSON, PIPESTATUS for exit codes, file-based gh bodies"
+    ],
+    "optimizations_deferred_with_reason": [
+      "malformed-TELOS_LOADOUT warning: not touched by this slice; adopt when the loadout mechanism is next edited"
+    ],
+    "missing_external_capabilities": [],
+    "capability_packets_required": false
+  },
+  "entry_ritual": "docs/runs/clotho-impl-slice-4b/reader-validation-artifact.json (comprehension gate over clotho/memory/comprehension-queries.4b.json; answers authored from the D25/D31 substrate)"
+}

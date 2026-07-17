@@ -63,18 +63,24 @@ export const CONTRACT_FILES = Object.freeze([
 // inventory, committed exactly at this PR (NOT a deferred per-weaver closure:
 // D17/AM-17 defers only per-weaver implementation-file lists and the orchestrator
 // list, not closed source inventories, per this plan's inventory.mjs description).
-// The EXACT reviewed set at this SHA is empty: Clotho weaves no committed ledger
-// artifact — runtime thread-ledgers are git-ignored `.telos/` files, and the
-// committed `docs/runs/**/events.jsonl` are the Daedalus subsystem's, not Clotho
-// ledger sources. Each entry, when present, is `{ id, path, adapter }`. This is
-// the final Task-4a value; if a real Clotho ledger source is later configured it
-// is a reviewed inventory change with tests, not a fill-in of a placeholder.
-export const LEDGER_SOURCES = Object.freeze([]);
+// Each entry is `{ id, path, adapter }`. The set was empty at the final Task-4a
+// value; the entry below is the REVIEWED INVENTORY CHANGE that value anticipated
+// ("a reviewed inventory change with tests"), authorized by The Eye's
+// reviewed-data ruling (2026-07-17, docs/runs/clotho-impl-slice-6/ESCALATION.md):
+// a committed, hash-chained obligation ledger whose concern/obligation entries
+// genuinely name the flagship symbol and resolve a real Proposal Lifecycle
+// clause. The artifact content is Eye-reviewed governance data.
+export const LEDGER_SOURCES = Object.freeze([
+  Object.freeze({ id: "clotho-obligations", path: "docs/ledgers/clotho-obligation-ledger.jsonl", adapter: "clotho-obligation-ledger-v1" })
+]);
 
 // Exact run directories plus their summary files (run-evidence). Only committed
-// runs that carry a summary.json participate.
+// runs that carry a summary.json participate. clotho-flagship-evidence is a REAL
+// executed run (its runner derives executable refs through the flagship symbol)
+// added under the same Eye ruling as the ledger source above.
 export const RUN_SOURCES = Object.freeze([
-  Object.freeze({ id: "plugin-seats", dir: "docs/runs/plugin-seats", summary: "docs/runs/plugin-seats/summary.json" })
+  Object.freeze({ id: "plugin-seats", dir: "docs/runs/plugin-seats", summary: "docs/runs/plugin-seats/summary.json" }),
+  Object.freeze({ id: "clotho-flagship-evidence", dir: "docs/runs/clotho-flagship-evidence", summary: "docs/runs/clotho-flagship-evidence/summary.json" })
 ]);
 
 // ---- the five weavers --------------------------------------------------------
@@ -112,7 +118,8 @@ export const LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS = deepFreeze({
 // ---- per-weaver implementation-file inventories (D33) ------------------------
 // Committed accepted-relative-module-load closures (repository-relative POSIX,
 // sorted). Proven equal to the derived closures by scripts/test-closure.mjs —
-// never trusted. Only git and code exist at this PR (AM-17).
+// never trusted. Task 4a committed git + code; Task 4b adds test, doc, and ledger
+// (D17/AM-17) — every named file exists at this PR.
 export const WEAVER_IMPL_FILES = deepFreeze({
   "clotho-git-weaver": [
     "clotho/registry.mjs",
@@ -122,6 +129,21 @@ export const WEAVER_IMPL_FILES = deepFreeze({
     "clotho/registry.mjs",
     "clotho/weavers/code.mjs",
     "clotho/weavers/util.mjs"
+  ],
+  "clotho-test-weaver": [
+    "clotho/registry.mjs",
+    "clotho/weavers/test.mjs",
+    "clotho/weavers/util.mjs"
+  ],
+  "clotho-doc-weaver": [
+    "clotho/registry.mjs",
+    "clotho/weavers/doc.mjs",
+    "clotho/weavers/util.mjs"
+  ],
+  "clotho-ledger-weaver": [
+    "clotho/registry.mjs",
+    "clotho/weavers/ledger.mjs",
+    "clotho/weavers/util.mjs"
   ]
 });
 
@@ -129,7 +151,10 @@ export const WEAVER_IMPL_FILES = deepFreeze({
 // the closure derivation), mapped to their repository-relative module path.
 export const WEAVER_ENTRY_MODULE = Object.freeze({
   "clotho-git-weaver": "clotho/weavers/git.mjs",
-  "clotho-code-weaver": "clotho/weavers/code.mjs"
+  "clotho-code-weaver": "clotho/weavers/code.mjs",
+  "clotho-test-weaver": "clotho/weavers/test.mjs",
+  "clotho-doc-weaver": "clotho/weavers/doc.mjs",
+  "clotho-ledger-weaver": "clotho/weavers/ledger.mjs"
 });
 
 // Permitted external (non-clotho) closure targets — merkle-dag primitives that
@@ -138,6 +163,55 @@ export const WEAVER_ENTRY_MODULE = Object.freeze({
 // any OTHER merkle-dag target as forbidden.
 export const PERMITTED_EXTERNAL_CLOSURE_FILES = Object.freeze([
   "merkle-dag/vendor.mjs"
+]);
+
+// ---- orchestrator-file inventory (D17/AM-17/D33, Task 5) ---------------------
+// The frozen orchestrator entry points and their committed accepted relative
+// module-load closure — the complete-weave driver, the thread ledger, and the
+// shared registry/canonicalization machinery their closures reach (the driver
+// statically imports the five weaver modules it drives, so those and their
+// shared substrate are orchestrator-reachable bytes). Committed in the SAME PR
+// that creates weave.mjs, so no inventory names a file that does not yet exist.
+// Proven equal to the derived closure by scripts/test-closure.mjs — never
+// trusted; the driver re-derives and re-checks it at publication time (D34).
+
+export const ORCHESTRATOR_ENTRY_MODULES = Object.freeze([
+  "clotho/thread-ledger.mjs",
+  "clotho/weave.mjs"
+]);
+
+export const ORCHESTRATOR_FILES = Object.freeze([
+  "clotho/inventory.mjs",
+  "clotho/registry.mjs",
+  "clotho/thread-ledger.mjs",
+  "clotho/weave.mjs",
+  "clotho/weavers/code.mjs",
+  "clotho/weavers/doc.mjs",
+  "clotho/weavers/git.mjs",
+  "clotho/weavers/ledger.mjs",
+  "clotho/weavers/test.mjs",
+  "clotho/weavers/util.mjs"
+]);
+
+// ---- closed fatal-warning code set (D22/AM-23, Task 5) -----------------------
+// A weaver warning carrying one of these codes aborts the weave before close and
+// publication (abort/remove/nonzero discipline); it can never coexist with a
+// published artifact. Includes the D29 accounting codes, the AM-39 attribution
+// code, and the D34 publication-time drift code. Sorted, closed, frozen.
+
+export const FATAL_WARNING_CODES = Object.freeze([
+  "attribution-violation",
+  "chain-failure",
+  "duplicate-heading-address",
+  "incomplete-source-consumption",
+  "invalid-content-address",
+  "invalid-ledger-entry",
+  "publication-time-drift",
+  "root-escape",
+  "source-count-mismatch",
+  "symlink-input",
+  "unexpected-source-consumption",
+  "unsupported-ledger-format"
 ]);
 
 // ---- deep freeze -------------------------------------------------------------

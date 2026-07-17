@@ -2,18 +2,19 @@
 
 Local MCP server for the V4 multi-model workflow.
 
-It exposes five tools:
+It exposes six tools:
 
 - `claude_ask`: calls Claude through the Anthropic Messages API.
 - `grok_ask`: calls Grok through xAI's OpenAI-compatible chat completions API.
 - `codex_ask`: calls Codex through OpenAI's chat completions API.
+- `gemini_ask`: calls Gemini through Google's Generative Language API.
 - `agy_checkpoint`: local phase/queue governance, no external key required.
 - `council_review`: asks Claude for a proposal and Grok for adversarial review.
 
 **Provenance.** Each model tool surfaces *real* provenance so a downstream gate
 can bind a packet to the response that produced it (never a self-declared id):
-- `claude_ask` / `grok_ask` / `codex_ask` return raw prose by default; pass
-  `include_provenance: true` to get a `{ text, provenance: { model, response_id,
+- `claude_ask` / `grok_ask` / `codex_ask` / `gemini_ask` return raw prose by default;
+  pass `include_provenance: true` to get a `{ text, provenance: { model, response_id,
   source } }` envelope where `model`/`response_id` come from the API response body.
 - `agy_checkpoint` is a local deterministic tool with no server-issued id, so it
   embeds a content-addressed **attestation** (`response_id = "agy-" +
@@ -29,7 +30,13 @@ It is wired into `C:\Users\dsmce\.codex\config.toml` as `mcp_servers.ai_peer`. R
 - `ANTHROPIC_API_KEY` for Claude tools.
 - `XAI_API_KEY` for Grok tools.
 - `OPENAI_API_KEY` for Codex tools (optional `OPENAI_BASE_URL` to override the endpoint).
-- `ANTHROPIC_MODEL`, `XAI_MODEL`, and `OPENAI_MODEL`, or pass `model` in each tool call.
+- `GEMINI_API_KEY` for Gemini tools (optional `GEMINI_BASE_URL` to override the endpoint).
+- `ANTHROPIC_MODEL`, `XAI_MODEL`, `OPENAI_MODEL`, and `GEMINI_MODEL`, or pass `model`
+  in each tool call — there are NO silent defaults; a seat with no model fails closed.
+  Friendly aliases resolve via `mapModelName` (e.g. `claude`→`claude-fable-5`,
+  `opus`→`claude-opus-4-8`, `sonnet`→`claude-sonnet-4-6`, `grok`→`grok-4.5`,
+  `codex`/`gpt`→`gpt-5.6-sol`, `gemini`→`gemini-3.1-pro-preview`,
+  `gemini flash`→`gemini-3.5-flash`).
 - `agy_checkpoint` requires no key.
 
 ## Quick Check
@@ -48,13 +55,13 @@ The smoke test uses only the local `agy_checkpoint` tool, so it does not require
 Use the helper script to set Windows User environment variables without echoing API keys:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File "C:\Users\dsmce\OneDrive\Attachments\Desktop\V4\me\codex\connectors\ai-peer-mcp\scripts\set-user-env.ps1"
+powershell -ExecutionPolicy Bypass -File "connectors\ai-peer-mcp\scripts\set-user-env.ps1"
 ```
 
 Verify set/missing status without printing secret values:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File "C:\Users\dsmce\OneDrive\Attachments\Desktop\V4\me\codex\connectors\ai-peer-mcp\scripts\check-user-env.ps1"
+powershell -ExecutionPolicy Bypass -File "connectors\ai-peer-mcp\scripts\check-user-env.ps1"
 ```
 
 You can also set these manually as user/session environment variables:
@@ -64,16 +71,20 @@ $env:ANTHROPIC_API_KEY = "..."
 $env:ANTHROPIC_MODEL = "..."
 $env:XAI_API_KEY = "..."
 $env:XAI_MODEL = "..."
+$env:OPENAI_API_KEY = "..."
+$env:OPENAI_MODEL = "..."
+$env:GEMINI_API_KEY = "..."
+$env:GEMINI_MODEL = "..."
 ```
 
 Do not paste real keys into vault notes.
 
 ## MCP Launch Command
 
-Use this command in an MCP client configuration:
+Use this command in an MCP client configuration (repo-relative):
 
 ```powershell
-node "C:\Users\dsmce\OneDrive\Attachments\Desktop\V4\me\codex\connectors\ai-peer-mcp\server.mjs"
+node "connectors\ai-peer-mcp\server.mjs"
 ```
 
 The current Codex config entry uses:
@@ -97,13 +108,17 @@ Example shape for a client that accepts command/args:
     "ai-peer": {
       "command": "node",
       "args": [
-        "C:\\Users\\dsmce\\OneDrive\\Attachments\\Desktop\\V4\\me\\codex\\connectors\\ai-peer-mcp\\server.mjs"
+        "<repo>/connectors/ai-peer-mcp/server.mjs"
       ],
       "env": {
-        "ANTHROPIC_API_KEY": "set-outside-vault",
+        "ANTHROPIC_API_KEY": "set-outside-repo",
         "ANTHROPIC_MODEL": "set-to-available-claude-model",
-        "XAI_API_KEY": "set-outside-vault",
-        "XAI_MODEL": "set-to-available-grok-model"
+        "XAI_API_KEY": "set-outside-repo",
+        "XAI_MODEL": "set-to-available-grok-model",
+        "OPENAI_API_KEY": "set-outside-repo",
+        "OPENAI_MODEL": "set-to-available-openai-model",
+        "GEMINI_API_KEY": "set-outside-repo",
+        "GEMINI_MODEL": "set-to-available-gemini-model"
       }
     }
   }
@@ -148,7 +163,22 @@ Arguments:
 {
   "prompt": "Stress-test this plan for execution risk.",
   "system": "You are Codex, implementation reviewer.",
-  "model": "optional override (else OPENAI_MODEL; bare 'codex' -> gpt-4o)",
+  "model": "optional override (else OPENAI_MODEL; bare 'codex'/'gpt' -> gpt-5.6-sol)",
+  "max_tokens": 2000,
+  "temperature": 0,
+  "include_provenance": false
+}
+```
+
+### `gemini_ask`
+
+Arguments:
+
+```json
+{
+  "prompt": "Independently re-derive this claim from the provided material.",
+  "system": "You are Gemini, independent verifier.",
+  "model": "optional override (else GEMINI_MODEL; bare 'gemini' -> gemini-3.1-pro-preview, 'gemini flash' -> gemini-3.5-flash)",
   "max_tokens": 2000,
   "temperature": 0,
   "include_provenance": false

@@ -1,0 +1,22 @@
+{
+  "kind": "evidence",
+  "component": "loadout",
+  "id": "task-loadout-4b",
+  "task": "4b",
+  "subject": "test/doc/ledger weavers",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "note": "ADVISORY per-task loadout review. Facts cite records; items under optimization_opportunities are judgments to weigh at slice start, not requirements.",
+  "entry_ritual": "pass clotho/memory/comprehension-queries.4b.json through docs/institutional-memory/comprehension-gate.mjs before any code",
+  "loadout": {
+    "oracles_to_flip": "clotho/memory/CONTRACTS/{verified-by-provenance,discharges-matrix}.json flip NORMATIVE when clotho/scripts/test-test.mjs and test-ledger-weaver.mjs exist and pass (their becomes_normative_when strings)",
+    "reuse": ["clotho/weavers/util.mjs (shared D33 scanner — do not fork it)", "clotho test harness (scripts/test-all.mjs)", "the AM-41 shebang carve-out (already frozen; weave.mjs shebang is legal)"],
+    "review": ["seat backends via build-gate/seat-registry.mjs for gauntlet review councils", ".github/workflows/{claude,code-review}.yml for PR review"],
+    "verification": ["docs/institutional-memory/verify-contracts.mjs (pending-record discipline)", "clotho npm test"]
+  },
+  "optimization_opportunities": [
+    "HARVEST, do not reimplement: origin/clotho-task4b already carries 4b work (weavers, gauntlet-found isolating oracles, council hard-stop resolutions H1/H2 — commits 4045dd3..15de463). Reconcile that branch against this one first; the slice may be mostly a merge + re-verify.",
+    "RECONCILE verify-contracts at merge: the 4b branch's copy uses a hand-maintained CONTRACT_FILES list that already silently skips its own ledger-adapter-integrity.json (NORMATIVE, unchecked); main's readdirSync sweep is the fix pattern — keep the sweep, drop the hand-list.",
+    "WIRE verify-contracts into CI in this slice: 4b flips two contracts NORMATIVE, which is exactly when continuous record==reality proof starts paying."
+  ]
+}

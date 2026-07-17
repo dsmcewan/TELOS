@@ -1,9 +1,15 @@
-# TELOS Roadmap — `ai-forge`
+# TELOS Roadmap
 
 > Living tracking doc. Update **Status** and the **Decisions log** as work lands.
-> This is the map; each phase still gets its own spec → plan → build.
+> This is the map; each phase still gets its own spec → plan → build — and, since
+> 2026-07-17, each implementation runs under the Iliad lifecycle
+> (pre-review → entry ritual → implement → enroll → retrospective → next-phase
+> Daedalus review; `docs/institutional-memory/iliad/`).
+>
+> The `ai-forge` expansion below is **complete** (Phases A–C.2). The Clotho
+> Phase 1 section and the "What's next" candidates follow it.
 
-## Vision
+## Vision (ai-forge expansion — complete)
 
 Expand TELOS from `saas-forge` (a hard-coded 7-team SaaS generator) into
 **`ai-forge`**: a *pattern-library-driven* forge that produces **AI architectures**
@@ -91,15 +97,63 @@ Each phase is an independent spec → plan → build cycle. Build order A → B 
 
 Legend: ⬜ not started · 🟡 in progress · ✅ done
 
-## Next action
+## Clotho Phase 1 — provenance-aware knowledge-graph weaver (2026-07)
 
-**Phase C.2 is complete.** The catalog now contains five patterns (RAG, TELOS,
-multi-agent, eval-harness, serving+guardrails). All three new patterns are
-8-workstream runs that converge over the real gate + Ed25519 ledger; run evidence
-at `docs/runs/ai-forge-{multiagent,eval,serving}/`.
+**State: slices 0–6 accepted; slice 7 (Phase 1 closure) in delivery.** Authority:
+`CURRENT-AUTHORITY.json` (plan v15 `sha256:05a48700…`, authz-008); current honest
+status: `docs/STATUS.md`.
 
-Remaining open items (issues #30/#37): composable-workstream-library generalization
-(deferred beyond C.2).
+Delivered so far, each slice lifecycle-governed (pre-review → comprehension-gate
+entry ritual → implement → enroll → retrospective → next-phase Daedalus review):
+
+- **Plan maturation:** Daedalus deltas v1→v15 with signed authorization runs
+  authz-001..008 — including preserved refusals (authz-004/-007 correctly blocked
+  defective plans; refusals are the system working).
+- **Slices 0–4a** (scaffold, CI, registry/ledger, git+code weavers) — PR #117.
+- **Slices 4b/5/6** (test/doc/ledger weavers; query surface + complete-weave
+  driver; flagship acceptance) — PR #126. First real-repository weave: 3892
+  edges, five weavers, signed ledger, `published` clean; successive delivery
+  weaves 3898 → 3954 edges. Flagship acceptance (`deriveExecutableRef`, all
+  eight groups, 76-fact unscored review set) runs in `cd clotho && npm test`
+  (14 tests). Task 6 set the escalation precedent: proved-unsatisfiable →
+  CHANGE-PROTOCOL escalation → The Eye's reviewed-data ruling → green.
+- **Institutional memory + role modules + the Iliad lifecycle** (2026-07-17):
+  machine-first records with executable oracles (`verify-contracts.mjs`,
+  `comprehension-gate.mjs`); role modules Daedalus/TELOS/Argo/loadout/Iliad;
+  enrollment registry with mandatory retrospectives; the suite named by The Eye
+  ("AI Systems Architects Best Practices Suite: Rapid Full Deployment and SDLC
+  Recursive Suite").
+- **Slice 7 (in delivery):** STATUS/ROADMAP current + convention-conformant
+  history moves (this change, agent-D) and the reproduction evidence run
+  `docs/runs/clotho-self-weave/` (agent-R); acceptance requires the final
+  evidence run from committed bytes, the Eye's re-binding of the expected
+  flagship artifact against the integrated HEAD, and all package suites green.
+
+## What's next (Phase-2-class candidates — named, not authorized)
+
+Every item below routes through CHANGE-PROTOCOL (Daedalus → TELOS authorization →
+Iliad lifecycle); naming here is not authorization.
+
+1. **Corpus-level Daedalus review via the Clotho weave** — use the published
+   real-repository weave (why chains, blast radius, review sets) as the input
+   substrate for a corpus-wide Daedalus review pass, instead of per-document
+   reading.
+2. **README renderer + drift gate** — generate `clotho/memory/README.md` from
+   the machine records and gate hand-drift (OPEN-QUESTIONS candidate, deferred
+   out of slice 7 deliberately).
+3. **Warning-shape harmonization amendment** — `{weaver, code, path, detail}`
+   (frozen v15) vs `{weaver, message}` (accepted weavers); a small Daedalus
+   delta when the weavers are next touched (slice-5 retrospective).
+4. **Future modules** — Hermes (API management / inter-system communication),
+   Medusa (defensive edge enforcement), Narcissus (iterative UI rendering and
+   visual review), Lachesis (dependency/risk/blast-radius measurement), Atropos
+   (retirement of obsolete artifacts): registered-unimplemented, names reserved
+   with meaning (`docs/mythological-vocabulary.md`); implementing one follows
+   CHANGE-PROTOCOL + the Iliad lifecycle.
+5. **Forge products** (`ai-forge`, `forge`, `saas-forge`) remain AM-40-deferred
+   pending conscious enrollment at the Iliad — never absorption by proximity.
+6. Older open items (issues #30/#37): composable-workstream-library
+   generalization (deferred beyond C.2, unchanged).
 
 ## Decisions log
 
@@ -124,6 +178,28 @@ Remaining open items (issues #30/#37): composable-workstream-library generalizat
 - **2026-06-29 — Phase C.2 built.** Three standalone patterns (multi-agent,
   eval-harness, serving+guardrails), ~24 workstreams converge; eval scorecard makes
   the #30 item-2 stored≈recomputed cross-check first-class; PRs #49–60.
+- **2026-07-14/15 — Proposal Lifecycle implemented + Argo completion pass.** The
+  frozen `contracts/Proposal Lifecycle.md` shipped as an opt-in layer; the Argo
+  pass composed the primitives into the autonomous entry point; adversarial
+  review of the shipped code found and fixed a real fail-open (a mandatory
+  `required_verification` on a non-blocking concern was silently dropped),
+  pinned by a regression test. Details preserved in
+  `docs/history/STATUS-2026-06-28.md`.
+- **2026-07-16/17 — Clotho Phase 1 plan matured and implemented under authority.**
+  Daedalus deltas to v15; signed authorizations authz-001..008 with two refusals
+  preserved; slices 0–4a accepted (PR #117), 4b/5/6 accepted (PR #126: first
+  real-repository weave 3892 edges; flagship acceptance in `npm test`; the Task 6
+  escalation → Eye reviewed-data ruling precedent).
+- **2026-07-17 — Institutional memory + role modules + the Iliad lifecycle
+  instituted; suite named by The Eye.** Machine-first governance records with
+  executable oracles; every subsequent implementation is lifecycle-governed
+  (pre-review → entry ritual → implement → enroll → retrospective → next-phase
+  Daedalus review).
+- **2026-07-17 — Slice 7 (Phase 1 closure) delivery split.** Two disjoint
+  writers per the matured approach (`docs/runs/clotho-slice7-daedalus/`):
+  agent-D — STATUS/ROADMAP + path-sensitivity-checked history moves (this
+  change); agent-R — the self-weave reproduction evidence. Acceptance pending
+  the final committed-byte evidence run and The Eye's review.
 
 ## Out of scope (YAGNI — revisit only if needed)
 

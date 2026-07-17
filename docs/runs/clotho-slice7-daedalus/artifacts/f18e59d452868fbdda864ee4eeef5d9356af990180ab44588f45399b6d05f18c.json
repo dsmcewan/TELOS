@@ -1,0 +1,57 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "The matching plan does not enforce the frozen matcher semantics. Saying that each expectation has a unique match does not establish global one-to-one matching because the same fact could satisfy multiple expectations. It also omits exact-JSON-only equality and the required semantics of all eight groups.",
+        "scope": "plan-escalation"
+      },
+      {
+        "claim": "D25 expectation provenance is absent. The approach neither validates the required provenance on every expected entry nor guarantees that provenance is preserved in expected-match-report.json.",
+        "scope": "plan-escalation"
+      },
+      {
+        "claim": "The review-set plan does not fully state D3/R2 publishability rules. It must publish the complete deterministic complement of unmatched flagship-neighborhood facts, permit that complement to be nonempty without treating it as failure, and assert that no score or rank field of any kind is carried. Calling the file merely 'unscored, sorted' is insufficient, and the purported R2 resolution addresses package tests rather than review-set publication.",
+        "scope": "plan-escalation"
+      },
+      {
+        "claim": "The approach name-checks D31 counts but never implements or verifies the D31 doc-skipped clause resolution. Checking the ledger weaver's contract-files count alone does not satisfy that branch of the frozen count semantics.",
+        "scope": "plan-escalation"
+      },
+      {
+        "claim": "D35 is reduced to a coverage:\"verified\" marker. The approach does not validate and record the required coverage directions for affected nodes, evidence, and edges; a marker without the direction-specific proofs is insufficient.",
+        "scope": "plan-escalation"
+      },
+      {
+        "claim": "The frozen 120-second ceiling is omitted. Recording wall time does not enforce the ceiling, and no timeout or fail-closed overrun check is planned.",
+        "scope": "plan-escalation"
+      },
+      {
+        "claim": "The purported R1 resolution answers a timestamp/wall-time question, not the repository_ref question. The approach leaves undefined how repository_ref is derived from the recorded input repository head and how the derived value is checked consistently against the ledger header and published evidence.",
+        "scope": "plan-escalation"
+      },
+      {
+        "claim": "The integration ordering makes verification.json stale or impossible to produce as specified: run.mjs is said to generate and commit evidence before the integration test battery and post-move scanner run, yet verification.json must contain every executed package-test result and the retained final scanner counts. Those checks must occur inside the pre-publication evidence run, or evidence must be regenerated and reverified afterward; mutating already generated evidence is not a valid substitute.",
+        "scope": "plan-escalation"
+      },
+      {
+        "claim": "The recorded Slice-5 integration contracts are not implemented explicitly. The plan does not require currentDocs to retain Map<docAddressKey,text_sha256|null> semantics, including null for deleted or ambiguous documents, and does not verify the exact frozen kind-to-producer mapping rather than relying on a generic AM-39 failure label.",
+        "scope": "plan-escalation"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2dSgaY2wTo1f6bN6wikZMPz5KTS3",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2dSgaY2wTo1f6bN6wikZMPz5KTS3",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}

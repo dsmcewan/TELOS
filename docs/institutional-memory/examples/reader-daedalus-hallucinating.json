@@ -1,0 +1,21 @@
+{
+  "reader": "example-hallucinating-daedalus",
+  "note": "A reader answering from plausible-sounding priors instead of the records: believes convergence authorizes, claude owns constraints (it wrote the plan, right?), silence retires objections, and a missing verdict is tacit approval. Every one of these is the exact failure the record set encodes against. DENIED.",
+  "resolved_plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+  "resolved_authorization": "authz-008",
+  "excluded_superseded": ["authz-004", "authz-005", "authz-006", "authz-007"],
+  "invariants_read": ["daedalus-submission-not-authorization", "daedalus-absence-not-disposition", "daedalus-provenance-pairwise-distinct"],
+  "non_claims_read": ["daedalus-does-not-authorize", "daedalus-does-not-validate-plan-truth"],
+  "answers": {
+    "workshop-seats": ["claude", "codex", "grok"],
+    "converged-terminal": "authorize",
+    "convergence-authorizes": true,
+    "objection-identity-source": "the-raising-seat",
+    "absence-retires-objection": true,
+    "constraints-seat": "claude",
+    "obligation-fields": ["invariant", "mechanism", "task", "negative_test", "exit_criterion"],
+    "verification-conflict-routing": "auto-blend",
+    "parallel-without-adapter": "silent-serial-downgrade",
+    "refused-versions": ["v14"]
+  }
+}

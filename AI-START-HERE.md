@@ -1,5 +1,12 @@
 # AI-START-HERE
 
+> **AI Systems Architects Best Practices Suite: Rapid Full Deployment and SDLC
+> Recursive Suite** — the suite's mantra (The Eye, 2026-07-17). Rapid full
+> deployment: policy as data, pinned loadout, harvest-first, parallel
+> disjoint-writer builds merged under the merkle-dag discipline. SDLC recursive:
+> the lifecycle applies to itself — this layer was built under the governance it
+> defines, and every record here proves it.
+
 You are a fresh model with no memory of this project. This file is your onboarding
 protocol. TELOS is a multi-model build-gate and a set of registered components; you are
 inheriting an institution, not just source code. **Do not begin from a confident guess —
@@ -43,6 +50,49 @@ It grades your answers **deterministically** against authority-anchored facts. Y
 Also confirm reality matches the records:
 ```
 node docs/institutional-memory/verify-contracts.mjs   # every NORMATIVE contract == the code; plan hashes == disk
+```
+
+## Role modules (registered roles with their own memory)
+
+Some registered roles are realized by **code + protocol + run lineage** rather than a
+top-level package. Each has a memory dir with the same record set and its own
+comprehension queries — load it before touching that role's code or workflow.
+`repository-manifest.json#role_modules` is the machine index.
+
+| role | registered meaning | memory dir |
+|---|---|---|
+| **Daedalus** | collaboratively matures implementation plans | `docs/institutional-memory/daedalus/` |
+| **TELOS** | governs review, evidence, authorization, execution boundaries | `docs/institutional-memory/telos/` |
+| **Argo** | carries an authorized plan through implementation, verification, documentation | `docs/institutional-memory/argo/` |
+| **The Iliad** | lifecycle umbrella for enrolled sub-systems (pre-review → enroll → retrospective) | `docs/institutional-memory/iliad/` |
+
+**Future modules (registered, UNIMPLEMENTED)** — names reserved WITH meaning; no code
+exists. Do not coin them for other purposes, and do not assume the components exist:
+**Hermes** (API management & inter-system communication) · **Medusa** (defensive edge
+enforcement) · **Narcissus** (iterative UI rendering & visual review) · **Lachesis**
+(dependencies/relevance/risk/blast-radius) · **Atropos** (retirement of obsolete
+artifacts — discipline partially expressed today via supersession records). Machine
+index: `repository-manifest.json#future_modules` (verify-contracts cross-checks it
+against the vocabulary verbatim). Implementing one: CHANGE-PROTOCOL + the Iliad
+lifecycle.
+
+**Route by what you are about to do** (load that module's memory dir FIRST, then
+pass its `comprehension-queries.json` through the gate):
+
+| about to… | load | you must already know |
+|---|---|---|
+| change a plan, run a delta, amend a decision | `daedalus/` | convergence ≠ authorization; Eye rulings are fixed inputs |
+| touch the gate, council, signing, or an authz run | `telos/` | required trio vs advisory; one dissent blocks; refusals are the system working |
+| implement a slice, review, or merge | `argo/` | comprehension gate first; The Eye accepts; the dissent asymmetry |
+| touch `clotho/` code | `clotho/memory/` | AM-40 roots; AM-41 profile; advisory/non-sandboxed posture |
+| choose tools/seats for a run, or START any task | `loadout/` (+ your task's `TASK-LOADOUTS/task-<id>.json`) | seat routes are pinned; a loadout server can never shadow a seat; missing capabilities must be surfaced, never worked around |
+| create a NEW implementation / sub-system | `iliad/` (pre-review first; read the latest retrospective) | lifecycle: pre-review → enrolled sub-system → retrospective; 'delivered' is refused without the retrospective |
+
+One command re-proves the whole record set against reality (runs the Argo entry
+ritual both ways, probes the Daedalus state machine, re-hashes both lineages):
+
+```
+node docs/institutional-memory/verify-contracts.mjs
 ```
 
 ## Hard rules

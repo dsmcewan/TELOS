@@ -1,0 +1,67 @@
+{
+  "kind": "contract",
+  "component": "loadout",
+  "id": "env-surface",
+  "title": "Closed ambient-context surface — every environment variable the spine may read, tied to this JSON record",
+  "authority": {
+    "scope_source": "clotho/memory/CONTRACTS/package-roots.json (AM-40 — the scan scope is itself a known JSON quantity)",
+    "security_model": "CLAUDE.md#security (secrets live in env / OS registry only, never the repo)"
+  },
+  "note": "Runs are context-light because the spine's entire ambient surface is CLOSED: every process.env read across the AM-40 package roots must be a name in this contract, match a declared dynamic pattern, or occur in an enumerated file with a recorded justification. The verifier scans the source and fails on any read outside this record — and bidirectionally: a contract entry no source uses is also a failure (no phantom surface).",
+  "names": [
+    "AI_PEER_DEBUG",
+    "AI_PEER_LONG_TIMEOUT",
+    "AI_PEER_TIMEOUT_MS",
+    "ANTHROPIC_API_KEY",
+    "ANTHROPIC_AUTH_TOKEN",
+    "ANTHROPIC_MODEL",
+    "ANTHROPIC_VERSION",
+    "BREAKOUT_CLAUDE_MODEL",
+    "BREAKOUT_REVIEW_MODEL",
+    "ComSpec",
+    "GEMINI_API_KEY",
+    "GEMINI_BASE_URL",
+    "GEMINI_MODEL",
+    "GIT_DIR",
+    "OPENAI_API_KEY",
+    "OPENAI_BASE_URL",
+    "OPENAI_MODEL",
+    "PATH",
+    "PATHEXT",
+    "TELOS_FIGHT_MEMORY",
+    "TELOS_LOADOUT",
+    "TELOS_PLUGINS_DIR",
+    "TELOS_PROPOSAL_CONTROLLER_SK",
+    "XAI_API_KEY",
+    "XAI_BASE_URL",
+    "XAI_MODEL"
+  ],
+  "patterns": [
+    { "prefix": "TELOS_SECRET_", "owner": "build-gate/sign.mjs#secretFor", "why": "per-seat HMAC secrets, one per council seat (CLAUDE/AGY/CODEX/... + TESTER in tests); the seat set varies so the name is a derived, prefixed quantity" },
+    { "prefix": "TELOS_EFFORT_", "owner": "build-gate/model-profiles.mjs", "why": "per-role reasoning-effort override; role names are data, so the name is a derived, prefixed quantity" }
+  ],
+  "dynamic_read_files": [
+    { "file": "connectors/ai-peer-mcp/server.mjs", "why": "loadWin32Env fills MISSING env vars from the HKCU registry (generic name loop; never overwrites an existing var) and requireEnv(name) is an indirection whose call sites pass the static names above" },
+    { "file": "connectors/ai-peer-mcp/scripts/stress-test-mcp.mjs", "why": "registry-loader test fixture (creates/expands/deletes throwaway test keys)" },
+    { "file": "connectors/ai-peer-mcp/scripts/test-win32-env.mjs", "why": "registry-loader test fixture" },
+    { "file": "build-gate/scripts/stress-tests.mjs", "why": "generates child-process fixture code (template literals) exercising the registry loader with throwaway names" }
+  ],
+  "whole_env_files": [
+    { "file": "breakout/mcp_client.mjs", "why": "spawning an MCP server child: inherits the parent env then applies explicit overrides — the child's surface is still bounded by this contract" },
+    { "file": "build-gate/evidence.mjs", "why": "scrubbedEnv is a SANITIZER: it takes the env in order to REMOVE secrets before handing it to the sandboxed verifier child — context-reducing, not context-consuming" },
+    { "file": "clotho/weavers/util.mjs", "why": "copies the env and NEUTRALIZES every repository-redirecting GIT_* var so git inspects only the intended repo — hermetic/context-reducing" },
+    { "file": "clotho/scripts/test-util.mjs", "why": "test for the neutralized-copy behavior above (controlled copies of the env in fixtures)" },
+    { "file": "build-gate/scripts/stress-tests.mjs", "why": "comment prose discussing the env plus generated fixture code that manipulates it wholesale in a throwaway child" },
+    { "file": "connectors/ai-peer-mcp/scripts/stress-test-mcp.mjs", "why": "snapshots and restores the whole env around the registry-loader fixture" },
+    { "file": "connectors/ai-peer-mcp/scripts/test-win32-env.mjs", "why": "snapshots and restores the whole env around the registry-loader fixture" }
+  ],
+  "why": "A future model must be able to answer 'what outside the repo can influence this code?' from one record. Everything ambient is here: API keys, model overrides, HMAC secret patterns, plugin locations, and the enumerated files that handle the env wholesale — each of those either bounds, scrubs, or neutralizes it.",
+  "change_rule": "Reading a NEW env var requires adding it here in the same change (the scanner fails otherwise) — which is the point: ambient context cannot grow silently. Removal of a read requires removing the entry (the phantom check fails otherwise).",
+  "oracle": {
+    "source_of_truth": "every .mjs file under the AM-40 package roots",
+    "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (scans all spine sources: every read classified and matched against this record, bidirectionally — no unlisted reads, no phantom entries, no stale file allowances)"
+  },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

@@ -1,0 +1,66 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [],
+    "dispositions": [
+      {
+        "objection_hash": "sha256:51583b794f31b45bcedda196bed7f244a22b013f83df7e007a2510972795d194",
+        "action": "resolved",
+        "note": "Matcher contract now specifies exact-JSON-only equality (types, member sets/values, array order; no coercion/fuzzy/partial matching), a global bijective expectation-to-fact assignment failing on zero-match, multi-match, and fact reuse, and requires all eight frozen groups with their prescribed group semantics and cardinalities, with test cases covering fact-reuse, duplicate-match, missing-match, and all-eight-group scenarios."
+      },
+      {
+        "objection_hash": "sha256:31b747d107249ade8db2ef19e23ef8f4d4c20d3274a1e14285fbc420589f0f13",
+        "action": "resolved",
+        "note": "D25 provenance is now validated on every expected entry at parse time under a strict schema and preserved unchanged into expected-match-report.json, with a provenance-loss test case required."
+      },
+      {
+        "objection_hash": "sha256:c83a889b19b6a583d8acdba89a0f974833a0b12509df89c615efe4e8325e526a",
+        "action": "resolved",
+        "note": "The R2 section and matcher steps 5–6 now require the complete deterministic complement with both-direction set equality, explicitly permit a nonempty complement without failure, and mandate a strict fact-only schema admitting no score, rank, confidence, priority, ordinal, or other ranking metadata; R2 is explicitly separated from the package-test rule."
+      },
+      {
+        "objection_hash": "sha256:690939dab618f776362b3e22ecdc3b92f75f52a01843bbfea81c271be0f1dc71",
+        "action": "resolved",
+        "note": "The plan now materializes the document-eligible and doc-skipped partitions, validates every skip and prescribed reason, requires partition completeness and the D31 count equation as the resolved branch of the frozen count semantics, and separately requires the ledger weaver's contract-files count."
+      },
+      {
+        "objection_hash": "sha256:4d9513b29b4eb03ce6e04d415042a74b96b2a41dfdfbc27738de7e05d389f062",
+        "action": "resolved",
+        "note": "D35 now requires independent derivation of affected-node, evidence, and edge sets with both-direction verification per collection (six direction results recorded), and coverage:\"verified\" set only after all six pass; a bare marker is declared invalid."
+      },
+      {
+        "objection_hash": "sha256:d015672027bc7b70fa8e82b5a548f7363e650ee0170b82fd8c721b5e498f0d19",
+        "action": "resolved",
+        "note": "The 120-second ceiling is now enforced with a monotonic clock over the timed acceptance interval, deadline propagation to child operations with termination and closure on expiry, fail-closed pre-publication overrun rejection, and wall time recorded only after the ceiling check succeeds; timeout is listed among the nonzero-exit conditions."
+      },
+      {
+        "objection_hash": "sha256:0a646162194b7b6f42b903e6e117b74af745151aea07ddb6eaa495221bae73f4",
+        "action": "resolved",
+        "note": "R1 now defines a single canonical derivation from the recorded full input repository HEAD (excluding branch names, worktree paths, timestamps, abbreviated IDs, or post-evidence commits), independent rederivation at verification time, and byte-equality checks across the ledger header, summary.json, verification.json, and the committed-evidence verification result, all fatal before publication on disagreement."
+      },
+      {
+        "objection_hash": "sha256:3fbb78cd2c9fe839abeec13896f33d23ed32ba61e2561fe3f9384c666fb41227",
+        "action": "resolved",
+        "note": "Ordering is fixed: the package-test battery and the post-move advisory scanner run inside the single final run.mjs execution before any evidence file is published; verification.json is produced from that same run's data and is never mutated afterward, with documentation moves landing before scanner, tests, weave, and publication."
+      },
+      {
+        "objection_hash": "sha256:5ce2a1cd5aa2d66abfc183f7d3957655daa6c27e7536dbde58e4dbe137920005",
+        "action": "resolved",
+        "note": "The Slice-5 contracts are now explicit: currentDocs retains Map<docAddressKey, text_sha256|null> semantics with null meaning deleted or ambiguous, never dropped, coerced, or treated as a valid hash, with both cases exercised; the exact frozen kind-to-producer mapping is enumerated and any missing, additional, or cross-kind producer relation is rejected as an AM-39 attribution violation rather than a generic failure label."
+      }
+    ],
+    "provenance": {
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011Cd7m9vafxPoaJZagJDhC9",
+      "source": "ai-peer-mcp/claude_ask"
+    }
+  },
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011Cd7m9vafxPoaJZagJDhC9",
+    "source": "ai-peer-mcp/claude_ask"
+  }
+}

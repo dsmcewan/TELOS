@@ -1,0 +1,20 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2cT5Wa3DEQTbyvZ872RKYG5jW4EZ",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2cT5Wa3DEQTbyvZ872RKYG5jW4EZ",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}

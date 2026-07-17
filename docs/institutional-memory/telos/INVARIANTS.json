@@ -1,0 +1,50 @@
+[
+  {
+    "id": "telos-fail-closed-authorization",
+    "statement": "Absent or ambiguous evidence BLOCKS authorization rather than approving. Five of the eight recorded runs refused (authz-001..004, authz-007) — refusal is the default posture, and every refusal is preserved on disk.",
+    "authority": { "records": "docs/institutional-memory/telos/CONTRACTS/authorization-chain.json", "system_invariant": "fail-closed (docs/institutional-memory/INVARIANTS.md)" },
+    "oracle": { "test": "build-gate/scripts/test-gate.mjs + build-gate/scripts/test-trust.mjs (missing/invalid evidence -> blocked)", "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (chain records re-checked on disk)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "telos-signed-mode-dual-enforcement",
+    "statement": "Under trust_mode 'signed' the gate enforces BOTH the per-seat HMAC signature and real provenance as blockers on every required packet; cross-seat response-id reuse blocks. All eight recorded authorization runs ran signed.",
+    "authority": { "code": "build-gate/gate.mjs (signed mode)", "records": "authorization-summary.json x8 (trust_mode: signed)" },
+    "oracle": { "test": "build-gate/scripts/test-trust.mjs", "evidence_probe": "docs/institutional-memory/verify-contracts.mjs (authz-008 record: signing_enforced && provenance_enforced)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "telos-required-trio",
+    "statement": "The gate requires claude, agy, and codex approval packets; a missing required packet blocks ('Missing required <model> approval packet.'). The roster is derived per job by planSeats, whose approvers are exactly this trio.",
+    "authority": { "code": "build-gate/gate.mjs#REQUIRED_MODELS + build-gate/council.mjs#planSeats" },
+    "oracle": { "test": "build-gate/scripts/test-gate.mjs", "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (planSeats probe)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "telos-advisory-never-blocks",
+    "statement": "grok and gemini ride as ADVISORY seats — planSeats marks them advisory, they are never gate-required, and a missing XAI/GEMINI key never blocks authorization. Advisory ABSENCE is surfaced as a warning ('No Grok advisory packet present.'), never a blocker; a PRESENT advisory packet with unresolved hard stops still blocks (absence and dissent differ).",
+    "authority": { "code": "build-gate/council.mjs#planSeats + build-gate/gate.mjs" },
+    "oracle": { "test": "build-gate/scripts/test-gate.mjs (direct negative case: trio-only packets, advisory keys deleted -> pass, zero advisory blockers, warning surfaced; separate case: present grok packet with unresolved hard stops -> blocked); build-gate/scripts/test-council-orchestrator.mjs (roster roles)", "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (planSeats probe: advisory roles exact)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "telos-dissent-blocks",
+    "statement": "One required seat's dissent outweighs any convergence: decision !== 'approve' or a non-empty required_edits list blocks. authz-007 is the live precedent — a Daedalus-converged v14 was refused on codex's 'revise'.",
+    "authority": { "record": "docs/runs/clotho-authorization-7/authorization-summary.json", "doc": "docs/convergence-is-not-authorization.md" },
+    "oracle": { "test": "build-gate/scripts/test-gate.mjs (revise/required_edits blockers)", "evidence_probe": "docs/institutional-memory/verify-contracts.mjs (authz-007 record carries the codex-revise blocker)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "telos-refusals-preserved",
+    "statement": "NOT_AUTHORIZED records are retained on disk and superseded by later runs — never rewritten, never deleted. The authorization-chain contract lists them and the verifier re-checks each from disk.",
+    "authority": { "contract": "docs/institutional-memory/telos/CONTRACTS/authorization-chain.json", "pattern": "Atropos supersession (must_not_govern_new_work), docs/mythological-vocabulary.md" },
+    "oracle": { "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  }
+]

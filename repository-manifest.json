@@ -1,5 +1,13 @@
 {
   "system": "TELOS",
+  "suite": {
+    "mantra": "AI Systems Architects Best Practices Suite: Rapid Full Deployment and SDLC Recursive Suite",
+    "named_by": "The Eye, 2026-07-17",
+    "pillars": {
+      "rapid_full_deployment": "seat-keyed models + purpose-keyed prompts as data; pinned loadout; harvest-first; parallel disjoint-writer builds merged under the merkle-dag discipline — idea to verified, enrolled sub-system in one governed pass",
+      "sdlc_recursive": "the lifecycle applies to itself: pre-review -> comprehension-gated implementation -> machine-verified records -> retrospective -> next-phase Daedalus review -> the next cycle's inputs. TELOS gated its own upgrade; the memory layer documents its own construction; the lifecycle governed the slice that built the lifecycle"
+    }
+  },
   "note": "Machine-readable system map. A repository scanner should build its architectural map from THIS file, not by ranking README language. Each claim carries a grade + evidence; a scanner verifies claims against evidence and rejects any claim contradicted by a NON-CLAIMS record. Roles are registered mythological terms (docs/mythological-vocabulary.md) — no coined names.",
   "as_of": "2026-07-17",
   "active_authority": { "pointer": "CURRENT-AUTHORITY.json" },
@@ -7,7 +15,16 @@
     "onboarding": "AI-START-HERE.md",
     "schema": "docs/institutional-memory/SCHEMA.md",
     "comprehension_gate": "docs/institutional-memory/comprehension-gate.mjs",
-    "contract_verifier": "docs/institutional-memory/verify-contracts.mjs"
+    "contract_verifier": "docs/institutional-memory/verify-contracts.mjs",
+    "example_readers": "docs/institutional-memory/examples/ (reader-{component}-{correct|hallucinating}.json — worked pass/deny runs per module)",
+    "memory_dirs": {
+      "clotho": "clotho/memory/",
+      "daedalus": "docs/institutional-memory/daedalus/",
+      "telos": "docs/institutional-memory/telos/",
+      "argo": "docs/institutional-memory/argo/",
+      "loadout": "docs/institutional-memory/loadout/",
+      "iliad": "docs/institutional-memory/iliad/"
+    }
   },
   "normative_docs": [
     "docs/runs/clotho-daedalus-delta14/matured-plan-v15.md",
@@ -57,5 +74,124 @@
     { "name": "connectors/ai-peer-mcp", "role": null, "status": "in use", "purpose": "MCP server exposing model backends with real per-seat provenance", "trust_domain": "provider-native structured output; provenance != HMAC signature" },
     { "name": "merkle-dag", "role": null, "status": "in use", "purpose": "content-addressed planning, Ed25519 verified delegation, append-only signed ledger, pure done() gate", "trust_domain": "content-address + signature" },
     { "name": "contracts", "role": null, "status": "reference", "purpose": "the human-readable protocol the gate enforces", "trust_domain": "normative protocol text" }
+  ],
+  "role_modules": [
+    {
+      "name": "daedalus",
+      "role": "Daedalus",
+      "role_meaning": "collaboratively matures implementation plans",
+      "kind": "role module — a registered role realized by code + protocol + run lineage, not a top-level package",
+      "status": "active (serial loop for small deltas; parallel authorship HELD by The Eye 2026-07-15, implemented fail-closed)",
+      "code": ["build-gate/daedalus.mjs"],
+      "methodology": "docs/daedalus-methodology.md",
+      "workflow_evidence": "docs/runs/clotho-daedalus*/ (index: docs/institutional-memory/daedalus/EVIDENCE/delta-chain.json)",
+      "memory_dir": "docs/institutional-memory/daedalus/",
+      "comprehension_queries": "docs/institutional-memory/daedalus/comprehension-queries.json",
+      "claims": [
+        { "statement": "workshop protocol constants and every claimed state-machine terminal equal what build-gate/daedalus.mjs enforces (terminals probed, not paraphrased)", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "build-gate/scripts/test-daedalus.mjs", "docs/institutional-memory/daedalus/CONTRACTS/workshop-protocol.json"] },
+        { "statement": "the plan-maturation chain v11-v15 re-hashes from disk and matches CURRENT-AUTHORITY.json exactly (one active version; the two authorization refusals preserved)", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "docs/institutional-memory/daedalus/CONTRACTS/plan-version-chain.json"] },
+        { "statement": "a parallel-authorship request without an adapter blocks (PARALLEL_AUTHORSHIP_UNAVAILABLE) rather than silently downgrading to serial", "grade": "executable", "evidence": ["build-gate/scripts/test-proposal-orchestrator.mjs"] }
+      ],
+      "non_claims": [
+        "does not authorize (TELOS does; convergence is not authorization)",
+        "does not implement (Argo's role)",
+        "does not validate plan content truth (process structure only)",
+        "no autonomous Daedalus service exists",
+        "cannot amend an Eye ruling (fixed input)"
+      ]
+    },
+    {
+      "name": "telos",
+      "role": "TELOS",
+      "role_meaning": "governs review, evidence, authorization, and execution boundaries",
+      "kind": "role module — the governance function, NOT the repository of the same name (ownership is not inferred from the repo name; AM-40 governs products beside the spine)",
+      "status": "active (authz-001..008 recorded, all trust_mode signed; five refusals preserved; authz-008 active)",
+      "code": ["build-gate/gate.mjs", "build-gate/council.mjs", "build-gate/sign.mjs"],
+      "workflow_evidence": "docs/runs/clotho-authorization*/ (index: docs/institutional-memory/telos/EVIDENCE/authz-runs.json)",
+      "memory_dir": "docs/institutional-memory/telos/",
+      "comprehension_queries": "docs/institutional-memory/telos/comprehension-queries.json",
+      "claims": [
+        { "statement": "the authorization chain authz-001..008 matches its on-disk records exactly (ids, statuses, plan refs, signed mode); reviewable plans re-hash from disk; the active entry equals CURRENT-AUTHORITY", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "docs/institutional-memory/telos/CONTRACTS/authorization-chain.json"] },
+        { "statement": "the council roster is exactly required {claude,agy,codex} + advisory {grok,gemini} (planSeats probed); signed mode enforced signature+provenance on the recorded pass and the recorded refusal carries the codex-revise dissent", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "build-gate/scripts/test-trust.mjs", "build-gate/scripts/test-gate.mjs"] }
+      ],
+      "non_claims": [
+        "authorization does not execute code (Argo implements)",
+        "a model approval is not human authority (The Eye; convergence is not authorization)",
+        "the gate cannot prove an id is genuine from disk (binding happens at generation time)",
+        "a pass is not a correctness proof beyond what the checks check",
+        "the role is not the repo (AM-40)"
+      ]
+    },
+    {
+      "name": "argo",
+      "role": "Argo",
+      "role_meaning": "carries an authorized plan through implementation, verification, and documentation",
+      "kind": "role module — a workflow with code touchpoints; NO autonomous Argo runner exists (system non-claim, preserved)",
+      "status": "active (slice 4a accepted by The Eye with a deferred backlog; 4b next; 4b/5/6/7 specified-pending)",
+      "code": ["docs/institutional-memory/comprehension-gate.mjs (the entry ritual)"],
+      "workflow_evidence": "docs/runs/clotho-impl-slice-4a/ (index: docs/institutional-memory/argo/EVIDENCE/impl-runs.json)",
+      "memory_dir": "docs/institutional-memory/argo/",
+      "comprehension_queries": "docs/institutional-memory/argo/comprehension-queries.json",
+      "claims": [
+        { "statement": "the accepted-slice ledger deep-equals CURRENT-AUTHORITY.implementation_authority (holder, governs, slices, next, pending) and every cited slice record (13-round signed review, gate meets, deferred backlog) exists and matches", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "docs/institutional-memory/argo/CONTRACTS/accepted-slices.json"] },
+        { "statement": "the entry ritual is real and fail-closed: verify-contracts EXECUTES the comprehension gate — the correct example reader exits 0 (GRANTED) and the hallucinating reader exits 3 (DENIED)", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "docs/institutional-memory/comprehension-gate.mjs"] }
+      ],
+      "non_claims": [
+        "no autonomous Argo runner exists",
+        "a passing gate artifact is a precondition, not implementation authority (The Eye grants)",
+        "the comprehension gate is open-book (proves record-reading + authority resolution, not deep understanding)",
+        "acceptance is not a zero-defect claim (slice 4a carries a deferred backlog)",
+        "Argo does not choose scope (ambiguities escalate; never designed around)"
+      ]
+    },
+    {
+      "name": "iliad",
+      "role": "The Iliad",
+      "role_meaning": "the system-of-systems lifecycle umbrella under which registered components coordinate the creation, governance, maintenance, recovery, evolution, and retirement of enrolled systems",
+      "kind": "role module — the implementation lifecycle (pre-review -> enrolled sub-system -> retrospective); no orchestrator service exists",
+      "status": "active (protocol instituted 2026-07-17; first enrollment: institutional-memory-role-modules, delivered with retrospective; products remain AM-40-deferred)",
+      "code": [],
+      "memory_dir": "docs/institutional-memory/iliad/",
+      "comprehension_queries": "docs/institutional-memory/iliad/comprehension-queries.json",
+      "claims": [
+        { "statement": "enrollment integrity is machine-verified: every entry's evidence and memory dirs exist; delivered requires a retrospective whose every optimization names where it lands; post-protocol entries require a recorded pre-review; the deferred list deep-equals the AM-40 exclusions", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "docs/institutional-memory/iliad/CONTRACTS/enrollment.json"] }
+      ],
+      "non_claims": [
+        "no autonomous Iliad orchestrator exists",
+        "enrollment is not absorption into the spine (AM-40)",
+        "the verifier cannot detect an implementation that never registered",
+        "the pre-review records model intent; per-seat provenance proves actuality",
+        "retrospective optimizations are advisory until adopted by a run or a reviewed change"
+      ]
+    }
+  ],
+  "future_modules": [
+    { "name": "hermes", "role": "Hermes", "role_meaning": "API management and inter-system communication: routing, contracts, translation, and delivery." },
+    { "name": "medusa", "role": "Medusa", "role_meaning": "defensive edge enforcement; blocks or quarantines hostile and nonconforming traffic." },
+    { "name": "narcissus", "role": "Narcissus", "role_meaning": "iterative UI rendering and visual review through repeated reflection." },
+    { "name": "lachesis", "role": "Lachesis", "role_meaning": "measures dependencies, relevance, risk, and blast radius." },
+    { "name": "atropos", "role": "Atropos", "role_meaning": "retires obsolete relationships, artifacts, tools, and processes." }
+  ],
+  "future_modules_note": "Registered mythological terms with defined system responsibilities and NO implementation yet — reserved WITH meaning (docs/mythological-vocabulary.md; meanings verbatim, machine-checked). Do not coin, do not assume existence; implementing one follows CHANGE-PROTOCOL + the Iliad lifecycle. Machine copy of record: docs/institutional-memory/iliad/CONTRACTS/enrollment.json#future_modules_registered_unimplemented (verify-contracts requires the two lists equal).",
+  "capability_modules": [
+    {
+      "name": "loadout",
+      "kind": "capability module — the development loadout (tools, seat backends, plugins, review harness, per-task optimization reviews); named from the code's own term seat-registry.mjs#withLoadout, not a mythological role",
+      "status": "active (seat routes pinned + probed; loadout extension declared; per-task reviews for slices 4b/5/6/7)",
+      "code": ["build-gate/seat-registry.mjs", "breakout/seat_router.mjs"],
+      "memory_dir": "docs/institutional-memory/loadout/",
+      "comprehension_queries": "docs/institutional-memory/loadout/comprehension-queries.json",
+      "claims": [
+        { "statement": "every seat route, server framing, and the no-shadow invariant equal what seat-registry.mjs builds (registry rebuilt and deep-checked; shadow attempt probed and refused; extension mechanism probed and admitted)", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "build-gate/scripts/test-seat-registry.mjs", "breakout/scripts/test-seat-router.mjs"] },
+        { "statement": "the capability-packet field set equals the committed worked example, and both fail-closed and passing fixtures exist; every pending slice carries an ADVISORY loadout+optimization review with a non-empty opportunities list", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "build-gate/examples/capability-blocked/", "docs/institutional-memory/loadout/TASK-LOADOUTS/"] }
+      ],
+      "non_claims": [
+        "session skills/plugins are not pinned by the repo",
+        "the registry names backends, not models",
+        "task-loadout reviews are advisory (capability packets are the enforced form)",
+        "plugin server bytes are not verified (routes are)",
+        "malformed loadout files fail silently (recorded; warning is a candidate improvement)"
+      ]
+    }
   ]
 }

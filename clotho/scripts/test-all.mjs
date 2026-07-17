@@ -24,7 +24,14 @@ const TESTS = [
   "scripts/test-inventory.mjs",
   "scripts/test-git.mjs",
   "scripts/test-code.mjs",
-  "scripts/test-closure.mjs"
+  "scripts/test-weaver-test.mjs",
+  "scripts/test-weaver-doc.mjs",
+  "scripts/test-weaver-ledger.mjs",
+  "scripts/test-closure.mjs",
+  "scripts/test-advisory.mjs",
+  "scripts/test-query.mjs",
+  "scripts/test-weave.mjs",
+  "scripts/test-flagship.mjs"
 ];
 
 function collectTestFiles(dir) {

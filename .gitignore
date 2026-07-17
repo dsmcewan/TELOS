@@ -24,3 +24,6 @@ docs/runs/*/workdir-driver*.log
 
 # Clotho runtime artifacts (ephemeral; never committed) — plan v12 Task 1
 .telos/clotho/
+
+# Claude Code session artifacts (local worktrees, settings)
+.claude/

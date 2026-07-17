@@ -1,0 +1,1396 @@
+{
+  "kind": "clotho-flagship-review-set",
+  "note": "Unexpected facts in the flagship neighborhood (fact-set minus matched), deterministically sorted; reported for review, never scored (D3 — relevance is Lachesis's domain, non-claimed).",
+  "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+  "target": {
+    "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+    "path": "merkle-dag/obligation.mjs",
+    "symbol": "deriveExecutableRef",
+    "blob_sha": "3a6f43fb1321a8d8bf7ca86308fadc3a8de33ff0"
+  },
+  "fact_count": 104,
+  "matched_count": 28,
+  "unmatched": [
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "buildProject"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "runProposalLifecycle"
+      },
+      "source_ref": "file:build-gate/build-orchestrator.mjs@b5583d343b6cd4da1f4590c8f866a7208b93d58f"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "buildProject"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "source_ref": "file:build-gate/build-orchestrator.mjs@b5583d343b6cd4da1f4590c8f866a7208b93d58f"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "makeTeamDispatch"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "runProposalLifecycle"
+      },
+      "source_ref": "file:build-gate/build-orchestrator.mjs@b5583d343b6cd4da1f4590c8f866a7208b93d58f"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "makeTeamDispatch"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "source_ref": "file:build-gate/build-orchestrator.mjs@b5583d343b6cd4da1f4590c8f866a7208b93d58f"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "makeTeamKeyring"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "runProposalLifecycle"
+      },
+      "source_ref": "file:build-gate/build-orchestrator.mjs@b5583d343b6cd4da1f4590c8f866a7208b93d58f"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "makeTeamKeyring"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "source_ref": "file:build-gate/build-orchestrator.mjs@b5583d343b6cd4da1f4590c8f866a7208b93d58f"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "mintVerificationNodes"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "source_ref": "file:build-gate/proposal-orchestrator.mjs@c489daef3ead939cdd1527c556f36a7f2e810d3e"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "mintVerificationNodes"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateProposalLifecycle"
+      },
+      "source_ref": "file:build-gate/proposal-orchestrator.mjs@c489daef3ead939cdd1527c556f36a7f2e810d3e"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "parseTasks"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "source_ref": "file:build-gate/proposal-orchestrator.mjs@c489daef3ead939cdd1527c556f36a7f2e810d3e"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "parseTasks"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateProposalLifecycle"
+      },
+      "source_ref": "file:build-gate/proposal-orchestrator.mjs@c489daef3ead939cdd1527c556f36a7f2e810d3e"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "runProposalLifecycle"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "source_ref": "file:build-gate/proposal-orchestrator.mjs@c489daef3ead939cdd1527c556f36a7f2e810d3e"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "runProposalLifecycle"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateProposalLifecycle"
+      },
+      "source_ref": "file:build-gate/proposal-orchestrator.mjs@c489daef3ead939cdd1527c556f36a7f2e810d3e"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "serializeTasks"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "source_ref": "file:build-gate/proposal-orchestrator.mjs@c489daef3ead939cdd1527c556f36a7f2e810d3e"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "serializeTasks"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateProposalLifecycle"
+      },
+      "source_ref": "file:build-gate/proposal-orchestrator.mjs@c489daef3ead939cdd1527c556f36a7f2e810d3e"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "DEFAULT_PROTECTED_PATHS"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateProposalLifecycle"
+      },
+      "source_ref": "file:build-gate/gate.mjs@c5332063f3646161341213ff5adce99aca5f725a"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateGate"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateProposalLifecycle"
+      },
+      "source_ref": "file:build-gate/gate.mjs@c5332063f3646161341213ff5adce99aca5f725a"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateProposalLifecycle"
+      },
+      "source_ref": "file:build-gate/gate.mjs@c5332063f3646161341213ff5adce99aca5f725a"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
+        "path": "build-gate/situation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "collectWriteTargets"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "DEFAULT_PROTECTED_PATHS"
+      },
+      "source_ref": "file:build-gate/situation.mjs@f05d04556173520b6e1ba1dffe15c89b1a4d35cb"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
+        "path": "build-gate/situation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "detectConventions"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "DEFAULT_PROTECTED_PATHS"
+      },
+      "source_ref": "file:build-gate/situation.mjs@f05d04556173520b6e1ba1dffe15c89b1a4d35cb"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
+        "path": "build-gate/situation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "detectProtectedOnDisk"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "DEFAULT_PROTECTED_PATHS"
+      },
+      "source_ref": "file:build-gate/situation.mjs@f05d04556173520b6e1ba1dffe15c89b1a4d35cb"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
+        "path": "build-gate/situation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "senseProject"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "DEFAULT_PROTECTED_PATHS"
+      },
+      "source_ref": "file:build-gate/situation.mjs@f05d04556173520b6e1ba1dffe15c89b1a4d35cb"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "152c789e7182b6e2e87c39d8f4e52a7bfa88dd23",
+        "path": "build-gate/scripts/test-proposal-lifecycle.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateProposalLifecycle"
+      },
+      "source_ref": "file:build-gate/scripts/test-proposal-lifecycle.mjs@152c789e7182b6e2e87c39d8f4e52a7bfa88dd23"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
+        "path": "build-gate/scripts/test-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateGate"
+      },
+      "source_ref": "file:build-gate/scripts/test-gate.mjs@2bd02ef849e8f7ae218b50f3350e7366ed8973ac"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
+        "path": "build-gate/scripts/test-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "source_ref": "file:build-gate/scripts/test-gate.mjs@2bd02ef849e8f7ae218b50f3350e7366ed8973ac"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "4d6d54ee2449f9e249a3d877504189a68f3947af",
+        "path": "build-gate/scripts/stress-test-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "source_ref": "file:build-gate/scripts/stress-test-gate.mjs@4d6d54ee2449f9e249a3d877504189a68f3947af"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "5b98a858ffded818340755dd2932078b15235226",
+        "path": "build-gate/scripts/test-breakout-coverage.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "source_ref": "file:build-gate/scripts/test-breakout-coverage.mjs@5b98a858ffded818340755dd2932078b15235226"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "95ed4375f76b16492ac14823f83dd9547bdf71f6",
+        "path": "build-gate/scripts/test-council-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "source_ref": "file:build-gate/scripts/test-council-orchestrator.mjs@95ed4375f76b16492ac14823f83dd9547bdf71f6"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "9a265552d67af3fe699bc96df40fe38905dbe130",
+        "path": "build-gate/scripts/test-proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "mintVerificationNodes"
+      },
+      "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@9a265552d67af3fe699bc96df40fe38905dbe130"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "9a265552d67af3fe699bc96df40fe38905dbe130",
+        "path": "build-gate/scripts/test-proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "checkColdReview"
+      },
+      "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@9a265552d67af3fe699bc96df40fe38905dbe130"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "9a265552d67af3fe699bc96df40fe38905dbe130",
+        "path": "build-gate/scripts/test-proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "checkProposalRefBinding"
+      },
+      "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@9a265552d67af3fe699bc96df40fe38905dbe130"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "9a265552d67af3fe699bc96df40fe38905dbe130",
+        "path": "build-gate/scripts/test-proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateProposalLifecycle"
+      },
+      "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@9a265552d67af3fe699bc96df40fe38905dbe130"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "9a265552d67af3fe699bc96df40fe38905dbe130",
+        "path": "build-gate/scripts/test-proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "verifyWrittenPlan"
+      },
+      "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@9a265552d67af3fe699bc96df40fe38905dbe130"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "a60e08063006f2b7bb2b9cebf0e370485e5ccd55",
+        "path": "build-gate/scripts/test-trust.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "source_ref": "file:build-gate/scripts/test-trust.mjs@a60e08063006f2b7bb2b9cebf0e370485e5ccd55"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "depends-on",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "fc5afbfaa321920bd4a60cc9139aa521ec7e2e1d",
+        "path": "build-gate/scripts/stress-tests.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "code-symbol",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "source_ref": "file:build-gate/scripts/stress-tests.mjs@fc5afbfaa321920bd4a60cc9139aa521ec7e2e1d"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "buildProject"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "7db1a6e6913a5b5858f3d66958091887f14e5b15",
+        "path": "build-gate/scripts/test-build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-build-orchestrator.mjs@7db1a6e6913a5b5858f3d66958091887f14e5b15"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "buildProject"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "ad75a34cc930a85e9e756026a7d3b0d7e2a00a76",
+        "path": "build-gate/scripts/test-proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-proposal-orchestrator.mjs@ad75a34cc930a85e9e756026a7d3b0d7e2a00a76"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "buildProject"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "b829951972b6ab86eff0ef2b9b4c02fbdf5eb1d8",
+        "path": "build-gate/scripts/test-runtime-adaptation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-runtime-adaptation.mjs@b829951972b6ab86eff0ef2b9b4c02fbdf5eb1d8"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "makeTeamDispatch"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/proposal-orchestrator.mjs@c489daef3ead939cdd1527c556f36a7f2e810d3e"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "makeTeamDispatch"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "7db1a6e6913a5b5858f3d66958091887f14e5b15",
+        "path": "build-gate/scripts/test-build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-build-orchestrator.mjs@7db1a6e6913a5b5858f3d66958091887f14e5b15"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "makeTeamDispatch"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "b829951972b6ab86eff0ef2b9b4c02fbdf5eb1d8",
+        "path": "build-gate/scripts/test-runtime-adaptation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-runtime-adaptation.mjs@b829951972b6ab86eff0ef2b9b4c02fbdf5eb1d8"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "makeTeamKeyring"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "7db1a6e6913a5b5858f3d66958091887f14e5b15",
+        "path": "build-gate/scripts/test-build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-build-orchestrator.mjs@7db1a6e6913a5b5858f3d66958091887f14e5b15"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "makeTeamKeyring"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "ad75a34cc930a85e9e756026a7d3b0d7e2a00a76",
+        "path": "build-gate/scripts/test-proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-proposal-orchestrator.mjs@ad75a34cc930a85e9e756026a7d3b0d7e2a00a76"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "makeTeamKeyring"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "b829951972b6ab86eff0ef2b9b4c02fbdf5eb1d8",
+        "path": "build-gate/scripts/test-runtime-adaptation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-runtime-adaptation.mjs@b829951972b6ab86eff0ef2b9b4c02fbdf5eb1d8"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "mintVerificationNodes"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "9a265552d67af3fe699bc96df40fe38905dbe130",
+        "path": "build-gate/scripts/test-proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@9a265552d67af3fe699bc96df40fe38905dbe130"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "runProposalLifecycle"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/build-orchestrator.mjs@b5583d343b6cd4da1f4590c8f866a7208b93d58f"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "DEFAULT_PROTECTED_PATHS"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
+        "path": "build-gate/situation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/situation.mjs@f05d04556173520b6e1ba1dffe15c89b1a4d35cb"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateGate"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
+        "path": "build-gate/scripts/test-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-gate.mjs@2bd02ef849e8f7ae218b50f3350e7366ed8973ac"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/build-orchestrator.mjs@b5583d343b6cd4da1f4590c8f866a7208b93d58f"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/proposal-orchestrator.mjs@c489daef3ead939cdd1527c556f36a7f2e810d3e"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "4d6d54ee2449f9e249a3d877504189a68f3947af",
+        "path": "build-gate/scripts/stress-test-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/stress-test-gate.mjs@4d6d54ee2449f9e249a3d877504189a68f3947af"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "fc5afbfaa321920bd4a60cc9139aa521ec7e2e1d",
+        "path": "build-gate/scripts/stress-tests.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/stress-tests.mjs@fc5afbfaa321920bd4a60cc9139aa521ec7e2e1d"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "5b98a858ffded818340755dd2932078b15235226",
+        "path": "build-gate/scripts/test-breakout-coverage.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-breakout-coverage.mjs@5b98a858ffded818340755dd2932078b15235226"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "95ed4375f76b16492ac14823f83dd9547bdf71f6",
+        "path": "build-gate/scripts/test-council-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-council-orchestrator.mjs@95ed4375f76b16492ac14823f83dd9547bdf71f6"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
+        "path": "build-gate/scripts/test-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-gate.mjs@2bd02ef849e8f7ae218b50f3350e7366ed8973ac"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateRecords"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "a60e08063006f2b7bb2b9cebf0e370485e5ccd55",
+        "path": "build-gate/scripts/test-trust.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-trust.mjs@a60e08063006f2b7bb2b9cebf0e370485e5ccd55"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "checkColdReview"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "9a265552d67af3fe699bc96df40fe38905dbe130",
+        "path": "build-gate/scripts/test-proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@9a265552d67af3fe699bc96df40fe38905dbe130"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "checkProposalRefBinding"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "9a265552d67af3fe699bc96df40fe38905dbe130",
+        "path": "build-gate/scripts/test-proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@9a265552d67af3fe699bc96df40fe38905dbe130"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateProposalLifecycle"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "c5332063f3646161341213ff5adce99aca5f725a",
+        "path": "build-gate/gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/gate.mjs@c5332063f3646161341213ff5adce99aca5f725a"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateProposalLifecycle"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "c489daef3ead939cdd1527c556f36a7f2e810d3e",
+        "path": "build-gate/proposal-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/proposal-orchestrator.mjs@c489daef3ead939cdd1527c556f36a7f2e810d3e"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateProposalLifecycle"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "9a265552d67af3fe699bc96df40fe38905dbe130",
+        "path": "build-gate/scripts/test-proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@9a265552d67af3fe699bc96df40fe38905dbe130"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "validateProposalLifecycle"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "152c789e7182b6e2e87c39d8f4e52a7bfa88dd23",
+        "path": "build-gate/scripts/test-proposal-lifecycle.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-proposal-lifecycle.mjs@152c789e7182b6e2e87c39d8f4e52a7bfa88dd23"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+        "path": "build-gate/proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "verifyWrittenPlan"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "9a265552d67af3fe699bc96df40fe38905dbe130",
+        "path": "build-gate/scripts/test-proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@9a265552d67af3fe699bc96df40fe38905dbe130"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
+        "path": "build-gate/situation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "collectWriteTargets"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "e780ffb7b115b8929733aa4ff463ce2bc4b20309",
+        "path": "build-gate/scripts/test-situation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-situation.mjs@e780ffb7b115b8929733aa4ff463ce2bc4b20309"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
+        "path": "build-gate/situation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "detectConventions"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/build-orchestrator.mjs@b5583d343b6cd4da1f4590c8f866a7208b93d58f"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
+        "path": "build-gate/situation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "detectConventions"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "e780ffb7b115b8929733aa4ff463ce2bc4b20309",
+        "path": "build-gate/scripts/test-situation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-situation.mjs@e780ffb7b115b8929733aa4ff463ce2bc4b20309"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
+        "path": "build-gate/situation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "detectProtectedOnDisk"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "e780ffb7b115b8929733aa4ff463ce2bc4b20309",
+        "path": "build-gate/scripts/test-situation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-situation.mjs@e780ffb7b115b8929733aa4ff463ce2bc4b20309"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
+        "path": "build-gate/situation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "senseProject"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "b5583d343b6cd4da1f4590c8f866a7208b93d58f",
+        "path": "build-gate/build-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/build-orchestrator.mjs@b5583d343b6cd4da1f4590c8f866a7208b93d58f"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "code-symbol",
+      "from_locator": {
+        "blob_sha": "f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
+        "path": "build-gate/situation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+        "symbol": "senseProject"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "e780ffb7b115b8929733aa4ff463ce2bc4b20309",
+        "path": "build-gate/scripts/test-situation.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/scripts/test-situation.mjs@e780ffb7b115b8929733aa4ff463ce2bc4b20309"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "152c789e7182b6e2e87c39d8f4e52a7bfa88dd23",
+        "path": "build-gate/scripts/test-proposal-lifecycle.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "152c789e7182b6e2e87c39d8f4e52a7bfa88dd23",
+        "path": "build-gate/scripts/test-proposal-lifecycle.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
+        "path": "build-gate/scripts/test-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
+        "path": "build-gate/scripts/test-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "4d6d54ee2449f9e249a3d877504189a68f3947af",
+        "path": "build-gate/scripts/stress-test-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "4d6d54ee2449f9e249a3d877504189a68f3947af",
+        "path": "build-gate/scripts/stress-test-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "5b98a858ffded818340755dd2932078b15235226",
+        "path": "build-gate/scripts/test-breakout-coverage.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "5b98a858ffded818340755dd2932078b15235226",
+        "path": "build-gate/scripts/test-breakout-coverage.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "95ed4375f76b16492ac14823f83dd9547bdf71f6",
+        "path": "build-gate/scripts/test-council-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "95ed4375f76b16492ac14823f83dd9547bdf71f6",
+        "path": "build-gate/scripts/test-council-orchestrator.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "9a265552d67af3fe699bc96df40fe38905dbe130",
+        "path": "build-gate/scripts/test-proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "9a265552d67af3fe699bc96df40fe38905dbe130",
+        "path": "build-gate/scripts/test-proposal-gate.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "a60e08063006f2b7bb2b9cebf0e370485e5ccd55",
+        "path": "build-gate/scripts/test-trust.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "a60e08063006f2b7bb2b9cebf0e370485e5ccd55",
+        "path": "build-gate/scripts/test-trust.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+    },
+    {
+      "subject": "edge",
+      "edge_kind": "verified-by",
+      "from_kind": "repository-file",
+      "from_locator": {
+        "blob_sha": "fc5afbfaa321920bd4a60cc9139aa521ec7e2e1d",
+        "path": "build-gate/scripts/stress-tests.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "to_kind": "test",
+      "to_locator": {
+        "blob_sha": "fc5afbfaa321920bd4a60cc9139aa521ec7e2e1d",
+        "path": "build-gate/scripts/stress-tests.mjs",
+        "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+      },
+      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+    }
+  ]
+}

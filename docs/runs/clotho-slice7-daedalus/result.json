@@ -1,0 +1,39 @@
+{
+  "run": "clotho-slice7-daedalus (next-phase evaluation, Iliad lifecycle)",
+  "mode": "live",
+  "state": "converged-for-submission",
+  "reason": "all-objections-accounted",
+  "terminal": "submit",
+  "rounds": 2,
+  "final_candidate_ref": "sha256:6e6e4b0bd8b368cd1dac55162fb8a766c40ce95da5ff3d17e0bd3a32621a5b49",
+  "creation_lineage": [
+    {
+      "seat": "claude",
+      "round": 1,
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011Cd7kjujuGXn4CcR8Fihsf"
+    },
+    {
+      "seat": "codex",
+      "round": 1,
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2dSgaY2wTo1f6bN6wikZMPz5KTS3"
+    },
+    {
+      "seat": "codex",
+      "round": 2,
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2dUgAVKoD17rkkQBMvWYY32Sf8rm"
+    },
+    {
+      "seat": "claude",
+      "round": 2,
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011Cd7m9vafxPoaJZagJDhC9"
+    }
+  ]
+}

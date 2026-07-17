@@ -1,0 +1,20 @@
+{
+  "kind": "evidence",
+  "component": "loadout",
+  "id": "task-loadout-7",
+  "task": "7",
+  "subject": "reproduction evidence + documentation",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "note": "ADVISORY per-task loadout review. Facts cite records; items under optimization_opportunities are judgments to weigh at slice start, not requirements.",
+  "entry_ritual": "pass clotho/memory/comprehension-queries.7.json through docs/institutional-memory/comprehension-gate.mjs before any code",
+  "loadout": {
+    "oracles_to_flip": "invariant d8-self-weave-exclusion flips NORMATIVE via docs/runs/clotho-self-weave/run.mjs + clotho/scripts/test-flagship.mjs (its becomes_normative_when string)",
+    "reuse": ["the role modules' rendered-README pattern (machine records -> human projection)", "the example-reader pattern (docs/institutional-memory/examples/) for the reproduction proof"],
+    "verification": ["docs/institutional-memory/verify-contracts.mjs", "clotho npm test"]
+  },
+  "optimization_opportunities": [
+    "This is the natural slice to resolve the OPEN-QUESTIONS renderer candidate: generate clotho/memory/README.md from the machine records with a drift gate, instead of hand-rendering — documentation IS this task's deliverable, so the tooling pays for itself immediately.",
+    "Reproduction evidence should reuse the committed-bytes discipline (reproduce from committed bytes, not the working tree) that d8's oracle already names."
+  ]
+}
