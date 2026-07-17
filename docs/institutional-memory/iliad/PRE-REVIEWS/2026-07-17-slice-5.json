@@ -1,0 +1,33 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "pre-review-2026-07-17-slice-5",
+  "note": "Pre-review for Clotho slice 5, per the amended lifecycle (next-phase workshop now precedes this record).",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "clotho slice 5 (branch institutional-memory-role-modules, PR #126)",
+  "next_phase_workshop": "docs/runs/clotho-slice5-daedalus/matured-approach.md (LIVE Daedalus workshop, converged-for-submission round 1: claude-fable-5 msg_011Cd7boRN9wmL8ncRe2KYfP authored, gpt-5.6-sol chatcmpl-E2bdL1YGSL0g7UJMxS8mjlJT909TD bound; R1-R3 resolved)",
+  "model_review": {
+    "baseline": "docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-17.json (unchanged same-day)",
+    "seats": {
+      "claude": "claude-fable-5 (proven live this run: the workshop author)",
+      "codex": "gpt-5.6-sol (proven live this run: the workshop reviewer)",
+      "build_agents": "session model (claude-opus-4-8) for the three parallel build agents"
+    },
+    "newly_available_models_considered": ["none since the same-day model review"],
+    "seat_changes_proposed": []
+  },
+  "capability_review": {
+    "task_loadout_read": "docs/institutional-memory/loadout/TASK-LOADOUTS/task-5.json",
+    "prior_retrospectives_read": ["docs/institutional-memory/iliad/RETROSPECTIVES/slice-4b.json"],
+    "optimizations_adopted": [
+      "parallel disjoint-writer build agents in isolated worktrees, merged after green oracles (slice-4b evaluation; matured approach) — EXTENDED to three agents after the full-clause read surfaced test-advisory.mjs as a third independent work unit: agent-Q (query.mjs + test-query.mjs + util.mjs sole-writer), agent-W (weave.mjs + test-weave.mjs + inventory.mjs orchestrator inventory + test-closure.mjs extension), agent-A (test-advisory.mjs)",
+      "oracle names match becomes_normative_when EXACTLY (4b lesson): test-query.mjs, test-weave.mjs",
+      "harvest check: no origin branch carries Task 5 implementation (clotho-memory-4b-7 is substrate-only, already on main via f3d8d41) — this slice is genuinely new code"
+    ],
+    "optimizations_deferred_with_reason": [],
+    "missing_external_capabilities": [],
+    "capability_packets_required": false
+  },
+  "entry_ritual": "docs/runs/clotho-impl-slice-5/reader-validation-artifact.json"
+}
