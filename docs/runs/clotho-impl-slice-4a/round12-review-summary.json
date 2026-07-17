@@ -1,0 +1,116 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "review_ref": "sha256:d8cfba80bdbbe07c3895eff02a8aab62fe7b36e43aa444252d549ed49137dc1b",
+  "pr": 117,
+  "pr_head": "6126645d109ab30ddfd7b39acb70fa38c7bbc1c4",
+  "plan_ref": "sha256:f9368b5748de6c2670193558783b60b7f74fd94de9196c9664d42269f3d2bc04",
+  "authorization": "authz-006",
+  "timestamp": "2026-07-17T04:53:16.680Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd72msZMQDZDAXcx1hr32",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-17T04:54:06.072Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2UrY2TnEoR6JpN0dU7sVuCFAo9iR",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-17T04:59:42.759Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "1559ada1-897b-9145-bcd1-0ecd284ff7e2",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-17T04:53:38.118Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "P7VZarmGKLWjqtsP1Z3e6QI",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-17T04:53:34.636Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Repair the shared lexer/classifier so regex-versus-division is decided from actual previous significant token context across all frozen expression-start contexts, including default-export and class-extends expressions, without treating keyword-named properties or methods as control/keyword contexts. Add classifier and closure regressions proving regex-contained load lookalikes create no edge and do not cause closure failure, while genuine adjacent loads remain visible.; Enforce b3 for every standard line-leading whitespace form admitted by the profile, not only space and tab, and add stable-diagnostic tests including form-feed or another non-space/tab ECMAScript whitespace character.; Complete b6 truncated-form detection, including a bare `import`, and add tests requiring `ProfileError` with diagnostic exactly `unsupported-module-lexical-profile`; audit the other accepted-form prefixes so none can return a successful no-edge classification when truncated.",
+      "codex has hard stops: AM-41 supported-profile correctness is not satisfied. The regex-versus-division logic is context-insensitive for required expression-start contexts. For example, `export default /import(\"\\x2e\\x2fghost.mjs\")/;` is valid supported-profile source whose regex contains only a load lookalike, but `default` is absent from `REGEX_KEYWORDS`; the lexer treats the opening slash as division and `classifyModuleLoads` consequently infers a literal dynamic-import edge to `./ghost.mjs`. Closure derivation then falsely includes or fatally resolves that target. Similar defects exist around `extends` and keyword-named member calls because control-head and keyword decisions use only `prevSigWord`, without establishing token context.; AM-41's exact fail-closed set is incompletely enforced. A line-leading legacy close comment preceded by standard whitespace other than space/tab, such as form-feed (`\\f-->`), is b3 and must throw `unsupported-module-lexical-profile`; the implementation checks only U+0020 and tab and accepts it. Truncated-form detection is also not total: a bare `import` is accepted as producing no sites rather than rejected as a truncated accepted module-load form under b6."
+    ],
+    "warnings": []
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

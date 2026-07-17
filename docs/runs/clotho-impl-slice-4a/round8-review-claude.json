@@ -1,0 +1,37 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:e3b0ae112346cff706fb47f4c923d74b0f82f9baa680ae3c0c2c7f340fcf7139",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-17T02:08:38.200Z",
+  "rationale": "Verified against v13 Task 4a frozen scope (incl. AM-40) clause by clause; I judge the implementation faithful with no reinterpretation and no scope expansion. (a) Inventory: PACKAGE_ROOTS is exactly the five spine packages and PACKAGE_ROOTS_EXCLUDE exactly the three sibling products, both frozen/sorted; test-inventory §7 mechanically discovers tracked package.json dirs via git ls-files and proves discovered == union AND intersection == ∅ bidirectionally, with the exact AM-40 arrays pinned; DOC_ROOTS, docs/runs and docs/runs/clotho-self-weave exclusions, D31 CONTRACT_FILES (sorted, existence-checked), RUN_SOURCES, five weaver ids with integer versions all committed. REQUIRED_INVENTORY_IDS matches the frozen normative table exactly (git->[package-files,package-symbols], code->[package-modules], test->[package-manifests,test-files], doc->[doc-files], ledger->[contract-files,ledger-sources,run-sources]) with a deepEqual unit against an in-test copy of the normative table. LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS is exactly {module,node:module} -> [\"builtinModules\",\"isBuiltin\"], deep-frozen, with deep-equal, exact-key/value, freeze, and mutation-attempt units including unchanged-after-failed-mutation. LEDGER_SOURCES=[] is presented as the exact reviewed set at this SHA with rationale (runtime ledgers are git-ignored; docs/runs events.jsonl belong to Daedalus), asserted exact-final in tests — a committed reviewed decision, not a silent deferral. (b) D17/AM-17: WEAVER_IMPL_FILES covers only git and code; test-inventory and test-closure prove every named file exists. (c) util.mjs: ONE classifier (classifyModuleLoads) + ONE resolver (resolveRelativeSpecifier) exported and consumed by both deriveAcceptedClosure and code.mjs; closure test §9 proves uniqueness of definitions across all clotho .mjs files, that deriveAcceptedClosure's body calls both by name, that code.mjs imports the shared resolver, and that no other module appends .mjs (no second resolver) — a reasonable, mechanical AM-34 test-19 discharge given the advisory scanner is Task 5. Lexer is dependency-free, comment/string/template/regex-aware with sound regex-vs-division handling (control-paren tracking, postfix ++/--, `of` division), escape decoding so \\x2e-obfuscated relative specifiers cannot evade closure; Phase-1 export grammar exactly the four forms with warnings for every unsupported category; walker rejects root escape, symlinked roots/components/entries (fail-closed, ENOENT-only tolerance); counted iterator counts only on completed consumption with driver-held accessor and units proving partial-not-counted, exactly-once, exhaustion-only-on-normal-completion, cardinality, and non-reachability of accounting from the iterable; D21 helper lstats every component including ancestors of the root, rejects symlink components, resolves deepest-existing ancestor, never follows symlinks to decide, with units for symlinked allowed root, symlinked nested parent, escape-via-symlink-target, and plain-path acceptance; git wrapper allowlists exactly the five frozen shapes with order/duplication/extra-arg rejection, canonical-POSIX non-option path args, execFileSync no-shell, and caller-override-proof spawn options. (d) test-closure derives closures with the shared classifier/resolver and proves committed inventories equal (never trusted) through one shared harness; per-form fixtures cover all seven accepted forms plus keyword-alias and whitespace-module.require variants; recursion/cycles/unreachable-dynamic-import/merkle-dag traversal covered; missing/extra/nonexistent-inventory, unresolved, ambiguous-extension, non-regular, escape, forbidden, symlink (junction-based, must-run), entry-level checks, non-literal and comment/string no-edge all covered; §12 additionally pins the exact real-repo closures including registry as a leaf. (e) git.mjs emits exactly the two frozen log invocations, first-result (earliest) selection, source_ref git:<same-sha>, full-SHA validation of every line with blank/bare-CR/malformed fatal and empty-only warn/no-edge; units assert exact argv, -S metacharacter verbatim token, CRLF acceptance vs bare-CR fatal, both-sources exhaustion including an empty source, validation-before-spawn, and byte-equal reruns. (f) code.mjs threads all four endpoint shapes with symbol- vs file-level logic, preserves no-export named-import as repository-file->code-symbol, dedups, ignores unused imports and comment/string lookalikes, and emits unrepresentable-consumer only for unresolvable specifiers (missing .mjs target, or resolving outside seeded roots) while non-.mjs specifiers are silent and physical-policy violations (symlink/escape/non-regular) fail closed — each behavior pinned by fixture units matching the mandated fixture set, plus locator-field assertions carrying repository_ref and blob_sha and byte-equal reruns. Zero runtime deps, ESM, imports confined to node:/clotho-relative (gate confirms), spine untouched (diff confined to clotho/). Judgment calls I accept as within scope rather than defects: code.mjs throwing on symlink/escape import targets (fail-closed physical policy, consistent with D15/D21 posture; the spec reserves unrepresentable-consumer for unresolvable specifiers and says nothing permitting silent acceptance of policy-violating targets); DOC_WEAVER_EXCLUDE/GLOBAL_EXCLUDE committed but consumed by Task 4b/5 walks (their consumers do not exist yet by design); counted-iterator counting on resume-for-next-item as the mechanical rendering of 'completed consumption without fatal error'. The deterministic gate passed with all 15 checks green including the full test suite.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011Cd6pDhSc1tfCuRNShCPPF",
+    "source": "ai-peer-mcp/claude_ask",
+    "answered_at": "2026-07-17T02:09:15.358Z",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "a7aaa019432b04d53a80ee409637c71afbbcbff816cb37fa3b8f3e0aad4a5a24",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:2d56e2f6922e51269477b2a9191025eb89514e984b1d78b2083fbb8ab22b262d",
+  "decision": "revise",
+  "required_edits": [
+    "Reimplement physicalContainment so the supplied allowed/repository-root chain and every existing candidate-parent component are lstat-checked before any realpath decision, every symlink component is rejected, and the deepest existing ancestor is resolved and proven beneath the repository real path. Add a test that passes a symlink itself as the allowed repo root, plus nested-parent, external-target, nonexistent-tail, and plain-path cases.",
+    "Make the shared lexical classifier exact for the frozen forms: distinguish the import keyword from member properties, distinguish direct module.require from property-chain lookalikes, scan executable template substitutions, prevent regex literals from creating load sites, and correctly classify literal string values. Make closure entry points undergo the same regular-file/symlink/containment checks as resolved targets, and fail on every ambiguous extension resolution.",
+    "Constrain validateGitArgs to exactly the two frozen log arrays in their required order, in addition to the exact rev-parse, rev-list, and hash-object arrays. Prevent options from overriding cwd, shell:false, encoding, or other security-relevant fixed execution settings.",
+    "Restrict code-weaver dependency extraction to static relative specifiers that explicitly end in .mjs; do not append extensions or accept other extensions. Make identifier-use detection operate on actual identifier tokens outside import declarations, including template-expression code while excluding regex/comment/string contents.",
+    "Make walkFiles throw on every encountered symlinked root, directory, or file instead of silently omitting nested symlinks, while preserving deterministic sorting and regular-file-only output.",
+    "Preserve duplicate export discoveries until seedSourceDescriptors can reject duplicate descriptors, and ensure every mandated unsupported export category produces a warning that is propagated to the eventual weave result rather than discarded.",
+    "Return structured warnings conforming to the existing warning contract, with weaver set to clotho-git-weaver or clotho-code-weaver respectively; add attribution assertions for both no-result and unresolvable-import paths.",
+    "Extend the tests with all frozen form and failure fixtures, including export * as namespace from, ambiguity, non-regular targets, symlinked entry and allowed root, omission through re-export/dynamic/require forms, explicit-extension rejection, strict git-wrapper counterexamples, duplicate descriptors, and structured warning attribution. Normative symlink tests must fail rather than skip when fixture setup fails, and bad inventories should be passed through the same equality/existence validator used for committed inventories."
+  ],
+  "hard_stops": [
+    "The D21 physical-containment helper is not faithful. It calls realpathSync(repoRoot) before lstat-checking the supplied repository/allowed-root path, so a symlinked allowed root is followed and can be accepted. It also never resolves the deepest existing ancestor as required. The purported symlinked-allowed-root unit only tests a symlink beneath a real repo root, not a symlink supplied as repoRoot.",
+    "The D33 classifier/resolver is not an exact accepted-form implementation. classifyModuleLoads falsely treats valid member calls such as obj.import(\"./x.mjs\") and obj.module.require(\"./x.mjs\") as accepted loader forms; it masks executable ${...} template substitutions and therefore misses accepted literal loads inside them; and its lack of regex-literal handling can manufacture edges from regex contents. The resolver has no ambiguity detection and deriveAcceptedClosure follows a symlinked entry through realpathSync rather than rejecting it.",
+    "The weaver-facing git boundary is broader than the frozen allowlist. validateGitArgs accepts log shapes with missing, duplicated, or reordered required flags, while makeGitRunner spreads caller options after cwd and shell:false, allowing callers to override cwd and enable shell execution.",
+    "The code weaver violates the explicit-.mjs grammar: resolveModulePath appends .mjs to extensionless specifiers and also accepts any other extension when the resulting path is seeded. Its identifier-use check is not token-faithful because regex bodies remain searchable and executable template substitutions are masked, causing false and missed depends-on edges.",
+    "The source walker silently skips nested symlink entries instead of failing closed on symlinked input. This can silently omit an input beneath a configured root rather than reject the inventory walk as required.",
+    "Duplicate symbol descriptors cannot produce the required error because scanExports deduplicates names before seedSourceDescriptors performs its duplicate check. In addition, required unsupported/dynamic export warnings are not reliably surfaced by descriptor seeding.",
+    "Both weavers emit warning strings. This is incompatible with the frozen producer-attribution contract requiring every returned warning to carry warning.weaver equal to the invoked weaver id.",
+    "The mandatory units are incomplete or non-proving: there is no namespace re-export form fixture, ambiguous or non-regular closure-target fixture, genuine symlinked-entry/allowed-root proof, explicit-.mjs rejection unit, or strict git-log-shape/option-override unit. Required omission cases reached only through re-export, dynamic import, and require-style forms are not exercised. The missing/extra inventory checks mostly assert inequality rather than invoking a common equality validator, and symlink setup failures silently skip normative cases."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T22:29:24.908Z",
+  "rationale": "The implementation gets several central pieces right: the frozen required-inventory table and D32 mapping are exact and deeply frozen; only git and code implementation inventories are committed; the real inventories currently compare equal to the derived closures; git.mjs issues the prescribed commands and selects the first validated SHA; and code.mjs implements the four endpoint shapes, alias threading, fallback endpoints, deduplication, and counted-source consumption. The later orchestrator, D34 publication check, and test/doc/ledger weavers are correctly absent and are not blockers here. However, the failures above are direct contradictions of D21, D29/D33 exactness, the no-shell exact git boundary, the explicit-.mjs code grammar, producer-bound warning semantics, and specifically mandated tests. The deterministic gate does not exercise these counterexamples, so the branch is not acceptable as-is.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2Os4IuyVsPDPBAJ3n3EdYP1okb79",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T22:35:12.461Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "703d9601037547ff78be05d82d3b9230a07d5d79ccb3a81af3a5b393f6aa9dfd",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

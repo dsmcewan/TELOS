@@ -1,0 +1,43 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:fd3e605c570fa65ab9bd571d8d53e9dbd21d4364d4323eda153a8d885948cb4a",
+  "decision": "revise",
+  "required_edits": [
+    "Make `classifyModuleLoads` parse and delimit actual module-load declarations rather than treating every lexical `import`/`export` token as a statement boundary. It must recognize every accepted static re-export even when legal imported/exported names are keywords, while continuing to reject property/member lookalikes. Add a form-only closure regression proving the keyword-alias re-export reaches its helper and that omission fails equality.",
+    "Make `scanImports` recognize only actual static import declarations and bind each `from` clause and span to its own declaration. It must not create spans from object properties, shorthand properties, member names, or unrelated tokens. Add a code-weaver regression using a property named `import`, a genuine used import later in the module, and a use before that declaration; assert the required dependency edge is emitted."
+  ],
+  "hard_stops": [
+    "The D33 classifier is not exact for accepted static re-exports. It bounds an `export` region at every subsequent lexical `import`/`export` token, including tokens legally used as exported names. For example, `export { h as import } from \"./helper.mjs\";` is a valid `export ... from` form, but `classifyModuleLoads` records no edge because the alias token prematurely terminates the governing export region. The committed closure can therefore omit a file reachable through an accepted literal relative load.",
+    "`scanImports` can omit required code-weaver edges because it treats non-declaration `import` property names as declaration starts and searches unboundedly for a later `from` clause. In valid module code such as `const o = { import: 1 }; console.log(alpha); import { alpha } from \"./dep.mjs\"; export const c = 1;`, it creates a bogus span from the object property through the real import. That span covers the genuine pre-declaration use of `alpha`, causing `identifierUsedOutside` to report the used import as unused and suppress the required `code-symbol -> code-symbol` edge."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-17T01:23:49.695Z",
+  "rationale": "The inventories, frozen normative tables, D32 mapping, closure equality mechanism, counted-source behavior, git calls, and principal endpoint threading are substantially aligned with Task 4a. However, the two reproducible parser defects violate the frozen exact accepted-form closure and used-static-import semantics. Because they can produce false-negative provenance and dependency edges, the implementation is not acceptable AS-IS despite the passing deterministic gate.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2Rarh4iVELopBpLKqnqYuLLKvT9X",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-17T01:30:42.397Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "d5293e8ab69fed4c8b54914ec657d3dc8cdf7e74d54e30480606f88d1cb9b3a6",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "note": "A reader that reconstructed system reality from the institutional-memory records. The comprehension-gate GRANTS implementation authority for this answer set.",
+  "reader": "example-correct-reader",
+  "resolved_plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+  "resolved_authorization": "authz-008",
+  "excluded_superseded": ["authz-004", "authz-005", "authz-006", "authz-007"],
+  "invariants_read": ["d33-fail-closed-profile", "d33-deny-based-regex"],
+  "non_claims_read": ["not-a-js-parser", "no-loader-containment"],
+  "answers": {
+    "package-roots": ["breakout", "build-gate", "clotho", "connectors/ai-peer-mcp", "merkle-dag"],
+    "excluded-roots": ["ai-forge", "forge", "saas-forge"],
+    "excluded-reason": "filesystem-proximity-does-not-establish-architectural-membership",
+    "new-package-behavior": "fails-classification-test-until-explicitly-assigned",
+    "loader-containment": false
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:fd3e605c570fa65ab9bd571d8d53e9dbd21d4364d4323eda153a8d885948cb4a",
+  "decision": "revise",
+  "required_edits": [
+    "Restore or explicitly justify the frozen per-form fixture for `export * as ns from` in section 2 of test-closure.mjs — it IS present; however the frozen scope's form-only fixture list also requires a fixture where the helper is reached ONLY through `module.require()` with the whitespace-separated `module . require(...)` spelling resolved at CLOSURE level (test-util pins classification only); add a closure fixture or justification in-line.",
+    "test-closure.mjs section 9 (AM-34 test 19) proves single definition of classifier/resolver and that deriveAcceptedClosure's body TEXTUALLY mentions classifyModuleLoads/resolveRelativeSpecifier, but the frozen requirement is that BOTH consumers import the same EXPORTED classifier and resolver: the closure derivation lives in the same module (util.mjs) and calls module-local bindings rather than importing exports. Either (a) strengthen the unit to prove the exported bindings are the identical function objects consumed by the derivation (e.g., identity comparison via an exported hook or restructuring so the derivation consumes the exports), or (b) commit an explicit in-repo note that same-module lexical binding satisfies AM-34 test 19 with the Task 5 scanner as the second importing consumer, and add the assertion that will bind the Task 5 scanner to these exact exports.",
+    "The git wrapper's frozen subcommand list includes `rev-parse HEAD` per the scope text, but no unit exercises makeGitRunner/execFileSync integration end-to-end (all git.mjs tests use mocks; validateGitArgs is unit-tested standalone). Add at least one unit proving makeGitRunner validates args before spawning (e.g., a disallowed shape throws WITHOUT spawning) so the validation cannot be bypassed by refactor.",
+    "seedSourceDescriptors reads walked files via readFileSync(path.join(repoRoot, ...rel.split('/'))) AFTER walkFiles validated the tree — acceptable — but hash-object receives the repo-relative path while the file bytes are read separately; add a comment or unit pinning that both name the same file (same walk output), so the 'symbol and file descriptors for the same path carry the same blob_sha by construction' claim is proven rather than asserted.",
+    "GLOBAL_EXCLUDE (docs/runs/clotho-self-weave) is committed and unit-pinned as a value, but no code path in this PR consumes it (walkFiles takes no exclusion parameter). Since doc/ledger weavers are Task 4b, this is arguably in-scope-deferred; add an explicit comment in inventory.mjs stating which task wires GLOBAL_EXCLUDE/DOC_WEAVER_EXCLUDE into the walker so the exclusion cannot silently remain decorative."
+  ],
+  "hard_stops": [],
+  "confidence": "medium",
+  "timestamp": "2026-07-17T01:23:49.695Z",
+  "rationale": "The implementation is substantially faithful and high quality. Verified strengths: (a) inventory.mjs commits PACKAGE_ROOTS exactly per AM-40 with the three-product PACKAGE_ROOTS_EXCLUDE, and test-inventory section 7 mechanically proves discovered == union and empty intersection over TRACKED package.json via git ls-files; REQUIRED_INVENTORY_IDS deep-equals the frozen normative table with a unit (test-inventory section 2); LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS matches D32 exactly with deep-equal, exact-keys/values, deep-freeze, and mutation-attempt units (section 3). (b) Per D17/AM-17 only git+code inventories are committed (WEAVER_IMPL_FILES has exactly two keys) and test-inventory proves every committed path exists. (c) util.mjs exports one classifier and one resolver; the walker rejects escape and symlinked entries fail-closed; counted-iterator semantics (partial-not-counted, exhaustion-only-on-normal-completion, cardinality, driver-held accessor with non-leakage probing) are properly unit-proven; physicalContainment lstats every component including repo-root ancestors, rejects symlink components, and never follows symlinks to decide; validateGitArgs permits only the exact frozen shapes with order/duplication/reorder rejection and a canonical non-option path-arg rule. (d) test-closure derives closures with the shared machinery, proves committed inventories equal derived closures via one harness, covers per-form omission fixtures, recursion/cycles/unreachable-dynamic-import, permitted merkle-dag traversal, all fatal modes (unresolved, ambiguous-extension, non-regular, escape, forbidden, symlink incl. entry checks), non-literal and lookalike no-edge, and direct real-repo closure equality including proving registry.mjs is a leaf. (e) git.mjs emits exactly the two frozen log invocations, first-result selection, git:<sha> source_ref, malformed-line fatal (incl. bare-CR and blank-line discipline), no-result warns; -S token verbatim metacharacter test present. (f) code.mjs covers all four endpoint shapes, symbol- vs file-level threading, no-export preservation as repository-file -> code-symbol, unrepresentable-consumer ONLY for unresolvable specifiers (with the outside-closed-roots case), unused imports no-edge, dedup, byte-equal double-run. Zero runtime deps, node:-only imports, gate green, diff confined to clotho/. The requested revisions are narrow faithfulness-tightening items, not scope defects: the strongest is the AM-34 test 19 concern — the frozen text requires 'a unit proves BOTH consumers import the same exported classifier and resolver', but the closure derivation consumes module-local bindings inside util.mjs itself and the second consumer (advisory scanner) does not exist until Task 5, so the current proof (single definition + textual body-call assertions + code.mjs import check) approximates rather than exactly discharges the requirement; it deserves either strengthening or an explicit committed justification. Remaining items (module.require closure-level whitespace-spelling fixture, makeGitRunner validation-before-spawn unit, blob_sha same-file-by-construction pin, decorative GLOBAL_EXCLUDE wiring note) are small, genuine gaps between the frozen test enumeration and what is pinned. None are scope expansions or reinterpretations; hence revise rather than reject, with no hard stops.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011Cd6koVfQzkoaDSjsGWF2B",
+    "source": "ai-peer-mcp/claude_ask",
+    "answered_at": "2026-07-17T01:24:27.171Z",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "24196afcce96dd25d99f2497e8f4e674c26dad941d3ff1c858afc01cdfd4412a",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "no-loader-containment",
+    "statement": "Clotho Phase 1 is advisory / non-sandboxed. It does NOT prove complete JavaScript loader analysis, loader isolation, or loader containment. The deterministic scanner (D27/D32) is a trusted-code review signal, not a capability boundary or a sandbox.",
+    "authority": { "amendments": ["AM-35", "AM-41"], "authorization": "authz-008", "posture": "advisory / non-sandbox (AM-35..AM-39)" }
+  },
+  {
+    "id": "not-a-js-parser",
+    "statement": "The shared D33 scanner is a dependency-free lexical scanner correct over a closed source profile, NOT a complete ECMAScript parser. Out-of-profile inputs are REFUSED (fail closed with unsupported-module-lexical-profile), not parsed correctly.",
+    "authority": { "decision": "AM-41", "authorization": "authz-008", "doc": "docs/clotho-phase-1-plan-amendments-13.md" }
+  },
+  {
+    "id": "not-committed-inventory-equality",
+    "statement": "Task 4a validates GENERIC ledger/scanner integrity against injected fixtures only; equality of coverage refs/counts with committed inventories is the Task 5 driver's job, not Task 4a's.",
+    "authority": { "decision": "D19", "authorization": "authz-008" }
+  },
+  {
+    "id": "no-orchestrator-yet",
+    "statement": "Task 4a commits the git and code weaver inventories/closures only (D17/AM-17). The test/doc/ledger weavers, the orchestrator inventory, atomic publication (D20/D28), and D34 re-derivation are LATER tasks (4b/5), not present or claimed here.",
+    "authority": { "decisions": ["D17", "AM-17"], "authorization": "authz-008" }
+  }
+]

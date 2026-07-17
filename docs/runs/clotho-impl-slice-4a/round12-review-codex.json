@@ -1,0 +1,44 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:d8cfba80bdbbe07c3895eff02a8aab62fe7b36e43aa444252d549ed49137dc1b",
+  "decision": "revise",
+  "required_edits": [
+    "Repair the shared lexer/classifier so regex-versus-division is decided from actual previous significant token context across all frozen expression-start contexts, including default-export and class-extends expressions, without treating keyword-named properties or methods as control/keyword contexts. Add classifier and closure regressions proving regex-contained load lookalikes create no edge and do not cause closure failure, while genuine adjacent loads remain visible.",
+    "Enforce b3 for every standard line-leading whitespace form admitted by the profile, not only space and tab, and add stable-diagnostic tests including form-feed or another non-space/tab ECMAScript whitespace character.",
+    "Complete b6 truncated-form detection, including a bare `import`, and add tests requiring `ProfileError` with diagnostic exactly `unsupported-module-lexical-profile`; audit the other accepted-form prefixes so none can return a successful no-edge classification when truncated."
+  ],
+  "hard_stops": [
+    "AM-41 supported-profile correctness is not satisfied. The regex-versus-division logic is context-insensitive for required expression-start contexts. For example, `export default /import(\"\\x2e\\x2fghost.mjs\")/;` is valid supported-profile source whose regex contains only a load lookalike, but `default` is absent from `REGEX_KEYWORDS`; the lexer treats the opening slash as division and `classifyModuleLoads` consequently infers a literal dynamic-import edge to `./ghost.mjs`. Closure derivation then falsely includes or fatally resolves that target. Similar defects exist around `extends` and keyword-named member calls because control-head and keyword decisions use only `prevSigWord`, without establishing token context.",
+    "AM-41's exact fail-closed set is incompletely enforced. A line-leading legacy close comment preceded by standard whitespace other than space/tab, such as form-feed (`\\f-->`), is b3 and must throw `unsupported-module-lexical-profile`; the implementation checks only U+0020 and tab and accepts it. Truncated-form detection is also not total: a bare `import` is accepted as producing no sites rather than rejected as a truncated accepted module-load form under b6."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-17T04:53:16.680Z",
+  "rationale": "The implementation otherwise tracks much of frozen Task 4a faithfully: the AM-40 package roots and exclusions, normative inventory-id table, deeply frozen D32 mapping, git/code-only implementation inventories, closure equality, counted iterators, containment helpers, exact git commands, and four code-edge endpoint shapes are present and tested. The deterministic gate passing does not cure the uncovered AM-41 counterexamples. Because D33 closure provenance depends directly on this classifier, a false regex edge can make a committed closure wrong or turn valid supported-profile source into a fatal unresolved target; this is a substantive faithfulness failure, not merely missing test coverage.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2UrY2TnEoR6JpN0dU7sVuCFAo9iR",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-17T04:59:42.759Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "ab4e889b092b4de36bfd256670f8cf4fe247e9e32eb17370d3bfab995668583b",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

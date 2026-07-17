@@ -1,0 +1,32 @@
+{
+  "kind": "contract",
+  "component": "clotho",
+  "id": "source-profile",
+  "title": "D33 shared scanner — enforced closed module-lexical source profile (AM-41)",
+  "authority": { "decision": "AM-41", "authorization": "authz-008", "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3", "ruling": "The Eye", "doc": "docs/clotho-phase-1-plan-amendments-13.md" },
+  "principle": "Total correctness over an explicit subset that refuses everything else — NOT a complete ECMAScript parser. The shared classifier/resolver is correct over the supported profile and FAILS CLOSED with the stable diagnostic 'unsupported-module-lexical-profile' on the exact out-of-profile set. Enforced and tested, never presumed.",
+  "supported_profile": {
+    "encoding_terminators": "UTF-8; only LF or CRLF line terminators",
+    "leading_shebang": "at most one optional shebang line, permitted only when #! begins at byte offset 0, is the first line, and terminates with LF or CRLF; removed before lexical classification",
+    "comments": "// line comments and /* */ block comments",
+    "strings": "single/double-quoted with the escape set \\\\ \\\" \\' \\n \\r \\t \\b \\f \\v \\0(not-digit) \\xHH \\uHHHH \\u{...}; template literals whose ${...} are scanned as code; a module-load specifier must be a plain string literal",
+    "accepted_forms": "static import ... from; side-effect import; export ... from; export * [as ns] from; literal dynamic import() (incl. options / trailing comma); literal require(); literal module.require()",
+    "regex_vs_division": "deny rule by previous-significant-token: division only after a value token (identifier, numeric/string/template/regex literal, this/super/true/false/null, )/]/value-}/postfix); regex after every other token including every reserved keyword"
+  },
+  "out_of_profile_fail_closed": {
+    "diagnostic": "unsupported-module-lexical-profile",
+    "b1": "a bare CR (U+000D not immediately followed by LF), U+2028, or U+2029 anywhere",
+    "b2": "a hashbang (#!) anywhere other than the single permitted leading shebang (a #! inside a string or comment is NOT a hashbang, per The Eye's ruling)",
+    "b3": "an HTML/legacy comment opener <!-- or a line-leading -->",
+    "b4": "a string line-continuation (backslash before a line terminator) or a legacy/octal escape",
+    "b5": "a string-literal specifier or alias name in an import/export clause",
+    "b6": "an unterminated string or comment, or a truncated accepted module-load form"
+  },
+  "non_claim": "The scanner does NOT parse out-of-profile inputs; it refuses them. It is not a complete ECMAScript parser or a sandbox (see clotho/memory/NON-CLAIMS.md).",
+  "change_rule": "Any expansion or contraction of the supported profile or the out-of-profile set requires a plan amendment (Daedalus), TELOS re-authorization, implementation review, and updated adversarial fixtures.",
+  "oracle": { "source_of_truth": "clotho/weavers/util.mjs (classifyModuleLoads / lex / resolveRelativeSpecifier / deriveAcceptedClosure)", "test": "clotho/scripts/test-util.mjs + clotho/scripts/test-closure.mjs (supported-profile correctness + each b1-b6 fails closed)" },
+  "residuals": "Deferred minor-fix backlog (adversarial inputs NOT present in committed Clotho source): docs/runs/clotho-impl-slice-4a/DEFERRED-MINOR-FIXES.md",
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

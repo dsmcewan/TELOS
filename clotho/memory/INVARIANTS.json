@@ -1,0 +1,53 @@
+[
+  {
+    "id": "d33-fail-closed-profile",
+    "statement": "The shared D33 scanner is correct over a closed module-lexical source profile and FAILS CLOSED with the stable diagnostic 'unsupported-module-lexical-profile' on the exact out-of-profile set b1-b6; exactly one optional leading shebang (#! at byte 0, first line, LF/CRLF-terminated) is admitted and stripped before lexing.",
+    "authority": { "decision": "AM-41", "authorization": "authz-008" },
+    "contract": "clotho/memory/CONTRACTS/source-profile.json",
+    "oracle": { "test": "clotho/scripts/test-util.mjs + clotho/scripts/test-closure.mjs", "source_of_truth": "clotho/weavers/util.mjs" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "d33-deny-based-regex",
+    "statement": "The regex-vs-division decision is made by previous-significant-token: a `/` is DIVISION only after a value token (identifier, numeric/string/template/regex literal, this/super/true/false/null, )/]/value-}/postfix), and a REGEX after every other token including every reserved keyword. It is not a hand-maintained keyword allow-list.",
+    "authority": { "decision": "AM-41", "authorization": "authz-008" },
+    "oracle": { "test": "clotho/scripts/test-util.mjs", "source_of_truth": "clotho/weavers/util.mjs#lex" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "d21-original-order-containment",
+    "statement": "The shared resolver and physicalContainment lstat every existing component of the ORIGINAL uncollapsed candidate path (original order) BEFORE any normalization that could collapse a `..` and erase a component; any symlink component is rejected; only genuine ENOENT is absence, every other lstat error fails closed. A backslash in a relative specifier is rejected before resolution.",
+    "authority": { "decisions": ["D21"], "amendment": "AM-41", "authorization": "authz-008" },
+    "oracle": { "test": "clotho/scripts/test-util.mjs (containment fixtures: link/.. and missing/../link/..)", "source_of_truth": "clotho/weavers/util.mjs" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "inventory-id-table-frozen",
+    "statement": "The per-weaver REQUIRED_INVENTORY_IDS table is exactly the frozen normative table and is proven equal to the ledger's coverage validator by a unit.",
+    "authority": { "decisions": ["D24", "D26", "D31"], "authorization": "authz-008" },
+    "contract": "clotho/memory/CONTRACTS/inventory-id-table.json",
+    "oracle": { "test": "clotho/scripts/test-inventory.mjs", "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "d32-loader-safe-exports-frozen",
+    "statement": "LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS is deeply frozen and exactly {module, node:module} -> [\"builtinModules\", \"isBuiltin\"]; mutation attempts fail or leave it unchanged.",
+    "authority": { "decision": "D32", "authorization": "authz-008" },
+    "contract": "clotho/memory/CONTRACTS/loader-safe-exports.json",
+    "oracle": { "test": "clotho/scripts/test-inventory.mjs (deep-equal/deep-freeze/mutation)", "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "closure-equality-proven",
+    "statement": "Each committed weaver implementation-file inventory is PROVEN equal to its derived accepted-relative-module-load closure (D33), never trusted. git -> {registry, git}; code -> {registry, code, util}.",
+    "authority": { "decisions": ["D33"], "authorization": "authz-008" },
+    "oracle": { "test": "clotho/scripts/test-closure.mjs (sections 1 and 12)", "source_of_truth": "clotho/inventory.mjs#WEAVER_IMPL_FILES + clotho/weavers/util.mjs#deriveAcceptedClosure" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "kind": "contract",
+  "component": "clotho",
+  "id": "git-allowlist",
+  "title": "Weaver-facing git wrapper — closed subcommand/arg allowlist + controlled execution",
+  "authority": { "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3", "authorization": "authz-008", "decisions": ["D18"] },
+  "allowed_forms": [
+    "rev-parse HEAD",
+    "rev-parse --is-shallow-repository",
+    "rev-list --max-parents=0 HEAD",
+    "hash-object --no-filters -- <path>",
+    "log -S<symbol> --format=%H --reverse -- <path>",
+    "log --format=%H --reverse -- <path>"
+  ],
+  "execution": {
+    "runner": "execFileSync('git', args, {...}) — no shell",
+    "cwd": "repoRoot (fixed)",
+    "shell": false,
+    "controlled_env": "a copy of process.env with repository-redirecting variables stripped: GIT_DIR, GIT_WORK_TREE, GIT_COMMON_DIR, GIT_OBJECT_DIRECTORY, GIT_ALTERNATE_OBJECT_DIRECTORIES, GIT_INDEX_FILE, GIT_NAMESPACE",
+    "path_args": "must be canonical repository-relative POSIX (no absolute, no .., no backslash, no NUL)",
+    "caller_options": "dropped — caller cannot override cwd/shell/env/encoding"
+  },
+  "why": "The weaver's provenance must be faithful to the repository it names; an inherited GIT_DIR or a shell must not redirect or reinterpret the git calls.",
+  "non_claim": "This is the WEAVER-facing wrapper only; the Task 2 clone/init fixture builder has its own separate test-only allowlist.",
+  "change_rule": "Adding a subcommand/arg shape requires a plan amendment, TELOS re-authorization, and updated allowlist + option-override + metacharacter units.",
+  "oracle": { "source_of_truth": "clotho/weavers/util.mjs (validateGitArgs / makeGitRunner / gitSpawnOptions)", "test": "clotho/scripts/test-util.mjs (allowlist, controlled-env two-repo GIT_DIR, option-override) + clotho/scripts/test-git.mjs (exact calls)" },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

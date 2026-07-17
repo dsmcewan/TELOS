@@ -1,0 +1,119 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "review_ref": "sha256:0141730a9fb474f27341d379936b0f774436c4c2e725a4fc4abb10578ddf5826",
+  "pr": 117,
+  "pr_head": "8be332cf85fc22626902a0b71333d78a14ba4901",
+  "plan_ref": "sha256:f9368b5748de6c2670193558783b60b7f74fd94de9196c9664d42269f3d2bc04",
+  "authorization": "authz-006",
+  "timestamp": "2026-07-17T03:29:28.914Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "medium",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6vPFVsCKVrZGvxfUovo",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-17T03:30:20.708Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2TYSj3zmLBxIyMyOYIomGBapeT8X",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-17T03:36:49.120Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "0183ad14-9615-9f24-a3c3-5c2ba1b5a447",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-17T03:29:57.822Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "m6FZasmKLoiHz7IP58rCCA",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-17T03:29:43.140Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "claude decision is 'revise', not 'approve'.",
+      "claude has required edits: Restore or explicitly justify the AM-41(c) resolver fixture semantics: the frozen text requires a candidate with a symlink component FOLLOWED BY A LATER `..` that would normalize it away to be REJECTED because the symlink is lstat-checked in original component order. In util.mjs `originalChainSymlinkFree`, a `..` segment is processed as `cur = path.dirname(cur)` BEFORE the symlink is entered when the specifier ends with the collapse (e.g. `./link/../x.mjs` DOES check `link` — good), but the test in test-util.mjs section 16 accepts EITHER `symlink` OR `escape` as the rejection kind (`r.kind === \"symlink\" || r.kind === \"escape\"`). The frozen requirement is rejection BECAUSE of the symlink component; accepting `escape` would let an implementation that never lstats the original chain pass by coincidental containment failure. Tighten the assertion to require kind === \"symlink\" (or prove escape cannot occur for this fixture and document why).; Align the git wrapper allowlist with the frozen shape list or justify the widening: gitSpawnOptions spreads caller `options` FIRST and then overrides cwd/shell/encoding/stdio/maxBuffer — this is correct for the security-relevant keys, but it still forwards arbitrary other caller-supplied spawn options (env, timeout, uid, windowsHide, etc.) to execFileSync. The task text says the wrapper 'permits only the exact subcommands and argument shapes' and uses `execFileSync('git', args, {cwd: repoRoot, ...})`; forwarding an uncontrolled options bag (e.g. a caller-supplied `env` with GIT_DIR/GIT_WORK_TREE, or `argv0`) can redirect which repository is inspected without violating the arg-shape allowlist. Either freeze the accepted options to a closed set (drop unknown keys) or add a unit proving repository-redirecting env vars cannot pass through, and record the decision.; PACKAGE_ROOTS completeness unit (test-inventory section 7) invokes `execFileSync(\"git\", [\"ls-files\", ...])` directly — a raw git call outside any allowlist, in a test that authoritatively proves an inventory invariant. The Task 2 fixture builder is granted 'its own separate test-only allowlist'; this test has none. Add the test-only allowlist (or route through a validated test-git helper) so the mechanically-enforcing unit itself follows the no-shell/closed-shape discipline, and pin the exact ls-files invocation shape.; The scanExports Phase-1 grammar accepts `export const NAME` with NO initializer follow-through check beyond `=?` in the `phase1` regex — `export const x;` (illegal JS but lexically matchable) and, more importantly, `export const x = 1, y = 2;` seeds ONLY `x` and silently drops `y` with no warning. The frozen grammar is 'export const followed by an identifier', so seeding x is defensible, but the silent drop of the second declarator is neither a seeded symbol nor a warned unsupported form — it is unclassified symbol flow. Add a warning (or a fatal) for multi-declarator export const, plus a unit pinning the chosen behavior.",
+      "claude has hard stops: Committed-closure equality is asserted through a boolean harness that swallows ALL derivation errors: in test-closure.mjs, `inventoryMatches` wraps `deriveAcceptedClosure` in `try/catch { return false }`, and section 1 asserts `inventoryMatches(...) === true`. This is fine for the positive direction, BUT the normative committed-inventory check (section 1) and the direct equality check (section 12) both derive the closure of git.mjs/code.mjs against the REAL repo — while scanExports/scanImports/classifyModuleLoads THROW ProfileError on any out-of-profile byte. If a future edit makes a weaver source out-of-profile, section 12's assert.deepEqual would fail loudly (good), so this is survivable — however the WEAVER_IMPL_FILES table itself omits `clotho/inventory.mjs` from BOTH weaver closures while the frozen Task 4a text names `clotho/inventory.mjs` as exemplary shared substrate 'such as clotho/weavers/util.mjs, clotho/registry.mjs, and clotho/inventory.mjs' participating in closures. Neither git.mjs nor code.mjs imports inventory.mjs, so the DERIVED closures legitimately exclude it and equality holds — but then NO committed Task-4a artifact proves inventory.mjs itself is within the enforced source profile or closure-clean, and the driver that WILL import it lands only in Task 5. Commit an explicit unit (e.g. deriveAcceptedClosure over inventory.mjs proving it is a profile-clean closure leaf, as done for registry.mjs in section 12) so the inventory module the whole task exists to establish is itself provably inside the discipline it freezes.; The git weaver's -S argument construction (`-S${symbol}`) is attacker-influenceable only through seeded symbols, and seeded symbols are constrained to identifier tokens by scanExports + registry's IDENTIFIER check — but git.mjs performs NO local validation that `symbol` is identifier-shaped before splicing it into the argv token, and weave() accepts ctx from the (future Task 5) driver as plain data. A ctx with symbol='x --all' would produce argv token '-Sx --all' (still one token, safe) but symbol strings containing NUL or beginning with '-' interplay with validateGitArgs only IF the runner is the wrapped one; test contexts inject raw mocks. Since the frozen text requires 'Identifier matching uses tokens or escaped guards', add a fail-closed identifier-shape check on symbol (and canonical-path check on path) INSIDE git.mjs weave() so the weaver's own contract does not depend on which runner the driver injects.",
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Replace or strengthen the lexical state machine so regex/division is decided from a real previous-significant-token/context model across the frozen expression-start contexts, including comments, control heads, `for ... of`, statement/block boundaries, and loader-name call versus declaration/property/method contexts. Ensure regex interiors cannot manufacture module loads, exports, or binding uses.; Enforce the complete frozen lexical profile with `ProfileError` and diagnostic `unsupported-module-lexical-profile`. Validate full accepted-form structure, including closing delimiters and dynamic-import options/trailing-comma syntax; reject every truncated static import, re-export, dynamic import, require, and module.require form. Reject malformed or non-frozen string escapes and unterminated templates rather than accepting them or leaking another exception type.; Expand AM-41 tests to prove the corrected regex/comment/token contexts and every b1-b6 case, especially each truncated accepted form. Assert both direct classification failure and closure failure with no inferred edge or successful coverage result.; Perform original-order component inspection before normalization in both `resolveRelativeSpecifier`/closure derivation and `physicalContainment`. Continue inspection after missing components so later `..` can return to an existing chain; reject every encountered symlink or transient root escape. Add fixtures for both `link/../target` and `missing/../link/../target` against the resolver and physical-containment helper.; Remove the closure-only `.mjs`/`.cjs` restriction and implement the frozen shared exact-target extension rules for every accepted literal relative load. Add closure fixtures for explicit non-`.mjs` targets beyond `.cjs`, while retaining the `.mjs`-only filtering solely in `code.mjs`.",
+      "codex has hard stops: The shared lexer/classifier does not satisfy AM-41 supported-profile total correctness. Regex-versus-division is based on previous characters and `precedingWord(source, ...)`, not previous significant tokens. Comments therefore break contexts such as `return /*c*/ /.../` and `if /*c*/ (...) /.../`; contextual expression starts such as `for (... of /.../)` are intentionally mishandled. Import-shaped text inside those valid regex literals can become false closure edges, exports, or identifier uses.; The frozen fail-closed profile is incomplete. Truncated accepted forms such as `import(\"./x.mjs\",`, `require(\"./x.mjs\"`, `import { x } from`, and `export * from` return a successful classification or no edge instead of throwing `unsupported-module-lexical-profile`. The implementation also accepts escapes outside the frozen list and does not diagnose unterminated template literals. The required b6 truncated-form units are absent.; Original-component containment is not faithfully enforced. `physicalContainment` normalizes with `path.resolve` before inspecting candidate components, so a symlink followed by `..` can disappear. `originalChainSymlinkFree` also returns immediately at the first `ENOENT`; a path such as `./missing/../link/../target.mjs` can therefore recover from the missing component and traverse an existing symlink that was never lstat-checked. This violates AM-41(c)'s every-existing-component, original-order rule.; D33 closure resolution invents a `.mjs`/`.cjs` whitelist. `deriveAcceptedClosure` rejects an existing explicit `.js`, `.json`, or other non-whitelisted relative target as `ambiguous-extension`, and the tests deliberately enshrine that behavior. The frozen rule requires every accepted literal relative module-load edge to participate in closure, with `.cjs` given as an example rather than an exhaustive second extension; only the code-weaver's application-dependency extraction is restricted to explicit `.mjs` targets."
+    ],
+    "warnings": []
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}
