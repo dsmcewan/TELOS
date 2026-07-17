@@ -61,13 +61,19 @@
         "reviewed_head": "git:86793a3",
         "note": "the escalation slice: builder proved Task 6 unsatisfiable from a real weave and escalated per CHANGE-PROTOCOL; The Eye ruled the reviewed-data path (obligation ledger + real run evidence + anticipated inventory change with tests, 1596767); builder resumed and delivered the flagship green in npm test (14/14; all eight groups; 76-fact review set). Eye review artifacts at PR: expected-flagship.json + clotho-obligation-ledger.jsonl",
         "entry_ritual": "docs/runs/clotho-impl-slice-6/reader-validation-artifact.json"
+      },
+      {
+        "task": "7",
+        "pr": 126,
+        "merge_anchor": "git:395c971",
+        "reviewed_head": "git:395c971",
+        "note": "PHASE 1 CLOSURE: docs housekeeping (path-sensitivity-checked) + self-weave reproduction executed at the integrated HEAD — 4001 edges published clean, 28/28 expectations, full eight-package battery recorded, d8 flipped NORMATIVE; ZERO pending records remain; acceptance path = PR #126 review + CI + The Eye standing directive",
+        "entry_ritual": "docs/runs/clotho-impl-slice-7/reader-validation-artifact.json"
       }
     ],
-    "next_slice": "7",
-    "specified_pending_slices": [
-      "7"
-    ],
-    "specified_pending_note": "Frozen in v15 (authz-008); machine-first design substrate under clotho/memory/ (status SPECIFIED-PENDING-IMPLEMENTATION). An implementer loads it and passes clotho/memory/comprehension-queries.<task>.json via the comprehension gate before writing code; each record flips to NORMATIVE-CURRENT when its becomes_normative_when oracle passes."
+    "next_slice": null,
+    "specified_pending_slices": [],
+    "specified_pending_note": "PHASE 1 COMPLETE (2026-07-17): every v15 task delivered and every design-substrate record NORMATIVE-CURRENT with a passing oracle. New work enters via the Iliad lifecycle (pre-review first)."
   },
   "amendments_in_force": [
     {

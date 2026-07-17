@@ -185,8 +185,10 @@
       "decision": "D8",
       "authorization": "authz-008"
     },
-    "normativity": "ADVISORY",
-    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
-    "becomes_normative_when": "docs/runs/clotho-self-weave/run.mjs + clotho/scripts/test-flagship.mjs prove the self-weave exclusion and reproduction from committed bytes."
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT",
+    "oracle": {
+      "test": "docs/runs/clotho-self-weave/run.mjs (keyless reproduction from committed bytes; second-run identity proves prior snapshots are never consumed) + clotho/scripts/test-flagship.mjs; GLOBAL_EXCLUDE pinned by test-inventory"
+    }
   }
 ]

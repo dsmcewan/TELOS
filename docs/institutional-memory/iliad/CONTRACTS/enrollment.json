@@ -69,6 +69,20 @@
       "pre_review": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-17-slice-6.json",
       "retrospective": "docs/institutional-memory/iliad/RETROSPECTIVES/slice-6.json",
       "maintained_by": "The Iliad umbrella; oracles in CI (clotho test-all 14 incl. test-flagship; institutional-memory job)"
+    },
+    {
+      "name": "clotho-slice-7-phase-1-closure",
+      "kind": "Clotho Phase 1 CLOSURE: docs current + self-weave reproduction evidence (fixed point proven); design substrate fully NORMATIVE",
+      "created_by": "PR #126 (integration 395c971 + evidence commit; agents 9571ff7/12394cc; workshop b38aaf4)",
+      "evidence": "docs/runs/clotho-self-weave/summary.json",
+      "memory_dirs": [
+        "clotho/memory/"
+      ],
+      "status": "delivered",
+      "post_protocol": true,
+      "pre_review": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-17-slice-7.json",
+      "retrospective": "docs/institutional-memory/iliad/RETROSPECTIVES/slice-7.json",
+      "maintained_by": "The Iliad umbrella; oracles in CI (clotho 14 tests; institutional-memory job); the reproduction re-verifies from committed bytes via run.mjs --verify-committed"
     }
   ],
   "future_modules_registered_unimplemented": [

@@ -1,0 +1,1208 @@
+{
+  "kind": "clotho-self-weave-expected-match-report",
+  "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+  "note": "Every expectation from the hand-audited expected artifact (D25 provenance preserved unchanged) with its globally unique exact-JSON match; zero unmatched expectations across all eight groups.",
+  "groups": {
+    "definition": 1,
+    "consumers": 7,
+    "tests": 3,
+    "introduction": 1,
+    "documentation": 12,
+    "concern": 1,
+    "run-evidence": 1,
+    "contract": 2
+  },
+  "matched": [
+    {
+      "expectation": {
+        "source_group": "definition",
+        "subject": "node",
+        "kind": "code-symbol",
+        "locator_match": {
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "path": "merkle-dag/obligation.mjs",
+          "symbol": "deriveExecutableRef",
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0"
+        }
+      },
+      "matched_fact": {
+        "subject": "node",
+        "kind": "code-symbol",
+        "locator": {
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "path": "merkle-dag/obligation.mjs",
+          "symbol": "deriveExecutableRef",
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0"
+        }
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "consumers",
+        "subject": "edge",
+        "edge_kind": "depends-on",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+          "path": "build-gate/proposal-gate.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "checkColdReview"
+        },
+        "to_kind": "code-symbol",
+        "to_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "depends-on",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+          "path": "build-gate/proposal-gate.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "checkColdReview"
+        },
+        "to_kind": "code-symbol",
+        "to_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "consumers",
+        "subject": "edge",
+        "edge_kind": "depends-on",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+          "path": "build-gate/proposal-gate.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "checkProposalRefBinding"
+        },
+        "to_kind": "code-symbol",
+        "to_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "depends-on",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+          "path": "build-gate/proposal-gate.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "checkProposalRefBinding"
+        },
+        "to_kind": "code-symbol",
+        "to_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "consumers",
+        "subject": "edge",
+        "edge_kind": "depends-on",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+          "path": "build-gate/proposal-gate.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "collectCreationLineage"
+        },
+        "to_kind": "code-symbol",
+        "to_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "depends-on",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+          "path": "build-gate/proposal-gate.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "collectCreationLineage"
+        },
+        "to_kind": "code-symbol",
+        "to_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "consumers",
+        "subject": "edge",
+        "edge_kind": "depends-on",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+          "path": "build-gate/proposal-gate.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "collectReviewLineage"
+        },
+        "to_kind": "code-symbol",
+        "to_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "depends-on",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+          "path": "build-gate/proposal-gate.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "collectReviewLineage"
+        },
+        "to_kind": "code-symbol",
+        "to_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "consumers",
+        "subject": "edge",
+        "edge_kind": "depends-on",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+          "path": "build-gate/proposal-gate.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "validateProposalLifecycle"
+        },
+        "to_kind": "code-symbol",
+        "to_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "depends-on",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+          "path": "build-gate/proposal-gate.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "validateProposalLifecycle"
+        },
+        "to_kind": "code-symbol",
+        "to_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "consumers",
+        "subject": "edge",
+        "edge_kind": "depends-on",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+          "path": "build-gate/proposal-gate.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "verifyWrittenPlan"
+        },
+        "to_kind": "code-symbol",
+        "to_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "depends-on",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+          "path": "build-gate/proposal-gate.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "verifyWrittenPlan"
+        },
+        "to_kind": "code-symbol",
+        "to_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "consumers",
+        "subject": "edge",
+        "edge_kind": "depends-on",
+        "from_kind": "repository-file",
+        "from_locator_match": {
+          "blob_sha": "65a836011c0efb535401a3e896a3fce0c25f0d7c",
+          "path": "merkle-dag/scripts/test-obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "to_kind": "code-symbol",
+        "to_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "source_ref": "file:merkle-dag/scripts/test-obligation.mjs@65a836011c0efb535401a3e896a3fce0c25f0d7c"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "depends-on",
+        "from_kind": "repository-file",
+        "from_locator": {
+          "blob_sha": "65a836011c0efb535401a3e896a3fce0c25f0d7c",
+          "path": "merkle-dag/scripts/test-obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "to_kind": "code-symbol",
+        "to_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "source_ref": "file:merkle-dag/scripts/test-obligation.mjs@65a836011c0efb535401a3e896a3fce0c25f0d7c"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "tests",
+        "subject": "edge",
+        "edge_kind": "verified-by",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "test",
+        "to_locator_match": {
+          "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+          "path": "build-gate/proposal-gate.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "verified-by",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "test",
+        "to_locator": {
+          "blob_sha": "7820dff34ab40eaece6f7c10d35047fb4d6a1788",
+          "path": "build-gate/proposal-gate.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "source_ref": "file:build-gate/proposal-gate.mjs@7820dff34ab40eaece6f7c10d35047fb4d6a1788"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "tests",
+        "subject": "edge",
+        "edge_kind": "verified-by",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "test",
+        "to_locator_match": {
+          "blob_sha": "65a836011c0efb535401a3e896a3fce0c25f0d7c",
+          "path": "merkle-dag/scripts/test-obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "source_ref": "file:merkle-dag/scripts/test-obligation.mjs@65a836011c0efb535401a3e896a3fce0c25f0d7c"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "verified-by",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "test",
+        "to_locator": {
+          "blob_sha": "65a836011c0efb535401a3e896a3fce0c25f0d7c",
+          "path": "merkle-dag/scripts/test-obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "source_ref": "file:merkle-dag/scripts/test-obligation.mjs@65a836011c0efb535401a3e896a3fce0c25f0d7c"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "tests",
+        "subject": "edge",
+        "edge_kind": "verified-by",
+        "from_kind": "repository-file",
+        "from_locator_match": {
+          "blob_sha": "65a836011c0efb535401a3e896a3fce0c25f0d7c",
+          "path": "merkle-dag/scripts/test-obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "to_kind": "test",
+        "to_locator_match": {
+          "blob_sha": "65a836011c0efb535401a3e896a3fce0c25f0d7c",
+          "path": "merkle-dag/scripts/test-obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "source_ref": "file:merkle-dag/package.json@81e1169536c75639aa4af0a1ac7f605168b18179"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "verified-by",
+        "from_kind": "repository-file",
+        "from_locator": {
+          "blob_sha": "65a836011c0efb535401a3e896a3fce0c25f0d7c",
+          "path": "merkle-dag/scripts/test-obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "to_kind": "test",
+        "to_locator": {
+          "blob_sha": "65a836011c0efb535401a3e896a3fce0c25f0d7c",
+          "path": "merkle-dag/scripts/test-obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "source_ref": "file:merkle-dag/package.json@81e1169536c75639aa4af0a1ac7f605168b18179"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "introduction",
+        "subject": "edge",
+        "edge_kind": "introduced-by",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "commit",
+        "to_locator_match": {
+          "sha": "0901c660d67178637953563ce14b6cc43757f37b"
+        },
+        "source_ref": "git:0901c660d67178637953563ce14b6cc43757f37b"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "introduced-by",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "commit",
+        "to_locator": {
+          "sha": "0901c660d67178637953563ce14b6cc43757f37b"
+        },
+        "source_ref": "git:0901c660d67178637953563ce14b6cc43757f37b"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "documentation",
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator_match": {
+          "heading_path": [
+            "TELOS Roadmap",
+            "Clotho Phase 1 — provenance-aware knowledge-graph weaver (2026-07)"
+          ],
+          "path": "docs/ROADMAP.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "87a85ce1a86d8d18c9920dcbaee1b0beb2084709a693a5fccd4e511ebff4c6df"
+        },
+        "source_ref": "file:docs/ROADMAP.md@e1822d234e13e97389a693dd200fddc02dba2b40"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator": {
+          "heading_path": [
+            "TELOS Roadmap",
+            "Clotho Phase 1 — provenance-aware knowledge-graph weaver (2026-07)"
+          ],
+          "path": "docs/ROADMAP.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "87a85ce1a86d8d18c9920dcbaee1b0beb2084709a693a5fccd4e511ebff4c6df"
+        },
+        "source_ref": "file:docs/ROADMAP.md@e1822d234e13e97389a693dd200fddc02dba2b40"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "documentation",
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator_match": {
+          "heading_path": [
+            "TELOS — STATUS",
+            "Clotho Phase 1 — slice state (as of 2026-07-17)",
+            "Flagship acceptance runs in `npm test`"
+          ],
+          "path": "docs/STATUS.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "3893602aa6b8fe10cc8b5d414ca395dc72658455a4d3f79e6822631b72c6a2ca"
+        },
+        "source_ref": "file:docs/STATUS.md@1e5a203c871a09ab011224f3d5d2b798b644a47d"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator": {
+          "heading_path": [
+            "TELOS — STATUS",
+            "Clotho Phase 1 — slice state (as of 2026-07-17)",
+            "Flagship acceptance runs in `npm test`"
+          ],
+          "path": "docs/STATUS.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "3893602aa6b8fe10cc8b5d414ca395dc72658455a4d3f79e6822631b72c6a2ca"
+        },
+        "source_ref": "file:docs/STATUS.md@1e5a203c871a09ab011224f3d5d2b798b644a47d"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "documentation",
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator_match": {
+          "heading_path": [
+            "Clotho — Phase 1 Design v2 (the TELOS self-weave)",
+            "Acceptance criteria"
+          ],
+          "path": "docs/clotho-phase-1-design.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "0c3b36749f1965952b98b688940b1a65f50e1b02e82db27d55bc3885ec49db51"
+        },
+        "source_ref": "file:docs/clotho-phase-1-design.md@b59da93ecd6491719fc5583fa376a57f19751628"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator": {
+          "heading_path": [
+            "Clotho — Phase 1 Design v2 (the TELOS self-weave)",
+            "Acceptance criteria"
+          ],
+          "path": "docs/clotho-phase-1-design.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "0c3b36749f1965952b98b688940b1a65f50e1b02e82db27d55bc3885ec49db51"
+        },
+        "source_ref": "file:docs/clotho-phase-1-design.md@b59da93ecd6491719fc5583fa376a57f19751628"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "documentation",
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator_match": {
+          "heading_path": [
+            "Clotho — Phase 1 Design v2 (the TELOS self-weave)",
+            "Flagship acceptance query"
+          ],
+          "path": "docs/clotho-phase-1-design.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "8b2f35bf1a8658f67e3250ab6e21e5cffd327c592c6ff02d8e7ab0cb122ede2a"
+        },
+        "source_ref": "file:docs/clotho-phase-1-design.md@b59da93ecd6491719fc5583fa376a57f19751628"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator": {
+          "heading_path": [
+            "Clotho — Phase 1 Design v2 (the TELOS self-weave)",
+            "Flagship acceptance query"
+          ],
+          "path": "docs/clotho-phase-1-design.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "8b2f35bf1a8658f67e3250ab6e21e5cffd327c592c6ff02d8e7ab0cb122ede2a"
+        },
+        "source_ref": "file:docs/clotho-phase-1-design.md@b59da93ecd6491719fc5583fa376a57f19751628"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "documentation",
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator_match": {
+          "heading_path": [
+            "Clotho — Phase 1 Design v2 (the TELOS self-weave)",
+            "Queries (pure functions, no mutation)"
+          ],
+          "path": "docs/clotho-phase-1-design.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "7e3f923a4ece6be626481f2c98404ca94144fd4c6a8eeed4dc4944dba5bb85be"
+        },
+        "source_ref": "file:docs/clotho-phase-1-design.md@b59da93ecd6491719fc5583fa376a57f19751628"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator": {
+          "heading_path": [
+            "Clotho — Phase 1 Design v2 (the TELOS self-weave)",
+            "Queries (pure functions, no mutation)"
+          ],
+          "path": "docs/clotho-phase-1-design.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "7e3f923a4ece6be626481f2c98404ca94144fd4c6a8eeed4dc4944dba5bb85be"
+        },
+        "source_ref": "file:docs/clotho-phase-1-design.md@b59da93ecd6491719fc5583fa376a57f19751628"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "documentation",
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator_match": {
+          "heading_path": [
+            "Clotho Phase 1 Implementation Plan — SKELETON (SUPERSEDED historical artifact)",
+            "File structure",
+            "Task 2: Registries + identity (`registry.mjs`)"
+          ],
+          "path": "docs/clotho-phase-1-plan.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "f0f832c7b3541db0caee596fc492140ed55ba7a168d0ccd26330efb30d99521c"
+        },
+        "source_ref": "file:docs/clotho-phase-1-plan.md@8a3c169f9834802f835cfa591e13499f668c53b5"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator": {
+          "heading_path": [
+            "Clotho Phase 1 Implementation Plan — SKELETON (SUPERSEDED historical artifact)",
+            "File structure",
+            "Task 2: Registries + identity (`registry.mjs`)"
+          ],
+          "path": "docs/clotho-phase-1-plan.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "f0f832c7b3541db0caee596fc492140ed55ba7a168d0ccd26330efb30d99521c"
+        },
+        "source_ref": "file:docs/clotho-phase-1-plan.md@8a3c169f9834802f835cfa591e13499f668c53b5"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "documentation",
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator_match": {
+          "heading_path": [
+            "Clotho Phase 1 Implementation Plan — SKELETON (SUPERSEDED historical artifact)",
+            "File structure",
+            "Task 6: Flagship acceptance + fail-closed gap"
+          ],
+          "path": "docs/clotho-phase-1-plan.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "38256ee736762f481400313e41c6508ce4332719c43820d79c79a9579e570bf1"
+        },
+        "source_ref": "file:docs/clotho-phase-1-plan.md@8a3c169f9834802f835cfa591e13499f668c53b5"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator": {
+          "heading_path": [
+            "Clotho Phase 1 Implementation Plan — SKELETON (SUPERSEDED historical artifact)",
+            "File structure",
+            "Task 6: Flagship acceptance + fail-closed gap"
+          ],
+          "path": "docs/clotho-phase-1-plan.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "38256ee736762f481400313e41c6508ce4332719c43820d79c79a9579e570bf1"
+        },
+        "source_ref": "file:docs/clotho-phase-1-plan.md@8a3c169f9834802f835cfa591e13499f668c53b5"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "documentation",
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator_match": {
+          "heading_path": [
+            "Clotho Phase 1 Implementation Plan — SKELETON (SUPERSEDED historical artifact)",
+            "File structure"
+          ],
+          "path": "docs/clotho-phase-1-plan.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "4ebfa2bf4b2f9958bd47f4e9636e963a55568d066983bc8fe8bfbf1787229043"
+        },
+        "source_ref": "file:docs/clotho-phase-1-plan.md@8a3c169f9834802f835cfa591e13499f668c53b5"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator": {
+          "heading_path": [
+            "Clotho Phase 1 Implementation Plan — SKELETON (SUPERSEDED historical artifact)",
+            "File structure"
+          ],
+          "path": "docs/clotho-phase-1-plan.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "4ebfa2bf4b2f9958bd47f4e9636e963a55568d066983bc8fe8bfbf1787229043"
+        },
+        "source_ref": "file:docs/clotho-phase-1-plan.md@8a3c169f9834802f835cfa591e13499f668c53b5"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "documentation",
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator_match": {
+          "heading_path": [
+            "Clotho Phase 1 Implementation Plan — SKELETON (SUPERSEDED historical artifact)"
+          ],
+          "path": "docs/clotho-phase-1-plan.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "e9b6622074955f0fc196de1a4c63cb2ee05c31ea494e36629cc510556f213db4"
+        },
+        "source_ref": "file:docs/clotho-phase-1-plan.md@8a3c169f9834802f835cfa591e13499f668c53b5"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator": {
+          "heading_path": [
+            "Clotho Phase 1 Implementation Plan — SKELETON (SUPERSEDED historical artifact)"
+          ],
+          "path": "docs/clotho-phase-1-plan.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "e9b6622074955f0fc196de1a4c63cb2ee05c31ea494e36629cc510556f213db4"
+        },
+        "source_ref": "file:docs/clotho-phase-1-plan.md@8a3c169f9834802f835cfa591e13499f668c53b5"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "documentation",
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator_match": {
+          "heading_path": [
+            "TELOS Upgrade — STATUS (final)",
+            "Addendum — Argo completion pass (2026-07-15 correction)"
+          ],
+          "path": "docs/history/STATUS-2026-06-28.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "c23f35b25dd8ab7a62e68236d28f314672f554a0dd7c82bc61b16c1fe486f431"
+        },
+        "source_ref": "file:docs/history/STATUS-2026-06-28.md@ff8a7923d8b69068a5c321e1229a3aeb9fa8f40a"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator": {
+          "heading_path": [
+            "TELOS Upgrade — STATUS (final)",
+            "Addendum — Argo completion pass (2026-07-15 correction)"
+          ],
+          "path": "docs/history/STATUS-2026-06-28.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "c23f35b25dd8ab7a62e68236d28f314672f554a0dd7c82bc61b16c1fe486f431"
+        },
+        "source_ref": "file:docs/history/STATUS-2026-06-28.md@ff8a7923d8b69068a5c321e1229a3aeb9fa8f40a"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "documentation",
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator_match": {
+          "heading_path": [
+            "Proposal Lifecycle — implementation reference",
+            "Module map"
+          ],
+          "path": "docs/proposal-lifecycle-implementation.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "4b0c47be778935c8471db895556e3ac2b6c35d3a10dd124f6e4e07dde330d6c2"
+        },
+        "source_ref": "file:docs/proposal-lifecycle-implementation.md@e44394a17034f04837684dd1fb9b6ced0a23550c"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator": {
+          "heading_path": [
+            "Proposal Lifecycle — implementation reference",
+            "Module map"
+          ],
+          "path": "docs/proposal-lifecycle-implementation.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "4b0c47be778935c8471db895556e3ac2b6c35d3a10dd124f6e4e07dde330d6c2"
+        },
+        "source_ref": "file:docs/proposal-lifecycle-implementation.md@e44394a17034f04837684dd1fb9b6ced0a23550c"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "documentation",
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator_match": {
+          "heading_path": [
+            "Proposal Lifecycle — implementation reference",
+            "The load-bearing mechanisms",
+            "2. The gate binds the executable to the contract (`reconcileObligations`)"
+          ],
+          "path": "docs/proposal-lifecycle-implementation.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "a9ea06ca9b94133eed6badc3fd5e19817af64dad19530f4fa86456e40ae7b37f"
+        },
+        "source_ref": "file:docs/proposal-lifecycle-implementation.md@e44394a17034f04837684dd1fb9b6ced0a23550c"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "documented-in",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "doc-section",
+        "to_locator": {
+          "heading_path": [
+            "Proposal Lifecycle — implementation reference",
+            "The load-bearing mechanisms",
+            "2. The gate binds the executable to the contract (`reconcileObligations`)"
+          ],
+          "path": "docs/proposal-lifecycle-implementation.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "a9ea06ca9b94133eed6badc3fd5e19817af64dad19530f4fa86456e40ae7b37f"
+        },
+        "source_ref": "file:docs/proposal-lifecycle-implementation.md@e44394a17034f04837684dd1fb9b6ced0a23550c"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "concern",
+        "subject": "edge",
+        "edge_kind": "motivated-by",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "concern",
+        "to_locator_match": {
+          "entry_hash": "8c52703e040fd32202f9b0c2a1f96a56678c3d19e185becda8572d45ad628ee8",
+          "ledger_path": "docs/ledgers/clotho-obligation-ledger.jsonl",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "source_ref": "ledger:docs/ledgers/clotho-obligation-ledger.jsonl#8c52703e040fd32202f9b0c2a1f96a56678c3d19e185becda8572d45ad628ee8"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "motivated-by",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "concern",
+        "to_locator": {
+          "entry_hash": "8c52703e040fd32202f9b0c2a1f96a56678c3d19e185becda8572d45ad628ee8",
+          "ledger_path": "docs/ledgers/clotho-obligation-ledger.jsonl",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "source_ref": "ledger:docs/ledgers/clotho-obligation-ledger.jsonl#8c52703e040fd32202f9b0c2a1f96a56678c3d19e185becda8572d45ad628ee8"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "run-evidence",
+        "subject": "edge",
+        "edge_kind": "evidenced-by",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "run-evidence",
+        "to_locator_match": {
+          "path": "docs/runs/clotho-flagship-evidence",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "summary_sha256": "12c0d2aa6ec11288facbe59928672f83cd42210b138a82cb8b90bd0ab5e47e4e"
+        },
+        "source_ref": "file:docs/runs/clotho-flagship-evidence/summary.json@ece42e4ca7d432f0bdd095bc038d52f7e442b02b"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "evidenced-by",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "run-evidence",
+        "to_locator": {
+          "path": "docs/runs/clotho-flagship-evidence",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "summary_sha256": "12c0d2aa6ec11288facbe59928672f83cd42210b138a82cb8b90bd0ab5e47e4e"
+        },
+        "source_ref": "file:docs/runs/clotho-flagship-evidence/summary.json@ece42e4ca7d432f0bdd095bc038d52f7e442b02b"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "contract",
+        "subject": "edge",
+        "edge_kind": "discharges",
+        "from_kind": "code-symbol",
+        "from_locator_match": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "obligation",
+        "to_locator_match": {
+          "entry_hash": "a5367b2f824183262c7a20a45526c8d43be9c38f9f36d100607aa67c844388b5",
+          "ledger_path": "docs/ledgers/clotho-obligation-ledger.jsonl",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "source_ref": "ledger:docs/ledgers/clotho-obligation-ledger.jsonl#a5367b2f824183262c7a20a45526c8d43be9c38f9f36d100607aa67c844388b5"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "discharges",
+        "from_kind": "code-symbol",
+        "from_locator": {
+          "blob_sha": "4840bb0228a157ca0a7da033246cf64f7e8aa2e0",
+          "path": "merkle-dag/obligation.mjs",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "symbol": "deriveExecutableRef"
+        },
+        "to_kind": "obligation",
+        "to_locator": {
+          "entry_hash": "a5367b2f824183262c7a20a45526c8d43be9c38f9f36d100607aa67c844388b5",
+          "ledger_path": "docs/ledgers/clotho-obligation-ledger.jsonl",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "source_ref": "ledger:docs/ledgers/clotho-obligation-ledger.jsonl#a5367b2f824183262c7a20a45526c8d43be9c38f9f36d100607aa67c844388b5"
+      }
+    },
+    {
+      "expectation": {
+        "source_group": "contract",
+        "subject": "edge",
+        "edge_kind": "discharges",
+        "from_kind": "obligation",
+        "from_locator_match": {
+          "entry_hash": "a5367b2f824183262c7a20a45526c8d43be9c38f9f36d100607aa67c844388b5",
+          "ledger_path": "docs/ledgers/clotho-obligation-ledger.jsonl",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "to_kind": "contract-clause",
+        "to_locator_match": {
+          "heading_path": [
+            "Proposal Lifecycle — Audited Judgment and Verified Authorization",
+            "Verification obligations — the bridge to Rule 3"
+          ],
+          "path": "contracts/Proposal Lifecycle.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "f6da2b30fa2bc75073527b4835821d92eefb3d94ba6758c62b32ca66d9ea861c"
+        },
+        "source_ref": "ledger:docs/ledgers/clotho-obligation-ledger.jsonl#a5367b2f824183262c7a20a45526c8d43be9c38f9f36d100607aa67c844388b5"
+      },
+      "matched_fact": {
+        "subject": "edge",
+        "edge_kind": "discharges",
+        "from_kind": "obligation",
+        "from_locator": {
+          "entry_hash": "a5367b2f824183262c7a20a45526c8d43be9c38f9f36d100607aa67c844388b5",
+          "ledger_path": "docs/ledgers/clotho-obligation-ledger.jsonl",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
+        },
+        "to_kind": "contract-clause",
+        "to_locator": {
+          "heading_path": [
+            "Proposal Lifecycle — Audited Judgment and Verified Authorization",
+            "Verification obligations — the bridge to Rule 3"
+          ],
+          "path": "contracts/Proposal Lifecycle.md",
+          "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+          "text_sha256": "f6da2b30fa2bc75073527b4835821d92eefb3d94ba6758c62b32ca66d9ea861c"
+        },
+        "source_ref": "ledger:docs/ledgers/clotho-obligation-ledger.jsonl#a5367b2f824183262c7a20a45526c8d43be9c38f9f36d100607aa67c844388b5"
+      }
+    }
+  ],
+  "unmatched_expectations": []
+}

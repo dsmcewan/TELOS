@@ -1,0 +1,186 @@
+{
+  "kind": "clotho-self-weave-verification",
+  "node_version": "v24.16.0",
+  "input_repo_head": "395c9719aa52306ae51b364747387fb191514c70",
+  "repository_ref": {
+    "derived": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+    "ledger_header": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+    "rederived_at_publication": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
+    "equal": true
+  },
+  "snapshot": {
+    "path": "docs/runs/clotho-self-weave/thread-ledger.snapshot.jsonl",
+    "sha256": "d7db5bcf1295c75773e412220b6dae3f289bd651c0bb61a5fb230ef33df21901",
+    "ledger_verification": "ok",
+    "errors": []
+  },
+  "trusted_record_count": 4001,
+  "manifest": {
+    "weavers": [
+      {
+        "id": "clotho-git-weaver",
+        "state": "executed",
+        "implementation_refs": [
+          "file:clotho/registry.mjs@15ae6c35927934906fc237b88065dc1763a6efec",
+          "file:clotho/weavers/git.mjs@cf90b8e969dbdd5c80b9de444a48f2d6b261977b"
+        ]
+      },
+      {
+        "id": "clotho-code-weaver",
+        "state": "executed",
+        "implementation_refs": [
+          "file:clotho/registry.mjs@15ae6c35927934906fc237b88065dc1763a6efec",
+          "file:clotho/weavers/code.mjs@6cb24ce642122930c781803c6a8a73aa8fed2786",
+          "file:clotho/weavers/util.mjs@15ba5636505fd2ad6b2472a14e7cf9e58a7af6a3"
+        ]
+      },
+      {
+        "id": "clotho-test-weaver",
+        "state": "executed",
+        "implementation_refs": [
+          "file:clotho/registry.mjs@15ae6c35927934906fc237b88065dc1763a6efec",
+          "file:clotho/weavers/test.mjs@ff8acda96da095c96cd619e98d62106c65edacd2",
+          "file:clotho/weavers/util.mjs@15ba5636505fd2ad6b2472a14e7cf9e58a7af6a3"
+        ]
+      },
+      {
+        "id": "clotho-doc-weaver",
+        "state": "executed",
+        "implementation_refs": [
+          "file:clotho/registry.mjs@15ae6c35927934906fc237b88065dc1763a6efec",
+          "file:clotho/weavers/doc.mjs@f8f6e6261311c961c6e860b69b2eafdb3b06c8cc",
+          "file:clotho/weavers/util.mjs@15ba5636505fd2ad6b2472a14e7cf9e58a7af6a3"
+        ]
+      },
+      {
+        "id": "clotho-ledger-weaver",
+        "state": "executed",
+        "implementation_refs": [
+          "file:clotho/registry.mjs@15ae6c35927934906fc237b88065dc1763a6efec",
+          "file:clotho/weavers/ledger.mjs@fc588192d64b8a2068bfdf32ee979dd30fd23ab4",
+          "file:clotho/weavers/util.mjs@15ba5636505fd2ad6b2472a14e7cf9e58a7af6a3"
+        ]
+      }
+    ],
+    "orchestrator_refs": [
+      "file:clotho/inventory.mjs@964bb72c370c36f661ee37edd011eed4c3cf18f8",
+      "file:clotho/registry.mjs@15ae6c35927934906fc237b88065dc1763a6efec",
+      "file:clotho/thread-ledger.mjs@e19466185903ad011791d2987ae73e672bff3d16",
+      "file:clotho/weave.mjs@415990e6c6bf60c237d8eb8f5cf8cda270606d09",
+      "file:clotho/weavers/code.mjs@6cb24ce642122930c781803c6a8a73aa8fed2786",
+      "file:clotho/weavers/doc.mjs@f8f6e6261311c961c6e860b69b2eafdb3b06c8cc",
+      "file:clotho/weavers/git.mjs@cf90b8e969dbdd5c80b9de444a48f2d6b261977b",
+      "file:clotho/weavers/ledger.mjs@fc588192d64b8a2068bfdf32ee979dd30fd23ab4",
+      "file:clotho/weavers/test.mjs@ff8acda96da095c96cd619e98d62106c65edacd2",
+      "file:clotho/weavers/util.mjs@15ba5636505fd2ad6b2472a14e7cf9e58a7af6a3"
+    ],
+    "consistency": "consistent"
+  },
+  "closure": {
+    "d33_equality": "equal",
+    "d34_rederivation": "no-drift",
+    "provenance_statement": "These references exactly cover the supported, statically declared dependency model at publication time"
+  },
+  "counts": {
+    "d24": "conformant",
+    "d31_contract_files": 5
+  },
+  "attribution": {
+    "am39": "conformant",
+    "producers": [
+      "clotho-git-weaver",
+      "clotho-code-weaver",
+      "clotho-test-weaver",
+      "clotho-doc-weaver",
+      "clotho-ledger-weaver"
+    ]
+  },
+  "self_exclusion": {
+    "d8_global_exclude_pins_self_export": true,
+    "records_referencing_self_export": 0
+  },
+  "flagship": {
+    "expected": 28,
+    "matched": 28,
+    "unmatched_expectations": 0,
+    "review_set": 76,
+    "groups": {
+      "definition": 1,
+      "consumers": 7,
+      "tests": 3,
+      "introduction": 1,
+      "documentation": 12,
+      "concern": 1,
+      "run-evidence": 1,
+      "contract": 2
+    },
+    "query_gaps": 0,
+    "drift_gaps": 0
+  },
+  "d35": {
+    "affected_derived_in_recorded": true,
+    "affected_recorded_in_derived": true,
+    "evidence_derived_in_recorded": true,
+    "evidence_recorded_in_derived": true,
+    "edges_derived_in_recorded": true,
+    "edges_recorded_in_derived": true,
+    "coverage": "verified"
+  },
+  "advisory": {
+    "command": "node clotho/scripts/test-advisory.mjs",
+    "exit_status": 0,
+    "units": 72,
+    "outside_scanned": 132,
+    "outside_unclassified": 0,
+    "clotho_scanned": 27,
+    "accepted_edges": 60,
+    "unassigned_sources": 76,
+    "note": "Two-direction advisory review signals (D23/D27/D30/D32/D33, AM-35..39), including the D30/D32 loader-construction checks against the exact frozen mapping and the D33 shared-grammar proof — recorded as advisory trusted-code review signals, never as isolation or loader-containment proofs."
+  },
+  "package_tests": {
+    "mode": "full",
+    "results": [
+      {
+        "package": "clotho",
+        "command": "npm test",
+        "exit_status": 0
+      },
+      {
+        "package": "ai-forge",
+        "command": "npm test",
+        "exit_status": 0
+      },
+      {
+        "package": "breakout",
+        "command": "npm test",
+        "exit_status": 0
+      },
+      {
+        "package": "build-gate",
+        "command": "npm test",
+        "exit_status": 0
+      },
+      {
+        "package": "connectors/ai-peer-mcp",
+        "command": "npm test",
+        "exit_status": 0
+      },
+      {
+        "package": "forge",
+        "command": "npm test",
+        "exit_status": 0
+      },
+      {
+        "package": "merkle-dag",
+        "command": "npm test",
+        "exit_status": 0
+      },
+      {
+        "package": "saas-forge",
+        "command": "npm test",
+        "exit_status": 0
+      }
+    ]
+  },
+  "publication_state": "published"
+}
