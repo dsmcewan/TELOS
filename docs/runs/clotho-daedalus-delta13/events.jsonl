@@ -1,0 +1,1 @@
+{"stage":"negotiation","artifact_refs":["sha256:00a1718b06df225c4f3df79d3d274b95779063a613e390fab6ec978c663664c1","sha256:3691d55114b653fbcee5389b6bde6fcca5b66503d320bba5a31d7e94193010af","sha256:5097e26e5fa49f86861a0f3efb086d250902946ce1fe0c689f203cf44f6c0ba2"],"policy_result":{"state":"converged-for-submission","unresolved":0,"round":1},"at":"2026-07-17T02:46:52.001Z"}
