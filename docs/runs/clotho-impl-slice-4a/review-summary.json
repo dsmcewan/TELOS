@@ -1,0 +1,116 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "review_ref": "sha256:e72c7b80f2f34cf7e609349c7191d347157b3db9fd47ffc4ea9de867d672f289",
+  "pr": 117,
+  "pr_head": "0e73ca6982eb766761637f05fff87ebe133d6ab9",
+  "plan_ref": "sha256:f9368b5748de6c2670193558783b60b7f74fd94de9196c9664d42269f3d2bc04",
+  "authorization": "authz-006",
+  "timestamp": "2026-07-17T05:14:12.871Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "medium",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd74NUHiCnmF138jurqSX",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-17T05:14:53.561Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2VBoE84DaayJ1yP18jU77gpLdkXL",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-17T05:19:54.081Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "62c887ab-ccd8-94d1-bdc8-98fbc8968239",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-17T05:14:34.658Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "J7pZar2yOcmEz7IPnvuwWA",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-17T05:14:26.981Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Correct the shared declaration parser to delimit import/export declarations according to the frozen supported grammar, including semicolonless/ASI boundaries, without scanning a completed local export into a following statement. Add classifier and closure fixtures for semicolonless local exports followed by strings and other statements.; Replace the call-definition heuristic with token-context-aware classification that distinguishes method/function definitions from real calls followed by a subsequent block. Add form-only closure tests proving `require`, `module.require`, and dynamic `import` calls followed by an ASI-separated block remain edges.; Complete regex-versus-division handling for all supported expression contexts, including function/class expressions, contextual `of` bindings in `for` heads, `for await`, and keyword-named member properties. Add tests that prove real loads remain visible and regex lookalikes remain masked in each context.; Recognize the complete standard horizontal whitespace set when enforcing line-leading `-->`, and add one failing AM-41(b3) unit for each omitted whitespace class, all asserting the stable diagnostic.; Make `physicalContainment` inspect original uncollapsed components from the correct anchor for both relative and absolute candidates, and inspect the original allowed-root spelling before normalization. Add absolute-candidate and allowed-root fixtures containing a symlink component followed by `..`, requiring rejection.",
+      "codex has hard stops: The shared D33 classifier is not correct over the frozen supported profile. `parseModuleDecl` does not respect statement/ASI boundaries: valid in-profile source such as `const x = 1; export { x }\\nconsole.log(\"ok\");` is scanned past the completed local export and throws `unsupported-module-lexical-profile` on the following string. Conversely, `isDefinition` suppresses a real accepted call whenever its closing parenthesis is followed by `{`; for example, `require(\"./x.mjs\")\\n{}` contains a real require call but produces no closure edge.; The required previous-significant-token regex/division classification is incomplete. Function/class expression bodies are treated like statement blocks, so valid in-profile code such as `const q = function() {} / import(\"./x.mjs\");` masks the real dynamic import as regex text. Contextual/reserved IdentifierName uses also remain unsound, including `of` used as a binding inside a `for` head and reserved words used after member access. These are supported-profile token contexts, not authorized exclusions.; AM-41(b3) is not completely enforced. `isHorizontalWs` claims to cover the complete horizontal whitespace set but omits ECMAScript Space_Separator characters such as U+1680, U+2000–U+200A, U+202F, U+205F, and U+3000. Consequently a line-leading `-->` preceded by, for example, U+2003 is accepted instead of failing with `unsupported-module-lexical-profile`.; `physicalContainment` can normalize away an original symlink component for absolute candidate paths. It splits an absolute candidate into components but incorrectly walks those components starting at `absRepo`; the subsequent `path.resolve` then collapses `link/..`. Thus an absolute spelling such as `<repo>/link/../real/file`, where `<repo>/link` is a symlink, can be accepted after the actual `link` component was never lstat-checked. The original spelling of `repoRoot` is likewise normalized before component inspection. This violates D21's every-component, never-follow discipline."
+    ],
+    "warnings": []
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

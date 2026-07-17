@@ -1,0 +1,48 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:e72c7b80f2f34cf7e609349c7191d347157b3db9fd47ffc4ea9de867d672f289",
+  "decision": "revise",
+  "required_edits": [
+    "Correct the shared declaration parser to delimit import/export declarations according to the frozen supported grammar, including semicolonless/ASI boundaries, without scanning a completed local export into a following statement. Add classifier and closure fixtures for semicolonless local exports followed by strings and other statements.",
+    "Replace the call-definition heuristic with token-context-aware classification that distinguishes method/function definitions from real calls followed by a subsequent block. Add form-only closure tests proving `require`, `module.require`, and dynamic `import` calls followed by an ASI-separated block remain edges.",
+    "Complete regex-versus-division handling for all supported expression contexts, including function/class expressions, contextual `of` bindings in `for` heads, `for await`, and keyword-named member properties. Add tests that prove real loads remain visible and regex lookalikes remain masked in each context.",
+    "Recognize the complete standard horizontal whitespace set when enforcing line-leading `-->`, and add one failing AM-41(b3) unit for each omitted whitespace class, all asserting the stable diagnostic.",
+    "Make `physicalContainment` inspect original uncollapsed components from the correct anchor for both relative and absolute candidates, and inspect the original allowed-root spelling before normalization. Add absolute-candidate and allowed-root fixtures containing a symlink component followed by `..`, requiring rejection."
+  ],
+  "hard_stops": [
+    "The shared D33 classifier is not correct over the frozen supported profile. `parseModuleDecl` does not respect statement/ASI boundaries: valid in-profile source such as `const x = 1; export { x }\\nconsole.log(\"ok\");` is scanned past the completed local export and throws `unsupported-module-lexical-profile` on the following string. Conversely, `isDefinition` suppresses a real accepted call whenever its closing parenthesis is followed by `{`; for example, `require(\"./x.mjs\")\\n{}` contains a real require call but produces no closure edge.",
+    "The required previous-significant-token regex/division classification is incomplete. Function/class expression bodies are treated like statement blocks, so valid in-profile code such as `const q = function() {} / import(\"./x.mjs\");` masks the real dynamic import as regex text. Contextual/reserved IdentifierName uses also remain unsound, including `of` used as a binding inside a `for` head and reserved words used after member access. These are supported-profile token contexts, not authorized exclusions.",
+    "AM-41(b3) is not completely enforced. `isHorizontalWs` claims to cover the complete horizontal whitespace set but omits ECMAScript Space_Separator characters such as U+1680, U+2000–U+200A, U+202F, U+205F, and U+3000. Consequently a line-leading `-->` preceded by, for example, U+2003 is accepted instead of failing with `unsupported-module-lexical-profile`.",
+    "`physicalContainment` can normalize away an original symlink component for absolute candidate paths. It splits an absolute candidate into components but incorrectly walks those components starting at `absRepo`; the subsequent `path.resolve` then collapses `link/..`. Thus an absolute spelling such as `<repo>/link/../real/file`, where `<repo>/link` is a symlink, can be accepted after the actual `link` component was never lstat-checked. The original spelling of `repoRoot` is likewise normalized before component inspection. This violates D21's every-component, never-follow discipline."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-17T05:14:12.871Z",
+  "rationale": "The inventory constants, committed git/code closures, exact git invocation shapes, counted-source plumbing, and principal git/code edge semantics appear substantially aligned, and the deterministic gate passes. However, v15/AM-41 requires total correctness over the frozen source profile and deterministic rejection of every enumerated exclusion. The concrete supported-profile false negatives/false rejection and the missed b3 construct mean the closure can be incomplete or fail on valid input. The D21 absolute-path normalization hole independently defeats physical containment. These are faithfulness defects, not optional hardening, so the implementation is not acceptable as-is.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2VBoE84DaayJ1yP18jU77gpLdkXL",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-17T05:19:54.081Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "1636ff9d77d39ccda84d392453589257cd9e7c659a1bafbecbfda2103e40f66f",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

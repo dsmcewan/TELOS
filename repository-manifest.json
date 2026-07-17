@@ -1,0 +1,52 @@
+{
+  "system": "TELOS",
+  "note": "Machine-readable system map. A repository scanner should build its architectural map from THIS file, not by ranking README language. Each claim carries a grade + evidence; a scanner verifies claims against evidence and rejects any claim contradicted by a NON-CLAIMS record. Roles are registered mythological terms (docs/mythological-vocabulary.md) — no coined names.",
+  "as_of": "2026-07-17",
+  "active_authority": { "pointer": "CURRENT-AUTHORITY.json" },
+  "entry_points": {
+    "onboarding": "AI-START-HERE.md",
+    "schema": "docs/institutional-memory/SCHEMA.md",
+    "comprehension_gate": "docs/institutional-memory/comprehension-gate.mjs",
+    "contract_verifier": "docs/institutional-memory/verify-contracts.mjs"
+  },
+  "normative_docs": [
+    "docs/runs/clotho-daedalus-delta14/matured-plan-v15.md",
+    "docs/clotho-phase-1-plan-amendments-12.md",
+    "docs/clotho-phase-1-plan-amendments-13.md",
+    "docs/mythological-vocabulary.md",
+    "docs/convergence-is-not-authorization.md"
+  ],
+  "superseded_docs": {
+    "note": "Present in the repo but must_not_govern_new_work — see CURRENT-AUTHORITY.json#superseded",
+    "plans": ["v11", "v12", "v13", "v14"]
+  },
+  "components": [
+    {
+      "name": "clotho",
+      "role": "Clotho",
+      "role_meaning": "creates and maintains knowledge-graph threads across artifacts and repositories",
+      "status": "implementation (Phase 1: tasks 0-4a accepted; 4b-7 remain)",
+      "purpose": "provenance-aware knowledge-graph weaver over the TELOS spine",
+      "trust_domain": "advisory / non-sandboxed",
+      "memory_dir": "clotho/memory/",
+      "claims": [
+        { "statement": "PACKAGE_ROOTS is exactly the five TELOS-spine packages with an explicit tested exclusion of the three products (AM-40)", "grade": "executable", "evidence": ["clotho/scripts/test-inventory.mjs", "docs/institutional-memory/verify-contracts.mjs", "clotho/memory/CONTRACTS/package-roots.json"] },
+        { "statement": "the shared D33 scanner is correct over a closed source profile and fails closed on b1-b6 (AM-41)", "grade": "executable", "evidence": ["clotho/scripts/test-util.mjs", "clotho/scripts/test-closure.mjs", "clotho/memory/CONTRACTS/source-profile.json"] },
+        { "statement": "committed weaver inventories are proven equal to their derived closures", "grade": "executable", "evidence": ["clotho/scripts/test-closure.mjs"] },
+        { "statement": "the frozen inventory-id table and the D32 loader-safe-exports map are exact and frozen", "grade": "executable", "evidence": ["clotho/scripts/test-inventory.mjs", "docs/institutional-memory/verify-contracts.mjs"] }
+      ],
+      "non_claims": [
+        "not a JavaScript sandbox",
+        "not a complete ECMAScript parser",
+        "does not prove loader analysis or containment",
+        "no orchestrator / test / doc / ledger weaver yet (tasks 4b/5)"
+      ],
+      "deferred_backlog": "docs/runs/clotho-impl-slice-4a/DEFERRED-MINOR-FIXES.md"
+    },
+    { "name": "build-gate", "role": null, "role_note": "implements the TELOS gate (TELOS governs review/evidence/authorization/execution); mythological ownership is not asserted for the package name per docs/mythological-vocabulary.md", "status": "in use", "purpose": "the gate (gate.mjs), per-seat HMAC signing, the council orchestrator, and the Daedalus workshop", "trust_domain": "certifies from disk + signatures + provenance, never a self-report" },
+    { "name": "breakout", "role": null, "status": "in use", "purpose": "adversarial self-challenge + verdict-on-facts (verifier.mjs) and a minimal MCP stdio client", "trust_domain": "deterministic verification" },
+    { "name": "connectors/ai-peer-mcp", "role": null, "status": "in use", "purpose": "MCP server exposing model backends with real per-seat provenance", "trust_domain": "provider-native structured output; provenance != HMAC signature" },
+    { "name": "merkle-dag", "role": null, "status": "in use", "purpose": "content-addressed planning, Ed25519 verified delegation, append-only signed ledger, pure done() gate", "trust_domain": "content-address + signature" },
+    { "name": "contracts", "role": null, "status": "reference", "purpose": "the human-readable protocol the gate enforces", "trust_domain": "normative protocol text" }
+  ]
+}

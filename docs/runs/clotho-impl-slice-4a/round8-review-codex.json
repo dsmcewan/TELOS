@@ -1,0 +1,45 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:e3b0ae112346cff706fb47f4c923d74b0f82f9baa680ae3c0c2c7f340fcf7139",
+  "decision": "revise",
+  "required_edits": [
+    "Separate D33 resolution from the code-weaver’s extraction policy: make the shared closure resolver traverse existing explicit relative targets permitted by the frozen D33 extension rules, including accepted require-style non-`.mjs` targets, while enforcing the code weaver’s explicit-`.mjs` restriction in `code.mjs` or a code-specific caller check. Replace the test asserting all require-style non-`.mjs` targets are fatal with closure-inclusion and recursive-traversal coverage.",
+    "Correct the dependency-free lexer so regular-expression literals and hashbang/comment forms cannot manufacture module-load sites, exports, or identifier uses in every valid expression-start context. Add regression units using a regex after a declaration/block and in `yield` or `for...of`, proving no closure edge and no inferred code edge/export.",
+    "Rework physical containment so no existing component is discarded before lstat inspection. Either reject dot-segment candidate/root inputs or inspect their original component sequence and ensure the subsequently used write path is the same checked path. Add a unit where a symlink/junction component followed by `..` would physically escape, and require rejection."
+  ],
+  "hard_stops": [
+    "The shared D33 resolver imposes a universal `.mjs`-only rule. D33 closes over every accepted literal relative module-loading edge; the explicit-`.mjs` restriction is specific to the code-weaver extraction grammar. An existing explicit target such as `require(\"./helper.cjs\")` or `module.require(\"./helper.cjs\")` is currently classified as an accepted literal load and then rejected as `ambiguous-extension` instead of being included and recursively traversed.",
+    "The lexical scanner is not exact for valid JavaScript regular-expression contexts. For example, after a function declaration or block, `/import(\".\\\\/ghost.mjs\")/` is a regular-expression literal, but `lex()` treats the opening slash as division, allowing `classifyModuleLoads()` to fabricate a dynamic-import edge from regex contents. Similar failures occur after `yield`, in `for (... of /.../)`, and other expression-start contexts. This violates the exact accepted-form classifier and token-based use/export scanning requirements.",
+    "`physicalContainment()` calls `path.resolve()` before lstat-walking the candidate, so lexical components can be normalized away without inspection. A candidate such as `link/../target`, where `link` is a symlink or junction, can therefore be accepted without lstatting `link`; on filesystems that resolve the raw path through the symlink before `..`, the physical write can escape. D21 requires every existing component to be inspected and symlink components rejected before containment is decided."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-17T02:08:38.200Z",
+  "rationale": "The committed package classification, frozen required-inventory table, D32 mapping and freezing, git/code implementation inventories, exact git argv and SHA handling, counted-source structure, and the principal code-weaver endpoint threading are otherwise closely aligned with Task 4a. The deterministic gate and current units pass, but they pin the incorrect universal `.mjs` closure rule and do not cover the valid regex-context or symlink-plus-dot-segment counterexamples above. These are substrate/provenance and physical-containment defects, not later-task concerns, so the PR is not acceptable as-is.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2SIEa9i5oQUwMTVBEN4j0mthrnh1",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-17T02:16:07.472Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "922d907c51b724eeef7d4c2dd1b1dbf8eb8e7c099beafb6f253509fe364129ed",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

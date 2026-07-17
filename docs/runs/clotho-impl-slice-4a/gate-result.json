@@ -1,0 +1,297 @@
+{
+  "workstream": "clotho-task-4a-inventory-weavers",
+  "claimedStatus": "meets",
+  "finalStatus": "meets",
+  "converged": true,
+  "verified_facts": [
+    {
+      "id": "exists:inventory.mjs",
+      "description": "file exists: C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\inventory.mjs",
+      "ok": true,
+      "detail": "found C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\inventory.mjs"
+    },
+    {
+      "id": "exists:weavers/util.mjs",
+      "description": "file exists: C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\util.mjs",
+      "ok": true,
+      "detail": "found C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\util.mjs"
+    },
+    {
+      "id": "exists:weavers/git.mjs",
+      "description": "file exists: C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\git.mjs",
+      "ok": true,
+      "detail": "found C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\git.mjs"
+    },
+    {
+      "id": "exists:weavers/code.mjs",
+      "description": "file exists: C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\code.mjs",
+      "ok": true,
+      "detail": "found C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\code.mjs"
+    },
+    {
+      "id": "exists:scripts/test-closure.mjs",
+      "description": "file exists: C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\scripts\\test-closure.mjs",
+      "ok": true,
+      "detail": "found C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\scripts\\test-closure.mjs"
+    },
+    {
+      "id": "git-weave",
+      "description": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\git.mjs contains \"export function weave\"",
+      "ok": true,
+      "detail": "found \"export function weave\""
+    },
+    {
+      "id": "code-weave",
+      "description": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\code.mjs contains \"export function weave\"",
+      "ok": true,
+      "detail": "found \"export function weave\""
+    },
+    {
+      "id": "frozen-table",
+      "description": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\inventory.mjs contains \"REQUIRED_INVENTORY_IDS\"",
+      "ok": true,
+      "detail": "found \"REQUIRED_INVENTORY_IDS\""
+    },
+    {
+      "id": "loader-map",
+      "description": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\inventory.mjs contains \"LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS\"",
+      "ok": true,
+      "detail": "found \"LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS\""
+    },
+    {
+      "id": "closure-test-derives",
+      "description": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\scripts\\test-closure.mjs contains \"WEAVER_IMPL_FILES\"",
+      "ok": true,
+      "detail": "found \"WEAVER_IMPL_FILES\""
+    },
+    {
+      "id": "check",
+      "description": "clotho check",
+      "ok": true,
+      "detail": "exit=0 clotho check OK (15 files)"
+    },
+    {
+      "id": "test-all",
+      "description": "clotho test-all (incl. closure + frozen-table + D32 units)",
+      "ok": true,
+      "detail": "exit=0 clotho test-all OK (7 tests)"
+    },
+    {
+      "id": "zero-deps",
+      "description": "zero dependencies",
+      "ok": true,
+      "detail": "exit=0"
+    },
+    {
+      "id": "imports-permitted",
+      "description": "new modules import node:/clotho-relative/vendor only",
+      "ok": true,
+      "detail": "exit=0"
+    },
+    {
+      "id": "confined",
+      "description": "diff confined to clotho/",
+      "ok": true,
+      "detail": "exit=0"
+    }
+  ],
+  "checks": [
+    {
+      "type": "file_exists",
+      "path": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\inventory.mjs",
+      "id": "exists:inventory.mjs"
+    },
+    {
+      "type": "file_exists",
+      "path": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\util.mjs",
+      "id": "exists:weavers/util.mjs"
+    },
+    {
+      "type": "file_exists",
+      "path": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\git.mjs",
+      "id": "exists:weavers/git.mjs"
+    },
+    {
+      "type": "file_exists",
+      "path": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\code.mjs",
+      "id": "exists:weavers/code.mjs"
+    },
+    {
+      "type": "file_exists",
+      "path": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\scripts\\test-closure.mjs",
+      "id": "exists:scripts/test-closure.mjs"
+    },
+    {
+      "type": "file_contains",
+      "path": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\git.mjs",
+      "needle": "export function weave",
+      "id": "git-weave"
+    },
+    {
+      "type": "file_contains",
+      "path": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\code.mjs",
+      "needle": "export function weave",
+      "id": "code-weave"
+    },
+    {
+      "type": "file_contains",
+      "path": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\inventory.mjs",
+      "needle": "REQUIRED_INVENTORY_IDS",
+      "id": "frozen-table"
+    },
+    {
+      "type": "file_contains",
+      "path": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\inventory.mjs",
+      "needle": "LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS",
+      "id": "loader-map"
+    },
+    {
+      "type": "file_contains",
+      "path": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\scripts\\test-closure.mjs",
+      "needle": "WEAVER_IMPL_FILES",
+      "id": "closure-test-derives"
+    },
+    {
+      "type": "command",
+      "id": "check",
+      "description": "clotho check",
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "scripts/check.mjs"
+      ],
+      "cwd": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho",
+      "expectExit": 0
+    },
+    {
+      "type": "command",
+      "id": "test-all",
+      "description": "clotho test-all (incl. closure + frozen-table + D32 units)",
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "scripts/test-all.mjs"
+      ],
+      "cwd": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho",
+      "expectExit": 0
+    },
+    {
+      "type": "command",
+      "id": "zero-deps",
+      "description": "zero dependencies",
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "-e",
+        "const p=require('./package.json');process.exit(p.dependencies||p.devDependencies?1:0)"
+      ],
+      "cwd": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho",
+      "expectExit": 0
+    },
+    {
+      "type": "command",
+      "id": "imports-permitted",
+      "description": "new modules import node:/clotho-relative/vendor only",
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "-e",
+        "const fs=require('fs');const mods=['inventory.mjs','weavers/util.mjs','weavers/git.mjs','weavers/code.mjs'];const ok=(x)=>x.startsWith('node:')||x.startsWith('./')||x==='../registry.mjs'||x.endsWith('merkle-dag/vendor.mjs');for(const m of mods){const s=fs.readFileSync(m,'utf8');const im=[...s.matchAll(/^import[^\\n]*from\\s+[\\\"']([^\\\"']+)[\\\"']/gm)].map(x=>x[1]);const bad=im.filter(x=>!ok(x));if(bad.length){console.error('bad import in '+m+': '+bad.join(','));process.exit(1);}}process.exit(0)"
+      ],
+      "cwd": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho",
+      "expectExit": 0
+    },
+    {
+      "type": "command",
+      "id": "confined",
+      "description": "diff confined to clotho/",
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "-e",
+        "const {execFileSync}=require('child_process');const out=execFileSync('git',['diff','--name-only','bb265b9','HEAD'],{cwd:process.env.ROOTDIR,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(Boolean);process.exit(out.every(f=>f.startsWith('clotho/'))?0:1)"
+      ],
+      "cwd": "C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3",
+      "expectExit": 0
+    }
+  ],
+  "surviving_blockers": [],
+  "go_to_market_blockers": [],
+  "rounds": [
+    {
+      "round": 1,
+      "checks": [
+        {
+          "id": "exists:inventory.mjs",
+          "ok": true,
+          "detail": "found C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\inventory.mjs"
+        },
+        {
+          "id": "exists:weavers/util.mjs",
+          "ok": true,
+          "detail": "found C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\util.mjs"
+        },
+        {
+          "id": "exists:weavers/git.mjs",
+          "ok": true,
+          "detail": "found C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\git.mjs"
+        },
+        {
+          "id": "exists:weavers/code.mjs",
+          "ok": true,
+          "detail": "found C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\weavers\\code.mjs"
+        },
+        {
+          "id": "exists:scripts/test-closure.mjs",
+          "ok": true,
+          "detail": "found C:\\Users\\dsmce\\GITHUB\\telos\\.claude\\worktrees\\clotho-task3\\clotho\\scripts\\test-closure.mjs"
+        },
+        {
+          "id": "git-weave",
+          "ok": true,
+          "detail": "found \"export function weave\""
+        },
+        {
+          "id": "code-weave",
+          "ok": true,
+          "detail": "found \"export function weave\""
+        },
+        {
+          "id": "frozen-table",
+          "ok": true,
+          "detail": "found \"REQUIRED_INVENTORY_IDS\""
+        },
+        {
+          "id": "loader-map",
+          "ok": true,
+          "detail": "found \"LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS\""
+        },
+        {
+          "id": "closure-test-derives",
+          "ok": true,
+          "detail": "found \"WEAVER_IMPL_FILES\""
+        },
+        {
+          "id": "check",
+          "ok": true,
+          "detail": "exit=0 clotho check OK (15 files)"
+        },
+        {
+          "id": "test-all",
+          "ok": true,
+          "detail": "exit=0 clotho test-all OK (7 tests)"
+        },
+        {
+          "id": "zero-deps",
+          "ok": true,
+          "detail": "exit=0"
+        },
+        {
+          "id": "imports-permitted",
+          "ok": true,
+          "detail": "exit=0"
+        },
+        {
+          "id": "confined",
+          "ok": true,
+          "detail": "exit=0"
+        }
+      ]
+    }
+  ]
+}

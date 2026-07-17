@@ -1,0 +1,119 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "review_ref": "sha256:61d8071138c1cd7f985bad339bdf478c8bbbf34d077a634252467462bc7f3909",
+  "pr": 117,
+  "pr_head": "8dae45ea00841498a9587409d02428620321c20e",
+  "plan_ref": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3",
+  "authorization": "authz-005",
+  "timestamp": "2026-07-16T23:23:31.476Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "medium",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6bdNbgNpbqZW52wjmZy",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-16T23:24:33.237Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2PiQ2WIpsLACfAZLNDjNn3BLXm6O",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-16T23:30:57.052Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "b84b6528-3fb2-99ea-8023-d7e3ef6368d4",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-16T23:23:52.185Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "9WdZarHPKsrnz7IPq-aReQ",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-16T23:23:51.736Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "claude decision is 'revise', not 'approve'.",
+      "claude has required edits: Fix the required-vs-required test asymmetry for git.mjs sources: git.mjs's committed closure is {clotho/registry.mjs, clotho/weavers/git.mjs} and it does NOT import util.mjs, yet the task's mandate 'both weavers ... consume only counted sources' plus D29 requires the weaver to exhaust EVERY handed iterable; git.mjs iterates sources['package-symbols'] then sources['package-files'] — acceptable — but there is no unit proving the weaver exhausts BOTH iterables when one is empty-but-present or proving behavior when a handed iterable is left unconsumed (the driver-side fatal accounting check is Task 5, but Task 4a's own text requires units proving exhaustion semantics against the weaver; test-git.mjs only asserts the happy-path exhausted:true). Add a unit where one counted source is empty and both accountings still read exhausted:true after weave().; scanExports mis-classifies `export const x = 1` when phase1 regex is applied: the phase1 regex `export\\s+(?:async\\s+function|function|const\\s+[A-Za-z_$][A-Za-z0-9_$]*\\s*=?|class)\\s*` and declRe overlap but phase1 permits `const NAME` with OPTIONAL `=`, meaning `export const x;` (illegal JS but lexically matchable) or `export const x = require(...)` dynamic flow is silently accepted as a Phase 1 export rather than warned as dynamic symbol flow. The frozen grammar is exactly 'export function|async function|const|class followed by an identifier'; `export const x = <arbitrary dynamic expression>` IS within the frozen grammar, so this is arguably faithful — but add a unit pinning `export const x = someCall()` as a seeded export so the boundary is committed behavior, not accident.; test-closure.mjs section 1 asserts committed inventories equal derived closures, but WEAVER_IMPL_FILES['clotho-git-weaver'] omits clotho/weavers/util.mjs while git.mjs is claimed (in its header comment) to have closure exactly {registry.mjs, git.mjs} — verify and pin with an explicit unit that git.mjs contains NO import of util.mjs (e.g. assert classifyModuleLoads over git.mjs source yields only '../registry.mjs'), because a future drive-by import of util.mjs into git.mjs would be caught by closure equality only if the committed inventory is not simultaneously 'fixed' in the same commit; a redundant explicit assertion documents reviewed intent.; code.mjs treats r.kind === 'ambiguous-extension' silently for non-.mjs RELATIVE imports (e.g. './helper.json' emits nothing). The task text says code.mjs 'accepts static relative imports with an explicit .mjs target' and 'unrepresentable-consumer only for imports whose specifier does not resolve to a real file below the closed roots'. A relative './helper.json' import that resolves to a real seeded file is neither accepted (.mjs grammar) nor unresolvable — silence is a defensible reading, but the fixture list in the task requires 'an import specifier resolves to no file' to warn; ADD a unit pinning that a relative non-.mjs specifier to a MISSING file (e.g. './missing.json') is also silent (currently ambiguous-extension short-circuits before existence is checked) so the precedence is committed, reviewed behavior.; physicalContainment accepts a nonexistent tail under a real chain (returns true) — consistent with D21's 'deepest existing ancestor' language — but walkFiles' componentsSymlinkFree returns {ok:true, missing:true} when ANY component mid-chain is missing, then 'continue's (absent root: nothing to walk). A missing INTERMEDIATE component with an existing deeper path cannot occur on real filesystems, but a TOCTOU rename between lstat calls can produce it; this is acceptable for Phase 1 yet undocumented. Document the race posture in a comment or normalize both helpers to one shared chain-walk primitive (containmentReal vs componentsSymlinkFree vs physicalContainment currently implement three near-identical walks — consolidation reduces drift risk for the D21/D33 shared-mechanics claim).",
+      "claude has hard stops: Task text requires PACKAGE_ROOTS to inventory 'every current package root' and the gate only proves the file exists — but the committed list includes 'connectors/ai-peer-mcp' while the imports-permitted gate check and spine-read-only constraint enumerate merkle-dag/build-gate/breakout as spine; nothing in the provided artifacts proves 'connectors/ai-peer-mcp' is a real package root at this PR (test-inventory.mjs statSync would fail if absent, and the gate says tests pass, so existence is proven) — HOWEVER the completeness direction (no package root OMITTED) is proven nowhere: no test walks the repository for package.json files and asserts the committed list covers them. The task freezes 'inventory every current package root once and commit the exact sorted paths'; without a completeness check this is an unverifiable hand claim. Require either a unit enumerating repo-top-level package manifests and asserting set-equality with PACKAGE_ROOTS, or an explicit human-reviewed attestation in the PR that the five roots are exhaustive at head 8dae45ea.; The counted-iterator final-item semantics (test-util section 8) codify observed_count = N-1 when the consumer breaks after processing the last item: 'a source that raises before completion is not counted' is satisfied, but D26 defines 'inspected' as opened+read+processed to edge-extraction eligibility WITHOUT fatal error — a consumer that fully processed item N and then breaks has inspected N items, yet the driver-held accessor reads N-1 with exhausted:false, which under D29 would be fatal accounting failure for a weaver that legitimately processed everything but exited its loop early. The implementation makes run-to-natural-completion the ONLY way to get counted(N)+exhausted, which is a STRICTER contract than D26's definition of inspected. This strictness is defensible (it forces for...of to completion) and the test documents it, but it means the count is NOT 'incremented when the consumer completes consumption of that source' as the task text states — it increments one iteration LATER. Since both weavers use for...of to completion this cannot misfire at this PR, and the driver check is Task 5; I flag it as a semantic divergence from the frozen text that must be either (a) ratified as the intended reading in Task 5's driver, or (b) fixed now by counting on the generator's resumption OR return()/throw() hooks. Because the divergence is observable only through the driver-held accessor and no driver exists at this PR, I do not treat it as an outright reject, but it must not silently propagate into Task 5.",
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Replace the regex/division heuristic with dependency-free lexical handling that is sound for the frozen grammar. Add regressions proving that load-shaped text and imported names inside regex literals after control-condition `)` create no closure edge/use, and that division after an identifier such as `of` does not hide a real dynamic import or identifier use.; Commit the reviewed exact `LEDGER_SOURCES` set in Task 4a, with each configured ledger file carrying its adapter id, and add exact shape/order/existence assertions. If the reviewed set is genuinely empty at this SHA, establish that as the final exact Task 4a inventory rather than a value deferred for Task 4b.; Use one canonical repository-relative POSIX path validator for walker outputs, resolved closure paths, and git path arguments. Reject absolute paths, dot/dot-dot segments, NULs, backslashes, and other noncanonical results; add direct regression units, including POSIX backslash-containing filesystem names and git path escapes.; Parse git output by valid LF or CRLF line boundaries while continuing to reject blank lines, mixed malformed content, bare carriage returns, and non-40-hex lines. Add single- and multi-line CRLF tests.",
+      "codex has hard stops: The shared lexer is not sound for JavaScript regex-versus-division context. For example, a valid regex statement after a control-condition `)` can expose regex contents as code, causing `classifyModuleLoads` to invent a D33 edge and `identifierUsedOutside` to invent an identifier use. Conversely, treating the contextual identifier `of` as a regex-introducing keyword can mask a real dynamic import or identifier appearing after division. This violates both the exact shared D33 classifier and code-weaver token-use semantics.; `LEDGER_SOURCES` is explicitly implemented and tested as a placeholder to be finalized in Task 4b. Frozen Task 4a requires the exact configured ledger-file inventory plus adapter ids now; D17/AM-17 defers only implementation-file closures for weavers that do not yet exist, not closed top-level source inventories.; Repository-relative path validation is incomplete. `walkFiles` and `resolveRelativeSpecifier` can return noncanonical paths on POSIX, notably names containing backslashes, while `validateGitArgs` accepts absolute paths, `..` escapes, and backslash-containing paths. This does not implement the required validated repository-relative POSIX outputs or an exact repository-path git allowlist.; The git-weaver SHA parser rejects ordinary CRLF-delimited git output because it strips only LF and then validates the retained carriage return as part of the SHA. A full SHA line with a platform line terminator is not malformed output."
+    ],
+    "warnings": []
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

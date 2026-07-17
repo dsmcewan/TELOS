@@ -1,0 +1,50 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:77044f9177c0288c52ad27f61c8d28e08698e9f9739a225611070a9b77408439",
+  "decision": "revise",
+  "required_edits": [
+    "Replace or repair the shared lexer/classifier so it recognizes exactly the accepted D33 forms using declaration/call boundaries and sound token context, without keyword bleed or regex-vs-division omissions. Add closure tests for postfix-update division followed by literal `import()`, non-load `import`/`export` property-name lookalikes, and other corrected boundary cases.",
+    "Make `scanExports` recognize actual export declarations only. Make `scanImports` return the complete declaration span, including import attributes/assertions, and add a unit proving an imported local appearing only inside its own declaration remains unused.",
+    "Apply the canonical repository-relative POSIX validator to every successful resolver and closure output, including the entry path, and fail fatally on noncanonical names.",
+    "Handle only genuine absence errors as missing. All other `lstat`/directory-walk errors must fail closed; `physicalContainment` must return false or throw when any component cannot be inspected. Add units for these error paths where portable.",
+    "Rewrite the package-root unit around tracked `package.json` paths, compare the discovered set exactly with `PACKAGE_ROOTS ∪ PACKAGE_ROOTS_EXCLUDE`, prove disjointness, and assert the exact AM-40 arrays are sorted and unique without silently deleting a possible root package.",
+    "Add a code-weaver fixture for a used named import absent from the target's seeded exports and assert the appropriate code-symbol-to-repository-file or repository-file-to-repository-file fallback locator and edge, as applicable."
+  ],
+  "hard_stops": [
+    "The shared lexical classifier does not implement the exact D33 accepted-form grammar. Its regex/character heuristic can omit real accepted edges—for example, after postfix `++`, `/` is treated as a regex introducer, so valid code such as `x++ / import(\"./helper.mjs\")` masks the literal dynamic import. Its unbounded keyword-to-`from` search can also associate `import`/`export` property names with later, unrelated tokens. Closure equality against this classifier therefore does not prove equality with the normative D33 closure.",
+    "The Phase-1 scanner is not declaration-aware: `scanExports(\"const o = { export: 1 };\")` emits an unsupported-export warning even though there is no export declaration. Likewise, `scanImports` records a span only through the specifier literal rather than through the complete import declaration, so identifiers in import attributes/assertions can be mistaken for uses of an imported local binding, violating the requirement that use occur outside the import declaration and that unused imports emit no edge.",
+    "The resolver/containment substrate is not fully fail-closed or canonical. `resolveRelativeSpecifier` and `deriveAcceptedClosure` return paths produced by `toPosix(path.relative(...))` without applying `isCanonicalRepoRelPosix`, so noncanonical repository-relative names can enter a closure. Separately, several `lstatSync` catch-all paths treat every filesystem error as absence: `walkFiles` can silently omit an entry, and `physicalContainment` can stop at an inaccessible component and return true based on an earlier ancestor. An unclassifiable filesystem error must not establish containment or a complete walk.",
+    "The PACKAGE_ROOTS proof does not implement AM-40's mandated tracked-file invariant. It scans the working filesystem rather than tracked `package.json` files, unconditionally removes the repository-root directory, skips selected directory names, and does not pin the exact five included and three excluded arrays or their sorted/unique form. Thus it is not the required mechanical proof that the tracked package directories equal the committed union with an empty intersection.",
+    "The required code-weaver proof is incomplete: no fixture exercises a used named import whose target is a real seeded module but whose imported name is not a seeded export, proving the mandated file-level fallback for that specific case."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-17T00:59:54.385Z",
+  "rationale": "The committed inventory values, D32 mapping, required-inventory table, D17 git/code-only implementation inventories, exact git command construction, core endpoint threading, counted-source usage, and omission of later Task 4b/5 work are broadly aligned with frozen scope. However, D33 closure provenance is only as sound as the shared classifier, and the concrete lexer/parser counterexamples mean the current equality test can certify the wrong closure. The scanner, canonical-path, fail-closed filesystem, and explicitly mandated inventory/test proof gaps also make the implementation unacceptable as-is despite the deterministic gate passing.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2RDheVk6I83TZwT7DyhVSL9ocNNS",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-17T01:07:26.692Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "1ebaa996a6c90e3e9457d8a5bd578e4d5708111b0fc3b34a69d94a8e7a7a92a0",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

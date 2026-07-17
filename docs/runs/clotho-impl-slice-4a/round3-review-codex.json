@@ -1,0 +1,47 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:61d8071138c1cd7f985bad339bdf478c8bbbf34d077a634252467462bc7f3909",
+  "decision": "revise",
+  "required_edits": [
+    "Replace the regex/division heuristic with dependency-free lexical handling that is sound for the frozen grammar. Add regressions proving that load-shaped text and imported names inside regex literals after control-condition `)` create no closure edge/use, and that division after an identifier such as `of` does not hide a real dynamic import or identifier use.",
+    "Commit the reviewed exact `LEDGER_SOURCES` set in Task 4a, with each configured ledger file carrying its adapter id, and add exact shape/order/existence assertions. If the reviewed set is genuinely empty at this SHA, establish that as the final exact Task 4a inventory rather than a value deferred for Task 4b.",
+    "Use one canonical repository-relative POSIX path validator for walker outputs, resolved closure paths, and git path arguments. Reject absolute paths, dot/dot-dot segments, NULs, backslashes, and other noncanonical results; add direct regression units, including POSIX backslash-containing filesystem names and git path escapes.",
+    "Parse git output by valid LF or CRLF line boundaries while continuing to reject blank lines, mixed malformed content, bare carriage returns, and non-40-hex lines. Add single- and multi-line CRLF tests."
+  ],
+  "hard_stops": [
+    "The shared lexer is not sound for JavaScript regex-versus-division context. For example, a valid regex statement after a control-condition `)` can expose regex contents as code, causing `classifyModuleLoads` to invent a D33 edge and `identifierUsedOutside` to invent an identifier use. Conversely, treating the contextual identifier `of` as a regex-introducing keyword can mask a real dynamic import or identifier appearing after division. This violates both the exact shared D33 classifier and code-weaver token-use semantics.",
+    "`LEDGER_SOURCES` is explicitly implemented and tested as a placeholder to be finalized in Task 4b. Frozen Task 4a requires the exact configured ledger-file inventory plus adapter ids now; D17/AM-17 defers only implementation-file closures for weavers that do not yet exist, not closed top-level source inventories.",
+    "Repository-relative path validation is incomplete. `walkFiles` and `resolveRelativeSpecifier` can return noncanonical paths on POSIX, notably names containing backslashes, while `validateGitArgs` accepts absolute paths, `..` escapes, and backslash-containing paths. This does not implement the required validated repository-relative POSIX outputs or an exact repository-path git allowlist.",
+    "The git-weaver SHA parser rejects ordinary CRLF-delimited git output because it strips only LF and then validates the retained carriage return as part of the SHA. A full SHA line with a platform line terminator is not malformed output."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T23:23:31.476Z",
+  "rationale": "The implementation gets much of Task 4a right: the normative required-inventory table and D32 mapping are exact and deeply frozen; only git/code implementation closures are committed; closure equality is derived rather than trusted; counted-source and physical-containment behavior are substantially exercised; git command construction and code endpoint threading largely match the frozen semantics; and the dependency/scope constraints are respected. However, the lexer defect can both add nonexistent closure edges and omit real accepted loads, so the central D33 proof is not faithful. The ledger-source deferral is also an explicit cadence reinterpretation. The path and CRLF defects leave frozen substrate behavior incorrect despite the passing deterministic gate.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2PiQ2WIpsLACfAZLNDjNn3BLXm6O",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T23:30:57.052Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "068695124c7834f6532dcaaaa3f5b4ea0a1c4c1a4e53ec93cacce5d3d219cadf",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

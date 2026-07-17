@@ -1,0 +1,48 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:a4ab4a7d93eda10ee5cf4897a96dde4423cbcbef0c7c09f6a3c678c18a288e11",
+  "decision": "revise",
+  "required_edits": [
+    "Correct the shared lexer’s regex-versus-division state so every supported expression-start context is handled, including at least `await`, `yield`, and statement/block boundaries, without stale keyword state after strings, templates, regexes, or other value tokens. Add fixtures proving regex lookalikes produce no edge and genuine division followed by a load remains visible across these contexts.",
+    "Enforce the exact AM-41 profile with `ProfileError` and diagnostic `unsupported-module-lexical-profile`: validate complete `\\xHH`, `\\uHHHH`, and bounded/nonempty `\\u{…}` escapes; detect line-leading `-->` after permitted leading whitespace; and structurally reject every truncated accepted import/export/call form, including unclosed clauses and malformed dynamic-import option/trailing-comma structures. Extend b1–b6 tests with these counterexamples and assert the stable diagnostic.",
+    "Make original-component inspection platform-safe before any normalization. Either reject backslashes in relative module specifiers deterministically before filesystem resolution or tokenize and inspect both platform separator spellings in original order. Add a symlink-component-plus-later-`..` fixture using backslash separators on Windows, alongside the existing forward-slash fixture.",
+    "Remove the `from` default-binding exclusion in `parseImportClause` while retaining correct governing-`from` detection. Add a code-weaver fixture for `import from from \"./dep.mjs\"` with an actual use and assert the appropriate file-level dependency endpoint.",
+    "After the shared scanner/resolver corrections, re-run the real git/code closure derivation and retain exact committed-inventory equality and deterministic-output tests."
+  ],
+  "hard_stops": [
+    "AM-41 supported-profile correctness is not met by the lexer’s regex/division logic. `REGEX_KEYWORDS` omits valid expression-start contexts such as `await` and `yield`, and the lexer lacks sufficient block-versus-expression context after `}`. A valid source such as `async function f(){ await /import(\".\\x2fevil.mjs\")/; }` can therefore be interpreted as containing a literal dynamic import instead of a regex lookalike, corrupting D33 closure derivation.",
+    "The exact fail-closed source profile is incompletely enforced. Malformed supported-prefix escapes such as `\\xG0`, `\\uZZZZ`, and `\\u{}` can pass without `unsupported-module-lexical-profile`, while an out-of-range `\\u{...}` can escape as a native `RangeError`. Whitespace-prefixed line-leading `-->` is not detected, and truncated accepted declarations such as `import { x }` or `export *` return no edge rather than failing closed. Unbalanced dynamic-import option structures can likewise be accepted when a closing parenthesis is present.",
+    "AM-41(c) original-component containment is bypassable on Windows. `originalChainSymlinkFree` splits only on `/`, then passes an embedded backslash-containing segment to `path.join`, which can normalize `link\\..` before `lstat`. A specifier equivalent to `./link\\..\\real\\target.mjs` can erase a symlink component before inspection, contrary to the requirement to inspect every original component before normalization.",
+    "The code-weaver import parser drops the valid contextual default binding `from`: `parseImportClause` explicitly excludes `from` after correctly classifying `import from from \"./dep.mjs\"`. Consequently, a used import in this frozen supported form emits no required file-level `depends-on` edge."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-17T03:54:47.745Z",
+  "rationale": "The committed inventory constants, normative inventory-id table, D32 mapping, git command shapes, introduced-by behavior, counted-source structure, and the main four code-edge endpoint paths are substantially aligned with Task 4a. However, AM-41 deliberately raises the acceptance bar to total correctness over the enforced lexical subset, and the concrete counterexamples above show both false closure edges and silent acceptance of enumerated out-of-profile/truncated input. The Windows original-path normalization issue also directly violates the frozen containment ruling. Because these defects can change or invalidate committed D33 closures and code-weaver output, the implementation is not acceptable as-is despite the deterministic gate passing.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2TwxZjotbkXPvIQmXPiSvN3FuRKr",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-17T04:00:42.307Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "65d6270dae983106e330e4d76777ad28f21ca7a72e4102b8668da2f015eacbf2",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:2d56e2f6922e51269477b2a9191025eb89514e984b1d78b2083fbb8ab22b262d",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-16T22:29:24.908Z",
+  "rationale": "Faithful Task 4a AS-IS within frozen scope. (a) inventory.mjs commits exact sorted PACKAGE_ROOTS, DOC_ROOTS + DOC_WEAVER_EXCLUDE/GLOBAL_EXCLUDE (docs/runs + self-weave), CONTRACT_FILES (D31), five weaver ids with integer versions, REQUIRED_INVENTORY_IDS deep-frozen and unit-proven deep-equal to the exact normative table (git→[package-files,package-symbols], code→[package-modules], test→[package-manifests,test-files], doc→[doc-files], ledger→[contract-files,ledger-sources,run-sources]), and LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS (D32) with key set exactly {module,node:module}, each value exactly [\"builtinModules\",\"isBuiltin\"], deep-freeze + mutation-failure units. (b) Per D17/AM-17 only clotho-git-weaver and clotho-code-weaver WEAVER_IMPL_FILES are committed; test-inventory/test-closure assert every named path exists as a regular file; LEDGER_SOURCES empty is intentional (Task 4b). (c) util.mjs is the single D33 classifier (classifyModuleLoads) + relative resolver (resolveRelativeSpecifier) shared by closure derivation and future scanner (AM-34 test 19 proves sole definitions live in util); dependency-free comment/string-aware lexer; Phase-1 export scanner limited to export function|async function|const|class; real-file walker rejects root escape and symlink inputs; D26/D29 counted iterator increments only on completed consumption, exhaustion only on normal completion, accounting only via driver-held accessor; D21 physicalContainment lstats every component and never follows symlinks to decide; git wrapper allowlists only the exact rev-parse/rev-list/hash-object/log shapes with no shell. (d) test-closure derives closures via the shared classifier/resolver and deep-equals committed inventories; form-only fixtures cover all seven accepted load forms, mixed recursive chain, cycles, conditional dynamic import, permitted merkle-dag recursion, missing/extra/nonexistent inventory failures, unresolved/escape/symlink/forbidden fatals, and non-literal/comment/string no-edge cases. (e) git.mjs emits introduced-by via exactly `git log -S<symbol> --format=%H --reverse -- <path>` and `git log --format=%H --reverse -- <path>`, first SHA, source_ref git:<sha>, malformed fatal, no-result warns. (f) code.mjs emits all four depends-on endpoint shapes with symbol- vs file-level threading, preserves no-export named imports as repository-file→code-symbol, unrepresentable-consumer only for unresolvable relative targets, unused imports emit no edge, dedup. Zero runtime deps; ESM; node:/clotho-relative/permitted merkle-dag only; spine untouched; gate finalStatus meets. No reinterpretation or scope expansion into 4b/5 (no orchestrator inventory, no D34 re-derivation, no test/doc/ledger weaver impls).",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5",
+    "response_id": "06eb0491-6bff-9b46-a40d-d13f5abab064",
+    "source": "ai-peer-mcp/grok_ask",
+    "answered_at": "2026-07-16T22:29:56.795Z",
+    "tool": "grok_ask"
+  }
+}

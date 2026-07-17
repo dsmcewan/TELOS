@@ -1,0 +1,116 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "review_ref": "sha256:a4ab4a7d93eda10ee5cf4897a96dde4423cbcbef0c7c09f6a3c678c18a288e11",
+  "pr": 117,
+  "pr_head": "57b5e233febe70a89625e335642c824ed39d5fdf",
+  "plan_ref": "sha256:f9368b5748de6c2670193558783b60b7f74fd94de9196c9664d42269f3d2bc04",
+  "authorization": "authz-006",
+  "timestamp": "2026-07-17T03:54:47.745Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "medium",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6xKDCaZnU9uDXwkwNYF",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-17T03:55:35.513Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2TwxZjotbkXPvIQmXPiSvN3FuRKr",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-17T04:00:42.307Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "57517152-183b-930a-93c9-45335998f745",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-17T03:55:18.045Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "iqdZatPhJuTFqtsPp-ew0AQ",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-17T03:55:10.985Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Correct the shared lexer’s regex-versus-division state so every supported expression-start context is handled, including at least `await`, `yield`, and statement/block boundaries, without stale keyword state after strings, templates, regexes, or other value tokens. Add fixtures proving regex lookalikes produce no edge and genuine division followed by a load remains visible across these contexts.; Enforce the exact AM-41 profile with `ProfileError` and diagnostic `unsupported-module-lexical-profile`: validate complete `\\xHH`, `\\uHHHH`, and bounded/nonempty `\\u{…}` escapes; detect line-leading `-->` after permitted leading whitespace; and structurally reject every truncated accepted import/export/call form, including unclosed clauses and malformed dynamic-import option/trailing-comma structures. Extend b1–b6 tests with these counterexamples and assert the stable diagnostic.; Make original-component inspection platform-safe before any normalization. Either reject backslashes in relative module specifiers deterministically before filesystem resolution or tokenize and inspect both platform separator spellings in original order. Add a symlink-component-plus-later-`..` fixture using backslash separators on Windows, alongside the existing forward-slash fixture.; Remove the `from` default-binding exclusion in `parseImportClause` while retaining correct governing-`from` detection. Add a code-weaver fixture for `import from from \"./dep.mjs\"` with an actual use and assert the appropriate file-level dependency endpoint.; After the shared scanner/resolver corrections, re-run the real git/code closure derivation and retain exact committed-inventory equality and deterministic-output tests.",
+      "codex has hard stops: AM-41 supported-profile correctness is not met by the lexer’s regex/division logic. `REGEX_KEYWORDS` omits valid expression-start contexts such as `await` and `yield`, and the lexer lacks sufficient block-versus-expression context after `}`. A valid source such as `async function f(){ await /import(\".\\x2fevil.mjs\")/; }` can therefore be interpreted as containing a literal dynamic import instead of a regex lookalike, corrupting D33 closure derivation.; The exact fail-closed source profile is incompletely enforced. Malformed supported-prefix escapes such as `\\xG0`, `\\uZZZZ`, and `\\u{}` can pass without `unsupported-module-lexical-profile`, while an out-of-range `\\u{...}` can escape as a native `RangeError`. Whitespace-prefixed line-leading `-->` is not detected, and truncated accepted declarations such as `import { x }` or `export *` return no edge rather than failing closed. Unbalanced dynamic-import option structures can likewise be accepted when a closing parenthesis is present.; AM-41(c) original-component containment is bypassable on Windows. `originalChainSymlinkFree` splits only on `/`, then passes an embedded backslash-containing segment to `path.join`, which can normalize `link\\..` before `lstat`. A specifier equivalent to `./link\\..\\real\\target.mjs` can erase a symlink component before inspection, contrary to the requirement to inspect every original component before normalization.; The code-weaver import parser drops the valid contextual default binding `from`: `parseImportClause` explicitly excludes `from` after correctly classifying `import from from \"./dep.mjs\"`. Consequently, a used import in this frozen supported form emits no required file-level `depends-on` edge."
+    ],
+    "warnings": []
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

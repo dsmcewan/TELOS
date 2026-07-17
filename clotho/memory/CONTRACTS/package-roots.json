@@ -1,0 +1,22 @@
+{
+  "kind": "contract",
+  "component": "clotho",
+  "id": "package-roots",
+  "title": "Clotho Phase 1 PACKAGE_ROOTS closed inventory",
+  "authority": { "decision": "AM-40", "authorization": "authz-006", "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3", "ruling": "The Eye" },
+  "package_roots": ["breakout", "build-gate", "clotho", "connectors/ai-peer-mcp", "merkle-dag"],
+  "package_roots_exclude": ["ai-forge", "forge", "saas-forge"],
+  "why": "Filesystem proximity does not establish architectural membership. Clotho Phase 1 weaves TELOS itself, not every product physically present in the monorepo. The three sibling products are governed beside the spine and are deferred for conscious enrollment later at the Iliad (the system-of-systems umbrella), not absorbed into the Phase 1 self-weave.",
+  "completeness_contract": "discovered(tracked package.json dirs) == package_roots UNION package_roots_exclude, AND package_roots INTERSECT package_roots_exclude == empty set. Both arrays are sorted and unique.",
+  "on_new_package": "fails-classification-test-until-explicitly-assigned : a newly added package.json directory fails the completeness test (and CI) until a human consciously classifies it into package_roots or package_roots_exclude.",
+  "non_claim": "This is not a claim that these are the only packages that could exist; it is the closed, human-authorized set Clotho Phase 1 weaves. Enrolling a product requires a deliberate amendment.",
+  "change_rule": "Expanding or contracting this set requires a plan amendment (Daedalus), TELOS re-authorization, implementation review, and updated completeness fixtures.",
+  "oracle": {
+    "source_of_truth": "clotho/inventory.mjs#PACKAGE_ROOTS + #PACKAGE_ROOTS_EXCLUDE",
+    "test": "clotho/scripts/test-inventory.mjs (completeness: discovered tracked package.json dirs == union, disjoint, exact AM-40 arrays)",
+    "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs"
+  },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

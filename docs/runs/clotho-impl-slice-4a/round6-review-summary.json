@@ -1,0 +1,118 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "review_ref": "sha256:fd3e605c570fa65ab9bd571d8d53e9dbd21d4364d4323eda153a8d885948cb4a",
+  "pr": 117,
+  "pr_head": "d4497d5e560bbeb12ebccf2df8f630ebededa6f2",
+  "plan_ref": "sha256:f9368b5748de6c2670193558783b60b7f74fd94de9196c9664d42269f3d2bc04",
+  "authorization": "authz-006",
+  "timestamp": "2026-07-17T01:23:49.695Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "medium",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6koVfQzkoaDSjsGWF2B",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-17T01:24:27.171Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2Rarh4iVELopBpLKqnqYuLLKvT9X",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-17T01:30:42.397Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "2dd4605b-1f85-997b-b4ec-4e24eba39302",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-17T01:24:16.819Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "KIRZar2YA_fhqtsPn6u_sAI",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-17T01:24:11.826Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "claude decision is 'revise', not 'approve'.",
+      "claude has required edits: Restore or explicitly justify the frozen per-form fixture for `export * as ns from` in section 2 of test-closure.mjs — it IS present; however the frozen scope's form-only fixture list also requires a fixture where the helper is reached ONLY through `module.require()` with the whitespace-separated `module . require(...)` spelling resolved at CLOSURE level (test-util pins classification only); add a closure fixture or justification in-line.; test-closure.mjs section 9 (AM-34 test 19) proves single definition of classifier/resolver and that deriveAcceptedClosure's body TEXTUALLY mentions classifyModuleLoads/resolveRelativeSpecifier, but the frozen requirement is that BOTH consumers import the same EXPORTED classifier and resolver: the closure derivation lives in the same module (util.mjs) and calls module-local bindings rather than importing exports. Either (a) strengthen the unit to prove the exported bindings are the identical function objects consumed by the derivation (e.g., identity comparison via an exported hook or restructuring so the derivation consumes the exports), or (b) commit an explicit in-repo note that same-module lexical binding satisfies AM-34 test 19 with the Task 5 scanner as the second importing consumer, and add the assertion that will bind the Task 5 scanner to these exact exports.; The git wrapper's frozen subcommand list includes `rev-parse HEAD` per the scope text, but no unit exercises makeGitRunner/execFileSync integration end-to-end (all git.mjs tests use mocks; validateGitArgs is unit-tested standalone). Add at least one unit proving makeGitRunner validates args before spawning (e.g., a disallowed shape throws WITHOUT spawning) so the validation cannot be bypassed by refactor.; seedSourceDescriptors reads walked files via readFileSync(path.join(repoRoot, ...rel.split('/'))) AFTER walkFiles validated the tree — acceptable — but hash-object receives the repo-relative path while the file bytes are read separately; add a comment or unit pinning that both name the same file (same walk output), so the 'symbol and file descriptors for the same path carry the same blob_sha by construction' claim is proven rather than asserted.; GLOBAL_EXCLUDE (docs/runs/clotho-self-weave) is committed and unit-pinned as a value, but no code path in this PR consumes it (walkFiles takes no exclusion parameter). Since doc/ledger weavers are Task 4b, this is arguably in-scope-deferred; add an explicit comment in inventory.mjs stating which task wires GLOBAL_EXCLUDE/DOC_WEAVER_EXCLUDE into the walker so the exclusion cannot silently remain decorative.",
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Make `classifyModuleLoads` parse and delimit actual module-load declarations rather than treating every lexical `import`/`export` token as a statement boundary. It must recognize every accepted static re-export even when legal imported/exported names are keywords, while continuing to reject property/member lookalikes. Add a form-only closure regression proving the keyword-alias re-export reaches its helper and that omission fails equality.; Make `scanImports` recognize only actual static import declarations and bind each `from` clause and span to its own declaration. It must not create spans from object properties, shorthand properties, member names, or unrelated tokens. Add a code-weaver regression using a property named `import`, a genuine used import later in the module, and a use before that declaration; assert the required dependency edge is emitted.",
+      "codex has hard stops: The D33 classifier is not exact for accepted static re-exports. It bounds an `export` region at every subsequent lexical `import`/`export` token, including tokens legally used as exported names. For example, `export { h as import } from \"./helper.mjs\";` is a valid `export ... from` form, but `classifyModuleLoads` records no edge because the alias token prematurely terminates the governing export region. The committed closure can therefore omit a file reachable through an accepted literal relative load.; `scanImports` can omit required code-weaver edges because it treats non-declaration `import` property names as declaration starts and searches unboundedly for a later `from` clause. In valid module code such as `const o = { import: 1 }; console.log(alpha); import { alpha } from \"./dep.mjs\"; export const c = 1;`, it creates a bogus span from the object property through the real import. That span covers the genuine pre-declaration use of `alpha`, causing `identifierUsedOutside` to report the used import as unused and suppress the required `code-symbol -> code-symbol` edge."
+    ],
+    "warnings": []
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

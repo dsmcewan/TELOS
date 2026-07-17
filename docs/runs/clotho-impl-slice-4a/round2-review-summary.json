@@ -1,0 +1,119 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "review_ref": "sha256:fc3b8b85b732df2eb6f4968b7c2b209eb6a96d3c8788596a009204a7176dc35c",
+  "pr": 117,
+  "pr_head": "93e3eaefcb0b252694bc46fd3ba4ce18840a5162",
+  "plan_ref": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3",
+  "authorization": "authz-005",
+  "timestamp": "2026-07-16T22:59:41.844Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "medium",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6Zoz6uhruA2Jmy7uqBG",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-16T23:00:27.460Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2PLNyjIX6rbpMF8nZfOoqUviywAV",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-16T23:06:03.986Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "5df8a5fd-749a-9cbb-b397-0ff2557e66ca",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-16T22:59:57.946Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "YGJZauajBPXQz7IPprKPaQ",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-16T22:59:57.797Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "claude decision is 'revise', not 'approve'.",
+      "claude has required edits: Fix the committed clotho-git-weaver closure or the git-weaver's actual imports: git.mjs imports deriveNodeId/validateEdgeInput from ../registry.mjs, and registry.mjs is claimed in WEAVER_IMPL_FILES as the ONLY dependency ({registry.mjs, git.mjs}) — but if clotho/registry.mjs itself contains any accepted literal relative import (it predates this PR and is not shown; the closure test would catch a mismatch only if registry.mjs is genuinely leaf), the committed inventory is wrong. More critically: provide clotho/registry.mjs in the review artifact or its derived closure evidence; the review packet omits the bytes of a file that is a member of BOTH committed closures, so faithfulness of the committed inventories cannot be verified from the artifact as presented. If registry.mjs is leaf, attach that evidence; the committed inventory equality claim currently rests solely on the self-referential test run.; test-closure.mjs section 9 (AM-34 required test 19) proves single-definition and that code.mjs imports resolveRelativeSpecifier, but it does NOT prove the closure derivation and the (future) advisory scanner import the same exported classifier AND resolver as the task text requires — the closure-derivation side is proven only implicitly (deriveAcceptedClosure lives in the same file as the classifier/resolver and calls them lexically, unverified by the test). Add an explicit assertion that deriveAcceptedClosure's implementation consumes classifyModuleLoads and resolveRelativeSpecifier (e.g. lexical assertion over util.mjs source that deriveAcceptedClosure's body calls both by name), so the shared-consumer proof does not silently regress when Task 5 lands the scanner.; makeCountedSource undercounts on early return/break: test-util section 1 asserts observed_count === 1 after breaking at 'b' — but the consumer DID complete consumption of 'a' AND received 'b'. Per D26 'inspected means opened, read, and processed to edge-extraction eligibility without fatal error', an item the consumer received but abandoned via break is correctly not counted — this matches the spec — however the generator's `observed++` placement also fails to count the FINAL item until the iterator is resumed past it, meaning a consumer that reads the last item, fully processes it, and then breaks (never triggering the final next()) records observed_count = N-1 with exhausted=false even though every source was fully processed. For the git/code weavers using for...of to completion this is invisible, but the accounting semantics diverge from D26's definition of 'inspected' for the last element under any consumer that stops after the final yield. Either document this as the frozen driver contract (weavers MUST run iterators to natural completion — which D29 requires anyway) with a unit pinning the N-1 behavior as intended, or restructure so completion of the final item is observable. At minimum add the pinning unit so Task 4b/5 drivers don't misread the boundary.; code.mjs emits `unrepresentable-consumer` for any import that resolves outside the seeded file set (`!fileBlob.has(r.repoRelative)`), not only for specifiers that fail to resolve to a real file below the closed roots. A relative import that resolves to a REAL existing file which happens to be outside the closed package roots (or a non-.mjs real file, kind 'ambiguous-extension') is warned as unrepresentable-consumer even though the spec says unrepresentable-consumer is ONLY for 'an import whose specifier does not resolve to a real file below the closed roots'. The conflation of resolver-failure kinds (symlink, escape, ambiguous-extension) with not-seeded into one warning is defensible for symlink/escape but the warning text asserts '(no seeded file below closed roots)' for ALL cases including resolvable-but-excluded files; add a fixture distinguishing a real file outside closed roots and confirm/adjust intended semantics so the warning matches its stated condition.; test-code.mjs never asserts the file-level fallback endpoint carrying repository_ref and blob_sha in the locator shape assertions demanded by the task ('file-level fallback endpoints and locators including repository_ref and blob_sha'): it checks node-id equality (which transitively binds locators) but never directly asserts e.from_locator.locator.repository_ref/blob_sha for the repository-file -> repository-file case as test-git.mjs does for its edges. Add the direct locator-field assertions for at least one file-level edge and one symbol-level edge in test-code.mjs.",
+      "claude has hard stops: Unverifiable committed-closure claim: clotho/registry.mjs is a member of both committed WEAVER_IMPL_FILES closures but its source is absent from the review artifact; the equality proof (test-closure section 1) executes against the real tree, but this council seat cannot independently confirm from the artifact that registry.mjs has no further accepted relative imports (which would make BOTH committed inventories incomplete and the test's pass contingent on bytes not under review). Faithfulness review of the central Task 4a deliverable — the committed per-weaver inventories — requires the closure-member bytes or their derived-closure evidence in the packet.",
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Make classifyModuleLoads/lex implement the frozen literal grammar across valid JavaScript whitespace and line terminators, correctly interpret string-literal escapes or otherwise fail closed without omitting a semantically relative literal, reject incomplete literals, and avoid duplicate classification of spaced module.require forms. Add form-only closure tests for newline/tab formatting and escaped relative literals.; Refactor containment into a fail-closed component walker used consistently by physicalContainment(), walkFiles(), resolveRelativeSpecifier(), and closure derivation. lstat every existing component of the repository/allowed-root chain and candidate parent chain before realpath, reject every symlink component, and distinguish ENOENT tails from other lstat failures. Add tests for a symlink in an ancestor of the repository root and an intermediate symlink in a configured walk root.; Correct lexical token handling so regex-literal contents cannot count as imported-binding uses, including regexes after return/throw/case-like expression-introducing tokens. Add a code-weaver unit proving a binding appearing only in such a regex emits no edge.; Implement warnings for all frozen unsupported export categories, including computed exports and dynamic symbol flow, while continuing to infer symbols only for the four Phase-1 declaration forms. Add focused comment/string-safe units for each warning category.; In code.mjs, ensure `unrepresentable-consumer` is reserved for eligible explicit-.mjs imports that genuinely cannot resolve to an allowed real file below the closed roots; do not use that warning for imports merely outside the accepted extension grammar, and preserve fail-closed handling for physical-policy violations. Add extension and symlink/escape classification units.; Make git output parsing distinguish empty output from blank or otherwise malformed lines, and add tests for blank-only output, internal blank lines, and the valid trailing-newline case.",
+      "codex has hard stops: The shared D33 classifier under-approximates accepted literal module-load syntax. It skips only U+0020 in several positions, so valid forms such as a side-effect import after a newline and literal import()/require() arguments preceded by a tab or newline are missed. Its string handling also does not decode JavaScript escapes, so a literal whose runtime value is relative, such as one beginning with a hex/unicode escape for '.', can be omitted from the closure. Consequently closure equality is proved only against a defective derivation and cannot establish D33.; The D21 physical-containment and real-file-walker implementations do not lstat every component of the allowed/configured root chain. physicalContainment() checks only the final repository-root pathname and descendants, while walkFiles() and resolveRelativeSpecifier() realpath the repository root first. A symlink in an ancestor of the repository root, or in an intermediate component of a configured walk root, is therefore followed rather than rejected. physicalContainment() also treats every lstat error as a missing tail instead of failing closed.; Identifier-use detection can infer false depends-on edges from regex-literal text. The regex-literal heuristic does not recognize a regex after tokens such as return, so an imported binding appearing only in `return /binding/` is treated as an identifier use even though no identifier token occurs. This violates the frozen symbol-use rule.; The Phase-1 export scanner has no complete warning path for the required computed-export and dynamic-symbol-flow categories. It warns for default/list/star/destructuring patterns, but unsupported mutable/dynamic export forms can emit neither a symbol nor the required warning.; git.mjs accepts a nonempty blank-line result (`\"\\n\"`) as no result. That output contains an empty, non-SHA line and must be fatal under the requirement that every output line be a full SHA; only genuinely empty output may take the warning/no-edge path."
+    ],
+    "warnings": []
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

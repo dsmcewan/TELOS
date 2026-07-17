@@ -1,0 +1,32 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:d8cfba80bdbbe07c3895eff02a8aab62fe7b36e43aa444252d549ed49137dc1b",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-17T04:53:16.680Z",
+  "rationale": "Faithful AS-IS implementation of frozen v15 Task 4a (incl. AM-40/AM-41) with no reinterpretation or scope expansion. inventory.mjs commits exact sorted PACKAGE_ROOTS (five spine packages) + explicit PACKAGE_ROOTS_EXCLUDE (three siblings), DOC_ROOTS + DOC_WEAVER_EXCLUDE/GLOBAL_EXCLUDE, CONTRACT_FILES (D31), empty LEDGER_SOURCES + RUN_SOURCES, five weaver ids/versions, REQUIRED_INVENTORY_IDS table EXACTLY equal to the normative table (unit-proven), LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS deep-frozen/exact (D32 units for deep-equal/keys/values/freeze/mutation), and ONLY git+code WEAVER_IMPL_FILES equal to their derived D33 closures (no nonexistent files; D17/AM-17). util.mjs exports the single shared D33 classifier+resolver (used by both closure derivation and code weaver; AM-34 test 19), dependency-free comment/string-aware lexer with AM-41 enforced closed profile (fail-closed unsupported-module-lexical-profile on exact b1–b6 + one optional leading shebang; original-component lstat before collapse), Phase-1 export scanner, real-file walker (reject escape/symlink), D26/D29 counted-iterator (count only on completed consumption; accessor driver-held only), D21 physical-containment (lstat every component, never follow), and no-shell git wrapper (exact subcommands/arg shapes only). test-closure.mjs derives closures via the shared classifier/resolver, proves committed inventories EQUAL derived (never trusted), covers every accepted form (incl. form-only fixtures that fail on omission) + recursion/cycles/unreachable-literal + permitted merkle-dag + all fatal/no-edge modes + AM-41. git.mjs emits introduced-by via exact `git log -S<symbol> --format=%H --reverse -- <path>` / `git log --format=%H --reverse -- <path>`, first result, git:<sha>, malformed fatal, no-result warns. code.mjs emits depends-on over all four endpoint shapes with symbol- vs file-level threading, unrepresentable-consumer ONLY for unresolvable, unused/no-edge, dedup. Zero runtime deps, ESM, node:/clotho-relative/permitted-vendor only, spine read-only, confined to clotho/. Gate meets; later tasks (4b/5) correctly absent. Stakes signature on approve.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5",
+    "response_id": "1559ada1-897b-9145-bcd1-0ecd284ff7e2",
+    "source": "ai-peer-mcp/grok_ask",
+    "answered_at": "2026-07-17T04:53:38.118Z",
+    "tool": "grok_ask"
+  }
+}

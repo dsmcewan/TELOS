@@ -1,0 +1,119 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "review_ref": "sha256:2d56e2f6922e51269477b2a9191025eb89514e984b1d78b2083fbb8ab22b262d",
+  "pr": 117,
+  "pr_head": "9926a25c03dcf0f7f6c2315f878f787a34d58176",
+  "plan_ref": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3",
+  "authorization": "authz-005",
+  "timestamp": "2026-07-16T22:29:24.908Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6XW4UMSxihaN47nPcCc",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-16T22:30:23.593Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2Os4IuyVsPDPBAJ3n3EdYP1okb79",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-16T22:35:12.461Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "06eb0491-6bff-9b46-a40d-d13f5abab064",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-16T22:29:56.795Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "R1tZaue3C5HwqtsPx6CA6AY",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-16T22:29:59.728Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "claude decision is 'revise', not 'approve'.",
+      "claude has required edits: code.mjs: delete the private resolveModulePath and resolve relative import specifiers through util's exported resolveRelativeSpecifier (or a thin wrapper it exports) so exactly ONE resolver exists; keep the code-weaver's 'seeded file below closed roots' membership test as the extraction-grammar filter, but the specifier->path resolution must be the shared function. Strengthen the AM-34 test-19 unit so it cannot be satisfied by renaming: assert code.mjs's import list includes the shared resolver, or assert no OTHER function in clotho/ performs join+normalize+extension-append resolution.; test-closure.mjs section 1: derive the real weaver closures with allowExternal = new Set(PERMITTED_EXTERNAL_CLOSURE_FILES) so the committed permitted-external policy is the SAME policy used in the normative equality check.; test-closure.mjs section 5: replace the hand-array notDeepEqual assertions with an actual inventory-equality harness (the same comparison the real check uses) and add the spec-enumerated per-form omission fixtures: an inventory omitting a member reachable ONLY via export-from/export-star, ONLY via literal dynamic import(), and ONLY via require()/module.require(), each proven to FAIL equality; plus an extra-file inventory and a nonexistent-file inventory failing through the same harness (not via a bare statSync throw).; util.mjs classifyModuleLoads: bind each from-clause to its governing import/export by scanning forward from the keyword (bounded clause parse over masked source) instead of nearest-preceding-keyword over the whole head; add units for adjacent dynamic-import-then-static-import, multiple declarations on one line, and `export * as ns from` explicitly (the recognized namespace re-export variant D27/D33 names), asserting correct per-site form attribution.; resolveRelativeSpecifier: enforce the extension rule as part of the shared resolver (reject or classify non-.mjs resolved targets per the frozen extension rules) OR document-and-test the accepted extension set with explicit units, so closure membership for non-.mjs files is a decided, tested behavior rather than an accident of candidate ordering.; test-git.mjs: add a unit asserting the -S argument is passed as a SINGLE argv token `-S<symbol>` with a symbol containing regex metacharacters (e.g. `a$b.c`) and that the mock receives it verbatim — the metacharacter-safe matching obligation covers the git path too, and validateGitArgs already permits it; the exact-shape proof for metacharacter symbols is currently absent.",
+      "claude has hard stops: WEAVER_IMPL_FILES for clotho-git-weaver omits clotho/inventory.mjs and clotho/weavers/util.mjs style shared substrate ONLY IF actually imported — verify: git.mjs imports ../registry.mjs only, so closure {registry.mjs, git.mjs} appears correct; HOWEVER the closure derivation test (test-closure.mjs section 1) calls deriveAcceptedClosure WITHOUT passing allowExternal built from PERMITTED_EXTERNAL_CLOSURE_FILES, meaning a permitted merkle-dag import in a real weaver would be reported 'forbidden' rather than traversed — the real-inventory equality check does not exercise the committed permitted-external list and would fail for a legitimate future closure; more critically it proves the shared resolver is invoked with different policy inputs in the normative check vs. the spec's stated closure definition; Task 4a requires closure-equality failure fixtures proving that 'an inventory missing a closure file — including one reached only through re-export, literal dynamic import, or an accepted require-style form — an inventory listing an extra file, and an inventory naming a nonexistent file all FAIL'. test-closure.mjs section 5 only asserts assert.notDeepEqual on hand-built arrays and that statSync throws ENOENT on a nonexistent path — it never exercises an actual inventory-vs-closure comparison failure path for the form-specific missing-file cases (re-export-only, dynamic-import-only, require-only members omitted from a committed-style inventory). The spec text explicitly enumerates these per-form omission fixtures; they are absent.; classifyModuleLoads misclassifies `export * as ns from \"./x.mjs\"` style recognized namespace re-export variants only via the /\\*/ heuristic on the region after the LAST import/export keyword; worse, the from-clause classifier attributes a from-clause to the nearest PRECEDING import/export keyword anywhere earlier in the file — e.g. a file containing `export const a = 1;` followed later by a stray `from \"./x.mjs\"` inside otherwise-masked code, or an import keyword consumed by a prior clause, can misattribute or fabricate a load site. Example defect: for source `import(\"./a.mjs\"); const y = from_table; import { b } from \"./b.mjs\";` the nearest-preceding-keyword scan can bind the second from-clause to the dynamic-import keyword. The classifier also treats ANY `from \"...\"` token sequence as a load site whenever any import/export keyword appears anywhere earlier — e.g. `const q = 1; export const from_ = 2;` plus a later object literal `{ from: \"./z.mjs\" }`... the (?<![A-Za-z0-9_$])from guard blocks `from:` key matches only when not followed by whitespace-quote; `{ from \"./z.mjs\" }` is invalid JS but `case from \"x\"` is not the issue — the substantive risk is misattribution between import/export governing keywords, which changes form classification (import vs export-star vs export-from) and thus whether the closure traverses or the scanner accepts. This is a correctness defect in the ONE shared D33 classifier that both the closure and the future advisory scanner must trust.; resolveRelativeSpecifier extension rule diverges from spec: it appends .mjs for ANY extensionless specifier, and accepts a resolved existing file of ANY extension (e.g. './helper.js', './x.json') as a closure member — the frozen scope defines extension rules as part of the ONE shared resolver but code.mjs separately enforces 'explicit .mjs target' semantics with its OWN lexical resolveModulePath (dir-join + normalize + append .mjs), creating exactly the second resolver D33 forbids ('no closure-only form list and NO closure-only resolver — one relative-specifier resolver'). code.mjs does not import resolveRelativeSpecifier; it defines resolveModulePath with different containment (lexical, no lstat, no symlink checks) and different extension behavior. The spec's knowledge-graph grammar is allowed to differ in WHAT it extracts, but the resolution of a relative specifier to a file is the resolver util exports, and AM-34 test 19's intent — one classifier, one resolver, both consumers — is contradicted in the very PR that introduces it. Note test-closure section 9 only greps for functions NAMED resolveRelativeSpecifier, so the duplicate resolver under a different name passes the unit while violating the invariant it claims to prove.",
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Reimplement physicalContainment so the supplied allowed/repository-root chain and every existing candidate-parent component are lstat-checked before any realpath decision, every symlink component is rejected, and the deepest existing ancestor is resolved and proven beneath the repository real path. Add a test that passes a symlink itself as the allowed repo root, plus nested-parent, external-target, nonexistent-tail, and plain-path cases.; Make the shared lexical classifier exact for the frozen forms: distinguish the import keyword from member properties, distinguish direct module.require from property-chain lookalikes, scan executable template substitutions, prevent regex literals from creating load sites, and correctly classify literal string values. Make closure entry points undergo the same regular-file/symlink/containment checks as resolved targets, and fail on every ambiguous extension resolution.; Constrain validateGitArgs to exactly the two frozen log arrays in their required order, in addition to the exact rev-parse, rev-list, and hash-object arrays. Prevent options from overriding cwd, shell:false, encoding, or other security-relevant fixed execution settings.; Restrict code-weaver dependency extraction to static relative specifiers that explicitly end in .mjs; do not append extensions or accept other extensions. Make identifier-use detection operate on actual identifier tokens outside import declarations, including template-expression code while excluding regex/comment/string contents.; Make walkFiles throw on every encountered symlinked root, directory, or file instead of silently omitting nested symlinks, while preserving deterministic sorting and regular-file-only output.; Preserve duplicate export discoveries until seedSourceDescriptors can reject duplicate descriptors, and ensure every mandated unsupported export category produces a warning that is propagated to the eventual weave result rather than discarded.; Return structured warnings conforming to the existing warning contract, with weaver set to clotho-git-weaver or clotho-code-weaver respectively; add attribution assertions for both no-result and unresolvable-import paths.; Extend the tests with all frozen form and failure fixtures, including export * as namespace from, ambiguity, non-regular targets, symlinked entry and allowed root, omission through re-export/dynamic/require forms, explicit-extension rejection, strict git-wrapper counterexamples, duplicate descriptors, and structured warning attribution. Normative symlink tests must fail rather than skip when fixture setup fails, and bad inventories should be passed through the same equality/existence validator used for committed inventories.",
+      "codex has hard stops: The D21 physical-containment helper is not faithful. It calls realpathSync(repoRoot) before lstat-checking the supplied repository/allowed-root path, so a symlinked allowed root is followed and can be accepted. It also never resolves the deepest existing ancestor as required. The purported symlinked-allowed-root unit only tests a symlink beneath a real repo root, not a symlink supplied as repoRoot.; The D33 classifier/resolver is not an exact accepted-form implementation. classifyModuleLoads falsely treats valid member calls such as obj.import(\"./x.mjs\") and obj.module.require(\"./x.mjs\") as accepted loader forms; it masks executable ${...} template substitutions and therefore misses accepted literal loads inside them; and its lack of regex-literal handling can manufacture edges from regex contents. The resolver has no ambiguity detection and deriveAcceptedClosure follows a symlinked entry through realpathSync rather than rejecting it.; The weaver-facing git boundary is broader than the frozen allowlist. validateGitArgs accepts log shapes with missing, duplicated, or reordered required flags, while makeGitRunner spreads caller options after cwd and shell:false, allowing callers to override cwd and enable shell execution.; The code weaver violates the explicit-.mjs grammar: resolveModulePath appends .mjs to extensionless specifiers and also accepts any other extension when the resulting path is seeded. Its identifier-use check is not token-faithful because regex bodies remain searchable and executable template substitutions are masked, causing false and missed depends-on edges.; The source walker silently skips nested symlink entries instead of failing closed on symlinked input. This can silently omit an input beneath a configured root rather than reject the inventory walk as required.; Duplicate symbol descriptors cannot produce the required error because scanExports deduplicates names before seedSourceDescriptors performs its duplicate check. In addition, required unsupported/dynamic export warnings are not reliably surfaced by descriptor seeding.; Both weavers emit warning strings. This is incompatible with the frozen producer-attribution contract requiring every returned warning to carry warning.weaver equal to the invoked weaver id.; The mandatory units are incomplete or non-proving: there is no namespace re-export form fixture, ambiguous or non-regular closure-target fixture, genuine symlinked-entry/allowed-root proof, explicit-.mjs rejection unit, or strict git-log-shape/option-override unit. Required omission cases reached only through re-export, dynamic import, and require-style forms are not exercised. The missing/extra inventory checks mostly assert inequality rather than invoking a common equality validator, and symlink setup failures silently skip normative cases."
+    ],
+    "warnings": []
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

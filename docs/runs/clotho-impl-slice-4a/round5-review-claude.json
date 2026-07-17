@@ -1,0 +1,45 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:77044f9177c0288c52ad27f61c8d28e08698e9f9739a225611070a9b77408439",
+  "decision": "revise",
+  "required_edits": [
+    "Update stale header comments: inventory.mjs, util.mjs, git.mjs, and code.mjs all say 'plan v12 Task 4a' but this review is against v13 (v12 + AM-40). Either reference v13 or the frozen-scope identifier so the committed provenance comment matches the authorizing plan version.",
+    "AM-40 requires a unit that 'mechanically discovers every directory in the repository holding a TRACKED package.json' — test-inventory.mjs section 7 walks the filesystem (readdirSync) rather than consulting git tracking (e.g. git ls-files). An untracked/stray package.json directory would fail the suite even though it is not a tracked package, and conversely the check does not prove discovery over TRACKED files as the frozen text specifies. Rework the completeness unit to enumerate tracked package.json paths (or justify equivalence and pin it), and assert discovered == PACKAGE_ROOTS \\u222a PACKAGE_ROOTS_EXCLUDE as a set equality in BOTH directions plus the disjointness check (the current per-element loops do achieve both directions, but the tracked-vs-filesystem basis must match the ruling).",
+    "The counted-iterator semantics deviate from the frozen Task 4a text: the plan says the count increments 'only when the consumer completes consumption of that source (open + read + processing to edge-extraction eligibility without fatal error)' and the units must prove 'a fully consumed one is counted exactly once.' makeCountedSource counts on the consumer's RESUME, so a consumer that fully processes the last item and then stops without resuming records N-1 — the implementation itself documents this divergence as a 'RATIFIED Task-4a contract' and pins it in test-util section 8. That ratification is not in the frozen v13 text; a fully-consumed final source that is never followed by a resume is 'fully consumed' under the plan's definition but is not counted. Either (a) obtain an explicit amendment authorizing the resume-counting semantics, or (b) restructure the iterator so completion of the final item's processing is countable (e.g. count on the next() call that returns done, plus documented equivalence for for...of full-consumption), keeping the partial-consumption-not-counted property.",
+    "test-closure.mjs section 5's 'missing member fails' case only exercises omission of a member reached via a plain named static import within that block; the frozen text requires closure-equality failure fixtures where the omitted member is reached ONLY through re-export, literal dynamic import, or an accepted require-style form. Section 2 does cover omission per form via inventoryMatches(['clotho/entry.mjs'],...) across all eight forms, which arguably satisfies this — but the export-from/export-star/dynamic/require omission fixtures rely on the same generic harness; add an explicit assertion or comment binding section 2's per-form omission checks to the required failure-fixture list so the coverage mapping is auditable.",
+    "git.mjs's parseShaLines accepts CRLF terminators and treats them as valid; the frozen text says 'Every output line is validated as a full SHA' and 'malformed output fatal' without authorizing CRLF normalization. This is a defensible platform accommodation (Windows) and bare-CR is still fatal, but it is an interpretation beyond the letter of the frozen scope — record it as a reviewed, pinned decision (it is pinned in test-git section 6) in the PR description or an amendment note rather than silently in code comments."
+  ],
+  "hard_stops": [
+    "Counted-iterator counting semantics (resume-counting; N-1 on last-item-then-break) self-describe as a 'RATIFIED Task-4a contract' but no such ratification exists in the frozen v13 Task 4a text or decision table supplied for this review; the frozen text's completion definition ('processing to edge-extraction eligibility without fatal error') does not make counting contingent on a subsequent resume. An unauthorized semantic redefinition of D26/D29 accounting is a scope/faithfulness defect that must be either amended by The Eye or corrected before this seat can sign."
+  ],
+  "confidence": "medium",
+  "timestamp": "2026-07-17T00:59:54.385Z",
+  "rationale": "The implementation is substantially strong: the closed inventory commits the exact five PACKAGE_ROOTS and three-product PACKAGE_ROOTS_EXCLUDE per AM-40; REQUIRED_INVENTORY_IDS matches the frozen normative table with an equality unit; LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS is deep-frozen with deep-equal/exact-key/mutation units; only git and code inventories are committed per D17/AM-17 and test-closure proves committed inventories equal derived closures (never trusted) using the shared classifier/resolver, with per-form fixtures, recursion/cycle/conditional-dynamic coverage, merkle-dag traversal, and fatal-target fixtures; util.mjs exports the ONE D33 classifier/resolver consumed by both the closure derivation and code.mjs (AM-34 test 19 is present and even guards against second resolvers); the git wrapper is a strict no-shell allowlist of exactly the frozen shapes; git.mjs emits the two exact log invocations with first-result selection, git:<sha> source_ref, malformed-fatal/no-result-warn; code.mjs covers all four endpoint shapes, symbol-vs-file threading, no-export preservation as repository-file -> code-symbol, unrepresentable-consumer only for unresolvable specifiers, unused-import suppression, dedup, and byte-equal determinism. The deterministic gate passed. However, I cannot sign it AS-IS. (1) The counted-iterator counts on resume, so a fully-processed final source without a subsequent resume records N-1; the code comment claims this is a 'RATIFIED Task-4a contract,' but no such ratification appears in the frozen v13 text I was given — the plan defines counting by completion of processing, not by resume, and the required unit is 'a fully consumed one is counted exactly once.' Codifying an unratified semantic in both implementation and pinning test is precisely the kind of quiet reinterpretation this council exists to catch; it needs an amendment or a fix. (2) AM-40's completeness unit specifies discovery of TRACKED package.json directories; the test walks the raw filesystem, a different basis that can both over- and under-report relative to the ruling. (3) Version-label drift ('plan v12') in headers misstates the authorizing scope. (4) Minor auditability and platform-accommodation items (CRLF acceptance; binding the per-form omission fixtures to the required failure list) should be recorded, not inferred. These are genuine faithfulness defects, mostly small and mechanically fixable — hence revise, not reject.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011Cd6iyfqPoAZGDdBdxzLui",
+    "source": "ai-peer-mcp/claude_ask",
+    "answered_at": "2026-07-17T01:00:31.454Z",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "487ab4853f534e4e61800dd3d209d714d6a1e164f5ed6f985bb6fe60f6cdac5e",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

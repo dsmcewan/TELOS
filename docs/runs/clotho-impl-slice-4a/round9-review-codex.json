@@ -1,0 +1,48 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:0141730a9fb474f27341d379936b0f774436c4c2e725a4fc4abb10578ddf5826",
+  "decision": "revise",
+  "required_edits": [
+    "Replace or strengthen the lexical state machine so regex/division is decided from a real previous-significant-token/context model across the frozen expression-start contexts, including comments, control heads, `for ... of`, statement/block boundaries, and loader-name call versus declaration/property/method contexts. Ensure regex interiors cannot manufacture module loads, exports, or binding uses.",
+    "Enforce the complete frozen lexical profile with `ProfileError` and diagnostic `unsupported-module-lexical-profile`. Validate full accepted-form structure, including closing delimiters and dynamic-import options/trailing-comma syntax; reject every truncated static import, re-export, dynamic import, require, and module.require form. Reject malformed or non-frozen string escapes and unterminated templates rather than accepting them or leaking another exception type.",
+    "Expand AM-41 tests to prove the corrected regex/comment/token contexts and every b1-b6 case, especially each truncated accepted form. Assert both direct classification failure and closure failure with no inferred edge or successful coverage result.",
+    "Perform original-order component inspection before normalization in both `resolveRelativeSpecifier`/closure derivation and `physicalContainment`. Continue inspection after missing components so later `..` can return to an existing chain; reject every encountered symlink or transient root escape. Add fixtures for both `link/../target` and `missing/../link/../target` against the resolver and physical-containment helper.",
+    "Remove the closure-only `.mjs`/`.cjs` restriction and implement the frozen shared exact-target extension rules for every accepted literal relative load. Add closure fixtures for explicit non-`.mjs` targets beyond `.cjs`, while retaining the `.mjs`-only filtering solely in `code.mjs`."
+  ],
+  "hard_stops": [
+    "The shared lexer/classifier does not satisfy AM-41 supported-profile total correctness. Regex-versus-division is based on previous characters and `precedingWord(source, ...)`, not previous significant tokens. Comments therefore break contexts such as `return /*c*/ /.../` and `if /*c*/ (...) /.../`; contextual expression starts such as `for (... of /.../)` are intentionally mishandled. Import-shaped text inside those valid regex literals can become false closure edges, exports, or identifier uses.",
+    "The frozen fail-closed profile is incomplete. Truncated accepted forms such as `import(\"./x.mjs\",`, `require(\"./x.mjs\"`, `import { x } from`, and `export * from` return a successful classification or no edge instead of throwing `unsupported-module-lexical-profile`. The implementation also accepts escapes outside the frozen list and does not diagnose unterminated template literals. The required b6 truncated-form units are absent.",
+    "Original-component containment is not faithfully enforced. `physicalContainment` normalizes with `path.resolve` before inspecting candidate components, so a symlink followed by `..` can disappear. `originalChainSymlinkFree` also returns immediately at the first `ENOENT`; a path such as `./missing/../link/../target.mjs` can therefore recover from the missing component and traverse an existing symlink that was never lstat-checked. This violates AM-41(c)'s every-existing-component, original-order rule.",
+    "D33 closure resolution invents a `.mjs`/`.cjs` whitelist. `deriveAcceptedClosure` rejects an existing explicit `.js`, `.json`, or other non-whitelisted relative target as `ambiguous-extension`, and the tests deliberately enshrine that behavior. The frozen rule requires every accepted literal relative module-load edge to participate in closure, with `.cjs` given as an example rather than an exhaustive second extension; only the code-weaver's application-dependency extraction is restricted to explicit `.mjs` targets."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-17T03:29:28.914Z",
+  "rationale": "The committed package/exclusion inventory, normative per-weaver source table, deep-frozen D32 mapping, Task-4a-only git/code closure inventories, counted-source substrate, exact git invocations, and the principal code-weaver endpoint threading are substantially aligned. However, AM-41 and D33 are provenance-integrity requirements: false edges, silently accepted malformed source, skipped original path components, or omitted accepted relative targets make the committed closure claim unsound. The passing deterministic gate does not exercise these counterexamples, so the implementation is not acceptable as-is.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2TYSj3zmLBxIyMyOYIomGBapeT8X",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-17T03:36:49.120Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "2374d6f2f62e0efda0c410e92a2262c4f257e8ef30ca36bdd559adc81a64669d",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

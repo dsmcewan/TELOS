@@ -1,0 +1,37 @@
+[
+  {
+    "id": "fail-closed",
+    "statement": "If evidence is absent or ambiguous, block rather than approve. The gate re-reads disk ground truth and certifies from signatures + real provenance, never a seat's self-report.",
+    "authority": { "doc": "README.md (trust model)", "contract": "contracts/Multi-Model Agentic Build Gate.md" },
+    "oracle": { "test": "build-gate npm test (gate/sign/trust)", "source_of_truth": "build-gate/gate.mjs" },
+    "normativity": "NORMATIVE"
+  },
+  {
+    "id": "content-address-not-mutable-label",
+    "statement": "No mutable label keys an enforcement decision; every enforcement identity is a content-derived address. A mutable label must not stand where an identity belongs.",
+    "authority": { "doc": "CLAUDE.md (proposal-lifecycle rule)" },
+    "oracle": { "test": "merkle-dag npm test; clotho test-registry.mjs (deriveNodeId content-binding)", "source_of_truth": "merkle-dag/vendor.mjs, clotho/registry.mjs" },
+    "normativity": "NORMATIVE"
+  },
+  {
+    "id": "spine-read-only",
+    "statement": "Nothing outside clotho/ may import from clotho/; each top-level package is self-contained. Slice diffs are confined to their declared paths.",
+    "authority": { "doc": "CLAUDE.md (Layout)", "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3" },
+    "oracle": { "test": "docs/runs/clotho-impl-slice-4a/gate.mjs (imports-permitted + confined checks)" },
+    "normativity": "NORMATIVE"
+  },
+  {
+    "id": "zero-runtime-dependencies",
+    "statement": "Every package uses only the Node standard library (node: prefix); no npm packages, no lockfile.",
+    "authority": { "doc": "CLAUDE.md (Conventions)" },
+    "oracle": { "test": "docs/runs/clotho-impl-slice-4a/gate.mjs (zero-deps check); each package npm run check" },
+    "normativity": "NORMATIVE"
+  },
+  {
+    "id": "eye-authority-non-delegable",
+    "statement": "The Eye's approval of consequential, irreversible, self-improving, or authority-expanding action cannot be delegated to a model or inferred from silence. A model approval is not human authority; convergence is not authorization.",
+    "authority": { "registry": "docs/mythological-vocabulary.md#The-Eye", "doc": "docs/convergence-is-not-authorization.md" },
+    "oracle": { "cited": "docs/runs/clotho-authorization-7/ (NOT_AUTHORIZED preserved) — required-seat dissent blocked a contradictory plan" },
+    "normativity": "NORMATIVE"
+  }
+]

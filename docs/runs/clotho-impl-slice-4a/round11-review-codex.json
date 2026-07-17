@@ -1,0 +1,46 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:a66ae5ea740a8164261233745d9cb6279cc006ecbf28e4c041fbe6bc482a755e",
+  "decision": "revise",
+  "required_edits": [
+    "Correct the shared lexer’s significant-token state and regex-versus-division handling for all supported expression contexts, including value-producing string/template/regex tokens and declaration/block endings such as class bodies. Add direct classifier and closure fixtures proving the real division-adjacent dynamic import is included and load-shaped text in a regex after a class declaration creates no edge.",
+    "Extend b5 detection to every import/export alias or specifier-name position, including `export * as <ModuleExportName> from`, and require the stable `unsupported-module-lexical-profile` diagnostic for quoted namespace aliases. Add direct and closure-level regression units.",
+    "Make malformed or truncated dynamic-import tails/options fail closed rather than degrade to `literal:false`. At minimum, enforce balanced and correctly nested option delimiters and add stable-diagnostic tests for closed-call but truncated/mismatched option structures such as `import(\"./x.mjs\", { )`.",
+    "Re-run the committed real-weaver closure-equality assertions and deterministic suite after the shared scanner corrections."
+  ],
+  "hard_stops": [
+    "The shared AM-41 lexer/classifier is not correct over the supported profile. `lex()` leaves `prevSigWord` stale after string, template, and regex literals, and its brace heuristic classifies ordinary class bodies as expression/object braces. Consequently, valid code such as `function f(){ return \"x\" / import(\"\\x2e\\x2fdep.mjs\") / 1; }` can have its real dynamic-import edge masked as a regex, while a regex after `class C {}` can expose load-shaped regex text as a false closure edge. This violates the required previous-significant-token decision across all expression-start contexts and makes D33 closure results unsound.",
+    "AM-41(b5) is not fully enforced. `parseModuleDecl()` rejects string-literal names only inside `{...}` lists, so the namespace re-export variant `export * as \"ns\" from \"./x.mjs\"` is accepted instead of throwing `unsupported-module-lexical-profile`. The frozen rule rejects every string-literal specifier/alias name in an import/export clause.",
+    "AM-41(b6) truncated-form enforcement is incomplete. For example, `import(\"./x.mjs\", { )` has a closed call parenthesis but a truncated/unbalanced options object; `literalAt()` merely returns `null`, and the classifier reports a nonliteral site instead of failing with `unsupported-module-lexical-profile`. This permits a truncated accepted form to produce a successful classification/closure result."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-17T04:36:03.079Z",
+  "rationale": "The inventory constants, AM-40 package classification, normative inventory-id table, deeply frozen D32 mapping, D17 git/code-only implementation inventories, closure equality machinery, counted sources, containment helpers, git allowlist/weaver behavior, and code-weaver endpoint threading are substantially aligned with Task 4a. However, AM-41 correctness is part of the provenance boundary, not optional hardening. The concrete supported-profile false-negative/false-positive cases and the missed b5/b6 failures mean the shared classifier cannot be accepted AS-IS despite the deterministic gate passing.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2Uatcp7LZOObSLnxyCmz6DcSvMmA",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-17T04:42:31.403Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "b5ca07a672b5d9e7decc4f060de6eff87f93a4a1414cbb4539c52e1d419201ee",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "docs/institutional-memory/SCHEMA.md#current-authority",
+  "note": "The single machine-readable answer to 'what governs new work now'. Every field terminates in a stable identifier. Fail-closed: docs/institutional-memory/comprehension-gate.mjs recomputes active_plan.sha256 from disk and refuses to certify any reader if it does not match. Do NOT infer authority from filenames, dates, or model consensus; read this file.",
+  "system": "TELOS",
+  "as_of": "2026-07-17",
+  "active_plan": {
+    "component": "clotho",
+    "version": "v15",
+    "path": "docs/runs/clotho-daedalus-delta14/matured-plan-v15.md",
+    "sha256": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+    "release_anchor": "git:bb265b9",
+    "release_pr": 121
+  },
+  "active_authorization": {
+    "id": "authz-008",
+    "record": "docs/runs/clotho-authorization-8/authorization-summary.json",
+    "status": "AUTHORIZED",
+    "authorizes_plan": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+    "merge_anchor": "git:bb265b9",
+    "extends": "authz-006",
+    "supersedes": "authz-007",
+    "required_seats": ["claude", "agy", "codex"],
+    "decision": "unanimous approve/high, signed; gate pass"
+  },
+  "implementation_authority": {
+    "holder": "The Eye",
+    "governs": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+    "accepted_slices": [
+      { "task": "4a", "pr": 117, "merge_anchor": "git:f12e5d2", "reviewed_head": "git:0e73ca6", "note": "accepted with a deferred minor-fix backlog per The Eye's stopping rule", "deferred_backlog": "docs/runs/clotho-impl-slice-4a/DEFERRED-MINOR-FIXES.md" }
+    ],
+    "next_slice": "4b"
+  },
+  "amendments_in_force": [
+    { "id": "AM-40", "subject": "PACKAGE_ROOTS = TELOS spine (5), explicit exclusion of 3 products", "integrated_in": "v13", "authorized_by": "authz-006", "doc": "docs/clotho-phase-1-plan-amendments-12.md" },
+    { "id": "AM-41", "subject": "D33 scanner enforced closed source profile; fail-closed b1-b6; one optional leading shebang", "integrated_in": "v14 (+ shebang carve-out v15)", "authorized_by": "authz-008", "doc": "docs/clotho-phase-1-plan-amendments-13.md" }
+  ],
+  "superseded": [
+    { "plan_version": "v11", "sha256": "sha256:f5d9cd52f12ec9abb4c613c469437d0079af7fdf249c5a842f94c451d55fc30c", "authorization": "authz-004", "authz_status": "NOT_AUTHORIZED", "superseded_by": "v15", "must_not_govern_new_work": true },
+    { "plan_version": "v12", "sha256": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3", "authorization": "authz-005", "authz_status": "AUTHORIZED", "superseded_by": "v15", "must_not_govern_new_work": true },
+    { "plan_version": "v13", "sha256": "sha256:f9368b5748de6c2670193558783b60b7f74fd94de9196c9664d42269f3d2bc04", "authorization": "authz-006", "authz_status": "AUTHORIZED", "superseded_by": "v15", "must_not_govern_new_work": true },
+    { "plan_version": "v14", "sha256": "sha256:f152f1663234a393aa8a0dd441d2631a9cf4a6d50773d719178f38f483da3426", "authorization": "authz-007", "authz_status": "NOT_AUTHORIZED", "superseded_by": "v15", "must_not_govern_new_work": true, "note": "authz-007 correctly blocked v14: AM-41 hashbang exclusion contradicted Task 5 weave.mjs shebang; resolved by the AM-41 shebang carve-out in v15." }
+  ]
+}

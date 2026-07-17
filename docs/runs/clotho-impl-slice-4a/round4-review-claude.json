@@ -1,0 +1,42 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:d3c85a47ac8020a3b90e074a501cd31075ec65cc048b3076b85396ab2fdd13bf",
+  "decision": "revise",
+  "required_edits": [
+    "Reconcile WEAVER_IMPL_FILES['clotho-git-weaver'] with the actual derived closure semantics: git.mjs imports only ../registry.mjs, yet the committed inventory lists clotho/registry.mjs + clotho/weavers/git.mjs and the closure test passes — but registry.mjs itself must be traversed recursively; confirm (and pin with an explicit unit) that registry.mjs's own accepted relative closure is empty (it imports only node:crypto), so the two-file inventory is genuinely the fixed point rather than an untested coincidence. Add a direct unit asserting deriveAcceptedClosure(clotho/weavers/git.mjs) === ['clotho/registry.mjs','clotho/weavers/git.mjs'] and similarly for code.mjs, with the derived list printed on failure, so reviewers see the real-repo closure equality directly rather than only through the boolean inventoryMatches harness.",
+    "Add the missing spec-mandated unit: 'accounting observable only through the driver-held accessor' is asserted only weakly (Object.keys(source) is empty and source.accounting undefined). Strengthen with an assertion that the accessor function is NOT reachable from the iterable via any own or symbol-keyed property (Object.getOwnPropertyNames + getOwnPropertySymbols on the source object and its iterator), matching the D26 requirement that the weaver can never see or report counts.",
+    "test-closure.mjs section 2 'require()' and 'module.require()' fixtures write entry files whose require-target helper is reached via an .mjs specifier (require('./helper.mjs')); the frozen scope says accepted literal require()/module.require() forms participate in the closure — but util's resolver hard-rejects any non-.mjs extension as ambiguous-extension, while test-util section 4 classifies require('./req.cjs') / module.require('./mreq.cjs') as literal load sites. Add an explicit closure-level unit pinning the committed behavior for a literal require of a non-.mjs target inside clotho/ (fatal ambiguous-extension), so the extension rule for require-style edges is a committed, tested decision rather than an implicit interaction.",
+    "The exit criterion requires 'npm test is green' over the suite; the gate ran scripts/test-all.mjs (7 tests) but the artifact does not include test-all.mjs or package.json test wiring. Include (or reference in the PR) the test-all.mjs registration showing test-closure/test-inventory/test-util/test-git/test-code are all registered, so a green gate provably covers the five new suites."
+  ],
+  "hard_stops": [],
+  "confidence": "medium",
+  "timestamp": "2026-07-17T00:51:13.302Z",
+  "rationale": "Overall this is a strong, largely faithful implementation. What is verifiably correct: (a) inventory.mjs commits PACKAGE_ROOTS exactly as AM-40 rules (five spine packages), PACKAGE_ROOTS_EXCLUDE exactly the three siblings, with test-inventory section 7 mechanically discovering every tracked package.json directory and requiring discovered == union plus disjointness — this matches the AM-40 unit requirement (modulo using a filesystem walk rather than 'tracked' git enumeration, which is a minor fidelity nuance but covers the drift-prevention intent); DOC_ROOTS, docs/runs and self-weave exclusions, CONTRACT_FILES (D31), five weaver ids with integer versions, REQUIRED_INVENTORY_IDS deep-frozen and proven equal to the frozen normative table by unit (test-inventory section 2 matches git->[package-files,package-symbols], code->[package-modules], test->[package-manifests,test-files], doc->[doc-files], ledger->[contract-files,ledger-sources,run-sources]); LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS deep-frozen with deep-equal/exact-keys/exact-values/deep-freeze/mutation units (test-inventory section 3). (b) Per D17/AM-17 only git and code inventories are committed; test-inventory section 4 proves every committed path exists. (c) util.mjs exports ONE classifier (classifyModuleLoads) and ONE resolver (resolveRelativeSpecifier); test-closure section 9 proves single definition sites, that deriveAcceptedClosure's body calls both, and that code.mjs imports the shared resolver — satisfying AM-34 test 19's spirit for the consumers that exist at this PR (the advisory scanner is Task 5). The lexer is dependency-free, comment/string aware, with genuinely sophisticated regex-vs-division handling that is unit-tested; Phase 1 export grammar matches the four forms with warnings for unsupported forms; the walker rejects escape and symlinked input including symlinked ancestors/intermediate components; counted-iterator semantics (count on completed consumption, exhaustion only on normal completion, cardinality) are unit-proven including the pinned N-1 boundary; physicalContainment lstats every component, rejects symlink components, resolves deepest existing ancestor, never follows symlinks — all D21 unit cases (symlinked allowed root, symlinked nested parent, escape via symlink target, plain nested accepted) present. (d) test-closure derives closures with the shared machinery, proves committed inventories equal derived closures via one harness, covers all accepted forms with form-only fixtures, recursion/cycles/conditional-dynamic-import, permitted merkle-dag traversal, and all fatal modes (missing/extra/nonexistent inventory entries; unresolved/ambiguous/symlink/non-regular/escape/forbidden targets; entry-level checks; non-literal and comment/string non-edges). (e) git.mjs emits exactly the two frozen log shapes, first-result selection, git:<sha> source_ref, full-SHA validation with malformed fatal and empty warning; the CRLF-accepted/bare-CR-fatal refinement is a reasonable, explicitly tested reading of 'every output line is validated as a full SHA'. (f) code.mjs covers all four endpoint shapes, symbol/file threading, no-export preservation, unrepresentable-consumer only for unresolvable specifiers, unused-import suppression, dedup, byte-equal determinism. Zero deps, ESM, permitted imports only, spine untouched per the gate. Why revise rather than approve: four faithfulness gaps that are real but repairable. (1) The real-repo closure equality is asserted only through the boolean inventoryMatches harness; there is no direct assertion of the derived closure contents for the actual weavers, so a subtle resolver/classifier bug that makes derivation throw... would just return false and fail, but a bug making both the committed list and derivation agree on a wrong fixed point (e.g. failing to traverse registry.mjs recursively) is not independently pinned. (2) The D26 requirement that accounting is observable ONLY via the driver-held accessor is under-asserted. (3) The interaction between accepted require()-form closure edges and the explicit-.mjs extension rule is untested at closure level while test-util classifies .cjs require sites as literal loads — a committed decision should be pinned. (4) The exit criterion's npm-test wiring for the five new suites is not in evidence. None of these are scope expansions or reinterpretations — they are missing proof obligations the frozen scope explicitly demands ('accounting observable only through the driver-held accessor'; inventories 'proven equal to the derived closures'). Hence revise, not reject.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011Cd6iKF3KgQH4MKR5gdQGF",
+    "source": "ai-peer-mcp/claude_ask",
+    "answered_at": "2026-07-17T00:51:54.449Z",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "4f612b1863f4bc3f5509092d04846c53df092b1ed6ca3ef86716a8cc84098ce4",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

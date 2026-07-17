@@ -1,0 +1,106 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "review_ref": "sha256:d3c85a47ac8020a3b90e074a501cd31075ec65cc048b3076b85396ab2fdd13bf",
+  "pr": 117,
+  "pr_head": "536943044623fe1f6856a11774ce112204678f90",
+  "plan_ref": "sha256:f9368b5748de6c2670193558783b60b7f74fd94de9196c9664d42269f3d2bc04",
+  "authorization": "authz-006",
+  "timestamp": "2026-07-17T00:51:13.302Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "medium",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6iKF3KgQH4MKR5gdQGF",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-17T00:51:54.449Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": false,
+      "reason": "read ECONNRESET"
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "7aecd33c-2e20-9435-a3c9-4ab8159acf4a",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-17T00:51:50.660Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "g3xZateJKr_rz7IP0bKR0AE",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-17T00:51:31.587Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "claude decision is 'revise', not 'approve'.",
+      "claude has required edits: Reconcile WEAVER_IMPL_FILES['clotho-git-weaver'] with the actual derived closure semantics: git.mjs imports only ../registry.mjs, yet the committed inventory lists clotho/registry.mjs + clotho/weavers/git.mjs and the closure test passes — but registry.mjs itself must be traversed recursively; confirm (and pin with an explicit unit) that registry.mjs's own accepted relative closure is empty (it imports only node:crypto), so the two-file inventory is genuinely the fixed point rather than an untested coincidence. Add a direct unit asserting deriveAcceptedClosure(clotho/weavers/git.mjs) === ['clotho/registry.mjs','clotho/weavers/git.mjs'] and similarly for code.mjs, with the derived list printed on failure, so reviewers see the real-repo closure equality directly rather than only through the boolean inventoryMatches harness.; Add the missing spec-mandated unit: 'accounting observable only through the driver-held accessor' is asserted only weakly (Object.keys(source) is empty and source.accounting undefined). Strengthen with an assertion that the accessor function is NOT reachable from the iterable via any own or symbol-keyed property (Object.getOwnPropertyNames + getOwnPropertySymbols on the source object and its iterator), matching the D26 requirement that the weaver can never see or report counts.; test-closure.mjs section 2 'require()' and 'module.require()' fixtures write entry files whose require-target helper is reached via an .mjs specifier (require('./helper.mjs')); the frozen scope says accepted literal require()/module.require() forms participate in the closure — but util's resolver hard-rejects any non-.mjs extension as ambiguous-extension, while test-util section 4 classifies require('./req.cjs') / module.require('./mreq.cjs') as literal load sites. Add an explicit closure-level unit pinning the committed behavior for a literal require of a non-.mjs target inside clotho/ (fatal ambiguous-extension), so the extension rule for require-style edges is a committed, tested decision rather than an implicit interaction.; The exit criterion requires 'npm test is green' over the suite; the gate ran scripts/test-all.mjs (7 tests) but the artifact does not include test-all.mjs or package.json test wiring. Include (or reference in the PR) the test-all.mjs registration showing test-closure/test-inventory/test-util/test-git/test-code are all registered, so a green gate provably covers the five new suites.",
+      "Missing required codex approval packet."
+    ],
+    "warnings": []
+  },
+  "review_passed": false,
+  "acceptance": {
+    "status": "REVIEW_NOT_PASSED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

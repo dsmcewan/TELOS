@@ -1,0 +1,32 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:d3c85a47ac8020a3b90e074a501cd31075ec65cc048b3076b85396ab2fdd13bf",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-17T00:51:13.302Z",
+  "rationale": "Faithful AS-IS implementation of frozen v13 Task 4a (incl. AM-40 PACKAGE_ROOTS ruling) with no reinterpretation and no scope expansion. inventory.mjs commits exact sorted PACKAGE_ROOTS + explicit PACKAGE_ROOTS_EXCLUDE (completeness unit proves discovered == union, disjoint), DOC_ROOTS + DOC_WEAVER_EXCLUDE/GLOBAL_EXCLUDE, CONTRACT_FILES (D31), empty LEDGER_SOURCES (exact reviewed set), RUN_SOURCES, five weaver ids+integer versions, REQUIRED_INVENTORY_IDS deep-equal to the frozen normative table (unit), LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS exactly {module,node:module}→[\"builtinModules\",\"isBuiltin\"] deep-frozen with mutation/deep-equal units, and WEAVER_IMPL_FILES/WEAVER_ENTRY_MODULE only for git+code (D17/AM-17) naming only existing files. util.mjs exports the single D33 classifier+resolver (shared by deriveAcceptedClosure and code; AM-34 test 19 proves sole definition + both consumers), dependency-free lexer + Phase-1 export scanner, real-file walker (root-escape/symlink reject), D26/D29 counted-iterator (count-on-complete, accounting only via driver accessor; boundary units), D21 physical-containment (lstat every component, never follow), and exact no-shell git allowlist. test-closure derives with the shared classifier/resolver and proves WEAVER_IMPL_FILES equal derived closures (never trusted), covering every accepted form (incl. export * as ns), recursion/cycles/conditional, permitted merkle-dag, and all fatal/no-edge modes. git.mjs uses exactly the two frozen log shapes, first SHA, git:<sha>, malformed fatal, no-result warn. code.mjs emits all four depends-on endpoint shapes with symbol/file threading, unrepresentable-consumer only for unresolvable, unused/no-edge, dedup. Zero runtime deps, ESM, permitted imports only, spine read-only, confined to clotho/; deterministic gate meets. Orchestrator/D34/test/doc/ledger weavers correctly deferred to later tasks.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5",
+    "response_id": "7aecd33c-2e20-9435-a3c9-4ab8159acf4a",
+    "source": "ai-peer-mcp/grok_ask",
+    "answered_at": "2026-07-17T00:51:50.660Z",
+    "tool": "grok_ask"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:fc3b8b85b732df2eb6f4968b7c2b209eb6a96d3c8788596a009204a7176dc35c",
+  "decision": "revise",
+  "required_edits": [
+    "Make classifyModuleLoads/lex implement the frozen literal grammar across valid JavaScript whitespace and line terminators, correctly interpret string-literal escapes or otherwise fail closed without omitting a semantically relative literal, reject incomplete literals, and avoid duplicate classification of spaced module.require forms. Add form-only closure tests for newline/tab formatting and escaped relative literals.",
+    "Refactor containment into a fail-closed component walker used consistently by physicalContainment(), walkFiles(), resolveRelativeSpecifier(), and closure derivation. lstat every existing component of the repository/allowed-root chain and candidate parent chain before realpath, reject every symlink component, and distinguish ENOENT tails from other lstat failures. Add tests for a symlink in an ancestor of the repository root and an intermediate symlink in a configured walk root.",
+    "Correct lexical token handling so regex-literal contents cannot count as imported-binding uses, including regexes after return/throw/case-like expression-introducing tokens. Add a code-weaver unit proving a binding appearing only in such a regex emits no edge.",
+    "Implement warnings for all frozen unsupported export categories, including computed exports and dynamic symbol flow, while continuing to infer symbols only for the four Phase-1 declaration forms. Add focused comment/string-safe units for each warning category.",
+    "In code.mjs, ensure `unrepresentable-consumer` is reserved for eligible explicit-.mjs imports that genuinely cannot resolve to an allowed real file below the closed roots; do not use that warning for imports merely outside the accepted extension grammar, and preserve fail-closed handling for physical-policy violations. Add extension and symlink/escape classification units.",
+    "Make git output parsing distinguish empty output from blank or otherwise malformed lines, and add tests for blank-only output, internal blank lines, and the valid trailing-newline case."
+  ],
+  "hard_stops": [
+    "The shared D33 classifier under-approximates accepted literal module-load syntax. It skips only U+0020 in several positions, so valid forms such as a side-effect import after a newline and literal import()/require() arguments preceded by a tab or newline are missed. Its string handling also does not decode JavaScript escapes, so a literal whose runtime value is relative, such as one beginning with a hex/unicode escape for '.', can be omitted from the closure. Consequently closure equality is proved only against a defective derivation and cannot establish D33.",
+    "The D21 physical-containment and real-file-walker implementations do not lstat every component of the allowed/configured root chain. physicalContainment() checks only the final repository-root pathname and descendants, while walkFiles() and resolveRelativeSpecifier() realpath the repository root first. A symlink in an ancestor of the repository root, or in an intermediate component of a configured walk root, is therefore followed rather than rejected. physicalContainment() also treats every lstat error as a missing tail instead of failing closed.",
+    "Identifier-use detection can infer false depends-on edges from regex-literal text. The regex-literal heuristic does not recognize a regex after tokens such as return, so an imported binding appearing only in `return /binding/` is treated as an identifier use even though no identifier token occurs. This violates the frozen symbol-use rule.",
+    "The Phase-1 export scanner has no complete warning path for the required computed-export and dynamic-symbol-flow categories. It warns for default/list/star/destructuring patterns, but unsupported mutable/dynamic export forms can emit neither a symbol nor the required warning.",
+    "git.mjs accepts a nonempty blank-line result (`\"\\n\"`) as no result. That output contains an empty, non-SHA line and must be fatal under the requirement that every output line be a full SHA; only genuinely empty output may take the warning/no-edge path."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-16T22:59:41.844Z",
+  "rationale": "The committed git/code implementation inventories are limited to the two extant weavers, the visible lists are sorted and name existing files, the required-inventory table and D32 mapping match the frozen values and are deeply frozen, and the principal git/code endpoint threading and counted-source discipline are present. The deterministic gate is therefore useful evidence, but its tests are self-consistent with the defects above: the closure fixtures use only simple spacing and unescaped literals, containment tests do not place a symlink in an ancestor of the allowed/configured root, dependency tests do not exercise regex-only occurrences, and git tests do not exercise blank-only output. Because D33 closure completeness and D21 physical containment are provenance/security invariants, this is not acceptable as-is.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2PLNyjIX6rbpMF8nZfOoqUviywAV",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-16T23:06:03.986Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "dee43233fa58ce79793a09d547273c928b2c9e3c6b26acabe1a555edce8db466",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

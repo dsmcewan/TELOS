@@ -1,0 +1,32 @@
+{
+  "build_id": "clotho-task-4a-review",
+  "use_case": "clotho-phase-1-task-4a",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "clotho/inventory.mjs",
+    "clotho/weavers/util.mjs",
+    "clotho/weavers/git.mjs",
+    "clotho/weavers/code.mjs",
+    "clotho/scripts/test-closure.mjs",
+    "clotho/scripts/test-inventory.mjs",
+    "clotho/scripts/test-util.mjs",
+    "clotho/scripts/test-git.mjs",
+    "clotho/scripts/test-code.mjs"
+  ],
+  "proposal_ref": "sha256:fc3b8b85b732df2eb6f4968b7c2b209eb6a96d3c8788596a009204a7176dc35c",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-16T22:59:41.844Z",
+  "rationale": "Faithful AS-IS implementation of frozen v12 Task 4a only (no reinterpretation, no scope expansion into 4b/5). inventory.mjs commits exact sorted PACKAGE_ROOTS, DOC_ROOTS + DOC_WEAVER_EXCLUDE/GLOBAL_EXCLUDE (docs/runs + self-weave), sorted CONTRACT_FILES (D31), five weaver ids + integer versions, REQUIRED_INVENTORY_IDS exactly equal to the normative table (proven by unit), LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS exactly the D32 mapping (keys {module,node:module}, values [\"builtinModules\",\"isBuiltin\"], deep-frozen outer+inners, deep-equal + mutation-failure units). Per D17/AM-17 only git+code WEAVER_IMPL_FILES (existing files equal to shared-classifier/resolver closures) are committed; no nonexistent names. util.mjs exports the single D33 classifier+relative resolver (shared by closure derivation and proven by AM-34 test 19 for both consumers; no competing definitions or extension-append), dependency-free lexer + Phase-1 export scanner (exactly the four forms), real-file walker (rejects escape/symlinks, POSIX-sorted), D26/D29 counted-iterator (count only on completed consumption; accounting solely via driver-held accessor; partial/exhaustion/cardinality units), D21 physical-containment (lstat every component, reject symlink, never follow), and exact no-shell git allowlist. test-closure derives with the shared pair and proves inventories == closures (never trusted) for every accepted form via form-only fixtures + recursion/cycles/unreachable-literal + all fatal (missing/extra/nonexistent/unresolved/ambiguous/symlink/non-regular/escape/forbidden/entry) and no-edge (nonliteral/comment/string) modes. git.mjs uses exactly the two frozen log shapes, first (--reverse) result, git:<sha>, malformed fatal, no-result warn. code.mjs emits all four depends-on endpoint shapes (symbol/file threading, no-export named-import preserved as repository-file->code-symbol), unrepresentable-consumer only for unresolvable, unused/comments/strings emit nothing, dedup. Zero runtime deps, ESM, node:/clotho-relative/permitted-vendor only, spine untouched. Gate green; all required units present and passing. Stakeable.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5",
+    "response_id": "5df8a5fd-749a-9cbb-b397-0ff2557e66ca",
+    "source": "ai-peer-mcp/grok_ask",
+    "answered_at": "2026-07-16T22:59:57.946Z",
+    "tool": "grok_ask"
+  }
+}
