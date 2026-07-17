@@ -136,9 +136,11 @@
       "authorization": "authz-008"
     },
     "contract": "clotho/memory/CONTRACTS/coverage-schema.json",
-    "normativity": "ADVISORY",
-    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
-    "becomes_normative_when": "clotho/scripts/test-query.mjs proves the closed coverage schema + coverageUnknown legality + closed-schema rejection."
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT",
+    "oracle": {
+      "test": "clotho/scripts/test-query.mjs (80 units incl. every enumerated D35 positive/negative case)"
+    }
   },
   {
     "id": "d34-publication-time-drift-abort",
@@ -152,9 +154,11 @@
       ],
       "authorization": "authz-008"
     },
-    "normativity": "ADVISORY",
-    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
-    "becomes_normative_when": "clotho/scripts/test-weave.mjs proves publication-time re-derivation + hash recheck + abort-on-drift + atomic no-replace publish."
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT",
+    "oracle": {
+      "test": "clotho/scripts/test-weave.mjs (new-edge drift + hash-recheck drift, weaver AND orchestrator; atomic no-replace publish; published-cleanup-incomplete)"
+    }
   },
   {
     "id": "d10-am39-producer-attribution",
@@ -167,9 +171,11 @@
       ],
       "authorization": "authz-008"
     },
-    "normativity": "ADVISORY",
-    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
-    "becomes_normative_when": "clotho/scripts/test-weave.mjs proves producer==attribution rejection of mismatched edges/warnings."
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT",
+    "oracle": {
+      "test": "clotho/scripts/test-weave.mjs (five attribution violations proven rejected before any appendEdge)"
+    }
   },
   {
     "id": "d8-self-weave-exclusion",
