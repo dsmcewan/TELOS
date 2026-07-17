@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:201da70f385483426b0d7032f85e731276eb07a1004216c76bf519ea13cadb99",
+  "output_plan_artifact_hash": "sha256:a7673264c1b971dc85ee1978e157d8f8c469b3b02e89533879c322019f4856a5",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:ef4801aa76ec9180eb43e258e495a67551a91860b2ca6a1d8a1e3e9ae67748a1",
+    "provenance_key": "anthropic:msg_011Cd7xcxFAmcHgFJtQ95vmH"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:0c9a54897280e440abeaf77e5a0dac9e035bce3a3096641d78183334f5acfe5d",
+    "provenance_key": "openai:chatcmpl-E2ftQCPj8rVWejzKORuKb9huGXHfz",
+    "bound_hash": "sha256:bf430f53cb4ec094fad17b7b21f4fbf93e4ff24257feca926d44573401781e34"
+  },
+  "objections": [
+    {
+      "claim": "The candidate claims to implement the corpus-level consumer named by the frozen methodology while explicitly excluding Daedalus plans, findings, amendments, dispositions, tests, and authorization results as first-class lineage. The frozen target is review over the complete lineage. This may be delivered as a coverage preflight, but it cannot be represented as the corpus review or as covering all five detection targets until completeness is established.",
+      "scope": "candidate/corpus-coverage",
+      "objection_hash": "sha256:cc0b5a2f9dc6b8c027a333d7bcdd1684d54c3c412d1f3cc1210d5d963114d5ec",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "A depth-2 blast radius over one committed graph snapshot cannot discriminate temporal behavioral widening or repair-induced causality. The candidate has no amendment-to-symbol lineage from which to compute “growth across amendments” or “amendment-touched symbols”; overlap is correlation, not a repair-induced finding. Counting those signals toward the two-findings redesign threshold would therefore produce unsupported methodology triggers. Truncated radius results also lack fail-closed classification semantics.",
+      "scope": "candidate/detection-oracles",
+      "objection_hash": "sha256:5e7206b6b924638141ca9740090a108991be6dc953a9f9d1bbdd24ab431a8671",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The candidate adds a new report harness, inputs, outputs, classifications, and exit behavior but omits the behavioral-delta accounting required for every amendment: behavior added/removed, states, transitions, input forms, trust boundaries, runtime obligations, negative tests, and net behavioral-surface change.",
+      "scope": "candidate/methodology-compliance",
+      "objection_hash": "sha256:dba6055496f3c056d119b6c202e261d20f74885d1dc0f7d03f729a28dc808cbd",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

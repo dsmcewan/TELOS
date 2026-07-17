@@ -1,0 +1,34 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "pre-review-2026-07-17-daedalus-corpus-review",
+  "note": "Pre-review for the first POST-Phase-1 implementation: Daedalus corpus-level review v1 over the published weave (the methodology's named Phase-2-class consumer) + the two recorded maintenance optimizations. First cycle to enter purely through the lifecycle with no frozen plan slice behind it.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "daedalus-corpus-review-1 (branch from main @ 8523444)",
+  "next_phase_workshop": "to be produced this cycle (docs/runs/daedalus-corpus-review-1-workshop/) — for a NEW implementation the workshop matures the approach at cycle start",
+  "model_review": {
+    "baseline": "docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-17.json (same-day; claude-fable-5 + gpt-5.6-sol proven across four live workshops incl. one multi-round)",
+    "seats": { "claude": "claude-fable-5", "codex": "gpt-5.6-sol", "build": "session model (claude-opus-4-8)" },
+    "newly_available_models_considered": ["none since the same-day review"],
+    "seat_changes_proposed": []
+  },
+  "capability_review": {
+    "task_loadout_read": "n/a (no frozen task) — capabilities from the delivered Phase 1: clotho/query.mjs surface over verifyLedger of the committed snapshot (docs/runs/clotho-self-weave/thread-ledger.snapshot.jsonl, sha256 ea3ca462…)",
+    "prior_retrospectives_read": ["docs/institutional-memory/iliad/RETROSPECTIVES/slice-7.json", "docs/institutional-memory/iliad/RETROSPECTIVES/slice-6.json"],
+    "optimizations_adopted": [
+      "authority basis: docs/daedalus-methodology.md#corpus-level (HELD by The Eye 2026-07-15) names this exact consumer — 'run corpus-level review over its complete lineage… to detect repeated claim-to-proof gaps, repair-induced defects, behavioral widening, recurring subsystem failures'; out-of-scope-for-Phase-1 clause is now satisfied (Clotho exists)",
+      "maintenance bundle from slice-7 evaluation: export the flagship matcher (dedup with run.mjs) and parameterize the three near-copy workshop harnesses into one iliad tool",
+      "honest v1 scope: a REPORT harness (queryable-lineage evidence: gap reports across expected kinds for spine mechanisms, blastRadius profiles, why-chain completeness), NOT automated methodology enforcement — enforcement rules become candidates only after the first report shows what the corpus supports",
+      "process rules re-armed after slice-7's repeats: commit before destructive git ops; cwd-check before node; read signatures before probes"
+    ],
+    "optimizations_deferred_with_reason": [
+      "README renderer + drift gate: separate cycle (documentation-owned deliverable, disjoint writer set)",
+      "warning-shape harmonization: requires a plan-amendment path (Daedalus delta), not bundleable into an advisory report cycle",
+      "future modules (incl. Lachesis, whose meaning overlaps blastRadius): a NEW COMPONENT BOUNDARY needs The Eye's explicit approval per CHANGE-PROTOCOL — not assumed under standing agency"
+    ],
+    "missing_external_capabilities": [],
+    "capability_packets_required": false
+  },
+  "entry_ritual": "docs/runs/daedalus-corpus-review-1/reader-validation-artifact.json (iliad module queries — the governing module for lifecycle-entered work)"
+}
