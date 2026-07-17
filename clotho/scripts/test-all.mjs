@@ -28,7 +28,8 @@ const TESTS = [
   "scripts/test-weaver-doc.mjs",
   "scripts/test-weaver-ledger.mjs",
   "scripts/test-closure.mjs",
-  "scripts/test-advisory.mjs"
+  "scripts/test-advisory.mjs",
+  "scripts/test-query.mjs"
 ];
 
 function collectTestFiles(dir) {
