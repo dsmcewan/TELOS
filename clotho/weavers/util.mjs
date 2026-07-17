@@ -16,6 +16,15 @@ const IDENT_CHAR = /[A-Za-z0-9_$]/;
 const IDENT = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 const HEX40 = /^[0-9a-f]{40}$/;
 
+// ---- enforced closed source profile (AM-41) ---------------------------------
+// The shared D33 scanner is correct ONLY over a closed, mechanically enforced
+// source profile; every construct outside it FAILS CLOSED with this stable
+// diagnostic (no edge, no closure result, no coverage claim for that file).
+export const PROFILE_DIAGNOSTIC = "unsupported-module-lexical-profile";
+export class ProfileError extends Error {
+  constructor(detail) { super(`${PROFILE_DIAGNOSTIC}: ${detail}`); this.diagnostic = PROFILE_DIAGNOSTIC; this.detail = detail; }
+}
+
 // Escape a run of text for use as a LITERAL inside a RegExp: every
 // metacharacter is neutralized, so searched text can never alter the matcher.
 export function escapeRegExp(s) {
@@ -132,7 +141,28 @@ export function lex(source) {
   // head is a regex while a `/` after an expression group is division.
   const parenStack = [];
   let lastParenKind = null;
+  // AM-41 enforced source profile: `profileError` is set on the FIRST out-of-
+  // profile construct (b1-b6); callers throw ProfileError (fail closed).
+  let profileError = null;
+  const flagProfile = (d) => { if (!profileError) profileError = d; };
+  // b1: a bare CR (U+000D not immediately followed by LF), U+2028, or U+2029
+  // anywhere in the source (checked mode-independently, incl. string interiors).
+  for (let k = 0; k < n; k++) {
+    const cc = source.charCodeAt(k);
+    if ((cc === 0x0d && source.charCodeAt(k + 1) !== 0x0a) || cc === 0x2028 || cc === 0x2029) {
+      flagProfile("bare CR / U+2028 / U+2029 line terminator"); break;
+    }
+  }
   let i = 0;
+  // AM-41: one optional leading shebang line (`#!` at byte offset 0, first line,
+  // LF/CRLF-terminated) is IN-profile and blanked before lexical classification;
+  // an unterminated leading shebang is out-of-profile (b6). A `#!` anywhere else
+  // is caught as b2 in code mode below.
+  if (source[0] === "#" && source[1] === "!") {
+    const e = source.indexOf("\n");
+    if (e === -1) { flagProfile("unterminated leading shebang"); i = n; }
+    else { i = e; } // [0,e) stays blanked (keep=0); the LF at e lexes normally
+  }
   while (i < n) {
     const top = stack[stack.length - 1];
     if (top.mode === "template") {
@@ -155,21 +185,38 @@ export function lex(source) {
     }
     if (c === "{") { if (top.subst) top.brace++; keep[i] = 1; i++; prevSig = "{"; continue; }
     if (c === "}") { if (top.subst && top.brace > 0) top.brace--; keep[i] = 1; i++; prevSig = "}"; continue; }
+    if (c === "#" && c2 === "!") { flagProfile("hashbang (#!) in code position"); i += 2; continue; } // b2 (non-leading)
+    if (c === "<" && source[i + 1] === "!" && source[i + 2] === "-" && source[i + 3] === "-") { flagProfile("HTML comment opener <!--"); i += 4; continue; } // b3
+    if (c === "-" && c2 === "-" && source[i + 2] === ">" && (i === 0 || source[i - 1] === "\n")) { flagProfile("line-leading HTML comment -->"); i += 3; continue; } // b3
     if (c === "/" && c2 === "/") { i += 2; while (i < n && source[i] !== "\n") i++; continue; }
-    if (c === "/" && c2 === "*") { i += 2; while (i < n && !(source[i] === "*" && source[i + 1] === "/")) i++; i += 2; continue; }
+    if (c === "/" && c2 === "*") {
+      i += 2;
+      while (i < n && !(source[i] === "*" && source[i + 1] === "/")) i++;
+      if (i >= n) { flagProfile("unterminated block comment"); continue; } // b6
+      i += 2; continue;
+    }
     if (c === '"' || c === "'") {
       const open = i;
       keep[open] = 1; // preserve the opening quote position
       i++;
       let value = "";
       while (i < n && source[i] !== c) {
-        if (source[i] === "\\") { const d = decodeEscape(source, i); value += d.value; i = d.next; continue; }
+        if (source[i] === "\\") {
+          const e = source[i + 1], ec = source.charCodeAt(i + 1);
+          // b4: a string line-continuation (backslash before a line terminator),
+          // or a legacy/octal escape (`\` + decimal digit, other than `\0` NOT
+          // followed by a digit), is out-of-profile.
+          if (e === "\n" || e === "\r" || ec === 0x2028 || ec === 0x2029) flagProfile("string line-continuation");
+          else if (e >= "0" && e <= "9" && !(e === "0" && !(source[i + 2] >= "0" && source[i + 2] <= "9"))) flagProfile("legacy/octal string escape");
+          const d = decodeEscape(source, i); value += d.value; i = d.next; continue;
+        }
         if (source[i] === "\n") break; // unterminated line string; stop
         value += source[i];
         i++;
       }
       const closed = i < n && source[i] === c;
       if (closed) { keep[i] = 1; i++; }
+      else flagProfile("unterminated string literal"); // b6
       strings.set(open, { end: closed ? i : n, value, plain: true });
       prevSig = c;
       continue;
@@ -214,7 +261,7 @@ export function lex(source) {
   }
   let masked = "";
   for (let k = 0; k < n; k++) masked += keep[k] ? source[k] : " ";
-  return { masked, strings, templates };
+  return { masked, strings, templates, profileError };
 }
 
 // ---- module-load form classifier (D33) --------------------------------------
@@ -268,12 +315,18 @@ function parseModuleDecl(masked, strings, kwStart, kwWord) {
     if (/[A-Za-z_$]/.test(c)) {
       let q = p; while (q < n && /[A-Za-z0-9_$]/.test(masked[q])) q++;
       const word = masked.slice(p, q);
-      if (word === "from") {                                    // the governing from-clause
+      if (word === "from") {
+        // `from` is the governing from-clause keyword ONLY when a string specifier
+        // follows it. `from` used as a binding/namespace NAME (`import from from
+        // "x"`, `import * as from from "x"`) is not followed by a string — keep
+        // scanning so the REAL from-keyword (the one before the specifier) governs.
         let r = q; while (r < n && /\s/.test(masked[r])) r++;
         const s = strings.get(r);
-        if (!s) return null;
-        const form = kwWord === "import" ? "import" : (isStar ? "export-star" : "export-from");
-        return { kwWord, kwStart, form, specifier: s.value, clauseStart, fromKwStart: p, fromEnd: s.end };
+        if (s) {
+          const form = kwWord === "import" ? "import" : (isStar ? "export-star" : "export-from");
+          return { kwWord, kwStart, form, specifier: s.value, clauseStart, fromKwStart: p, fromEnd: s.end };
+        }
+        first = false; p = q; continue;
       }
       // An export whose FIRST clause token is a declaration keyword is a local
       // export (`export const/function/class/default/...`) — never a module load.
@@ -299,21 +352,44 @@ function* moduleDecls(masked, strings) {
   }
 }
 
+// Last significant (non-space) char in `masked` before `idx` — comments/strings
+// are blanked to spaces in masked, so this skips across whitespace AND comments,
+// making `obj . require(...)` / `obj ./*c*/require(...)` / `this.#require(...)`
+// resolve their preceding member/private token.
+function prevSigChar(masked, idx) {
+  let j = idx - 1;
+  while (j >= 0 && masked[j] === " ") j--;
+  return j >= 0 ? masked[j] : "";
+}
+
 export function classifyModuleLoads(source) {
-  const { masked, strings } = lex(source);
+  const { masked, strings, profileError } = lex(source);
+  if (profileError) throw new ProfileError(profileError);
+  // b5: a string-literal specifier/alias NAME inside an import/export specifier
+  // clause (`import { "a" as b } from …`) is out-of-profile. A real declaration's
+  // from-target string is legitimate; a string appearing BEFORE the `from` keyword
+  // of a brace-clause declaration is a string name.
+  for (const d of moduleDecls(masked, strings)) {
+    if (d.fromKwStart == null) continue;
+    for (const openIdx of strings.keys()) {
+      if (openIdx >= d.kwStart && openIdx < d.fromKwStart) throw new ProfileError("string-literal specifier/alias name in import/export clause");
+    }
+  }
   const sites = [];
 
   const literalAt = (parenIdx) => {
     // parenIdx points at "("; find next non-whitespace (tabs/newlines included, not
-    // just U+0020); if a plain string opens there and the call closes right after
-    // it, return its value, else null.
+    // just U+0020); if a plain string opens there and the call closes ")" OR is
+    // followed by "," (an import options object and/or a trailing comma —
+    // `import("./x.mjs", { with:{...} })`, `import("./x.mjs",)`), the FIRST arg is a
+    // literal specifier; return its value, else null.
     let j = parenIdx + 1;
     while (j < masked.length && /\s/.test(masked[j])) j++;
     const s = strings.get(j);
     if (!s || !s.plain) return null;
     let k = s.end;
     while (k < masked.length && /\s/.test(masked[k])) k++;
-    return masked[k] === ")" ? s.value : null;
+    return (masked[k] === ")" || masked[k] === ",") ? s.value : null;
   };
   // ---- statement forms: import ... / export ... --------------------------------
   // Each REAL declaration is delimited by parseModuleDecl (brace-matched), so a
@@ -324,29 +400,34 @@ export function classifyModuleLoads(source) {
   }
 
   // ---- call forms: dynamic import() / require() / module.require() -------------
-  // The lookbehind excludes a preceding "." so member calls (obj.import(...),
-  // a.module.require(...), o.require(...)) are NOT accepted loader forms.
-  const dynRe = /(?<![A-Za-z0-9_$.])import\s*\(/g;
+  // An accepted loader name is a load site ONLY as a real call — never a member
+  // access or private member. The `(?<![A-Za-z0-9_$])` lookbehind excludes an
+  // adjacent identifier char; `prevSigChar` additionally rejects a preceding "."
+  // or "#" reached across whitespace/comments (`obj . import(...)`,
+  // `obj ./*c*/require(...)`, `this.#require(...)`), which the lookbehind alone
+  // (immediate-char only) would miss.
+  const isMember = (idx) => { const p = prevSigChar(masked, idx); return p === "." || p === "#"; };
+  const dynRe = /(?<![A-Za-z0-9_$])import\s*\(/g;
   for (let m; (m = dynRe.exec(masked)); ) {
+    if (isMember(m.index)) continue; // obj.import(...) / obj . import(...) is not a load
     const paren = m.index + m[0].length - 1;
     const value = literalAt(paren);
     sites.push({ form: "dynamic-import", specifier: value, literal: value !== null });
   }
-  // `module.require(` is claimed as module-require; its inner `require(` (when the
-  // members are whitespace-separated, `module . require(`, the char before
-  // `require` is a space, not `.`) must NOT also be classified as a bare require.
   const claimedParens = new Set();
-  const modReqRe = /(?<![A-Za-z0-9_$.])module\s*\.\s*require\s*\(/g;
+  const modReqRe = /(?<![A-Za-z0-9_$])module\s*\.\s*require\s*\(/g;
   for (let m; (m = modReqRe.exec(masked)); ) {
+    if (isMember(m.index)) continue; // a.module.require(...) is a member call, not a load
     const paren = m.index + m[0].length - 1;
     claimedParens.add(paren);
     const value = literalAt(paren);
     sites.push({ form: "module-require", specifier: value, literal: value !== null });
   }
-  const reqRe = /(?<![A-Za-z0-9_$.])require\s*\(/g;
+  const reqRe = /(?<![A-Za-z0-9_$])require\s*\(/g;
   for (let m; (m = reqRe.exec(masked)); ) {
     const paren = m.index + m[0].length - 1;
     if (claimedParens.has(paren)) continue; // already a module.require site
+    if (isMember(m.index)) continue; // obj.require(...) / obj . require(...) / this.#require(...) is not a load
     const value = literalAt(paren);
     sites.push({ form: "require", specifier: value, literal: value !== null });
   }
@@ -451,14 +532,41 @@ function containmentReal(repoRootReal, absTarget) {
 // repository-relative POSIX path. The MEMBERSHIP policy (which resolved files a
 // consumer permits: clotho-only + allowExternal for the closure; the seeded file
 // set for the code weaver) belongs to the caller, not to this resolver.
-export function resolveRelativeSpecifier(fromFileAbs, specifier, { repoRoot } = {}) {
+// AM-41 (c): walk the ORIGINAL, uncollapsed candidate components in source order
+// from the importing file's directory, lstat-ing each concrete component AS IT IS
+// ENTERED — BEFORE any `..` collapse could erase it — and reject a symlink
+// component. So `./link/../x.mjs` where `link` is a symlink is rejected even
+// though the collapsed path `./x.mjs` is clean. Only genuine absence (ENOENT) is
+// "missing"; any other lstat error fails closed.
+function originalChainSymlinkFree(fromDirAbs, specifier) {
+  let cur = fromDirAbs;
+  for (const seg of specifier.split("/")) {
+    if (seg === "" || seg === ".") continue;
+    if (seg === "..") { cur = path.dirname(cur); continue; }
+    cur = path.join(cur, seg);
+    let st;
+    try { st = lstatSync(cur); } catch (e) { if (e && e.code === "ENOENT") return { ok: true }; throw e; }
+    if (st.isSymbolicLink()) return { ok: false };
+  }
+  return { ok: true };
+}
+
+export function resolveRelativeSpecifier(fromFileAbs, specifier, { repoRoot, extensions = [".mjs"] } = {}) {
   if (typeof specifier !== "string" || !(specifier.startsWith("./") || specifier.startsWith("../"))) {
     return { ok: false, kind: "non-relative" };
   }
-  // Explicit `.mjs` only — an extensionless or other-extension specifier is
-  // ambiguous (fatal for the closure; no edge for the code weaver).
-  if (!specifier.endsWith(".mjs")) return { ok: false, kind: "ambiguous-extension", resolved: specifier };
+  // Explicit accepted extension only — extensionless / other-extension is
+  // ambiguous. The code-weaver keeps its `.mjs`-only extraction rule (default);
+  // the D33 CLOSURE resolver additionally traverses accepted literal
+  // `require()`/`module.require()` targets that are not `.mjs` (e.g. `.cjs`) by
+  // passing extensions: [".mjs", ".cjs"] — the ONE resolver, configured per D33.
+  if (!extensions.some((x) => specifier.endsWith(x))) return { ok: false, kind: "ambiguous-extension", resolved: specifier };
   const repoRootReal = checkedRepoRootReal(repoRoot);
+  // Reject a symlink in the ORIGINAL uncollapsed chain before path.resolve below
+  // normalizes any `..` away (AM-41 (c)).
+  if (!originalChainSymlinkFree(path.dirname(fromFileAbs), specifier).ok) {
+    return { ok: false, kind: "symlink", resolved: specifier };
+  }
   const abs = path.resolve(path.dirname(fromFileAbs), specifier);
   const contain = containmentReal(repoRootReal, abs);
   if (!contain.ok) return { ok: false, kind: contain.reason, resolved: toPosix(path.relative(repoRootReal, abs)) };
@@ -523,7 +631,7 @@ export function deriveAcceptedClosure(entryFileAbs, { repoRoot, allowExternal = 
       // creates no edge (but is still a recognized site).
       if (!site.literal || site.specifier === null) continue;
       if (!(site.specifier.startsWith("./") || site.specifier.startsWith("../"))) continue;
-      const r = resolveRelativeSpecifier(abs, site.specifier, { repoRoot: repoRootReal });
+      const r = resolveRelativeSpecifier(abs, site.specifier, { repoRoot: repoRootReal, extensions: [".mjs", ".cjs"] });
       if (!r.ok) {
         throw new Error(`closure: ${rel} -> ${JSON.stringify(site.specifier)} is ${r.kind}${r.resolved ? " (" + r.resolved + ")" : ""}`);
       }
@@ -544,7 +652,7 @@ export function deriveAcceptedClosure(entryFileAbs, { repoRoot, allowExternal = 
 // exports, default exports, and dynamic symbol flow warn and emit no symbol.
 
 export function scanExports(source) {
-  const { masked } = lex(source);
+  const { masked, profileError } = lex(source); if (profileError) throw new ProfileError(profileError);
   // Every occurrence is reported (NOT de-duplicated): a repeated export name is a
   // duplicate descriptor, which seedSourceDescriptors treats as fatal.
   const exportsFound = [];
@@ -597,7 +705,7 @@ export function scanExports(source) {
 // Only used to derive knowledge-graph dependency edges (unchanged by D33).
 
 export function scanImports(source) {
-  const { masked, strings } = lex(source);
+  const { masked, strings, profileError } = lex(source); if (profileError) throw new ProfileError(profileError);
   const imports = [];
   // Extend a declaration's end THROUGH a trailing import-attributes clause
   // (`assert { type: "json" }` / `with { ... }`) so identifiers inside the clause
@@ -663,7 +771,7 @@ function parseImportClause(clause) {
 // True if `name` occurs as an identifier token in `masked` OUTSIDE every span in
 // `excludeSpans` (metacharacter-safe: guarded by non-identifier boundaries).
 export function identifierUsedOutside(source, name, excludeSpans) {
-  const { masked } = lex(source);
+  const { masked, profileError } = lex(source); if (profileError) throw new ProfileError(profileError);
   const re = new RegExp(`(?<![A-Za-z0-9_$])${escapeRegExp(name)}(?![A-Za-z0-9_$])`, "g");
   for (let m; (m = re.exec(masked)); ) {
     const idx = m.index;

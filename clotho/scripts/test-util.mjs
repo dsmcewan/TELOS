@@ -14,7 +14,8 @@ import path from "node:path";
 import {
   makeCountedSource, physicalContainment, walkFiles, seedSourceDescriptors,
   classifyModuleLoads, scanExports, scanImports, identifierUsedOutside, escapeRegExp,
-  validateGitArgs, gitSpawnOptions, isFullSha, isCanonicalRepoRelPosix
+  validateGitArgs, gitSpawnOptions, isFullSha, isCanonicalRepoRelPosix,
+  resolveRelativeSpecifier, deriveAcceptedClosure, ProfileError, PROFILE_DIAGNOSTIC
 } from "../weavers/util.mjs";
 
 // ---- 1. counted-iterator (D26/D29) ------------------------------------------
@@ -377,12 +378,15 @@ import {
 {
   // A regex after a control-condition `)` must be recognized as a regex, so
   // load-shaped text and an imported name inside it create NO closure edge / use.
-  const ctrl = 'if (x) /import("./evil.mjs") from "./evil2.mjs" binding/.test(y);\n';
+  // Escaped slashes keep this a single valid (in-profile) regex literal — the
+  // load-shaped text and the `binding` identifier live inside it and must create
+  // no load site / no use.
+  const ctrl = 'if (x) /import(".\\/evil.mjs") from ".\\/evil2.mjs" binding/.test(y);\n';
   const sites = classifyModuleLoads(ctrl);
   assert.equal(sites.filter((s) => s.specifier === "./evil.mjs" || s.specifier === "./evil2.mjs").length, 0, "regex after control ) is not a load");
   assert.equal(identifierUsedOutside(ctrl, "binding", []), false, "identifier only inside a control-) regex is not a use");
   // A regex after `while (...)` likewise.
-  const wh = 'while (a) /b from "./z.mjs"/g;\n';
+  const wh = 'while (a) /b from ".\\/z.mjs"/g;\n';
   assert.equal(classifyModuleLoads(wh).filter((s) => s.specifier === "./z.mjs").length, 0);
 
   // Division after an identifier named `of` must NOT be treated as a regex —
@@ -394,7 +398,7 @@ import {
   assert.equal(identifierUsedOutside(ofUse, "weaverBinding", []), true, "identifier after `of /` division is a real use");
 
   // A regex in ordinary expression-start position still masks its interior.
-  const es = 'const re = /import("./no.mjs")/;\n';
+  const es = 'const re = /import(".\\/no.mjs")/;\n';
   assert.equal(classifyModuleLoads(es).filter((s) => s.specifier === "./no.mjs").length, 0);
 
   // Postfix ++/-- is an expression-ender: the following `/` is DIVISION, so a
@@ -534,6 +538,85 @@ import {
   const src3 = `import data from "./m.mjs" with { type: "json" };\nexport const z = 1;`;
   const imps3 = scanImports(src3);
   assert.equal(identifierUsedOutside(src3, "type", imps3.map((i) => i.span)), false, "identifier inside the import's with-clause is not a use");
+}
+
+// ---- 14. AM-41 supported profile — accepted forms correct under variation ----
+{
+  const specs = (src, form) => classifyModuleLoads(src).filter((s) => s.form === form && s.literal).map((s) => s.specifier);
+  // member / private / property / meta lookalikes are NOT loads (incl. whitespace
+  // and comment-separated member access).
+  for (const lure of [
+    'const y = obj.import("./a.mjs");', 'const y = obj . import("./a.mjs");',
+    'const y = obj.require("./a.cjs");', 'const y = obj . require("./a.cjs");',
+    'const y = obj ./*c*/ require("./a.cjs");', 'const y = a.module.require("./a.cjs");',
+    'class C { #require(x){} m(){ this.#require("./a.cjs"); } }', 'const m = import.meta.url;',
+    'const o = { import: 1, require: 2 };'
+  ]) {
+    const sites = classifyModuleLoads(lure).filter((s) => s.literal && (s.specifier === "./a.mjs" || s.specifier === "./a.cjs"));
+    assert.equal(sites.length, 0, `member/private/property lookalike is not a load: ${lure}`);
+  }
+  // literal dynamic import WITH options object and/or trailing comma is a real edge.
+  assert.deepEqual(specs('const p = import("./x.mjs", { with: { type: "json" } });', "dynamic-import"), ["./x.mjs"], "dynamic import with options");
+  assert.deepEqual(specs('const p = import("./x.mjs",);', "dynamic-import"), ["./x.mjs"], "dynamic import with trailing comma");
+  // contextual `from` used as a binding / namespace name classifies correctly.
+  assert.deepEqual(specs('import from from "./x.mjs";', "import"), ["./x.mjs"], "import from from");
+  assert.deepEqual(specs('import * as from from "./x.mjs";', "import"), ["./x.mjs"], "import * as from from");
+  assert.deepEqual(specs('export * as from from "./x.mjs";', "export-star"), ["./x.mjs"], "export * as from from");
+  // a `#!` INSIDE a string or comment is ordinary in-profile content (The Eye).
+  assert.doesNotThrow(() => classifyModuleLoads('const x = "#!/usr/bin/env node";\n// #! not a hashbang\n'), "#! in string/comment is in-profile");
+}
+
+// ---- 15. AM-41 leading shebang (in-profile, stripped) + b1-b6 fail-closed -----
+{
+  const isProfile = (fn) => { try { fn(); return false; } catch (e) { return e instanceof ProfileError && e.diagnostic === PROFILE_DIAGNOSTIC; } };
+  // Accepted leading shebang (LF and CRLF) is in-profile and stripped before
+  // classification — a real import after it is still detected.
+  for (const nl of ["\n", "\r\n"]) {
+    const src = `#!/usr/bin/env node${nl}import x from "./a.mjs";${nl}export const z = 1;${nl}`;
+    const sites = classifyModuleLoads(src).filter((s) => s.form === "import" && s.specifier === "./a.mjs");
+    assert.equal(sites.length, 1, `leading shebang (${JSON.stringify(nl)}) is stripped; the import is detected`);
+  }
+  // b1: bare CR / U+2028 / U+2029 anywhere (built at runtime — never a literal).
+  assert.ok(isProfile(() => classifyModuleLoads("const a = 1;" + String.fromCharCode(0x0d) + "const b = 2;\n")), "b1 bare CR");
+  assert.ok(isProfile(() => classifyModuleLoads("const a = 1;" + String.fromCharCode(0x2028) + "\n")), "b1 U+2028");
+  assert.ok(isProfile(() => classifyModuleLoads("const a = 1;" + String.fromCharCode(0x2029) + "\n")), "b1 U+2029");
+  // b2: a hashbang not in the one permitted leading position.
+  assert.ok(isProfile(() => classifyModuleLoads(" #!/usr/bin/env node\nexport const z=1;\n")), "b2 leading whitespace before #!");
+  assert.ok(isProfile(() => classifyModuleLoads("export const z=1;\n#!later\n")), "b2 #! not on line 1");
+  assert.ok(isProfile(() => classifyModuleLoads("#!/usr/bin/env node\n#!second\nexport const z=1;\n")), "b2 second #! line");
+  // b3: HTML/legacy comments.
+  assert.ok(isProfile(() => classifyModuleLoads("const a = 1; <!-- html\nexport const z=1;\n")), "b3 <!--");
+  assert.ok(isProfile(() => classifyModuleLoads("const a = 1;\n--> trailing\nexport const z=1;\n")), "b3 line-leading -->");
+  // b4: string line-continuation / legacy octal escape.
+  assert.ok(isProfile(() => classifyModuleLoads('const s = "a\\\nb";\n')), "b4 string line-continuation");
+  assert.ok(isProfile(() => classifyModuleLoads('const s = "\\101";\n')), "b4 legacy octal escape");
+  assert.doesNotThrow(() => classifyModuleLoads('const s = "\\0";\n'), "\\0 not followed by a digit is in-profile");
+  // b5: string-literal specifier/alias name in an import/export clause.
+  assert.ok(isProfile(() => classifyModuleLoads('import { "a" as b } from "./x.mjs";\n')), "b5 string import name");
+  assert.ok(isProfile(() => classifyModuleLoads('export { "a" } from "./x.mjs";\n')), "b5 string export name");
+  // b6: unterminated string / comment / leading shebang.
+  assert.ok(isProfile(() => classifyModuleLoads('const s = "unterminated;\n')), "b6 unterminated string");
+  assert.ok(isProfile(() => classifyModuleLoads("const a = 1; /* unterminated comment\n")), "b6 unterminated block comment");
+  assert.ok(isProfile(() => classifyModuleLoads("#!/usr/bin/env node")), "b6 unterminated leading shebang");
+}
+
+// ---- 16. AM-41 (c) original-uncollapsed-component containment -----------------
+{
+  const base = mkdtempSync(path.join(tmpdir(), "clotho-am41c-"));
+  try {
+    // repo/real/target.mjs exists; repo/link -> repo/real (junction). A specifier
+    // `./link/../real/target.mjs` collapses to `./real/target.mjs`, but the
+    // ORIGINAL path traverses the symlink component `link` — which must be
+    // lstat-inspected BEFORE the `..` collapse and rejected.
+    mkdirSync(path.join(base, "real"), { recursive: true });
+    writeFileSync(path.join(base, "real", "target.mjs"), "export const t = 1;\n");
+    const fromFile = path.join(base, "from.mjs");
+    writeFileSync(fromFile, "export const f = 1;\n");
+    symlinkSync(path.join(base, "real"), path.join(base, "link"), "junction");
+    const r = resolveRelativeSpecifier(fromFile, "./link/../real/target.mjs", { repoRoot: base });
+    assert.equal(r.ok, false, "a symlink component erased by a later .. is still rejected");
+    assert.ok(r.kind === "symlink" || r.kind === "escape", `rejection kind is symlink/escape (got ${r.kind})`);
+  } finally { rmSync(base, { recursive: true, force: true }); }
 }
 
 console.log("test-util: all assertions passed");

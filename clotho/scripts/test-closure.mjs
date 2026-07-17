@@ -352,18 +352,41 @@ const closureOf = (root, allowExternal = new Set()) =>
     "registry.mjs is a closure leaf (derived: " + JSON.stringify(regClosure) + ")");
 }
 
-// ---- 13. require-style edge to a non-.mjs target is fatal (extension rule) ----
-// test-util proves require('./x.cjs') / module.require('./x.cjs') is a recognized
-// literal load SITE; here we pin what the closure RESOLVER does with that site — a
-// non-.mjs target is a FATAL ambiguous-extension, never an edge to a .cjs file.
+// ---- 13. require-style edge to an existing non-.mjs target is INCLUDED (D33) ---
+// D33 governs mechanism provenance: the shared CLOSURE resolver traverses every
+// accepted literal relative load, INCLUDING require()/module.require() targets
+// that are not .mjs (e.g. .cjs). (The code-weaver keeps its OWN explicit-.mjs
+// extraction rule — that split is proven in test-code/test-util, not here.)
 {
   for (const form of ['require("./x.cjs")', 'module.require("./x.cjs")']) {
     const root = mkRepo({ "clotho/entry.mjs": `export const r = ${form};\n`, "clotho/x.cjs": "module.exports = 1;\n" });
     try {
-      assert.throws(() => closureOf(root), /ambiguous-extension/,
-        `literal ${form} of a non-.mjs target is fatal ambiguous-extension`);
+      const cl = closureOf(root);
+      assert.deepEqual(cl, ["clotho/entry.mjs", "clotho/x.cjs"],
+        `literal ${form} of an existing .cjs target is included + traversed (derived: ${JSON.stringify(cl)})`);
     } finally { rmSync(root, { recursive: true, force: true }); }
   }
+  // A require of a MISSING .cjs is still not silently accepted — fail closed.
+  const miss = mkRepo({ "clotho/entry.mjs": 'export const r = require("./gone.cjs");\n' });
+  try { assert.throws(() => closureOf(miss), /unresolved/, "require of a missing .cjs still fails closed"); }
+  finally { rmSync(miss, { recursive: true, force: true }); }
+  // A require of an other-extension target (e.g. .json) remains ambiguous-extension.
+  const other = mkRepo({ "clotho/entry.mjs": 'export const r = require("./data.json");\n', "clotho/data.json": "{}\n" });
+  try { assert.throws(() => closureOf(other), /ambiguous-extension/, "require of a non-.mjs/.cjs target is ambiguous-extension"); }
+  finally { rmSync(other, { recursive: true, force: true }); }
+}
+
+// ---- 14. AM-41: an out-of-profile closure entry fails closed (no result) ------
+// The closure derivation over an out-of-profile file surfaces the stable
+// diagnostic and yields NO closure result (never silently proceeds).
+{
+  const root = mkRepo({ "clotho/entry.mjs": "export const z = 1;\n#!not-a-leading-shebang\n" });
+  try { assert.throws(() => closureOf(root), /unsupported-module-lexical-profile/, "out-of-profile closure entry fails closed"); }
+  finally { rmSync(root, { recursive: true, force: true }); }
+  // a traversed member that is out-of-profile likewise fails the whole closure.
+  const root2 = mkRepo({ "clotho/entry.mjs": 'import "./bad.mjs";\nexport const z = 1;\n', "clotho/bad.mjs": 'const s = "\\101";\n' });
+  try { assert.throws(() => closureOf(root2), /unsupported-module-lexical-profile/, "out-of-profile traversed member fails closed"); }
+  finally { rmSync(root2, { recursive: true, force: true }); }
 }
 
 console.log("test-closure: all assertions passed");
