@@ -1,0 +1,34 @@
+[
+  {
+    "id": "iliad-pre-review-before-implementation",
+    "statement": "Every implementation enrolled after the lifecycle protocol was instituted (post_protocol: true) records a pre-review BEFORE the work: seat model ids for the run, newly-available models considered, the task loadout + prior retrospectives read, and which optimizations were adopted. Intent recorded up front; actuality proven by per-seat provenance downstream.",
+    "authority": { "contract": "docs/institutional-memory/iliad/CONTRACTS/implementation-lifecycle.json", "instituted": "The Eye's direction, 2026-07-17" },
+    "oracle": { "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (post_protocol enrollment without a pre_review record fails)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "iliad-enrollment-required",
+    "statement": "Each implementation creates a sub-system recorded in the enrollment registry with its evidence and memory dirs — maintained under The Iliad umbrella, never left as untracked artifacts.",
+    "authority": { "contract": "docs/institutional-memory/iliad/CONTRACTS/enrollment.json", "vocabulary": "docs/mythological-vocabulary.md#The-Iliad" },
+    "oracle": { "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (per-entry: evidence + every memory_dir exist)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "iliad-post-review-required",
+    "statement": "No enrollment is 'delivered' without its retrospective, and a retrospective must carry at least one feed-forward optimization naming where it lands — the loop is closed, not ceremonial.",
+    "authority": { "contract": "docs/institutional-memory/iliad/CONTRACTS/implementation-lifecycle.json" },
+    "oracle": { "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (delivered => retrospective exists, parses, optimizations_for_future_runs non-empty with lands_in)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "iliad-products-enrollment-deferred",
+    "statement": "ai-forge, forge, and saas-forge remain deferred for CONSCIOUS enrollment (AM-40): the registry's deferred list is exactly the package-roots exclusions, and enrolling one requires a deliberate amendment, never absorption by proximity.",
+    "authority": { "decision": "AM-40", "contract": "clotho/memory/CONTRACTS/package-roots.json" },
+    "oracle": { "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (deferred list deep-equals package_roots_exclude)" },
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  }
+]

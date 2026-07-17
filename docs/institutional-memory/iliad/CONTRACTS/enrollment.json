@@ -1,0 +1,43 @@
+{
+  "kind": "contract",
+  "component": "iliad",
+  "id": "enrollment",
+  "title": "The Iliad enrollment registry — sub-systems created by implementations, maintained under the umbrella",
+  "authority": {
+    "vocabulary": "docs/mythological-vocabulary.md#The-Iliad",
+    "deferral_precedent": "AM-40 (clotho/memory/CONTRACTS/package-roots.json — products deferred for conscious enrollment at the Iliad)"
+  },
+  "note": "Each implementation creates a sub-system recorded here. An entry is 'delivered' only with its retrospective; entries created after the lifecycle protocol was instituted (post_protocol: true) must also carry their pre-review. The spine packages themselves are governed directly by TELOS authorization (plan/authz chain), not through this registry — enrollment covers sub-systems that implementations CREATE, plus the consciously-deferred products awaiting enrollment.",
+  "enrolled": [
+    {
+      "name": "institutional-memory-role-modules",
+      "kind": "governance-layer extension: role modules (daedalus, telos, argo) + capability modules (loadout, iliad) with executable verification",
+      "created_by": "PR #126 (branch institutional-memory-role-modules)",
+      "evidence": "docs/runs/institutional-memory-role-modules/STEP-LEDGER.json",
+      "memory_dirs": [
+        "docs/institutional-memory/daedalus/",
+        "docs/institutional-memory/telos/",
+        "docs/institutional-memory/argo/",
+        "docs/institutional-memory/loadout/",
+        "docs/institutional-memory/iliad/"
+      ],
+      "status": "delivered",
+      "post_protocol": false,
+      "pre_review": null,
+      "pre_review_note": "this delivery INSTITUTED the lifecycle protocol at its end; no pre-review existed to run — recorded honestly rather than backdated. Every subsequent enrollment is post_protocol: true and must carry one.",
+      "retrospective": "docs/institutional-memory/iliad/RETROSPECTIVES/pr-126-institutional-memory-role-modules.json",
+      "maintained_by": "The Iliad umbrella: lifecycle records live in this module; the sub-system's own oracles run in CI (institutional-memory job)"
+    }
+  ],
+  "deferred_pending_conscious_enrollment": ["ai-forge", "forge", "saas-forge"],
+  "deferred_note": "EXACTLY the AM-40 product exclusions (verify-contracts cross-checks this list against clotho/memory/CONTRACTS/package-roots.json#package_roots_exclude). Enrolling one requires a deliberate amendment — never absorption by proximity.",
+  "why": "The umbrella needs a ledger of what it maintains. Without a registry, 'each implementation creates a sub-system' decays into untracked artifacts; with it, every sub-system has evidence, memory, a retrospective, and (going forward) a pre-review — and the verifier fails any entry that skips them.",
+  "change_rule": "Appending an enrollment is the lifecycle operating. Removing or reclassifying one is retirement — Atropos discipline (supersession recorded, never erased), via CHANGE-PROTOCOL.",
+  "oracle": {
+    "source_of_truth": "this registry + the referenced records on disk",
+    "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (per-entry: evidence exists, every memory_dir exists, delivered => retrospective exists with non-empty optimizations, post_protocol => pre_review exists; deferred list == AM-40 exclusions)"
+  },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

@@ -1,0 +1,49 @@
+{
+  "kind": "contract",
+  "component": "iliad",
+  "id": "implementation-lifecycle",
+  "title": "The Iliad implementation lifecycle — pre-review, enrolled sub-system, post-review",
+  "authority": {
+    "vocabulary": "docs/mythological-vocabulary.md#The-Iliad (the system-of-systems lifecycle umbrella under which registered components coordinate the creation, governance, maintenance, recovery, evolution, and retirement of enrolled systems)",
+    "instituted_by": "The Eye's direction, 2026-07-17 (recorded in this delivery); precedent anticipation: AM-40 ('deferred for conscious enrollment later at the Iliad')"
+  },
+  "phases": [
+    {
+      "phase": "pre-review",
+      "when": "BEFORE each implementation begins",
+      "steps": [
+        "MODEL REVIEW: record which model id will fill each seat this run (env-resolved: ANTHROPIC_MODEL/OPENAI_MODEL/XAI_MODEL/GEMINI_MODEL over seats.json role bindings) and note any newly-available model worth a seat change — a seat change itself is a reviewed edit to build-gate/seats.json",
+        "CAPABILITY REVIEW: read the task's loadout review (docs/institutional-memory/loadout/TASK-LOADOUTS/) and the prior retrospectives' optimizations; any missing EXTERNAL capability graduates into gate-enforced capability packets on the dossier",
+        "record the pre-review as PRE-REVIEWS/<run>.json (template: PRE-REVIEWS/TEMPLATE.json)"
+      ],
+      "verification_note": "intent is recorded here; ACTUALITY is verified downstream — per-seat provenance in the run records proves which model actually answered"
+    },
+    {
+      "phase": "implementation",
+      "when": "the run itself",
+      "steps": [
+        "the implementation is carried per the Argo protocol (comprehension gate -> bounded work -> deterministic verification -> review -> acceptance)",
+        "every step logged and verifiable (commit-anchored; a step ledger under docs/runs/<name>/ for multi-step deliveries)",
+        "the result is a SUB-SYSTEM enrolled under The Iliad: an entry in CONTRACTS/enrollment.json naming what was created, its evidence, and its memory dirs"
+      ]
+    },
+    {
+      "phase": "post-review",
+      "when": "AFTER each implementation is delivered",
+      "steps": [
+        "retrospective evaluation recorded as RETROSPECTIVES/<run>.json: what was built, verification outcome, what worked, defects found during the work (including process mistakes), and optimizations for future runs",
+        "each optimization FEEDS FORWARD: it lands in the relevant TASK-LOADOUTS review, a PRE-REVIEWS template update, or a proposed data/contract change — so the next run's pre-review reads it",
+        "an enrollment entry is not 'delivered' without its retrospective (verify-contracts enforces)"
+      ]
+    }
+  ],
+  "why": "One-shot implementations leak their lessons. The lifecycle makes the loop closed and checkable: the pre-review consumes the last run's retrospective, the implementation is enrolled where The Iliad maintains it, and the post-review writes the next run's inputs. The umbrella term is used with EXACTLY its registered meaning — coordination of enrolled systems' lifecycle, not a new runtime.",
+  "change_rule": "Phase changes route via CHANGE-PROTOCOL (The Eye). Adding an enrollment or retrospective is the protocol OPERATING, not changing.",
+  "oracle": {
+    "source_of_truth": "CONTRACTS/enrollment.json + PRE-REVIEWS/ + RETROSPECTIVES/ on disk",
+    "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (enrollment integrity: evidence + memory dirs exist; delivered => retrospective with feed-forward optimizations; post-protocol entries => pre-review recorded; deferred products cross-checked against AM-40 package_roots_exclude; the template exists)"
+  },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

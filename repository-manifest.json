@@ -14,7 +14,8 @@
       "daedalus": "docs/institutional-memory/daedalus/",
       "telos": "docs/institutional-memory/telos/",
       "argo": "docs/institutional-memory/argo/",
-      "loadout": "docs/institutional-memory/loadout/"
+      "loadout": "docs/institutional-memory/loadout/",
+      "iliad": "docs/institutional-memory/iliad/"
     }
   },
   "normative_docs": [
@@ -133,6 +134,26 @@
         "the comprehension gate is open-book (proves record-reading + authority resolution, not deep understanding)",
         "acceptance is not a zero-defect claim (slice 4a carries a deferred backlog)",
         "Argo does not choose scope (ambiguities escalate; never designed around)"
+      ]
+    },
+    {
+      "name": "iliad",
+      "role": "The Iliad",
+      "role_meaning": "the system-of-systems lifecycle umbrella under which registered components coordinate the creation, governance, maintenance, recovery, evolution, and retirement of enrolled systems",
+      "kind": "role module — the implementation lifecycle (pre-review -> enrolled sub-system -> retrospective); no orchestrator service exists",
+      "status": "active (protocol instituted 2026-07-17; first enrollment: institutional-memory-role-modules, delivered with retrospective; products remain AM-40-deferred)",
+      "code": [],
+      "memory_dir": "docs/institutional-memory/iliad/",
+      "comprehension_queries": "docs/institutional-memory/iliad/comprehension-queries.json",
+      "claims": [
+        { "statement": "enrollment integrity is machine-verified: every entry's evidence and memory dirs exist; delivered requires a retrospective whose every optimization names where it lands; post-protocol entries require a recorded pre-review; the deferred list deep-equals the AM-40 exclusions", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "docs/institutional-memory/iliad/CONTRACTS/enrollment.json"] }
+      ],
+      "non_claims": [
+        "no autonomous Iliad orchestrator exists",
+        "enrollment is not absorption into the spine (AM-40)",
+        "the verifier cannot detect an implementation that never registered",
+        "the pre-review records model intent; per-seat provenance proves actuality",
+        "retrospective optimizations are advisory until adopted by a run or a reviewed change"
       ]
     }
   ],

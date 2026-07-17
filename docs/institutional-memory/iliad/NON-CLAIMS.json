@@ -1,0 +1,27 @@
+[
+  {
+    "id": "no-autonomous-iliad-orchestrator",
+    "statement": "No autonomous Iliad orchestrator or service exists. 'The Iliad' names the registered lifecycle umbrella — a coordination discipline realized by records (enrollment, pre-reviews, retrospectives) and their verifier checks, not a deployed runtime. Same rule as Argo and Daedalus.",
+    "authority": { "vocabulary": "docs/mythological-vocabulary.md", "pattern": "docs/institutional-memory/NON-CLAIMS.md" }
+  },
+  {
+    "id": "iliad-enrollment-is-not-absorption",
+    "statement": "Enrolling a sub-system under the umbrella does not absorb it into the TELOS spine or change its governance: spine work stays under TELOS authorization; products stay deferred until a deliberate AM-40-class amendment. Enrollment adds lifecycle records, not authority.",
+    "authority": { "decision": "AM-40" }
+  },
+  {
+    "id": "iliad-cannot-detect-unregistered-implementations",
+    "statement": "The verifier proves registered enrollments are complete and honest; it CANNOT mechanically detect an implementation that never registered. That gap is closed by review discipline (an unenrolled delivery should fail human review), not by the oracle.",
+    "authority": { "contract": "docs/institutional-memory/iliad/CONTRACTS/enrollment.json" }
+  },
+  {
+    "id": "iliad-pre-review-does-not-verify-model-catalogs",
+    "statement": "The pre-review records model INTENT (env-resolved seat ids, new models considered); it does not and cannot verify external provider catalogs. Which model actually answered is proven downstream by per-seat provenance in the run records.",
+    "authority": { "contract": "docs/institutional-memory/iliad/CONTRACTS/implementation-lifecycle.json" }
+  },
+  {
+    "id": "iliad-retrospective-optimizations-are-advisory",
+    "statement": "A retrospective's optimizations bind nothing by themselves — each is adopted (or deferred with a reason) by a future run's pre-review, or graduates into a reviewed data/contract change. The record closes the loop; humans and the gate still decide.",
+    "authority": { "contract": "docs/institutional-memory/iliad/CONTRACTS/implementation-lifecycle.json" }
+  }
+]

@@ -486,6 +486,32 @@ try {
   }
 } catch (e) { check("seat-prompts:separation", false, e.message); }
 
+// ---- 8. iliad: implementation lifecycle — enrollment integrity + closed loop ---
+try {
+  const enr = readJson("docs/institutional-memory/iliad/CONTRACTS/enrollment.json");
+  const roots = readJson("clotho/memory/CONTRACTS/package-roots.json");
+  check("iliad:deferred==AM-40-exclusions", eqArr(enr.deferred_pending_conscious_enrollment, roots.package_roots_exclude),
+    `registry=${JSON.stringify(enr.deferred_pending_conscious_enrollment)} AM-40=${JSON.stringify(roots.package_roots_exclude)}`);
+  check("iliad:pre-review-template-exists", existsSync(path.join(ROOT, "docs/institutional-memory/iliad/PRE-REVIEWS/TEMPLATE.json")), "PRE-REVIEWS/TEMPLATE.json");
+  for (const e of enr.enrolled) {
+    check(`iliad:${e.name}-evidence-exists`, existsSync(path.join(ROOT, e.evidence)), e.evidence);
+    const missingDirs = (e.memory_dirs || []).filter((d) => !existsSync(path.join(ROOT, d)));
+    check(`iliad:${e.name}-memory-dirs-exist`, missingDirs.length === 0, missingDirs.length ? `missing: ${missingDirs.join(", ")}` : `${(e.memory_dirs || []).length} memory dirs present`);
+    if (e.status === "delivered") {
+      try {
+        const retro = readJson(e.retrospective);
+        const opts = retro.optimizations_for_future_runs || [];
+        const ok = opts.length > 0 && opts.every((o) => o && typeof o.optimization === "string" && typeof o.lands_in === "string" && o.lands_in.length > 0);
+        check(`iliad:${e.name}-retrospective-feeds-forward`, ok, ok ? `${opts.length} optimizations, each naming where it lands` : "delivered without a feed-forward retrospective");
+      } catch (err) { check(`iliad:${e.name}-retrospective`, false, err.message); }
+    }
+    if (e.post_protocol === true) {
+      const ok = typeof e.pre_review === "string" && existsSync(path.join(ROOT, e.pre_review));
+      check(`iliad:${e.name}-pre-review-recorded`, ok, ok ? e.pre_review : "post-protocol enrollment without a pre-review record");
+    }
+  }
+} catch (e) { check("iliad:enrollment", false, e.message); }
+
 // ---- report -------------------------------------------------------------------
 for (const r of results) console.log(`  [${r.ok ? "PASS" : "FAIL"}] ${r.id}: ${r.detail}`);
 const failed = results.filter((r) => !r.ok);
