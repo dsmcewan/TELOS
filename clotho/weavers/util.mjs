@@ -1371,3 +1371,106 @@ export function splitMarkdownSections(input) {
   const duplicatePaths = new Set([...seen].filter(([, n]) => n > 1).map(([k]) => k));
   return { preamble, sections, duplicatePaths };
 }
+
+// ---- weave-manifest structural validator (Task 5; D35/AM-37, D11) ------------
+// The ONE shared validator for a published weave coverage manifest, consumed by
+// the pure query surface (query.mjs) and the complete-weave driver (weave.mjs),
+// so the same manifest can never pass one surface and fail the other (matured
+// slice-5 approach, R3). Pure and I/O-free: exact structure, the five weaver
+// entries in their frozen declared order, published states only
+// (executed|skipped), 'file:' content-address shapes, the frozen per-weaver
+// required inventory-id table, zero counts for skipped weavers, and — via
+// `weaverEdgeIds` — the record/manifest consistency rule that a weaver recorded
+// `skipped` may not have asserted an edge. Mirrors the trailer-time validation
+// in thread-ledger.mjs (v12 Task 3) without importing it: the weaver substrate
+// stays a relative-import leaf, so no new file enters any weaver closure (D33).
+
+const MANIFEST_WEAVER_ORDER = [
+  "clotho-git-weaver", "clotho-code-weaver", "clotho-test-weaver",
+  "clotho-doc-weaver", "clotho-ledger-weaver"
+];
+const MANIFEST_REQUIRED_INVENTORY_IDS = {
+  "clotho-git-weaver": ["package-files", "package-symbols"],
+  "clotho-code-weaver": ["package-modules"],
+  "clotho-test-weaver": ["package-manifests", "test-files"],
+  "clotho-doc-weaver": ["doc-files"],
+  "clotho-ledger-weaver": ["contract-files", "ledger-sources", "run-sources"]
+};
+const MANIFEST_PUBLISHED_STATES = new Set(["executed", "skipped"]);
+
+function isPlainObjectValue(v) {
+  if (v === null || typeof v !== "object" || Array.isArray(v)) return false;
+  const p = Object.getPrototypeOf(v);
+  return p === Object.prototype || p === null;
+}
+
+// Exactly the expected OWN ENUMERABLE string keys — rejects own symbols, own
+// non-enumerable fields, extra fields, and enumerable fields inherited through a
+// polluted prototype (registry.requireExactKeys' rigor).
+function requireManifestKeys(obj, expected, label) {
+  if (!isPlainObjectValue(obj)) throw new TypeError(`${label}: expected a plain object`);
+  if (Object.getOwnPropertySymbols(obj).length > 0) throw new TypeError(`${label}: symbol-keyed fields are not permitted`);
+  for (const k of Object.getOwnPropertyNames(obj)) if (!expected.includes(k)) throw new TypeError(`${label}: unexpected field '${k}'`);
+  for (const k of expected) {
+    const d = Object.getOwnPropertyDescriptor(obj, k);
+    if (!d) throw new TypeError(`${label}: missing field '${k}'`);
+    if (!d.enumerable) throw new TypeError(`${label}: field '${k}' must be own-enumerable`);
+  }
+  for (const k in obj) if (!Object.prototype.hasOwnProperty.call(obj, k)) throw new TypeError(`${label}: inherited enumerable field '${k}' is not permitted`);
+}
+
+// A 'file:<repo-relative-path>@<40-hex>' content address with a canonical POSIX
+// relative path — the same shape registry.validateSourceRef accepts, checked
+// locally so util stays import-free of registry (closure-leaf discipline).
+function requireManifestFileRef(ref, label) {
+  if (typeof ref !== "string" || !ref.startsWith("file:")) throw new TypeError(`${label}: expected a 'file:' content address, got ${JSON.stringify(ref)}`);
+  const at = ref.lastIndexOf("@");
+  if (at < 0) throw new TypeError(`${label}: missing '@<blob_sha>'`);
+  if (!isCanonicalRepoRelPosix(ref.slice(5, at))) throw new TypeError(`${label}: not a canonical POSIX relative path: ${JSON.stringify(ref.slice(5, at))}`);
+  if (!HEX40.test(ref.slice(at + 1))) throw new TypeError(`${label}: blob_sha must be lowercase 40-hex`);
+}
+
+function requireManifestCounts(counts, state, requiredIds, label) {
+  if (!Array.isArray(counts)) throw new TypeError(`${label}: inspected_source_counts must be an array`);
+  let prevId = null;
+  for (const entry of counts) {
+    requireManifestKeys(entry, ["inventory_id", "count"], `${label} count entry`);
+    if (typeof entry.inventory_id !== "string" || entry.inventory_id.length === 0) throw new TypeError(`${label}: inventory_id must be a nonempty string`);
+    if (!Number.isSafeInteger(entry.count) || entry.count < 0) throw new TypeError(`${label}: count must be a nonnegative safe integer`);
+    if (prevId !== null && entry.inventory_id <= prevId) throw new TypeError(`${label}: inspected_source_counts must be sorted and unique by inventory_id`);
+    prevId = entry.inventory_id;
+    if (state === "skipped" && entry.count !== 0) throw new TypeError(`${label}: skipped weaver must carry zero counts`);
+  }
+  const ids = counts.map((e) => e.inventory_id);
+  if (ids.length !== requiredIds.length || ids.some((id, i) => id !== requiredIds[i])) {
+    throw new TypeError(`${label}: inspected_source_counts must carry exactly [${requiredIds.join(", ")}], got [${ids.join(", ")}]`);
+  }
+}
+
+// `weaverEdgeIds` is the set of weaver ids that asserted a
+// deterministic-extraction edge in the accompanying records: a weaver with
+// edges may not be recorded 'skipped' (fail closed on the contradiction).
+export function validateWeaveManifest(manifest, { weaverEdgeIds = new Set() } = {}) {
+  requireManifestKeys(manifest, ["weavers", "orchestrator_refs", "inventories_consumed"], "manifest");
+  const { weavers, orchestrator_refs, inventories_consumed } = manifest;
+  if (!Array.isArray(weavers) || weavers.length !== 5) throw new TypeError("manifest.weavers: must be exactly five entries (a manifest omitting a producer's entry is malformed)");
+  for (let i = 0; i < 5; i++) {
+    const w = weavers[i];
+    requireManifestKeys(w, ["id", "version", "implementation_refs", "state", "inspected_source_counts"], "manifest weaver");
+    if (w.id !== MANIFEST_WEAVER_ORDER[i]) throw new TypeError(`manifest weaver[${i}]: expected id ${MANIFEST_WEAVER_ORDER[i]}, got ${JSON.stringify(w.id)}`);
+    if (!Number.isInteger(w.version)) throw new TypeError(`manifest weaver[${w.id}].version: must be an integer`);
+    if (!MANIFEST_PUBLISHED_STATES.has(w.state)) throw new TypeError(`manifest weaver[${w.id}].state: must be executed|skipped, got ${JSON.stringify(w.state)}`);
+    if (!Array.isArray(w.implementation_refs) || w.implementation_refs.length === 0) throw new TypeError(`manifest weaver[${w.id}].implementation_refs: nonempty array`);
+    for (const r of w.implementation_refs) requireManifestFileRef(r, `manifest weaver[${w.id}].implementation_refs`);
+    requireManifestCounts(w.inspected_source_counts, w.state, MANIFEST_REQUIRED_INVENTORY_IDS[w.id], `manifest weaver[${w.id}]`);
+    if (w.state === "skipped" && weaverEdgeIds.has(w.id)) throw new TypeError(`manifest weaver[${w.id}]: recorded 'skipped' but asserted an edge in the supplied records`);
+  }
+  if (!Array.isArray(orchestrator_refs) || orchestrator_refs.length === 0) throw new TypeError("manifest.orchestrator_refs: nonempty array");
+  for (const r of orchestrator_refs) requireManifestFileRef(r, "manifest.orchestrator_refs");
+  if (!Array.isArray(inventories_consumed)) throw new TypeError("manifest.inventories_consumed: must be an array");
+  for (const inv of inventories_consumed) {
+    requireManifestKeys(inv, ["id", "source_ref"], "inventories_consumed entry");
+    if (typeof inv.id !== "string" || inv.id.length === 0) throw new TypeError("inventories_consumed.id: nonempty string");
+    requireManifestFileRef(inv.source_ref, "inventories_consumed.source_ref");
+  }
+}
