@@ -1,0 +1,139 @@
+{
+  "build_id": "clotho-phase-1-authz-008",
+  "use_case": "clotho-phase-1",
+  "objective": "Re-authorize Argo execution of the Clotho Phase 1 implementation plan v15 (content address sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3; released by The Eye via PR #121, squash-merge bb265b9; extends authz-006 which authorized v13; SUPERSEDES the NOT_AUTHORIZED authz-007). v15 = v14 + The Eye's AM-41 SHEBANG CARVE-OUT. v14 carried AM-41 (the enforced closed source profile: the shared D33 scanner is required correct ONLY over a closed, mechanically enforced module-lexical source profile, rejecting every out-of-profile construct deterministically with 'unsupported-module-lexical-profile'). authz-007 correctly returned NOT_AUTHORIZED because AM-41's blanket hashbang rejection contradicted Task 5's requirement that clotho/weave.mjs (a closure entry point) carry a Node shebang. AM-41 is now refined: the scanner admits AT MOST ONE optional leading shebang line, permitted ONLY when '#!' begins at byte offset 0, is the first line, and terminates with LF or CRLF (removed before lexical classification, per Node's executable-module convention); a raw '#!' in code position ANYWHERE ELSE (preceding whitespace, not byte-0/not-line-1, or a second '#!' line) fails closed. Per The Eye's explicit ruling, a '#!' occurring inside a recognized string literal or comment is NOT a hashbang (it is ordinary string/comment content, in-profile) — this is deliberate and authorized, not an out-of-profile case. This resolves the authz-007 contradiction (weave.mjs keeps its shebang and derives its closure) WITHOUT broadening the scanner into a full ES parser and WITHOUT overriding the codex seat. v15 differs from the already-reviewed v14 at EXACTLY the two AM-41-block edits (the accepted-grammar leading-shebang admission + the b2 hashbang carve-out; 20 lines); the rest of AM-41 and every other frozen decision is reaffirmed unchanged (AM-40 PACKAGE_ROOTS; advisory / non-sandboxed posture per AM-35..AM-39; D17/AM-17; D24/D26/D31; D32; the D33 accepted-form set; zero-dependency; spine read-only). Judge v15 on ITS OWN advisory/non-sandbox terms — do NOT require it to prove loader isolation, and do NOT require a full ES parser beyond the frozen closed-profile bar. Approve ONLY if the plan is implementation-ready and consistent with its governing spec (v2.8, advisory posture), the repository's trust model (fail-closed, closed sets, spine read-only, advisory-only Clotho), and its own decisions and exit criteria — with AM-41 (incl. the shebang carve-out) correctly defining the scanner's enforced correctness domain and NO remaining plan contradiction.",
+  "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+  "merge_anchor": "bb265b9",
+  "reviewed_head": "bb265b9",
+  "extends": "authz-006",
+  "timestamp": "2026-07-17T03:06:41.301Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd6teRvrpEcXoWrEY5wnD",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-17T03:07:02.184Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2TCO8xdtafkjLDqsFbfjImjVh4h6",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-17T03:07:27.047Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "46195833-3bd3-99e1-a9d5-0836797e9b22",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-17T03:06:56.030Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "RJxZaq5kuYbPsg_QwLrZAg",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-17T03:06:52.056Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "pass",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [],
+    "warnings": [],
+    "provenance": [
+      {
+        "model": "claude",
+        "has_provenance": true,
+        "provider": "anthropic",
+        "response_model": "claude-fable-5",
+        "response_id": "msg_011Cd6teRvrpEcXoWrEY5wnD",
+        "source": "ai-peer-mcp/claude_ask"
+      },
+      {
+        "model": "agy",
+        "has_provenance": true,
+        "provider": "local",
+        "response_model": "agy-checkpoint",
+        "response_id": "agy-8da53012afb65f4f76c6c26f201d7099bbea1a80",
+        "source": "ai-peer-mcp/agy_checkpoint"
+      },
+      {
+        "model": "codex",
+        "has_provenance": true,
+        "provider": "openai",
+        "response_model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2TCO8xdtafkjLDqsFbfjImjVh4h6",
+        "source": "ai-peer-mcp/codex_ask"
+      }
+    ]
+  },
+  "authorized": true,
+  "authorization": {
+    "status": "AUTHORIZED",
+    "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+    "note": "Argo execution of Clotho Phase 1 plan v13 is authorized by the signed council under the TELOS gate; extends authz-006."
+  }
+}
