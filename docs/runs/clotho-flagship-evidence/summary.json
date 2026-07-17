@@ -1,0 +1,12 @@
+{
+  "objective": "Execute deriveExecutableRef (merkle-dag/obligation.mjs) against two genuine Rule-3 verification bindings and record the derived content-addressed executable refs.",
+  "note": "deriveExecutableRef derived deterministic, distinct sha256 executable refs for both bindings; this run is the committed evidence that the symbol executes as the Verification-obligations clause requires.",
+  "symbols": [
+    "deriveExecutableRef"
+  ],
+  "evidence": [
+    "merkle-dag-npm-test: sha256:c255a56f05035e5b2f9514c461d440d2b63c9e5a75ad50ce56ad1c0406251542",
+    "clotho-npm-test: sha256:a5cf6c3a0f762e8a00c58dc39b041edf770858ee18e71ff83fde27c957f91fbb"
+  ],
+  "runner": "docs/runs/clotho-flagship-evidence/run-evidence.mjs"
+}

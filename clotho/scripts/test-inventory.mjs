@@ -8,8 +8,10 @@
 // node:assert/strict; fresh process.
 
 import assert from "node:assert/strict";
-import { statSync } from "node:fs";
+import { statSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
+import { canonicalJson } from "../registry.mjs";
 import { fileURLToPath } from "node:url";
 
 import { statSync as statSyncFs } from "node:fs";
@@ -117,15 +119,38 @@ const abs = (rel) => path.join(REPO_ROOT, ...rel.split("/"));
 
 // ---- 6. LEDGER_SOURCES is a committed closed source inventory (exact-final) ---
 {
-  // Not a deferred placeholder: the exact reviewed set at this SHA is empty
-  // (Clotho weaves no committed ledger artifact). If a real entry is ever added
-  // it must carry the { id, path, adapter } shape and name an existing file.
+  // The exact reviewed set at this SHA: ONE committed obligation ledger, added by
+  // The Eye's reviewed-data ruling (2026-07-17, docs/runs/clotho-impl-slice-6/
+  // ESCALATION.md) — the reviewed inventory change the empty Task-4a value
+  // anticipated. Shape, existence, AND artifact integrity are all asserted.
   assert.ok(Array.isArray(LEDGER_SOURCES) && Object.isFrozen(LEDGER_SOURCES));
-  assert.deepEqual(LEDGER_SOURCES, []);
+  assert.deepEqual(LEDGER_SOURCES, [
+    { id: "clotho-obligations", path: "docs/ledgers/clotho-obligation-ledger.jsonl", adapter: "clotho-obligation-ledger-v1" }
+  ]);
   for (const e of LEDGER_SOURCES) {
     assert.deepEqual(Object.keys(e).sort(), ["adapter", "id", "path"]);
     assert.ok(statSync(abs(e.path)).isFile(), `ledger source ${e.path} exists`);
   }
+  // The committed artifact is valid-by-hash under the clotho-obligation-ledger-v1
+  // rules: every line's entryHash recomputes from its canonical content and the
+  // prev_hash chain is unbroken from "".
+  {
+    const lines = readFileSync(abs("docs/ledgers/clotho-obligation-ledger.jsonl"), "utf8").trim().split("\n");
+    assert.ok(lines.length >= 2, "obligation ledger carries the reviewed concern + obligation entries");
+    let prev = "";
+    for (const line of lines) {
+      const obj = JSON.parse(line);
+      const content = { entryKind: obj.entryKind, evidenceText: obj.evidenceText, dischargeEvidence: obj.dischargeEvidence, contractClauseRef: obj.contractClauseRef };
+      assert.equal(createHash("sha256").update(Buffer.from(canonicalJson(content), "utf8")).digest("hex"), obj.entryHash, "entryHash recomputes from canonical content");
+      assert.equal(obj.prev_hash, prev, "prev_hash chain unbroken");
+      prev = obj.entryHash;
+    }
+  }
+  // RUN_SOURCES is likewise the exact reviewed set (closed, not open-ended).
+  assert.deepEqual(RUN_SOURCES, [
+    { id: "plugin-seats", dir: "docs/runs/plugin-seats", summary: "docs/runs/plugin-seats/summary.json" },
+    { id: "clotho-flagship-evidence", dir: "docs/runs/clotho-flagship-evidence", summary: "docs/runs/clotho-flagship-evidence/summary.json" }
+  ]);
 }
 
 // ---- 7. PACKAGE_ROOTS completeness over TRACKED package.json (AM-40) ----------

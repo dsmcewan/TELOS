@@ -63,18 +63,24 @@ export const CONTRACT_FILES = Object.freeze([
 // inventory, committed exactly at this PR (NOT a deferred per-weaver closure:
 // D17/AM-17 defers only per-weaver implementation-file lists and the orchestrator
 // list, not closed source inventories, per this plan's inventory.mjs description).
-// The EXACT reviewed set at this SHA is empty: Clotho weaves no committed ledger
-// artifact — runtime thread-ledgers are git-ignored `.telos/` files, and the
-// committed `docs/runs/**/events.jsonl` are the Daedalus subsystem's, not Clotho
-// ledger sources. Each entry, when present, is `{ id, path, adapter }`. This is
-// the final Task-4a value; if a real Clotho ledger source is later configured it
-// is a reviewed inventory change with tests, not a fill-in of a placeholder.
-export const LEDGER_SOURCES = Object.freeze([]);
+// Each entry is `{ id, path, adapter }`. The set was empty at the final Task-4a
+// value; the entry below is the REVIEWED INVENTORY CHANGE that value anticipated
+// ("a reviewed inventory change with tests"), authorized by The Eye's
+// reviewed-data ruling (2026-07-17, docs/runs/clotho-impl-slice-6/ESCALATION.md):
+// a committed, hash-chained obligation ledger whose concern/obligation entries
+// genuinely name the flagship symbol and resolve a real Proposal Lifecycle
+// clause. The artifact content is Eye-reviewed governance data.
+export const LEDGER_SOURCES = Object.freeze([
+  Object.freeze({ id: "clotho-obligations", path: "docs/ledgers/clotho-obligation-ledger.jsonl", adapter: "clotho-obligation-ledger-v1" })
+]);
 
 // Exact run directories plus their summary files (run-evidence). Only committed
-// runs that carry a summary.json participate.
+// runs that carry a summary.json participate. clotho-flagship-evidence is a REAL
+// executed run (its runner derives executable refs through the flagship symbol)
+// added under the same Eye ruling as the ledger source above.
 export const RUN_SOURCES = Object.freeze([
-  Object.freeze({ id: "plugin-seats", dir: "docs/runs/plugin-seats", summary: "docs/runs/plugin-seats/summary.json" })
+  Object.freeze({ id: "plugin-seats", dir: "docs/runs/plugin-seats", summary: "docs/runs/plugin-seats/summary.json" }),
+  Object.freeze({ id: "clotho-flagship-evidence", dir: "docs/runs/clotho-flagship-evidence", summary: "docs/runs/clotho-flagship-evidence/summary.json" })
 ]);
 
 // ---- the five weavers --------------------------------------------------------
