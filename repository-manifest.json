@@ -82,6 +82,28 @@
         "no autonomous Daedalus service exists",
         "cannot amend an Eye ruling (fixed input)"
       ]
+    },
+    {
+      "name": "telos",
+      "role": "TELOS",
+      "role_meaning": "governs review, evidence, authorization, and execution boundaries",
+      "kind": "role module — the governance function, NOT the repository of the same name (ownership is not inferred from the repo name; AM-40 governs products beside the spine)",
+      "status": "active (authz-001..008 recorded, all trust_mode signed; five refusals preserved; authz-008 active)",
+      "code": ["build-gate/gate.mjs", "build-gate/council.mjs", "build-gate/sign.mjs"],
+      "workflow_evidence": "docs/runs/clotho-authorization*/ (index: docs/institutional-memory/telos/EVIDENCE/authz-runs.json)",
+      "memory_dir": "docs/institutional-memory/telos/",
+      "comprehension_queries": "docs/institutional-memory/telos/comprehension-queries.json",
+      "claims": [
+        { "statement": "the authorization chain authz-001..008 matches its on-disk records exactly (ids, statuses, plan refs, signed mode); reviewable plans re-hash from disk; the active entry equals CURRENT-AUTHORITY", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "docs/institutional-memory/telos/CONTRACTS/authorization-chain.json"] },
+        { "statement": "the council roster is exactly required {claude,agy,codex} + advisory {grok,gemini} (planSeats probed); signed mode enforced signature+provenance on the recorded pass and the recorded refusal carries the codex-revise dissent", "grade": "executable", "evidence": ["docs/institutional-memory/verify-contracts.mjs", "build-gate/scripts/test-trust.mjs", "build-gate/scripts/test-gate.mjs"] }
+      ],
+      "non_claims": [
+        "authorization does not execute code (Argo implements)",
+        "a model approval is not human authority (The Eye; convergence is not authorization)",
+        "the gate cannot prove an id is genuine from disk (binding happens at generation time)",
+        "a pass is not a correctness proof beyond what the checks check",
+        "the role is not the repo (AM-40)"
+      ]
     }
   ]
 }

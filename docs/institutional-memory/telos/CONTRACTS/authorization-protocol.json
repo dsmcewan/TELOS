@@ -1,0 +1,32 @@
+{
+  "kind": "contract",
+  "component": "telos",
+  "id": "authorization-protocol",
+  "title": "TELOS authorization protocol — seats, enforcement, and the human authority boundary",
+  "authority": {
+    "vocabulary": "docs/mythological-vocabulary.md#TELOS (governs review, evidence, authorization, and execution boundaries)",
+    "doc": "docs/convergence-is-not-authorization.md",
+    "code": ["build-gate/gate.mjs", "build-gate/council.mjs", "build-gate/sign.mjs"]
+  },
+  "required_seats": ["claude", "agy", "codex"],
+  "advisory_seats": ["grok", "gemini"],
+  "advisory_rule": "advisory seats are never gate-required — a missing XAI/GEMINI key never blocks authorization",
+  "signed_mode": {
+    "opt_in": "trust_mode: \"signed\"",
+    "enforces": ["signature", "provenance"],
+    "rule": "each required seat's packet must verify under its per-seat HMAC secret AND carry real provenance (server-issued response id, or agy's content-addressed attestation); a placeholder id, a missing id, or a response_id shared across two seats blocks"
+  },
+  "dissent_rule": "any required seat with decision !== 'approve' or a non-empty required_edits list blocks authorization — one dissent outweighs any convergence (authz-007 is the preserved precedent)",
+  "ground_truth": "disk — the gate re-reads artifacts and re-verifies evidence; a seat's self-reported status never satisfies the gate",
+  "human_boundary": "TELOS authorization is a MODEL council outcome; implementation authority is THE EYE's and cannot be delegated to a model or inferred from consensus or silence",
+  "why": "The protocol separates three things a model will otherwise conflate: maturation (Daedalus), authorization (this protocol), and human authority (The Eye). Each is checkable: the roster from planSeats, the enforcement from the signed-mode gate tests, the boundary from the preserved refusal records.",
+  "change_rule": "Changing the required trio, advisory set, or enforcement rules is a trust-model change: Eye ruling -> Daedalus delta -> TELOS re-authorization (docs/institutional-memory/CHANGE-PROTOCOL.md); this contract must be updated in the same change or verify-contracts fails.",
+  "oracle": {
+    "source_of_truth": "build-gate/council.mjs#planSeats (roster) + build-gate/gate.mjs (REQUIRED_MODELS, signed-mode blockers)",
+    "test": "build-gate/scripts/test-trust.mjs (signed-mode signature+provenance blockers); build-gate/scripts/test-gate.mjs (missing-packet + required-edits blockers); build-gate/scripts/test-council-orchestrator.mjs",
+    "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (probes planSeats roster; cross-checks CURRENT-AUTHORITY.required_seats; asserts the recorded authz-008 pass enforced signature+provenance and the recorded authz-007 block carries the codex-revise dissent)"
+  },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

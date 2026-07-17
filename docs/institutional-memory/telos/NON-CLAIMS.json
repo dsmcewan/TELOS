@@ -1,0 +1,27 @@
+[
+  {
+    "id": "telos-authorization-does-not-execute",
+    "statement": "TELOS authorization certifies merge-readiness from disk + signatures + provenance; it does NOT execute code, deploy anything, or carry a plan through implementation (Argo's role).",
+    "authority": { "system": "docs/institutional-memory/NON-CLAIMS.md", "vocabulary": "docs/mythological-vocabulary.md" }
+  },
+  {
+    "id": "telos-model-approval-is-not-human-authority",
+    "statement": "A unanimous signed council is still a MODEL outcome. The Eye's authority over consequential action is non-delegable and cannot be inferred from consensus or silence. Convergence is not authorization; authorization is not The Eye.",
+    "authority": { "doc": "docs/convergence-is-not-authorization.md", "system_invariant": "eye-authority-non-delegable" }
+  },
+  {
+    "id": "telos-gate-cannot-prove-id-genuineness",
+    "statement": "From disk alone the gate cannot prove a well-formed, unique response_id is genuine rather than fabricated (it does not re-contact provider APIs). That binding is made by the council wiring at generation time, with the per-seat HMAC secret as the identity floor.",
+    "authority": { "doc": "README.md#trust-model (fail-closed)" }
+  },
+  {
+    "id": "telos-pass-is-not-correctness",
+    "statement": "gate_status 'pass' certifies exactly what the checks check — shape, signature, provenance, disk re-verification, seat decisions. It is not a proof the plan or code is correct beyond those checks.",
+    "authority": { "system": "docs/institutional-memory/NON-CLAIMS.md ('a green gate is not a correctness proof')" }
+  },
+  {
+    "id": "telos-role-is-not-the-repo",
+    "statement": "'TELOS' the registered role (governs review, evidence, authorization, execution boundaries) is not co-extensive with the TELOS repository. Packages like ai-forge/saas-forge live in the repo but are governed BESIDE the spine (AM-40); role ownership must not be inferred from the repository name.",
+    "authority": { "vocabulary": "docs/mythological-vocabulary.md (do not infer ownership from resemblance)", "decision": "AM-40" }
+  }
+]

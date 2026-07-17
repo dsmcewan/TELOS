@@ -55,6 +55,7 @@ comprehension queries — load it before touching that role's code or workflow.
 | role | registered meaning | memory dir |
 |---|---|---|
 | **Daedalus** | collaboratively matures implementation plans | `docs/institutional-memory/daedalus/` |
+| **TELOS** | governs review, evidence, authorization, execution boundaries | `docs/institutional-memory/telos/` |
 
 ## Hard rules
 

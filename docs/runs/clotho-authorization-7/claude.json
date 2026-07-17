@@ -1,0 +1,30 @@
+{
+  "build_id": "clotho-phase-1-authz-007",
+  "use_case": "clotho-phase-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/clotho-daedalus-delta13/matured-plan-v14.md",
+    "docs/clotho-phase-1-design.md"
+  ],
+  "proposal_ref": "sha256:f152f1663234a393aa8a0dd441d2631a9cf4a6d50773d719178f38f483da3426",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-17T02:50:08.597Z",
+  "rationale": "v14 is judged against v13 (already authorized as authz-006) plus exactly one narrow delta: the AM-41 clause inserted into Task 4a. I verified the plan's own claim that the change is confined to that block — the remainder of the document reaffirms the frozen v13 decisions (AM-40 PACKAGE_ROOTS with the explicit exclude/discover-all unit; advisory non-sandbox posture per AM-35..AM-39; D17/AM-17 inventory-existence discipline; D24/D26/D31 count semantics; D32 frozen loader mapping; the D33 accepted-form set; zero-dependency; spine read-only) without alteration, so the review properly narrows to whether AM-41 is sound and correctly integrated.\n\nOn the merits, AM-41 resolves the one real gap in v13's D33 story: a shared classifier/resolver whose correctness domain was implicitly 'the accepted forms' without a defined lexical boundary, leaving silent-misclassification risk on exotic-but-legal JS (bare CR/LS/PS line terminators altering ASI and comment termination; hashbang; HTML-comment legacy syntax; string line-continuations and octal escapes; string-literal import/export names; truncated forms). AM-41's answer is the architecturally correct one for this repository's trust model: instead of demanding a full ECMAScript lexer (disproportionate, and explicitly out of scope per the objective), it freezes a closed source profile and demands TOTAL correctness inside it plus DETERMINISTIC fail-closed rejection of an EXACT, enumerable out-of-profile set (b1–b6) with a stable diagnostic that produces no edge, no closure result, and no coverage claim. This converts an open-ended correctness obligation into a closed one — the same fail-closed/closed-set pattern (D27/D32/D33) the repo already uses everywhere else. Critically, clause (b) makes the exclusion tested and enforced rather than presumed, and clause (d) requires both directions proven: in-profile classification under whitespace/comment/string/alias/option/token-context variation (including the genuinely hard cases: keyword-named aliases, import options with trailing commas, member-access vs call-site discrimination, regex-vs-division by previous-significant-token), and per-construct b1–b6 rejection fixtures. The residual honesty is preserved: with the profile enforced, closure results cover the supported statically-declared dependency model over the closed profile — the plan does not smuggle back a completeness claim.\n\nThe AM-41 containment clause (c) is a genuine hardening, not just restatement: it moves original-uncollapsed-component lstat checking INTO the shared resolver (resolveRelativeSpecifier/deriveAcceptedClosure) rather than relying solely on the driver's physicalContainment helper, closing the symlink-component-erased-by-later-'..' normalization hole for closure derivation and outbound scanning alike, with a mandated fixture exercising exactly that collapse scenario. This is consistent with D21's physical-not-lexical principle and extends it to the one consumer that previously checked containment only post-resolution.\n\nConsistency checks pass: AM-41 does not broaden the D27 accepted surface (the profile constrains how accepted forms are recognized, not which forms are accepted); it does not contradict D23/D30's unclassified-reporting posture for the repo-wide advisory scan (out-of-profile rejection is the Clotho-side closure/outbound bar, and 'no coverage claim for that file' composes correctly with D33's no-omission rule — a weaver module failing the profile cannot yield a closure, so inventory equality fails and the weave aborts rather than publishing under-covered provenance); the stable diagnostic slots into the existing fatal-warning/abort discipline (D22); and the explicit-.mjs code-weaver extraction rule remains separated from the shared closure resolver's broader accepted-target traversal (.cjs via require), matching D33's mechanism-provenance-vs-application-graph split. The profile freeze lives in the plan, not the implementation, so profile expansion requires amendment — the correct governance boundary, and explicitly not an override of the codex seat.\n\nJudged on its own advisory/non-sandbox terms as instructed: no isolation proof is claimed or required, no full-parser bar is imposed, and the plan's exit criteria, task ordering (Task 1 before Task 0 so the matrix never names an absent package; D17 inventory existence per PR), and evidence requirements are unchanged from the already-authorized v13. The one-block delta is well-specified, testable, strictly risk-reducing, and implementation-ready. I stake the seat's signature on it: approve as-is.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011Cd6sPFggaRHw1zogNJhNU",
+    "source": "ai-peer-mcp/claude_ask",
+    "answered_at": "2026-07-17T02:50:40.866Z",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "dda7dd0ddb406102b5f2fe299f3af730af0dd79b7c131bbf28aae94f814ff9a7",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

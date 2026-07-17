@@ -1,0 +1,30 @@
+{
+  "build_id": "clotho-phase-1-authz-008",
+  "use_case": "clotho-phase-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/clotho-daedalus-delta14/matured-plan-v15.md",
+    "docs/clotho-phase-1-design.md"
+  ],
+  "proposal_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-17T03:06:41.301Z",
+  "rationale": "The single blocking defect that made authz-007 return NOT_AUTHORIZED — AM-41's blanket hashbang rejection contradicting Task 5's requirement that clotho/weave.mjs carry a Node shebang — is resolved cleanly and minimally in v15. I verified the resolution on the plan text itself: (1) AM-41(a) now admits at most one optional leading shebang line, permitted only at byte offset 0 on the first line terminated by LF/CRLF, removed before lexical classification, which matches Node's actual executable-module convention and covers exactly the weave.mjs case; (2) AM-41(b2) is correspondingly narrowed to reject '#!' anywhere OTHER than that single permitted position (preceding whitespace, non-byte-0/non-line-1, or a second '#!' line), preserving determinism and the fail-closed posture; (3) The Eye's explicit ruling that '#!' inside a recognized string literal or comment is ordinary content, not a hashbang, is lexically coherent — once the scanner correctly tracks string/comment state (which the profile already requires for every other decision, e.g. b6 unterminated constructs and the regex-vs-division rule), '#!' in those contexts is unambiguous content, so admitting it neither widens the enforcement gap nor requires parser sophistication beyond the frozen closed-profile bar. The carve-out does not weaken the closed profile: the out-of-profile set (b1–b6) remains exact and enumerable, the stable 'unsupported-module-lexical-profile' diagnostic is unchanged, and clause (d) still demands proof of both correct in-profile classification and fail-closed rejection of every enumerated out-of-profile construct, which now includes the misplaced-hashbang cases as explicit test obligations. The two edits are tightly scoped (the accepted-grammar admission plus the b2 refinement), and everything else — AM-40 PACKAGE_ROOTS, the advisory non-sandbox posture per AM-35..AM-39, D17 inventory-existence discipline, D24/D26/D31 count semantics, D32's frozen loader mapping, the D33 accepted-form set and shared classifier/resolver, D34 publication-time re-derivation, zero-dependency, and spine read-only — is reaffirmed unchanged from the already-reviewed v14. Judged on its own advisory/non-sandboxed terms as instructed, the plan is internally consistent: the scanner's correctness domain is now a well-defined closed profile with no contradiction between the profile and any file the plan itself requires to exist (weave.mjs keeps its shebang and derives its closure after shebang stripping); D14/D33/D34 provenance closure, D29 consumption accounting, D10/AM-39 attribution binding, D20/D28 publication semantics, and D35 coverage schema all compose without circularity; task ordering respects D17 (no inventory names a nonexistent file, orchestrator inventory lands with weave.mjs in Task 5); and the exit criteria are mechanically checkable. Residual risks (symlink/TOCTOU races, closure inflation, cleanup-incomplete residue) are explicitly bounded and acceptable for advisory, git-ignored output. I checked for second-order effects of the carve-out and found none: shebang stripping occurs before classification so it cannot create a false module-load edge; a shebang line cannot smuggle an accepted form since it is removed, not scanned; and the byte-0 requirement means the admission is decidable without lookahead. Implementation-ready as-is; approving unconditionally.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011Cd6teRvrpEcXoWrEY5wnD",
+    "source": "ai-peer-mcp/claude_ask",
+    "answered_at": "2026-07-17T03:07:02.184Z",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "a9804a63e5d24c0cc78a5eb46a43c25055a6786b15c1091ad534eba01047d393",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

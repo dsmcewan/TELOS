@@ -1,0 +1,83 @@
+{
+  "component": "telos",
+  "note": "Authority-anchored comprehension queries for the TELOS role module. These encode the exact hallucinations a fresh model is most likely to produce about authorization: that consensus authorizes, that advisory seats are required, that refusals were mistakes, that the gate trusts a seat's self-report.",
+  "governing_authority": {
+    "plan": "docs/runs/clotho-daedalus-delta14/matured-plan-v15.md",
+    "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+    "authorization": "authz-008"
+  },
+  "required_invariants": ["telos-fail-closed-authorization", "telos-dissent-blocks", "telos-advisory-never-blocks"],
+  "required_non_claims": ["telos-model-approval-is-not-human-authority", "telos-pass-is-not-correctness"],
+  "queries": [
+    {
+      "id": "required-seats",
+      "query": "Which seats are gate-REQUIRED for authorization?",
+      "answer_kind": "set",
+      "expected": ["claude", "agy", "codex"],
+      "authority_anchor": { "code": "build-gate/gate.mjs#REQUIRED_MODELS + build-gate/council.mjs#planSeats", "contract": "docs/institutional-memory/telos/CONTRACTS/authorization-protocol.json" }
+    },
+    {
+      "id": "advisory-missing-key-blocks",
+      "query": "Can a missing XAI/GEMINI key block authorization?",
+      "answer_kind": "boolean",
+      "expected": false,
+      "authority_anchor": { "code": "build-gate/council.mjs#planSeats (grok/gemini advisory)", "invariant": "telos-advisory-never-blocks" }
+    },
+    {
+      "id": "model-consensus-authorizes",
+      "query": "Does a unanimous signed council constitute human implementation authority?",
+      "answer_kind": "boolean",
+      "expected": false,
+      "authority_anchor": { "doc": "docs/convergence-is-not-authorization.md", "system_invariant": "eye-authority-non-delegable" }
+    },
+    {
+      "id": "refused-authorizations",
+      "query": "Which authorization runs returned NOT_AUTHORIZED?",
+      "answer_kind": "set",
+      "expected": ["authz-001", "authz-002", "authz-003", "authz-004", "authz-007"],
+      "authority_anchor": { "contract": "docs/institutional-memory/telos/CONTRACTS/authorization-chain.json" }
+    },
+    {
+      "id": "authz-007-block-cause",
+      "query": "What blocked authz-007? (enum: codex-revise-dissent | missing-api-key | plan-hash-drift)",
+      "answer_kind": "enum",
+      "expected": "codex-revise-dissent",
+      "authority_anchor": { "record": "docs/runs/clotho-authorization-7/authorization-summary.json (gate.blockers)", "decision": "DECISIONS/convergence-is-not-authorization.md" }
+    },
+    {
+      "id": "signed-mode-enforces",
+      "query": "Which two things does trust_mode 'signed' enforce as blockers on every required packet?",
+      "answer_kind": "set",
+      "expected": ["signature", "provenance"],
+      "authority_anchor": { "oracle": "build-gate/scripts/test-trust.mjs", "contract": "docs/institutional-memory/telos/CONTRACTS/authorization-protocol.json" }
+    },
+    {
+      "id": "active-authorization",
+      "query": "Which authorization currently governs new work? (enum: authz-006 | authz-007 | authz-008)",
+      "answer_kind": "enum",
+      "expected": "authz-008",
+      "authority_anchor": { "pointer": "CURRENT-AUTHORITY.json#active_authorization" }
+    },
+    {
+      "id": "authorization-executes-code",
+      "query": "Does TELOS authorization execute code?",
+      "answer_kind": "boolean",
+      "expected": false,
+      "authority_anchor": { "non_claim": "telos-authorization-does-not-execute", "system": "docs/institutional-memory/NON-CLAIMS.md" }
+    },
+    {
+      "id": "gate-ground-truth",
+      "query": "What is the gate's ground truth? (enum: disk | seat-self-report | council-transcript)",
+      "answer_kind": "enum",
+      "expected": "disk",
+      "authority_anchor": { "code": "build-gate/gate.mjs", "doc": "README.md#trust-model" }
+    },
+    {
+      "id": "authz-007-superseded-by",
+      "query": "Which authorization superseded the refused authz-007? (enum: authz-006 | authz-008 | none)",
+      "answer_kind": "enum",
+      "expected": "authz-008",
+      "authority_anchor": { "record": "docs/runs/clotho-authorization-8/authorization-summary.json", "pointer": "CURRENT-AUTHORITY.json#active_authorization.supersedes" }
+    }
+  ]
+}

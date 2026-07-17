@@ -1,0 +1,20 @@
+{
+  "kind": "evidence",
+  "component": "telos",
+  "id": "authz-runs",
+  "title": "Index of every authorization run directory (navigation aid)",
+  "note": "ADVISORY navigation index for an agentic reader. The NORMATIVE, record-verified chain lives in ../CONTRACTS/authorization-chain.json; do not treat this index as authority. Each run dir holds authorization-summary.json (the record), one packet file per seat, and the runner script.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "runs": [
+    { "dir": "docs/runs/clotho-authorization/", "id": "authz-001", "runner": "run-authorization.mjs" },
+    { "dir": "docs/runs/clotho-authorization-2/", "id": "authz-002", "runner": "run-authorization-2.mjs" },
+    { "dir": "docs/runs/clotho-authorization-3/", "id": "authz-003", "runner": "run-authorization-3.mjs" },
+    { "dir": "docs/runs/clotho-authorization-4/", "id": "authz-004", "runner": "run-authorization-4.mjs" },
+    { "dir": "docs/runs/clotho-authorization-5/", "id": "authz-005", "runner": "run-authorization-5.mjs" },
+    { "dir": "docs/runs/clotho-authorization-6/", "id": "authz-006", "runner": "run-authorization-6.mjs", "restored": "evidence restored to main from origin/clotho-authz-006 (the CURRENT-AUTHORITY pointer was merged without its record files)" },
+    { "dir": "docs/runs/clotho-authorization-7/", "id": "authz-007", "runner": "run-authorization-7.mjs", "restored": "evidence restored to main from origin/clotho-authz-007" },
+    { "dir": "docs/runs/clotho-authorization-8/", "id": "authz-008", "runner": "run-authorization-8.mjs", "restored": "evidence restored to main from origin/clotho-authz-008", "active": true }
+  ],
+  "per_seat_packets": ["claude.json", "agy.json", "codex.json", "grok.json", "gemini.json"]
+}

@@ -212,6 +212,61 @@ try {
   check("daedalus:chain-covers-authority", missing.length === 0, missing.length ? `missing versions: ${missing.join(",")}` : "every authority-named version present");
 } catch (e) { check("daedalus:plan-version-chain", false, e.message); }
 
+// ---- 5a. telos: authorization-chain contract == records on disk + authority ----
+try {
+  const c = readJson("docs/institutional-memory/telos/CONTRACTS/authorization-chain.json");
+  const auth = readJson("CURRENT-AUTHORITY.json");
+  const hashOf = (rel) => "sha256:" + sha256hex(canonicalize({ kind: "candidate", plan: readFileSync(path.join(ROOT, rel), "utf8") }));
+  for (const entry of c.chain) {
+    try {
+      const rec = readJson(entry.record);
+      const idOk = typeof rec.build_id === "string" && rec.build_id.endsWith(entry.id);
+      const statusOk = rec.authorization && rec.authorization.status === entry.status && rec.authorized === entry.authorized;
+      const planOk = rec.plan_ref === entry.plan_ref;
+      const signedOk = rec.trust_mode === entry.trust_mode;
+      check(`telos:${entry.id}-record`, idOk && statusOk && planOk && signedOk,
+        `record=${entry.record} build_id=${rec.build_id} status=${rec.authorization && rec.authorization.status} plan_ref=${(rec.plan_ref || "").slice(0, 20)}… trust=${rec.trust_mode}`);
+      if (entry.plan_path) {
+        const real = hashOf(entry.plan_path);
+        check(`telos:${entry.id}-plan-hash`, real === entry.plan_ref, `disk=${real} contract=${entry.plan_ref}`);
+      }
+    } catch (e) { check(`telos:${entry.id}-record`, false, e.message); }
+  }
+  const active = c.chain.filter((e) => e.active);
+  check("telos:chain-exactly-one-active", active.length === 1, `active entries=${active.length}`);
+  check("telos:chain-active==authority.active_authorization",
+    active.length === 1 && active[0].id === auth.active_authorization.id && active[0].record === auth.active_authorization.record
+      && active[0].status === auth.active_authorization.status && active[0].plan_ref === auth.active_authorization.authorizes_plan,
+    active.length === 1 ? `chain=${active[0].id}/${active[0].status} authority=${auth.active_authorization.id}/${auth.active_authorization.status}` : "no single active entry");
+  const byId = new Map(c.chain.map((e) => [e.id, e]));
+  for (const s of auth.superseded || []) {
+    const e = byId.get(s.authorization);
+    check(`telos:chain-${s.authorization}==superseded-record`, !!e && e.status === s.authz_status && e.plan_ref === s.sha256,
+      e ? `chain=${e.status}/${e.plan_ref.slice(0, 20)}… authority=${s.authz_status}/${s.sha256.slice(0, 20)}…` : "authorization named by CURRENT-AUTHORITY missing from chain");
+  }
+} catch (e) { check("telos:authorization-chain", false, e.message); }
+
+// ---- 5b. telos: authorization-protocol contract == council roster + evidence ---
+try {
+  const c = readJson("docs/institutional-memory/telos/CONTRACTS/authorization-protocol.json");
+  const auth = readJson("CURRENT-AUTHORITY.json");
+  const council = await imp("build-gate/council.mjs");
+  const seats = council.planSeats({});
+  const approvers = seats.filter((s) => s.role === "approver").map((s) => s.model);
+  const advisory = seats.filter((s) => s.role === "advisory").map((s) => s.model);
+  check("telos:required_seats==planSeats-approvers", eqArr(c.required_seats, approvers), `contract=${JSON.stringify(c.required_seats)} planSeats=${JSON.stringify(approvers)}`);
+  check("telos:advisory_seats==planSeats-advisory", eqArr(c.advisory_seats, advisory), `contract=${JSON.stringify(c.advisory_seats)} planSeats=${JSON.stringify(advisory)}`);
+  check("telos:required_seats==authority.required_seats", eqArr(c.required_seats, auth.active_authorization.required_seats), `contract=${JSON.stringify(c.required_seats)} authority=${JSON.stringify(auth.active_authorization.required_seats)}`);
+  // evidence probes — the recorded pass enforced both blockers; the recorded refusal carries the dissent
+  const pass = readJson("docs/runs/clotho-authorization-8/authorization-summary.json");
+  check("telos:authz-008-dual-enforcement", pass.gate && pass.gate.gate_status === "pass" && pass.gate.signing_enforced === true && pass.gate.provenance_enforced === true,
+    `gate_status=${pass.gate && pass.gate.gate_status} signing=${pass.gate && pass.gate.signing_enforced} provenance=${pass.gate && pass.gate.provenance_enforced}`);
+  const refusal = readJson("docs/runs/clotho-authorization-7/authorization-summary.json");
+  const dissent = refusal.gate && Array.isArray(refusal.gate.blockers) && refusal.gate.blockers.some((b) => /codex decision is 'revise'/.test(b));
+  check("telos:authz-007-dissent-blocker", refusal.gate && refusal.gate.gate_status === "blocked" && dissent,
+    `gate_status=${refusal.gate && refusal.gate.gate_status} codex-revise-blocker=${!!dissent}`);
+} catch (e) { check("telos:authorization-protocol", false, e.message); }
+
 // ---- report -------------------------------------------------------------------
 for (const r of results) console.log(`  [${r.ok ? "PASS" : "FAIL"}] ${r.id}: ${r.detail}`);
 const failed = results.filter((r) => !r.ok);

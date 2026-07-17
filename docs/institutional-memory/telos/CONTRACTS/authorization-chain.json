@@ -1,0 +1,112 @@
+{
+  "kind": "contract",
+  "component": "telos",
+  "id": "authorization-chain",
+  "title": "TELOS authorization chain — every authz run, its record, and its outcome",
+  "authority": {
+    "pointer": "CURRENT-AUTHORITY.json",
+    "vocabulary": "docs/mythological-vocabulary.md#TELOS"
+  },
+  "note": "One entry per authorization run on disk. Refusals are PRESERVED, never erased — five of eight runs refused authorization, which is the fail-closed posture demonstrated, not a failure history to clean up. Entries with a plan_path are re-hashed from disk by the verifier; authz-001..003 reviewed candidate bytes that are not preserved as matured-plan files on main, so their plan_ref is record-internal only (checked against the record, not the disk) — recorded honestly rather than reconstructed.",
+  "chain": [
+    {
+      "id": "authz-001",
+      "record": "docs/runs/clotho-authorization/authorization-summary.json",
+      "status": "NOT_AUTHORIZED",
+      "authorized": false,
+      "plan_ref": "sha256:1a9f22085d57f9ace35931f48ae370e91934b3e6e7451b23375b08e74973e47d",
+      "plan_path": null,
+      "trust_mode": "signed",
+      "active": false
+    },
+    {
+      "id": "authz-002",
+      "record": "docs/runs/clotho-authorization-2/authorization-summary.json",
+      "status": "NOT_AUTHORIZED",
+      "authorized": false,
+      "plan_ref": "sha256:47f634889001eeeecc65390bc7e58e64d39d86f0c0061e0ff04afafacc556f8a",
+      "plan_path": null,
+      "trust_mode": "signed",
+      "active": false
+    },
+    {
+      "id": "authz-003",
+      "record": "docs/runs/clotho-authorization-3/authorization-summary.json",
+      "status": "NOT_AUTHORIZED",
+      "authorized": false,
+      "plan_ref": "sha256:a23da81a38c16cd1948875c104a8297cad7a092b8f088ea9f34c566e5ec19116",
+      "plan_path": null,
+      "trust_mode": "signed",
+      "active": false
+    },
+    {
+      "id": "authz-004",
+      "record": "docs/runs/clotho-authorization-4/authorization-summary.json",
+      "status": "NOT_AUTHORIZED",
+      "authorized": false,
+      "plan_ref": "sha256:f5d9cd52f12ec9abb4c613c469437d0079af7fdf249c5a842f94c451d55fc30c",
+      "plan_path": "docs/runs/clotho-daedalus-delta10/matured-plan-v11.md",
+      "plan_version": "v11",
+      "trust_mode": "signed",
+      "active": false
+    },
+    {
+      "id": "authz-005",
+      "record": "docs/runs/clotho-authorization-5/authorization-summary.json",
+      "status": "AUTHORIZED",
+      "authorized": true,
+      "plan_ref": "sha256:bdc93901952312846d693e14925eac49c332e0364a4a2a158ae21b2d607e79d3",
+      "plan_path": "docs/runs/clotho-daedalus-delta11/matured-plan-v12.md",
+      "plan_version": "v12",
+      "trust_mode": "signed",
+      "active": false
+    },
+    {
+      "id": "authz-006",
+      "record": "docs/runs/clotho-authorization-6/authorization-summary.json",
+      "status": "AUTHORIZED",
+      "authorized": true,
+      "plan_ref": "sha256:f9368b5748de6c2670193558783b60b7f74fd94de9196c9664d42269f3d2bc04",
+      "plan_path": "docs/runs/clotho-daedalus-delta12/matured-plan-v13.md",
+      "plan_version": "v13",
+      "extends": "authz-005",
+      "trust_mode": "signed",
+      "active": false
+    },
+    {
+      "id": "authz-007",
+      "record": "docs/runs/clotho-authorization-7/authorization-summary.json",
+      "status": "NOT_AUTHORIZED",
+      "authorized": false,
+      "plan_ref": "sha256:f152f1663234a393aa8a0dd441d2631a9cf4a6d50773d719178f38f483da3426",
+      "plan_path": "docs/runs/clotho-daedalus-delta13/matured-plan-v14.md",
+      "plan_version": "v14",
+      "extends": "authz-006",
+      "block_cause": "codex decision 'revise' (required-seat dissent); AM-41's blanket hashbang exclusion contradicted Task 5's weave.mjs shebang",
+      "trust_mode": "signed",
+      "active": false
+    },
+    {
+      "id": "authz-008",
+      "record": "docs/runs/clotho-authorization-8/authorization-summary.json",
+      "status": "AUTHORIZED",
+      "authorized": true,
+      "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+      "plan_path": "docs/runs/clotho-daedalus-delta14/matured-plan-v15.md",
+      "plan_version": "v15",
+      "extends": "authz-006",
+      "supersedes": "authz-007",
+      "trust_mode": "signed",
+      "active": true
+    }
+  ],
+  "why": "A future model must be able to walk authorization history without inferring outcomes from filenames or assuming success. The chain shows the gate refusing five times — including refusing a Daedalus-converged plan on one required seat's dissent (authz-007) — and shows every run under trust_mode signed. That record IS the trust model, demonstrated.",
+  "change_rule": "A new authorization appends an entry (council run -> record committed under docs/runs/ -> CURRENT-AUTHORITY.json updated -> this contract updated in the same change or verify-contracts fails). Entries are never rewritten.",
+  "oracle": {
+    "source_of_truth": "the authorization-summary.json records on disk + CURRENT-AUTHORITY.json",
+    "contract_equals_code": "docs/institutional-memory/verify-contracts.mjs (each record exists, parses, and matches this entry; plan_path entries re-hashed from disk; exactly one active entry equal to CURRENT-AUTHORITY.active_authorization; superseded statuses cross-checked)"
+  },
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}
