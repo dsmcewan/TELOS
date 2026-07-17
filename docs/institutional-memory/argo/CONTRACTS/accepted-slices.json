@@ -31,10 +31,22 @@
       "entry_ritual": "docs/runs/clotho-impl-slice-4b/reader-validation-artifact.json",
       "acceptance_note": "harvested from origin/clotho-task4b under The Eye's 'finish Clotho' directive (2026-07-17); the branch carried the 13-file 4b implementation with its gauntlet oracles and council hard-stop resolutions (H1/H2); entry ritual GRANTED 13/13 before any work; oracles at landing: clotho npm test 10/10, verify-contracts 188/188, build-gate regression green; acceptance path = PR #126 review + CI + The Eye's merge decision",
       "review_context": "no fresh signed-council slice review was run for the harvest — the harvested branch's own lineage records its council findings and hard-stop resolutions; recorded honestly rather than staged"
+    },
+    {
+      "task": "5",
+      "pr": 126,
+      "merge_anchor": "git:321473a",
+      "reviewed_head": "git:321473a",
+      "entry_ritual": "docs/runs/clotho-impl-slice-5/reader-validation-artifact.json",
+      "acceptance_note": "three parallel disjoint-writer build agents (Q: query+oracle, W: driver+oracle+inventory+closure, A: advisory) per the LIVE Daedalus-matured approach; each oracle green in its worktree before merge; integration single-writer; first real-repository weave published as the Task 5 exit; oracles at landing: clotho 13/13, verify-contracts 203/203, build-gate green",
+      "review_context": "approach extensively reviewed pre-implementation by the live slice-5 Daedalus workshop (claude-fable-5 authored, gpt-5.6-sol bound; docs/runs/clotho-slice5-daedalus/)"
     }
   ],
-  "next_slice": "5",
-  "specified_pending_slices": ["5", "6", "7"],
+  "next_slice": "6",
+  "specified_pending_slices": [
+    "6",
+    "7"
+  ],
   "design_substrate": "clotho/memory/ (SPECIFIED-PENDING-IMPLEMENTATION records + per-task comprehension queries clotho/memory/comprehension-queries.<task>.json)",
   "why": "The Argo ledger is the honest answer to 'what has actually been implemented and accepted' — one slice (4a), 13 signed review rounds, a deterministic slice gate at meets, and an acceptance that DEFERRED known minors rather than pretending zero defects. A future model must read the backlog as part of the acceptance, not as contradicting it.",
   "change_rule": "A new accepted slice appends an entry (slice gate meets -> signed required-seat review -> The Eye's acceptance -> merge; update CURRENT-AUTHORITY.json + this contract in the same change or verify-contracts fails). Entries are never rewritten.",

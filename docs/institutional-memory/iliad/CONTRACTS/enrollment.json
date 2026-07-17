@@ -33,23 +33,63 @@
       "kind": "Clotho Phase 1 slice: test/doc/ledger weavers with isolating oracles; D25/D31 + contracts flipped NORMATIVE",
       "created_by": "PR #126 (harvest merge git:af64b88 of origin/clotho-task4b head git:15de463)",
       "evidence": "docs/runs/clotho-impl-slice-4b/reader-validation-artifact.json",
-      "memory_dirs": ["clotho/memory/"],
+      "memory_dirs": [
+        "clotho/memory/"
+      ],
       "status": "delivered",
       "post_protocol": true,
       "pre_review": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-17-slice-4b.json",
       "retrospective": "docs/institutional-memory/iliad/RETROSPECTIVES/slice-4b.json",
       "maintained_by": "The Iliad umbrella; oracles run in CI (clotho job: test-all incl. test-weaver-{test,doc,ledger}; institutional-memory job: record discipline)"
+    },
+    {
+      "name": "clotho-slice-5",
+      "kind": "Clotho Phase 1 slice: query surface + complete-weave driver + advisory invariant; first real-repository weave published",
+      "created_by": "PR #126 (delivery git:321473a; agent merges 723703a/3578efe/18c57dd)",
+      "evidence": "docs/runs/clotho-impl-slice-5/reader-validation-artifact.json",
+      "memory_dirs": [
+        "clotho/memory/"
+      ],
+      "status": "delivered",
+      "post_protocol": true,
+      "pre_review": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-17-slice-5.json",
+      "retrospective": "docs/institutional-memory/iliad/RETROSPECTIVES/slice-5.json",
+      "maintained_by": "The Iliad umbrella; oracles in CI (clotho test-all 13 incl. test-query/test-weave/test-advisory; institutional-memory job)"
     }
   ],
   "future_modules_registered_unimplemented": [
-    { "name": "hermes", "role": "Hermes", "role_meaning": "API management and inter-system communication: routing, contracts, translation, and delivery." },
-    { "name": "medusa", "role": "Medusa", "role_meaning": "defensive edge enforcement; blocks or quarantines hostile and nonconforming traffic." },
-    { "name": "narcissus", "role": "Narcissus", "role_meaning": "iterative UI rendering and visual review through repeated reflection." },
-    { "name": "lachesis", "role": "Lachesis", "role_meaning": "measures dependencies, relevance, risk, and blast radius." },
-    { "name": "atropos", "role": "Atropos", "role_meaning": "retires obsolete relationships, artifacts, tools, and processes." }
+    {
+      "name": "hermes",
+      "role": "Hermes",
+      "role_meaning": "API management and inter-system communication: routing, contracts, translation, and delivery."
+    },
+    {
+      "name": "medusa",
+      "role": "Medusa",
+      "role_meaning": "defensive edge enforcement; blocks or quarantines hostile and nonconforming traffic."
+    },
+    {
+      "name": "narcissus",
+      "role": "Narcissus",
+      "role_meaning": "iterative UI rendering and visual review through repeated reflection."
+    },
+    {
+      "name": "lachesis",
+      "role": "Lachesis",
+      "role_meaning": "measures dependencies, relevance, risk, and blast radius."
+    },
+    {
+      "name": "atropos",
+      "role": "Atropos",
+      "role_meaning": "retires obsolete relationships, artifacts, tools, and processes."
+    }
   ],
   "future_modules_note": "Registered myths with defined system responsibilities and NO implementation (meanings VERBATIM from docs/mythological-vocabulary.md; verify-contracts parses the registry and cross-checks each). Atropos's discipline is partially expressed today via supersession records (must_not_govern_new_work); Lachesis's risk measurement is explicitly non-claimed by Clotho Phase 1. Implementing one follows CHANGE-PROTOCOL + this lifecycle (pre-review -> enroll -> retrospective).",
-  "deferred_pending_conscious_enrollment": ["ai-forge", "forge", "saas-forge"],
+  "deferred_pending_conscious_enrollment": [
+    "ai-forge",
+    "forge",
+    "saas-forge"
+  ],
   "deferred_note": "EXACTLY the AM-40 product exclusions (verify-contracts cross-checks this list against clotho/memory/CONTRACTS/package-roots.json#package_roots_exclude). Enrolling one requires a deliberate amendment — never absorption by proximity.",
   "why": "The umbrella needs a ledger of what it maintains. Without a registry, 'each implementation creates a sub-system' decays into untracked artifacts; with it, every sub-system has evidence, memory, a retrospective, and (going forward) a pre-review — and the verifier fails any entry that skips them.",
   "change_rule": "Appending an enrollment is the lifecycle operating. Removing or reclassifying one is retirement — Atropos discipline (supersession recorded, never erased), via CHANGE-PROTOCOL.",
