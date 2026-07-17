@@ -1,0 +1,43 @@
+{
+  "run": "daedalus-corpus-review-1-workshop (next-phase evaluation, Iliad lifecycle; parameterized harness)",
+  "mode": "live",
+  "candidate": "docs/runs/daedalus-corpus-review-1/approach-candidate.md",
+  "specs": [
+    "docs/daedalus-methodology.md"
+  ],
+  "state": "converged-for-submission",
+  "reason": "all-objections-accounted",
+  "terminal": "submit",
+  "rounds": 2,
+  "final_candidate_ref": "sha256:1b2043e59a3ca328e071d43c2bcc0748dcfd79e4d6abdcb284f9deb5016f9ffa",
+  "creation_lineage": [
+    {
+      "seat": "claude",
+      "round": 1,
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011Cd7xcxFAmcHgFJtQ95vmH"
+    },
+    {
+      "seat": "codex",
+      "round": 1,
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2ftQCPj8rVWejzKORuKb9huGXHfz"
+    },
+    {
+      "seat": "codex",
+      "round": 2,
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2fwhrjhk5MAZ6aNY35Uu7TVVAPwd"
+    },
+    {
+      "seat": "claude",
+      "round": 2,
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011Cd7y6w6VEU7TTNcgEPK9U"
+    }
+  ]
+}
