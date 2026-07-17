@@ -1,0 +1,31 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "pre-review-2026-07-17-slice-7",
+  "note": "Pre-review for Clotho slice 7 (Phase 1 closure) per the amended lifecycle.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "clotho slice 7 (branch institutional-memory-role-modules, PR #126)",
+  "next_phase_workshop": "docs/runs/clotho-slice7-daedalus/matured-approach.md (LIVE workshop, TWO rounds: 9 objections raised r1, all resolved r2, converged-for-submission; lineage claude:1 msg_… / codex:1 chatcmpl-… / codex:2 chatcmpl-E2dUgAVKoD17rkkQBMvWYY32Sf8rm / claude:2 msg_011Cd7m9vafxPoaJZagJDhC9; key additions: path-sensitivity check before every history move — living-verifier paths are never moved; writer boundaries hardened)",
+  "model_review": {
+    "baseline": "docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-17.json (unchanged same-day; both seats proven live again — first multi-round workshop of the lifecycle)",
+    "seats": { "claude": "claude-fable-5", "codex": "gpt-5.6-sol", "build_agents": "session model (claude-opus-4-8): agent-D (docs), agent-R (reproduction)" },
+    "newly_available_models_considered": ["none since the same-day review"],
+    "seat_changes_proposed": []
+  },
+  "capability_review": {
+    "task_loadout_read": "docs/institutional-memory/loadout/TASK-LOADOUTS/task-7.json",
+    "prior_retrospectives_read": ["docs/institutional-memory/iliad/RETROSPECTIVES/slice-6.json", "docs/institutional-memory/iliad/RETROSPECTIVES/slice-5.json"],
+    "optimizations_adopted": [
+      "parallel split per evaluations #2/#3: agent-D (STATUS/ROADMAP/history moves) + agent-R (self-weave reproduction) — disjoint writers; integration executes the evidence AFTER housekeeping merges (clause ordering)",
+      "renderer DEFERRED: the clotho/memory README renderer is an OPEN-QUESTIONS candidate, not clause-mandated — slice-7 diff stays within the clause's allowed set",
+      "path-sensitivity discipline for history moves (the workshop's round-1 objection harvest) — living-verifier paths (superseded plans re-hashed by CURRENT-AUTHORITY/verify-contracts) are never moved"
+    ],
+    "optimizations_deferred_with_reason": [
+      "README renderer + drift gate: post-Phase-1 lifecycle run (OPEN-QUESTIONS candidate; not in the frozen clause)"
+    ],
+    "missing_external_capabilities": [],
+    "capability_packets_required": false
+  },
+  "entry_ritual": "docs/runs/clotho-impl-slice-7/reader-validation-artifact.json"
+}

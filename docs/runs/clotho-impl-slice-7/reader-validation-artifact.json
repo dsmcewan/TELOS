@@ -1,0 +1,72 @@
+{
+  "gate": "comprehension-gate",
+  "component": "clotho",
+  "reader": "claude-opus-4-8 (implementer/integrator, slice 7 — PR #126 session)",
+  "active_authority": {
+    "plan": "docs/runs/clotho-daedalus-delta14/matured-plan-v15.md",
+    "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+    "authorization": "authz-008"
+  },
+  "plan_hash_verified": true,
+  "authority_resolved": "authz-008",
+  "superseded_artifacts_excluded": true,
+  "comprehension_checks": {
+    "passed": 10,
+    "failed": 0,
+    "checks": [
+      {
+        "id": "resolved_active_plan",
+        "ok": true,
+        "detail": "reader.resolved_plan_ref=sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3 expected active sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3"
+      },
+      {
+        "id": "resolved_active_authorization",
+        "ok": true,
+        "detail": "reader.resolved_authorization=authz-008 expected authz-008"
+      },
+      {
+        "id": "queries_bound_to_active_plan",
+        "ok": true,
+        "detail": "queries.governing_authority.plan_ref=sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3 expected active sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3"
+      },
+      {
+        "id": "excluded_superseded",
+        "ok": true,
+        "detail": "all superseded authorizations excluded"
+      },
+      {
+        "id": "answer:self-weave-output-included",
+        "ok": true,
+        "detail": "match [anchor: {\"decision\":\"D8\"}]"
+      },
+      {
+        "id": "answer:clotho-proves-loader-containment",
+        "ok": true,
+        "detail": "match [anchor: {\"non_claim\":\"no-loader-containment\",\"amendments\":[\"AM-35\",\"AM-41\"]}]"
+      },
+      {
+        "id": "answer:evidence-verifies-from-committed-bytes",
+        "ok": true,
+        "detail": "match [anchor: {\"task\":\"7\",\"decision\":\"D34\"}]"
+      },
+      {
+        "id": "invariant_read:d8-self-weave-exclusion",
+        "ok": true,
+        "detail": "reader did not acknowledge invariant d8-self-weave-exclusion"
+      },
+      {
+        "id": "invariant_read:d34-publication-time-drift-abort",
+        "ok": true,
+        "detail": "reader did not acknowledge invariant d34-publication-time-drift-abort"
+      },
+      {
+        "id": "non_claim_read:no-loader-containment",
+        "ok": true,
+        "detail": "reader did not acknowledge non-claim no-loader-containment"
+      }
+    ]
+  },
+  "unresolved_contradictions": [],
+  "result": "COMPREHENSION_PASSED",
+  "implementation_authority": "GRANTED"
+}
