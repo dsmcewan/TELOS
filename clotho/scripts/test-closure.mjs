@@ -314,4 +314,41 @@ const closureOf = (root, allowExternal = new Set()) =>
   assert.ok(PERMITTED_EXTERNAL_CLOSURE_FILES.includes("merkle-dag/vendor.mjs"));
 }
 
+// ---- 12. DIRECT real-repo closure equality (derived list shown on failure) ---
+// Beyond the boolean inventoryMatches harness, assert the exact derived closures
+// so a reviewer sees the real-repo fixed point directly.
+{
+  const allow = new Set(PERMITTED_EXTERNAL_CLOSURE_FILES);
+  const derive = (rel) => deriveAcceptedClosure(path.join(REPO_ROOT, ...rel.split("/")), { repoRoot: REPO_ROOT, allowExternal: allow });
+
+  const gitClosure = derive("clotho/weavers/git.mjs");
+  assert.deepEqual(gitClosure, ["clotho/registry.mjs", "clotho/weavers/git.mjs"],
+    "git.mjs closure (derived: " + JSON.stringify(gitClosure) + ")");
+
+  const codeClosure = derive("clotho/weavers/code.mjs");
+  assert.deepEqual(codeClosure, ["clotho/registry.mjs", "clotho/weavers/code.mjs", "clotho/weavers/util.mjs"],
+    "code.mjs closure (derived: " + JSON.stringify(codeClosure) + ")");
+
+  // registry.mjs imports only node:crypto, so its OWN accepted-relative closure is
+  // exactly itself — proving the git/code inventories are the genuine recursive
+  // fixed point, not an untested coincidence.
+  const regClosure = derive("clotho/registry.mjs");
+  assert.deepEqual(regClosure, ["clotho/registry.mjs"],
+    "registry.mjs is a closure leaf (derived: " + JSON.stringify(regClosure) + ")");
+}
+
+// ---- 13. require-style edge to a non-.mjs target is fatal (extension rule) ----
+// test-util proves require('./x.cjs') / module.require('./x.cjs') is a recognized
+// literal load SITE; here we pin what the closure RESOLVER does with that site — a
+// non-.mjs target is a FATAL ambiguous-extension, never an edge to a .cjs file.
+{
+  for (const form of ['require("./x.cjs")', 'module.require("./x.cjs")']) {
+    const root = mkRepo({ "clotho/entry.mjs": `export const r = ${form};\n`, "clotho/x.cjs": "module.exports = 1;\n" });
+    try {
+      assert.throws(() => closureOf(root), /ambiguous-extension/,
+        `literal ${form} of a non-.mjs target is fatal ambiguous-extension`);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  }
+}
+
 console.log("test-closure: all assertions passed");

@@ -429,4 +429,29 @@ import {
   assert.ok(comp.warnings.length >= 1);
 }
 
+// ---- 12. accounting is NOT reachable from the iterable (D26 driver-held only) --
+// The weaver receives ONLY `source`; the accounting accessor is returned
+// separately to the driver. Prove the weaver can never see or report counts:
+// neither `source` nor its iterator exposes the accessor or the counts via any
+// own (name- or symbol-keyed) property.
+{
+  const { source, accounting } = makeCountedSource("inv", ["a", "b"]);
+  const acctShape = accounting();
+  const probes = [source, source[Symbol.iterator]()]; // creating the iterator does not advance it
+  for (const obj of probes) {
+    for (const key of [...Object.getOwnPropertyNames(obj), ...Object.getOwnPropertySymbols(obj)]) {
+      const val = obj[key];
+      assert.notEqual(val, accounting, `own key ${String(key)} must not expose the accounting accessor`);
+      if (val && typeof val === "object") {
+        assert.notDeepEqual(val, acctShape, `own key ${String(key)} must not leak the accounting counts`);
+      }
+    }
+  }
+  // the counts never leaked even after creating the iterator
+  assert.equal(accounting().observed_count, 0);
+  assert.equal(typeof source.accounting, "undefined");
+  assert.equal(typeof source.observed_count, "undefined");
+  assert.equal(typeof source.inspected, "undefined");
+}
+
 console.log("test-util: all assertions passed");
