@@ -43,3 +43,14 @@ minor-fix backlog (`docs/runs/clotho-impl-slice-4a/DEFERRED-MINOR-FIXES.md`). Ne
 `clotho/memory/comprehension-queries.json`, and pass
 `docs/institutional-memory/comprehension-gate.mjs`. You have no implementation authority
 until it exits 0.
+
+**Design substrate for pending tasks (4b–7).** The frozen v15 scope for the not-yet-built
+tasks is captured machine-first — `status: SPECIFIED-PENDING-IMPLEMENTATION` (authority
+v15/authz-008, oracle pending): decisions (`DECISIONS/task-4b-decisions.md`,
+`task-5-decisions.md`, `task-6-7-decisions.md`), contracts (`CONTRACTS/coverage-schema.json`,
+`verified-by-provenance.json`, `discharges-matrix.json`), invariants (the `d25-*`, `d31-*`,
+`d35-*`, `d34-*`, `d10-*`, `d8-*` entries in `INVARIANTS.json`), and per-task comprehension
+queries (`comprehension-queries.{4b,5,6,7}.json`). To implement one of these tasks: load its
+records, pass its comprehension gate, then write code until each `becomes_normative_when`
+oracle passes — at which point the record flips to `NORMATIVE-CURRENT`. This is
+documentation-first: the contract is the intent; the code proves conformance.

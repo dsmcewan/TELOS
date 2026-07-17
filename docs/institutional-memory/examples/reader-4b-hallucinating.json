@@ -1,0 +1,17 @@
+{
+  "note": "A Task 4b implementer that fell into the recurring traps: put the test-file blob on a command-inferred edge (D25 violation), reused the doc-weaver's map (D31 violation), and thought the test-weaver runs commands. Gate DENIES.",
+  "reader": "example-4b-hallucinating-reader",
+  "resolved_plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+  "resolved_authorization": "authz-008",
+  "excluded_superseded": ["authz-004", "authz-005", "authz-006", "authz-007"],
+  "invariants_read": ["d25-command-inferred-provenance", "d31-independent-contract-files"],
+  "non_claims_read": ["test-weaver-executes-no-command"],
+  "answers": {
+    "command-inferred-source-ref": "test-file-blob",
+    "import-derived-source-ref": "test-file-blob",
+    "ledger-reuses-doc-map": true,
+    "ledger-consumes-contract-files-when-doc-skipped": false,
+    "test-weaver-executes-command": true,
+    "obligation-clause-discharge-requires": "any-partial-reference"
+  }
+}

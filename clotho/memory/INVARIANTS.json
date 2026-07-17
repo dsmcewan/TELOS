@@ -49,5 +49,62 @@
     "oracle": { "test": "clotho/scripts/test-closure.mjs (sections 1 and 12)", "source_of_truth": "clotho/inventory.mjs#WEAVER_IMPL_FILES + clotho/weavers/util.mjs#deriveAcceptedClosure" },
     "normativity": "NORMATIVE",
     "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "d25-command-inferred-provenance",
+    "task": "4b",
+    "statement": "A verified-by edge inferred from a package check/test command carries source_ref = the package.json blob (the manifest bytes evidencing execution), NOT the test file. Import-derived verified-by keeps the test file's own blob. No command is executed.",
+    "authority": { "decision": "D25", "authorization": "authz-008" },
+    "contract": "clotho/memory/CONTRACTS/verified-by-provenance.json",
+    "normativity": "ADVISORY",
+    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
+    "becomes_normative_when": "clotho/scripts/test-test.mjs proves both provenance cases by exact-output tests."
+  },
+  {
+    "id": "d31-independent-contract-files",
+    "task": "4b",
+    "statement": "The ledger weaver builds its current-contract clause-resolution index SOLELY from its own counted contract-files source; it receives NO map from the doc-weaver and performs no uncounted fallback read. The iterator is consumed and exhausted whenever the ledger weaver executes — even when the doc-weaver is skipped, when no obligation produces a clause edge, and when every reference is stale.",
+    "authority": { "decision": "D31", "authorization": "authz-008" },
+    "contract": "clotho/memory/CONTRACTS/discharges-matrix.json",
+    "normativity": "ADVISORY",
+    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
+    "becomes_normative_when": "clotho/scripts/test-ledger-weaver.mjs proves clause resolution independent of any doc-weaver product, with full counted contract-files consumption recorded."
+  },
+  {
+    "id": "d35-closed-coverage-schema",
+    "task": "5",
+    "statement": "The query interface exposes a closed normative coverage field: coverage is exactly \"verified\"|\"unverified\", never optional, never defaulting to verified; coverageUnknown: [] is legal ONLY under a verified manifest proving every consulted producer executed; any other/contradictory value is a test failure.",
+    "authority": { "decisions": ["D35", "AM-37", "D11"], "authorization": "authz-008" },
+    "contract": "clotho/memory/CONTRACTS/coverage-schema.json",
+    "normativity": "ADVISORY",
+    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
+    "becomes_normative_when": "clotho/scripts/test-query.mjs proves the closed coverage schema + coverageUnknown legality + closed-schema rejection."
+  },
+  {
+    "id": "d34-publication-time-drift-abort",
+    "task": "5",
+    "statement": "At publication time the driver RE-DERIVES the weave, re-reads and re-hashes the sources, exact-compares against the assembled result, and ABORTS on any drift before atomic no-replace publication (D28). The coverage claim is 'the supported statically-declared dependency model at publication time', never a claim of covering every module.",
+    "authority": { "decisions": ["D34", "AM-38", "D28"], "authorization": "authz-008" },
+    "normativity": "ADVISORY",
+    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
+    "becomes_normative_when": "clotho/scripts/test-weave.mjs proves publication-time re-derivation + hash recheck + abort-on-drift + atomic no-replace publish."
+  },
+  {
+    "id": "d10-am39-producer-attribution",
+    "task": "5",
+    "statement": "Before appending any weaver result the driver requires every edge to carry asserted_by == the invoked weaver id and assertion_status == deterministic-extraction, and every warning.weaver == that same id; a result attributing output to another weaver, human, or model is rejected and the weave aborts.",
+    "authority": { "decisions": ["D10", "AM-39"], "authorization": "authz-008" },
+    "normativity": "ADVISORY",
+    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
+    "becomes_normative_when": "clotho/scripts/test-weave.mjs proves producer==attribution rejection of mismatched edges/warnings."
+  },
+  {
+    "id": "d8-self-weave-exclusion",
+    "task": "7",
+    "statement": "The self-weave output directory (docs/runs/clotho-self-weave/) is excluded from EVERY weaver's inventory (D8), so weaving TELOS never ingests its own prior output.",
+    "authority": { "decision": "D8", "authorization": "authz-008" },
+    "normativity": "ADVISORY",
+    "status": "SPECIFIED-PENDING-IMPLEMENTATION",
+    "becomes_normative_when": "docs/runs/clotho-self-weave/run.mjs + clotho/scripts/test-flagship.mjs prove the self-weave exclusion and reproduction from committed bytes."
   }
 ]

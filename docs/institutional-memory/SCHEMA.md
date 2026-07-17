@@ -46,10 +46,20 @@ projection** of it, not the source.
 ## Status / normativity taxonomy (closed set)
 
 `NORMATIVE-CURRENT` · `SUPERSEDED` (with `superseded_by` + `must_not_govern_new_work:true`)
-· `MODEL-PROPOSAL` · `REJECTED-ALTERNATIVE` · `OPEN-QUESTION` ·
-`HUMAN-AUTHORIZED-EXCEPTION` · `ADVISORY`. **Preserve rejected alternatives** so a later
-model does not rediscover them as novel; a superseded plan must not look like a second
-valid plan merely because it still exists in the repo.
+· `SPECIFIED-PENDING-IMPLEMENTATION` · `MODEL-PROPOSAL` · `REJECTED-ALTERNATIVE` ·
+`OPEN-QUESTION` · `HUMAN-AUTHORIZED-EXCEPTION` · `ADVISORY`. **Preserve rejected
+alternatives** so a later model does not rediscover them as novel; a superseded plan
+must not look like a second valid plan merely because it still exists in the repo.
+
+**`SPECIFIED-PENDING-IMPLEMENTATION`** — the design-substrate state. The rule is FROZEN
+and authority-anchored (a plan `sha256:` + `authz-N` + a decision id), but the CODE DOES
+NOT EXIST YET, so it has NO passing oracle. Such a record is NOT `NORMATIVE` and MUST
+carry a **`becomes_normative_when`** field naming the oracle (the test file) that will
+exist once the task is implemented. This is documentation-first: the contract is the
+intent an implementer of the task builds against — the implementer loads it, answers the
+task's comprehension queries, and writes code until the record flips to `NORMATIVE-CURRENT`
+with a passing oracle. `verify-contracts.mjs` exempts `SPECIFIED-PENDING-IMPLEMENTATION`
+records from the has-passing-oracle rule but requires a nonempty `becomes_normative_when`.
 
 ## Record set layout
 

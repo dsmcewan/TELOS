@@ -64,15 +64,36 @@ try {
   check("contract:loader-safe-exports==LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS", deepEq(contract.loader_capable_builtin_safe_exports, inv.LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS), "compared canonical JSON");
 } catch (e) { check("contract:loader-safe-exports", false, e.message); }
 
-// ---- 3. every NORMATIVE contract declares a nonempty oracle --------------------
-const CONTRACT_FILES = ["package-roots", "inventory-id-table", "loader-safe-exports", "source-profile", "git-allowlist"];
+// ---- 3. discipline: NORMATIVE has an oracle; SPECIFIED-PENDING has becomes_normative_when
+const CONTRACT_FILES = [
+  "package-roots", "inventory-id-table", "loader-safe-exports", "source-profile", "git-allowlist",
+  "coverage-schema", "verified-by-provenance", "discharges-matrix"
+];
 for (const name of CONTRACT_FILES) {
   try {
-    const contract = readJson(`clotho/memory/CONTRACTS/${name}.json`);
-    const hasOracle = contract.normativity === "NORMATIVE" ? (contract.oracle && Object.keys(contract.oracle).length > 0) : true;
-    check(`discipline:normative-has-oracle(${name})`, !!hasOracle, `${contract.normativity} oracle=${contract.oracle ? "present" : "MISSING"}`);
-  } catch (e) { check(`discipline:normative-has-oracle(${name})`, false, e.message); }
+    const c = readJson(`clotho/memory/CONTRACTS/${name}.json`);
+    if (c.status === "SPECIFIED-PENDING-IMPLEMENTATION") {
+      const ok = typeof c.becomes_normative_when === "string" && c.becomes_normative_when.length > 0;
+      check(`discipline:pending-has-becomes-normative-when(${name})`, ok, ok ? `becomes NORMATIVE when: ${c.becomes_normative_when}` : "SPECIFIED-PENDING but no becomes_normative_when");
+    } else {
+      const hasOracle = c.normativity === "NORMATIVE" ? (c.oracle && Object.keys(c.oracle).length > 0) : true;
+      check(`discipline:normative-has-oracle(${name})`, !!hasOracle, `${c.normativity} oracle=${c.oracle ? "present" : "MISSING"}`);
+    }
+  } catch (e) { check(`discipline:contract(${name})`, false, e.message); }
 }
+
+// ---- 3b. same discipline over the component INVARIANTS ------------------------
+try {
+  for (const inv of readJson("clotho/memory/INVARIANTS.json")) {
+    if (inv.status === "SPECIFIED-PENDING-IMPLEMENTATION") {
+      const ok = typeof inv.becomes_normative_when === "string" && inv.becomes_normative_when.length > 0;
+      check(`discipline:pending-invariant(${inv.id})`, ok, ok ? `becomes NORMATIVE when: ${inv.becomes_normative_when}` : "SPECIFIED-PENDING but no becomes_normative_when");
+    } else if (inv.normativity === "NORMATIVE") {
+      const ok = inv.oracle && Object.keys(inv.oracle).length > 0;
+      check(`discipline:normative-invariant(${inv.id})`, !!ok, ok ? "oracle present" : "NORMATIVE but no oracle");
+    }
+  }
+} catch (e) { check("discipline:invariants", false, e.message); }
 
 // ---- report -------------------------------------------------------------------
 for (const r of results) console.log(`  [${r.ok ? "PASS" : "FAIL"}] ${r.id}: ${r.detail}`);
