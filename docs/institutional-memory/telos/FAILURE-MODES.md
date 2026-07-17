@@ -16,7 +16,7 @@ note: How the TELOS role fails, on purpose. Every mode is a designed, fail-close
 | **Cross-seat id reuse (signed mode)** | two seats carry the same `response_id` | blocked — no seat borrows another's identity |
 | **NOT_AUTHORIZED** | any of the above at authorization scope | run recorded and preserved (`authorization.status: NOT_AUTHORIZED`); superseded later, never erased |
 | **Authority drift** | active plan bytes no longer hash to `CURRENT-AUTHORITY.json` | the comprehension gate refuses to certify ANY reader (`GATE_ERROR: AUTHORITY DRIFT`) |
-| **Missing advisory key** | XAI/GEMINI key absent | **not a failure** — grok/gemini are advisory; the run proceeds and the gate is unaffected |
+| **Missing advisory key** | XAI/GEMINI key absent | **not a failure** — grok/gemini are advisory; the gate passes, surfacing at most an advisory warning (`No Grok advisory packet present.`) — visible, never blocking |
 
 **Interpretation rule for a future model:** a block is the system working. Escalate
 via `docs/institutional-memory/CHANGE-PROTOCOL.md` (The Eye) — do not weaken the

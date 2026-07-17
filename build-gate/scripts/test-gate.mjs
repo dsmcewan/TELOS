@@ -113,6 +113,43 @@ assert.ok(
   "unresolved Grok hard stops should block the gate"
 );
 
+// Advisory seats are never gate-required: with ONLY the required trio's packets —
+// no grok/gemini packet, no XAI/GEMINI key in the environment — the gate passes
+// and nothing demands an advisory seat. (A PRESENT grok packet with unresolved
+// hard stops still blocks, per the case above — absence and dissent differ.)
+{
+  const savedXai = process.env.XAI_API_KEY;
+  const savedGemini = process.env.GEMINI_API_KEY;
+  delete process.env.XAI_API_KEY;
+  delete process.env.GEMINI_API_KEY;
+  const advisoryAbsentReport = validateRecords(
+    {
+      build_id: "advisory-absent-demo",
+      use_case: "advisory-absent",
+      objective: "Show missing advisory seats never block.",
+      required_docs: ["doc-a"],
+      write_targets: ["shared/Coordination/example.md"],
+      protected_paths: []
+    },
+    [
+      approvalPacket("advisory-absent-demo", "advisory-absent", "claude", ["doc-a"]),
+      approvalPacket("advisory-absent-demo", "advisory-absent", "agy", []),
+      approvalPacket("advisory-absent-demo", "advisory-absent", "codex", [])
+    ]
+  );
+  assert.equal(advisoryAbsentReport.gate_status, "pass",
+    "the gate passes on the required trio alone — no advisory packet, no advisory key");
+  const advisoryBlockers = advisoryAbsentReport.blockers.filter((m) => /\bgrok\b|\bgemini\b/i.test(m));
+  assert.deepEqual(advisoryBlockers, [],
+    "no BLOCKER demands an advisory (grok/gemini) seat");
+  assert.ok(
+    (advisoryAbsentReport.warnings || []).some((w) => w.includes("No Grok advisory packet present.")),
+    "advisory absence is SURFACED as a warning — visible, never blocking"
+  );
+  if (savedXai !== undefined) process.env.XAI_API_KEY = savedXai;
+  if (savedGemini !== undefined) process.env.GEMINI_API_KEY = savedGemini;
+}
+
 const cliPass = spawnSync(
   process.execPath,
   ["gate.mjs", "validate", "examples/pass/dossier.json", "examples/pass/packets"],

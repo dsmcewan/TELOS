@@ -370,6 +370,78 @@ try {
   }
 } catch (e) { check("loadout:task-reviews", false, e.message); }
 
+// ---- 7d. loadout: env-surface — the spine's ambient context is CLOSED ----------
+// Scope comes from the AM-40 package-roots contract (the scan scope is itself a
+// known JSON quantity). Every process.env read in every spine .mjs file must be
+// a contract name, match a declared pattern, or sit in an enumerated file with a
+// recorded justification — and bidirectionally: contract entries no source uses
+// are phantom surface and fail too.
+try {
+  const c = readJson("docs/institutional-memory/loadout/CONTRACTS/env-surface.json");
+  const roots = readJson("clotho/memory/CONTRACTS/package-roots.json").package_roots;
+  const nameSet = new Set(c.names);
+  const prefixes = c.patterns.map((p) => p.prefix);
+  const dynFiles = new Set(c.dynamic_read_files.map((d) => d.file));
+  const wholeFiles = new Set(c.whole_env_files.map((d) => d.file));
+  const usedNames = new Set(), usedPrefixes = new Set(), usedDynFiles = new Set(), usedWholeFiles = new Set();
+  const violations = [];
+  let reads = 0, filesScanned = 0;
+
+  const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((d) => {
+    const p = path.join(dir, d.name);
+    if (d.isDirectory()) return d.name === "node_modules" ? [] : walk(p);
+    return d.name.endsWith(".mjs") ? [p] : [];
+  });
+
+  for (const root of roots) {
+    for (const file of walk(path.join(ROOT, root))) {
+      filesScanned++;
+      const rel = path.relative(ROOT, file).replace(/\\/g, "/");
+      const src = readFileSync(file, "utf8");
+      // Read forms, most specific first: .NAME | ["NAME"] | ["PREFIX" + expr] |
+      // [`PREFIX${expr}`] | [expr] | bare (whole-object).
+      const re = /process\.env(\.([A-Za-z_$][A-Za-z0-9_$]*)|\[\s*["']([A-Za-z_][A-Za-z0-9_]*)["']\s*\]|\[\s*["']([A-Za-z_][A-Za-z0-9_]*)["']\s*\+|\[\s*`([A-Za-z_][A-Za-z0-9_]*)\$\{|\[)?/g;
+      let m;
+      while ((m = re.exec(src)) !== null) {
+        reads++;
+        const line = src.slice(0, m.index).split("\n").length;
+        const name = m[2] && !m[2].includes("$") ? m[2] : m[3];
+        const prefixCand = m[4] || m[5];
+        if (name) {
+          const prefix = prefixes.find((p) => name.startsWith(p));
+          if (prefix) usedPrefixes.add(prefix);
+          else if (nameSet.has(name)) usedNames.add(name);
+          else violations.push(`${rel}:${line} reads undeclared env var ${name}`);
+        } else if (prefixCand) {
+          const prefix = prefixes.find((p) => prefixCand.startsWith(p));
+          if (prefix) usedPrefixes.add(prefix);
+          else if (dynFiles.has(rel)) usedDynFiles.add(rel);
+          else violations.push(`${rel}:${line} computed env name with undeclared prefix ${prefixCand}`);
+        } else if (m[1] === "[" || (m[2] && m[2].includes("$"))) {
+          if (dynFiles.has(rel)) usedDynFiles.add(rel);
+          else violations.push(`${rel}:${line} dynamic process.env read in unenumerated file`);
+        } else {
+          if (wholeFiles.has(rel)) usedWholeFiles.add(rel);
+          else violations.push(`${rel}:${line} whole-object process.env use in unenumerated file`);
+        }
+      }
+    }
+  }
+
+  check("loadout:env-surface-closed", violations.length === 0,
+    violations.length ? violations.slice(0, 5).join(" | ") : `${reads} env references across ${filesScanned} spine files, all within the contract`);
+  const phantomNames = c.names.filter((n) => !usedNames.has(n));
+  check("loadout:env-surface-no-phantom-names", phantomNames.length === 0,
+    phantomNames.length ? `contract names no source reads: ${phantomNames.join(", ")}` : `${usedNames.size}/${c.names.length} names in live use`);
+  const phantomPrefixes = prefixes.filter((p) => !usedPrefixes.has(p));
+  check("loadout:env-surface-no-phantom-patterns", phantomPrefixes.length === 0,
+    phantomPrefixes.length ? `unused patterns: ${phantomPrefixes.join(", ")}` : "every declared pattern in live use");
+  const staleDyn = [...dynFiles].filter((f) => !usedDynFiles.has(f));
+  const staleWhole = [...wholeFiles].filter((f) => !usedWholeFiles.has(f));
+  check("loadout:env-surface-no-stale-allowances", staleDyn.length === 0 && staleWhole.length === 0,
+    staleDyn.length || staleWhole.length ? `stale allowances: ${[...staleDyn, ...staleWhole].join(", ")}` : "every file allowance corresponds to a real use");
+} catch (e) { check("loadout:env-surface", false, e.message); }
+
 // ---- report -------------------------------------------------------------------
 for (const r of results) console.log(`  [${r.ok ? "PASS" : "FAIL"}] ${r.id}: ${r.detail}`);
 const failed = results.filter((r) => !r.ok);
