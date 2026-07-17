@@ -18,5 +18,23 @@
     "id": "no-orchestrator-yet",
     "statement": "Task 4a commits the git and code weaver inventories/closures only (D17/AM-17). The test/doc/ledger weavers, the orchestrator inventory, atomic publication (D20/D28), and D34 re-derivation are LATER tasks (4b/5), not present or claimed here.",
     "authority": { "decisions": ["D17", "AM-17"], "authorization": "authz-008" }
+  },
+  {
+    "id": "test-weaver-executes-no-command",
+    "task": "4b",
+    "statement": "The test-weaver executes NO command. Package check/test command strings are parsed only as text to infer verified-by edges; nothing is run.",
+    "authority": { "decision": "D25", "authorization": "authz-008" }
+  },
+  {
+    "id": "coverage-never-defaults-verified",
+    "task": "5",
+    "statement": "The coverage field is NEVER optional and NEVER defaults to 'verified'. Any non-executed producer state means coverage-unknown; coverage: 'verified' is asserted only when a verified manifest proves the consulted producers executed at publication time.",
+    "authority": { "decisions": ["D35", "AM-37"], "authorization": "authz-008" }
+  },
+  {
+    "id": "flagship-not-total-coverage",
+    "task": "6",
+    "statement": "The flagship proves the hand-audited, Eye-reviewed expected 8-group fact set plus closure equality (D33/AM-34 test 23); it does NOT prove Clotho covers every module JavaScript could reach. Unmatched neighborhood facts are exposed in the review set (D3) without being scored.",
+    "authority": { "decisions": ["D3", "D33", "AM-34"], "authorization": "authz-008" }
   }
 ]

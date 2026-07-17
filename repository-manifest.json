@@ -41,7 +41,16 @@
         "does not prove loader analysis or containment",
         "no orchestrator / test / doc / ledger weaver yet (tasks 4b/5)"
       ],
-      "deferred_backlog": "docs/runs/clotho-impl-slice-4a/DEFERRED-MINOR-FIXES.md"
+      "deferred_backlog": "docs/runs/clotho-impl-slice-4a/DEFERRED-MINOR-FIXES.md",
+      "specified_pending": {
+        "note": "Frozen v15 tasks not yet implemented. Their machine-first design substrate (contracts, invariants, decisions, comprehension queries) exists under clotho/memory/ with status SPECIFIED-PENDING-IMPLEMENTATION; an implementer loads it and must pass the per-task comprehension gate before writing code. Claims are grade:cited (frozen spec), not executable (no code yet).",
+        "tasks": [
+          { "task": "4b", "subject": "test/doc/ledger weavers", "decisions": ["D25", "D31", "duplicate-heading-path"], "queries": "clotho/memory/comprehension-queries.4b.json", "grade": "cited" },
+          { "task": "5", "subject": "queries + complete-weave driver + advisory invariant", "decisions": ["D35", "AM-37", "D34", "AM-38", "D10", "AM-39", "D26", "D29", "D19", "D28"], "queries": "clotho/memory/comprehension-queries.5.json", "grade": "cited" },
+          { "task": "6", "subject": "flagship acceptance + skipped-source coverage failure", "decisions": ["D3", "D33", "AM-34"], "queries": "clotho/memory/comprehension-queries.6.json", "grade": "cited" },
+          { "task": "7", "subject": "reproduction evidence + documentation", "decisions": ["D8", "D34"], "queries": "clotho/memory/comprehension-queries.7.json", "grade": "cited" }
+        ]
+      }
     },
     { "name": "build-gate", "role": null, "role_note": "implements the TELOS gate (TELOS governs review/evidence/authorization/execution); mythological ownership is not asserted for the package name per docs/mythological-vocabulary.md", "status": "in use", "purpose": "the gate (gate.mjs), per-seat HMAC signing, the council orchestrator, and the Daedalus workshop", "trust_domain": "certifies from disk + signatures + provenance, never a self-report" },
     { "name": "breakout", "role": null, "status": "in use", "purpose": "adversarial self-challenge + verdict-on-facts (verifier.mjs) and a minimal MCP stdio client", "trust_domain": "deterministic verification" },

@@ -1,0 +1,16 @@
+{
+  "note": "A Task 5 implementer that treated coverage as optional/defaulted, thought empty coverageUnknown is always legal, and skipped publication-time re-derivation. Gate DENIES.",
+  "reader": "example-5-hallucinating-reader",
+  "resolved_plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+  "resolved_authorization": "authz-008",
+  "excluded_superseded": ["authz-004", "authz-005", "authz-006", "authz-007"],
+  "invariants_read": ["d35-closed-coverage-schema", "d34-publication-time-drift-abort", "d10-am39-producer-attribution"],
+  "non_claims_read": ["coverage-never-defaults-verified"],
+  "answers": {
+    "coverage-values": ["verified", "unverified", "unknown"],
+    "coverage-optional-or-defaulted": true,
+    "empty-coverageUnknown-legality": "always-legal",
+    "publication-time-redrive-abort": false,
+    "producer-attribution-enforced": false
+  }
+}

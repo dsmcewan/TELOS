@@ -1,0 +1,23 @@
+{
+  "kind": "contract",
+  "component": "clotho",
+  "task": "5",
+  "id": "coverage-schema",
+  "title": "Closed normative coverage schema (D35/AM-37)",
+  "authority": { "decisions": ["D35", "AM-37", "D11"], "authorization": "authz-008", "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3", "eye_directive": true },
+  "coverage_enum": ["verified", "unverified"],
+  "rules": {
+    "never_optional": "The `coverage` field is NEVER optional and NEVER defaults to `verified`. blastRadius result always contains it.",
+    "coverageUnknown_under_verified": "Under `coverage: \"verified\"`, coverageUnknown lists exactly the weaver ids producing any consulted edge whose executed-state could not be confirmed.",
+    "coverageUnknown_under_unverified": "Under `coverage: \"unverified\"`, coverageUnknown conservatively contains EVERY consulted producer.",
+    "empty_coverageUnknown_legality": "coverageUnknown: [] is legal ONLY when coverage is \"verified\" AND the verified manifest proves every consulted producer `executed`. `unverified` with empty coverageUnknown while any producer was consulted is a test failure.",
+    "closed_schema_rejection": "A `coverage` value that is missing, not in the enum, or contradictory (e.g. unverified with empty coverageUnknown while producers were consulted) is a test failure; downstream consumers (flagship, reproduction) reject it."
+  },
+  "non_claim": "`coverage: \"verified\"` asserts the consulted producers executed at publication time (D34), NOT that Clotho covers every module JavaScript could reach.",
+  "change_rule": "Changing the coverage schema requires a plan amendment (Daedalus), TELOS re-authorization, implementation review, and updated fixtures.",
+  "oracle": null,
+  "becomes_normative_when": "clotho/scripts/test-query.mjs (Task 5) proves the closed coverage schema + coverageUnknown legality + closed-schema rejection, and verify-contracts deep-equals this enum/rules against the query implementation.",
+  "normativity": "ADVISORY",
+  "status": "SPECIFIED-PENDING-IMPLEMENTATION",
+  "must_not_govern_new_work": false
+}

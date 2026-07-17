@@ -28,7 +28,9 @@
     "accepted_slices": [
       { "task": "4a", "pr": 117, "merge_anchor": "git:f12e5d2", "reviewed_head": "git:0e73ca6", "note": "accepted with a deferred minor-fix backlog per The Eye's stopping rule", "deferred_backlog": "docs/runs/clotho-impl-slice-4a/DEFERRED-MINOR-FIXES.md" }
     ],
-    "next_slice": "4b"
+    "next_slice": "4b",
+    "specified_pending_slices": ["4b", "5", "6", "7"],
+    "specified_pending_note": "Frozen in v15 (authz-008); machine-first design substrate under clotho/memory/ (status SPECIFIED-PENDING-IMPLEMENTATION). An implementer loads it and passes clotho/memory/comprehension-queries.<task>.json via the comprehension gate before writing code; each record flips to NORMATIVE-CURRENT when its becomes_normative_when oracle passes."
   },
   "amendments_in_force": [
     { "id": "AM-40", "subject": "PACKAGE_ROOTS = TELOS spine (5), explicit exclusion of 3 products", "integrated_in": "v13", "authorized_by": "authz-006", "doc": "docs/clotho-phase-1-plan-amendments-12.md" },
