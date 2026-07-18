@@ -128,3 +128,33 @@ button[aria-pressed="true"], button.primary { color: #fff; border-color: var(--a
 .node-detail .metrics span { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.1em; color: var(--fg-faint); text-transform: uppercase; }
 .node-detail .metrics b { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .node-detail blockquote { font-size: 0.84rem; color: var(--fg-muted); font-style: italic; margin: 0.4rem 0 0.7rem; }
+/* ---- projected HTML labels (paint only) — award-crisp type over the weave ---- */
+.gl-labels { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.gl-label {
+  position: absolute; transform: translate(-50%, -145%);
+  display: inline-flex; align-items: baseline; gap: 0.45rem; white-space: nowrap;
+  font-family: var(--font-display); font-weight: 600; font-size: 0.92rem; letter-spacing: 0.01em;
+  color: var(--fg);
+  /* halo backdrop so threads never cross the text */
+  background: color-mix(in srgb, var(--page) 62%, transparent);
+  backdrop-filter: blur(3px);
+  padding: 0.18rem 0.55rem; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--edge-strong) 60%, transparent);
+  text-shadow: 0 1px 8px rgba(0,0,0,0.45);
+}
+.gl-label .gl-metric {
+  font-family: var(--font-mono); font-weight: 500; font-size: 0.66rem; letter-spacing: 0.06em;
+  color: var(--accent);
+}
+.gl-label.sel { border-color: var(--accent); box-shadow: var(--glow-sm); }
+
+/* ---- light-theme pass for the graph view (deliberate, not inverted) ---- */
+:root[data-theme="light"] .hud { background: rgba(251,252,254,0.72); border-color: var(--edge); box-shadow: 0 12px 44px rgba(51,65,85,0.18); }
+:root[data-theme="light"] .gl-label { text-shadow: none; background: color-mix(in srgb, #ffffff 70%, transparent); }
+:root[data-theme="light"] .vignette { background: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(51,65,85,0.18) 100%); }
+:root[data-theme="light"] .topbar { background: linear-gradient(180deg, rgba(222,226,231,0.92), rgba(222,226,231,0.55)); border-bottom-color: var(--edge); }
+:root[data-theme="light"] .node-row.sel, :root[data-theme="light"] .node-row[aria-pressed="true"] { color: var(--fg); background: #ffffff; }
+:root[data-theme="light"] .node-row.sel .node-label { color: var(--fg); }
+:root[data-theme="light"] button, :root[data-theme="light"] a.btn { background: var(--surface-raised); }
+:root[data-theme="light"] button[aria-pressed="true"], :root[data-theme="light"] button.primary { color: #fff; }
+:root[data-theme="light"] button[aria-pressed="true"], :root[data-theme="light"] button.primary { background: linear-gradient(180deg, var(--accent), var(--accent-strong)); border-color: var(--accent); }

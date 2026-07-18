@@ -36,6 +36,12 @@ test("capture flagship views", async ({ page }) => {
   await page.waitForTimeout(700);
   await page.screenshot({ path: path.join(dir, "05-live-graph.png") });
 
+  // GRAPH VIEW in LIGHT THEME (deliberate light pass — LEXI red on light)
+  await page.getByTestId("cmd-TOGGLE_THEME").click();
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: path.join(dir, "07-live-graph-light.png") });
+  await page.getByTestId("cmd-TOGGLE_THEME").click();
+
   // STORY VIEW with ferrofluid knots under tension (thread pulled) — confirm the shared shader reads well
   await page.getByTestId("cmd-EXIT_GRAPH").click();
   await page.locator('[data-testid="cmd-GO_STATION"][data-index="2"]').click(); // Daedalus / reiteration
