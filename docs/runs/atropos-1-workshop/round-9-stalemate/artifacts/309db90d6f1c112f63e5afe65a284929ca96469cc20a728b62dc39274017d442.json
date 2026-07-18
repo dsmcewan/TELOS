@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "The verifier treats `active_plan.version` as the terminal authority and calls it `sha256:`-anchored, but ingestion and verification require only a non-empty version string. A fixture with valid superseded entries terminating at `v15` and an `active_plan` containing only `{version:\"v15\"}`—or containing an incorrect hash—can therefore return `consistent`. A version label is not a stable authority identifier, and later enrollment into `verify-contracts.mjs` does not make that central verifier a runtime precondition of `atropos/verify.mjs`. Require and validate the active plan's `sha256:` anchor and compose the verdict with its disk-hash resolution, or explicitly make a passing central authority-hash verification an enforced prerequisite of every `consistent` verdict.",
+        "scope": "candidate §§3–5; frozen authority-anchoring discipline"
+      },
+      {
+        "claim": "The READ-ONLY oracle does not discriminate a straightforward write-capable implementation. It restricts imports from `node:fs` and bans `node:fs/promises`, but Node accepts the equivalent bare specifiers `fs` and `fs/promises`; `import { writeFileSync } from \"fs\"` therefore escapes every stated check. It also scans the local runtime tree while permitting the runtime import of `merkle-dag/vendor.mjs`, leaving that transitive runtime module outside the claimed whole-runtime check. The oracle must normalize and check both bare and `node:` builtin specifiers and scan or content-pin every transitively reachable sanctioned local module.",
+        "scope": "candidate §5 `scripts/test-readonly.mjs`"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2yFxDwgoigYyOOMDSX0Ko6AfpNRM",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2yFxDwgoigYyOOMDSX0Ko6AfpNRM",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}

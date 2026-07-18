@@ -1,4 +1,4 @@
-# Candidate approach (rev 8) — Atropos (enrollment quest, cycle 1)
+# Candidate approach (rev 9) — Atropos (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json`.
@@ -57,10 +57,12 @@ detecting via source+membership, not by matching the (distinct) record-kind and 
   `sha256` (string `sha256:<64hex>`), `authorization` (string `authz-N`), `authz_status`
   (string ∈ {AUTHORIZED, NOT_AUTHORIZED}), `superseded_by` (non-empty string), `must_not_govern_new_work`
   (boolean, and === true), `note` (string) — an object/number/null/empty-string in any field → `inconsistent`;
-  `active_plan.version` must be a non-empty string. **unique `plan_version`**; `active_plan.version` MUST NOT also appear superseded; `must_not_govern_new_work===true`;
+  **`active_plan` must be `{version: non-empty string, sha256: sha256:<64hex>}`** (BOTH pinned — the terminal
+  authority is content-addressed by `active_plan.sha256`, so "sha256-anchored" is a checked fact, not a label).
+  **unique `plan_version`**; `active_plan.version` MUST NOT also appear superseded; `must_not_govern_new_work===true`;
   `superseded_by` resolves only to `active_plan.version` or another unique superseded `plan_version` — reject
-  self/dangling/cycles (visited-set); every chain TERMINATES at `active_plan.version` (a stable
-  `sha256:`-anchored current authority). No `SUPERSEDED` record / weave edge required (structurally inapplicable).
+  self/dangling/cycles (visited-set); every chain TERMINATES at `active_plan.version` whose `active_plan.sha256`
+  is a well-formed `sha256:<64hex>` (the content-addressed current authority). No `SUPERSEDED` record / weave edge required (structurally inapplicable).
   **This CHANGE-PROTOCOL(living)/schema tension was EXPLICITLY ESCALATED to The Eye and RULED a design-level
   applicability determination** — plan-version weave-edge/record surfaces are structurally inapplicable
   (verified fact), not a spec defect, resolved as a technical call (peer-model input), NOT a CHANGE-PROTOCOL
@@ -130,11 +132,12 @@ for The Eye).
 - `scripts/test-boundary.mjs`: source-profile boundary oracle (reused from Lachesis + its hardening).
 - **`scripts/test-readonly.mjs` (executable READ-ONLY oracle) — ALLOWLIST posture (sounder than a denylist):**
   scans ALL runtime `.mjs`/`.js`/`.cjs` recursively (excluding `scripts/`), comment-stripped, and requires:
-  (a) every `node:fs` import is a NAMED import drawn from a closed READ allowlist (`readFileSync`, `readdirSync`,
-  `realpathSync`, `statSync`, `lstatSync`, `existsSync`) — `openSync` is EXCLUDED (write-capable via its flag
-  argument, which a name scan cannot constrain); the runtime reads with `readFileSync` only; any other `node:fs`
-  named import → fail; (b) NO namespace import of `node:fs` (`import * as fs`)
-  and no `node:fs/promises` (defeats name-based checking / exposes FileHandle writers); (c) NO import of
+  (a) fs specifiers are NORMALIZED — `fs` ≡ `node:fs` and `fs/promises` ≡ `node:fs/promises` (Node accepts the
+  bare forms; the boundary oracle also bans bare imports as defense-in-depth) — and every fs import must be a
+  NAMED import drawn from a closed READ allowlist (`readFileSync`, `readdirSync`, `realpathSync`, `statSync`,
+  `lstatSync`, `existsSync`); `openSync` is EXCLUDED (write-capable via its flag argument); the runtime reads
+  with `readFileSync` only; any other fs named import → fail; (b) NO namespace import of fs (`import * as fs`)
+  and NO `fs/promises` in either form (defeats name-based checking / exposes FileHandle writers); (c) NO import of
   `node:child_process`, `node:worker_threads`, `node:vm`, `process.binding`, `process.dlopen`; (d) deny known
   GLOBAL write paths that need no import — `process.report.writeReport`, `process.report.directory`/`filename`
   assignment, `process.chdir`; (d2) **NO runtime import resolves under `scripts/`** (the excluded dev-only tree)

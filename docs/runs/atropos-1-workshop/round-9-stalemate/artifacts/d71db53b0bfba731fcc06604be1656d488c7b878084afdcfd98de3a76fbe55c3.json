@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:c210a1c837ec8746bd66b22d36b36f72e3bc4ab93ad837971086ecf1a0719bc3",
+  "output_plan_artifact_hash": "sha256:c210a1c837ec8746bd66b22d36b36f72e3bc4ab93ad837971086ecf1a0719bc3",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:f79c90570ea5cff882d4266183b5081e63a009cf83a5d5ac25ddf7d84284cfcd",
+    "provenance_key": "anthropic:msg_011Cd9WNTSenboNN4gAMwMxi"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:309db90d6f1c112f63e5afe65a284929ca96469cc20a728b62dc39274017d442",
+    "provenance_key": "openai:chatcmpl-E2yFxDwgoigYyOOMDSX0Ko6AfpNRM",
+    "bound_hash": "sha256:c210a1c837ec8746bd66b22d36b36f72e3bc4ab93ad837971086ecf1a0719bc3"
+  },
+  "objections": [
+    {
+      "claim": "The verifier treats `active_plan.version` as the terminal authority and calls it `sha256:`-anchored, but ingestion and verification require only a non-empty version string. A fixture with valid superseded entries terminating at `v15` and an `active_plan` containing only `{version:\"v15\"}`—or containing an incorrect hash—can therefore return `consistent`. A version label is not a stable authority identifier, and later enrollment into `verify-contracts.mjs` does not make that central verifier a runtime precondition of `atropos/verify.mjs`. Require and validate the active plan's `sha256:` anchor and compose the verdict with its disk-hash resolution, or explicitly make a passing central authority-hash verification an enforced prerequisite of every `consistent` verdict.",
+      "scope": "candidate §§3–5; frozen authority-anchoring discipline",
+      "objection_hash": "sha256:86b4b595f0e2d3d4090f862abf24ed40e88fa4d63c9e9826a6008c22ddfff4e0",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The READ-ONLY oracle does not discriminate a straightforward write-capable implementation. It restricts imports from `node:fs` and bans `node:fs/promises`, but Node accepts the equivalent bare specifiers `fs` and `fs/promises`; `import { writeFileSync } from \"fs\"` therefore escapes every stated check. It also scans the local runtime tree while permitting the runtime import of `merkle-dag/vendor.mjs`, leaving that transitive runtime module outside the claimed whole-runtime check. The oracle must normalize and check both bare and `node:` builtin specifiers and scan or content-pin every transitively reachable sanctioned local module.",
+      "scope": "candidate §5 `scripts/test-readonly.mjs`",
+      "objection_hash": "sha256:f9e1d3e7d7af0e193dbee83c88cf80193ac11cc40f7f4f0064c9937d976b1c38",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
