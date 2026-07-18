@@ -1,73 +1,73 @@
-# Candidate approach — Lachesis (enrollment quest, cycle 1)
+# Candidate approach (rev 2) — Lachesis (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
-`file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-lachesis-1.json` (awaiting workshop).
+`file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-lachesis-1.json`.
 **Registered meaning (fixed, the boundary):** Lachesis *measures dependencies, relevance, risk, and blast
-radius* (`docs/mythological-vocabulary.md#Lachesis`). No extension.
+radius* (`docs/mythological-vocabulary.md#Lachesis`). Lachesis **does metrics.** No extension.
 
-This is the APPROACH the Daedalus workshop matures to `submit`; code is authored by Argo after TELOS
-authorization. Implementation mechanics are specified here up front (the reviewer will require them).
+Rev 2 resolves all four round-1 reviewer objections (Clotho import boundary; unspecified metric semantics;
+unused gap uncertainty; incomplete memory layout). This is the APPROACH the workshop matures; Argo authors
+code after TELOS authorization.
 
-## 1. What Lachesis is, and its boundary
+## 1. Boundary: Lachesis is a metrics engine over the weave DATA — it never imports Clotho (fixes obj. 1)
 
-A new **zero-dependency Node ESM** package `lachesis/` that CONSUMES Clotho's query surface to MEASURE, and
-produces an ADVISORY risk assessment as input to TELOS/The Eye. It does NOT authorize (TELOS), retire
-(Atropos), weave/produce edges (Clotho), or render (Narcissus). It imports Clotho; it does not modify it.
+The spine rule is frozen: **nothing outside `clotho/` imports from it.** So Lachesis consumes a **serialized
+data boundary** — it reads the committed weave snapshot `docs/runs/clotho-self-weave/thread-ledger.snapshot.jsonl`
+(JSONL of thread-ledger records: typed nodes + edges) as **data**, and computes its OWN metrics over it.
+Computing metrics over the weave is Lachesis's PURPOSE (measuring), not a re-implementation of Clotho's query
+API — Lachesis defines its own metrics; it does not call `clotho/query.mjs`. The record format it parses is a
+documented data contract, not Clotho code.
 
-## 2. Concrete deliverables (the mechanics)
+## 2. Pinned metric definitions (NORMATIVE — the oracle tests a FIXED algorithm) (fixes obj. 2)
 
-- **`lachesis/measure.mjs`** — pure functions over a Clotho weave (an array of thread-ledger records) and a
-  target `nodeId`, importing `clotho/query.mjs` (`blastRadius`, `threadsOf`, `why`, `reportGaps`) — never
-  re-implementing them:
-  - `measureBlastRadius(records, nodeId, depth)` — dependents reachable via `depends-on` (delegates to
-    Clotho `blastRadius`), returned as an exact count + the node set.
-  - `measureDependencies(records, nodeId)` — the node's direct + transitive `depends-on` closure (via
-    `threadsOf`), as an exact set.
-  - `measureRelevance(records, nodeId)` — a DETERMINISTIC relevance metric (documented formula:
-    in-degree of `depends-on`/`verified-by`/`introduced-by` edges, normalized), no model judgment.
-  - `deriveRiskClass(measurements)` — a DOCUMENTED deterministic threshold mapping to a class
-    (`low`/`medium`/`high`), so it is testable — but the CLASS is ADVISORY input, not an enforced gate.
-- **`lachesis/scripts/test-measure.mjs`** — the executable ORACLE: deterministic assertions over a fixed
-  fixture weave committed under `lachesis/fixtures/` (known blast radii, dependency sets, relevance,
-  risk classes). Run by `npm test` in the package (mirrors clotho's `npm test`).
-- **`lachesis/memory/`** — the institutional-memory record set (mirroring `clotho/memory/`): `IDENTITY.md`,
-  `INVARIANTS.json`/`.md`, `CONTRACTS/measurement.json` (the exact measurement contract, NORMATIVE with the
-  test-measure oracle), `NON-CLAIMS.json`/`.md` (measures ≠ authorizes/retires/weaves/renders; risk class is
-  advisory; relevance is a proxy, not ground truth), `comprehension-queries.json`, and a RENDERED `README.md`
-  (via a local `render.mjs`, `--write`/`--check` byte-identical — matching the rendered-projection discipline).
-- **`lachesis/package.json`** — `"type":"module"`, `npm test` runs the oracle; zero dependencies, no lockfile.
+`lachesis/measure.mjs` (pure functions over parsed weave records + a target `nodeId`), each definition PINNED
+in `lachesis/memory/CONTRACTS/metrics.json` so the oracle cannot bless a co-written algorithm:
+- **edge orientation:** a `depends-on` edge is `from = dependent`, `to = dependency` (stated explicitly).
+- **dependencies(nodeId):** the transitive set reached by following `depends-on` FROM the node; a **visited
+  set** dedups (cycle-safe); termination = fixpoint over the visited set.
+- **blastRadius(nodeId, depth):** the set of **dependents** reachable via REVERSE `depends-on` up to `depth`
+  hops (depth = edge hops; depth 0 = the node itself excluded from the count); visited-set cycle handling;
+  returned as an exact count + node set.
+- **relevance(nodeId):** a pinned formula — weighted in-degree = (w1·depends-on-in) + (w2·verified-by-in) +
+  (w3·introduced-by-in), with the exact weights frozen in the contract; normalized by the max in-degree in
+  the snapshot (normalization defined exactly, div-by-zero → 0).
+- **riskClass(measurements):** pinned thresholds (frozen in the contract) mapping (blastRadius, relevance,
+  coverage) → `low | medium | high`. ADVISORY — a class fed to TELOS/The Eye, never an enforced gate.
 
-## 3. Normativity (mixed, honest)
+## 3. Coverage/gaps feed uncertainty — no false "measured low" over an incomplete weave (fixes obj. 3)
 
-- The **measurement contract** (`measure.mjs` behavior) is **NORMATIVE-CURRENT** — deterministic, with the
-  `test-measure.mjs` oracle. `verify-contracts.mjs` (or the package's own test, referenced by the record)
-  is the passing verification.
-- The **risk class** is **ADVISORY** — a documented threshold mapping, but a judgment fed to TELOS/The Eye,
-  never a new enforcement gate.
+`measureCoverage(records, nodeId)` — Lachesis's OWN check that the node's expected edge kinds are present
+(per a pinned expected-kinds set). If coverage is incomplete, the assessment carries an explicit
+`coverage: "incomplete"` and the risk class is **uncertainty-bumped** (cannot report `low` under incomplete
+coverage — it reports the higher of the computed class and `medium`, with `coverage_incomplete: true`). The
+advisory posture does not cure omitted uncertainty; the metric surfaces it.
 
-## 4. Enrollment flip (the shared-registry change — routed to The Eye at authorization)
+## 4. Complete institutional-memory layout (fixes obj. 4)
 
-Enrolling Lachesis:
-- moves `lachesis` from `enrollment.json#future_modules_registered_unimplemented` to the enrolled set;
-- adds a `lachesis` entry to `repository-manifest.json` (its role, code paths, memory_dir, comprehension_queries);
-- flips the `verify-contracts.mjs` cross-check for lachesis from `future-lachesis-unimplemented: no memory dir`
-  to an implemented-module check (the memory dir now exists). This is the ONE shared-verifier change, inherent
-  to enrolling any future module; the workshop scopes the exact minimal edit and it is a routed decision for
-  The Eye at the authorization gate — not resolved unilaterally, and kept as small as the registry requires.
+`lachesis/memory/` mirrors the FROZEN per-component layout: `IDENTITY.md`, `INVARIANTS.json`/`.md`,
+`CONTRACTS/metrics.json` (NORMATIVE, oracle = the test below), `DECISIONS/` (incl. `rejected-alternatives.md`
+— e.g. "import clotho/query.mjs" rejected for the boundary; "reimplement Clotho's blastRadius" rejected for
+drift), `NON-CLAIMS.json`/`.md`, `FAILURE-MODES.md`, `EVIDENCE/`, `comprehension-queries.json`, rendered
+`README.md`.
 
-## 5. Acceptance sequence
+## 5. Oracle + package
 
-1. Author `measure.mjs` + fixtures + `test-measure.mjs`; `npm test` in `lachesis/` exits 0.
-2. Author the `lachesis/memory/` record set; render README (`--check` byte-identical).
-3. Comprehension fixtures (existing gate, unmodified): pass->0; negatives (e.g. "Lachesis authorizes",
-   "risk class is enforced", "relevance is ground truth")->nonzero, each proving the targeted misconception.
-4. Apply the minimal enrollment flip (enrollment.json + manifest + the one verify-contracts expectation).
-5. `verify-contracts.mjs` exits 0 (now including lachesis as implemented).
-6. Record commands/exits/digests. Terminal is **submit, not authorization**; TELOS authz + The Eye's
-   acceptance follow.
+- `lachesis/scripts/test-metrics.mjs` — deterministic assertions over a small committed fixture weave
+  (`lachesis/fixtures/weave.jsonl`) with hand-verified dependency sets, blast radii, relevance scores,
+  coverage, and risk classes (incl. a cycle case and an incomplete-coverage case). `npm test` runs it.
+- `lachesis/package.json` — `"type":"module"`, zero dependencies, no lockfile.
 
-## 6. Non-goals (cycle 1)
+## 6. Acceptance sequence
 
-- No enforcement/gate wired from the risk class (advisory only).
-- No Atropos/Narcissus work; no change to Clotho query code (consume only); no npm dependency.
-- No extension of the registered meaning.
+1. `npm test` in `lachesis/` exits 0 (the metrics oracle). 2. Author the full `lachesis/memory/` set; render
+README (`--check` byte-identical). 3. Comprehension fixtures (existing gate): pass->0; negatives ("Lachesis
+authorizes", "risk class is enforced", "relevance is ground truth", "gaps don't affect risk")->nonzero, each
+proving its targeted misconception. 4. Minimal enrollment flip (enrollment.json + manifest + the one
+verify-contracts expectation) — routed to The Eye at authorization. 5. `verify-contracts.mjs` exits 0.
+Terminal is **submit, not authorization**; TELOS authz + Eye acceptance follow.
+
+## 7. Non-goals (cycle 1)
+
+- No `import` of `clotho/` (data boundary only); no re-implementation of Clotho's query API (Lachesis's
+  metrics are its own). No enforcement wired from the risk class (advisory). No Atropos/Narcissus work; no
+  npm dependency; no extension of the registered meaning.

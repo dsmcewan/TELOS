@@ -1,0 +1,71 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:6fa016f5ff6cf6e71edebf1385d2d29cfec03c9aee2372523b2e1f3db0385eee",
+  "output_plan_artifact_hash": "sha256:6fa016f5ff6cf6e71edebf1385d2d29cfec03c9aee2372523b2e1f3db0385eee",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:e4d6736d9f7517ccd05acf1540e9acf576c17cb22b5d136361f477fa441e8286",
+    "provenance_key": "anthropic:msg_011Cd92MqHGF4cycDQQR3HMg"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:f7064aeaef3ae51af33deeeb3ab190746bda38410f6253ca8d598432dfa6662d",
+    "provenance_key": "openai:chatcmpl-E2sWTQHt6ASQ9VjvM1BRRVo51Ga7v",
+    "bound_hash": "sha256:65d219928cd90af4fa728c1529cf6e5ea1bbcdebbb6f8b2d93dfeaa8fd26ebba"
+  },
+  "objections": [
+    {
+      "claim": "The candidate directly imports `clotho/query.mjs` from `lachesis/`, violating the frozen Clotho boundary that nothing outside `clotho/` imports from it. Read-only consumption requires a serialized data boundary or a Clotho-owned adapter, not a cross-package runtime import.",
+      "scope": "candidate §§1–2 / frozen import boundary",
+      "objection_hash": "sha256:a150d60fd0ba53155464277e3e22afe6a8907585ed778fe86a2bb263820b9fd1",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The acceptance sequence implements code before authoring and comprehending the contract, and declares the contract `NORMATIVE-CURRENT` before its oracle exists. The frozen protocol requires an authority-anchored `SPECIFIED-PENDING-IMPLEMENTATION` record with `becomes_normative_when`, successful comprehension before implementation authority, and promotion only after the oracle passes.",
+      "scope": "candidate §§3 and 5 / institutional-memory lifecycle",
+      "objection_hash": "sha256:4859375f08d7fd937009d324fbe4f5786210e00dc8f71a5c7885dbbb25f0d93a",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "`normalized` relevance, risk thresholds, dependency-edge orientation, traversal termination, depth semantics, and cycle handling are unspecified. Fixtures written alongside the implementation could therefore bless materially different algorithms while still satisfying the stated oracle.",
+      "scope": "candidate §2 / oracle discrimination",
+      "objection_hash": "sha256:dcedc23e6b678066c78ce538531baad2e55680049edc690054c1d3823d7415f7",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The candidate imports `reportGaps` but never incorporates gap results into the assessment. Exact low/medium/high output over an incomplete weave can falsely imply measured low risk; the advisory posture does not cure omitted uncertainty.",
+      "scope": "candidate §§2–3 / unresolved incompleteness risk",
+      "objection_hash": "sha256:fadd729d724b8d32dc239ae0f2cd921723081405f417017640ef5cd2ef7ffe32",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The proposed `lachesis/memory/` set omits required per-component layout elements including `DECISIONS/`, `FAILURE-MODES`, and `EVIDENCE/`. Calling the listed subset the institutional-memory record set does not satisfy the frozen layout.",
+      "scope": "candidate §2 / frozen record-set layout",
+      "objection_hash": "sha256:bdeeef1eac10819d15e97031343299dd1426fc6202c54ff1054a1f2333849d9b",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The candidate calls the risk class `ADVISORY` while also testing its threshold behavior as part of a `NORMATIVE-CURRENT` measurement contract. The algorithm's conformance and the operational authority of its output are distinct: the deterministic mapping may be normative while its output remains advisory and must not authorize action.",
+      "scope": "candidate §3 / normativity semantics",
+      "objection_hash": "sha256:a0592e6d9d5bd8afdfa81d092079d2ce23b503241dbd7a55ca899422fd246c74",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
