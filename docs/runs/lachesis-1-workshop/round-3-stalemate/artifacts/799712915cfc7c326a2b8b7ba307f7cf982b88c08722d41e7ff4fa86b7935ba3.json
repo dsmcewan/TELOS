@@ -1,0 +1,37 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "The completeness mechanism still implements the rejected false-completeness rule. `expected-coverage.json` inventories only edge kinds, and `coverage(nodeId)` becomes `complete` after finding one edge of each kind. Missing additional expected edges remain undetected, and edge direction is not specified. Such a node can consequently receive `low` risk despite an incomplete weave, contradicting the claim that omitted uncertainty is surfaced. The contract must either pin expected edge identities/directions/cardinalities or explicitly model only kind-presence and stop treating that result as sufficient evidence for low risk.",
+        "scope": "candidate §3 — completeness and coverage-qualified risk"
+      },
+      {
+        "claim": "The proposed oracle is not required to discriminate the pinned metric semantics. The only explicit test obligations cover malformed, duplicate, and dangling ingestion fixtures. An implementation using the wrong `depends-on` direction, only one-hop dependencies, incorrect cycle handling, an unweighted normalization maximum, or incorrect threshold inclusivity could satisfy the stated acceptance sequence. Before `metrics.json` can become `NORMATIVE-CURRENT`, the plan must require exact fixtures or properties covering orientation, transitive closure, cycles, depth boundaries, weighted normalization including `MAX_RAW == 0`, coverage states, and every risk threshold boundary.",
+        "scope": "candidate §§2, 4, and 7 — executable metric oracle"
+      },
+      {
+        "claim": "`loadWeave(path, expectedSha)` does not establish an authority-pinned input because the expected digest is caller-supplied and no trusted source or binding for that argument is specified. A caller can compute the digest of an arbitrary valid snapshot and pass both values successfully. The digest must be obtained from an authority-anchored contract or verified manifest that callers cannot substitute, with a negative test proving that a self-consistent but unauthorized path/hash pair is rejected.",
+        "scope": "candidate §§4–5 — snapshot identity and ingestion trust boundary"
+      },
+      {
+        "claim": "The enumerated ingestion checks do not constitute fail-closed schema validation. They do not require complete node-versus-edge record shapes, field types, content-addressed node-id verification through the required Clotho identity rules, valid edge identity, or allowed `source_ref` schemes. Parseable records with an allowed `kind` but malformed identity or metadata can therefore reach metric computation. The ingestion contract and negative fixtures must cover the full pinned record schema, not only syntax, duplicates, and dangling references.",
+        "scope": "candidate §4 — fail-closed ingestion"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2sx6H5hlPWyW5eZ6od1SWJ6RwGbD",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2sx6H5hlPWyW5eZ6od1SWJ6RwGbD",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}
