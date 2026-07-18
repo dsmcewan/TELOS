@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:002a17a77c191579c38e77c498950e11fc10ac608c04bdd92bda8607e303e448",
+  "output_plan_artifact_hash": "sha256:002a17a77c191579c38e77c498950e11fc10ac608c04bdd92bda8607e303e448",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:88f39c0be611d1053cb3262bbe5a37d86445733ec25977a5fccccc6279597844",
+    "provenance_key": "anthropic:msg_011Cd95zRqzo6raLxeStMkSR"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:c6eecf5dc93cb77397b5d02571767ec73d8b3fde88556f101ae8794faa419a16",
+    "provenance_key": "openai:chatcmpl-E2tGaFmrl6Xz1xBv4GWIP4R872CVY",
+    "bound_hash": "sha256:2c0eb27c11a04a69c2f5e98985a80517e306c6622226c23ac9acda89026df846"
+  },
+  "objections": [
+    {
+      "claim": "The manifest link is not implementable as specified: no manifest schema or exact CURRENT-AUTHORITY key is defined, and loadWeave(path) does not require the caller's path to equal an authorized path. Consequently implementations can disagree about which field is pinned and whether the chain authorizes a file location or only matching bytes.",
+      "scope": "candidate §§1-2",
+      "objection_hash": "sha256:09f262133a547274f3554bff4d598805d9f4da038575b25fc390443f7d5eb962",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "Calling CURRENT-AUTHORITY.json an authenticated, independently protected root is unsupported. Lachesis has no authentication mechanism for that file; changing the snapshot, manifest, and CURRENT-AUTHORITY together bypasses the described checks. The guarantee must be conditional on the repository authority root remaining authorized and unchanged, with root authentication explicitly outside Lachesis.",
+      "scope": "candidate §1",
+      "objection_hash": "sha256:793c2a3400370d5963cc2b50279ce7d2c0dd24e45fab7806c051fc182df01ef2",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The coverage oracle contains a non-discriminating 'wrong-node' branch. Selection is already defined as record.node_id == target, so a wrong-node record is indistinguishable from an absent record and cannot prove a separate post-selection node-id check. In addition, the listed negatives do not exercise rejection of unexpected fields despite node, edge, manifest, and attestation schemas being declared closed.",
+      "scope": "candidate §§2-4",
+      "objection_hash": "sha256:b85ca9e274d1a58bc3dbe54af47ef18e4969daafaf734f20ff96ba47734eb6c6",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

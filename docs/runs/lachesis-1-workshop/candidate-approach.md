@@ -1,4 +1,4 @@
-# Candidate approach (rev 6) — Lachesis (enrollment quest, cycle 1)
+# Candidate approach (rev 7) — Lachesis (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-lachesis-1.json`.
@@ -19,28 +19,37 @@ syntax is CHECKED as `sha256:<64hex>` but NEVER recomputed (see §1 non-claim).
 
 Lachesis CANNOT recompute Clotho's content-addresses — `deriveNodeId` (canonicalize + sha256hex) lives in
 `clotho/registry.mjs`; importing it breaks the spine boundary, re-implementing it drifts. So the **trust root
-is provenance, chained to the authenticated root**, not recomputation, and NOT a caller argument:
-1. `CURRENT-AUTHORITY.json` (the authenticated root of trust) pins the exact content-digest of
-   `lachesis/memory/CONTRACTS/snapshot-manifest.json`.
-2. `loadWeave()` recomputes the manifest's digest and checks it == the CURRENT-AUTHORITY pin; mismatch → throw.
-   (This is the fix: mutating BOTH snapshot and manifest now fails, because the manifest's digest no longer
-   matches the independent CURRENT-AUTHORITY pin — the root a caller cannot substitute.)
-3. The verified manifest pins the snapshot's sha256; `loadWeave()` checks the snapshot file == that digest;
-   mismatch → throw.
-**What the chained digest proves (restricted, honest):** that the snapshot bytes are the EXACT authorized,
-integrity-checked input selected by the authenticated root — authorized selection + byte integrity. It does
-NOT prove node/edge ids were correctly derived, nor that Clotho authored the bytes. Lachesis measures over the
-authorized bytes AS-IS. NON-CLAIM (consistent): Lachesis verifies snapshot provenance-of-selection + structure;
-it does not re-derive content-addresses or attest authorship. Negatives: mutated snapshot, mutated manifest
-(both), and manifest-digest ≠ CURRENT-AUTHORITY each throw.
+is provenance, chained to the repository authority root**, not recomputation, and the authorized path is NOT a
+caller argument:
+1. `CURRENT-AUTHORITY.json` pins the manifest's content-digest under the exact key
+   `#lachesis_snapshot_manifest_digest`.
+2. `loadWeave()` (NO path argument) reads `lachesis/memory/CONTRACTS/snapshot-manifest.json`, recomputes its
+   digest, checks it == the CURRENT-AUTHORITY pin; mismatch → throw.
+3. **Manifest schema (closed, frozen):** `{ snapshot_path: <repo-relative string>, snapshot_digest:
+   <sha256:64hex> }` (extra/missing field → throw). `loadWeave()` opens the manifest's OWN `snapshot_path`
+   (the caller cannot point it elsewhere — this authorizes a file LOCATION, not merely matching bytes) and
+   checks that file's raw-byte digest == `snapshot_digest`; mismatch → throw.
+**What the chain proves — CONDITIONAL, honest (fixes the root overclaim):** *Given the repository authority
+root (`CURRENT-AUTHORITY.json`) is authorized and unchanged* — a precondition enforced OUTSIDE Lachesis (git
+history, the build-gate, The Eye); Lachesis has NO mechanism to authenticate that root and does not claim one —
+the chain proves the loaded bytes are the authorized snapshot at the authorized path (authorized selection +
+byte integrity). It does NOT prove node/edge ids were correctly derived, nor that Clotho authored the bytes;
+Lachesis measures over the authorized bytes AS-IS. NON-CLAIM: Lachesis verifies provenance-of-selection +
+structure conditional on the external root; it does not re-derive content-addresses, attest authorship, or
+authenticate CURRENT-AUTHORITY. Negatives: mutated snapshot (bytes ≠ pinned digest), mutated manifest (digest ≠
+CURRENT-AUTHORITY pin), wrong `snapshot_path` file → each throw. (Simultaneous mutation of the root itself is
+outside Lachesis's threat model, by the stated precondition.)
 
 ## 2. Fail-closed schema validation (fixes obj. 4 — defense-in-depth behind the digest)
 
-`lachesis/ingest.mjs#loadWeave(path)` — the ONLY entry to metrics; every check throws (fail-closed):
-- snapshot digest == the pinned manifest digest (§1); else throw.
+`lachesis/ingest.mjs#loadWeave()` (no path arg — the authorized path comes from the verified manifest, §1) —
+the ONLY entry to metrics; every check throws (fail-closed):
+- the §1 chain (manifest digest vs CURRENT-AUTHORITY, snapshot bytes vs manifest digest at the authorized
+  path); else throw.
 - JSONL: each line parses; else throw.
-- record shape by `kind`: nodes vs edges have their complete required-field set with correct types (a closed
-  per-kind shape table pinned in `metrics.json`); missing/mistyped field → throw.
+- record shape by `kind`: nodes vs edges have EXACTLY their closed field set (all required present, correct
+  types, AND no unexpected/extra fields — every schema here is closed) per the per-kind shape table pinned in
+  `metrics.json`; any missing, mistyped, OR extra field → throw.
 - `kind` ∈ the COMPLETE closed Clotho sets (pinned in `metrics.json`, authority-anchored to
   `file:clotho/registry.mjs@ed0e05c034317331e874ac511c4182580c192620`, with a change_rule to re-sync if
   Clotho's change) — NODE_KINDS =
@@ -67,8 +76,9 @@ wrong implementation fails, not just the happy path:
   `≥` boundaries (off-by-one inclusivity fails).
 - **per-branch ingestion negatives** (one fixture EACH, so every rejection branch is proven): unknown node
   kind, unknown edge kind, invalid node-id syntax, disallowed source_ref scheme, each missing required field,
-  each mistyped field, duplicate node, duplicate edge, dangling edge, unparseable line, snapshot-digest
-  mismatch, manifest-digest ≠ CURRENT-AUTHORITY → each throws.
+  each mistyped field, an unexpected/extra field on a node/edge/manifest record (closed schemas), duplicate
+  node, duplicate edge, dangling edge, unparseable line, snapshot-digest mismatch, manifest-digest ≠
+  CURRENT-AUTHORITY, wrong `snapshot_path` file → each throws.
 Pinned semantics (frozen in `metrics.json`): `depends-on` = `from` dependent → `to` dependency;
 `dependencies` = transitive forward closure (visited-set, fixpoint); `blastRadius(depth)` = reverse-reachable
 dependents to `depth` hops (node excluded), visited-set; `relevance` = `raw = 3·(depends-on in) + 2·(verified-by
@@ -102,8 +112,10 @@ ATTESTATION-GATED with a closed, verifiable schema:
 - **Oracle:** POSITIVE (valid attestation → an otherwise-low node stays `low`) + NEGATIVES each isolating ONE
   branch so an implementation that skips that check fails: **(digest) a semantically valid record (right node,
   right snapshot, authorized) but the FILE digest ≠ the CURRENT-AUTHORITY pin → unverified**; absent record;
-  unauthorized `attested_by`; stale-snapshot (`snapshot_digest` mismatch); wrong-node; malformed schema;
-  duplicate `node_id` (→ throw) — and each `unverified` floors an otherwise-`low` node to `medium`.
+  unauthorized `attested_by`; stale-snapshot (`snapshot_digest` mismatch); unexpected/extra field (closed
+  schema → absent); duplicate `node_id` (→ throw) — and each `unverified` floors an otherwise-`low` node to
+  `medium`. (No separate "wrong-node" case: selection IS `node_id == target`, so a wrong-node record is just an
+  absent record — not a distinct branch.)
 The prior presence-based `expected-coverage.json` is REMOVED (it was the false rule).
 
 ## 5. Boundary, layout, package
