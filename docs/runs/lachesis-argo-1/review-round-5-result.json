@@ -1,0 +1,70 @@
+{
+  "codex": {
+    "name": "codex",
+    "ok": true,
+    "objections": [
+      {
+        "claim": "The anchored regexes are not exact in JavaScript: `$` also matches immediately before a final line terminator. Consequently `HEX64.test(\"a\".repeat(64) + \"\\n\")` is true, as are analogous hashes/source refs ending in `\\n` or U+2028. A canonical JSON record can encode that terminator inside the string, so ingestion can accept a non-bare node ID and treat it as distinct from the intended 64-hex ID, corrupting identity, closures, and duplicate detection.",
+        "scope": "lachesis/ingest.mjs: HEX64, DIGEST, SOURCE_REF_SCHEMES, and hasSignedFields()",
+        "severity": "high"
+      },
+      {
+        "claim": "`buf.toString(\"utf8\")` performs replacement decoding rather than fatal UTF-8 validation. Invalid byte sequences inside JSON strings can become U+FFFD, parse successfully, and potentially compare equal to the canonical serialization. This admits bytes that are not canonical UTF-8 JSON and can collapse distinct invalid locator byte sequences onto the same structural locator identity.",
+        "scope": "lachesis/ingest.mjs: loadWeave() UTF-8 decoding and canonical-JSON check",
+        "severity": "high"
+      },
+      {
+        "claim": "Empty physical lines are removed before structure and canonicality checks. Leading, inter-record, and trailing blank lines therefore disappear, so a malformed ledger whose raw first line is blank or whose records are separated by blank lines is accepted as though it had the exact header/edges/trailer framing. The digest pin authenticates those malformed bytes; it does not make them valid ledger framing.",
+        "scope": "lachesis/ingest.mjs: `split(\"\\n\").filter((l) => l.length > 0)`",
+        "severity": "medium"
+      },
+      {
+        "claim": "Header/trailer structural validation is not fail-closed even apart from the declared cryptographic non-claims. An empty `header.pub_key` is accepted; required real-header metadata is not checked; `clotho_weave_trailer: []` passes because arrays satisfy the trailer body's `typeof === \"object\"` test; and an empty trailer body with arbitrary extra top-level fields is accepted. The tests themselves use an empty trailer, so they cannot establish conformance to the real trailer schema or record-count metadata.",
+        "scope": "lachesis/ingest.mjs: header and trailer branches in loadWeave()",
+        "severity": "medium"
+      },
+      {
+        "claim": "The returned value is not wholly frozen despite the stated guarantee. `Object.freeze({ header, ... })` freezes only the outer wrapper; `header` and its nested values remain mutable. A caller can therefore alter digest-validated snapshot metadata after loading. The freeze oracle only attempts `w.edges.push()` and misses this mutation path.",
+        "scope": "lachesis/ingest.mjs: loadWeave() return construction; lachesis/scripts/test-metrics.mjs frozen-return test",
+        "severity": "medium"
+      },
+      {
+        "claim": "The digest and trailer are discarded from the returned weave, and `assess()` outputs no snapshot identifier. Thus a measurement value has no intrinsic binding to the manifest digest that was checked and is indistinguishable from the same node's measurement over another snapshot. This weakens even the stated raw-digest-relative trust boundary without requiring signature-chain verification.",
+        "scope": "lachesis/ingest.mjs return value and lachesis/measure.mjs assess()",
+        "severity": "medium"
+      },
+      {
+        "claim": "Every measurement API accepts an arbitrary duck-typed object; `requireKnown()` checks only `nodes.has(nodeId)`. It does not establish that `loadWeave()` produced the object, that edges reference known nodes, or that the graph is immutable. A fabricated or getter-backed weave bypasses the digest boundary and can even present different edge sets to blast and relevance during one `riskClass()` call. The synthetic tests intentionally depend on this unbranded bypass.",
+        "scope": "lachesis/measure.mjs: requireKnown(), dependencies(), blastRadius(), relevance(), and riskClass()",
+        "severity": "medium"
+      },
+      {
+        "claim": "The static boundary checker can be bypassed by escape sequences in a static module specifier. For example, source text equivalent to `import x from \"./\\u002e./cl\\u006ftho/query.mjs\"` is resolved by JavaScript as `../clotho/query.mjs`, while the checker resolves the raw escaped spelling as an in-package relative path and the raw `clotho/` scan does not match. This contradicts the claimed total correctness over static imports and permits the exact forbidden spine import.",
+        "scope": "lachesis/scripts/test-boundary.mjs: violations() raw scan and static-specifier path resolution",
+        "severity": "high"
+      },
+      {
+        "claim": "The sanctioned-vendor oracle does not enforce its stated 'only node: builtins' rule. `violations()` treats any relative import resolving under `lachesis/` as allowed even when called for `merkle-dag/vendor.mjs`, so the vendor can import Lachesis files and the subsequent filter still reports no violation. The sanctioned file is also not checked for being a symlink, unlike runtime entries.",
+        "scope": "lachesis/scripts/test-boundary.mjs: SANCTIONED vendor.mjs validation",
+        "severity": "low"
+      },
+      {
+        "claim": "The threshold oracle does not pin the claimed `blast >= 3` medium interval. It tests blast counts 2, 3, and 10, but none from 4 through 9. An incorrect classifier using `blast === 3 ? medium : blast >= 10 ? high : low` would pass all current class assertions, including the real-snapshot golden assertions.",
+        "scope": "lachesis/scripts/test-metrics.mjs: blast-driven risk-class tests",
+        "severity": "medium"
+      },
+      {
+        "claim": "Canonical-format fixtures are generated with the same `canonicalize()` implementation used by production ingestion. Apart from one key-order negative, the tests establish only self-consistency with that implementation, not compatibility with Clotho's canonical-JSON contract. A shared canonicalizer error would therefore make both fixture generation and loader validation agree and pass.",
+        "scope": "lachesis/scripts/test-metrics.mjs fixture() and lachesis/ingest.mjs canonical-JSON enforcement",
+        "severity": "low"
+      }
+    ]
+  },
+  "grok": {
+    "name": "grok",
+    "ok": true,
+    "text": "",
+    "model": "grok-4.5",
+    "id": "a8ffc109-983f-965f-85fc-358fe953a31c"
+  }
+}

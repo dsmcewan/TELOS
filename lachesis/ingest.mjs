@@ -41,12 +41,15 @@ const SOURCE_REF_SCHEMES = [
   /^ledger:[^\0]+#[0-9a-f]{64}$/,
   /^git:[0-9a-f]{40}$/
 ];
-const HEX64 = /^[0-9a-f]{64}$/;
 const DIGEST = /^sha256:[0-9a-f]{64}$/;
+// length-guarded hex (belt-and-suspenders: JS `$` already rejects trailing terminators, verified,
+// but an explicit length check makes an embedded terminator impossible regardless of regex nuance).
+const isHex64 = (s) => typeof s === "string" && s.length === 64 && /^[0-9a-f]{64}$/.test(s);
 
 const rawDigest = (buf) => "sha256:" + createHash("sha256").update(buf).digest("hex");
 const validScheme = (ref) => typeof ref === "string" && SOURCE_REF_SCHEMES.some((re) => re.test(ref));
-const hasSignedFields = (r) => HEX64.test(r.prev_hash || "") && HEX64.test(r.record_hash || "") && typeof r.signature === "string" && r.signature.length > 0;
+const hasSignedFields = (r) => isHex64(r.prev_hash) && isHex64(r.record_hash) && typeof r.signature === "string" && r.signature.length > 0;
+function deepFreeze(o) { if (o && typeof o === "object" && !Object.isFrozen(o)) { Object.freeze(o); for (const k of Object.keys(o)) deepFreeze(o[k]); } return o; }
 
 // Canonical bucket key for a locator: object member order IGNORED (keys sorted), array order kept
 // (matches isDeepStrictEqual semantics). Internal index only — NOT a content-address claim.
@@ -78,7 +81,13 @@ export function loadWeave(manifest, rootDir) {
   } finally { closeSync(fd); }
   if (rawDigest(buf) !== manifest.snapshot_digest) throw new Error(`snapshot digest mismatch (pinned ${manifest.snapshot_digest})`);
 
-  const lines = buf.toString("utf8").split("\n").filter((l) => l.length > 0);
+  // fatal UTF-8 decode (reject replacement of invalid bytes). Then split on \n, drop the single
+  // trailing newline, and REJECT any blank line (blank lines are not valid ledger framing).
+  let text;
+  try { text = new TextDecoder("utf-8", { fatal: true }).decode(buf); } catch { throw new Error("snapshot is not valid UTF-8"); }
+  const lines = text.split("\n");
+  if (lines.length > 0 && lines[lines.length - 1] === "") lines.pop();
+  for (let i = 0; i < lines.length; i++) if (lines[i].length === 0) throw new Error(`line ${i + 1}: blank line (invalid framing)`);
   let header = null, trailer = null;
   const nodes = new Map();          // id -> locator value
   const locatorToId = new Map();    // canonKey(locator) -> id (bijection, reverse direction)
@@ -96,14 +105,14 @@ export function loadWeave(manifest, rootDir) {
     if (i === 0) {
       if (!("clotho_weave_header" in r) || Object.keys(r).length !== 1) throw new Error("line 1: first record must be a lone clotho_weave_header");
       header = r.clotho_weave_header;
-      if (!header || typeof header !== "object" || typeof header.pub_key !== "string") throw new Error("line 1: header missing pub_key");
+      if (!header || typeof header !== "object" || typeof header.pub_key !== "string" || header.pub_key.length === 0) throw new Error("line 1: header missing/empty pub_key");
       if (header.weave_version !== 1) throw new Error(`line 1: unsupported weave_version ${JSON.stringify(header.weave_version)}`);
       continue;
     }
     if ("clotho_weave_header" in r) throw new Error(`line ${i + 1}: misplaced/duplicate header`);
     if ("clotho_weave_trailer" in r) {
       if (i !== lines.length - 1) throw new Error(`line ${i + 1}: trailer must be the last record`);
-      if (typeof r.clotho_weave_trailer !== "object" || r.clotho_weave_trailer === null) throw new Error(`line ${i + 1}: trailer body must be an object`);
+      if (typeof r.clotho_weave_trailer !== "object" || r.clotho_weave_trailer === null || Array.isArray(r.clotho_weave_trailer)) throw new Error(`line ${i + 1}: trailer body must be a non-array object`);
       if (!hasSignedFields(r)) throw new Error(`line ${i + 1}: trailer missing signed-ledger fields`);
       trailer = r;
       continue;
@@ -115,7 +124,7 @@ export function loadWeave(manifest, rootDir) {
     if (!hasSignedFields(r)) throw new Error(`line ${i + 1}: edge missing signed-ledger fields (prev_hash/record_hash/signature)`);
     if (r.from_node === r.to_node) throw new Error(`line ${i + 1}: self-edge (from_node === to_node) rejected`);
     for (const [n, loc] of [[r.from_node, r.from_locator], [r.to_node, r.to_locator]]) {
-      if (!HEX64.test(n)) throw new Error(`line ${i + 1}: node id not bare 64-hex`);
+      if (!isHex64(n)) throw new Error(`line ${i + 1}: node id not bare 64-hex`);
       if (!loc || typeof loc !== "object" || !NODE_KIND_SET.has(loc.kind)) throw new Error(`line ${i + 1}: bad/unknown node locator kind`);
       // locator PAYLOAD must be present + a non-empty object (NON-CLAIM: full per-kind field schema is future)
       if (!loc.locator || typeof loc.locator !== "object" || Array.isArray(loc.locator) || Object.keys(loc.locator).length === 0) {
@@ -144,9 +153,11 @@ export function loadWeave(manifest, rootDir) {
 
   if (!header) throw new Error("missing clotho_weave_header");
   if (!trailer) throw new Error("missing clotho_weave_trailer");
-  // freeze the digest-validated weave so callers cannot mutate edges/nodes before measurement
+  // deep-freeze the digest-validated weave so callers cannot mutate edges/nodes/header before measurement
   for (const e of edges) Object.freeze(e);
+  deepFreeze(header);
   const idSet = new Set(nodes.keys());
   const frozenNodes = Object.freeze({ has: (id) => idSet.has(id), get size() { return idSet.size; }, ids: () => [...idSet] });
-  return Object.freeze({ header, nodes: frozenNodes, edges: Object.freeze(edges) });
+  // snapshot_digest is stamped onto the weave so a measurement is bound to the exact bytes checked
+  return Object.freeze({ header, nodes: frozenNodes, edges: Object.freeze(edges), snapshot_digest: manifest.snapshot_digest });
 }

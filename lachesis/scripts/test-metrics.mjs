@@ -77,10 +77,12 @@ const wv = (edges) => {
   for (let k = 0; k < 20; k++) edges.push(e(800 + k, 500, "depends-on"));
   edges.push(e(700, 2, "depends-on"), e(701, 2, "depends-on"));
   for (let k = 0; k < 3; k++) edges.push(e(710 + k, 3, "depends-on"));
+  for (let k = 0; k < 6; k++) edges.push(e(730 + k, 6, "depends-on"));    // T6: blast 6 (mid-interval)
   for (let k = 0; k < 10; k++) edges.push(e(720 + k, 4, "depends-on"));
   const w = wv(edges);
   ok(blastRadius(w, hid(2)).count === 2 && riskClass(w, hid(2), "attested-complete").class === "low", "blast 2 -> low (attested)");
-  ok(blastRadius(w, hid(3)).count === 3 && riskClass(w, hid(3), "attested-complete").class === "medium", "blast 3 -> medium");
+  ok(blastRadius(w, hid(3)).count === 3 && riskClass(w, hid(3), "attested-complete").class === "medium", "blast 3 -> medium (lower bound)");
+  ok(blastRadius(w, hid(6)).count === 6 && riskClass(w, hid(6), "attested-complete").class === "medium", "blast 6 -> medium (mid 3-9, pins interval)");
   ok(blastRadius(w, hid(4)).count === 10 && riskClass(w, hid(4), "attested-complete").class === "high", "blast 10 -> high");
   ok(riskClass(w, hid(2), "unverified").class === "medium", "coverage floor: blast-2 unverified -> medium");
   // relevance does NOT change class: a high-relevance verified-by SUBJECT (from) with blast 0 stays low
@@ -130,6 +132,8 @@ const wv = (edges) => {
   ok(blastRadius(w, G2).count === 21, "golden G2: blastRadius=21");
   ok(Math.abs(relevance(w, G2) - 81 / 430) < 1e-9, "golden G2: relevance=81/430");
   ok(dependencies(w, HUB).size !== blastRadius(w, HUB).count, "golden: HUB deps != blast (orientation pinned)");
+  // digest stamp: a measurement is bound to the checked bytes
+  ok(assess(w, HUB).snapshot_digest === manifest.snapshot_digest, "golden: assess() stamps the snapshot_digest");
 }
 
 // ---- ingestion: positive + per-branch negatives (real-format fixtures, distinct locators) ----
@@ -172,6 +176,7 @@ try {
     let mutated = false;
     try { w.edges.push({ edge_kind: "depends-on", from: hid(9), to: hid(8) }); mutated = true; } catch { /* frozen */ }
     ok(!mutated && w.edges.length === 1, "frozen return: edges array cannot be mutated");
+    ok(Object.isFrozen(w.header) && Object.isFrozen(w.edges[0]), "frozen return: header + edge objects deep-frozen");
   }
   // duplicate (from,to) with DIFFERENT edge_kind is NOT a duplicate (pins (kind,from,to) identity)
   {

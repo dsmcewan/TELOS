@@ -42,6 +42,7 @@ export function violations(rawSource, fileDir) {
     let m; while ((m = re.exec(source))) specs.push(m[1]);
   }
   for (const s of specs) {
+    if (s.includes("\\")) { v.push(`escaped module specifier (fail-closed): ${s}`); continue; } // . etc. can spell ../clotho
     if (s.startsWith("node:")) continue;                         // stdlib, ok
     if (s.startsWith(".")) {
       const resolved = path.resolve(fileDir, s);
@@ -75,10 +76,13 @@ for (const f of runtime) {
   ok(v.length === 0, `runtime ${path.relative(PKG, f)} clean (got: ${v.join("; ")})`);
 }
 // the ONE sanctioned external module (merkle-dag/vendor.mjs) must itself import only node: builtins
+// (checked directly — violations() is lachesis-centric and would mis-handle vendor's own dir).
 {
   const vsrc = readFileSync(SANCTIONED, "utf8");
-  const vv = violations(vsrc, path.dirname(SANCTIONED)).filter((x) => !/vendor\.mjs|within the package/.test(x));
-  ok(vv.length === 0, `sanctioned vendor.mjs imports only node: builtins (got: ${vv.join("; ")})`);
+  ok(!/(?:\bfrom|\bimport|\brequire|_load)\s*\(?\s*["'][^"']*clotho\//.test(vsrc), "vendor.mjs does not import clotho/");
+  const vspecs = [...vsrc.matchAll(/(?:^|[^.\w])(?:import|export)[^;]*?\bfrom\s*["']([^"']+)["']/g)].map((m) => m[1]);
+  const badV = vspecs.filter((s) => !s.startsWith("node:"));
+  ok(badV.length === 0, `sanctioned vendor.mjs imports ONLY node: builtins (offending: ${badV.join(", ")})`);
 }
 
 // 2) discriminating NEGATIVE fixtures — each MUST be flagged
@@ -92,6 +96,7 @@ const NEG = [
   ['const r = require("x");', "require()"],
   ['import { createRequire } from "node:module"; const r = createRequire(import.meta.url);', "createRequire alias"],
   ['const m = Module._load("../../clotho/query.mjs");', "low-level loader escape"],
+  ['import x from "./\\u002e./clotho/query.mjs";', "escaped module specifier"],
   ['const f = eval("readFileSync");', "eval()"]
 ];
 for (const [src, label] of NEG) ok(violations(src, PKG).length > 0, `negative flagged: ${label}`);

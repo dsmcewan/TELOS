@@ -123,10 +123,14 @@ export function riskClass(weave, nodeId, coverage = "unverified") {
   return { class: cls, blast_radius: br, relevance: relevance(weave, nodeId), coverage };
 }
 
+// NON-CLAIM: measure operates on the weave STRUCTURE loadWeave returns (frozen, digest-stamped).
+// It does not cryptographically prove provenance of a weave-shaped object — callers must pass a
+// loadWeave() result. The snapshot_digest is echoed so a measurement is bound to the checked bytes.
 export function assess(weave, nodeId, coverage = "unverified") {
   requireKnown(weave, nodeId);
   return {
     node: nodeId,
+    snapshot_digest: weave.snapshot_digest ?? null,
     dependencies: dependencies(weave, nodeId).size,
     ...riskClass(weave, nodeId, coverage)
   };
