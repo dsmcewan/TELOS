@@ -1,0 +1,32 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "retrospective-iliad-workflow-contract-1",
+  "title": "Post-implementation review — Iliad-quest workflow contract (first NON-converged cycle; Eye-adjudicated)",
+  "note": "ADVISORY evaluation anchored to commit-verified facts. The first cycle whose Daedalus workshop did NOT converge — it stalemated twice — and was authorized by The Eye's implement-to-the-objections ruling, not by workshop convergence. That is the discipline working, not failing.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "iliad-workflow-contract-1 (pre-review 79332ba; workshop stalemated x2 — round-1/round-2 evidence preserved; record set 28acf1b; PR #131 merged git:80e88fae23e306171a306dbae0366dc267f7f30b)",
+  "what_was_built": "docs/institutional-memory/iliad/workflow/ — the Iliad-quest workflow as an ADVISORY contract: content-addressed workflow.json (7-stage order iliad-pre-review -> daedalus -> telos -> argo -> reference/documentation module -> clotho -> iliad-retrospective; authority-links the NORMATIVE iliad invariants; new doc-module stage ADVISORY per option b), a fail-closed check-workflow.mjs oracle (id recompute + explicit canonical stage table), a deterministic render-workflow.mjs (named README), and comprehension-queries.json + fixtures.",
+  "verification_outcome": "check-workflow.mjs exit 0; comprehension gate UNMODIFIED: pass->0, three negatives each flipping ONE answer->3 (targeted misconception denies); verify-contracts.mjs UNCHANGED -> 215/215. Shared enforcement infra not modified (option b).",
+  "what_worked": [
+    "The workshop STALEMATED twice and refused to blend — codex escalated from 'abbreviated anchors' to 'your checker cannot tell a swapped invariant link from a correct one.' Neither seat conceded; the disagreement routed to The Eye. Convergence is not authorization, enforced on the very cycle that documents the workflow.",
+    "The single most valuable objection — check-workflow must validate an EXPLICIT canonical stage table, not merely that refs resolve — is the content-address-identity principle: resolving a reference proves it EXISTS, not that it is the RIGHT one. The final oracle is materially more rigorous than an unprompted author would have written.",
+    "Implement-to-the-objections (Eye ruling) turned a non-converging workshop into a shipped, verified record without pretending it converged."
+  ],
+  "defects_found_during": [
+    "The candidate approach was under-specified TWICE — an approach document cannot pre-specify implementation mechanics (id derivation, exact stage table, concrete oracles, named render destination) without becoming the implementation; a rigorous reviewer will always find the gap."
+  ],
+  "process_mistakes_preserved": [
+    "RECURRING: abbreviated the sha authority anchor (git:6d16c8f) in the candidate — codex has now caught this exact sloppiness in BOTH the agentic-orchestration cycle AND this one. Lesson (hard-armed): NEVER abbreviate an authority anchor; always the full 40-hex, verified.",
+    "The serial Daedalus workshop stalemates structurally when the author is satisfied (returns no revision) while the reviewer keeps finding real gaps — an author↔reviewer disagreement that resolves only at The Eye. For approach docs destined for a rigorous reviewer, specify implementation mechanics up front to reduce stalemate rounds."
+  ],
+  "system_evaluation": "A non-converged cycle is a first-class, healthy outcome: two adversarial stalemates hardened the requirements; The Eye adjudicated; the result is a verified ADVISORY contract that adds no shared enforcement. The Iliad-quest workflow is now recorded and self-checking; future implementation cycles can reference it.",
+  "optimizations_for_future_runs": [
+    { "optimization": "When authoring a candidate approach for the workshop, front-load the implementation mechanics the reviewer will demand — content-addressed id + recompute, explicit canonical tables validated exactly, concrete named oracles/renderers, real comprehension queries with negatives that prove the targeted misconception denies. This is the de-facto reviewer spec; providing it up front reduces stalemate rounds.", "destination": "next-run-pre-review" },
+    { "optimization": "NEVER abbreviate an authority/content-address anchor (full 40-hex only). Caught 2x by codex now.", "destination": "next-run-pre-review (process rule; hard-armed)" },
+    { "optimization": "The Iliad-quest workflow record (docs/institutional-memory/iliad/workflow/workflow.json) now exists — future implementation cycles cite it as the canonical stage order; the doc-module stage remains ADVISORY until a future Eye decision commissions its oracle.", "destination": "next-run-pre-review" }
+  ],
+  "must_not_govern_new_work": false,
+  "effective_from_commit": "git:80e88fae23e306171a306dbae0366dc267f7f30b"
+}
