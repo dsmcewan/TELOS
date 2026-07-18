@@ -1,0 +1,37 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "The proposed single `workflow.json` has only record-level `status` and `normativity` under the frozen schema, yet the approach assigns normativity per stage without defining separate schema-valid records. This cannot faithfully represent the required mixed posture. The approach must either make the workflow record ADVISORY while authority-linking the existing NORMATIVE-CURRENT invariant records, or split independently normative and advisory claims into separate records.",
+        "scope": "candidate §2–§3 — mixed-normativity representation"
+      },
+      {
+        "claim": "The human projection is conditional and permits “a note in the module README index.” The frozen schema requires machine-first, generated human projection and identifies the per-component README as rendered. A hand-maintained fallback would create an independent drift surface. The approach must specify a deterministic rendered projection from the machine record.",
+        "scope": "candidate §3 — human projection"
+      },
+      {
+        "claim": "The promised structural check has no executable mechanism, file, or command. Running `verify-contracts.mjs` unchanged merely “to prove no disturbance” does not establish that the new stage references resolve or are content-addressed. The approach must name a concrete executable oracle for reference resolution and content-address validation, without turning the advisory documentation-stage ordering into shared enforcement.",
+        "scope": "candidate §4 — structural oracle"
+      },
+      {
+        "claim": "The authority basis abbreviates the frozen full commit anchor to `git:6d16c8f`. A load-bearing authority statement must terminate in a stable identifier; the approach must preserve the full frozen anchor `git:6d16c8ff7cb120910ed0c2968d321269dd1f57cb` and the directive’s exact file reference.",
+        "scope": "candidate header — authority anchoring"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2rLx2yxOXwoNlBYl2k7LtIb5KXmc",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2rLx2yxOXwoNlBYl2k7LtIb5KXmc",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}
