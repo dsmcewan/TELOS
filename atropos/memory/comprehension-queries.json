@@ -1,0 +1,15 @@
+{
+  "component": "atropos",
+  "note": "Reader-validation gate. Correct answers affirm read-only scope + honest deferrals.",
+  "queries": [
+    { "q": "Does Atropos perform retirement (mutate CURRENT-AUTHORITY)?",
+      "correct": "No — Atropos is READ-ONLY. It verifies recorded retirements are consistent; actual retirement is a human CHANGE-PROTOCOL step. It never writes.",
+      "negatives": ["It writes the SUPERSEDED status", "It updates CURRENT-AUTHORITY#superseded"] },
+    { "q": "What is the NORMATIVE surface and what is deferred?",
+      "correct": "Plan-version consistency over CURRENT-AUTHORITY#superseded is NORMATIVE. Node-backed retirement (SUPERSEDED records / weave supersedes edges) is UNREPRESENTABLE in the current schema and DEFERRED.",
+      "negatives": ["It fully verifies weave supersedes edges now", "All three surfaces are enforced in cycle 1"] },
+    { "q": "How does Atropos establish the terminal authority of a supersession chain?",
+      "correct": "The chain must terminate at active_plan.version whose sha256 is DISK-RESOLVED (recomputed via the sanctioned canonicalize/sha256hex over the realpath-contained active_plan file).",
+      "negatives": ["It trusts the pinned sha256 without recomputation", "It imports clotho/ to resolve the plan id"] }
+  ]
+}

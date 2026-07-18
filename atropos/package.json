@@ -1,0 +1,12 @@
+{
+  "name": "atropos",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Atropos — read-only supersession consistency verifier over CURRENT-AUTHORITY#superseded (never mutates; never imports clotho/).",
+  "scripts": {
+    "check": "node --check verify.mjs && node --check scripts/test-verify.mjs && node --check scripts/test-readonly.mjs",
+    "test": "npm run check && node scripts/test-verify.mjs && node scripts/test-readonly.mjs"
+  },
+  "dependencies": {}
+}
