@@ -1,0 +1,61 @@
+{
+  "kind": "contract",
+  "id": "agentic-orchestration-pattern-taxonomy",
+  "title": "Orchestration pattern taxonomy — five workflows + one agent class (advisory)",
+  "what": "The closed taxonomy this reference documents: exactly five patterns classified as 'workflow' and one classified as 'agent'. Anthropic's guidance preserves this distinction (workflows = predefined code paths; agents = the LLM directs its own process). Each entry carries a definition, use conditions, cautions, its provenance classification, and the evidence record it draws on.",
+  "why": "A named taxonomy lets an author pick the least-complex adequate shape deliberately, instead of reaching for the most agentic option by default.",
+  "scope": "agentic-orchestration reference (advisory)",
+  "authority": "git:9d322ddb9c7d679414b3822c3d8128575ddb3a3e + file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-17-agentic-orchestration-reference.json@7ea578d85896a197fce352a6407dacb6f34bcc52 + The Eye ruling accepted 2026-07-17",
+  "evidence": ["file:docs/institutional-memory/REFERENCES/agentic-orchestration/EVIDENCE/anthropic-sources.json@bbbede195988b9781fb79045d88d7e3ad12b8ae5"],
+  "non_claim": "A URL is a locator, not authority; taxonomy claims terminate in the pinned evidence record, not in an HTTP URL or a retrieval date. This taxonomy does not assert a TELOS mechanism is an exact implementation of a pattern (see worked-examples evidence).",
+  "change_rule": "A taxonomy edit is a reviewed change; the checker requires exactly five 'workflow' entries and one 'agent' entry with unique keys, each pinned to the evidence record.",
+  "status": "NORMATIVE-CURRENT",
+  "normativity": "ADVISORY",
+  "evidence_source": "agentic-orchestration-anthropic-sources#building-effective-agents",
+  "patterns": [
+    {
+      "key": "prompt-chaining",
+      "classification": "workflow",
+      "definition": "Decompose a task into a fixed sequence of steps, each LLM call consuming the prior output; optional programmatic gate checks between steps.",
+      "use_when": "The task cleanly decomposes into fixed subtasks and you can trade latency for higher per-step accuracy.",
+      "cautions": "Fixed path; poor fit when the decomposition can't be known in advance."
+    },
+    {
+      "key": "routing",
+      "classification": "workflow",
+      "definition": "Classify an input and dispatch it to a specialized follow-up prompt/process.",
+      "use_when": "There are distinct categories better handled separately AND classification can be done reliably.",
+      "cautions": "A misclassification silently routes to the wrong specialist; needs reliable classification."
+    },
+    {
+      "key": "parallelization",
+      "classification": "workflow",
+      "definition": "Run LLM calls concurrently and aggregate — sectioning (independent subtasks) or voting (same task run multiple times for diverse attempts).",
+      "use_when": "Independent subtasks can run for speed, or multiple perspectives/attempts raise confidence.",
+      "cautions": "Aggregation logic is load-bearing; voting adds cost for confidence."
+    },
+    {
+      "key": "orchestrator-workers",
+      "classification": "workflow",
+      "definition": "A central LLM dynamically decomposes the task, delegates subtasks to worker LLMs, and synthesizes the results.",
+      "use_when": "The subtasks cannot be predicted up front (the key difference from parallelization).",
+      "cautions": "Dynamic decomposition adds unpredictability and cost; needs a synthesis step."
+    },
+    {
+      "key": "evaluator-optimizer",
+      "classification": "workflow",
+      "definition": "One LLM generates a response; a second LLM evaluates and returns feedback in a loop.",
+      "use_when": "Clear evaluation criteria exist AND iterative refinement measurably improves the result.",
+      "cautions": "Without a real evaluation signal the loop just adds cost; needs a stopping condition."
+    },
+    {
+      "key": "autonomous-agent",
+      "classification": "agent",
+      "definition": "An LLM that plans and acts in a tool loop against environmental feedback, deciding its own steps, with ground-truth checkpoints.",
+      "use_when": "Open-ended problems with an unpredictable number of steps and no hardcodable path — when flexibility and model-driven decisions are worth the cost.",
+      "cautions": "Trades latency, cost, and compounding-error risk for flexibility; REQUIRES a ground-truth checkpoint (tests / human review) — but that requirement, where mandatory in TELOS, rests on TELOS/Argo records, not on this advisory reference."
+    }
+  ],
+  "must_not_govern_new_work": false,
+  "effective_from_commit": "git:9d322ddb9c7d679414b3822c3d8128575ddb3a3e"
+}

@@ -1,0 +1,45 @@
+{
+  "run": "agentic-orchestration-reference-1-workshop (next-phase evaluation, Iliad lifecycle; parameterized harness)",
+  "mode": "live",
+  "candidate": "docs/runs/agentic-orchestration-reference-1-workshop/candidate-approach.md",
+  "specs": [
+    "docs/institutional-memory/SCHEMA.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-17-agentic-orchestration-reference.json",
+    "AI-START-HERE.md"
+  ],
+  "state": "converged-for-submission",
+  "reason": "all-objections-accounted",
+  "terminal": "submit",
+  "rounds": 2,
+  "final_candidate_ref": "sha256:85a72e55b8f6f3b7e00d0ebf25623995f1f97c82e25e3cd5fae064b93d62ff01",
+  "creation_lineage": [
+    {
+      "seat": "claude",
+      "round": 1,
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011Cd8ezLFEp8yDWGebnrYxq"
+    },
+    {
+      "seat": "codex",
+      "round": 1,
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2o9lXIp57KGpMfm8eQGiNGUu4RkF"
+    },
+    {
+      "seat": "codex",
+      "round": 2,
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2oD3tsdD5TO0LRk1HQJkfUiXAL0D"
+    },
+    {
+      "seat": "claude",
+      "round": 2,
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011Cd8fM2H5hwvepm6PFNrBc"
+    }
+  ]
+}

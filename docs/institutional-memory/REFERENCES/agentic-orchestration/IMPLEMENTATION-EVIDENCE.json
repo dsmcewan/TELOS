@@ -1,0 +1,33 @@
+{
+  "kind": "evidence",
+  "id": "agentic-orchestration-implementation-evidence",
+  "title": "Implementation-phase evidence — commands, exit statuses, and the one routed decision",
+  "what": "Records the acceptance-sequence runs for the agentic-orchestration advisory reference (matured-approach §8), so The Eye's acceptance rests on reproduced evidence, not assertion.",
+  "why": "The institution's discipline: local test success does not authorize or merge; the evidence is submitted for TELOS/Eye acceptance.",
+  "scope": "agentic-orchestration reference (advisory)",
+  "authority": "git:9d322ddb9c7d679414b3822c3d8128575ddb3a3e + file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-17-agentic-orchestration-reference.json@7ea578d85896a197fce352a6407dacb6f34bcc52 (approved pre-review) + The Eye ruling accepted 2026-07-17",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "matured_approach": "docs/runs/agentic-orchestration-reference-1-workshop/matured-approach.md (converged sha256:85a72e55b8f6f3b7e00d0ebf25623995f1f97c82e25e3cd5fae064b93d62ff01)",
+  "runs": [
+    { "step": "local structural + provenance checker", "cmd": "node docs/institutional-memory/REFERENCES/agentic-orchestration/check.mjs", "exit": 0, "result": "6 records, taxonomy 5+1, all pinned refs resolve, all ADVISORY, manifest reference-only, README projection equal" },
+    { "step": "renderer projection equality", "cmd": "node .../render.mjs --check (invoked by check.mjs)", "exit": 0, "result": "README byte-identical to records" },
+    { "step": "comprehension gate — positive fixture", "cmd": "node docs/institutional-memory/comprehension-gate.mjs .../comprehension-queries.json .../fixtures/pass.json", "exit": 0, "result": "GRANTED" },
+    { "step": "comprehension gate — negative fixture (claims enforced)", "cmd": "... fixtures/fail-enforced.json", "exit": 3, "result": "DENIED (as required)" },
+    { "step": "comprehension gate — negative fixture (claims auto-select)", "cmd": "... fixtures/fail-autoselect.json", "exit": 3, "result": "DENIED (as required)" },
+    { "step": "global verifier UNCHANGED (no-disturbance proof)", "cmd": "node docs/institutional-memory/verify-contracts.mjs", "exit": 0, "result": "215/215 contracts match system reality — addition disturbs no existing normative contract" }
+  ],
+  "shared_infra_unchanged": ["docs/institutional-memory/verify-contracts.mjs", "docs/institutional-memory/comprehension-gate.mjs"],
+  "routed_decisions": [
+    {
+      "decision": "repository-manifest.json indexing",
+      "outcome": "NOT performed this cycle — routed to The Eye",
+      "basis": "The manifest's existing index fields are normative_docs (this reference is ADVISORY, not normative) and capability_modules (this reference has no enforcing code, is not a capability module). There is no existing advisory-reference index; adding one is a manifest SCHEMA change. Per matured-approach §1 and CHANGE-PROTOCOL, a schema/boundary change is The Eye's decision — do not invent a second indexing convention. The local checker enforces the negative invariant (the reference is NOT registered as a component/role/future module).",
+      "change_protocol": "docs/institutional-memory/CHANGE-PROTOCOL.md (new component boundary / schema change -> human approval)"
+    }
+  ],
+  "non_claim": "This evidence proves structural integrity, provenance linkage, content-addressing, projection equality, and no-disturbance. It does NOT prove that an advisory pattern choice is optimal or that a worked-example correspondence is semantically complete. Workshop convergence + local test success do not authorize or merge; this is submitted for TELOS/Eye acceptance.",
+  "change_rule": "Regenerated whenever the record set changes; every listed command must still produce the listed exit status.",
+  "must_not_govern_new_work": false,
+  "effective_from_commit": "git:9d322ddb9c7d679414b3822c3d8128575ddb3a3e"
+}

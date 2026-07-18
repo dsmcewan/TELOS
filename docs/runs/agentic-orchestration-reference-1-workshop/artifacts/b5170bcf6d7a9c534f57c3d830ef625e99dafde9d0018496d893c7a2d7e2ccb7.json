@@ -1,0 +1,63 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:642fe6bd5816e631b4f943faeb60167df64273c9946d882c582fac73cf40cc86",
+  "output_plan_artifact_hash": "sha256:c7da8e65f361f596954c79139c365736d3afbcc422796474e3a92436a33087d7",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:af7737d78d29fbeff4588aedb1e32fc97417d62611a02a9668dffce02b36b4e7",
+    "provenance_key": "anthropic:msg_011Cd8ezLFEp8yDWGebnrYxq"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:65e2dd1c1ae2c727ff8c00ae435a24b7fde35265221c14376f293c02fe188905",
+    "provenance_key": "openai:chatcmpl-E2o9lXIp57KGpMfm8eQGiNGUu4RkF",
+    "bound_hash": "sha256:85a72e55b8f6f3b7e00d0ebf25623995f1f97c82e25e3cd5fae064b93d62ff01"
+  },
+  "objections": [
+    {
+      "scope": "plan-escalation",
+      "claim": "Frozen pre-review record pre-review-2026-07-17-agentic-orchestration-reference declares normativity: ADVISORY together with status: NORMATIVE-CURRENT. Under SCHEMA.md's closed status/normativity taxonomy, NORMATIVE requires a passing executable oracle and ADVISORY is 'never enforced'; a record cannot coherently be both ADVISORY and NORMATIVE-CURRENT unless the taxonomy defines status and normativity as orthogonal axes — SCHEMA.md presents one closed set covering both. This ambiguity in the frozen material could let future ADVISORY records claim NORMATIVE-CURRENT status without an oracle, which is exactly the drift SCHEMA.md discipline 2 exists to prevent. Routed to The Eye for a taxonomy clarification (either split status vs normativity into two closed sets, or correct the pre-review's status field).",
+      "objection_hash": "sha256:825b89fee3d0f2c63a1f88144816a95c64dbb22502a8699b2fb01289a3768757",
+      "raised_by": {
+        "seat": "claude"
+      }
+    },
+    {
+      "claim": "The proposed `docs/institutional-memory/orchestration/` is described as a new capability module with a per-component-style record set, while the approved pre-review explicitly forbids a new component boundary. It also omits required per-component entries such as `DECISIONS`, `FAILURE-MODES`, and `EVIDENCE`. The artifact must instead be represented and indexed explicitly as a system-level reference, not as a partial new module.",
+      "scope": "candidate §2",
+      "objection_hash": "sha256:aa526babcc35d9eb99851ffade3f5eaafbb0e61dfef2fbd76b8e74ad13286f75",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "Anthropic URLs, a verification date, a bare pre-review id, and a truncated plan hash are not stable authority identifiers under SCHEMA.md. Moreover, the pre-review lists publication titles, not the exact URLs that the proposed allowlist oracle claims to validate. The source oracle therefore cannot operate as described and would only prove membership in an unanchored list.",
+      "scope": "candidate §§3 and 5",
+      "objection_hash": "sha256:4ac8c1308f1babeefc89b7c7d32b3e72d0381db9931fbea9727c0b6dea88d9a1",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The approach requires a generated README but defines no renderer or byte-equality check. The proposed local checker only checks paths and source membership, so it cannot detect machine-record/README drift and violates the frozen machine-first, human-rendered discipline.",
+      "scope": "candidate §§2 and 5",
+      "objection_hash": "sha256:378fcacc14d7e770fad5892bb1dadaa070ce71a2ab94cdfc38cbd98f619aa350",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "An ADVISORY record cannot coherently declare a checkpoint `mandatory for any autonomous loop`. That universal requirement is neither enforceable under the selected normativity nor established by the frozen approval. The approach also flattens Anthropic's five workflow patterns and autonomous agents into six equivalent patterns and labels TELOS correspondences as instantiations without an oracle capable of proving those semantic mappings.",
+      "scope": "candidate §§1, 2, and 5",
+      "objection_hash": "sha256:fac1c32808f93644c359fb6b1882e4a804944f5f6140f144ef81594d576ea587",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

@@ -1,0 +1,23 @@
+{
+  "kind": "non-claim",
+  "id": "agentic-orchestration-non-claims",
+  "title": "Agentic-orchestration reference — non-claims (honest boundaries)",
+  "what": "The explicit boundaries of this advisory reference. A future model must not read more into it than these records support.",
+  "why": "The reference exists to give shared vocabulary and a selection aid; it must never be mistaken for enforcement, authorization, or a safety proof.",
+  "scope": "agentic-orchestration reference (advisory)",
+  "authority": "git:9d322ddb9c7d679414b3822c3d8128575ddb3a3e + The Eye ruling accepted 2026-07-17",
+  "change_rule": "A reviewed edit; the checker requires every record in this reference to remain ADVISORY and make no enforcement claim.",
+  "status": "NORMATIVE-CURRENT",
+  "normativity": "ADVISORY",
+  "non_claims": [
+    "Does NOT enforce behavior — it is advisory; no record here is NORMATIVE-ENFORCED or an executable repository invariant.",
+    "Does NOT grant, transfer, or weaken authority — authorization stays with TELOS/The Eye; 'convergence is not authorization' is linked to its own canonical record, not restated as new.",
+    "Does NOT choose a pattern automatically — there is no selection engine; the checklist is a human/agent aid.",
+    "Does NOT prove containment, safety, or that any pattern choice is optimal — the local checker proves structural + provenance integrity only.",
+    "Does NOT replace component-specific policy — loadout owns the orchestration trust surface; Daedalus/Argo/Iliad own their workflows.",
+    "Does NOT establish that a TELOS mechanism is an exact implementation of an Anthropic pattern — worked examples are advisory structural correspondences (related_example), not instantiated_by declarations.",
+    "Does NOT authorize autonomous execution — naming the autonomous-agent pattern does not imply unlimited execution; stopping conditions, checkpoints, and TELOS authorization boundaries still apply from their own records."
+  ],
+  "must_not_govern_new_work": false,
+  "effective_from_commit": "git:9d322ddb9c7d679414b3822c3d8128575ddb3a3e"
+}

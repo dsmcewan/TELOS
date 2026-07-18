@@ -1,0 +1,41 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "pre-review-2026-07-17-agentic-orchestration-reference",
+  "note": "Pre-review for a post-Phase-1 institutional-memory REFERENCE addition: the agentic-orchestration pattern taxonomy + selection methodology (Anthropic's published 'Building Effective Agents' patterns), recorded in SCHEMA.md format and cross-linked to the existing role/capability modules. It ADDS by giving every existing module a shared pattern vocabulary (loadout's harness swarms = parallelization; Daedalus = orchestrator-workers + evaluator-optimizer; held-PR/The Eye = human-in-the-loop ground-truth checkpoint) — the recursive-improvement principle The Eye named. ADVISORY, not enforcement. Not a new mythological term or component boundary (no vocabulary registration). Seed content: PR #128 docs/agentic-orchestration-reference.md, to be reframed into the record set. Approved by The Eye 2026-07-17; entered via the Iliad lifecycle (pre-review first).",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "docs/runs/agentic-orchestration-reference-1 (pre-review + entry ritual); workshop docs/runs/agentic-orchestration-reference-1-workshop; branch from main @ 6165525",
+  "next_phase_workshop": "docs/runs/agentic-orchestration-reference-1-workshop/ — the next-phase Daedalus workshop matures the APPROACH at cycle start (candidate-approach.md), via the parameterized iliad harness (tools/run-daedalus-workshop.mjs); serial claude-author/codex-reviewer; terminal submit-not-authorization",
+  "model_review": {
+    "note": "seats env-resolved over build-gate/seats.json role bindings; no seat change proposed",
+    "baseline": "docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-17.json (same-day; claude-fable-5 + gpt-5.6-sol proven across live workshops)",
+    "seats": {
+      "claude": "claude-fable-5",
+      "codex": "gpt-5.6-sol",
+      "build": "session model (claude-opus-4-8)"
+    },
+    "newly_available_models_considered": ["none since the same-day review"],
+    "seat_changes_proposed": []
+  },
+  "capability_review": {
+    "task_loadout_read": "n/a (no frozen task slice) — this is a documentation/reference addition entering purely via the lifecycle",
+    "prior_retrospectives_read": ["docs/institutional-memory/iliad/RETROSPECTIVES/slice-7.json"],
+    "optimizations_adopted": [
+      "use the parameterized workshop harness (iliad/tools/run-daedalus-workshop.mjs), not a near-copy runner (slice-7 retrospective)",
+      "process rules re-armed: commit before destructive git ops; cwd-check before node; read signatures before probes; explicit cleanup globs (no bare *.md)",
+      "reuse existing records rather than rediscover: loadout already documents the orchestration TRUST surface; this reference documents pattern SELECTION methodology — the disjoint, additive slice"
+    ],
+    "optimizations_deferred_with_reason": [
+      "flipping any record NORMATIVE-ENFORCED (an orchestration reference is ADVISORY; enforcement rules would be a separate reviewed change)",
+      "closing stale PRs #102/#103 (loader redesign, superseded by shipped Clotho) and reframing PR #128: housekeeping, tracked separately from this cycle"
+    ],
+    "missing_external_capabilities": [],
+    "capability_packets_required": false
+  },
+  "sources": {
+    "external_grounding": "Anthropic published guidance (verified 2026-07-16): Building Effective Agents; Writing tools for AI agents; Claude Agent SDK overview; Effective context engineering; Multi-agent research system; Effective harnesses for long-running agents",
+    "seed_content": "docs/agentic-orchestration-reference.md (PR #128)"
+  },
+  "entry_ritual": "docs/runs/agentic-orchestration-reference-1/reader-validation-artifact.json (iliad module queries — the governing module for lifecycle-entered work; COMPREHENSION_PASSED / GRANTED)"
+}
