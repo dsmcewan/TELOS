@@ -1,0 +1,31 @@
+{
+  "run": "lachesis-1-workshop (next-phase evaluation, Iliad lifecycle; parameterized harness)",
+  "mode": "live",
+  "candidate": "docs/runs/lachesis-1-workshop/candidate-approach.md",
+  "specs": [
+    "docs/institutional-memory/SCHEMA.md",
+    "docs/mythological-vocabulary.md",
+    "clotho/memory/IDENTITY.md"
+  ],
+  "state": "converged-for-submission",
+  "reason": "all-objections-accounted",
+  "terminal": "submit",
+  "rounds": 1,
+  "final_candidate_ref": "sha256:2ff644720bb80fac2f0ec31f92ecaed9bac1986a47ccc94460f987decbc7097b",
+  "creation_lineage": [
+    {
+      "seat": "claude",
+      "round": 1,
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011Cd983g4psddNFt2XNKwaE"
+    },
+    {
+      "seat": "codex",
+      "round": 1,
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2tgdVkW2eP1VzxXrwr3cUNPLRKJW"
+    }
+  ]
+}
