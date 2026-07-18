@@ -1,0 +1,45 @@
+{
+  "build_id": "iliad-narcissus-1-authz",
+  "use_case": "iliad-narcissus-cycle-1",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/narcissus-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-narcissus-1.json"
+  ],
+  "proposal_ref": "sha256:3e62ea9698aa18d4570a7df98b9f36be56b2fe82b8c851c9b9d274ebd8b9d724",
+  "decision": "revise",
+  "required_edits": [
+    "Attach or make reviewable the canonical plan bytes matching sha256:3e62ea9698aa18d4570a7df98b9f36be56b2fe82b8c851c9b9d274ebd8b9d724, the cited pre-review, applicable trust rules, and the exact product target path. State how product dependencies remain isolated from the zero-dependency core.",
+    "Make rendering a pure function of the machine snapshot plus an explicitly controlled clock and seed. Either remove mouse reactivity or route pointer input through a typed registry command and machine state; amend the closed inventory accordingly. Specify production and ?e2e=1 clock/RNG/physics behavior, including shader time and D3 layout determinism.",
+    "Define one machine-readable registry as the source of the command union, dispatch API, control inventory, and E2E coverage manifest. CI must reject unknown dispatches, missing command coverage, interactive canvas handlers, and semantic controls not represented in the inventory. Repeated runs must compare command traces and deterministic outputs, not merely both pass.",
+    "Specify the exact package manager, lockfile policy, dependency versions, Playwright version, Chromium revision, build/serve/test commands, and CI runner contract.",
+    "Define performance enforcement on the production build without ?e2e=1 workload reductions: tool/version, route, viewport, cold-cache policy, network/CPU profile, run count, aggregation rule, and failure behavior for LCP<=2.5s, CLS<=0.1, and TBT<=200ms.",
+    "Provide the Evidence Ledger schema and verifier contract. Each claim must identify an approved source path, 40-lowercase-hex blob SHA, and exact verbatim quote; the verifier must resolve an object of type blob, recompute/confirm its Git object ID, confirm the quote occurs in those bytes, reject path traversal or missing objects, and emit only curated public fields. Name the human role authorized to approve publication of each entry.",
+    "Add forced no-WebGL, WebGL-initialization-failure/context-loss, and reduced-motion test modes. Require an aria-hidden noninteractive canvas, keyboard/focus tests, DOM content/control equivalence tests, and a recorded manual accessibility review.",
+    "State that Argo may produce aesthetic evidence but cannot satisfy or record The Eye’s blade; the enrollment flip must require a dated Eye judgment tied to the reviewed build artifact."
+  ],
+  "hard_stops": [
+    "The cited plan hash, pre-review, LEXI token file, and repository trust/dependency rules are not available as canonical artifacts in this review packet; consistency with them therefore cannot be verified for signature.",
+    "The mouse-reactive/time-driven shader and physics conflict with the normative invariant that the canvas owns no state or interaction. The closed command inventory contains no pointer or render-clock command, while the canvas is also specified as pointer-events:none.",
+    "The functional gate is not yet executable as written: no exact product path, package-manager/dependency pins, Playwright/Chromium revisions, CI commands, or reproducible performance profile are specified.",
+    "Evidence-Ledger enforcement lacks an implementation contract defining the manifest schema, safe extraction of historical blob bytes, exact-quote verification, and publication approval. A 40-hex value alone does not prevent unintended sensitive content from being emitted.",
+    "Repeating an E2E spec is not by itself a determinism oracle, and running performance checks under ?e2e=1 could improve results by disabling production work."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-18T12:41:03.039Z",
+  "rationale": "The plan has the correct foundational direction: WebGL is subordinate paint, XState and a typed registry own behavior, semantic DOM provides an equivalent experience, evidence is allowlisted and fail-closed, the functional blade is machine-enforced, and aesthetic judgment remains exclusively The Eye’s. However, the remaining contradictions and missing executable pins prevent BUILD authorization under the stated implementation-ready and repository-trust requirements. These are bounded revisions, not a rejection of the approach.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2ydksKaKwpSoWewoOjUBvpiVakZe",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-18T12:42:36.858Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "47e8b9f4f727dea46c588990b2e35c2d1bbf636d8655081ba47172d9874d507f",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

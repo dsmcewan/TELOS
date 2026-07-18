@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/commands.ts","./src/e2e-mode.ts","./src/machine.ts","./src/main.tsx","./src/stations.ts","./src/vite-env.d.ts","./src/components/DomLayer.tsx","./src/components/Loom.tsx"],"version":"5.9.3"}

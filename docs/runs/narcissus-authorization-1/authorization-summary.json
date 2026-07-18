@@ -1,0 +1,110 @@
+{
+  "build_id": "iliad-narcissus-1-authz",
+  "plan_ref": "sha256:3e62ea9698aa18d4570a7df98b9f36be56b2fe82b8c851c9b9d274ebd8b9d724",
+  "timestamp": "2026-07-18T12:41:03.039Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd9YFagWL1ZKzWWzCsKuV",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-18T12:41:26.018Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-d01ac808aa66f844f94525623fb27599efb6d069",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E2ydksKaKwpSoWewoOjUBvpiVakZe",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-18T12:42:36.858Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "9d599ba0-68eb-998e-b782-e117bbb06e83",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-18T12:41:18.124Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "YHRbaqDVHZnAqtsPqYmMqQU",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-18T12:41:11.102Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "blockers": [
+      "claude has hard stops: 'WebGL is paint' invariant is NORMATIVE: any state, interaction, or progression owned by the canvas (rather than the XState machine + typed command registry) voids this authorization.; Command registry is the CLOSED inventory: any interactive control or canvas interaction not present in the registry, or any registered command lacking >=1 deterministic E2E spec (coverage != inventory), fails the functional blade.; Evidence Ledger is fail-closed with full-40-hex pins: any story claim not mapped to an allowlisted, full-sha-pinned record must FAIL the build — no directory scrapes, no truncated shas, no unpinned quotes.; Perf budgets are pinned and binary: LCP<=2.5s, CLS<=0.1, TBT<=200ms on the pinned profile; over-budget = FAIL, no renegotiation mid-build.; Aesthetic blade is The Eye's HUMAN judgment: no machine oracle, no faked or self-attested aesthetic pass; visual evidence must be recorded honestly as human judgment.; No-WebGL/reduced-motion DOM layer must tell the WHOLE story and be fully operable standalone; axe alone is insufficient — the manual a11y pass is required.; Scope fence: front-end targets PRODUCTS only; zero-dep rule remains intact for the TELOS core (Playwright etc. are product dev-dependencies only); no back-end changes, no new governance enforcement.; ?e2e=1 must genuinely freeze RNG (seeded PRNG), pin the physics timestep (fixed 1/60), and disable springs/settle; flaky or nondeterministic E2E runs are a gate failure, not a retry target.",
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Attach or make reviewable the canonical plan bytes matching sha256:3e62ea9698aa18d4570a7df98b9f36be56b2fe82b8c851c9b9d274ebd8b9d724, the cited pre-review, applicable trust rules, and the exact product target path. State how product dependencies remain isolated from the zero-dependency core.; Make rendering a pure function of the machine snapshot plus an explicitly controlled clock and seed. Either remove mouse reactivity or route pointer input through a typed registry command and machine state; amend the closed inventory accordingly. Specify production and ?e2e=1 clock/RNG/physics behavior, including shader time and D3 layout determinism.; Define one machine-readable registry as the source of the command union, dispatch API, control inventory, and E2E coverage manifest. CI must reject unknown dispatches, missing command coverage, interactive canvas handlers, and semantic controls not represented in the inventory. Repeated runs must compare command traces and deterministic outputs, not merely both pass.; Specify the exact package manager, lockfile policy, dependency versions, Playwright version, Chromium revision, build/serve/test commands, and CI runner contract.; Define performance enforcement on the production build without ?e2e=1 workload reductions: tool/version, route, viewport, cold-cache policy, network/CPU profile, run count, aggregation rule, and failure behavior for LCP<=2.5s, CLS<=0.1, and TBT<=200ms.; Provide the Evidence Ledger schema and verifier contract. Each claim must identify an approved source path, 40-lowercase-hex blob SHA, and exact verbatim quote; the verifier must resolve an object of type blob, recompute/confirm its Git object ID, confirm the quote occurs in those bytes, reject path traversal or missing objects, and emit only curated public fields. Name the human role authorized to approve publication of each entry.; Add forced no-WebGL, WebGL-initialization-failure/context-loss, and reduced-motion test modes. Require an aria-hidden noninteractive canvas, keyboard/focus tests, DOM content/control equivalence tests, and a recorded manual accessibility review.; State that Argo may produce aesthetic evidence but cannot satisfy or record The Eye’s blade; the enrollment flip must require a dated Eye judgment tied to the reviewed build artifact.",
+      "codex has hard stops: The cited plan hash, pre-review, LEXI token file, and repository trust/dependency rules are not available as canonical artifacts in this review packet; consistency with them therefore cannot be verified for signature.; The mouse-reactive/time-driven shader and physics conflict with the normative invariant that the canvas owns no state or interaction. The closed command inventory contains no pointer or render-clock command, while the canvas is also specified as pointer-events:none.; The functional gate is not yet executable as written: no exact product path, package-manager/dependency pins, Playwright/Chromium revisions, CI commands, or reproducible performance profile are specified.; Evidence-Ledger enforcement lacks an implementation contract defining the manifest schema, safe extraction of historical blob bytes, exact-quote verification, and publication approval. A 40-hex value alone does not prevent unintended sensitive content from being emitted.; Repeating an E2E spec is not by itself a determinism oracle, and running performance checks under ?e2e=1 could improve results by disabling production work."
+    ],
+    "warnings": []
+  },
+  "authorized": false,
+  "authorization": {
+    "status": "NOT_AUTHORIZED",
+    "note": "see gate.blockers + seat decisions; builder adjudicates in build-mode."
+  }
+}

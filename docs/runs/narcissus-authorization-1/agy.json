@@ -1,0 +1,31 @@
+{
+  "build_id": "iliad-narcissus-1-authz",
+  "use_case": "iliad-narcissus-cycle-1",
+  "model": "agy",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/narcissus-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-narcissus-1.json"
+  ],
+  "proposal_ref": "sha256:3e62ea9698aa18d4570a7df98b9f36be56b2fe82b8c851c9b9d274ebd8b9d724",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-18T12:41:03.039Z",
+  "provenance": {
+    "provider": "local",
+    "model": "agy-checkpoint",
+    "source": "ai-peer-mcp/agy_checkpoint",
+    "response_id": "agy-d01ac808aa66f844f94525623fb27599efb6d069",
+    "answered_at": null,
+    "attestation": "local-deterministic",
+    "engine_version": "agy-checkpoint/1",
+    "tool": "agy_checkpoint"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "e8acef6588b5eeada9b232845f053aae6983bc4200a780b9ce2ad8de3d94c2a3",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

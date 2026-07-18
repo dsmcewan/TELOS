@@ -1,0 +1,39 @@
+{
+  "build_id": "iliad-narcissus-1-authz",
+  "use_case": "iliad-narcissus-cycle-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/narcissus-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-narcissus-1.json"
+  ],
+  "proposal_ref": "sha256:3e62ea9698aa18d4570a7df98b9f36be56b2fe82b8c851c9b9d274ebd8b9d724",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [
+    "'WebGL is paint' invariant is NORMATIVE: any state, interaction, or progression owned by the canvas (rather than the XState machine + typed command registry) voids this authorization.",
+    "Command registry is the CLOSED inventory: any interactive control or canvas interaction not present in the registry, or any registered command lacking >=1 deterministic E2E spec (coverage != inventory), fails the functional blade.",
+    "Evidence Ledger is fail-closed with full-40-hex pins: any story claim not mapped to an allowlisted, full-sha-pinned record must FAIL the build — no directory scrapes, no truncated shas, no unpinned quotes.",
+    "Perf budgets are pinned and binary: LCP<=2.5s, CLS<=0.1, TBT<=200ms on the pinned profile; over-budget = FAIL, no renegotiation mid-build.",
+    "Aesthetic blade is The Eye's HUMAN judgment: no machine oracle, no faked or self-attested aesthetic pass; visual evidence must be recorded honestly as human judgment.",
+    "No-WebGL/reduced-motion DOM layer must tell the WHOLE story and be fully operable standalone; axe alone is insufficient — the manual a11y pass is required.",
+    "Scope fence: front-end targets PRODUCTS only; zero-dep rule remains intact for the TELOS core (Playwright etc. are product dev-dependencies only); no back-end changes, no new governance enforcement.",
+    "?e2e=1 must genuinely freeze RNG (seeded PRNG), pin the physics timestep (fixed 1/60), and disable springs/settle; flaky or nondeterministic E2E runs are a gate failure, not a retry target."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-18T12:41:03.039Z",
+  "rationale": "Rev 2 is implementation-ready and internally consistent with the pre-review and the repo trust model. The decisive property is that the plan converts an inherently subjective domain (award-standard WebGL spectacle) into a gateable one via the NORMATIVE 'WebGL is paint' invariant: the canvas is pure view, all truth lives in one deterministic XState machine plus a typed command registry, and every 3D affordance is shadowed by a real semantic HTML control. This makes the functional blade honest rather than theatrical \\u2014 the closed command inventory with coverage==inventory is a genuine oracle (no untested control can exist, and the canvas cannot smuggle interaction past the gate), and ?e2e=1 (seeded PRNG, fixed 1/60 timestep, springs disabled) makes Playwright determinism real rather than aspirational. Round-1 objections are actually folded, not papered over: perf budgets are pinned numerics (LCP<=2.5s/CLS<=0.1/TBT<=200ms, over-budget=FAIL) on a pinned Chromium; the Evidence Ledger is a curated explicit-file allowlist with full-40-hex blob shas and a fail-closed build check, with the honest caveat stated in-plan that content-addressing pins bytes, not truth \\u2014 hence verbatim quoting; accessibility is a designed no-WebGL/reduced-motion DOM equivalent that tells the whole story, with axe explicitly necessary-not-sufficient. The trust model is respected: the zero-dep rule is correctly scoped to the core, with Playwright and the React/r3f/XState/D3 stack as product-level deps; Narcissus produces surfaces and does not gate merges. The two blades are scope-honest \\u2014 the functional blade is deterministic and machine-checkable, while the aesthetic blade is explicitly The Eye's human judgment with no faked oracle, recorded as such. The honest self-story sourcing (stalemates, corrections, a plan that passed every gate yet was wrong about reality, shown from real pinned records) is the right portfolio posture. Residual risks (shader perf on low-end profiles, unraveling-sequence complexity) sit inside the pinned budgets and the closed inventory, so they fail loudly rather than silently. I stake my signature on this plan as specified, contingent on the hard stops.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011Cd9YFagWL1ZKzWWzCsKuV",
+    "source": "ai-peer-mcp/claude_ask",
+    "answered_at": "2026-07-18T12:41:26.018Z",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "a9160175265b9149ef4d5bdb78eca897a7a4fff344b27c8c1c83b1f940151584",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

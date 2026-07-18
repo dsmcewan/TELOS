@@ -1,0 +1,32 @@
+{
+  "name": "narcissus-flagship",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Narcissus flagship — the TELOS development-story front-end ('Loom on Trial'). WebGL is paint; XState is truth.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --port 4317",
+    "test:e2e": "playwright test",
+    "verify:evidence": "node scripts/verify-evidence.mjs",
+    "verify:coverage": "node scripts/verify-coverage.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.169.0",
+    "@react-three/fiber": "^8.17.10",
+    "xstate": "^5.19.0",
+    "@xstate/react": "^5.0.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.10",
+    "@vitejs/plugin-react": "^4.3.3",
+    "typescript": "^5.6.3",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/three": "^0.169.0",
+    "@playwright/test": "^1.48.2"
+  }
+}

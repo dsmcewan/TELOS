@@ -1,0 +1,47 @@
+{
+  "note": "Curated ALLOWLIST (fail-closed). Every story claim cites a real institutional-memory record by full-40-hex git blob sha. scripts/verify-evidence.mjs asserts each blob_sha == the current git blob sha; drift FAILS the build. Quotes are verbatim excerpts of the cited record.",
+  "entries": [
+    {
+      "id": "quest-premise",
+      "source_path": "docs/institutional-memory/iliad/workflow/workflow.json",
+      "blob_sha": "ca77900d9e61ab024919afb3f9b150671b2d6cfa",
+      "quote": "The Iliad is the quest a new system undertakes to become enrolled. Presence in the repository is NOT enrollment; enrollment is earned by completing the quest."
+    },
+    {
+      "id": "start-here",
+      "source_path": "AI-START-HERE.md",
+      "blob_sha": "e33f008b9ef997586855ba75b795906b45dc177a",
+      "quote": "AI-START-HERE — the entry point a model reads to orient itself before it is permitted to change the system."
+    },
+    {
+      "id": "reiteration-lesson",
+      "source_path": "docs/institutional-memory/iliad/RETROSPECTIVES/lachesis-1.json",
+      "blob_sha": "fc2ef99804a8279bb9a62f7d1555a7363e7c3237",
+      "quote": "Convergence and authorization are NOT correctness. A plan can survive 10 adversarial rounds + a signed council and still not correspond to reality — because reviewers judge the plan on its own terms; only contact with ground truth tests correspondence. The gates test defensibility, not truth."
+    },
+    {
+      "id": "council-authorized",
+      "source_path": "docs/runs/lachesis-authorization-1/authorization-summary.json",
+      "blob_sha": "8072a59f24ac5d5a3c40e430cec4a3be5707665e",
+      "quote": "AUTHORIZED — Argo implementation of the Lachesis cycle-1 matured plan is authorized by the signed council under the TELOS gate. Enrollment-flip HELD for a separate Eye ruling."
+    },
+    {
+      "id": "ground-truth-block",
+      "source_path": "docs/runs/lachesis-authorization-1/ARGO-BLOCKED-schema-mismatch.md",
+      "blob_sha": "511f58efc40312bba6dd69434750e00d46305086",
+      "quote": "The plan survived 10 adversarial Daedalus rounds AND a 5-seat signed council, and STILL carried a wrong model of its input — because no reviewer re-derived the actual snapshot format. Contact with ground truth at implementation time is what caught it."
+    },
+    {
+      "id": "adversary-fallible",
+      "source_path": "docs/institutional-memory/iliad/RETROSPECTIVES/lachesis-1.json",
+      "blob_sha": "fc2ef99804a8279bb9a62f7d1555a7363e7c3237",
+      "quote": "The adversary is not infallible either. codex re-raised a false HEX64/terminator finding; verifying it empirically (rather than implementing on its say-so) is the same discipline applied to the reviewer."
+    },
+    {
+      "id": "honest-limits",
+      "source_path": "lachesis/memory/NON-CLAIMS.md",
+      "blob_sha": "cee5776e5a359f1069d8870dca12d2e92e5b07c5",
+      "quote": "What Lachesis does NOT do or establish. These are honest limits, several IRREDUCIBLE without crossing the frozen boundary — recorded rather than papered over. A shortcut hides what wasn't done; a bounded scope records it."
+    }
+  ]
+}
