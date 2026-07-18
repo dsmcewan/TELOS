@@ -1,0 +1,55 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:a515c2a31e79db557b32666f4bbdd941855289cd926d3932754d6422e6fe020b",
+  "output_plan_artifact_hash": "sha256:a515c2a31e79db557b32666f4bbdd941855289cd926d3932754d6422e6fe020b",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:51f1ca052456cecec78d5f9a488e71da134c400468c08ce3c871dc40c4ffe806",
+    "provenance_key": "anthropic:msg_011Cd9TsVzu6gRRKWiHKeBNv"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:6ff3db533458546c3696e6d69be701f7f987cf2f540bc8690eafd25c9fcde610",
+    "provenance_key": "openai:chatcmpl-E2xkENJ6DhgKfzMtDnOYqIbT6RIOt",
+    "bound_hash": "sha256:d4182855f1bd0714477f8c4f72593069fba9766c42a1a9ac6305a6d39d300a4e"
+  },
+  "objections": [
+    {
+      "claim": "Section 3 exempts plan-version retirement from the required `SUPERSEDED` record and `supersedes` edge, while frozen `CHANGE-PROTOCOL.md` explicitly requires all three surfaces when retiring an artifact or plan. The repository evidence that plan versions cannot currently be represented as weave nodes exposes a genuine frozen-spec/schema incompatibility; it does not authorize a peer-model applicability exemption. The unanchored “Eye/coordinator” characterization is not an Eye ruling followed by a Daedalus delta, new plan version, TELOS authorization, and renewed implementation authority.",
+      "scope": "plan-escalation",
+      "objection_hash": "sha256:1853c499dc9ecfcca9c12272fcc0fdc4da15c2512b90072bcd21b78884905379",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The proposed READ-ONLY oracle is not discriminating. Scanning only `ingest.mjs`, `verify.mjs`, and `detect.mjs` for named fs-write APIs permits writes through local imported modules, aliases or computed properties, `FileHandle` methods, dynamic imports, `child_process`, or other unscanned code. Such an implementation could pass while mutating the repository, so the oracle cannot support the stated machine-enforced READ-ONLY claim.",
+      "scope": "oracle",
+      "objection_hash": "sha256:b0db504f25741be9549c54b5f69fab5c9f9cdbec565293e52161d3d1d1201f4e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "Candidate discovery is not closed or authority-anchored. “The committed record set,” “the weave snapshot,” and “reusing Lachesis's snapshot loader design” specify neither exact roots/manifest nor a snapshot path, schema, and content identity. A verifier can omit a `SUPERSEDED` record or `supersedes` edge and still return `consistent`, making the golden incapable of proving repository-wide supersession consistency.",
+      "scope": "ingestion",
+      "objection_hash": "sha256:1988992d6ebca861b234e3eac53cfc2ddc908f6013f7ec0b129ae51fc382bfeb",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "Kind detection requires extracting the retired identity from each `supersedes` edge, but edge direction is explicitly deferred. Since both edge endpoints are normally weave-node ids, membership alone cannot determine which endpoint is retired. The proposed detector therefore has no deterministic mechanism for classifying an edge as described.",
+      "scope": "identity-resolution",
+      "objection_hash": "sha256:6d7a57c3ba18939d645aa3a0354af3f10110be020c85285118ad4ebc3aac41b0",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

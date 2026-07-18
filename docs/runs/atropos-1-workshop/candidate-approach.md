@@ -1,4 +1,4 @@
-# Candidate approach (rev 2) — Atropos (enrollment quest, cycle 1)
+# Candidate approach (rev 3) — Atropos (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json`.
@@ -10,7 +10,10 @@ Rev 2 incorporates the round-1 technical resolutions from **codex, the peer plan
 deferred to GPT on two design calls — ordinary model collaboration, `decision-round-1-result.json`; The Eye's
 consequential authority — merges/authorization/enrollment — is unaffected) and fixes the round-2 objections.
 **Design decision, not a governance change:** per The Eye/coordinator, the per-kind surface applicability is a
-technical call resolved by the peer model — **no CHANGE-PROTOCOL edit** (that draft is superseded).
+technical call resolved by the peer model — **no CHANGE-PROTOCOL edit** (that draft is superseded). Rev 3 fixes
+the round-2 objections and, per round-3, (a) shows The Eye's ruling on the CHANGE-PROTOCOL/schema tension so it
+reads as ruled not designed-around, (b) makes edge classification direction-free, (c) closes + anchors
+ingestion discovery, (d) hardens the READ-ONLY oracle across the whole runtime surface.
 
 ## 0. Reality (verified, not presumed)
 `CHANGE-PROTOCOL.md` (`status: living`) names three supersession surfaces (record `SUPERSEDED`; weave
@@ -32,8 +35,11 @@ Candidate set = UNION of: `CURRENT-AUTHORITY.json#superseded` entries; committed
 `SUPERSEDED`; committed weave edges with `edge_kind` exactly `supersedes`. Classify each into exactly ONE kind:
 - **plan-version** — a valid closed-shape `#superseded` entry whose authoritative identity is its `plan_version`
   field (a `vN`-looking string elsewhere is NOT sufficient).
-- **weave-node-backed** — a `SUPERSEDED` record or `supersedes` edge whose retired identity is a 64-hex id
-  PRESENT as a weave node id in the snapshot (set-membership — NOT `deriveNodeId` re-derivation; boundary-safe).
+- **weave-node-backed** — a `SUPERSEDED` record whose referenced identity is a 64-hex id PRESENT as a weave
+  node id in the snapshot (set-membership — NOT `deriveNodeId` re-derivation; boundary-safe), OR **any**
+  `supersedes` edge (an edge candidate is node-backed by construction — its endpoints are weave-node ids; which
+  endpoint is the RETIRED one is edge-direction, part of the DEFERRED full node-backed verifier and NOT needed
+  to classify: any `supersedes` edge → node-backed → the deterministic short-circuit below).
 - **unrepresented/unknown** — anything else: an id in more than one source with disagreement, an identity
   appearing as BOTH a plan-version and a weave node, a bare edge/record with no resolvable first-class weave-node
   identity, or a malformed shape. NEVER silently assigned the smaller plan surface set.
@@ -51,6 +57,10 @@ detecting via source+membership, not by matching the (distinct) record-kind and 
   `superseded_by` resolves only to `active_plan.version` or another unique superseded `plan_version` — reject
   self/dangling/cycles (visited-set); every chain TERMINATES at `active_plan.version` (a stable
   `sha256:`-anchored current authority). No `SUPERSEDED` record / weave edge required (structurally inapplicable).
+  **This CHANGE-PROTOCOL(living)/schema tension was EXPLICITLY ESCALATED to The Eye and RULED (2026-07-18): it
+  is a design-level applicability determination — a plan-version's weave-edge + record surfaces are structurally
+  inapplicable (verified fact), not a spec defect — resolved as a technical design call (peer-model input), NOT
+  a CHANGE-PROTOCOL amendment. It is therefore NOT designed-around; it is ruled.**
 - **weave-node-backed → deterministic `UNREPRESENTABLE_CURRENT_AUTHORITY_REFLECTION` (DEFERRED, cycle-1):** the
   current committed `CURRENT-AUTHORITY` closed schema represents ONLY plan-versions, so a node-backed retirement's
   required `CURRENT-AUTHORITY` reflection cannot be represented → `inconsistent` reason
@@ -65,11 +75,21 @@ detecting via source+membership, not by matching the (distinct) record-kind and 
 passes its checks; NO node-backed or unknown candidate is present (both short-circuit to `inconsistent`). Real
 data → 4 plan-versions, all → v15 → `consistent`.
 
-## 4. Ingestion (fail-closed) — `atropos/ingest.mjs`
-Reads `CURRENT-AUTHORITY.json` (closed-shape `#superseded` + `active_plan.version`), the committed record set,
-and the weave `supersedes`-edge slice (reusing Lachesis's snapshot loader design). Every anomaly throws; no
-partial result reaches the verifier. Trust NON-CLAIM: integrity RELATIVE TO the supplied inputs; no durable
-authenticated root (HELD for The Eye).
+## 4. Ingestion (fail-closed, CLOSED + anchored discovery) — `atropos/ingest.mjs`
+Inputs are EXACT + closed (a verifier cannot silently omit a surface and still pass):
+- **CURRENT-AUTHORITY** — the repo-root `CURRENT-AUTHORITY.json`, closed-shape `#superseded` + `active_plan.version`;
+  path pinned in `CONTRACTS/supersession.json`.
+- **SUPERSEDED records** — discovered over a CLOSED, pinned ROOT SET (`docs/institutional-memory/**`,
+  `clotho/memory/**`, and each enrolled `<component>/memory/**`) matching `*.json` with `status === "SUPERSEDED"`;
+  the root set is enumerated in the contract (no open globbing).
+- **weave `supersedes` edges** — read via a PINNED `atropos/config/snapshot-manifest.json` using Lachesis's
+  exact `loadWeave` (path bound to the manifest + realpath-contained; raw-byte digest; canonical-JSON;
+  fail-closed), restricted to `edge_kind === "supersedes"`.
+Every anomaly throws; no partial result reaches the verifier. **Discovery is discriminating: because the
+candidate set is the closed UNION of all three sources, a `SUPERSEDED` record or `supersedes` edge that IS
+present forces a node-backed candidate → `UNREPRESENTABLE…` → `inconsistent` — the verifier cannot omit it and
+return `consistent`.** Trust NON-CLAIM: integrity RELATIVE TO the supplied inputs; no durable authenticated
+root (HELD for The Eye).
 
 ## 5. Oracle + golden
 - `scripts/test-verify.mjs`: discriminating fixtures each FAIL a wrong impl — dangling/self/cyclic
@@ -79,10 +99,15 @@ authenticated root (HELD for The Eye).
   `CURRENT-AUTHORITY.json`:** 4 plan-versions, all `superseded_by=v15`, all `must_not_govern_new_work:true` →
   `consistent`.
 - `scripts/test-boundary.mjs`: source-profile boundary oracle (reused from Lachesis + its hardening).
-- **`scripts/test-readonly.mjs` (executable READ-ONLY oracle):** static scan of the runtime surface
-  (`ingest.mjs`/`verify.mjs`/`detect.mjs`) rejecting any fs-WRITE API (`writeFile*`, `appendFile*`, `rm*`,
-  `rename*`, `mkdir*`, `unlink*`, `truncate*`, `chmod*`, `open` with a write flag, `createWriteStream`) +
-  fixture negatives — so READ-ONLY is machine-enforced, not merely asserted.
+- **`scripts/test-readonly.mjs` (executable READ-ONLY oracle):** scans ALL runtime `.mjs` recursively
+  (excluding `scripts/`), comment-stripped (reusing the boundary oracle's stripper), rejecting any fs-WRITE or
+  process-spawn surface: `writeFile*`, `appendFile*`, `rm*`, `rmdir*`, `rename*`, `mkdir*`, `unlink*`,
+  `truncate*`, `chmod*`, `chown*`, `createWriteStream`, `open`/`opendir` with a write flag, FileHandle write
+  methods (`.write`/`.appendFile`/`.truncate`), and `node:child_process` / `process.binding` / `process.dlopen`.
+  Plus branch-isolating fixture negatives (each flagged) so a no-op cannot pass. **NON-CLAIM:** this is a
+  fail-closed STATIC scan over the closed import surface (the boundary oracle already rejects dynamic
+  `import()`/`require`/`createRequire`/`Module._load`), NOT a complete taint analysis; combined with the
+  zero-`dependencies` + no-`clotho`-import boundary, the runtime cannot reach an unscanned write path.
 
 ## 6. Anchoring + memory layout
 No CHANGE-PROTOCOL edit (design decision, per ruling). `atropos/memory/CONTRACTS/supersession.json` starts
