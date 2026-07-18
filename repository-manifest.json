@@ -168,9 +168,7 @@
   "future_modules": [
     { "name": "hermes", "role": "Hermes", "role_meaning": "API management and inter-system communication: routing, contracts, translation, and delivery." },
     { "name": "medusa", "role": "Medusa", "role_meaning": "defensive edge enforcement; blocks or quarantines hostile and nonconforming traffic." },
-    { "name": "narcissus", "role": "Narcissus", "role_meaning": "production of full-rollout, award-standard front-ends for enrolled products through the reflection loop: iterative UI rendering and visual review, repeated until the surface is genuinely beautiful, distinctive, and functionally complete." },
-    { "name": "lachesis", "role": "Lachesis", "role_meaning": "measures dependencies, relevance, risk, and blast radius." },
-    { "name": "atropos", "role": "Atropos", "role_meaning": "retires obsolete relationships, artifacts, tools, and processes." }
+    { "name": "narcissus", "role": "Narcissus", "role_meaning": "production of full-rollout, award-standard front-ends for enrolled products through the reflection loop: iterative UI rendering and visual review, repeated until the surface is genuinely beautiful, distinctive, and functionally complete." }
   ],
   "future_modules_note": "Registered mythological terms with defined system responsibilities and NO implementation yet — reserved WITH meaning (docs/mythological-vocabulary.md; meanings verbatim, machine-checked). Do not coin, do not assume existence; implementing one follows CHANGE-PROTOCOL + the Iliad lifecycle. Machine copy of record: docs/institutional-memory/iliad/CONTRACTS/enrollment.json#future_modules_registered_unimplemented (verify-contracts requires the two lists equal).",
   "capability_modules": [

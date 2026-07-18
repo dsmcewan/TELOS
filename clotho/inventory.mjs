@@ -19,10 +19,12 @@
 // repository and require each to be either committed here or listed in
 // PACKAGE_ROOTS_EXCLUDE — so no package root can be silently omitted.
 export const PACKAGE_ROOTS = Object.freeze([
+  "atropos",
   "breakout",
   "build-gate",
   "clotho",
   "connectors/ai-peer-mcp",
+  "lachesis",
   "merkle-dag"
 ]);
 
@@ -34,6 +36,7 @@ export const PACKAGE_ROOTS = Object.freeze([
 export const PACKAGE_ROOTS_EXCLUDE = Object.freeze([
   "ai-forge",
   "forge",
+  "narcissus/flagship",
   "saas-forge"
 ]);
 
