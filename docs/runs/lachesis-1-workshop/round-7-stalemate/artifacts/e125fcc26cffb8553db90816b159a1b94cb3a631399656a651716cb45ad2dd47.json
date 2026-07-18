@@ -1,0 +1,45 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "The ingestion oracle does not prove acceptance of the declared complete Clotho vocabulary. Its positive metric fixtures need only the three metric-relevant edge kinds and whatever node/source_ref forms those fixtures use; all listed vocabulary tests are rejection tests. An implementation that rejects valid metric-irrelevant node kinds, edge kinds, or allowed source_ref schemes can therefore pass. Add positive ingestion coverage for every pinned node kind, edge kind, and source_ref scheme through loadWeave().",
+        "scope": "candidate-oracle"
+      },
+      {
+        "claim": "The digest oracle does not discriminate the frozen digest operations. Canonically serialized positive files plus generic mismatch negatives can pass under an incorrect raw-byte hash for manifest/attestation JSON or an incorrect parsed/canonical hash for the JSONL snapshot. Add key-order/whitespace-varied JSON positives that retain the canonical digest, and a semantically equivalent snapshot byte mutation that must fail against the unchanged raw-byte digest.",
+        "scope": "candidate-oracle"
+      },
+      {
+        "claim": "Graph semantics remain under-specified where they affect results: dependencies() does not state whether the queried node is excluded when a cycle reaches it, and 'duplicate edge' does not define identity (entire canonical record, edge id, or the kind/from/to relation). The cycle oracle only mentions termination/double-counting, while an exact duplicate fixture would not distinguish the competing duplicate definitions. Pin both semantics and add discriminating fixtures, including parallel records with the same relation but differing provenance if such records are valid.",
+        "scope": "candidate-contract"
+      },
+      {
+        "claim": "snapshot_path is declared repo-relative, but no validation or oracle enforces that property. Digest authorization alone can accept an authority-pinned absolute path, traversal path, or repository symlink resolving outside the repository. Enforce a normalized repository-relative path whose resolved target remains beneath the repository root, and test absolute, traversal, and escaping-symlink cases.",
+        "scope": "candidate-ingestion"
+      },
+      {
+        "claim": "The layout preserves rejected alternatives only as DECISIONS/rejected-alternatives.md. That conflicts with the frozen machine-first and three-representation disciplines and with rejected-alternative being a closed machine-record kind: the listed load-bearing rejection decisions lack content-addressed machine records, authority anchors, and executable verification. Author authority-anchored rejected-alternative JSON records and render the Markdown projection from them.",
+        "scope": "candidate-memory-layout"
+      },
+      {
+        "claim": "The non-import/read-only boundary and zero-runtime-dependency constraints are load-bearing but have no stated discriminating oracle. npm test as described can pass after adding an import from clotho/ or a runtime dependency. Add an executable package-boundary check that rejects clotho imports, undeclared or non-stdlib runtime imports, dynamic-import escape paths, and nonempty runtime dependency fields.",
+        "scope": "candidate-oracle"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2tMoMxeB84uhxBr4ry097XyxChG6",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2tMoMxeB84uhxBr4ry097XyxChG6",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}

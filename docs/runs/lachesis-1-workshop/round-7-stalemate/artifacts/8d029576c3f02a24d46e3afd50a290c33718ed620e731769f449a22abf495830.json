@@ -1,0 +1,71 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:e8043089e72401841521b79989a0681d58802dd18b118e7c53f09c2aa6d37f49",
+  "output_plan_artifact_hash": "sha256:e8043089e72401841521b79989a0681d58802dd18b118e7c53f09c2aa6d37f49",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:cb6ad886ed36006c63939932b14f66f29012d009b4572a4d87bf4cb3eb5bd11f",
+    "provenance_key": "anthropic:msg_011Cd96UxJ763MhVnjT6vnrE"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:e125fcc26cffb8553db90816b159a1b94cb3a631399656a651716cb45ad2dd47",
+    "provenance_key": "openai:chatcmpl-E2tMoMxeB84uhxBr4ry097XyxChG6",
+    "bound_hash": "sha256:e8043089e72401841521b79989a0681d58802dd18b118e7c53f09c2aa6d37f49"
+  },
+  "objections": [
+    {
+      "claim": "The ingestion oracle does not prove acceptance of the declared complete Clotho vocabulary. Its positive metric fixtures need only the three metric-relevant edge kinds and whatever node/source_ref forms those fixtures use; all listed vocabulary tests are rejection tests. An implementation that rejects valid metric-irrelevant node kinds, edge kinds, or allowed source_ref schemes can therefore pass. Add positive ingestion coverage for every pinned node kind, edge kind, and source_ref scheme through loadWeave().",
+      "scope": "candidate-oracle",
+      "objection_hash": "sha256:e58330eacc8d95615107bedf0dd3ecc16358ef52c1ef229ab3417e4c9111e285",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The digest oracle does not discriminate the frozen digest operations. Canonically serialized positive files plus generic mismatch negatives can pass under an incorrect raw-byte hash for manifest/attestation JSON or an incorrect parsed/canonical hash for the JSONL snapshot. Add key-order/whitespace-varied JSON positives that retain the canonical digest, and a semantically equivalent snapshot byte mutation that must fail against the unchanged raw-byte digest.",
+      "scope": "candidate-oracle",
+      "objection_hash": "sha256:b799f0e7a77cb9ea19c70f15c9d02c838f55c36609e14f65ff8bcbc70e80bbf5",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "Graph semantics remain under-specified where they affect results: dependencies() does not state whether the queried node is excluded when a cycle reaches it, and 'duplicate edge' does not define identity (entire canonical record, edge id, or the kind/from/to relation). The cycle oracle only mentions termination/double-counting, while an exact duplicate fixture would not distinguish the competing duplicate definitions. Pin both semantics and add discriminating fixtures, including parallel records with the same relation but differing provenance if such records are valid.",
+      "scope": "candidate-contract",
+      "objection_hash": "sha256:df6e84e2495039daff3a9f116002adf0b9fbd21c48a7b12ebb79f666ca640c35",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "snapshot_path is declared repo-relative, but no validation or oracle enforces that property. Digest authorization alone can accept an authority-pinned absolute path, traversal path, or repository symlink resolving outside the repository. Enforce a normalized repository-relative path whose resolved target remains beneath the repository root, and test absolute, traversal, and escaping-symlink cases.",
+      "scope": "candidate-ingestion",
+      "objection_hash": "sha256:d2a0cb68dcdf157a7f56c9ae35089505cfaf346f030f1a2fbad2331c1c2aef49",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The layout preserves rejected alternatives only as DECISIONS/rejected-alternatives.md. That conflicts with the frozen machine-first and three-representation disciplines and with rejected-alternative being a closed machine-record kind: the listed load-bearing rejection decisions lack content-addressed machine records, authority anchors, and executable verification. Author authority-anchored rejected-alternative JSON records and render the Markdown projection from them.",
+      "scope": "candidate-memory-layout",
+      "objection_hash": "sha256:751e5a73f4159b057ec46f81880f85e38be2a53dd9c0e8c2b0037515fdab8824",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The non-import/read-only boundary and zero-runtime-dependency constraints are load-bearing but have no stated discriminating oracle. npm test as described can pass after adding an import from clotho/ or a runtime dependency. Add an executable package-boundary check that rejects clotho imports, undeclared or non-stdlib runtime imports, dynamic-import escape paths, and nonempty runtime dependency fields.",
+      "scope": "candidate-oracle",
+      "objection_hash": "sha256:66b88e16901922649777a1617768bf95f0ea438807cf2e06e111eba1ce7f4b8d",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

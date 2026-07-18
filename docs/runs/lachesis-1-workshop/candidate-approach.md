@@ -1,13 +1,15 @@
-# Candidate approach (rev 7) — Lachesis (enrollment quest, cycle 1)
+# Candidate approach (rev 8) — Lachesis (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-lachesis-1.json`.
 **Registered meaning (fixed):** Lachesis *measures dependencies, relevance, risk, and blast radius*. It does
 metrics. No extension. Authored AI-centric / machine-first (the first-three-modules standard).
 
-Rev 6 resolves the round-5 objections (all specification-completeness; architecture stable): §1 provenance
-overclaim; attestation data-source + isolated digest-check negative undefined; SPECIFIED-PENDING missing the
-authority triple; digest operation under-specified; a placeholder authority anchor.
+Rev 8 resolves the round-7 objections (all oracle-discrimination; architecture stable): positive vocabulary
+acceptance; digest-method discrimination; graph-semantics edge cases (cycle-to-self exclusion, duplicate-edge
+identity); repo-relative `snapshot_path` enforcement; rejected-alternative as content-addressed machine-records;
+an executable package-boundary oracle. (Prior fixes retained: §1 provenance restricted + conditional-root;
+attestation data-source; authority triple; frozen digest ops; real anchors.)
 
 **Digest operations (frozen, used everywhere below):** JSON records (manifest, attestation) are digested as
 `sha256:` + `sha256hex(canonicalize(record))` using the sanctioned shared primitives
@@ -26,9 +28,12 @@ caller argument:
 2. `loadWeave()` (NO path argument) reads `lachesis/memory/CONTRACTS/snapshot-manifest.json`, recomputes its
    digest, checks it == the CURRENT-AUTHORITY pin; mismatch → throw.
 3. **Manifest schema (closed, frozen):** `{ snapshot_path: <repo-relative string>, snapshot_digest:
-   <sha256:64hex> }` (extra/missing field → throw). `loadWeave()` opens the manifest's OWN `snapshot_path`
-   (the caller cannot point it elsewhere — this authorizes a file LOCATION, not merely matching bytes) and
-   checks that file's raw-byte digest == `snapshot_digest`; mismatch → throw.
+   <sha256:64hex> }` (extra/missing field → throw). `snapshot_path` MUST be a normalized, repo-relative path
+   whose realpath-resolved target remains BENEATH the repository root — reject absolute paths, `..` traversal,
+   and symlinks resolving outside the repo (each throws; each has an oracle fixture). `loadWeave()` opens the
+   manifest's OWN validated `snapshot_path` (the caller cannot point it elsewhere — this authorizes a file
+   LOCATION, not merely matching bytes) and checks that file's raw-byte digest == `snapshot_digest`; mismatch
+   → throw.
 **What the chain proves — CONDITIONAL, honest (fixes the root overclaim):** *Given the repository authority
 root (`CURRENT-AUTHORITY.json`) is authorized and unchanged* — a precondition enforced OUTSIDE Lachesis (git
 history, the build-gate, The Eye); Lachesis has NO mechanism to authenticate that root and does not claim one —
@@ -62,7 +67,8 @@ the ONLY entry to metrics; every check throws (fail-closed):
 - each `source_ref` matches an allowed scheme (the complete closed set — SCHEMA.md):
   `sha256:<64hex>` | `file:<path>@<40hex>` | `ledger:<path>#<64hex>` | `git:<40hex>`; else throw.
 - every edge `from_node`/`to_node` resolves to a node id present in the snapshot (reference integrity); else throw.
-- reject duplicate node ids and duplicate edges; else throw.
+- reject duplicate node ids (same `id`) and duplicate edges — **edge identity is the `(kind, from_node,
+  to_node)` relation** (two records with the same triple are duplicates, regardless of other fields); else throw.
 
 ## 3. Discriminating metric oracle (fixes obj. 2 — a wrong implementation MUST fail)
 
@@ -78,10 +84,20 @@ wrong implementation fails, not just the happy path:
   kind, unknown edge kind, invalid node-id syntax, disallowed source_ref scheme, each missing required field,
   each mistyped field, an unexpected/extra field on a node/edge/manifest record (closed schemas), duplicate
   node, duplicate edge, dangling edge, unparseable line, snapshot-digest mismatch, manifest-digest ≠
-  CURRENT-AUTHORITY, wrong `snapshot_path` file → each throws.
+  CURRENT-AUTHORITY, absolute/`..`-traversal/escaping-symlink `snapshot_path` → each throws.
+- **POSITIVE vocabulary acceptance** (proves the loader ACCEPTS the complete vocabulary, not just rejects): a
+  fixture snapshot exercising metric-IRRELEVANT node kinds, ALL eight edge kinds, and ALL four source_ref
+  schemes must LOAD successfully (accepted, metric-irrelevant kinds ignored by the metrics) — an over-strict
+  implementation that rejects valid kinds/schemes fails here.
+- **digest-method discrimination** (proves the FROZEN digest ops, not just "some hash"): (a) manifest/attestation
+  JSON positives with varied key-order/whitespace that retain the SAME canonical digest must verify (proves
+  `canonicalize`+`sha256hex`, not raw-byte, for JSON records); (b) a snapshot byte-mutation that is
+  "semantically equivalent" (e.g. reordered/whitespaced lines) MUST FAIL the raw-byte snapshot digest (proves
+  the snapshot is raw-byte hashed, not canonicalized).
 Pinned semantics (frozen in `metrics.json`): `depends-on` = `from` dependent → `to` dependency;
-`dependencies` = transitive forward closure (visited-set, fixpoint); `blastRadius(depth)` = reverse-reachable
-dependents to `depth` hops (node excluded), visited-set; `relevance` = `raw = 3·(depends-on in) + 2·(verified-by
+`dependencies` = transitive forward closure (visited-set, fixpoint), **EXCLUDING the queried node itself even
+when a cycle reaches back to it** (a fixture pins this cycle-to-self exclusion); `blastRadius(depth)` =
+reverse-reachable dependents to `depth` hops (node excluded), visited-set; `relevance` = `raw = 3·(depends-on in) + 2·(verified-by
 in) + 1·(introduced-by in)`, `normalized = raw / MAX_RAW` over ALL nodes, `MAX_RAW==0 → 0`;
 **`riskClass` uses `blastRadius` at a PINNED depth `RISK_BLAST_DEPTH` = the full transitive reverse closure
 (unbounded, visited-set cycle-safe) — the true blast radius, so the class is depth-deterministic** = `high` if
@@ -124,14 +140,19 @@ Lachesis reads the committed weave snapshot `docs/runs/clotho-self-weave/thread-
 — never `import`s `clotho/`; its metrics are its own. `lachesis/memory/`: `IDENTITY.md`; `INVARIANTS.json`/`.md`;
 `CONTRACTS/{metrics.json, snapshot-manifest.json, coverage-attestations.json}` (manifest + attestations
 digests pinned under named CURRENT-AUTHORITY keys); `DECISIONS/decision-lachesis-cycle-1.json` (the AFFIRMATIVE
-decision record carrying the authority triple, §6) + `DECISIONS/rejected-alternatives.md` (rejected: import
-`clotho/query.mjs`; re-implement blastRadius/deriveNodeId
-— drift; presence-based completeness — false rule; caller-supplied digest — substitutable; unpinned working-tree
-manifest — mutate-both bypass; narrowed edge-kind set — must accept the complete closed set; unpinned
-risk-blast depth — non-deterministic class); `NON-CLAIMS.json`/`.md` (measures ≠ authorizes/retires/weaves/renders;
-risk advisory; relevance a proxy; does NOT certify completeness; does NOT re-derive content-addresses; consumes
-a snapshot, not the live ledger); `FAILURE-MODES.md`; `EVIDENCE/`; `comprehension-queries.json`; `README.md`.
-`package.json`: `"type":"module"`, zero deps, `npm test` → `test-metrics.mjs`.
+decision record carrying the authority triple, §6); **`DECISIONS/rejected-alternatives/` — one content-addressed
+`rejected-alternative` MACHINE-RECORD (JSON, the closed kind's `id` = its content-address, authority-anchored)
+PER load-bearing rejection** (import `clotho/query.mjs`; re-implement blastRadius/deriveNodeId — drift;
+presence-based completeness — false rule; caller-supplied digest — substitutable; unpinned working-tree manifest
+— mutate-both bypass; narrowed edge-kind set; unpinned risk-blast depth), machine-first with a human-rendered
+`README.md` + an executable check (the three-representation discipline), NOT prose-only; `NON-CLAIMS.json`/`.md`
+(measures ≠ authorizes/retires/weaves/renders; risk advisory; relevance a proxy; does NOT certify completeness;
+does NOT re-derive content-addresses; consumes a snapshot, not the live ledger); `FAILURE-MODES.md`;
+`EVIDENCE/`; `comprehension-queries.json`; `README.md`. `package.json`: `"type":"module"`, `dependencies` empty.
+**`npm test` runs BOTH `test-metrics.mjs` AND an executable package-boundary oracle
+`scripts/test-boundary.mjs`** that FAILS on: any import from `clotho/`; any non-stdlib (non-`node:`) or
+undeclared runtime import; a dynamic-`import()`/`require()` escape path; or a non-empty `dependencies` field —
+so the load-bearing no-import/zero-dep boundary is machine-enforced, not merely asserted.
 
 ## 6. Acceptance sequence (documentation-first)
 
