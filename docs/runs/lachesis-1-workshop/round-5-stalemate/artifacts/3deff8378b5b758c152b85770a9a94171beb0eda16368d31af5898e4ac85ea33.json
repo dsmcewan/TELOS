@@ -1,0 +1,71 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:55056949a2c1e655fcb7139e002b0cd7f67978a834a2c1bf15ab9cab39d36a09",
+  "output_plan_artifact_hash": "sha256:55056949a2c1e655fcb7139e002b0cd7f67978a834a2c1bf15ab9cab39d36a09",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:b5ef560184cf9ad1aa44f405349ddf2648f1cf3ba5c012f245f86cac5abf12eb",
+    "provenance_key": "anthropic:msg_011Cd95VT95NjvqwyzycopNr"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:d0420828ead5f0df4f4a7ad2c339a9d7bcf39c727c4b468e5016cbf37a5a6b0f",
+    "provenance_key": "openai:chatcmpl-E2tADFwJLJ18ZgKkGATprjOpaB26D",
+    "bound_hash": "sha256:55056949a2c1e655fcb7139e002b0cd7f67978a834a2c1bf15ab9cab39d36a09"
+  },
+  "objections": [
+    {
+      "claim": "The attestation oracle does not discriminate enforcement of the attestation-content digest. An implementation that never computes or compares that digest would still pass the listed positive and negatives: the positive has valid fields, while unauthorized-authority, stale-snapshot, wrong-node, and malformed-schema cases fail for independent reasons. Add isolated negatives for a semantically valid attestation with a mismatched digest pin and for a missing CURRENT-AUTHORITY attestation pin.",
+      "scope": "candidate §§3–4: attestation oracle",
+      "objection_hash": "sha256:2e1c7299f9addcd57f8ddab23c244103083a5a14c154848f828b3eadb8e4f379",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "`coverage(nodeId)` has no deterministic attestation data source. The approach specifies one record schema but not its file location, collection/container shape, CURRENT-AUTHORITY key structure, per-node selection, duplicate handling, or whether multiple node attestations are permitted. It also leaves `attested_by` resolution undefined. Different conforming implementations could therefore return different coverage for the same repository state.",
+      "scope": "candidate §4: attestation mechanism",
+      "objection_hash": "sha256:a717ab0893b07f813389047276571543d29bbce89638d0f98ed2ff9cdd6f97ad",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "A pinned snapshot digest proves integrity and authorized selection of the snapshot bytes; it does not prove that node or edge identifiers were correctly derived, nor that Clotho authored those bytes. The statement that it 'transitively verifies every node/edge id' and proves 'Clotho committed those bytes' is unsupported and contradicts the explicit non-claim that Lachesis does not re-derive content addresses. Either restrict the claim to integrity of opaque identifiers or verify authority-anchored Clotho production evidence.",
+      "scope": "candidate §1: provenance semantics",
+      "objection_hash": "sha256:0a3a5413c79ba2ceb6edd458bbaa5965498012b48b5b88f00d32f80895f4d37c",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The proposed `SPECIFIED-PENDING-IMPLEMENTATION` contract is missing frozen-schema prerequisites. That status requires authority anchored by a plan `sha256:`, an `authz-N`, and a decision id. The listed layout contains only `DECISIONS/rejected-alternatives.md`, and the acceptance sequence never creates or references the required affirmative decision record or complete authority triple.",
+      "scope": "candidate §§5–6: institutional-memory contract",
+      "objection_hash": "sha256:211ec9e7061e7ce22698f576af5b32c6906158149b20f559fb30c421c3017b36",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The trust-chain digest operation is under-specified. The snapshot is described as byte-exact, but manifest and attestation 'content-digest' computations do not state raw-byte versus canonical-JSON hashing, encoding, digest prefix, or the required `canonicalize`/`sha256hex` use. Since these digests are the enforcement mechanism, implementations can disagree while following the approach.",
+      "scope": "candidate §§1 and 4: digest contract",
+      "objection_hash": "sha256:c293e6807e911e470d7d84516b6e34a81ae4c8123fbbd8f3f7f0a20720b2076c",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "`clotho/registry.mjs@<40hex>` is a placeholder, not a stable authority identifier. Consequently, the asserted complete node-kind, edge-kind, and source-reference sets cannot be checked against the exact Clotho registry revision, violating the frozen authority-anchoring discipline.",
+      "scope": "candidate §2: closed-set authority anchor",
+      "objection_hash": "sha256:e62d2c0556dd808abf6a9ee4c29bfe0e990eb63bd45e716f492be1b50ac44630",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

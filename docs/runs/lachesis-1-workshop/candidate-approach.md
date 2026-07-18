@@ -1,13 +1,19 @@
-# Candidate approach (rev 5) — Lachesis (enrollment quest, cycle 1)
+# Candidate approach (rev 6) — Lachesis (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-lachesis-1.json`.
 **Registered meaning (fixed):** Lachesis *measures dependencies, relevance, risk, and blast radius*. It does
 metrics. No extension. Authored AI-centric / machine-first (the first-three-modules standard).
 
-Rev 5 resolves the round-4 objections: (1) the manifest itself was not independently pinned; (2) the closed
-sets were wrong (dropped `sha256:`; narrowed the edge kinds); (3) `riskClass` used an unpinned blast depth;
-(4) the attestation mechanism + its oracle negatives were underspecified.
+Rev 6 resolves the round-5 objections (all specification-completeness; architecture stable): §1 provenance
+overclaim; attestation data-source + isolated digest-check negative undefined; SPECIFIED-PENDING missing the
+authority triple; digest operation under-specified; a placeholder authority anchor.
+
+**Digest operations (frozen, used everywhere below):** JSON records (manifest, attestation) are digested as
+`sha256:` + `sha256hex(canonicalize(record))` using the sanctioned shared primitives
+`canonicalize`/`sha256hex` from `merkle-dag/vendor.mjs` (per SCHEMA.md reuse; zero-dep, not the clotho spine).
+The snapshot FILE is digested as `sha256:` + raw-byte sha256 of its UTF-8 bytes (`node:crypto`). Node/edge id
+syntax is CHECKED as `sha256:<64hex>` but NEVER recomputed (see §1 non-claim).
 
 ## 1. Trust root: a CURRENT-AUTHORITY → manifest → snapshot chain, each link verified (fixes obj. 3)
 
@@ -21,10 +27,12 @@ is provenance, chained to the authenticated root**, not recomputation, and NOT a
    matches the independent CURRENT-AUTHORITY pin — the root a caller cannot substitute.)
 3. The verified manifest pins the snapshot's sha256; `loadWeave()` checks the snapshot file == that digest;
    mismatch → throw.
-**A byte-exact snapshot digest transitively verifies every node/edge id inside — Clotho committed those bytes —
-so node identity is verified without recomputation.** Negatives: mutated snapshot, mutated manifest (both),
-and manifest-digest ≠ CURRENT-AUTHORITY each throw. NON-CLAIM: Lachesis verifies PROVENANCE + structure; it
-does not re-derive content-addresses (the chained digest is the trust root).
+**What the chained digest proves (restricted, honest):** that the snapshot bytes are the EXACT authorized,
+integrity-checked input selected by the authenticated root — authorized selection + byte integrity. It does
+NOT prove node/edge ids were correctly derived, nor that Clotho authored the bytes. Lachesis measures over the
+authorized bytes AS-IS. NON-CLAIM (consistent): Lachesis verifies snapshot provenance-of-selection + structure;
+it does not re-derive content-addresses or attest authorship. Negatives: mutated snapshot, mutated manifest
+(both), and manifest-digest ≠ CURRENT-AUTHORITY each throw.
 
 ## 2. Fail-closed schema validation (fixes obj. 4 — defense-in-depth behind the digest)
 
@@ -34,7 +42,8 @@ does not re-derive content-addresses (the chained digest is the trust root).
 - record shape by `kind`: nodes vs edges have their complete required-field set with correct types (a closed
   per-kind shape table pinned in `metrics.json`); missing/mistyped field → throw.
 - `kind` ∈ the COMPLETE closed Clotho sets (pinned in `metrics.json`, authority-anchored to
-  `clotho/registry.mjs@<40hex>`, with a change_rule to re-sync if Clotho's change) — NODE_KINDS =
+  `file:clotho/registry.mjs@ed0e05c034317331e874ac511c4182580c192620`, with a change_rule to re-sync if
+  Clotho's change) — NODE_KINDS =
   {contract-clause, code-symbol, repository-file, test, commit, concern, obligation, check-contract,
   run-evidence, doc-section, decision}; EDGE_KINDS = {depends-on, introduced-by, motivated-by, verified-by,
   documented-in, evidenced-by, discharges, supersedes}. The loader ACCEPTS every known kind and ignores the
@@ -75,28 +84,36 @@ beyond a fixed small depth still counts).
 Presence of one edge per kind does NOT prove completeness; inferring it is the rejected false-completeness
 rule. Lachesis STRUCTURALLY cannot certify a snapshot is complete, so it stops trying — completeness is
 ATTESTATION-GATED with a closed, verifiable schema:
+- **Data source (deterministic, frozen):** attestations live in ONE file
+  `lachesis/memory/CONTRACTS/coverage-attestations.json` — a JSON array of records; that file's content-digest
+  (`sha256:`+`sha256hex(canonicalize(...))`) is pinned under a NAMED key
+  `CURRENT-AUTHORITY.json#lachesis_coverage_attestations_digest`. `attested_by` must equal a value in the
+  named authority list `CURRENT-AUTHORITY.json#lachesis_attestation_authorities`. Per-node selection = the
+  record whose `node_id` == the target; **two records for one `node_id` → throw** (no ambiguity); multiple
+  DISTINCT-node records are permitted.
 - **Attestation schema (closed, frozen in `metrics.json`):** `{ snapshot_digest: <sha256:64hex>, node_id:
-  <sha256:64hex>, coverage: "complete", attested_by: <authority anchor> }`; the attestation record's own
-  content-digest is pinned in `CURRENT-AUTHORITY.json` (same trust anchor as §1). Any extra/missing field or
-  wrong type → treated as absent (unverified).
-- **Verification (all must hold, else `unverified`):** the attestation's digest matches the CURRENT-AUTHORITY
-  pin; `snapshot_digest` == the loaded snapshot's verified digest (§1); `node_id` == the target node;
-  `attested_by` resolves to an authority anchor pinned in CURRENT-AUTHORITY; `coverage` == "complete".
-- `coverage(nodeId)` ∈ `attested-complete` (all checks pass) | `unverified` (otherwise). **riskClass is
-  floored: `low` ONLY when coverage == `attested-complete`; otherwise bumped to at least `medium` with
-  `coverage: "unverified"`.**
-- **Oracle:** POSITIVE (valid attestation → `attested-complete`, an otherwise-low node stays `low`) + NEGATIVES
-  each proving the floor: absent attestation, unauthorized `attested_by` (not in CURRENT-AUTHORITY),
-  stale-snapshot (`snapshot_digest` mismatch), wrong-node (`node_id` mismatch), malformed schema → each →
-  `unverified` and an otherwise-`low` node is floored to `medium`.
+  <sha256:64hex>, coverage: "complete", attested_by: <string> }`; extra/missing field or wrong type → absent
+  (unverified).
+- **Verification (ALL must hold, else `unverified`):** the attestations FILE digest == the named
+  CURRENT-AUTHORITY pin; the selected record's `snapshot_digest` == the loaded snapshot's verified digest (§1);
+  `node_id` == the target; `attested_by` ∈ the named authority list; `coverage` == "complete".
+- `coverage(nodeId)` ∈ `attested-complete` (all pass) | `unverified` (otherwise). **riskClass is floored: `low`
+  ONLY when `attested-complete`; otherwise bumped to at least `medium` with `coverage: "unverified"`.**
+- **Oracle:** POSITIVE (valid attestation → an otherwise-low node stays `low`) + NEGATIVES each isolating ONE
+  branch so an implementation that skips that check fails: **(digest) a semantically valid record (right node,
+  right snapshot, authorized) but the FILE digest ≠ the CURRENT-AUTHORITY pin → unverified**; absent record;
+  unauthorized `attested_by`; stale-snapshot (`snapshot_digest` mismatch); wrong-node; malformed schema;
+  duplicate `node_id` (→ throw) — and each `unverified` floors an otherwise-`low` node to `medium`.
 The prior presence-based `expected-coverage.json` is REMOVED (it was the false rule).
 
 ## 5. Boundary, layout, package
 
 Lachesis reads the committed weave snapshot `docs/runs/clotho-self-weave/thread-ledger.snapshot.jsonl` as DATA
 — never `import`s `clotho/`; its metrics are its own. `lachesis/memory/`: `IDENTITY.md`; `INVARIANTS.json`/`.md`;
-`CONTRACTS/{metrics.json, snapshot-manifest.json}` (manifest digest pinned in CURRENT-AUTHORITY);
-`DECISIONS/rejected-alternatives.md` (rejected: import `clotho/query.mjs`; re-implement blastRadius/deriveNodeId
+`CONTRACTS/{metrics.json, snapshot-manifest.json, coverage-attestations.json}` (manifest + attestations
+digests pinned under named CURRENT-AUTHORITY keys); `DECISIONS/decision-lachesis-cycle-1.json` (the AFFIRMATIVE
+decision record carrying the authority triple, §6) + `DECISIONS/rejected-alternatives.md` (rejected: import
+`clotho/query.mjs`; re-implement blastRadius/deriveNodeId
 — drift; presence-based completeness — false rule; caller-supplied digest — substitutable; unpinned working-tree
 manifest — mutate-both bypass; narrowed edge-kind set — must accept the complete closed set; unpinned
 risk-blast depth — non-deterministic class); `NON-CLAIMS.json`/`.md` (measures ≠ authorizes/retires/weaves/renders;
@@ -106,8 +123,14 @@ a snapshot, not the live ledger); `FAILURE-MODES.md`; `EVIDENCE/`; `comprehensio
 
 ## 6. Acceptance sequence (documentation-first)
 
-1. Author `metrics.json` (SPECIFIED-PENDING-IMPLEMENTATION + `becomes_normative_when` = test-metrics.mjs
-   passes) + `snapshot-manifest.json` + full memory set; render README (`--check`). 2. Comprehension gate:
+0. **Authority triple (minted at the preceding TELOS gate, referenced here):** the SPECIFIED-PENDING contract
+   requires the frozen triple — the plan `sha256:` (= the content-address of THIS matured approach), the
+   `authz-N` minted by the TELOS council for this Lachesis quest, and the decision id of
+   `DECISIONS/decision-lachesis-cycle-1.json` (the affirmative record authored from the council's ruling).
+   The contract is authored in Argo (post-authorization), so the triple already exists.
+1. Author `metrics.json` (SPECIFIED-PENDING-IMPLEMENTATION + the complete authority triple +
+   `becomes_normative_when` = test-metrics.mjs passes) + `snapshot-manifest.json` + `coverage-attestations.json`
+   + the affirmative decision record + full memory set; render README (`--check`). 2. Comprehension gate:
    pass→0; negatives ("Lachesis authorizes", "risk enforced", "relevance is ground truth", "certifies
    completeness", "recomputes node-ids", "caller supplies the digest", "the manifest is self-authenticating",
    "the loader accepts only three edge kinds")→nonzero, each proving its misconception.

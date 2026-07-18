@@ -1,0 +1,45 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "The attestation oracle does not discriminate enforcement of the attestation-content digest. An implementation that never computes or compares that digest would still pass the listed positive and negatives: the positive has valid fields, while unauthorized-authority, stale-snapshot, wrong-node, and malformed-schema cases fail for independent reasons. Add isolated negatives for a semantically valid attestation with a mismatched digest pin and for a missing CURRENT-AUTHORITY attestation pin.",
+        "scope": "candidate §§3–4: attestation oracle"
+      },
+      {
+        "claim": "`coverage(nodeId)` has no deterministic attestation data source. The approach specifies one record schema but not its file location, collection/container shape, CURRENT-AUTHORITY key structure, per-node selection, duplicate handling, or whether multiple node attestations are permitted. It also leaves `attested_by` resolution undefined. Different conforming implementations could therefore return different coverage for the same repository state.",
+        "scope": "candidate §4: attestation mechanism"
+      },
+      {
+        "claim": "A pinned snapshot digest proves integrity and authorized selection of the snapshot bytes; it does not prove that node or edge identifiers were correctly derived, nor that Clotho authored those bytes. The statement that it 'transitively verifies every node/edge id' and proves 'Clotho committed those bytes' is unsupported and contradicts the explicit non-claim that Lachesis does not re-derive content addresses. Either restrict the claim to integrity of opaque identifiers or verify authority-anchored Clotho production evidence.",
+        "scope": "candidate §1: provenance semantics"
+      },
+      {
+        "claim": "The proposed `SPECIFIED-PENDING-IMPLEMENTATION` contract is missing frozen-schema prerequisites. That status requires authority anchored by a plan `sha256:`, an `authz-N`, and a decision id. The listed layout contains only `DECISIONS/rejected-alternatives.md`, and the acceptance sequence never creates or references the required affirmative decision record or complete authority triple.",
+        "scope": "candidate §§5–6: institutional-memory contract"
+      },
+      {
+        "claim": "The trust-chain digest operation is under-specified. The snapshot is described as byte-exact, but manifest and attestation 'content-digest' computations do not state raw-byte versus canonical-JSON hashing, encoding, digest prefix, or the required `canonicalize`/`sha256hex` use. Since these digests are the enforcement mechanism, implementations can disagree while following the approach.",
+        "scope": "candidate §§1 and 4: digest contract"
+      },
+      {
+        "claim": "`clotho/registry.mjs@<40hex>` is a placeholder, not a stable authority identifier. Consequently, the asserted complete node-kind, edge-kind, and source-reference sets cannot be checked against the exact Clotho registry revision, violating the frozen authority-anchoring discipline.",
+        "scope": "candidate §2: closed-set authority anchor"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2tADFwJLJ18ZgKkGATprjOpaB26D",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2tADFwJLJ18ZgKkGATprjOpaB26D",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}
