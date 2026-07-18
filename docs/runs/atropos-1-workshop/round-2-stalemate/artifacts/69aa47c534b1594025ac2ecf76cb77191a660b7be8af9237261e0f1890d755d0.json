@@ -1,0 +1,49 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "Section 3's plan-version exception conflicts with the frozen CHANGE-PROTOCOL retirement row, which requires all three actions when retiring an obsolete plan: mark it SUPERSEDED, record a supersedes edge, and update CURRENT-AUTHORITY.json. The candidate also establishes that a plan-version cannot carry the required weave edge, making the frozen rule inapplicable as written. This is a genuine frozen-material ambiguity/defect; the held clarification cannot cure it. It requires an Eye ruling followed by a Daedalus delta, new TELOS authorization, and renewed implementation authority before the surface matrix is fixed or implemented.",
+        "scope": "plan-escalation"
+      },
+      {
+        "claim": "The preamble and sections 2/6 treat \"GPT-seat rulings\" and a \"codex ruling\" as authority delegated by The Eye. The frozen namespace policy expressly says The Eye's human-held authority cannot be delegated to a model. Model-seat conclusions may be review input but cannot authorize Ruling B, the anchoring amendment, or implementation.",
+        "scope": "candidate authority provenance"
+      },
+      {
+        "claim": "Sections 2-3 conflate the institutional-memory record-kind taxonomy with Clotho node kinds. The required \"same kind\" match is impossible for the listed kinds: record kinds such as contract and evidence differ from node kinds such as contract-clause and run-evidence, while the explicitly reusable Clotho decision kind is omitted from the candidate's node allowlist. Consequently, a valid SUPERSEDED record cannot satisfy the stated node-backed classification. Identity correspondence needs an explicit mapping or graph relation rather than kind equality.",
+        "scope": "candidate kind detection and identity resolution"
+      },
+      {
+        "claim": "The proposed oracle does not discriminate the node-backed verification logic. Under the candidate's own schema, every node-backed retirement necessarily returns UNREPRESENTABLE_CURRENT_AUTHORITY_REFLECTION, and the only listed node-backed fixture expects that result. An implementation that skips all record, edge-direction, successor-agreement, recursion, and terminal-authority checks and simply rejects every non-plan candidate would pass. Those checks cannot be NORMATIVE without an authorized representable schema and positive/negative fixtures, or they must be removed from the normative cycle-1 contract.",
+        "scope": "candidate oracle"
+      },
+      {
+        "claim": "The contract lifecycle omits mandatory frozen-protocol gates. SPECIFIED-PENDING-IMPLEMENTATION requires an existing plan sha256, authz-N, and decision anchor, but the candidate describes authorization as eventual. Its normative-flip condition names only the local test and committed clarification; it does not require integration with docs/institutional-memory/verify-contracts.mjs to prove contract/code equality and plan hashes. It also creates comprehension queries without requiring a successful comprehension-gate artifact before implementation authority. The approach must sequence all three requirements explicitly before implementation or normativity.",
+        "scope": "candidate institutional-memory protocol"
+      },
+      {
+        "claim": "The blanket rule that Atropos NEVER imports clotho/ is incompatible with the frozen instruction to reuse Clotho's deriveNodeId and closed identity kinds rather than reinventing them. The approach creates content-addressed component memory records and resolves weave identities but supplies no compliant deriveNodeId mechanism. A sanctioned reuse path must be defined, or the boundary must be narrowed so it does not prohibit the required shared identity primitive.",
+        "scope": "candidate package boundary"
+      },
+      {
+        "claim": "READ-ONLY is a load-bearing behavioral invariant, but no listed oracle discriminates it. The boundary test is described as an import/source-profile check, while ingestion necessarily has filesystem access; the verification fixtures would still pass if implementation code wrote, renamed, or deleted inputs. Labeling the invariant a NON-CLAIM does not remove the need for an executable oracle proving the promised no-mutation behavior.",
+        "scope": "candidate read-only invariant"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2xQrtf1pN3rkcF3z8tYwDYIymSqo",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2xQrtf1pN3rkcF3z8tYwDYIymSqo",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}

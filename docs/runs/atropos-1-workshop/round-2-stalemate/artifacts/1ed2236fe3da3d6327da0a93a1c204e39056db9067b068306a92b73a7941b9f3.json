@@ -1,0 +1,79 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:8e0d5e93249a0def1774fe7c69c90273681116346adebaad6301232e1f51b66e",
+  "output_plan_artifact_hash": "sha256:8e0d5e93249a0def1774fe7c69c90273681116346adebaad6301232e1f51b66e",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:703bdf2fa4e31e55344ca101b701e5305fd83a74319a186f5fe661a1da9cf9e0",
+    "provenance_key": "anthropic:msg_011Cd9SM3k8SL1UbznEPcE1n"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:69aa47c534b1594025ac2ecf76cb77191a660b7be8af9237261e0f1890d755d0",
+    "provenance_key": "openai:chatcmpl-E2xQrtf1pN3rkcF3z8tYwDYIymSqo",
+    "bound_hash": "sha256:8e0d5e93249a0def1774fe7c69c90273681116346adebaad6301232e1f51b66e"
+  },
+  "objections": [
+    {
+      "claim": "Section 3's plan-version exception conflicts with the frozen CHANGE-PROTOCOL retirement row, which requires all three actions when retiring an obsolete plan: mark it SUPERSEDED, record a supersedes edge, and update CURRENT-AUTHORITY.json. The candidate also establishes that a plan-version cannot carry the required weave edge, making the frozen rule inapplicable as written. This is a genuine frozen-material ambiguity/defect; the held clarification cannot cure it. It requires an Eye ruling followed by a Daedalus delta, new TELOS authorization, and renewed implementation authority before the surface matrix is fixed or implemented.",
+      "scope": "plan-escalation",
+      "objection_hash": "sha256:d0535713965e5dc22962945923900c0d9635af34fc0db4707c41899bdd1e4146",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The preamble and sections 2/6 treat \"GPT-seat rulings\" and a \"codex ruling\" as authority delegated by The Eye. The frozen namespace policy expressly says The Eye's human-held authority cannot be delegated to a model. Model-seat conclusions may be review input but cannot authorize Ruling B, the anchoring amendment, or implementation.",
+      "scope": "candidate authority provenance",
+      "objection_hash": "sha256:804d3630a43948ef20ef6bd334db0e995e3216025b1705a9ecbba26e2859b7e8",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "Sections 2-3 conflate the institutional-memory record-kind taxonomy with Clotho node kinds. The required \"same kind\" match is impossible for the listed kinds: record kinds such as contract and evidence differ from node kinds such as contract-clause and run-evidence, while the explicitly reusable Clotho decision kind is omitted from the candidate's node allowlist. Consequently, a valid SUPERSEDED record cannot satisfy the stated node-backed classification. Identity correspondence needs an explicit mapping or graph relation rather than kind equality.",
+      "scope": "candidate kind detection and identity resolution",
+      "objection_hash": "sha256:580ef6fd2b2a036cdfc205d1c0404e37d826e3d1e48f2a97f266026795e047ee",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The proposed oracle does not discriminate the node-backed verification logic. Under the candidate's own schema, every node-backed retirement necessarily returns UNREPRESENTABLE_CURRENT_AUTHORITY_REFLECTION, and the only listed node-backed fixture expects that result. An implementation that skips all record, edge-direction, successor-agreement, recursion, and terminal-authority checks and simply rejects every non-plan candidate would pass. Those checks cannot be NORMATIVE without an authorized representable schema and positive/negative fixtures, or they must be removed from the normative cycle-1 contract.",
+      "scope": "candidate oracle",
+      "objection_hash": "sha256:4b4333e773cf6e5f037283f69e9f63421f9a756df14f5cad3264de211d832a4f",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The contract lifecycle omits mandatory frozen-protocol gates. SPECIFIED-PENDING-IMPLEMENTATION requires an existing plan sha256, authz-N, and decision anchor, but the candidate describes authorization as eventual. Its normative-flip condition names only the local test and committed clarification; it does not require integration with docs/institutional-memory/verify-contracts.mjs to prove contract/code equality and plan hashes. It also creates comprehension queries without requiring a successful comprehension-gate artifact before implementation authority. The approach must sequence all three requirements explicitly before implementation or normativity.",
+      "scope": "candidate institutional-memory protocol",
+      "objection_hash": "sha256:998a4fe020af7fbc9bba090b5b512ababb6b53d4e58fab472b5235ba8260b110",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The blanket rule that Atropos NEVER imports clotho/ is incompatible with the frozen instruction to reuse Clotho's deriveNodeId and closed identity kinds rather than reinventing them. The approach creates content-addressed component memory records and resolves weave identities but supplies no compliant deriveNodeId mechanism. A sanctioned reuse path must be defined, or the boundary must be narrowed so it does not prohibit the required shared identity primitive.",
+      "scope": "candidate package boundary",
+      "objection_hash": "sha256:1ff3cc282c6caff102daf9f7aec02d3ada345425d8fdf85966a2ac0b49654648",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "READ-ONLY is a load-bearing behavioral invariant, but no listed oracle discriminates it. The boundary test is described as an import/source-profile check, while ingestion necessarily has filesystem access; the verification fixtures would still pass if implementation code wrote, renamed, or deleted inputs. Labeling the invariant a NON-CLAIM does not remove the need for an executable oracle proving the promised no-mutation behavior.",
+      "scope": "candidate read-only invariant",
+      "objection_hash": "sha256:3396ae84d456cbe0aa1b4b93e4e3a16167222c8b706dcb206006fbdfd1dd1aca",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
