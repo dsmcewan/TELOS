@@ -1,0 +1,27 @@
+{
+  "reader": "claude-opus-4-8 (build seat, corpus-review-1 IMPLEMENTATION phase; entry ritual re-affirmed for this session)",
+  "resolved_plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+  "resolved_authorization": "authz-008",
+  "excluded_superseded": ["authz-004", "authz-005", "authz-006", "authz-007"],
+  "invariants_read": [
+    "iliad-pre-review-before-implementation",
+    "iliad-post-review-required",
+    "iliad-products-enrollment-deferred"
+  ],
+  "non_claims_read": [
+    "no-autonomous-iliad-orchestrator",
+    "iliad-enrollment-is-not-absorption"
+  ],
+  "answers": {
+    "orchestrator-exists": false,
+    "lifecycle-phases": ["pre-review", "implementation", "post-review"],
+    "pre-review-timing": "before-implementation",
+    "delivered-without-retrospective": false,
+    "optimization-destination": "next-run-pre-review-or-reviewed-change",
+    "deferred-products": ["ai-forge", "forge", "saas-forge"],
+    "enrollment-changes-governance": false,
+    "model-actuality-proof": "per-seat-provenance",
+    "seat-change-mechanism": "reviewed-edit-to-seats-json",
+    "unregistered-implementation-detection": false
+  }
+}
