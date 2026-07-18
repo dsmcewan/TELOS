@@ -1,0 +1,31 @@
+{
+  "run": "iliad-workflow-contract-1-workshop (next-phase evaluation, Iliad lifecycle; parameterized harness)",
+  "mode": "live",
+  "candidate": "docs/runs/iliad-workflow-contract-1-workshop/candidate-approach.md",
+  "specs": [
+    "docs/institutional-memory/SCHEMA.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-iliad-workflow-contract.json",
+    "docs/institutional-memory/iliad/IDENTITY.md"
+  ],
+  "state": "stalemate",
+  "reason": "repeated-candidate-hash",
+  "terminal": "needs-work",
+  "rounds": 1,
+  "final_candidate_ref": "sha256:286fe2255d255a42f207084ef62218b5adefbef90c79f83c6131af9431e244f8",
+  "creation_lineage": [
+    {
+      "seat": "claude",
+      "round": 1,
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011Cd8xbgSdSmjiRUQRd8jhP"
+    },
+    {
+      "seat": "codex",
+      "round": 1,
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2rkjahB3Zam94xR6kpOLxRMkbQQH"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "The approach promises a SCHEMA-compliant record but never defines or verifies the required content-addressed `id`. `check-workflow.mjs` only checks references, taxonomy, order, and rendering, so mutation of `workflow.json` while retaining a stale `id` could pass. The implementation must use the repository's Clotho/canonicalization convention to derive the ID and have the checker recompute and compare it.",
+        "scope": "Candidate §§3–4 — workflow record construction and local oracle"
+      },
+      {
+        "claim": "The proposed local oracle does not discriminate incorrect stage metadata. It verifies that owner and authority references resolve and that both invariant IDs exist, but it does not require the exact owner, authority link, and advisory marker for each particular stage. Swapping the two invariant links or assigning a valid but wrong module record could therefore pass. The checker needs an explicit canonical stage table and exact comparison of each stage's identity, owner, authority/advisory classification, and position.",
+        "scope": "Candidate §3 — `check-workflow.mjs`"
+      },
+      {
+        "claim": "The comprehension-fixture mechanism is incomplete. No change to the authority-anchored `comprehension-queries.json` is listed, so the existing gate has no specified expected facts against which to grade the three new workflow claims. Moreover, merely requiring negative fixtures to exit nonzero does not show that the targeted misconception caused denial. The approach must add pinned, authority-anchored query entries and define each negative as a one-answer mutation of an otherwise passing complete answer set.",
+        "scope": "Candidate §§3–4 — comprehension fixtures and acceptance sequence"
+      },
+      {
+        "claim": "The generated human projection has no destination path or declared integration with the per-component rendered documentation. Consequently `render-workflow.mjs --check` could validate an arbitrary private output without satisfying the frozen machine-first/human-rendered representation requirement. The approach must name the generated artifact and define its deterministic relationship to `workflow.json` without clobbering unrelated rendered content.",
+        "scope": "Candidate §3 — renderer and human projection"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2rkjahB3Zam94xR6kpOLxRMkbQQH",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2rkjahB3Zam94xR6kpOLxRMkbQQH",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:009725322418aea2006fb28327362dc92eae3f58fbe9c0e3aa48973b516ea9f1",
+  "output_plan_artifact_hash": "sha256:009725322418aea2006fb28327362dc92eae3f58fbe9c0e3aa48973b516ea9f1",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:13a45cc4de0d8a18d818ef96ca397903f8ecf99e75dac369f8f7e5188348fbd5",
+    "provenance_key": "anthropic:msg_011Cd8veTVMs6z5wV7Mr37Fb"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:7298296d3279275df9de21f75186656923f1c82a09a2c85f07f66b9da848cea7",
+    "provenance_key": "openai:chatcmpl-E2rLx2yxOXwoNlBYl2k7LtIb5KXmc",
+    "bound_hash": "sha256:009725322418aea2006fb28327362dc92eae3f58fbe9c0e3aa48973b516ea9f1"
+  },
+  "objections": [
+    {
+      "claim": "The proposed single `workflow.json` has only record-level `status` and `normativity` under the frozen schema, yet the approach assigns normativity per stage without defining separate schema-valid records. This cannot faithfully represent the required mixed posture. The approach must either make the workflow record ADVISORY while authority-linking the existing NORMATIVE-CURRENT invariant records, or split independently normative and advisory claims into separate records.",
+      "scope": "candidate §2–§3 — mixed-normativity representation",
+      "objection_hash": "sha256:960895a62fe755f2c944007078b393fde41dfb42058e7580c11afe1390e423ab",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The human projection is conditional and permits “a note in the module README index.” The frozen schema requires machine-first, generated human projection and identifies the per-component README as rendered. A hand-maintained fallback would create an independent drift surface. The approach must specify a deterministic rendered projection from the machine record.",
+      "scope": "candidate §3 — human projection",
+      "objection_hash": "sha256:e36b8c24b2d444a27a3a3bd4e63021a4b7032e27006dddbac8a12892b9097ae0",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The promised structural check has no executable mechanism, file, or command. Running `verify-contracts.mjs` unchanged merely “to prove no disturbance” does not establish that the new stage references resolve or are content-addressed. The approach must name a concrete executable oracle for reference resolution and content-address validation, without turning the advisory documentation-stage ordering into shared enforcement.",
+      "scope": "candidate §4 — structural oracle",
+      "objection_hash": "sha256:6e8dc49eb15d6a516c5a0cee769ed5238bb1a3f6210baa95bc343ffa8953e81b",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The authority basis abbreviates the frozen full commit anchor to `git:6d16c8f`. A load-bearing authority statement must terminate in a stable identifier; the approach must preserve the full frozen anchor `git:6d16c8ff7cb120910ed0c2968d321269dd1f57cb` and the directive’s exact file reference.",
+      "scope": "candidate header — authority anchoring",
+      "objection_hash": "sha256:7060b5789f17739e50054665d87b06805bc92bb430dc6a1754bb1b535f050387",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

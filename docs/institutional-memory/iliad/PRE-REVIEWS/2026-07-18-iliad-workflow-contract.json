@@ -1,0 +1,42 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "pre-review-2026-07-18-iliad-workflow-contract",
+  "note": "Pre-review for formalizing the Iliad-quest workflow as an institutional-memory record: The Iliad is the quest a new system undertakes to become enrolled — a system ENTERS via pre-review + entry-ritual gate, undergoes the trials [Daedalus -> TELOS -> Argo -> reference/documentation module -> Clotho], and COMPLETES via the retrospective to become enrolled. Commissioned by The Eye's directive recorded in RETROSPECTIVES/agentic-orchestration-reference-1.json (2026-07-18). This is the follow-up cycle that turns that forward-directive into a durable contract.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "docs/runs/iliad-workflow-contract-1 (pre-review + entry ritual); workshop docs/runs/iliad-workflow-contract-1-workshop; branch from main @ 0127375",
+  "next_phase_workshop": "docs/runs/iliad-workflow-contract-1-workshop/ — the next-phase Daedalus workshop matures the APPROACH via iliad/tools/run-daedalus-workshop.mjs (serial claude-author/codex-reviewer). The workshop must resolve the normativity split + the oracle design (see honest_scope below) before implementation.",
+  "authority_basis": "git:6d16c8ff7cb120910ed0c2968d321269dd1f57cb + file:docs/institutional-memory/iliad/RETROSPECTIVES/agentic-orchestration-reference-1.json (The Eye directive 2026-07-18)",
+  "honest_scope": {
+    "deliverable": "A workflow contract in the iliad module (candidate: docs/institutional-memory/iliad/CONTRACTS/workflow.json) recording the canonical order Iliad(pre-review) -> Daedalus -> TELOS -> Argo -> [reference/documentation module] -> Clotho -> Iliad(retrospective), plus its human projection.",
+    "normativity_is_mixed_and_this_is_load_bearing": [
+      "The lifecycle-PRESENCE + ORDER rules that ALREADY have oracles (pre-review-before-implementation, post-review-required) anchor to the existing iliad invariants and can be NORMATIVE-CURRENT by pointing at them — NOT re-implemented.",
+      "The NEW rule — 'a documentation/reference module stage precedes the Clotho weave in every implementation cycle' — has NO oracle yet. Per SCHEMA, a rule without a passing oracle is NOT NORMATIVE. It enters as SPECIFIED-PENDING-IMPLEMENTATION with a becomes_normative_when naming the future verifier, OR stays ADVISORY until built. It must NOT be labelled NORMATIVE on prose alone."
+    ],
+    "shared_infra_implication_flagged_for_the_eye": "Enforcing the new doc-module stage would require a NEW oracle in the shared verifier docs/institutional-memory/verify-contracts.mjs. THE EYE RULED OPTION (b) (2026-07-18): the new 'documentation/reference module precedes Clotho' stage stays ADVISORY until it has proven itself over cycles — NO change to verify-contracts.mjs or any shared enforcement infra this cycle. The order/presence rules that already have oracles (pre-review-before-implementation, post-review-required) anchor to the existing iliad invariants and may be NORMATIVE-CURRENT. The new stage carries a note that it becomes a SPECIFIED-PENDING/NORMATIVE candidate only after a future Eye decision once it has earned an oracle. The workshop authors toward THIS resolved posture; it does not re-open the fork.",
+    "eye_decision": { "option": "b", "ruling": "new doc-module stage ADVISORY until proven; no shared-infra oracle this cycle", "date": "2026-07-18" }
+  },
+  "model_review": {
+    "note": "seats env-resolved over build-gate/seats.json; no seat change proposed",
+    "baseline": "docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-17.json",
+    "seats": { "claude": "claude-fable-5", "codex": "gpt-5.6-sol", "build": "session model (claude-opus-4-8)" },
+    "newly_available_models_considered": ["none since the same-day review"],
+    "seat_changes_proposed": []
+  },
+  "capability_review": {
+    "task_loadout_read": "n/a (no frozen task slice) — a workflow-contract addition entering via the lifecycle",
+    "prior_retrospectives_read": ["docs/institutional-memory/iliad/RETROSPECTIVES/agentic-orchestration-reference-1.json", "docs/institutional-memory/iliad/RETROSPECTIVES/slice-7.json"],
+    "optimizations_adopted": [
+      "carry the Eye-directive from the prior retrospective verbatim as the authority basis (not paraphrased as new)",
+      "use the parameterized workshop harness (iliad/tools/run-daedalus-workshop.mjs)",
+      "session hygiene re-armed: fetch origin/main + read CURRENT-AUTHORITY before any state claim; explicit cleanup globs; commit before destructive git ops"
+    ],
+    "optimizations_deferred_with_reason": [
+      "implementing the new-stage oracle without an explicit Eye decision on the shared-infra option (routed above)"
+    ],
+    "missing_external_capabilities": [],
+    "capability_packets_required": false
+  },
+  "entry_ritual": "docs/runs/iliad-workflow-contract-1/reader-validation-artifact.json (iliad module queries — COMPREHENSION_PASSED / GRANTED)"
+}
