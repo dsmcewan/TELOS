@@ -1,4 +1,4 @@
-# Candidate approach (rev 13) — Atropos (enrollment quest, cycle 1)
+# Candidate approach (rev 13, MATURED — build-mode finalize) — Atropos (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json`.
@@ -67,7 +67,9 @@ detecting via source+membership, not by matching the (distinct) record-kind and 
   is DISK-RESOLVED, not just syntactic: `active_plan.sha256` is RECOMPUTED over the on-disk active plan file
   (`active_plan.path`, `sha256:` + `sha256hex(canonicalize({kind:"candidate", plan: <file text>}))` — the
   frozen plan-hash scheme) and must equal the recorded digest; a corrupted/arbitrary `active_plan.sha256` →
-  `inconsistent`.** (NON-CLAIM: a SUPERSEDED entry's own `sha256` is syntax-checked only — historical
+  `inconsistent`. `active_plan.path` is realpath-CONTAINED under the repo root and required to be a REGULAR
+  FILE before reading (reject absolute/`..`-traversal/symlink-escape — same containment policy as the snapshot
+  + discovery roots).** (NON-CLAIM: a SUPERSEDED entry's own `sha256` is syntax-checked only — historical
   superseded-plan bytes are not re-fetched/present; Atropos does not resurrect retired plan files.) No
   `SUPERSEDED` record / weave edge required for a plan-version (structurally inapplicable).
   **This CHANGE-PROTOCOL(living)/schema tension was EXPLICITLY ESCALATED to The Eye and RULED a design-level

@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "`active_plan.path` is checked only as a repo-relative string; no lexical traversal rejection, realpath containment, or regular-file requirement is specified. An in-repo symlink escaping the repository—or a relative path such as `../outside`—can therefore pass when `active_plan.sha256` matches those external bytes. The verifier would prove the hash of an arbitrary disk file rather than the repository's active plan, and none of the listed fixtures discriminates this implementation. Require repo-root resolution, containment after `realpath`, a regular file, and negative traversal/absolute-path/symlink-escape fixtures.",
+        "scope": "§3 active-plan disk resolution and §5 `scripts/test-verify.mjs`"
+      },
+      {
+        "claim": "The READ-ONLY oracle scans the Atropos runtime tree but permits execution of the external `merkle-dag/vendor.mjs` module. ESM evaluates that module's complete top-level code, not merely the two imported bindings; a write-capable import or side effect added there would remain outside the stated scan while Atropos's oracle still passes. The boundary import allowlist does not discriminate this. The oracle must inspect the complete transitively executed vendor module (or verify a pinned reviewed digest/profile) and include a negative fixture demonstrating that a write-capable side effect in an allowed external module fails.",
+        "scope": "§5 `scripts/test-readonly.mjs` transitive runtime surface"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2yhemShxc8YD9raoBAJ7vpXnb9x2",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2yhemShxc8YD9raoBAJ7vpXnb9x2",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}

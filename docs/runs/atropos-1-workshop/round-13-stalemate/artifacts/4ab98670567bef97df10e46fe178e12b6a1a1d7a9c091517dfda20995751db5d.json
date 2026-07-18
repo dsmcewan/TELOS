@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:3fae3af8f0f76eecfe9b1a7998a799125ae936246c43c4ea4055ebed276d7076",
+  "output_plan_artifact_hash": "sha256:3fae3af8f0f76eecfe9b1a7998a799125ae936246c43c4ea4055ebed276d7076",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:09c64966a834f63820d5911d7c10edf36340d7b4ea114420c4fcc3d29c4543ad",
+    "provenance_key": "anthropic:msg_011Cd9YZ727Dg5LoVnwJrLXm"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:f2027689a1d043636f0c59c59eb5c3e0a5952f6ed3d2b542f20cd77398c0bb6d",
+    "provenance_key": "openai:chatcmpl-E2yhemShxc8YD9raoBAJ7vpXnb9x2",
+    "bound_hash": "sha256:3fae3af8f0f76eecfe9b1a7998a799125ae936246c43c4ea4055ebed276d7076"
+  },
+  "objections": [
+    {
+      "claim": "`active_plan.path` is checked only as a repo-relative string; no lexical traversal rejection, realpath containment, or regular-file requirement is specified. An in-repo symlink escaping the repository—or a relative path such as `../outside`—can therefore pass when `active_plan.sha256` matches those external bytes. The verifier would prove the hash of an arbitrary disk file rather than the repository's active plan, and none of the listed fixtures discriminates this implementation. Require repo-root resolution, containment after `realpath`, a regular file, and negative traversal/absolute-path/symlink-escape fixtures.",
+      "scope": "§3 active-plan disk resolution and §5 `scripts/test-verify.mjs`",
+      "objection_hash": "sha256:2b88cfd804333001a972ee2478467d5ee0503bc7878aa8bbebe1812e9ae90b12",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The READ-ONLY oracle scans the Atropos runtime tree but permits execution of the external `merkle-dag/vendor.mjs` module. ESM evaluates that module's complete top-level code, not merely the two imported bindings; a write-capable import or side effect added there would remain outside the stated scan while Atropos's oracle still passes. The boundary import allowlist does not discriminate this. The oracle must inspect the complete transitively executed vendor module (or verify a pinned reviewed digest/profile) and include a negative fixture demonstrating that a write-capable side effect in an allowed external module fails.",
+      "scope": "§5 `scripts/test-readonly.mjs` transitive runtime surface",
+      "objection_hash": "sha256:404688753a0678ce0a31f6e9f2fbbe44014d02d1dcecbf972548db066d5c3130",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
