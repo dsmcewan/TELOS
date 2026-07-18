@@ -1,0 +1,55 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:a11046c6a59baf61fe3befe91eb81bd259962bc46c181287799acd9620e9da67",
+  "output_plan_artifact_hash": "sha256:a11046c6a59baf61fe3befe91eb81bd259962bc46c181287799acd9620e9da67",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:0928726dde0155bdb182bc614926655e1470819cbfe4b2cf3f05dc2d3c3a05e2",
+    "provenance_key": "anthropic:msg_011Cd9PvcWgLsbWorRzHGP2i"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:13a94fea5c39f774e04cdf9b602007f513a581203fef3d38b56c2c6311df1dc8",
+    "provenance_key": "openai:chatcmpl-E2ww9kQIy79uvLHwFxatiVUIgbfdG",
+    "bound_hash": "sha256:33717583db50be721d1a99c3834a86a74f5038e8549d363312350a10ca356b41"
+  },
+  "objections": [
+    {
+      "claim": "The functional oracle is an open assertion: saying the suite covers “EVERY interactive element” does not establish a closed inventory or prove test coverage equals that inventory. A suite can pass while an unregistered control, reachable machine transition, export, or canvas-only interaction remains untested. The candidate also leaves the executable runner unresolved as “Playwright / chrome-devtools MCP.”",
+      "scope": "functional-gate",
+      "objection_hash": "sha256:2d4611af75ea64bc5f7a51bc73508e76cc64d7d95e783d7f4b74a5b2800117e8",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The Evidence Ledger mechanism is insufficiently fail-closed and violates the content-identity discipline. “Exact record/commit” does not require full 40-hex identities, directly reading broad institutional-memory directories risks publishing unintended material, and content addressing does not make information impossible to lose. The plan also does not explicitly preserve the spine as read-only.",
+      "scope": "evidence-ledger",
+      "objection_hash": "sha256:3541544334b0a0445a3c4577b9c5fc23e363abd60a7ae91e92d0ddefe7cb608c",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The accessibility and reduced-motion claims are unsound: invisible semantic controls do not provide accessible canvas content, meaningful focus presentation, logical reading order, or a reduced-motion/no-WebGL equivalent “for free.” Axe alone cannot certify those properties.",
+      "scope": "accessibility",
+      "objection_hash": "sha256:c72eef5d0142dff368e1c2472ef5540217cb5b00e5740d5ecae24d0db490344e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The performance gate would not discriminate because “loads + runs in seconds” supplies no numeric budgets, pinned browser/profile, repetition rule, or failure treatment. The listed missing browser-driver and 3D-walkthrough capabilities are not resolved before acceptance depends on them.",
+      "scope": "performance-and-capabilities",
+      "objection_hash": "sha256:2d1d8ac39a3b5231a615da9f38cd2c2417c0e55db05342fe8adf32f98dea0f2b",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

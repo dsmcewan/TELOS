@@ -1,0 +1,32 @@
+{
+  "run": "narcissus-1-workshop (next-phase evaluation, Iliad lifecycle; parameterized harness)",
+  "mode": "live",
+  "candidate": "docs/runs/narcissus-1-workshop/candidate-approach.md",
+  "specs": [
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-narcissus-1.json",
+    "docs/mythological-vocabulary.md",
+    "docs/runs/narcissus-1-prequest/breakout-synthesis.md",
+    "docs/runs/narcissus-1-prequest/lexi-tokens.md"
+  ],
+  "state": "stalemate",
+  "reason": "repeated-candidate-hash",
+  "terminal": "needs-work",
+  "rounds": 1,
+  "final_candidate_ref": "sha256:a11046c6a59baf61fe3befe91eb81bd259962bc46c181287799acd9620e9da67",
+  "creation_lineage": [
+    {
+      "seat": "claude",
+      "round": 1,
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011Cd9PvcWgLsbWorRzHGP2i"
+    },
+    {
+      "seat": "codex",
+      "round": 1,
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2ww9kQIy79uvLHwFxatiVUIgbfdG"
+    }
+  ]
+}
