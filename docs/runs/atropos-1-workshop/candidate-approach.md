@@ -1,4 +1,4 @@
-# Candidate approach (rev 4) — Atropos (enrollment quest, cycle 1)
+# Candidate approach (rev 5) — Atropos (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json`.
@@ -35,11 +35,12 @@ Candidate set = UNION of: `CURRENT-AUTHORITY.json#superseded` entries; committed
 `SUPERSEDED`; committed weave edges with `edge_kind` exactly `supersedes`. Classify each into exactly ONE kind:
 - **plan-version** — a valid closed-shape `#superseded` entry whose authoritative identity is its `plan_version`
   field (a `vN`-looking string elsewhere is NOT sufficient).
-- **weave-node-backed** — a `SUPERSEDED` record whose referenced identity is a 64-hex id PRESENT as a weave
-  node id in the snapshot (set-membership — NOT `deriveNodeId` re-derivation; boundary-safe), OR **any**
-  `supersedes` edge (an edge candidate is node-backed by construction — its endpoints are weave-node ids; which
-  endpoint is the RETIRED one is edge-direction, part of the DEFERRED full node-backed verifier and NOT needed
-  to classify: any `supersedes` edge → node-backed → the deterministic short-circuit below).
+- **weave-node-backed** — classified by SOURCE ONLY (no field extraction, no identity resolution — both are
+  part of the DEFERRED full verifier): **any** candidate from the `status:"SUPERSEDED"`-record source OR the
+  `supersedes`-edge source. A record/edge retirement is node-backed by construction; identifying WHICH field is
+  the retired identity, and which edge endpoint is retired, is deferred → all such candidates take the
+  deterministic short-circuit below. (This removes the round-5 ambiguity: a `SUPERSEDED` record can carry many
+  64-hex ids; cycle-1 does not extract one — it defers the whole node-backed path.)
 - **unrepresented/unknown** — anything else: an id in more than one source with disagreement, an identity
   appearing as BOTH a plan-version and a weave node, a bare edge/record with no resolvable first-class weave-node
   identity, or a malformed shape. NEVER silently assigned the smaller plan surface set.
@@ -101,16 +102,19 @@ root (HELD for The Eye).
 ## 5. Oracle + golden
 - `scripts/test-verify.mjs`: discriminating fixtures each FAIL a wrong impl — dangling/self/cyclic
   `superseded_by`; `active_plan.version` also superseded; `must_not_govern_new_work:false`; duplicate
-  `plan_version`; mistyped/extra key; a node-backed candidate (→ `UNREPRESENTABLE…`); an unknown candidate (→
-  `UNSUPPORTED_RETIREMENT_KIND`); an id as both plan-version and weave node (→ unknown). **GOLDEN over the real
-  `CURRENT-AUTHORITY.json`:** 4 plan-versions, all `superseded_by=v15`, all `must_not_govern_new_work:true` →
-  `consistent`.
+  `plan_version`; mistyped/extra key; a `SUPERSEDED`-record candidate + a `supersedes`-edge candidate (each →
+  `UNREPRESENTABLE…`); a malformed `#superseded` entry (→ `UNSUPPORTED_RETIREMENT_KIND`); **a MULTI-HOP chain
+  `v11→v13→v15` where v13 is itself a valid superseded entry → `consistent`** (discriminates transitive
+  resolution — an impl requiring every `superseded_by`===`active_plan.version` FAILS this); a chain that does
+  NOT terminate at `active_plan.version` → `inconsistent`. **GOLDEN over the real `CURRENT-AUTHORITY.json`:** 4
+  plan-versions, all `superseded_by=v15`, all `must_not_govern_new_work:true` → `consistent`.
 - `scripts/test-boundary.mjs`: source-profile boundary oracle (reused from Lachesis + its hardening).
 - **`scripts/test-readonly.mjs` (executable READ-ONLY oracle) — ALLOWLIST posture (sounder than a denylist):**
-  scans ALL runtime `.mjs` recursively (excluding `scripts/`), comment-stripped, and requires: (a) every
-  `node:fs` import is a NAMED import drawn from a closed READ allowlist (`readFileSync`, `readdirSync`,
-  `realpathSync`, `statSync`, `lstatSync`, `existsSync`, `openSync`+`fstatSync`+`closeSync` used read-only) —
-  any other `node:fs` named import (write API) → fail; (b) NO namespace import of `node:fs` (`import * as fs`)
+  scans ALL runtime `.mjs`/`.js`/`.cjs` recursively (excluding `scripts/`), comment-stripped, and requires:
+  (a) every `node:fs` import is a NAMED import drawn from a closed READ allowlist (`readFileSync`, `readdirSync`,
+  `realpathSync`, `statSync`, `lstatSync`, `existsSync`) — `openSync` is EXCLUDED (write-capable via its flag
+  argument, which a name scan cannot constrain); the runtime reads with `readFileSync` only; any other `node:fs`
+  named import → fail; (b) NO namespace import of `node:fs` (`import * as fs`)
   and no `node:fs/promises` (defeats name-based checking / exposes FileHandle writers); (c) NO import of
   `node:child_process`, `node:worker_threads`, `node:vm`, `process.binding`, `process.dlopen`; (d) the boundary
   oracle already bans dynamic `import()`/`require`/`createRequire`/`Module._load`/`eval`. Plus branch-isolating

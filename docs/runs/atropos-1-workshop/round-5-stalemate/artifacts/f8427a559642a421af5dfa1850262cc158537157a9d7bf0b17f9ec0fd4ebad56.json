@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:5f353c5bd9929a68ec918ff697cabf8bed3be2316feba07da154907a9d11e0ce",
+  "output_plan_artifact_hash": "sha256:5f353c5bd9929a68ec918ff697cabf8bed3be2316feba07da154907a9d11e0ce",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:9fc66c2bf51944752cba74c13a6d40ae36b7a9a49c41dc490ff8bf4ea3e10fab",
+    "provenance_key": "anthropic:msg_011Cd9UkwErwGn6vPteKvNfX"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:e7fbd09b329f5cb8e193d98396ddcb30a909f49d0f0e20b53b696592468a0922",
+    "provenance_key": "openai:chatcmpl-E2xvTkyRTZGTHYGmZfSjWissJb5LS",
+    "bound_hash": "sha256:5f353c5bd9929a68ec918ff697cabf8bed3be2316feba07da154907a9d11e0ce"
+  },
+  "objections": [
+    {
+      "claim": "The READ-ONLY oracle admits direct write-capability. `openSync` is allowlisted, but the described check validates only imported names and does not constrain call flags; `openSync(path, \"w\")` can create or truncate a file while satisfying the oracle. Additionally, scanning only `.mjs` permits an imported local `.js` module to use write APIs outside the scan. Therefore an implementation can mutate the repository and still pass `test-readonly.mjs`.",
+      "scope": "section 5 — READ-ONLY oracle",
+      "objection_hash": "sha256:5ca588301adaa01ccb749d20b5f6d873355bc019874454adc834dcf6a27696c2",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The verification fixtures do not discriminate the specified multi-hop supersession behavior. The mechanism permits `v11 -> v13 -> v15`, but the listed positive golden covers only direct-to-active chains. An incorrect implementation that requires every `superseded_by` to equal `active_plan.version` would pass the golden and every listed negative fixture while rejecting a valid chain.",
+      "scope": "section 5 — test-verify oracle",
+      "objection_hash": "sha256:e5e42f854e4f343490c4569ee36b501df35f5293f8510229a82ea8fd9677caab",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The node-backed classification is not implementable deterministically because the approach never defines which exact field of a `SUPERSEDED` record is the retirement's “referenced identity.” Such a record can contain multiple 64-hex identifiers (`id`, `superseded_by`, authority or evidence references). Membership testing without a closed extraction rule can classify the same input differently and does not satisfy the machine-readable exact-data requirement.",
+      "scope": "sections 2 and 4 — record identity extraction",
+      "objection_hash": "sha256:49892d6c28b6fd716ba40b0e4e602a810db17bcea3b412bba5da622988a992c5",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

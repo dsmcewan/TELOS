@@ -1,0 +1,33 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "The READ-ONLY oracle admits direct write-capability. `openSync` is allowlisted, but the described check validates only imported names and does not constrain call flags; `openSync(path, \"w\")` can create or truncate a file while satisfying the oracle. Additionally, scanning only `.mjs` permits an imported local `.js` module to use write APIs outside the scan. Therefore an implementation can mutate the repository and still pass `test-readonly.mjs`.",
+        "scope": "section 5 — READ-ONLY oracle"
+      },
+      {
+        "claim": "The verification fixtures do not discriminate the specified multi-hop supersession behavior. The mechanism permits `v11 -> v13 -> v15`, but the listed positive golden covers only direct-to-active chains. An incorrect implementation that requires every `superseded_by` to equal `active_plan.version` would pass the golden and every listed negative fixture while rejecting a valid chain.",
+        "scope": "section 5 — test-verify oracle"
+      },
+      {
+        "claim": "The node-backed classification is not implementable deterministically because the approach never defines which exact field of a `SUPERSEDED` record is the retirement's “referenced identity.” Such a record can contain multiple 64-hex identifiers (`id`, `superseded_by`, authority or evidence references). Membership testing without a closed extraction rule can classify the same input differently and does not satisfy the machine-readable exact-data requirement.",
+        "scope": "sections 2 and 4 — record identity extraction"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2xvTkyRTZGTHYGmZfSjWissJb5LS",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2xvTkyRTZGTHYGmZfSjWissJb5LS",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}
