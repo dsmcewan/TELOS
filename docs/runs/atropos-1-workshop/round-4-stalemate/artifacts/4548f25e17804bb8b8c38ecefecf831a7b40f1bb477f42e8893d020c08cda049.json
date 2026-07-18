@@ -1,0 +1,37 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "The asserted 2026-07-18 Eye ruling is not terminated in a stable authority identifier. A date, “per The Eye/coordinator,” and mutable file references do not evidence the ruling required to resolve the stated CHANGE-PROTOCOL/schema tension. The approach must cite an actual Eye ruling identifier such as AM-N or another content-addressed Eye artifact before authorization; otherwise the applicability decision remains an unsupported design-around.",
+        "scope": "candidate §§3 and 6 — governance evidence"
+      },
+      {
+        "claim": "Ingestion is closed only against Atropos's self-declared inputs, not against an independently authoritative inventory. An enumerated component-root list can omit a newly enrolled component, and `atropos/config/snapshot-manifest.json` can remain pinned to a stale or empty weave snapshot. All listed tests exercise candidates that are already supplied; none detects omission of a committed retirement surface. Therefore the verifier can return `consistent` while a `SUPERSEDED` record or `supersedes` edge exists outside those stale declarations. The root set and weave pointer need equality/drift checks against the repository's authoritative enrollment and current-weave inventories.",
+        "scope": "candidate §4 and §5 — ingestion completeness oracle"
+      },
+      {
+        "claim": "The READ-ONLY oracle is an incomplete denylist and does not establish the claimed absence of write paths. Unlisted Node write capabilities include `copyFile`, `cp`, `link`, `symlink`, `mkdtemp`, `utimes`/`lutimes`, and `FileHandle.createWriteStream`; aliases or computed property access can evade a comment-stripped token scan. `worker_threads`, `node:vm`, `eval`/`Function`, and the sanctioned out-of-package vendor module also provide unscanned execution paths. Branch fixtures for only the enumerated spellings cannot discriminate these implementations. Use a closed import/capability allowlist over the resolved transitive runtime graph, including the vendor module, rather than an open write-operation denylist.",
+        "scope": "candidate §5 — READ-ONLY oracle soundness"
+      },
+      {
+        "claim": "The approach creates `comprehension-queries.json` but never requires a passing artifact from `docs/institutional-memory/comprehension-gate.mjs` before implementation authority is exercised. That violates the frozen “Reading ≠ understanding” gate. The plan must make the deterministic gate and preservation of its passing artifact a precondition to implementation, including active-plan hash validation and exclusion of superseded authorizations.",
+        "scope": "candidate §6 — comprehension gate"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2xpdYehKLXP3Cd9Ab8BgU6lmMvxF",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2xpdYehKLXP3Cd9Ab8BgU6lmMvxF",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}

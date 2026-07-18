@@ -1,4 +1,4 @@
-# Candidate approach (rev 3) — Atropos (enrollment quest, cycle 1)
+# Candidate approach (rev 4) — Atropos (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json`.
@@ -57,10 +57,13 @@ detecting via source+membership, not by matching the (distinct) record-kind and 
   `superseded_by` resolves only to `active_plan.version` or another unique superseded `plan_version` — reject
   self/dangling/cycles (visited-set); every chain TERMINATES at `active_plan.version` (a stable
   `sha256:`-anchored current authority). No `SUPERSEDED` record / weave edge required (structurally inapplicable).
-  **This CHANGE-PROTOCOL(living)/schema tension was EXPLICITLY ESCALATED to The Eye and RULED (2026-07-18): it
-  is a design-level applicability determination — a plan-version's weave-edge + record surfaces are structurally
-  inapplicable (verified fact), not a spec defect — resolved as a technical design call (peer-model input), NOT
-  a CHANGE-PROTOCOL amendment. It is therefore NOT designed-around; it is ruled.**
+  **This CHANGE-PROTOCOL(living)/schema tension was EXPLICITLY ESCALATED to The Eye and RULED a design-level
+  applicability determination** — plan-version weave-edge/record surfaces are structurally inapplicable
+  (verified fact), not a spec defect, resolved as a technical call (peer-model input), NOT a CHANGE-PROTOCOL
+  amendment. **Its authority terminates in STABLE artifacts, not prose:** the content-addressed affirmative
+  decision record `DECISIONS/decision-atropos-cycle-1.json` (authored in Argo; captures The Eye's ruling + the
+  adopted peer-model resolution) + the git-commit-pinned `decision-round-1-result.json` (`git:<40hex>`, codex's
+  resolution with provenance) + the pre-review + the eventual `authz-N`. NOT designed-around; ruled + anchored.
 - **weave-node-backed → deterministic `UNREPRESENTABLE_CURRENT_AUTHORITY_REFLECTION` (DEFERRED, cycle-1):** the
   current committed `CURRENT-AUTHORITY` closed schema represents ONLY plan-versions, so a node-backed retirement's
   required `CURRENT-AUTHORITY` reflection cannot be represented → `inconsistent` reason
@@ -79,9 +82,13 @@ data → 4 plan-versions, all → v15 → `consistent`.
 Inputs are EXACT + closed (a verifier cannot silently omit a surface and still pass):
 - **CURRENT-AUTHORITY** — the repo-root `CURRENT-AUTHORITY.json`, closed-shape `#superseded` + `active_plan.version`;
   path pinned in `CONTRACTS/supersession.json`.
-- **SUPERSEDED records** — discovered over a CLOSED, pinned ROOT SET (`docs/institutional-memory/**`,
-  `clotho/memory/**`, and each enrolled `<component>/memory/**`) matching `*.json` with `status === "SUPERSEDED"`;
-  the root set is enumerated in the contract (no open globbing).
+- **SUPERSEDED records** — the root set is DERIVED from the AUTHORITATIVE manifest
+  (`docs/institutional-memory/**` + `docs/institutional-memory/manifest.json#entry_points.memory_dirs` — the
+  enrolled components' memory dirs), NOT a hard-coded list, so a newly enrolled component's memory dir is
+  automatically in scope (closes the "omitted new component" gap); `*.json` with `status === "SUPERSEDED"`.
+  **NON-CLAIM (completeness-of-universe):** Atropos verifies consistency over the manifest-authoritative
+  inventory it is given; it does NOT independently prove no retirement exists OUTSIDE the manifest's declared
+  roots — same honesty as the trust NON-CLAIM.
 - **weave `supersedes` edges** — read via a PINNED `atropos/config/snapshot-manifest.json` using Lachesis's
   exact `loadWeave` (path bound to the manifest + realpath-contained; raw-byte digest; canonical-JSON;
   fail-closed), restricted to `edge_kind === "supersedes"`.
@@ -99,15 +106,17 @@ root (HELD for The Eye).
   `CURRENT-AUTHORITY.json`:** 4 plan-versions, all `superseded_by=v15`, all `must_not_govern_new_work:true` →
   `consistent`.
 - `scripts/test-boundary.mjs`: source-profile boundary oracle (reused from Lachesis + its hardening).
-- **`scripts/test-readonly.mjs` (executable READ-ONLY oracle):** scans ALL runtime `.mjs` recursively
-  (excluding `scripts/`), comment-stripped (reusing the boundary oracle's stripper), rejecting any fs-WRITE or
-  process-spawn surface: `writeFile*`, `appendFile*`, `rm*`, `rmdir*`, `rename*`, `mkdir*`, `unlink*`,
-  `truncate*`, `chmod*`, `chown*`, `createWriteStream`, `open`/`opendir` with a write flag, FileHandle write
-  methods (`.write`/`.appendFile`/`.truncate`), and `node:child_process` / `process.binding` / `process.dlopen`.
-  Plus branch-isolating fixture negatives (each flagged) so a no-op cannot pass. **NON-CLAIM:** this is a
-  fail-closed STATIC scan over the closed import surface (the boundary oracle already rejects dynamic
-  `import()`/`require`/`createRequire`/`Module._load`), NOT a complete taint analysis; combined with the
-  zero-`dependencies` + no-`clotho`-import boundary, the runtime cannot reach an unscanned write path.
+- **`scripts/test-readonly.mjs` (executable READ-ONLY oracle) — ALLOWLIST posture (sounder than a denylist):**
+  scans ALL runtime `.mjs` recursively (excluding `scripts/`), comment-stripped, and requires: (a) every
+  `node:fs` import is a NAMED import drawn from a closed READ allowlist (`readFileSync`, `readdirSync`,
+  `realpathSync`, `statSync`, `lstatSync`, `existsSync`, `openSync`+`fstatSync`+`closeSync` used read-only) —
+  any other `node:fs` named import (write API) → fail; (b) NO namespace import of `node:fs` (`import * as fs`)
+  and no `node:fs/promises` (defeats name-based checking / exposes FileHandle writers); (c) NO import of
+  `node:child_process`, `node:worker_threads`, `node:vm`, `process.binding`, `process.dlopen`; (d) the boundary
+  oracle already bans dynamic `import()`/`require`/`createRequire`/`Module._load`/`eval`. Plus branch-isolating
+  fixture negatives (each flagged). **NON-CLAIM:** a fail-closed STATIC allowlist over the closed import
+  surface, NOT a runtime sandbox; but with only allowlisted read APIs importable, no write-capable module
+  reachable, and no dynamic loading, the runtime has no reachable write path.
 
 ## 6. Anchoring + memory layout
 No CHANGE-PROTOCOL edit (design decision, per ruling). `atropos/memory/CONTRACTS/supersession.json` starts
@@ -123,6 +132,14 @@ pre-review + authz; NO CHANGE-PROTOCOL anchor.
 `FAILURE-MODES.md`; `EVIDENCE/`; `comprehension-queries.json`; `README.md`. **Machine-first + human-rendered
 with a renderer + drift oracle:** `scripts/render.mjs` + `scripts/test-render.mjs` (`--check`) so the `.md`
 projections cannot drift from the machine records. `package.json`: `"type":"module"`, `dependencies` empty.
+
+**COMPREHENSION GATE (frozen "Reading ≠ understanding" — precondition to implementation authority):** a
+PASSING artifact from `docs/institutional-memory/comprehension-gate.mjs` over `atropos/memory/comprehension-queries.json`
+(GRANTED, with the negatives DENIED) MUST be produced AND preserved (as `docs/runs/atropos-1/reader-validation-artifact.json`)
+BEFORE Argo exercises implementation authority — same gate Lachesis passed. Acceptance order: author the
+memory set + SPECIFIED-PENDING contract → comprehension gate GRANTED (preserved) → Argo implements
+ingest/detect/verify + oracles until `test-verify.mjs`/`test-boundary.mjs`/`test-readonly.mjs`/`test-render.mjs`
+pass → contract flips NORMATIVE-CURRENT + verify-contracts integration → submit (not authorization).
 
 ## 7. Non-goals (cycle 1)
 No mutation of `CURRENT-AUTHORITY`/records (read-only, oracle-enforced); no deletion; no enforcement gate; no
