@@ -1,0 +1,12 @@
+{
+  "name": "lachesis",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Lachesis — measures dependencies, relevance, risk, and blast radius over a committed Clotho weave snapshot (read as data; never imports clotho/).",
+  "scripts": {
+    "check": "node --check ingest.mjs && node --check measure.mjs && node --check scripts/test-metrics.mjs && node --check scripts/test-boundary.mjs",
+    "test": "npm run check && node scripts/test-metrics.mjs && node scripts/test-boundary.mjs"
+  },
+  "dependencies": {}
+}
