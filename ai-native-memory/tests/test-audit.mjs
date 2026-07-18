@@ -14,4 +14,8 @@ assert.ok(fails("v-invariant-no-oracle", "three-representation").length >= 1, "i
 assert.ok(fails("v-normative-no-oracle", "taxonomy").length >= 1, "NORMATIVE without oracle flagged");
 assert.ok(fails("v-pending-no-becomes", "taxonomy").length >= 1, "PENDING without becomes_normative_when flagged");
 assert.ok(fails("v-superseded-loose", "taxonomy").length >= 1, "loose SUPERSEDED flagged");
+assert.ok(fails("v-stale-query", "query-freshness").length >= 1, "stale derived query flagged");
+assert.ok(fails("v-mirror-drift", "mirror-sync").length >= 1, "mirror drift flagged");
+assert.ok(fails("v-dangling-anchor", "staleness").length >= 1, "dangling anchor flagged");
+assert.ok(fails("v-authority-drift", "staleness").length >= 1, "authority drift flagged");
 console.log("test-audit: all assertions passed");

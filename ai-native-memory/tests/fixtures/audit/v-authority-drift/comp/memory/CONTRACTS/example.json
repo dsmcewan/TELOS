@@ -1,0 +1,7 @@
+{
+  "kind": "contract", "id": "example", "title": "Example contract",
+  "status": "NORMATIVE-CURRENT", "normativity": "NORMATIVE",
+  "oracle": { "test": "scripts/test-example.mjs" },
+  "lifecycle": "docs-first",
+  "decided_by": "human"
+}

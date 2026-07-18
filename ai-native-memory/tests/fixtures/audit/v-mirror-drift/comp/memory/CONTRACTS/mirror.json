@@ -1,0 +1,6 @@
+{
+  "kind": "contract", "id": "mirror", "title": "Mirrored closed set", "status": "NORMATIVE-CURRENT",
+  "normativity": "NORMATIVE", "oracle": { "test": "scripts/test-example.mjs" }, "lifecycle": "docs-first",
+  "mirror_of": { "file": "CONTRACTS/example.json", "pointer": "oracle.test" },
+  "values": "scripts/other.mjs"
+}
