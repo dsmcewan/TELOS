@@ -182,9 +182,10 @@ const abs = (rel) => path.join(REPO_ROOT, ...rel.split("/"));
   for (const d of PACKAGE_ROOTS) assert.ok(!excluded.has(d), `${d} not both included and excluded`);
   assert.equal(included.size + excluded.size, union.size, "PACKAGE_ROOTS ∩ PACKAGE_ROOTS_EXCLUDE == ∅");
 
-  // exact AM-40 arrays, sorted + unique
-  assert.deepEqual(PACKAGE_ROOTS, ["breakout", "build-gate", "clotho", "connectors/ai-peer-mcp", "merkle-dag"], "PACKAGE_ROOTS is exactly the five TELOS-spine packages (AM-40)");
-  assert.deepEqual(PACKAGE_ROOTS_EXCLUDE, ["ai-forge", "forge", "saas-forge"], "PACKAGE_ROOTS_EXCLUDE is exactly the three sibling products (AM-40)");
+  // exact roots, sorted + unique: the 5 TELOS-spine (AM-40) + lachesis/atropos consciously enrolled
+  // through the Iliad (in-profile, conformant, woven); narcissus/flagship deferred as a product.
+  assert.deepEqual(PACKAGE_ROOTS, ["atropos", "breakout", "build-gate", "clotho", "connectors/ai-peer-mcp", "lachesis", "merkle-dag"], "PACKAGE_ROOTS = 5 TELOS-spine + lachesis/atropos (conscious Iliad enrollment)");
+  assert.deepEqual(PACKAGE_ROOTS_EXCLUDE, ["ai-forge", "forge", "narcissus/flagship", "saas-forge"], "PACKAGE_ROOTS_EXCLUDE = 3 sibling products + narcissus/flagship (deferred product, AM-40)");
   const sortedUnique = (a) => Array.isArray(a) && a.length === new Set(a).size && a.every((v, i) => i === 0 || a[i - 1] < v);
   assert.ok(sortedUnique(PACKAGE_ROOTS), "PACKAGE_ROOTS sorted + unique");
   assert.ok(sortedUnique(PACKAGE_ROOTS_EXCLUDE), "PACKAGE_ROOTS_EXCLUDE sorted + unique");
