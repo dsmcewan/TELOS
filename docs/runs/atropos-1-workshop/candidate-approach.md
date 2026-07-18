@@ -1,4 +1,4 @@
-# Candidate approach (rev 5) — Atropos (enrollment quest, cycle 1)
+# Candidate approach (rev 6) — Atropos (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json`.
@@ -41,9 +41,10 @@ Candidate set = UNION of: `CURRENT-AUTHORITY.json#superseded` entries; committed
   the retired identity, and which edge endpoint is retired, is deferred → all such candidates take the
   deterministic short-circuit below. (This removes the round-5 ambiguity: a `SUPERSEDED` record can carry many
   64-hex ids; cycle-1 does not extract one — it defers the whole node-backed path.)
-- **unrepresented/unknown** — anything else: an id in more than one source with disagreement, an identity
-  appearing as BOTH a plan-version and a weave node, a bare edge/record with no resolvable first-class weave-node
-  identity, or a malformed shape. NEVER silently assigned the smaller plan surface set.
+- **unrepresented/unknown** — a `#superseded` entry that is NOT a valid closed-shape plan-version (malformed
+  shape / missing `plan_version`). (Cross-source disagreement + plan/node identity overlap detection REQUIRE
+  identity resolution, which is DEFERRED with the full node-backed verifier — so cycle-1 detection is purely
+  SOURCE + SHAPE, with no identity resolution anywhere; the round-6 contradiction is removed.)
 The complete Clotho node-kind set (for documentation; NOT a cross-taxonomy match) is the 11 `NODE_KINDS`:
 {contract-clause, code-symbol, repository-file, test, commit, concern, obligation, **check-contract**,
 run-evidence, doc-section, **decision**} — the round-2 objection correctly caught that rev1 omitted
@@ -116,11 +117,15 @@ root (HELD for The Eye).
   argument, which a name scan cannot constrain); the runtime reads with `readFileSync` only; any other `node:fs`
   named import → fail; (b) NO namespace import of `node:fs` (`import * as fs`)
   and no `node:fs/promises` (defeats name-based checking / exposes FileHandle writers); (c) NO import of
-  `node:child_process`, `node:worker_threads`, `node:vm`, `process.binding`, `process.dlopen`; (d) the boundary
-  oracle already bans dynamic `import()`/`require`/`createRequire`/`Module._load`/`eval`. Plus branch-isolating
-  fixture negatives (each flagged). **NON-CLAIM:** a fail-closed STATIC allowlist over the closed import
-  surface, NOT a runtime sandbox; but with only allowlisted read APIs importable, no write-capable module
-  reachable, and no dynamic loading, the runtime has no reachable write path.
+  `node:child_process`, `node:worker_threads`, `node:vm`, `process.binding`, `process.dlopen`; (d) deny known
+  GLOBAL write paths that need no import — `process.report.writeReport`, `process.report.directory`/`filename`
+  assignment, `process.chdir`; (e) the boundary oracle already bans dynamic
+  `import()`/`require`/`createRequire`/`Module._load`/`eval`. Plus branch-isolating fixture negatives (each
+  flagged). **NON-CLAIM (honest — corrects the rev-4 overclaim):** a FAIL-CLOSED STATIC check over the KNOWN
+  import + named-global write surface — NOT a proof of no-write and NOT a runtime sandbox; a determined write
+  via an unenumerated global/API is not provably excluded (e.g. built-in global surfaces evolve). The read-only
+  guarantee rests on the SMALL reviewed runtime surface + zero-`dependencies` + the import allowlist + no
+  dynamic loading; the oracle is strong evidence, not a proof.
 
 ## 6. Anchoring + memory layout
 No CHANGE-PROTOCOL edit (design decision, per ruling). `atropos/memory/CONTRACTS/supersession.json` starts

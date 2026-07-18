@@ -1,0 +1,33 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "Section 3 conflicts with the frozen CHANGE-PROTOCOL, whose retirement row explicitly includes plans and requires all three actions: mark SUPERSEDED with the required fields, record a supersedes edge, and update CURRENT-AUTHORITY.json. Declaring the first two surfaces structurally inapplicable is a specification reinterpretation, not an implementation detail. The cited future decision record and peer-model result are not a stable Eye ruling identifier, and even an Eye amendment must proceed through a Daedalus delta, new plan version, TELOS authorization, and renewed implementation authority. This tension must be escalated rather than encoded as a one-surface verifier.",
+        "scope": "plan-escalation"
+      },
+      {
+        "claim": "scripts/test-readonly.mjs does not establish its claimed no-write-path property. Runtime code can call the Node 18 global process.report.writeReport(path) without importing node:fs or any prohibited module, and the described scanner will accept it despite the resulting filesystem write. Other unclosed built-in surfaces compound the issue. The oracle must either enforce a genuinely closed runtime capability surface including global write APIs or narrow the normative claim; the present oracle would not discriminate a violating implementation.",
+        "scope": "oracle"
+      },
+      {
+        "claim": "The kind classifier is internally unimplementable as specified. It classifies every SUPERSEDED-record or supersedes-edge candidate as weave-node-backed solely from source while also assigning bare records/edges without resolvable identities, cross-source disagreement, and plan/node identity overlap to unknown. Those latter conditions require the identity extraction and resolution that the approach explicitly defers. Consequently the required exact-one-kind classification and reason codes are undefined for malformed or overlapping inputs. Define provenance-bearing candidate envelopes and executable structural/identity rules, or remove the branches that cannot be observed in cycle 1.",
+        "scope": "mechanism"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2y08178W3vs316Qd8sguMRWLDPkP",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2y08178W3vs316Qd8sguMRWLDPkP",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:3e7feb35c235d2d1e9f1900a4b3924f3270fcf5d38e10f8f2f943c2d0c8ce4b6",
+  "output_plan_artifact_hash": "sha256:3e7feb35c235d2d1e9f1900a4b3924f3270fcf5d38e10f8f2f943c2d0c8ce4b6",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:8614963cabc07679395c650cb55e4f957205f73cbe53780fcbe2373928e76363",
+    "provenance_key": "anthropic:msg_011Cd9V857TyBawu4PtzMo3y"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:a1a9aea9e12597d16386c69a5dff6271952182559c1107ae6f4781cf2416026b",
+    "provenance_key": "openai:chatcmpl-E2y08178W3vs316Qd8sguMRWLDPkP",
+    "bound_hash": "sha256:3e7feb35c235d2d1e9f1900a4b3924f3270fcf5d38e10f8f2f943c2d0c8ce4b6"
+  },
+  "objections": [
+    {
+      "claim": "Section 3 conflicts with the frozen CHANGE-PROTOCOL, whose retirement row explicitly includes plans and requires all three actions: mark SUPERSEDED with the required fields, record a supersedes edge, and update CURRENT-AUTHORITY.json. Declaring the first two surfaces structurally inapplicable is a specification reinterpretation, not an implementation detail. The cited future decision record and peer-model result are not a stable Eye ruling identifier, and even an Eye amendment must proceed through a Daedalus delta, new plan version, TELOS authorization, and renewed implementation authority. This tension must be escalated rather than encoded as a one-surface verifier.",
+      "scope": "plan-escalation",
+      "objection_hash": "sha256:fc4db82bb686d0db9d125212cfa516eb5a72ccbc1b7cddf5e75f39aee16b5673",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "scripts/test-readonly.mjs does not establish its claimed no-write-path property. Runtime code can call the Node 18 global process.report.writeReport(path) without importing node:fs or any prohibited module, and the described scanner will accept it despite the resulting filesystem write. Other unclosed built-in surfaces compound the issue. The oracle must either enforce a genuinely closed runtime capability surface including global write APIs or narrow the normative claim; the present oracle would not discriminate a violating implementation.",
+      "scope": "oracle",
+      "objection_hash": "sha256:e4d05314ab239389ca5300ed3dac5253149ce5e7438b2e15740b21b121651e4d",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The kind classifier is internally unimplementable as specified. It classifies every SUPERSEDED-record or supersedes-edge candidate as weave-node-backed solely from source while also assigning bare records/edges without resolvable identities, cross-source disagreement, and plan/node identity overlap to unknown. Those latter conditions require the identity extraction and resolution that the approach explicitly defers. Consequently the required exact-one-kind classification and reason codes are undefined for malformed or overlapping inputs. Define provenance-bearing candidate envelopes and executable structural/identity rules, or remove the branches that cannot be observed in cycle 1.",
+      "scope": "mechanism",
+      "objection_hash": "sha256:0e35d72d6edf900653e7bc4fee7e0e2dfe6cf72ea4605e8bd29c1d947a15a34e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
