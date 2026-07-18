@@ -16,13 +16,20 @@ const SANCTIONED = path.join(REPO, "merkle-dag/vendor.mjs");
 let passes = 0, fails = 0;
 const ok = (c, m) => { if (c) passes++; else { fails++; console.error("FAIL:", m); } };
 
+// Strip line + block comments so a comment can't hide a specifier (e.g. `import x from /*c*/ "..."`).
+// Bias: fail-closed — this is a static profile check, not a full lexer (NON-CLAIM below).
+function stripComments(src) {
+  return src.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+}
 // Return an array of boundary violations for a source string located at `fileDir`.
-export function violations(source, fileDir) {
+export function violations(rawSource, fileDir) {
+  const source = stripComments(rawSource);
   const v = [];
   // out-of-profile dynamic/computed loading -> FAIL CLOSED (never silently allowed)
   if (/\bimport\s*\(/.test(source)) v.push("dynamic import()");
   if (/\brequire\s*\(/.test(source)) v.push("require()");
   if (/\bcreateRequire\b/.test(source)) v.push("createRequire alias");
+  if (/\b(?:Module\._load|Module\._compile|process\.binding|process\.dlopen)\b/.test(source)) v.push("low-level loader escape");
   if (/\beval\s*\(/.test(source)) v.push("eval()");
   // static specifiers — `[^;]` (not `[^;\n]`) so MULTILINE `import {...}\nfrom "..."` is caught
   const specs = [];
@@ -66,9 +73,12 @@ const NEG = [
   ['import x from "../../clotho/query.mjs";', "clotho spine import"],
   ['import x from "../../elsewhere/thing.mjs";', "escaping relative import"],
   ['import fs from "fs";', "bare (non-node:) import"],
+  ['import x from /*c*/ "../../clotho/query.mjs";', "comment-hidden clotho import"],
   ['const m = await import("./x.mjs");', "dynamic import()"],
+  ['const m = await import/*c*/("./x.mjs");', "comment-hidden dynamic import"],
   ['const r = require("x");', "require()"],
   ['import { createRequire } from "node:module"; const r = createRequire(import.meta.url);', "createRequire alias"],
+  ['const m = Module._load("../../clotho/query.mjs");', "low-level loader escape"],
   ['const f = eval("readFileSync");', "eval()"]
 ];
 for (const [src, label] of NEG) ok(violations(src, PKG).length > 0, `negative flagged: ${label}`);

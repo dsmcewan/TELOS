@@ -1,0 +1,27 @@
+{
+  "identity_scope": {
+    "must_implement": [
+      "Preserve the frozen boundary: Lachesis MUST consume the committed snapshot only as data and MUST NOT import any module under clotho/ or locally reimplement deriveNodeId.",
+      "Require manifest.snapshot_digest to match /^sha256:[0-9a-f]{64}$/ and manifest.snapshot_path to be a relative, root-contained path. Resolve the path under rootDir, reject traversal or realpath escape, hash the exact snapshot file bytes with SHA-256 before parsing, and reject unless \"sha256:\" plus the lowercase hexadecimal digest exactly equals manifest.snapshot_digest.",
+      "Enforce a locator-to-node-id bijection over every from_node/from_locator and to_node/to_locator pair in the snapshot. Maintain idToLocator and locatorToId relations. Reject if one node id occurs with structurally unequal locators, or if one structurally equal locator occurs with different node ids.",
+      "Define locator equality over the complete parsed locator value: JSON object member order is ignored, array order is significant, and primitive type and value must match exactly. Implement this with structural JSON equality, such as node:util isDeepStrictEqual, rather than JSON.stringify property order or a locally reproduced Clotho canonicalizer.",
+      "Apply the bijection check globally across both endpoints and all edge kinds before returning any weave to measure.mjs; any conflict MUST fail the entire load, with no partial metrics result.",
+      "Add negative oracle tests for: same id/different locator, same locator/different ids, aliases split across from and to endpoints, object-member reordering of the same locator, malformed digest syntax, digest mismatch, path traversal, and symlink realpath escape."
+    ],
+    "must_nonclaim": [
+      "Cycle 1 MUST NOT claim that a node id is the content-address of its locator, that from_node equals deriveNodeId(from_locator), or that to_node equals deriveNodeId(to_locator). It establishes only intra-snapshot bijective consistency.",
+      "Cycle 1 MUST NOT claim that the manifest, its snapshot digest, or its snapshot path is authenticated by a durable trust root. The digest check establishes integrity only relative to the manifest supplied to Lachesis.",
+      "Cycle 1 MUST NOT claim CURRENT-AUTHORITY anchoring, authority continuity, publisher identity, or authorization of the snapshot.",
+      "Cycle 1 MUST NOT claim verification of the Clotho record-hash chain, Ed25519 signatures, header public key, or trailer cryptography merely because those fields are structurally present.",
+      "Cycle 1 MUST NOT describe its checks as equivalent to Clotho validation or deriveNodeId validation."
+    ],
+    "rationale": "Ruling A is the smallest correct cycle-1 construction. It detects both forms of identity equivocation and binds measured bytes to the supplied manifest without crossing the frozen no-clotho-import boundary or creating a drifting deriveNodeId clone. Full content-address verification and authenticated authority require Clotho-owned derivation or a separately versioned data contract plus wired CURRENT-AUTHORITY; neither exists in cycle 1, so those properties must remain explicit non-claims.",
+    "ruling": "A"
+  },
+  "relevance": {
+    "feeds_riskclass": false,
+    "formula": "For every node v, let raw(v) = 3*D(v) + 2*V(v) + I(v), where D(v) is the number of distinct edges e with e.edge_kind == \"depends-on\" and e.to == v, V(v) is the number of distinct edges e with e.edge_kind == \"verified-by\" and e.from == v, and I(v) is the number of distinct edges e with e.edge_kind == \"introduced-by\" and e.from == v. Let M = max(raw(u)) over every node u in weave.nodes. relevance(v) = 0 if M == 0; otherwise relevance(v) = raw(v)/M. Count direct edges only; do not use transitive closure. All other edge kinds contribute weight 0.",
+    "per_kind": "depends-on credits its TO endpoint (the dependency) with weight 3 per distinct edge; verified-by credits its FROM endpoint (the verified subject) with weight 2 per distinct edge; introduced-by credits its FROM endpoint (the introduced subject) with weight 1 per distinct edge; documented-in, evidenced-by, discharges, motivated-by, and supersedes contribute 0.",
+    "rationale": "This preserves the intended 3:2:1 salience measure while respecting the real edge orientations: dependencies receive dependency-centrality credit, while verification and introduction credit the subject rather than the test or commit. Max normalization makes the result deterministic in [0,1] and directly oracle-able from a snapshot. Relevance MUST remain reported but MUST NOT feed riskClass in cycle 1: verification and provenance links measure weave salience, not impact or failure probability, and the snapshot-relative normalization supplies no defensible absolute risk threshold. riskClass therefore remains blast-radius driven with its existing coverage floor."
+  }
+}

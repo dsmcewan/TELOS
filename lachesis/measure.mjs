@@ -2,21 +2,20 @@
 // The graph is over bare-hex node ids; edges carry an edge_kind. Lachesis MEASURES; it
 // does not authorize, enforce, retire, weave, or render. The risk CLASS is ADVISORY.
 //
-// SEMANTICS DECISIONS (cycle 1, reality-driven — FLAGGED for Eye ratification):
-//  * relevance = normalized `depends-on` IN-DEGREE (centrality). The fiction-plan's weighted
-//    {depends-on 3, verified-by 2, introduced-by 1} MIS-ORIENTED the latter two: in the real
-//    weave verified-by is file->test and introduced-by is file->commit (FROM = subject), so
-//    crediting the `to` endpoint attributed weight to tests/commits. Dropped them; relevance is
-//    pure depends-on centrality, oracled against golden real values.
-//  * riskClass is BLAST-DRIVEN + coverage floor. Under the corrected relevance (a normalized
-//    depends-on in-degree), relevance is subsumed by blast (blast >= in-degree), so folding it
-//    into the class never changes the outcome — it is reported, not risk-bearing.
+// SEMANTICS (cycle 1 — ruled by the GPT seat, delegated by The Eye 2026-07-18):
+//  * relevance = 3:2:1 salience with CORRECTED real orientation — depends-on credits its TO
+//    endpoint (dependency), verified-by/introduced-by credit their FROM endpoint (the verified/
+//    introduced subject; the fiction-plan credited the TO endpoint = test/commit). Normalized by
+//    max; direct edges only. RELEVANCE IS REPORTED BUT DOES NOT FEED riskClass: verification/
+//    provenance links measure weave salience, not impact, and snapshot-relative normalization is
+//    no defensible absolute risk threshold.
+//  * riskClass is BLAST-DRIVEN + coverage floor.
 //
 // Pinned metric semantics (the oracle in scripts/test-metrics.mjs discriminates each):
 //  depends-on: from = dependent, to = dependency.
 //  dependencies(id)      = transitive forward depends-on closure, EXCLUDING id (cycle-safe).
 //  blastRadius(id,depth) = reverse depends-on dependents to `depth` hops (id excluded), cycle-safe.
-//  relevance(id)         = (depends-on in-degree of id) / (max depends-on in-degree), 0 if max 0.
+//  relevance(id)         = raw(id)/max raw, raw = 3*D(to) + 2*V(from) + 1*I(from) (see below), 0 if max 0.
 //  riskClass(id,cov)     = blast>=10 high | >=3 medium | else low; then coverage-floored.
 
 export const RISK_BLAST_DEPTH = Infinity; // full transitive reverse closure — depth-deterministic
@@ -90,19 +89,30 @@ export function blastRadius(weave, nodeId, depth = RISK_BLAST_DEPTH) {
   return { count: set.size, nodes: set };
 }
 
-function inDegreeDependsOn(weave) {
-  const acc = new Map();
-  for (const e of weave.edges) if (e.edge_kind === "depends-on") acc.set(e.to, (acc.get(e.to) || 0) + 1);
-  return acc;
+// relevance salience (codex ruling, cycle 1): raw(v) = 3*D(v) + 2*V(v) + 1*I(v), where
+//   D(v) = # depends-on edges with to == v   (dependency centrality — credit the TO endpoint)
+//   V(v) = # verified-by edges with from == v (verified subject   — credit the FROM endpoint)
+//   I(v) = # introduced-by edges with from == v (introduced subject — credit the FROM endpoint)
+// direct edges only (no transitive closure); all other edge kinds weight 0. Ingest guarantees
+// (kind,from,to)-distinct edges, so edge counts are distinct counts.
+function rawSalience(weave) {
+  const raw = new Map();
+  const add = (k, w) => raw.set(k, (raw.get(k) || 0) + w);
+  for (const e of weave.edges) {
+    if (e.edge_kind === "depends-on") add(e.to, 3);
+    else if (e.edge_kind === "verified-by") add(e.from, 2);
+    else if (e.edge_kind === "introduced-by") add(e.from, 1);
+  }
+  return raw;
 }
 
 export function relevance(weave, nodeId) {
   requireKnown(weave, nodeId);
-  const acc = inDegreeDependsOn(weave);
-  let max = 0;
-  for (const v of acc.values()) if (v > max) max = v;
-  if (max === 0) return 0;
-  return (acc.get(nodeId) || 0) / max;
+  const raw = rawSalience(weave);
+  let M = 0;
+  for (const v of raw.values()) if (v > M) M = v;
+  if (M === 0) return 0;
+  return (raw.get(nodeId) || 0) / M;
 }
 
 export function riskClass(weave, nodeId, coverage = "unverified") {
