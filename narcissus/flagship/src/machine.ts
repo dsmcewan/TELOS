@@ -32,6 +32,20 @@ export const initialContext: FlagshipContext = {
 
 const clamp = (n: number) => Math.max(0, Math.min(STATION_COUNT - 1, n));
 
+// Boot context: honors ?view=graph deep links (shareable + Lighthouse-auditable graph view) and the
+// system-level prefers-reduced-motion (first-class reduced experience). Under ?e2e=1 both are pinned
+// to the deterministic defaults so the E2E suite starts from a reproducible state.
+export function bootContext(): FlagshipContext {
+  if (typeof location === "undefined") return initialContext;
+  const q = new URLSearchParams(location.search);
+  const e2e = q.get("e2e") === "1";
+  return {
+    ...initialContext,
+    view: !e2e && q.get("view") === "graph" ? "graph" : initialContext.view,
+    reducedMotion: !e2e && typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches,
+  };
+}
+
 export type FlagshipEvent =
   | { type: "NEXT_STATION" }
   | { type: "PREV_STATION" }
@@ -53,7 +67,7 @@ export type FlagshipEvent =
 export const flagshipMachine = createMachine({
   id: "flagship",
   types: {} as { context: FlagshipContext; events: FlagshipEvent },
-  context: initialContext,
+  context: bootContext,
   on: {
     NEXT_STATION: {
       actions: assign(({ context }) => {

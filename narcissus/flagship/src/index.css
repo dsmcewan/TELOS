@@ -20,6 +20,14 @@
   --glow-sm: 0 0 12px rgba(248, 113, 113, 0.35);
   --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  /* ---- motion language (deliberate, nothing default) ----
+     expo-out for entrances (fast arrival, long settle — thread released);
+     loom in-out for view swaps (tension gathered, then released). */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-loom: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-quick: 240ms;
+  --dur-enter: 620ms;
+  --dur-hero: 950ms;
 }
 :root[data-theme="light"] {
   --surface: #ffffff; --surface-raised: #fbfcfe; --surface-sunken: #e8eaee; --page: #dee2e7;
@@ -100,7 +108,49 @@ button[aria-pressed="true"], button.primary { color: #fff; border-color: var(--a
 
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+/* ---- motion: entrances (station text rises like thread pulled taut; HUD panels arrive from their anchor edge) ---- */
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes hud-from-left { from { opacity: 0; transform: translateX(-22px); } to { opacity: 1; transform: none; } }
+@keyframes hud-from-right { from { opacity: 0; transform: translateX(22px); } to { opacity: 1; transform: none; } }
+
+.station .kicker { animation: rise var(--dur-enter) var(--ease-out) both; }
+.station h1 { animation: rise var(--dur-hero) var(--ease-out) 70ms both; }
+.station p.body { animation: rise var(--dur-hero) var(--ease-out) 150ms both; }
+.station .actions { animation: rise var(--dur-hero) var(--ease-out) 230ms both; }
+.evidence { animation: rise var(--dur-enter) var(--ease-out) both; }
+.timeline { animation: fade var(--dur-hero) var(--ease-loom) both; }
+
+/* entering the loom: the canvas breathes in; HUD panels arrive AFTER the weave (weave is the hero) */
+.loom-canvas { animation: fade 1100ms var(--ease-loom) both; }
+.graph-view .hud-tl { animation: hud-from-left var(--dur-hero) var(--ease-out) 340ms both; }
+.graph-view .hud-r { animation: hud-from-right var(--dur-hero) var(--ease-out) 480ms both; }
+.graph-view .node-detail { animation: rise var(--dur-enter) var(--ease-out) both; }
+.gl-label { animation: fade var(--dur-hero) var(--ease-out) 720ms both; }
+
+/* reduced motion is a FIRST-CLASS experience: designed crossfades, no travel — not a disabled site.
+   Honors both the in-app toggle (data-motion) and the OS setting (prefers-reduced-motion). */
+:root[data-motion="reduced"] .station .kicker, :root[data-motion="reduced"] .station h1,
+:root[data-motion="reduced"] .station p.body, :root[data-motion="reduced"] .station .actions,
+:root[data-motion="reduced"] .evidence, :root[data-motion="reduced"] .graph-view .hud-tl,
+:root[data-motion="reduced"] .graph-view .hud-r, :root[data-motion="reduced"] .graph-view .node-detail,
+:root[data-motion="reduced"] .gl-label, :root[data-motion="reduced"] .timeline {
+  animation-name: fade; animation-duration: 180ms; animation-delay: 0ms; animation-timing-function: ease-out;
+}
+:root[data-motion="reduced"] .loom-canvas { animation-duration: 260ms; }
+@media (prefers-reduced-motion: reduce) {
+  .station .kicker, .station h1, .station p.body, .station .actions, .evidence,
+  .graph-view .hud-tl, .graph-view .hud-r, .graph-view .node-detail, .gl-label, .timeline {
+    animation-name: fade !important; animation-duration: 180ms !important; animation-delay: 0ms !important;
+  }
+  .loom-canvas { animation-duration: 260ms !important; }
+  button, a.btn { transition: none !important; }
+}
+
+/* ?e2e=1 — deterministic functional blade: ALL motion frozen at its settled end state. */
+:root[data-e2e="1"] *, :root[data-e2e="1"] *::before, :root[data-e2e="1"] *::after {
+  animation-duration: 0ms !important; animation-delay: 0ms !important; transition: none !important;
+}
 
 /* ---- Live Graph view — WEAVE IS THE HERO: canvas fills the frame; HUD overlays are edge-anchored + translucent ---- */
 .graph-view { position: relative; padding: 0; overflow: visible; display: block; height: 100%; }

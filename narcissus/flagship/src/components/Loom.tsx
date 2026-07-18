@@ -6,8 +6,11 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { STATION_COUNT } from "../stations";
 import { ferroVert, ferroFrag } from "../ferrofluid";
+import { isE2E } from "../e2e-mode";
 
 const N = 30;
+const easeOutCubic = (k: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, k)), 3);
+const E2E_T = 1.234;
 
 function Warp({ stationIndex, threadPulled, reducedMotion }: {
   stationIndex: number; threadPulled: boolean; reducedMotion: boolean;
@@ -18,11 +21,28 @@ function Warp({ stationIndex, threadPulled, reducedMotion }: {
     vertexShader: ferroVert, fragmentShader: ferroFrag,
     uniforms: { uTime: { value: 0 }, uColor: { value: new THREE.Color("#ef4444") }, uDim: { value: 1 } },
   }), []);
-  useFrame((state) => {
-    knotMat.uniforms.uTime.value = state.clock.elapsedTime;
-    if (reducedMotion || !group.current) return;
-    group.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.12) * 0.05;
-    group.current.position.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.05;
+  const mountAt = useRef<number | null>(null);
+  useFrame((state, delta) => {
+    const E2E = isE2E();
+    const wall = state.clock.elapsedTime;
+    const t = E2E ? E2E_T : wall;
+    if (mountAt.current === null) mountAt.current = wall;
+    knotMat.uniforms.uTime.value = t;
+
+    // RETURNING TO THE STORY: a gentle settle-back dolly (z 9.8 -> 8.5), and the camera PANS toward
+    // the current band on station change (the loom slides under the reader — movement, not a cut).
+    const dolly = E2E || reducedMotion ? 1 : easeOutCubic((wall - mountAt.current) / 1.2);
+    state.camera.position.z = 9.8 - 1.3 * dolly;
+    const bandX = (Math.floor((stationIndex / STATION_COUNT) * N) - N / 2) * 0.42;
+    const targetX = bandX * 0.16;
+    state.camera.position.x = E2E || reducedMotion
+      ? targetX
+      : THREE.MathUtils.damp(state.camera.position.x, targetX, 2.6, delta);
+    state.camera.lookAt(state.camera.position.x * 0.4, 0, 0);
+
+    if (reducedMotion || E2E || !group.current) return;
+    group.current.rotation.y = Math.sin(t * 0.12) * 0.05;
+    group.current.position.y = Math.sin(t * 0.2) * 0.05;
   });
   const threads = [];
   // warp threads as round TUBES with a gentle catenary bow toward the viewer on the current band —

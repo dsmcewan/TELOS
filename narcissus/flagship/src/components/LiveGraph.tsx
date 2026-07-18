@@ -8,6 +8,10 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { NODES, NODES_BY_BLAST, EDGES, LAYOUT, LABELED_IDS, MAX_BLAST, riskColor, nodeById } from "../livegraph";
 import { ferroVert, ferroFrag } from "../ferrofluid";
+import { isE2E } from "../e2e-mode";
+
+const easeOutCubic = (k: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, k)), 3);
+const E2E_T = 1.234; // frozen shader clock under ?e2e=1 — deterministic pixels
 
 const threadVert = /* glsl */`
   varying float vT;
@@ -32,25 +36,28 @@ function Graph({ selectedNodeId, reducedMotion, labelHost, theme }: {
   selectedNodeId: string | null; reducedMotion: boolean; labelHost: React.RefObject<HTMLDivElement>; theme: "dark" | "light";
 }) {
   const group = useRef<THREE.Group>(null);
+  const shellRef = useRef<THREE.Mesh>(null);
   const hubId = NODES_BY_BLAST[0].id;
 
-  const materials = useMemo(() => {
+  const { materials, baseDims } = useMemo(() => {
     const m: Record<string, THREE.ShaderMaterial> = {};
+    const dims: Record<string, number> = {};
     for (const n of NODES) {
       const weight = n.blast_radius / MAX_BLAST;
       const z = LAYOUT[n.id]?.[2] ?? 0;
       const depthDim = 1 + Math.min(0, z) * 0.16;
       const rankDim = 0.45 + weight * 0.65;
+      dims[n.id] = Math.max(0.28, rankDim * depthDim);
       m[n.id] = new THREE.ShaderMaterial({
         vertexShader: ferroVert, fragmentShader: ferroFrag,
         uniforms: {
           uTime: { value: 0 },
           uColor: { value: new THREE.Color(riskColor(n.risk_class)) },
-          uDim: { value: Math.max(0.28, rankDim * depthDim) },
+          uDim: { value: dims[n.id] },
         },
       });
     }
-    return m;
+    return { materials: m, baseDims: dims };
   }, []);
 
   const shellMat = useMemo(() => new THREE.ShaderMaterial({
@@ -87,21 +94,45 @@ function Graph({ selectedNodeId, reducedMotion, labelHost, theme }: {
     return out;
   }, [hubId]);
 
+  // motion clocks: mount time (the dolly-in) and last selection change (the ripple).
+  const mountAt = useRef<number | null>(null);
+  const selMark = useRef<{ id: string | null; at: number }>({ id: null, at: -10 });
+
   useFrame((state) => {
-    const t = state.clock.elapsedTime;
+    const E2E = isE2E();
+    const wall = state.clock.elapsedTime;
+    const t = E2E ? E2E_T : wall; // frozen shader clock under e2e — deterministic pixels
+    if (mountAt.current === null) mountAt.current = wall;
+    if (selMark.current.id !== selectedNodeId) selMark.current = { id: selectedNodeId, at: wall };
+
     for (const id in materials) materials[id].uniforms.uTime.value = t;
     shellMat.uniforms.uTime.value = t;
-    // selection drama: connected threads brighten, unrelated dim. Theme-aware thread color:
-    // light theme gets a WARMER dark-red so threads sit softer on the light grey.
+    // the hub's idle breath — a slow luminosity swell on the tension point (paint only)
+    materials[hubId].uniforms.uDim.value = baseDims[hubId] * (1 + 0.06 * Math.sin(t * 0.7));
+
+    // ENTERING THE LOOM: a camera dolly-in (not a cut) — z 15.5 -> 10.5 with a slight descend,
+    // expo-out over 1.7s. Settled instantly under e2e / reduced motion.
+    const dolly = E2E || reducedMotion ? 1 : easeOutCubic((wall - mountAt.current) / 1.7);
+    state.camera.position.z = 15.5 - 5.0 * dolly;
+    state.camera.position.y = 1.4 * (1 - dolly);
+    state.camera.lookAt(0, 0, 0);
+
+    // SELECTION RIPPLE: the boost/dim propagates over ~0.45s instead of snapping — the weave
+    // reacts to the pull. Theme-aware thread color (light theme gets a warmer dark-red).
+    const ripple = E2E || reducedMotion ? 1 : easeOutCubic((wall - selMark.current.at) / 0.45);
     for (const th of threads) {
       const connected = selectedNodeId && (th.from === selectedNodeId || th.to === selectedNodeId);
-      th.mat.uniforms.uBoost.value = selectedNodeId ? (connected ? 2.4 : 0.45) : 1;
+      const target = selectedNodeId ? (connected ? 2.4 : 0.45) : 1;
+      const cur = th.mat.uniforms.uBoost.value as number;
+      th.mat.uniforms.uBoost.value = cur + (target - cur) * ripple;
       const isHubThread = th.to === hubId || th.from === hubId;
       th.mat.uniforms.uColor.value.set(
         theme === "light" ? (isHubThread ? "#c2410c" : "#9a5b4f") : (isHubThread ? "#b91c1c" : "#7f1d1d"),
       );
     }
-    if (!reducedMotion && group.current) {
+    // the selection shell grows in with the ripple (a pop, then the pulse takes over)
+    if (shellRef.current) shellRef.current.scale.setScalar(1.45 * (0.55 + 0.45 * ripple));
+    if (!reducedMotion && !E2E && group.current) {
       group.current.rotation.y = Math.sin(t * 0.09) * 0.22;
       group.current.rotation.x = Math.sin(t * 0.05) * 0.05;
     }
@@ -154,7 +185,7 @@ function Graph({ selectedNodeId, reducedMotion, labelHost, theme }: {
               <sphereGeometry args={[size, seg, seg]} />
             </mesh>
             {sel && (
-              <mesh material={shellMat} scale={1.45}>
+              <mesh ref={shellRef} material={shellMat} scale={1.45}>
                 <sphereGeometry args={[size, 32, 32]} />
               </mesh>
             )}

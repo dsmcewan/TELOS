@@ -7,6 +7,7 @@ import { useEffect, lazy, Suspense } from "react";
 import { flagshipMachine } from "../machine";
 import { STATIONS, STATION_COUNT, evidenceById } from "../stations";
 import { NODES_BY_BLAST, CLOTHO, ATROPOS, SNAPSHOT, riskColor, nodeById } from "../livegraph";
+import { isE2E } from "../e2e-mode";
 
 // The WebGL canvases (three.js — the heavy chunk) are lazy-loaded so the DOM story (the LCP content) paints
 // immediately; three streams in as an async chunk. WebGL is paint, so a deferred canvas never blocks the app.
@@ -21,7 +22,14 @@ export function DomLayer() {
   const evidence = c.evidenceOpen && c.evidenceId ? evidenceById(c.evidenceId) : undefined;
   const node = c.selectedNodeId ? nodeById(c.selectedNodeId) : undefined;
 
-  useEffect(() => { document.documentElement.setAttribute("data-theme", c.theme); }, [c.theme]);
+  useEffect(() => {
+    const el = document.documentElement;
+    el.setAttribute("data-theme", c.theme);
+    // motion language switch: "full" runs the designed entrances; "reduced" swaps them for designed
+    // crossfades (a first-class experience, not a disabled one). ?e2e=1 freezes ALL motion for determinism.
+    el.setAttribute("data-motion", c.reducedMotion ? "reduced" : "full");
+    if (isE2E()) el.setAttribute("data-e2e", "1");
+  }, [c.theme, c.reducedMotion]);
 
   return (
     <>
