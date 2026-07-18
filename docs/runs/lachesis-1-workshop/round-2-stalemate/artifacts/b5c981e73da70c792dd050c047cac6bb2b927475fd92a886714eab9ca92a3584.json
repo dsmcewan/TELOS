@@ -1,0 +1,55 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:5d2289a1977d1f813d661eca46a85c6b97c7b9601172db1dd4a688a564e6db04",
+  "output_plan_artifact_hash": "sha256:5d2289a1977d1f813d661eca46a85c6b97c7b9601172db1dd4a688a564e6db04",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:d4d0fcb8dcac97b6f10fa4de1b58bba8422a620ed05563bf3575b455c370098b",
+    "provenance_key": "anthropic:msg_011Cd93NZoVQmFnSGgF4oFYb"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:a4651c7129427674dbee52169a4a2cc943688fbb2387205b1896d5203b0818a1",
+    "provenance_key": "openai:chatcmpl-E2sjJzJAB53G5xYJ19RruMlSQwNFG",
+    "bound_hash": "sha256:5d2289a1977d1f813d661eca46a85c6b97c7b9601172db1dd4a688a564e6db04"
+  },
+  "objections": [
+    {
+      "claim": "The acceptance order violates the frozen documentation-first comprehension protocol. Step 1 requires implemented metrics and passing tests before step 2 authors the memory records and before step 3 runs the comprehension gate. The frozen schema requires an authority-anchored SPECIFIED-PENDING-IMPLEMENTATION contract with `becomes_normative_when`, followed by successful comprehension validation before implementation authority; only after implementation and a passing oracle may it flip to NORMATIVE-CURRENT.",
+      "scope": "plan",
+      "objection_hash": "sha256:0cc7e57296327d114ee5c5652b8b2f12d09564fd89b26d12687e5788702b054e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The supposedly pinned metric contract still leaves load-bearing semantics undecided: no numerical relevance weights, risk thresholds/composition rule, or expected edge-kind set is specified. `normalized by the max in-degree` is also ambiguous about whether the denominator is maximum raw degree or maximum weighted degree. Deferring these choices to a contract authored alongside the implementation allows the oracle to bless arbitrary co-written behavior and does not resolve the stated metric-semantics risk.",
+      "scope": "plan",
+      "objection_hash": "sha256:6066904ef077ca5db3bdd63ef3630c6a937b3fd83afec26ccb7a5ae0d353d86d",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The coverage mechanism cannot support the claim that an incomplete weave cannot produce falsely low risk. Presence of each expected edge kind does not prove all expected edges are present; a snapshot can contain one edge of every required kind while omitting relevant dependencies or dependents. The plan needs a trustworthy completeness declaration or authority-anchored expected edge inventory, with missing or unverifiable completeness handled conservatively.",
+      "scope": "plan",
+      "objection_hash": "sha256:8a3b37b64ff37b28ee5569e4419f473a3833d441579e37123e8f04b9d6c599ce",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The serialized-data boundary is not fail-closed and its oracle does not cover the production input path. The plan specifies pure functions over parsed records but no ingestion/validation mechanism that verifies the selected snapshot identity, JSONL schema, ledger/hash-chain integrity, node and edge references, closed kinds, or malformed/duplicate records. A small fixture test can pass while the committed Clotho snapshot is incompatible or corrupted, and no acceptance step proves that the actual snapshot is parsed and rejected on contract violations.",
+      "scope": "plan",
+      "objection_hash": "sha256:68ba8c6b1a56a94b5382027b6f8a6da72339bb0f23a53faea3765fdb01938381",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

@@ -1,0 +1,37 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "The acceptance order violates the frozen documentation-first comprehension protocol. Step 1 requires implemented metrics and passing tests before step 2 authors the memory records and before step 3 runs the comprehension gate. The frozen schema requires an authority-anchored SPECIFIED-PENDING-IMPLEMENTATION contract with `becomes_normative_when`, followed by successful comprehension validation before implementation authority; only after implementation and a passing oracle may it flip to NORMATIVE-CURRENT.",
+        "scope": "plan"
+      },
+      {
+        "claim": "The supposedly pinned metric contract still leaves load-bearing semantics undecided: no numerical relevance weights, risk thresholds/composition rule, or expected edge-kind set is specified. `normalized by the max in-degree` is also ambiguous about whether the denominator is maximum raw degree or maximum weighted degree. Deferring these choices to a contract authored alongside the implementation allows the oracle to bless arbitrary co-written behavior and does not resolve the stated metric-semantics risk.",
+        "scope": "plan"
+      },
+      {
+        "claim": "The coverage mechanism cannot support the claim that an incomplete weave cannot produce falsely low risk. Presence of each expected edge kind does not prove all expected edges are present; a snapshot can contain one edge of every required kind while omitting relevant dependencies or dependents. The plan needs a trustworthy completeness declaration or authority-anchored expected edge inventory, with missing or unverifiable completeness handled conservatively.",
+        "scope": "plan"
+      },
+      {
+        "claim": "The serialized-data boundary is not fail-closed and its oracle does not cover the production input path. The plan specifies pure functions over parsed records but no ingestion/validation mechanism that verifies the selected snapshot identity, JSONL schema, ledger/hash-chain integrity, node and edge references, closed kinds, or malformed/duplicate records. A small fixture test can pass while the committed Clotho snapshot is incompatible or corrupted, and no acceptance step proves that the actual snapshot is parsed and rejected on contract violations.",
+        "scope": "plan"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2sjJzJAB53G5xYJ19RruMlSQwNFG",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2sjJzJAB53G5xYJ19RruMlSQwNFG",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}
