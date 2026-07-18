@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:7d05a674842b220eed7e51fa7e54a0d182762ad568a85657859950b79ced3a4b",
+  "output_plan_artifact_hash": "sha256:7d05a674842b220eed7e51fa7e54a0d182762ad568a85657859950b79ced3a4b",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:d532c05a505875ad1815b6a514ac2745557c9ee2e287eb62355e2e3494b28a6d",
+    "provenance_key": "anthropic:msg_011Cd97UCmLtWCLL2iT89hsF"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:ff76f1ce61b32521181f792c1e6974ed63541a254a6ae3c402dc7d164bf316bf",
+    "provenance_key": "openai:chatcmpl-E2tZJEynicdXgWhLJzkj34i3jmp8w",
+    "bound_hash": "sha256:7d05a674842b220eed7e51fa7e54a0d182762ad568a85657859950b79ced3a4b"
+  },
+  "objections": [
+    {
+      "claim": "The exact closed schemas for `snapshot-manifest.json` and entries in `coverage-attestations.json` are not valid institutional-memory records: they omit the mandatory record fields (`id`, closed-set `kind`, authority, evidence, status/normativity, change rule, and related fields). Because these artifacts are placed under `lachesis/memory/CONTRACTS/`, their declared two-field/four-field schemas directly conflict with the frozen record schema. Operational payloads must either live outside the institutional-memory record set and be described by compliant contract records, or be wrapped in compliant `contract`/`evidence` records.",
+      "scope": "§1, §4, and §5 — institutional-memory record layout and schemas",
+      "objection_hash": "sha256:acb0b1fb5c627800a2dc00a621fedfb058138c7f3773db6be12b5d282ebb66ac",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "`attested_by` membership in a mutable string allowlist does not prove that the named authority made the completeness attestation. Any author of the JSON can insert an allowed name, and the oracle checks only equality and file selection. Consequently `attested-complete` can be produced without a stable authority anchor such as an `authz-N` or Eye ruling, violating the authority-anchored discipline. Pinning the file digest proves which bytes were selected, not the asserted attester's authorship.",
+      "scope": "§4 — coverage attestation authority mechanism and oracle",
+      "objection_hash": "sha256:e7fa8b149a91fb8bbc404a19e56be98accaa23aa4c0be035c38ab9096663fbf8",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The boundary oracle does not establish its claimed closed runtime-import boundary. All `node:` imports are allowed, while the listed fixtures cover only representative `import()`/`require()` forms and no enforcement mechanism is specified for loader aliases such as `node:module#createRequire`, computed/evaluated loading, or the allowlisted vendor module's transitive imports. A checker that rejects only the enumerated fixture syntax can pass while unauthorized runtime code is loaded. The approach must either define and test a fail-closed runtime policy/import-graph mechanism, including the allowlisted target's transitive closure, or narrow the invariant to a precisely defined static property and state the runtime-loading non-claim.",
+      "scope": "§5 — package-boundary mechanism and discriminating oracle",
+      "objection_hash": "sha256:b5c3cdcb4452c285558ca8210d31e928aa386fde982be918e1bbdbdad8a90d97",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

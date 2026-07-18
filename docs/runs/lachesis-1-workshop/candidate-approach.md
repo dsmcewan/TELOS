@@ -1,18 +1,19 @@
-# Candidate approach (rev 9) — Lachesis (enrollment quest, cycle 1)
+# Candidate approach (rev 10) — Lachesis (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-lachesis-1.json`.
 **Registered meaning (fixed):** Lachesis *measures dependencies, relevance, risk, and blast radius*. It does
 metrics. No extension. Authored AI-centric / machine-first (the first-three-modules standard).
 
-Rev 9 resolves the round-8 objections (three internal-consistency defects; architecture stable): (1) the
-digest-reuse-vs-boundary contradiction — the boundary oracle now carries a CLOSED ALLOWLIST whose sole entry is
-the sanctioned `merkle-dag/vendor.mjs` reuse; (2) the boundary oracle is made DISCRIMINATING via compliant +
-branch-isolating negative fixture trees (a no-op exit-0 fails acceptance); (3) the circular decision-record
-hash — the record is anchored by the pre-existing plan hash + `authz-N`, its id follows the minus-id rule, and
-the contract cites the triple (no self-reference). (Prior fixes retained: §1 conditional-root; attestation
-data-source; frozen digest ops; positive vocab + digest-method + graph-semantics oracles; path safety; real
-anchors.)
+Rev 10 resolves the round-9 objections (three; architecture stable): (1) operational DATA (manifest,
+attestations) MOVED OUT of `memory/` to `lachesis/config/` — `memory/` holds only full-envelope institutional
+records; the `metrics.json` record defines the data's closed payload schemas; (2) attestation `authority` is now
+a STABLE anchor (`authz-N`/`AM-N`) that must RESOLVE in CURRENT-AUTHORITY (a mutable name-list proved nothing) +
+an honest NON-CLAIM (no cryptographic authorship proof; binding is anchor + root-pinned digest, conditional on
+the external root); (3) the boundary oracle modeled on Clotho's `source-profile` — total correctness over a
+supported static profile, FAIL-CLOSED on out-of-profile dynamic/computed loading + `createRequire` aliases, with
+the vendor module's import closure verified `node:`-only and digest-pinned. (Prior fixes retained: §1
+conditional-root; frozen digest ops + minus-id rule; discriminating metric/vocab/digest oracles; path safety.)
 
 **Digest operations (frozen, used everywhere below):** JSON records (manifest, attestation, decision) are
 digested as `sha256:` + `sha256hex(canonicalize(record))` using the sanctioned shared primitives
@@ -31,10 +32,13 @@ is provenance, chained to the repository authority root**, not recomputation, an
 caller argument:
 1. `CURRENT-AUTHORITY.json` pins the manifest's content-digest under the exact key
    `#lachesis_snapshot_manifest_digest`.
-2. `loadWeave()` (NO path argument) reads `lachesis/memory/CONTRACTS/snapshot-manifest.json`, recomputes its
-   digest, checks it == the CURRENT-AUTHORITY pin; mismatch → throw.
-3. **Manifest schema (closed, frozen):** `{ snapshot_path: <repo-relative string>, snapshot_digest:
-   <sha256:64hex> }` (extra/missing field → throw). `snapshot_path` MUST be a normalized, repo-relative path
+2. `loadWeave()` (NO path argument) reads `lachesis/config/snapshot-manifest.json` — **operational DATA, NOT an
+   institutional-memory record** (it lives OUTSIDE `memory/`; the memory record `metrics.json` DEFINES its
+   closed payload schema and references it) — recomputes its digest, checks it == the CURRENT-AUTHORITY pin;
+   mismatch → throw.
+3. **Manifest payload schema (closed, frozen in `metrics.json`):** `{ snapshot_path: <repo-relative string>,
+   snapshot_digest: <sha256:64hex> }` (extra/missing field → throw). `snapshot_path` MUST be a normalized,
+   repo-relative path
    whose realpath-resolved target remains BENEATH the repository root — reject absolute paths, `..` traversal,
    and symlinks resolving outside the repo (each throws; each has an oracle fixture). `loadWeave()` opens the
    manifest's OWN validated `snapshot_path` (the caller cannot point it elsewhere — this authorizes a file
@@ -116,26 +120,32 @@ beyond a fixed small depth still counts).
 Presence of one edge per kind does NOT prove completeness; inferring it is the rejected false-completeness
 rule. Lachesis STRUCTURALLY cannot certify a snapshot is complete, so it stops trying — completeness is
 ATTESTATION-GATED with a closed, verifiable schema:
-- **Data source (deterministic, frozen):** attestations live in ONE file
-  `lachesis/memory/CONTRACTS/coverage-attestations.json` — a JSON array of records; that file's content-digest
-  (`sha256:`+`sha256hex(canonicalize(...))`) is pinned under a NAMED key
-  `CURRENT-AUTHORITY.json#lachesis_coverage_attestations_digest`. `attested_by` must equal a value in the
-  named authority list `CURRENT-AUTHORITY.json#lachesis_attestation_authorities`. Per-node selection = the
-  record whose `node_id` == the target; **two records for one `node_id` → throw** (no ambiguity); multiple
-  DISTINCT-node records are permitted.
-- **Attestation schema (closed, frozen in `metrics.json`):** `{ snapshot_digest: <sha256:64hex>, node_id:
-  <sha256:64hex>, coverage: "complete", attested_by: <string> }`; extra/missing field or wrong type → absent
-  (unverified).
+- **Data source (deterministic, frozen):** attestations live in ONE file `lachesis/config/coverage-attestations.json`
+  — **operational DATA, NOT a memory record** (outside `memory/`; `metrics.json` defines its closed payload
+  schema); a JSON array whose file content-digest is pinned under
+  `CURRENT-AUTHORITY.json#lachesis_coverage_attestations_digest`. Per-node selection = the record whose
+  `node_id` == the target; **two records for one `node_id` → throw**; multiple DISTINCT-node records permitted.
+- **Attestation payload schema (closed, frozen in `metrics.json`):** `{ snapshot_digest: <sha256:64hex>,
+  node_id: <sha256:64hex>, coverage: "complete", authority: <authz-N | AM-N> }`; extra/missing field or wrong
+  type → absent (unverified). **`authority` is a STABLE authority anchor** (an `authz-N` authorization id or an
+  `AM-N` Eye ruling), not a mutable name — a string allowlist proved nothing (any editor could insert a name).
 - **Verification (ALL must hold, else `unverified`):** the attestations FILE digest == the named
-  CURRENT-AUTHORITY pin; the selected record's `snapshot_digest` == the loaded snapshot's verified digest (§1);
-  `node_id` == the target; `attested_by` ∈ the named authority list; `coverage` == "complete".
+  CURRENT-AUTHORITY pin; the record's `authority` RESOLVES to a real `active_authorization`/`amendments_in_force`
+  entry in CURRENT-AUTHORITY; `snapshot_digest` == the loaded snapshot's verified digest (§1); `node_id` == the
+  target; `coverage` == "complete".
+- **NON-CLAIM (honest, consistent with §1):** Lachesis has no signing infrastructure, so it does NOT
+  cryptographically prove WHO authored an attestation. The authority binding is: a real `authz-N`/`AM-N` anchor
+  PLUS the whole file's digest pinned in CURRENT-AUTHORITY — so an attestation cannot be forged without editing
+  the external authenticated root, which is outside Lachesis's threat model (same conditional-root precondition
+  as §1). Cryptographic authorship proof is future work, not claimed.
 - `coverage(nodeId)` ∈ `attested-complete` (all pass) | `unverified` (otherwise). **riskClass is floored: `low`
   ONLY when `attested-complete`; otherwise bumped to at least `medium` with `coverage: "unverified"`.**
 - **Oracle:** POSITIVE (valid attestation → an otherwise-low node stays `low`) + NEGATIVES each isolating ONE
   branch so an implementation that skips that check fails: **(digest) a semantically valid record (right node,
   right snapshot, authorized) but the FILE digest ≠ the CURRENT-AUTHORITY pin → unverified**; absent record;
-  unauthorized `attested_by`; stale-snapshot (`snapshot_digest` mismatch); unexpected/extra field (closed
-  schema → absent); duplicate `node_id` (→ throw) — and each `unverified` floors an otherwise-`low` node to
+  `authority` anchor that does NOT resolve in CURRENT-AUTHORITY; stale-snapshot (`snapshot_digest` mismatch);
+  unexpected/extra field (closed schema → absent); duplicate `node_id` (→ throw) — and each `unverified` floors
+  an otherwise-`low` node to
   `medium`. (No separate "wrong-node" case: selection IS `node_id == target`, so a wrong-node record is just an
   absent record — not a distinct branch.)
 The prior presence-based `expected-coverage.json` is REMOVED (it was the false rule).
@@ -143,9 +153,12 @@ The prior presence-based `expected-coverage.json` is REMOVED (it was the false r
 ## 5. Boundary, layout, package
 
 Lachesis reads the committed weave snapshot `docs/runs/clotho-self-weave/thread-ledger.snapshot.jsonl` as DATA
-— never `import`s `clotho/`; its metrics are its own. `lachesis/memory/`: `IDENTITY.md`; `INVARIANTS.json`/`.md`;
-`CONTRACTS/{metrics.json, snapshot-manifest.json, coverage-attestations.json}` (manifest + attestations
-digests pinned under named CURRENT-AUTHORITY keys); `DECISIONS/decision-lachesis-cycle-1.json` (the AFFIRMATIVE
+— never `import`s `clotho/`; its metrics are its own. **Operational DATA (NOT memory records) lives in
+`lachesis/config/{snapshot-manifest.json, coverage-attestations.json}`** — their file digests pinned under named
+CURRENT-AUTHORITY keys, their closed payload schemas DEFINED by the `metrics.json` memory record.
+`lachesis/memory/` holds only valid institutional-memory records: `IDENTITY.md`; `INVARIANTS.json`/`.md`;
+`CONTRACTS/metrics.json` (full record envelope: `id`, closed `kind`, authority, status/normativity, change_rule);
+`DECISIONS/decision-lachesis-cycle-1.json` (the AFFIRMATIVE
 decision record carrying the authority triple, §6); **`DECISIONS/rejected-alternatives/` — one content-addressed
 `rejected-alternative` MACHINE-RECORD (JSON, the closed kind's `id` = its content-address, authority-anchored)
 PER load-bearing rejection** (import `clotho/query.mjs`; re-implement blastRadius/deriveNodeId — drift;
@@ -156,16 +169,19 @@ presence-based completeness — false rule; caller-supplied digest — substitut
 does NOT re-derive content-addresses; consumes a snapshot, not the live ledger); `FAILURE-MODES.md`;
 `EVIDENCE/`; `comprehension-queries.json`; `README.md`. `package.json`: `"type":"module"`, `dependencies` empty.
 **`npm test` runs BOTH `test-metrics.mjs` AND an executable package-boundary oracle
-`scripts/test-boundary.mjs`.** The boundary rule is a CLOSED ALLOWLIST: the only permitted non-`node:`
-runtime import is `merkle-dag/vendor.mjs` (`canonicalize`/`sha256hex`) — the one sanctioned reuse (resolving
-the digest-vs-boundary contradiction); EVERYTHING else is rejected: any `clotho/` import, any other
-package-external relative import, any bare-package import, any dynamic `import()`/`require()` escape, any
-undeclared import, or a non-empty `dependencies` field.
-**The boundary oracle is itself DISCRIMINATING** — it runs against controlled fixture package trees, not just
-the real package (a no-op that exits 0 must fail acceptance): a COMPLIANT tree (passes) + branch-isolating
-NEGATIVE trees each flagged — a `clotho/` import, an unauthorized package-external relative import, a
-bare-package import, a dynamic `import()`, a `require()` escape, an undeclared import, and a non-empty
-`dependencies` field.
+`scripts/test-boundary.mjs`**, modeled on Clotho's `source-profile` discipline: **total correctness over a
+supported STATIC import profile, FAILING CLOSED on everything out-of-profile** (not silently passing). The
+CLOSED ALLOWLIST: the only permitted non-`node:` runtime import is `merkle-dag/vendor.mjs`
+(`canonicalize`/`sha256hex`) — the one sanctioned reuse (resolving the digest-vs-boundary contradiction); and
+that module's OWN import closure is verified `node:`-only and its digest pinned (its transitive behavior is
+fixed). REJECTED: any `clotho/` import; any other package-external relative or bare-package import; a non-empty
+`dependencies` field. **FAIL-CLOSED out-of-profile** (rejected, never passed): dynamic `import()`, `require()`,
+`node:module`/`createRequire` aliases, and any computed/`eval`-based load — a diagnostic like
+`unsupported-import-profile`, exactly as Clotho refuses out-of-profile source rather than parsing it.
+**The oracle is itself DISCRIMINATING** — it runs against controlled fixture package trees (a no-op exit-0
+must fail acceptance): a COMPLIANT tree (passes) + one branch-isolating NEGATIVE tree EACH — `clotho/` import,
+unauthorized external relative import, bare-package import, dynamic `import()`, `require()`, `createRequire`
+alias, computed/`eval` load, and a non-empty `dependencies` field — each flagged/failed-closed.
 
 ## 6. Acceptance sequence (documentation-first)
 

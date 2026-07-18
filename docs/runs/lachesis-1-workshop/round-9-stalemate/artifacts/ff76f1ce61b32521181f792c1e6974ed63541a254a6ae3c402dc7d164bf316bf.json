@@ -1,0 +1,33 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "The exact closed schemas for `snapshot-manifest.json` and entries in `coverage-attestations.json` are not valid institutional-memory records: they omit the mandatory record fields (`id`, closed-set `kind`, authority, evidence, status/normativity, change rule, and related fields). Because these artifacts are placed under `lachesis/memory/CONTRACTS/`, their declared two-field/four-field schemas directly conflict with the frozen record schema. Operational payloads must either live outside the institutional-memory record set and be described by compliant contract records, or be wrapped in compliant `contract`/`evidence` records.",
+        "scope": "§1, §4, and §5 — institutional-memory record layout and schemas"
+      },
+      {
+        "claim": "`attested_by` membership in a mutable string allowlist does not prove that the named authority made the completeness attestation. Any author of the JSON can insert an allowed name, and the oracle checks only equality and file selection. Consequently `attested-complete` can be produced without a stable authority anchor such as an `authz-N` or Eye ruling, violating the authority-anchored discipline. Pinning the file digest proves which bytes were selected, not the asserted attester's authorship.",
+        "scope": "§4 — coverage attestation authority mechanism and oracle"
+      },
+      {
+        "claim": "The boundary oracle does not establish its claimed closed runtime-import boundary. All `node:` imports are allowed, while the listed fixtures cover only representative `import()`/`require()` forms and no enforcement mechanism is specified for loader aliases such as `node:module#createRequire`, computed/evaluated loading, or the allowlisted vendor module's transitive imports. A checker that rejects only the enumerated fixture syntax can pass while unauthorized runtime code is loaded. The approach must either define and test a fail-closed runtime policy/import-graph mechanism, including the allowlisted target's transitive closure, or narrow the invariant to a precisely defined static property and state the runtime-loading non-claim.",
+        "scope": "§5 — package-boundary mechanism and discriminating oracle"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2tZJEynicdXgWhLJzkj34i3jmp8w",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2tZJEynicdXgWhLJzkj34i3jmp8w",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}
