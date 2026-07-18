@@ -3,7 +3,7 @@
 // data-testid={`cmd-${COMMAND}`} makes the command registry the closed E2E inventory. Two views: the story
 // stations, and the LIVE GRAPH (Clotho weave measured by Lachesis + verified by Atropos).
 import { useMachine } from "@xstate/react";
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { flagshipMachine } from "../machine";
 import { STATIONS, STATION_COUNT, evidenceById } from "../stations";
 import { NODES_BY_BLAST, CLOTHO, ATROPOS, SNAPSHOT, riskColor, nodeById } from "../livegraph";
@@ -22,6 +22,25 @@ export function DomLayer() {
   const evidence = c.evidenceOpen && c.evidenceId ? evidenceById(c.evidenceId) : undefined;
   const node = c.selectedNodeId ? nodeById(c.selectedNodeId) : undefined;
 
+  // WebGL leaves the critical path entirely: the canvases mount on idle-after-load (the DOM story is the
+  // LCP content; the loom then breathes in through its fade). ?e2e=1 mounts immediately (deterministic).
+  const [paintReady, setPaintReady] = useState(isE2E());
+  useEffect(() => {
+    if (paintReady) return;
+    let cleanup: (() => void) | undefined;
+    const arm = () => {
+      const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+      if (w.requestIdleCallback) w.requestIdleCallback(() => setPaintReady(true), { timeout: 900 });
+      else setTimeout(() => setPaintReady(true), 250);
+    };
+    if (document.readyState === "complete") arm();
+    else {
+      window.addEventListener("load", arm, { once: true });
+      cleanup = () => window.removeEventListener("load", arm);
+    }
+    return cleanup;
+  }, [paintReady]);
+
   useEffect(() => {
     const el = document.documentElement;
     el.setAttribute("data-theme", c.theme);
@@ -33,11 +52,13 @@ export function DomLayer() {
 
   return (
     <>
-      <Suspense fallback={null}>
-        {inGraph
-          ? <LiveGraphCanvas selectedNodeId={c.selectedNodeId} reducedMotion={c.reducedMotion} theme={c.theme} />
-          : <Loom stationIndex={c.stationIndex} threadPulled={c.threadPulled} reducedMotion={c.reducedMotion} theme={c.theme} />}
-      </Suspense>
+      {paintReady && (
+        <Suspense fallback={null}>
+          {inGraph
+            ? <LiveGraphCanvas selectedNodeId={c.selectedNodeId} reducedMotion={c.reducedMotion} theme={c.theme} />
+            : <Loom stationIndex={c.stationIndex} threadPulled={c.threadPulled} reducedMotion={c.reducedMotion} theme={c.theme} />}
+        </Suspense>
+      )}
       <div className="vignette" aria-hidden="true" />
       <main className="stage">
         <header className="topbar">

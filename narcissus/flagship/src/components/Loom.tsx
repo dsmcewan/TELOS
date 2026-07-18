@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { STATION_COUNT } from "../stations";
 import { ferroVert, ferroFrag } from "../ferrofluid";
 import { isE2E } from "../e2e-mode";
+import { FrameDriver } from "../frame-driver";
 
 const N = 30;
 const easeOutCubic = (k: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, k)), 3);
@@ -91,7 +92,8 @@ export function Loom({ stationIndex, threadPulled, reducedMotion, theme }: {
 }) {
   return (
     <div className="loom-canvas" aria-hidden="true">
-      <Canvas camera={{ position: [0, 0, 8.5], fov: 46 }} dpr={[1, 2]} gl={{ antialias: true }} frameloop={reducedMotion ? "demand" : "always"}>
+      <Canvas camera={{ position: [0, 0, 8.5], fov: 46 }} dpr={[1, 2]} gl={{ antialias: true }} frameloop="demand">
+        {!reducedMotion && <FrameDriver fps={30} />}
         <color attach="background" args={[theme === "dark" ? "#05070b" : "#dee2e7"]} />
         <ambientLight intensity={0.35} />
         <pointLight position={[0, 0, 6]} intensity={55} color="#ef4444" distance={30} />

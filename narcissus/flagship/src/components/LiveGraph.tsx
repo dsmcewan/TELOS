@@ -9,6 +9,7 @@ import * as THREE from "three";
 import { NODES, NODES_BY_BLAST, EDGES, LAYOUT, LABELED_IDS, MAX_BLAST, riskColor, nodeById } from "../livegraph";
 import { ferroVert, ferroFrag } from "../ferrofluid";
 import { isE2E } from "../e2e-mode";
+import { FrameDriver } from "../frame-driver";
 
 const easeOutCubic = (k: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, k)), 3);
 const E2E_T = 1.234; // frozen shader clock under ?e2e=1 — deterministic pixels
@@ -202,7 +203,8 @@ export function LiveGraphCanvas({ selectedNodeId, reducedMotion, theme }: {
   const labelHost = useRef<HTMLDivElement>(null);
   return (
     <div className="loom-canvas" aria-hidden="true">
-      <Canvas camera={{ position: [0, 0, 10.5], fov: 48 }} dpr={[1, 2]} gl={{ antialias: true }} frameloop={reducedMotion ? "demand" : "always"}>
+      <Canvas camera={{ position: [0, 0, 10.5], fov: 48 }} dpr={[1, 2]} gl={{ antialias: true }} frameloop="demand">
+        {!reducedMotion && <FrameDriver fps={40} />}
         <color attach="background" args={[theme === "dark" ? "#05070b" : "#dee2e7"]} />
         <ambientLight intensity={0.4} />
         <pointLight position={[0, 0, 9]} intensity={80} color="#ef4444" distance={44} />

@@ -147,6 +147,9 @@ button[aria-pressed="true"], button.primary { color: #fff; border-color: var(--a
   button, a.btn { transition: none !important; }
 }
 
+/* pre-hydration boot shell: graph deep-links hide the story text (the graph view mounts instead) */
+:root[data-boot="graph"] .boot-shell .boot-station, :root[data-boot="graph"] .boot-shell .timeline { visibility: hidden; }
+
 /* ?e2e=1 — deterministic functional blade: ALL motion frozen at its settled end state. */
 :root[data-e2e="1"] *, :root[data-e2e="1"] *::before, :root[data-e2e="1"] *::after {
   animation-duration: 0ms !important; animation-delay: 0ms !important; transition: none !important;
