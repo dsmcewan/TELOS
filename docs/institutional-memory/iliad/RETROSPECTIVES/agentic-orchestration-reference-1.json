@@ -1,0 +1,39 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "retrospective-agentic-orchestration-reference-1",
+  "title": "Post-implementation review — agentic-orchestration advisory reference (first pure documentation cycle)",
+  "note": "ADVISORY evaluation anchored to commit-verified facts. The first Iliad cycle whose deliverable is a documentation/reference record set (not code or a Clotho slice). Closes the lifecycle: pre-review -> Daedalus workshop -> implementation -> this post-review.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "agentic-orchestration-reference-1 (pre-review 1949eec; Daedalus workshop converged 9d322dd, candidate sha256:85a72e55…; record set 773badb; PR #129 merged git:2d3ba91)",
+  "what_was_built": "docs/institutional-memory/REFERENCES/agentic-orchestration/ — an ADVISORY reference: the orchestration pattern taxonomy (5 workflow + 1 agent) + a TELOS-local selection checklist + evidence-pinned TELOS worked examples, with a deterministic README renderer (--write/--check) and a fail-closed structural/provenance checker. Grounded in Anthropic's published guidance; provenance content-addressed by file:@<sha>, never a bare URL.",
+  "verification_outcome": "check.mjs exit 0 (7 records, taxonomy 5+1, all pinned refs resolve, all ADVISORY, manifest reference-only, README projection equal); comprehension gate UNMODIFIED: pass->0, fail-enforced->3, fail-autoselect->3; verify-contracts.mjs UNCHANGED -> 215/215 (no disturbance). Shared enforcement infra not modified.",
+  "what_worked": [
+    "The comprehension gates forced real understanding before authority: the reference is shaped BY the modules it documents (links to canonical authority instead of restating; reuses file:@sha content-addressing instead of inventing; defers the manifest question per CHANGE-PROTOCOL) — the recursive-improvement principle, demonstrated.",
+    "Codex's workshop review materially hardened the approach — it caught the abbreviated-sha256 authority shortcut in the candidate and enforced advisory-only language.",
+    "stop-rather-than-invent held: manifest indexing was NOT done because adding an advisory-reference index is a schema change (The Eye's call); recorded as a routed decision, not silently resolved."
+  ],
+  "defects_found_during": [
+    "check.mjs initially false-positived on NON-CLAIMS.json (a whole-text scan flagged the word 'NORMATIVE-ENFORCED' inside a negation) — fixed by relying on the normativity FIELD check.",
+    "check.mjs initially loaded comprehension-queries.json (a gate input, not a record) and would have failed it — fixed with an explicit exclusion."
+  ],
+  "process_mistakes_preserved": [
+    "SEVERE: operated ~70 commits STALE for the whole session (never fetched), and on that basis asserted twice — wrongly — that Clotho was unbuilt and that no AI-START-HERE existed. The user was right both times. Lesson: fetch/sync origin/main and read CURRENT-AUTHORITY BEFORE making any load-bearing claim about system state; begin from accumulated truth, not a confident guess (AI-START-HERE hard rule).",
+    "A bare `*.md` cleanup glob deleted the uncommitted frame-v3.md and preflight-refusals.md (recovered by re-authoring). Lesson (re-armed from slice-7): commit before destructive git ops; never use bare wildcards over a run directory.",
+    "Repeated live-run funding walls (Anthropic/OpenAI credit) handled by holding, never by model-shopping or auth workarounds — including honoring an auto-mode denial that correctly flagged routing refused content to a different provider."
+  ],
+  "system_evaluation": "The lifecycle handled a documentation deliverable cleanly with the SAME machinery as code: comprehension gate for authority, Daedalus for maturation, content-addressed records + a local oracle + the shared verifier for evidence. The advisory-acceptance path (pre-review -> Daedalus -> Eye acceptance -> implement -> Eye merge) is a legitimate lighter track than a full TELOS authz + Argo slice + Clotho weave; it should not be confused with that full product pipeline.",
+  "optimizations_for_future_runs": [
+    {
+      "optimization": "THE EYE'S DIRECTIVE (2026-07-18): the documentation/reference module is a workflow stage inserted BEFORE Clotho — Daedalus -> TELOS -> Argo -> [reference/documentation module] -> Clotho — effective at the NEXT implementation. Basis: the shipped product (Clotho Phase 1) traversed the full Daedalus(v15) -> TELOS(authz-008) -> Argo(slices 4a-7) -> Clotho(self-weave 4001 edges) pipeline, validating it; a documentation stage now precedes the weave so the graph ingests the reference alongside the implementation.",
+      "destination": "next-run-pre-review — formalizing this as a workflow-contract change is itself a lifecycle/CHANGE-PROTOCOL pass (The Eye ruling), taken up at the next implementation, not retroactively applied to this cycle."
+    },
+    {
+      "optimization": "Session hygiene: fetch origin/main + read CURRENT-AUTHORITY at session start before any state claim.",
+      "destination": "next-run-pre-review (process rule; re-armed)"
+    }
+  ],
+  "must_not_govern_new_work": false,
+  "effective_from_commit": "git:2d3ba91ccb7bccec8188705ab47c2f7e7572b756"
+}
