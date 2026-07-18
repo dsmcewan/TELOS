@@ -1,6 +1,6 @@
-// test-metrics.mjs — discriminating oracle for Lachesis. Each fixture pins ONE semantic
-// so a wrong implementation fails; ingestion negatives isolate each rejection branch; a
-// non-tautological smoke test runs against the REAL committed snapshot.
+// test-metrics.mjs — discriminating oracle for Lachesis. Synthetic fixtures pin each
+// semantic; GOLDEN values from the committed snapshot pin loader field-mapping + orientation
+// against reality; ingestion negatives isolate each rejection branch.
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
@@ -17,7 +17,11 @@ const throws = (fn, msg) => { try { fn(); fails++; console.error("FAIL (expected
 
 const hid = (i) => i.toString(16).padStart(64, "0");
 const e = (from, to, kind) => ({ edge_kind: kind, from: hid(from), to: hid(to) });
-const wv = (edges) => ({ header: { pub_key: "x" }, nodes: new Map(), edges });
+const wv = (edges) => {
+  const nodes = new Map();
+  for (const ed of edges) { nodes.set(ed.from, { kind: "code-symbol", payload: "{}" }); nodes.set(ed.to, { kind: "code-symbol", payload: "{}" }); }
+  return { header: { pub_key: "x" }, nodes, edges };
+};
 
 // ---- direction: depends-on from=dependent -> to=dependency ----
 {
@@ -27,139 +31,140 @@ const wv = (edges) => ({ header: { pub_key: "x" }, nodes: new Map(), edges });
   ok([...blastRadius(w, hid(2)).nodes].join() === hid(1), "direction: blastRadius(2)={1}");
   ok(blastRadius(w, hid(1)).count === 0, "direction: blastRadius(1)=0");
 }
-// ---- transitivity: membership, not just cardinality ----
+// ---- transitivity: membership ----
 {
   const w = wv([e(1, 2, "depends-on"), e(2, 3, "depends-on")]);
   const d = dependencies(w, hid(1));
-  ok(d.size === 2 && d.has(hid(2)) && d.has(hid(3)), "transitivity: dependencies(1)={2,3} (membership)");
+  ok(d.size === 2 && d.has(hid(2)) && d.has(hid(3)), "transitivity: dependencies(1)={2,3}");
   const b = blastRadius(w, hid(3)).nodes;
-  ok(b.size === 2 && b.has(hid(1)) && b.has(hid(2)), "transitivity: blastRadius(3)={1,2} (membership)");
+  ok(b.size === 2 && b.has(hid(1)) && b.has(hid(2)), "transitivity: blastRadius(3)={1,2}");
 }
-// ---- cycle: self-excluded and terminating, on BOTH forward and reverse ----
+// ---- cycle: self-excluded + terminating, forward AND reverse ----
 {
   const w = wv([e(1, 2, "depends-on"), e(2, 1, "depends-on")]);
   const d = dependencies(w, hid(1));
-  ok(d.size === 1 && d.has(hid(2)) && !d.has(hid(1)), "cycle: dependencies(1)={2}, self excluded");
+  ok(d.size === 1 && d.has(hid(2)) && !d.has(hid(1)), "cycle: dependencies(1)={2}");
   const b = blastRadius(w, hid(1)).nodes;
-  ok(b.size === 1 && b.has(hid(2)) && !b.has(hid(1)), "cycle: blastRadius(1)={2}, self excluded, terminates");
+  ok(b.size === 1 && b.has(hid(2)) && !b.has(hid(1)), "cycle: blastRadius(1)={2}, terminates");
 }
-// ---- weighted normalization: MAX_RAW is weighted, not max degree ----
+// ---- relevance = normalized depends-on in-degree ----
 {
-  const w = wv([e(1, 10, "depends-on"), e(2, 20, "introduced-by"), e(3, 20, "introduced-by")]);
-  ok(relevance(w, hid(10)) === 1, "normalization: relevance(P)=3/3=1 (weighted MAX_RAW)");
-  ok(Math.abs(relevance(w, hid(20)) - 2 / 3) < 1e-12, "normalization: relevance(Q)=2/3 (not 2/2)");
+  const w = wv([e(1, 10, "depends-on"), e(2, 10, "depends-on"), e(3, 20, "depends-on")]); // indeg: 10->2, 20->1, max 2
+  ok(relevance(w, hid(10)) === 1, "relevance: max in-degree -> 1.0");
+  ok(relevance(w, hid(20)) === 0.5, "relevance: half in-degree -> 0.5");
+  ok(relevance(w, hid(1)) === 0, "relevance: no depends-on-in -> 0");
 }
-// ---- blast thresholds, isolated from relevance via a dominant distractor ----
-{
-  const edges = [];
-  for (let k = 0; k < 10; k++) edges.push(e(600 + k, 500, "depends-on")); // D(500): blast 10, raw 30 = MAX_RAW
-  edges.push(e(710, 3, "depends-on"), e(711, 3, "depends-on"));           // T2(3): blast 2, rel 0.2
-  for (let k = 0; k < 3; k++) edges.push(e(720 + k, 4, "depends-on"));    // T3(4): blast 3, rel 0.3
-  const w = wv(edges);
-  ok(blastRadius(w, hid(3)).count === 2 && riskClass(w, hid(3)).class !== "high", "threshold: blast 2 -> not high");
-  ok(blastRadius(w, hid(4)).count === 3 && riskClass(w, hid(4)).class === "medium", "threshold: blast 3 -> medium (>=3 inclusive)");
-  ok(blastRadius(w, hid(500)).count === 10 && riskClass(w, hid(500)).class === "high", "threshold: blast 10 -> high (>=10 inclusive)");
-}
-// ---- relevance DRIVES the class (verified-by/introduced-by raise relevance, NOT blast) ----
-// discriminates: wrong byRel cutoff, wrong max(byBlast,byRel) combine, or relevance omitted entirely.
-{
-  const edges = [
-    e(600, 500, "verified-by"), e(601, 500, "verified-by"), // D(500): raw 4 = MAX_RAW, blast 0
-    e(602, 4, "verified-by"), e(603, 4, "introduced-by"),   // Y(4): raw 3 -> rel 0.75, blast 0
-    e(604, 5, "verified-by")                                // X(5): raw 2 -> rel 0.5, blast 0
-  ];
-  const w = wv(edges);
-  ok(blastRadius(w, hid(500)).count === 0 && riskClass(w, hid(500)).class === "high", "relevance drives high (blast 0, rel 1.0) — omitted relevance would floor to medium");
-  ok(riskClass(w, hid(4)).class === "high", "relevance 0.75 >= 0.66 -> high");
-  ok(riskClass(w, hid(5)).class !== "high", "relevance 0.5 < 0.66 -> not high (pins the 0.66 cutoff)");
-}
-// ---- coverage floor: a genuinely-low node floors to medium unless attested-complete ----
+// ---- blast DRIVES the class: three distinct classes from blast alone (attested-complete, no floor) ----
 {
   const edges = [];
-  for (let k = 0; k < 10; k++) edges.push(e(600 + k, 500, "depends-on")); // dominant D -> MAX_RAW 30
-  edges.push(e(700, 2, "depends-on"));                                     // L(2): blast 1, raw 3, rel 0.1 -> low
+  for (let k = 0; k < 20; k++) edges.push(e(800 + k, 500, "depends-on")); // dominant, keeps others distinct
+  edges.push(e(700, 2, "depends-on"), e(701, 2, "depends-on"));           // T2: blast 2
+  for (let k = 0; k < 3; k++) edges.push(e(710 + k, 3, "depends-on"));    // T3: blast 3
+  for (let k = 0; k < 10; k++) edges.push(e(720 + k, 4, "depends-on"));   // T10: blast 10
   const w = wv(edges);
-  ok(riskClass(w, hid(2), "unverified").class === "medium", "coverage: unverified floors low -> medium");
-  ok(riskClass(w, hid(2), "attested-complete").class === "low", "coverage: attested-complete stays low");
+  ok(blastRadius(w, hid(2)).count === 2 && riskClass(w, hid(2), "attested-complete").class === "low", "blast 2 -> low (attested)");
+  ok(blastRadius(w, hid(3)).count === 3 && riskClass(w, hid(3), "attested-complete").class === "medium", "blast 3 -> medium (>=3)");
+  ok(blastRadius(w, hid(4)).count === 10 && riskClass(w, hid(4), "attested-complete").class === "high", "blast 10 -> high (>=10)");
+  ok(riskClass(w, hid(2), "unverified").class === "medium", "coverage floor: blast-2 unverified -> medium");
 }
-// ---- finite-depth blastRadius (hop limit) ----
+// ---- finite-depth blastRadius: membership, not just count ----
 {
   const w = wv([e(1, 2, "depends-on"), e(2, 3, "depends-on"), e(3, 4, "depends-on")]); // dependents of 4: 3,2,1
   ok(blastRadius(w, hid(4)).count === 3, "finite-depth: full blast(4)=3");
-  ok(blastRadius(w, hid(4), 1).count === 1, "finite-depth: depth1 blast(4)=1");
-  ok(blastRadius(w, hid(4), 2).count === 2, "finite-depth: depth2 blast(4)=2");
+  const d1 = blastRadius(w, hid(4), 1).nodes; ok(d1.size === 1 && d1.has(hid(3)), "finite-depth: depth1={3}");
+  const d2 = blastRadius(w, hid(4), 2).nodes; ok(d2.size === 2 && d2.has(hid(3)) && d2.has(hid(2)), "finite-depth: depth2={3,2}");
 }
-// ---- assess() advisory shape ----
+// ---- fail-closed: absent node id + invalid depth ----
+{
+  const w = wv([e(1, 2, "depends-on")]);
+  throws(() => assess(w, hid(999)), "assess on absent node -> throws");
+  throws(() => dependencies(w, hid(999)), "dependencies on absent node -> throws");
+  throws(() => blastRadius(w, hid(2), -1), "blastRadius depth -1 -> throws");
+  throws(() => blastRadius(w, hid(2), 1.5), "blastRadius fractional depth -> throws");
+}
+// ---- assess() shape ----
 {
   const a = assess(wv([e(1, 2, "depends-on")]), hid(2));
   ok(a.node === hid(2) && typeof a.dependencies === "number" && ["low", "medium", "high"].includes(a.class)
     && typeof a.blast_radius === "number" && typeof a.relevance === "number", "assess(): full advisory shape");
 }
 
+// ---- GOLDEN values from the committed snapshot: pin loader field-mapping + orientation to REALITY ----
+{
+  const manifest = JSON.parse(readFileSync(path.join(ROOT, "lachesis/config/snapshot-manifest.json"), "utf8"));
+  const w = loadWeave(manifest, ROOT);
+  ok(w.edges.length === 4001, `golden: 4001 edges (${w.edges.length})`);
+  const HUB = "0fcf5ff72e47d79ef80d99630502551aefca0459db2fdcc16c706bf07e6dfc19";
+  const G2 = "0328b9ce74868e03071be1e4f5c21cbb310e7110c4601495c1199a3a4b9f8656";
+  ok(dependencies(w, HUB).size === 0, "golden HUB: dependencies=0 (leaf dependency)");
+  ok(blastRadius(w, HUB).count === 177, "golden HUB: blastRadius=177");
+  ok(relevance(w, HUB) === 1, "golden HUB: relevance=1.0");
+  ok(assess(w, HUB).class === "high", "golden HUB: class=high");
+  ok(dependencies(w, G2).size === 1, "golden G2: dependencies=1");
+  ok(blastRadius(w, G2).count === 21, "golden G2: blastRadius=21");
+  ok(Math.abs(relevance(w, G2) - 18 / 131) < 1e-9, "golden G2: relevance=18/131");
+  // orientation guard: swapping from/to would flip these two numbers
+  ok(dependencies(w, HUB).size !== blastRadius(w, HUB).count, "golden: HUB deps != blast (from/to orientation pinned)");
+}
+
 // ---- ingestion: positive + per-branch negatives (real-format fixtures) ----
 const loc = (kind) => ({ kind, locator: {} });
-const rec = (from, to, kind, extra = {}) => ({ edge_kind: kind, from_node: hid(from), to_node: hid(to), from_locator: loc("code-symbol"), to_locator: loc("code-symbol"), ...extra });
+const H64 = (c) => c.repeat(64);
+const rec = (from, to, kind, extra = {}) => ({ edge_kind: kind, from_node: hid(from), to_node: hid(to), from_locator: loc("code-symbol"), to_locator: loc("code-symbol"), prev_hash: H64("a"), record_hash: H64("b"), signature: "c2ln", ...extra });
 const HEADER = { clotho_weave_header: { pub_key: "x", woven_at: "t", repo_head: "h", repository_ref: "r", weave_version: 1 } };
-const TRAILER = { clotho_weave_trailer: {} };
+const TRAILER = { clotho_weave_trailer: {}, prev_hash: H64("a"), record_hash: H64("b"), signature: "c2ln" };
 const tmp = mkdtempSync(path.join(tmpdir(), "lachesis-fx-"));
 let fxN = 0;
 function fixture(objs) {
   const name = `fx${fxN++}.jsonl`;
-  const jsonl = objs.map((o) => JSON.stringify(o)).join("\n") + "\n";
-  writeFileSync(path.join(tmp, name), jsonl);
+  writeFileSync(path.join(tmp, name), objs.map((o) => JSON.stringify(o)).join("\n") + "\n");
   const digest = "sha256:" + createHash("sha256").update(readFileSync(path.join(tmp, name))).digest("hex");
   return { manifest: { snapshot_path: name, snapshot_digest: digest } };
 }
 try {
-  // POSITIVE: header + metric-irrelevant kind + all metric kinds + all source_ref schemes -> loads
+  // POSITIVE + end-to-end field mapping through loadWeave
   {
     const objs = [HEADER,
-      rec(1, 2, "depends-on", { source_ref: "sha256:" + "a".repeat(64) }),
+      rec(1, 2, "depends-on", { source_ref: "sha256:" + H64("a") }),
       rec(2, 3, "verified-by", { source_ref: "file:x/y.mjs@" + "b".repeat(40) }),
       rec(3, 4, "introduced-by", { source_ref: "git:" + "c".repeat(40) }),
-      rec(4, 5, "documented-in", { source_ref: "ledger:z#" + "d".repeat(64) }), // metric-irrelevant, still accepted
+      rec(4, 5, "documented-in", { source_ref: "ledger:z#" + H64("d") }),
       TRAILER];
     const { manifest } = fixture(objs);
     const w = loadWeave(manifest, tmp);
-    ok(w.edges.length === 4, "ingest positive: 4 edges accepted (incl. metric-irrelevant)");
+    ok(w.edges.length === 4, "ingest positive: 4 edges (incl. metric-irrelevant)");
     ok(EDGE_KINDS.has("supersedes"), "ingest: complete edge-kind set present");
+    // e2e: loadWeave maps from_node->from(dependent), to_node->to(dependency)
+    ok(dependencies(w, hid(1)).has(hid(2)) && dependencies(w, hid(1)).size === 1, "e2e: from->dependent, to->dependency");
+    ok(blastRadius(w, hid(2)).nodes.has(hid(1)), "e2e: blastRadius(to) includes from");
   }
   const neg = (objs, mutate) => { const { manifest } = fixture(objs); if (mutate) mutate(manifest); return () => loadWeave(manifest, tmp); };
-  throws(neg([HEADER, { ...rec(1, 2, "depends-on"), edge_kind: "bogus-kind" }, TRAILER]), "unknown edge_kind");
+  throws(neg([HEADER, { ...rec(1, 2, "depends-on"), edge_kind: "bogus" }, TRAILER]), "unknown edge_kind");
   throws(neg([HEADER, { ...rec(1, 2, "depends-on"), from_node: "NOTHEX" }, TRAILER]), "non-hex node id");
-  throws(neg([HEADER, { ...rec(1, 2, "depends-on"), from_locator: loc("bogus-node-kind") }, TRAILER]), "unknown locator kind");
-  throws(neg([HEADER, rec(1, 2, "depends-on"), { ...rec(1, 3, "verified-by"), from_locator: loc("test") }, TRAILER]), "locator-kind conflict for a reused node id");
+  throws(neg([HEADER, { ...rec(1, 2, "depends-on"), from_locator: loc("bogus") }, TRAILER]), "unknown locator kind");
+  throws(neg([HEADER, rec(1, 2, "depends-on"), { ...rec(1, 3, "verified-by"), from_locator: loc("test") }, TRAILER]), "locator conflict on reused id");
+  throws(neg([HEADER, { ...rec(1, 2, "depends-on"), prev_hash: undefined }, TRAILER]), "missing signed-ledger fields");
   throws(neg([HEADER, rec(1, 2, "depends-on", { source_ref: "http://evil" }), TRAILER]), "disallowed source_ref scheme");
-  throws(neg([HEADER, rec(1, 2, "depends-on"), rec(1, 2, "depends-on"), TRAILER]), "duplicate edge (kind,from,to)");
-  throws(neg([HEADER, rec(1, 2, "depends-on"), TRAILER], (m) => { m.snapshot_digest = "sha256:" + "0".repeat(64); }), "snapshot digest mismatch");
+  throws(neg([HEADER, rec(1, 2, "depends-on"), rec(1, 2, "depends-on"), TRAILER]), "duplicate edge");
+  throws(neg([HEADER, rec(1, 2, "depends-on"), TRAILER], (m) => { m.snapshot_digest = "sha256:" + H64("0"); }), "digest mismatch");
   throws(neg([rec(1, 2, "depends-on"), TRAILER]), "structure: first record not header");
-  throws(neg([HEADER, HEADER, rec(1, 2, "depends-on"), TRAILER]), "structure: duplicate/misplaced header");
+  throws(neg([{ clotho_weave_header: { pub_key: "x", weave_version: 1 }, extra: 1 }, rec(1, 2, "depends-on"), TRAILER]), "structure: header not a lone key");
+  throws(neg([{ clotho_weave_header: { pub_key: "x", weave_version: 2 } }, rec(1, 2, "depends-on"), TRAILER]), "structure: unsupported weave_version");
+  throws(neg([HEADER, HEADER, rec(1, 2, "depends-on"), TRAILER]), "structure: duplicate header");
   throws(neg([HEADER, TRAILER, rec(1, 2, "depends-on")]), "structure: trailer not last");
   throws(neg([HEADER, rec(1, 2, "depends-on")]), "structure: missing trailer");
+  throws(neg([HEADER, null, TRAILER]), "structure: null middle record -> Error (not TypeError)");
   throws(() => { const name = "bad.jsonl"; writeFileSync(path.join(tmp, name), "{not json\n"); loadWeave({ snapshot_path: name, snapshot_digest: "sha256:" + createHash("sha256").update(readFileSync(path.join(tmp, name))).digest("hex") }, tmp); }, "unparseable line");
+  // path containment: a sibling OUTSIDE rootDir via ".." must be rejected even with a matching digest
+  {
+    const sib = path.join(tmpdir(), `lachesis-escape-${process.pid}.jsonl`);
+    writeFileSync(sib, [HEADER, rec(1, 2, "depends-on"), TRAILER].map((o) => JSON.stringify(o)).join("\n") + "\n");
+    const digest = "sha256:" + createHash("sha256").update(readFileSync(sib)).digest("hex");
+    throws(() => loadWeave({ snapshot_path: `../${path.basename(sib)}`, snapshot_digest: digest }, tmp), "path containment: ../ escape rejected");
+    rmSync(sib, { force: true });
+  }
 } finally {
   rmSync(tmp, { recursive: true, force: true });
-}
-
-// ---- SMOKE: real committed snapshot, NON-tautological structural assertions ----
-{
-  const manifest = JSON.parse(readFileSync(path.join(ROOT, "lachesis/config/snapshot-manifest.json"), "utf8"));
-  const w = loadWeave(manifest, ROOT);
-  ok(w.edges.length === 4001, `smoke: real snapshot loads 4001 edges (got ${w.edges.length})`);
-  ok(w.nodes.size > 100, `smoke: real snapshot has many nodes (${w.nodes.size})`);
-  // hub = the node most depended-upon; its blast radius must be a real, non-trivial number > 1
-  const indeg = new Map();
-  for (const x of w.edges) if (x.edge_kind === "depends-on") indeg.set(x.to, (indeg.get(x.to) || 0) + 1);
-  let hub = null, max = 0;
-  for (const [k, v] of indeg) if (v > max) { max = v; hub = k; }
-  const hubBlast = blastRadius(w, hub).count;
-  ok(hubBlast > 1 && hubBlast >= max, `smoke: hub blast radius > 1 and >= its in-degree (in=${max}, blast=${hubBlast})`);
-  // normalization sanity: the max relevance over real targets is exactly 1.0
-  let maxRel = 0;
-  for (const t of indeg.keys()) { const r = relevance(w, t); if (r > maxRel) maxRel = r; }
-  ok(Math.abs(maxRel - 1) < 1e-9, `smoke: max relevance == 1.0 (got ${maxRel})`);
-  const rc = riskClass(w, hub);
-  ok(["low", "medium", "high"].includes(rc.class) && rc.relevance >= 0 && rc.relevance <= 1, "smoke: hub riskClass sane");
 }
 
 console.log(`test-metrics: ${passes} passed, ${fails} failed`);

@@ -4,7 +4,7 @@
 // profile dynamic/computed loading. Allowlist: node: builtins, relative imports that
 // stay under the package root, and the ONE sanctioned sibling merkle-dag/vendor.mjs.
 // Discriminating: negative fixtures must be flagged, so a no-op cannot pass.
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -24,9 +24,9 @@ export function violations(source, fileDir) {
   if (/\brequire\s*\(/.test(source)) v.push("require()");
   if (/\bcreateRequire\b/.test(source)) v.push("createRequire alias");
   if (/\beval\s*\(/.test(source)) v.push("eval()");
-  // static specifiers
+  // static specifiers — `[^;]` (not `[^;\n]`) so MULTILINE `import {...}\nfrom "..."` is caught
   const specs = [];
-  for (const re of [/(?:^|[^.\w])(?:import|export)[^;\n]*?\bfrom\s*["']([^"']+)["']/g, /(?:^|[^.\w])import\s*["']([^"']+)["']/g]) {
+  for (const re of [/(?:^|[^.\w])(?:import|export)[^;]*?\bfrom\s*["']([^"']+)["']/g, /(?:^|[^.\w])import\s*["']([^"']+)["']/g]) {
     let m; while ((m = re.exec(source))) specs.push(m[1]);
   }
   for (const s of specs) {
@@ -43,10 +43,22 @@ export function violations(source, fileDir) {
   return v;
 }
 
-// 1) runtime surface must be clean
-for (const f of ["ingest.mjs", "measure.mjs"]) {
-  const src = readFileSync(path.join(PKG, f), "utf8");
-  ok(violations(src, PKG).length === 0, `runtime ${f} clean (got: ${violations(src, PKG).join("; ")})`);
+// 1) EVERY runtime .mjs must be clean (recursively; exclude scripts/ dev tooling, which holds
+//    intentional negative-fixture strings). Catches an in-package helper that imports the spine.
+function runtimeFiles(dir) {
+  const out = [];
+  for (const ent of readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, ent.name);
+    if (ent.isDirectory()) { if (ent.name !== "scripts" && ent.name !== "node_modules") out.push(...runtimeFiles(full)); }
+    else if (ent.name.endsWith(".mjs")) out.push(full);
+  }
+  return out;
+}
+const runtime = runtimeFiles(PKG);
+ok(runtime.length >= 2, `runtime surface discovered (${runtime.length} .mjs files)`);
+for (const f of runtime) {
+  const v = violations(readFileSync(f, "utf8"), path.dirname(f));
+  ok(v.length === 0, `runtime ${path.relative(PKG, f)} clean (got: ${v.join("; ")})`);
 }
 
 // 2) discriminating NEGATIVE fixtures — each MUST be flagged

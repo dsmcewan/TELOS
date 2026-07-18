@@ -14,7 +14,7 @@
 // chain-signature verification is a NEXT-ROUND question (reimplement vs. boundary)
 // and is NOT claimed here — see NON-CLAIMs.
 
-import { readFileSync } from "node:fs";
+import { readFileSync, realpathSync } from "node:fs";
 import { createHash } from "node:crypto";
 import path from "node:path";
 
@@ -57,7 +57,13 @@ export function loadWeave(manifest, rootDir) {
     throw new Error("loadWeave: manifest must be { snapshot_path, snapshot_digest }");
   }
   if (typeof rootDir !== "string") throw new Error("loadWeave: rootDir required (the manifest binds the path under it)");
-  const snapshotPath = path.join(rootDir, manifest.snapshot_path);
+  // path containment: the manifest binds a LOCATION under rootDir. Reject absolute paths,
+  // `..` traversal, and symlinks whose realpath escapes the root (realpathSync resolves links).
+  const realRoot = realpathSync(rootDir);
+  const snapshotPath = realpathSync(path.resolve(realRoot, manifest.snapshot_path));
+  if (snapshotPath !== realRoot && !snapshotPath.startsWith(realRoot + path.sep)) {
+    throw new Error(`snapshot_path escapes rootDir: ${manifest.snapshot_path}`);
+  }
   const buf = readFileSync(snapshotPath);
   const digest = rawDigest(buf);
   if (digest !== manifest.snapshot_digest) {
@@ -66,36 +72,46 @@ export function loadWeave(manifest, rootDir) {
 
   const lines = buf.toString("utf8").split("\n").filter((l) => l.length > 0);
   let header = null, trailer = null;
-  const nodes = new Map();      // id(hex) -> locator kind
+  const nodes = new Map();      // id(hex) -> { kind, payload(JSON string) }
   const edges = [];             // { edge_kind, from, to }
   const seenEdge = new Set();
 
   for (let i = 0; i < lines.length; i++) {
     let r;
     try { r = JSON.parse(lines[i]); } catch { throw new Error(`line ${i + 1}: unparseable JSON`); }
-    // structure: header FIRST and only, trailer LAST and only, edges strictly between
+    if (!r || typeof r !== "object" || Array.isArray(r)) throw new Error(`line ${i + 1}: record must be a JSON object`);
+    // structure: header FIRST and only (single key), trailer LAST and only, edges strictly between
     if (i === 0) {
-      if (!r || !r.clotho_weave_header) throw new Error("line 1: first record must be clotho_weave_header");
+      if (!r.clotho_weave_header || Object.keys(r).length !== 1) throw new Error("line 1: first record must be a lone clotho_weave_header");
       header = r.clotho_weave_header;
+      if (!header || typeof header.pub_key !== "string") throw new Error("line 1: header missing pub_key");
+      if (header.weave_version !== 1) throw new Error(`line 1: unsupported weave_version ${JSON.stringify(header.weave_version)}`);
       continue;
     }
-    if (r && r.clotho_weave_header) throw new Error(`line ${i + 1}: misplaced/duplicate header`);
-    if (r && r.clotho_weave_trailer !== undefined) {
+    if (r.clotho_weave_header) throw new Error(`line ${i + 1}: misplaced/duplicate header`);
+    if (r.clotho_weave_trailer !== undefined) {
       if (i !== lines.length - 1) throw new Error(`line ${i + 1}: trailer must be the last record`);
       trailer = r;
       continue;
     }
 
-    // edge record
+    // edge record — structural signed-ledger fields required (presence, not crypto-verified: NON-CLAIM)
     const ek = r.edge_kind;
     if (!EDGE_KINDS.has(ek)) throw new Error(`line ${i + 1}: unknown edge_kind ${JSON.stringify(ek)}`);
+    if (!HEX64.test(r.prev_hash || "") || !HEX64.test(r.record_hash || "") || typeof r.signature !== "string" || r.signature.length === 0) {
+      throw new Error(`line ${i + 1}: edge missing signed-ledger fields (prev_hash/record_hash/signature)`);
+    }
     for (const [n, loc] of [[r.from_node, r.from_locator], [r.to_node, r.to_locator]]) {
       if (!HEX64.test(n)) throw new Error(`line ${i + 1}: node id not bare 64-hex`);
       if (!loc || !NODE_KINDS.has(loc.kind)) throw new Error(`line ${i + 1}: bad/unknown node locator kind`);
+      const payload = JSON.stringify(loc);
       if (nodes.has(n)) {
-        if (nodes.get(n) !== loc.kind) throw new Error(`line ${i + 1}: locator-kind conflict for node ${n.slice(0, 8)} (${nodes.get(n)} vs ${loc.kind})`);
+        const prev = nodes.get(n);
+        if (prev.kind !== loc.kind || prev.payload !== payload) {
+          throw new Error(`line ${i + 1}: locator conflict for node ${n.slice(0, 8)} (same id, different locator)`);
+        }
       } else {
-        nodes.set(n, loc.kind);
+        nodes.set(n, { kind: loc.kind, payload });
       }
     }
     if (r.source_ref !== undefined && !validScheme(r.source_ref)) {
@@ -107,7 +123,7 @@ export function loadWeave(manifest, rootDir) {
     edges.push({ edge_kind: ek, from: r.from_node, to: r.to_node });
   }
 
-  if (!header || typeof header.pub_key !== "string") throw new Error("missing/invalid clotho_weave_header");
+  if (!header) throw new Error("missing clotho_weave_header");
   if (!trailer) throw new Error("missing clotho_weave_trailer");
   // NON-CLAIM: metrics measure over the edges PRESENT. `supersedes`/`discharges` are accepted
   // (complete-set discipline) but NOT interpreted as retiring other edges; retirement-aware
