@@ -3,12 +3,15 @@
 // data-testid={`cmd-${COMMAND}`} makes the command registry the closed E2E inventory. Two views: the story
 // stations, and the LIVE GRAPH (Clotho weave measured by Lachesis + verified by Atropos).
 import { useMachine } from "@xstate/react";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { flagshipMachine } from "../machine";
 import { STATIONS, STATION_COUNT, evidenceById } from "../stations";
 import { NODES_BY_BLAST, CLOTHO, ATROPOS, SNAPSHOT, riskColor, nodeById } from "../livegraph";
-import { Loom } from "./Loom";
-import { LiveGraphCanvas } from "./LiveGraph";
+
+// The WebGL canvases (three.js — the heavy chunk) are lazy-loaded so the DOM story (the LCP content) paints
+// immediately; three streams in as an async chunk. WebGL is paint, so a deferred canvas never blocks the app.
+const Loom = lazy(() => import("./Loom").then((m) => ({ default: m.Loom })));
+const LiveGraphCanvas = lazy(() => import("./LiveGraph").then((m) => ({ default: m.LiveGraphCanvas })));
 
 export function DomLayer() {
   const [state, send] = useMachine(flagshipMachine);
@@ -22,9 +25,11 @@ export function DomLayer() {
 
   return (
     <>
-      {inGraph
-        ? <LiveGraphCanvas selectedNodeId={c.selectedNodeId} reducedMotion={c.reducedMotion} theme={c.theme} />
-        : <Loom stationIndex={c.stationIndex} threadPulled={c.threadPulled} reducedMotion={c.reducedMotion} theme={c.theme} />}
+      <Suspense fallback={null}>
+        {inGraph
+          ? <LiveGraphCanvas selectedNodeId={c.selectedNodeId} reducedMotion={c.reducedMotion} theme={c.theme} />
+          : <Loom stationIndex={c.stationIndex} threadPulled={c.threadPulled} reducedMotion={c.reducedMotion} theme={c.theme} />}
+      </Suspense>
       <div className="vignette" aria-hidden="true" />
       <main className="stage">
         <header className="topbar">
