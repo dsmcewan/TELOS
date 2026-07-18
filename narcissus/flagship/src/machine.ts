@@ -13,6 +13,8 @@ export interface FlagshipContext {
   reducedMotion: boolean;
   timeScrub: number; // 0..(STATION_COUNT-1), the timeline scrubber
   exports: number;
+  view: "story" | "graph"; // the story stations, or the live-weave graph view
+  selectedNodeId: string | null; // selected node in the live graph
 }
 
 export const initialContext: FlagshipContext = {
@@ -24,6 +26,8 @@ export const initialContext: FlagshipContext = {
   reducedMotion: false,
   timeScrub: 0,
   exports: 0,
+  view: "story",
+  selectedNodeId: null,
 };
 
 const clamp = (n: number) => Math.max(0, Math.min(STATION_COUNT - 1, n));
@@ -40,7 +44,11 @@ export type FlagshipEvent =
   | { type: "TOGGLE_MOTION" }
   | { type: "SCRUB_TIME"; value: number }
   | { type: "EXPORT" }
-  | { type: "RESET" };
+  | { type: "RESET" }
+  | { type: "ENTER_GRAPH" }
+  | { type: "EXIT_GRAPH" }
+  | { type: "SELECT_NODE"; id: string }
+  | { type: "CLEAR_NODE" };
 
 export const flagshipMachine = createMachine({
   id: "flagship",
@@ -88,5 +96,9 @@ export const flagshipMachine = createMachine({
     },
     EXPORT: { actions: assign(({ context }) => ({ exports: context.exports + 1 })) },
     RESET: { actions: assign(() => ({ ...initialContext })) },
+    ENTER_GRAPH: { actions: assign({ view: "graph", evidenceOpen: false }) },
+    EXIT_GRAPH: { actions: assign({ view: "story", selectedNodeId: null }) },
+    SELECT_NODE: { actions: assign(({ event }) => ({ selectedNodeId: (event as { id: string }).id })) },
+    CLEAR_NODE: { actions: assign({ selectedNodeId: null }) },
   },
 });

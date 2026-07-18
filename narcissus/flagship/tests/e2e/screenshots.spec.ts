@@ -27,4 +27,12 @@ test("capture flagship views", async ({ page }) => {
   await page.getByTestId("cmd-TOGGLE_THEME").click();
   await page.waitForTimeout(400);
   await page.screenshot({ path: path.join(dir, "04-light-theme.png") });
+  await page.getByTestId("cmd-TOGGLE_THEME").click(); // back to dark
+
+  // the LIVE GRAPH: Clotho weave measured by Lachesis, verified by Atropos, with a node selected
+  await page.getByTestId("cmd-ENTER_GRAPH").click();
+  await page.getByTestId("compound-citation").waitFor();
+  await page.locator('[data-testid="cmd-SELECT_NODE"]').first().click(); // the hub (canonicalize)
+  await page.waitForTimeout(700);
+  await page.screenshot({ path: path.join(dir, "05-live-graph.png") });
 });

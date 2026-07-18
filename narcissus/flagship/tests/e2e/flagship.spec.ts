@@ -75,6 +75,28 @@ test("RESET returns to the first station", async ({ page }) => {
   expect(await progress(page)).toBe("01 / 06");
 });
 
+test("ENTER_GRAPH / EXIT_GRAPH switch to the live weave and back, with the compounding citation", async ({ page }) => {
+  await page.getByTestId("cmd-ENTER_GRAPH").click();
+  const cite = page.getByTestId("compound-citation");
+  await expect(cite).toBeVisible();
+  await expect(cite).toContainText("Lachesis"); // measured by Lachesis
+  await expect(cite).toContainText("Atropos"); // verified by Atropos
+  await page.getByTestId("cmd-EXIT_GRAPH").click();
+  await expect(page.getByTestId("station-title")).toBeVisible();
+});
+
+test("SELECT_NODE / CLEAR_NODE inspect a measured node's Lachesis metrics", async ({ page }) => {
+  await page.getByTestId("cmd-ENTER_GRAPH").click();
+  await page.locator('[data-testid="cmd-SELECT_NODE"]').first().click();
+  const detail = page.getByTestId("node-detail");
+  await expect(detail).toBeVisible();
+  await expect(detail).toContainText("blast radius");
+  await expect(detail).toContainText("Lachesis");
+  await expect(detail).toContainText("Atropos");
+  await page.getByTestId("cmd-CLEAR_NODE").click();
+  await expect(detail).toHaveCount(0);
+});
+
 test("determinism: two ?e2e=1 loads render the same first station", async ({ page }) => {
   const a = await title(page);
   await page.reload();

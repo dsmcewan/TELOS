@@ -14,5 +14,9 @@ export const COMMANDS = [
   "SCRUB_TIME",
   "EXPORT",
   "RESET",
+  "ENTER_GRAPH",
+  "EXIT_GRAPH",
+  "SELECT_NODE",
+  "CLEAR_NODE",
 ] as const;
 export type Command = (typeof COMMANDS)[number];
