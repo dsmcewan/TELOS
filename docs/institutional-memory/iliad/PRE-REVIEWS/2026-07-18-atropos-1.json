@@ -1,0 +1,45 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "pre-review-2026-07-18-atropos-1",
+  "note": "Pre-review for the enrollment quest of the registered-but-unimplemented future module Atropos. Commissioned by The Eye (2026-07-18): 'Atropos and then Narcissus.' Second future-module build after Lachesis; same Iliad adversarial pipeline + technique. This is a NEW COMPONENT build (code) entering via the Iliad lifecycle per enrollment.json#future_modules_note. PHASE 1 (this document + the workshop candidate) only; workshop/authorization/implementation are downstream and NOT started.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "docs/runs/atropos-1 (pre-review + entry ritual, downstream); workshop docs/runs/atropos-1-workshop; branch from main",
+  "next_phase_workshop": "docs/runs/atropos-1-workshop/ — the next-phase Daedalus workshop matures the APPROACH. Then TELOS authorization, then Argo implementation — each gated, checkpointed to The Eye.",
+  "authority_basis": "The Eye directive 2026-07-18 (commission Atropos) + file:docs/institutional-memory/iliad/CONTRACTS/enrollment.json (atropos registered-unimplemented) + registered meaning docs/mythological-vocabulary.md#Atropos ('retires obsolete relationships, artifacts, tools, and processes'; SCHEMA.md short form 'handles supersession') + the authoritative scoping in docs/institutional-memory/daedalus/IDENTITY.md ('Retirement/supersession bookkeeping — Atropos, expressed via CURRENT-AUTHORITY.json#superseded + must_not_govern_new_work') + the supersession recipe in docs/institutional-memory/CHANGE-PROTOCOL.md.",
+  "reality_findings": {
+    "supersession_is_a_three_surface_discipline": "Per CHANGE-PROTOCOL.md, retiring something = (1) mark the record SUPERSEDED with superseded_by + must_not_govern_new_work:true; (2) record a `supersedes` edge in the weave; (3) update CURRENT-AUTHORITY.json. Atropos is authoritatively 'expressed via CURRENT-AUTHORITY.json#superseded + must_not_govern_new_work' (daedalus/IDENTITY.md).",
+    "live_data_is_sparse": "The committed weave snapshot has 0 `supersedes` edges (only 2 `discharges`); 0 institutional-memory records carry a live status:SUPERSEDED (all SUPERSEDED occurrences are in examples/fixtures/comprehension-queries). The ONLY surface with real supersession data is CURRENT-AUTHORITY.json#superseded — a handful of retired Clotho plan versions (v11/authz-004, v12/authz-005, …), each with sha256, superseded_by, authz_status, must_not_govern_new_work:true.",
+    "implication": "Atropos cycle-1 has almost no supersession in the weave/records to operate on; the real substrate is CURRENT-AUTHORITY.json#superseded. Golden values must come from CURRENT-AUTHORITY#superseded (real) + synthetic fixtures. (Lachesis's lesson applies: design against the REAL surface, not an assumed one — verified by inspection, not presumed.)"
+  },
+  "honest_scope": {
+    "registered_meaning_is_the_boundary": "Atropos retires/handles supersession of obsolete relationships, artifacts, tools, and processes. It does NOT authorize (TELOS), measure risk (Lachesis), weave (Clotho), or render (Narcissus). Exact registered meaning; no extension.",
+    "recommended_cycle_1_deliverable": "A NEW zero-dependency Node ESM package `atropos/` that reads CURRENT-AUTHORITY.json#superseded (primary/NORMATIVE surface) — plus, as ADVISORY cross-checks, any weave `supersedes` edges and any record status:SUPERSEDED fields, both read as DATA — and produces: (1) a DETERMINISTIC supersession-CONSISTENCY verdict (NORMATIVE, tested oracle): every superseded entry has the required fields, superseded_by resolves to a CURRENT (non-superseded) authority, no dangling/cyclic supersession, must_not_govern_new_work:true; (2) an ADVISORY retirement report (what is retired, what supersedes it, whether anything superseded is still being treated as governing). Plus its institutional-memory record set atropos/memory/ mirroring lachesis/memory/. It is READ-ONLY: it detects/verifies supersession; it does NOT mutate CURRENT-AUTHORITY, retire records itself, or delete anything (records are superseded, never deleted — telos discipline). Never imports clotho/; reads data only.",
+    "normativity_split": "The consistency verification is NORMATIVE-CURRENT with an executable oracle (deterministic over CURRENT-AUTHORITY#superseded + synthetic fixtures). The retirement report/recommendations are ADVISORY (input to The Eye/controller under CHANGE-PROTOCOL, never an enforced action).",
+    "enrollment_flip_flagged_for_the_eye": "Enrolling Atropos edits the manifest entry_points.memory_dirs + moves atropos out of enrollment.json#future_modules_registered_unimplemented, flipping verify-contracts's 'atropos: no memory dir (genuinely unbuilt)' check (a manifest-driven check — the on-disk atropos/memory/ dir does NOT flip it; only the manifest edit does). This is inherent to enrolling a future module and touches the shared registry — a routed decision for The Eye at the authorization gate, not resolved unilaterally.",
+    "non_goals_cycle_1": "No mutation of CURRENT-AUTHORITY or any record (read-only); no deletion (supersession, never deletion); no authorization/enforcement gate; no Narcissus work; no change to Clotho's code (consume only); no new npm dependency (zero-dep)."
+  },
+  "open_questions_for_the_eye": [
+    "VERB SCOPE (verify vs. act): the registered meaning says Atropos 'retires' (action), but CHANGE-PROTOCOL makes retirement a human/controller action and daedalus/IDENTITY frames Atropos as 'bookkeeping expressed via CURRENT-AUTHORITY#superseded'. Lachesis precedent = advisory read-only. RECOMMEND cycle-1 = read-only supersession-CONSISTENCY verifier + advisory retirement report (does NOT itself mutate/retire). Confirm, or does The Eye want Atropos to actually perform retirement bookkeeping (mutating CURRENT-AUTHORITY)?",
+    "PRIMARY SURFACE: daedalus/IDENTITY names CURRENT-AUTHORITY#superseded as the surface. RECOMMEND it as the primary/NORMATIVE surface; weave `supersedes` edges + record status:SUPERSEDED as ADVISORY cross-checks (both currently empty). Confirm the surface set.",
+    "DATA SPARSITY: with 0 weave supersedes edges + 0 live SUPERSEDED records, real substrate = only CURRENT-AUTHORITY#superseded. Is building+validating the mechanism now (golden from CURRENT-AUTHORITY#superseded + synthetic fixtures) acceptable for cycle-1, or should Atropos wait for more real supersession?"
+  ],
+  "model_review": {
+    "note": "seats env-resolved over build-gate/seats.json; no seat change proposed. Workshop = serial claude author + codex reviewer (same as Lachesis); Argo + TELOS council seats resolved at those gates.",
+    "baseline": "docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-17.json",
+    "seats": { "claude": "claude-fable-5", "codex": "gpt-5.6-sol", "build": "session model (claude-opus-4-8)" },
+    "seat_changes_proposed": []
+  },
+  "capability_review": {
+    "prior_retrospectives_read": ["docs/institutional-memory/iliad/RETROSPECTIVES/lachesis-1.json"],
+    "optimizations_adopted": [
+      "REALITY FIRST: inspect the actual supersession surfaces BEFORE designing (the Lachesis lesson — a plan can pass every gate and still mismodel its input). Done: CURRENT-AUTHORITY#superseded is the real surface; the weave supersedes edges + record SUPERSEDED statuses are empty.",
+      "front-load implementation mechanics in the candidate approach (rigorous reviewer will demand them)",
+      "NEVER abbreviate an authority/content-address anchor (full 40-hex / full sha256:); honest NON-CLAIMs over faked completeness; verify claims (including the adversary's) against ground truth",
+      "surface genuine design-semantics decisions to The Eye (verb scope, surface set) rather than deciding unilaterally"
+    ],
+    "capability_packets_required": false
+  },
+  "phase_1_status": "Pre-review + candidate authored. NOT started: Daedalus workshop, live seats, TELOS council, git commit, shared-registry edits. Held for The Eye's review of scope + the three open questions before the workshop fires."
+}
