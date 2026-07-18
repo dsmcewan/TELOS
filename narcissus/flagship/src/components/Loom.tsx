@@ -2,9 +2,10 @@
 // pointer-events: none, and it is aria-hidden — the DOM layer carries the whole story). A field of warp
 // threads on near-black; the current station's band glows LEXI-red; pulling a thread tightens its band.
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { STATION_COUNT } from "../stations";
+import { ferroVert, ferroFrag } from "../ferrofluid";
 
 const N = 30;
 
@@ -12,7 +13,13 @@ function Warp({ stationIndex, threadPulled, reducedMotion }: {
   stationIndex: number; threadPulled: boolean; reducedMotion: boolean;
 }) {
   const group = useRef<THREE.Group>(null);
+  // shared ferrofluid material for the tension knots (consistent with the graph hub)
+  const knotMat = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader: ferroVert, fragmentShader: ferroFrag,
+    uniforms: { uTime: { value: 0 }, uColor: { value: new THREE.Color("#ef4444") } },
+  }), []);
   useFrame((state) => {
+    knotMat.uniforms.uTime.value = state.clock.elapsedTime;
     if (reducedMotion || !group.current) return;
     group.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.12) * 0.05;
     group.current.position.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.05;
@@ -42,9 +49,8 @@ function Warp({ stationIndex, threadPulled, reducedMotion }: {
   const kx = (Math.floor((stationIndex / STATION_COUNT) * N) - N / 2) * 0.42;
   for (let k = 0; k < 3; k++) {
     knots.push(
-      <mesh key={`k${k}`} position={[kx, (k - 1) * 1.6, -2.2]}>
-        <sphereGeometry args={[threadPulled ? 0.14 : 0.1, 16, 16]} />
-        <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={2.4} toneMapped={false} />
+      <mesh key={`k${k}`} position={[kx, (k - 1) * 1.6, -2.2]} material={knotMat}>
+        <sphereGeometry args={[threadPulled ? 0.2 : 0.14, 32, 32]} />
       </mesh>,
     );
   }

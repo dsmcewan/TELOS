@@ -1,6 +1,7 @@
 /* LEXI-grounded design tokens (from github.com/dsmcewan/LEXI lexi-dashboard/frontend/src/styles/tokens.css).
-   Dark theme primary; signature red/crimson accent with red bloom-glow; Inter + JetBrains Mono. */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
+   Dark theme primary; signature red/crimson accent with red bloom-glow; Inter + JetBrains Mono.
+   Fonts are SELF-HOSTED (./fonts.css -> /fonts/*.woff2, font-display:swap) — no render-blocking external request. */
+@import "./fonts.css";
 
 :root {
   --surface: #0b0f1a;
@@ -101,28 +102,29 @@ button[aria-pressed="true"], button.primary { color: #fff; border-color: var(--a
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
-/* ---- Live Graph view ---- */
-.graph-view { align-items: start; padding: 2rem 2.6rem; overflow-y: auto; }
-.graph-view { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(15rem, 0.9fr); grid-template-rows: auto auto; gap: 1.4rem 2rem; width: 100%; max-width: 78rem; margin: 0 auto; }
-.graph-intro { grid-column: 1; grid-row: 1; background: linear-gradient(165deg, rgba(5,7,11,0.86), rgba(8,11,20,0.66)); backdrop-filter: blur(12px); border: 1px solid var(--edge); border-radius: 14px; padding: 1.5rem 1.7rem; }
-.graph-intro h1 { font-size: clamp(1.6rem, 3.4vw, 2.5rem); line-height: 1.05; font-weight: 800; letter-spacing: -0.02em; background: linear-gradient(180deg, var(--fg), var(--fg-muted)); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0.6rem 0 1rem; }
-.graph-intro .body b { color: var(--fg); }
-.compound-panels { display: flex; gap: 0.8rem; margin-top: 1.3rem; flex-wrap: wrap; }
-.mini-panel { border: 1px solid var(--edge-strong); border-left: 3px solid var(--accent); border-radius: 8px; padding: 0.7rem 0.9rem; background: var(--surface-sunken); min-width: 15rem; }
-.mini-panel b { display: block; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.18em; color: var(--accent); margin-bottom: 0.25rem; }
-.mini-panel span { font-size: 0.82rem; color: var(--fg-muted); }
-.graph-intro .src { margin-top: 1rem; }
-
-.node-list { grid-column: 2; grid-row: 1 / span 2; display: flex; flex-direction: column; gap: 0.3rem; max-height: 66vh; overflow-y: auto; padding: 0.6rem; background: linear-gradient(180deg, rgba(8,11,20,0.82), rgba(8,11,20,0.6)); backdrop-filter: blur(12px); border: 1px solid var(--edge); border-radius: 12px; }
-.node-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; text-align: left; font-family: var(--font-display); font-size: 0.82rem; letter-spacing: 0; padding: 0.5rem 0.75rem; }
+/* ---- Live Graph view — WEAVE IS THE HERO: canvas fills the frame; HUD overlays are edge-anchored + translucent ---- */
+.graph-view { position: relative; padding: 0; overflow: visible; display: block; height: 100%; }
+.hud { position: absolute; z-index: 3; background: rgba(6,9,16,0.5); backdrop-filter: blur(7px); border: 1px solid var(--edge); border-radius: 12px; padding: 1rem 1.15rem; box-shadow: 0 12px 44px rgba(0,0,0,0.5); }
+.hud-tl { top: 1.4rem; left: 1.4rem; max-width: 22rem; }
+.hud-title { font-size: 1.55rem; font-weight: 800; letter-spacing: -0.02em; margin: 0.35rem 0 0.55rem; background: linear-gradient(180deg, var(--fg), var(--fg-muted)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hud-sub { font-size: 0.85rem; line-height: 1.5; color: var(--fg-muted); }
+.hud-sub b { color: var(--fg); }
+.hud .src { font-family: var(--font-mono); font-size: 0.64rem; color: var(--fg-faint); word-break: break-all; margin-top: 0.7rem; }
+.chips { display: flex; gap: 0.5rem; margin: 0.85rem 0 0; flex-wrap: wrap; }
+.chip { font-family: var(--font-mono); font-size: 0.64rem; color: var(--fg-muted); border: 1px solid var(--edge-strong); border-left: 2px solid var(--accent); border-radius: 6px; padding: 0.35rem 0.55rem; }
+.chip b { color: var(--accent); margin-right: 0.35rem; }
+.hud-r { top: 1.4rem; right: 1.4rem; bottom: 1.4rem; width: 13.5rem; display: flex; flex-direction: column; gap: 0.28rem; overflow-y: auto; padding: 0.7rem; }
+.hud-r-head { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.16em; color: var(--fg-faint); padding: 0.1rem 0.2rem 0.5rem; }
+.hud-bl { bottom: 1.4rem; left: 1.4rem; max-width: 30rem; border-left: 3px solid var(--accent); }
+.node-row { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; text-align: left; font-family: var(--font-display); font-size: 0.8rem; padding: 0.45rem 0.7rem; }
 .node-row .node-label { color: var(--fg-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.node-row .node-blast { font-family: var(--font-mono); font-size: 0.72rem; }
+.node-row .node-blast { font-family: var(--font-mono); font-size: 0.7rem; }
 .node-row.sel, .node-row[aria-pressed="true"] { border-color: var(--accent); color: #fff; box-shadow: var(--glow-sm); background: var(--surface-sunken); }
 .node-row.sel .node-label { color: #fff; }
-
-.node-detail { grid-column: 1; grid-row: 2; align-self: start; margin-top: 0; }
-.node-detail .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin: 0.7rem 0; }
+.node-detail .src { font-family: var(--font-mono); font-size: 0.66rem; color: var(--fg-faint); word-break: break-all; margin-bottom: 0.45rem; }
+.node-detail .src b { color: var(--accent); }
+.node-detail .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7rem; margin: 0.6rem 0; }
 .node-detail .metrics div { display: flex; flex-direction: column; gap: 0.15rem; }
-.node-detail .metrics span { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; color: var(--fg-faint); text-transform: uppercase; }
+.node-detail .metrics span { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.1em; color: var(--fg-faint); text-transform: uppercase; }
 .node-detail .metrics b { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-.node-detail blockquote { font-size: 0.86rem; color: var(--fg-muted); font-style: italic; margin: 0.5rem 0 0.8rem; }
+.node-detail blockquote { font-size: 0.84rem; color: var(--fg-muted); font-style: italic; margin: 0.4rem 0 0.7rem; }

@@ -47,23 +47,23 @@ export function DomLayer() {
 
         {inGraph ? (
           <section className="viewport graph-view" aria-live="polite">
-            <article className="graph-intro">
+            {/* WEAVE IS THE HERO: the canvas fills the frame; these HUD overlays are edge-anchored + translucent, out of the weave's way. */}
+            <div className="hud hud-tl">
               <div className="kicker">LIVE · Clotho × Lachesis × Atropos</div>
-              <h1>The live weave, measured &amp; verified</h1>
-              <p className="body">
-                This is the real Clotho weave — {CLOTHO.total_nodes} nodes, {CLOTHO.total_edges} edges —
-                <b> measured by Lachesis</b> (blast radius, risk, relevance per node) and <b> verified by Atropos</b>.
-                The three modules compound: Clotho remembers, Lachesis measures, Atropos retires. Nodes are sized
-                by blast radius; the tension point is <b>canonicalize</b> (blast 184) — everything depends on it.
+              <h2 className="hud-title">The live weave</h2>
+              <p className="hud-sub">
+                <b>{CLOTHO.total_nodes}</b> nodes · <b>{CLOTHO.total_edges}</b> edges — measured by <b>Lachesis</b>,
+                verified by <b>Atropos</b>. Sized by blast radius; the tension point is <b>canonicalize</b> (184).
               </p>
-              <div className="compound-panels">
-                <div className="mini-panel"><b>CLOTHO</b><span>{CLOTHO.total_nodes} nodes · {CLOTHO.total_edges} edges · {CLOTHO.depends_on_edges} depends-on</span></div>
-                <div className="mini-panel"><b>ATROPOS</b><span>supersession {ATROPOS.verdict} · retired {ATROPOS.retired_plan_versions.join(", ")} → active {ATROPOS.active_plan_version}</span></div>
+              <div className="chips">
+                <span className="chip"><b>CLOTHO</b> {CLOTHO.total_nodes}·{CLOTHO.total_edges}·{CLOTHO.depends_on_edges}</span>
+                <span className="chip"><b>ATROPOS</b> {ATROPOS.verdict} · v11–14→{ATROPOS.active_plan_version}</span>
               </div>
-              <p className="src" data-testid="compound-citation">Measured by Lachesis over the live Clotho weave (snapshot {SNAPSHOT.slice(0, 20)}…); supersession verified by Atropos.</p>
-            </article>
+              <p className="src" data-testid="compound-citation">Measured by Lachesis over the live Clotho weave (snapshot {SNAPSHOT.slice(0, 18)}…); supersession verified by Atropos.</p>
+            </div>
 
-            <aside className="node-list" aria-label="Measured nodes by blast radius">
+            <aside className="hud hud-r node-list" aria-label="Measured nodes by blast radius">
+              <div className="hud-r-head">TOP BY BLAST RADIUS</div>
               {NODES_BY_BLAST.map((n) => (
                 <button
                   key={n.id} className={"node-row" + (n.id === c.selectedNodeId ? " sel" : "")}
@@ -77,7 +77,7 @@ export function DomLayer() {
             </aside>
 
             {node && (
-              <aside className="evidence node-detail" data-testid="node-detail" aria-label="Node measurement">
+              <aside className="hud hud-bl evidence node-detail" data-testid="node-detail" aria-label="Node measurement">
                 <div className="src">NODE · <b>{node.label}</b> ({node.kind}) @ {node.id.slice(0, 12)}…</div>
                 <div className="metrics">
                   <div><span>blast radius</span><b>{node.blast_radius}</b></div>

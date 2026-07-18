@@ -6,6 +6,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { NODES, NODES_BY_BLAST, EDGES, LAYOUT, LABELED_IDS, MAX_BLAST, riskColor, nodeById } from "../livegraph";
+import { ferroVert, ferroFrag } from "../ferrofluid";
 
 // billboarded label as a sprite with a canvas texture (no extra deps; culled to the important nodes).
 function makeLabelTexture(text: string, color: string): THREE.CanvasTexture {
@@ -28,28 +29,20 @@ function makeLabelTexture(text: string, color: string): THREE.CanvasTexture {
   return tex;
 }
 
-const hubVert = /* glsl */`
-  varying vec3 vN; varying vec3 vV;
-  void main(){
-    vN = normalize(normalMatrix * normal);
-    vec4 mv = modelViewMatrix * vec4(position, 1.0);
-    vV = normalize(-mv.xyz);
-    gl_Position = projectionMatrix * mv;
-  }`;
-const hubFrag = /* glsl */`
-  uniform float uTime; uniform vec3 uColor;
-  varying vec3 vN; varying vec3 vV;
-  void main(){
-    float fres = pow(1.0 - max(dot(vN, vV), 0.0), 2.4);
-    float pulse = 0.86 + 0.14 * sin(uTime * 1.8);
-    vec3 col = uColor * (0.3 + fres * 2.6 * pulse);
-    gl_FragColor = vec4(col, 1.0);
-  }`;
-
 function Graph({ selectedNodeId, reducedMotion }: { selectedNodeId: string | null; reducedMotion: boolean }) {
   const group = useRef<THREE.Group>(null);
-  const hubMat = useRef<THREE.ShaderMaterial>(null);
   const hubId = NODES_BY_BLAST[0].id;
+  // one ferrofluid material per node — dimensional orbs, risk-colored, all ticked together in useFrame.
+  const materials = useMemo(() => {
+    const m: Record<string, THREE.ShaderMaterial> = {};
+    for (const n of NODES) {
+      m[n.id] = new THREE.ShaderMaterial({
+        vertexShader: ferroVert, fragmentShader: ferroFrag,
+        uniforms: { uTime: { value: 0 }, uColor: { value: new THREE.Color(riskColor(n.risk_class)) } },
+      });
+    }
+    return m;
+  }, []);
 
   const edgePositions = useMemo(() => {
     const arr: number[] = [];
@@ -69,10 +62,11 @@ function Graph({ selectedNodeId, reducedMotion }: { selectedNodeId: string | nul
   );
 
   useFrame((state) => {
-    if (hubMat.current) hubMat.current.uniforms.uTime.value = state.clock.elapsedTime;
+    const t = state.clock.elapsedTime;
+    for (const id in materials) materials[id].uniforms.uTime.value = t;
     if (reducedMotion || !group.current) return;
-    group.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.09) * 0.22;
-    group.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.05) * 0.05;
+    group.current.rotation.y = Math.sin(t * 0.09) * 0.22;
+    group.current.rotation.x = Math.sin(t * 0.05) * 0.05;
   });
 
   return (
@@ -86,23 +80,12 @@ function Graph({ selectedNodeId, reducedMotion }: { selectedNodeId: string | nul
 
       {NODES.map((n) => {
         const p = LAYOUT[n.id];
-        const size = 0.14 + (n.blast_radius / MAX_BLAST) * 0.72;
-        const color = riskColor(n.risk_class);
         const sel = n.id === selectedNodeId;
-        const hub = n.id === hubId;
-        if (hub) {
-          return (
-            <mesh key={n.id} position={p}>
-              <sphereGeometry args={[size, 48, 48]} />
-              <shaderMaterial ref={hubMat} vertexShader={hubVert} fragmentShader={hubFrag}
-                uniforms={{ uTime: { value: 0 }, uColor: { value: new THREE.Color("#ef4444") } }} toneMapped={false} />
-            </mesh>
-          );
-        }
+        const size = (0.14 + (n.blast_radius / MAX_BLAST) * 0.72) * (sel ? 1.2 : 1);
+        const seg = n.id === hubId ? 48 : 30;
         return (
-          <mesh key={n.id} position={p}>
-            <sphereGeometry args={[size, 24, 24]} />
-            <meshStandardMaterial color={color} emissive={color} emissiveIntensity={sel ? 3.4 : 1.15} toneMapped={false} />
+          <mesh key={n.id} position={p} material={materials[n.id]}>
+            <sphereGeometry args={[size, seg, seg]} />
           </mesh>
         );
       })}
@@ -121,7 +104,7 @@ export function LiveGraphCanvas({ selectedNodeId, reducedMotion, theme }: {
 }) {
   return (
     <div className="loom-canvas" aria-hidden="true">
-      <Canvas camera={{ position: [0, 0, 12], fov: 46 }} dpr={[1, 2]} gl={{ antialias: true }} frameloop={reducedMotion ? "demand" : "always"}>
+      <Canvas camera={{ position: [0, 0, 10.5], fov: 48 }} dpr={[1, 2]} gl={{ antialias: true }} frameloop={reducedMotion ? "demand" : "always"}>
         <color attach="background" args={[theme === "dark" ? "#05070b" : "#dee2e7"]} />
         <ambientLight intensity={0.4} />
         <pointLight position={[0, 0, 9]} intensity={80} color="#ef4444" distance={44} />
