@@ -1,0 +1,25 @@
+{
+  "build_id": "iliad-lachesis-1-authz",
+  "use_case": "iliad-lachesis-cycle-1",
+  "model": "gemini",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/lachesis-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-lachesis-1.json"
+  ],
+  "proposal_ref": "sha256:2ff644720bb80fac2f0ec31f92ecaed9bac1986a47ccc94460f987decbc7097b",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-18T07:34:25.558Z",
+  "rationale": "The cycle-1 rev-10 plan for Lachesis successfully resolves previous architectural objections and is implementation-ready as-is. It achieves strict boundary enforcement through a static import oracle explicitly allowing only the sanctioned merkle-dag vendor module while failing closed on all dynamic or out-of-profile imports. The trust model is rigorously defined as conditional on the external CURRENT-AUTHORITY root, adopting honest non-claims to avoid falsely asserting cryptographic authorship or re-deriving Clotho content addresses. Furthermore, separating operational data from institutional memory records establishes a clean, closed-set validation flow, while shifting from presence-based completeness to explicit, authority-anchored coverage attestations closes a significant semantic gap. Per the pre-review constraints, the enrollment-flip expectation change remains held for a separate Eye ruling.",
+  "provenance": {
+    "provider": "google",
+    "model": "gemini-3.1-pro-preview",
+    "response_id": "gixbarX6Ot-mmtkP7P6V0QQ",
+    "source": "ai-peer-mcp/gemini_ask",
+    "answered_at": "2026-07-18T07:34:44.208Z",
+    "tool": "gemini_ask"
+  }
+}

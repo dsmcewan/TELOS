@@ -1,0 +1,30 @@
+{
+  "build_id": "iliad-lachesis-1-authz",
+  "use_case": "iliad-lachesis-cycle-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/lachesis-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-lachesis-1.json"
+  ],
+  "proposal_ref": "sha256:2ff644720bb80fac2f0ec31f92ecaed9bac1986a47ccc94460f987decbc7097b",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-18T07:34:25.558Z",
+  "rationale": "Judged on the plan's own advisory/measurement terms, rev 10 is implementation-ready with no remaining internal contradiction. (1) Registered meaning is respected: every deliverable (dependencies closure, blastRadius, relevance, riskClass) is a measurement over snapshot DATA; riskClass is explicitly advisory with a coverage floor, never a gate — and the plan resists the temptation to smuggle enforcement in. (2) The trust chain is honestly scoped: CURRENT-AUTHORITY pin → manifest digest → snapshot raw-byte digest, with the authorized path coming from the verified manifest rather than a caller argument (closing the substitutable-digest and mutate-both bypasses recorded as rejected alternatives), and the conditional-root non-claim states exactly what is and is not proven. The frozen digest ops (canonicalize+sha256hex for JSON records vs raw-byte for the snapshot file, minus-id rule for record ids) are pinned AND discriminated by the digest-method fixtures — a canonicalizing snapshot hasher or a raw-byte record hasher both fail. (3) The completeness objection is resolved structurally, not cosmetically: presence-inference is removed, attestations are closed-schema, root-pinned at the file level, anchored to resolvable authz-N/AM-N entries, snapshot-digest-bound, and every unverified path floors low→medium; the oracle isolates each verification branch including the file-digest-only failure. (4) The boundary is enforced by an executable source-profile oracle that fails closed on dynamic/computed loading and createRequire aliases, with the single sanctioned vendor import's own closure verified node:-only and digest-pinned; the oracle is itself validated against fixture trees so a no-op exit-0 cannot pass — this resolves the digest-vs-boundary tension cleanly. (5) The metric oracle is genuinely discriminating: direction, ≥2-hop transitivity, cycle-safety with pinned cycle-to-self exclusion, weighted-vs-unweighted normalization, exact threshold inclusivity at all four boundaries, pinned unbounded RISK_BLAST_DEPTH with a depth-dependence fixture, per-branch ingestion negatives, and positive vocabulary acceptance so an over-strict loader also fails. (6) Repository trust model honored: fail-closed throughout ingestion, closed sets pinned with an authority anchor and change_rule, spine read-only (no clotho/ import, no id re-derivation), zero-dependency verified by the boundary oracle. (7) Sequencing is documentation-first with a non-circular authority triple (both external members pre-exist the decision record; minus-id keeps the record id out of its own preimage), and the enrollment flip is correctly held for a separate Eye ruling, which I do not condition on per the objective. Residual risks are acknowledged in-plan as honest non-claims (external root authentication, cryptographic authorship, id derivation correctness) and lie outside Lachesis's threat model by stated precondition — they are not defects of this plan. I would sign this: approve as-is.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011Cd98sQQ5w1t3FHxnmFwdn",
+    "source": "ai-peer-mcp/claude_ask",
+    "answered_at": "2026-07-18T07:34:48.795Z",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "0e6872ab85b67d842224a82012488ffe1079c064c4ade1cc254de690a2db8ca6",
+    "signed_fields": "canonical-minus-signature"
+  }
+}
