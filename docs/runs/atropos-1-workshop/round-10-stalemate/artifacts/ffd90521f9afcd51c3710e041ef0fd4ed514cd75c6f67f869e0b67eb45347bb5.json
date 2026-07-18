@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:80830dcd1fd192b0f79f8f4de9f5b7b8666ba9c3ee575f7e7f024a50f053feab",
+  "output_plan_artifact_hash": "sha256:80830dcd1fd192b0f79f8f4de9f5b7b8666ba9c3ee575f7e7f024a50f053feab",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:c1c8f46d5582218fbf06c1d69c20cf9d0023c193223263cc1b90159ea8550005",
+    "provenance_key": "anthropic:msg_011Cd9WerSCjRXxxtEAFmvGD"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:d92afc4e0b00a7038aee26bcd28433d1daa7d63e332f7e5037f686291278c309",
+    "provenance_key": "openai:chatcmpl-E2yJXOiMoDqnztTmj8bAYP378se5i",
+    "bound_hash": "sha256:65e6ea5d73b8eb5964daddd2c3ce3a4419107f1f4525521c53098c4046aa59b2"
+  },
+  "objections": [
+    {
+      "claim": "Section 3 depends on an asserted Eye ruling whose stable authority artifact does not exist. The git-pinned peer-model resolution is advisory and cannot substitute for The Eye; creating a decision record later in Argo, after authorization, is circular because CHANGE-PROTOCOL requires the Eye ruling before the Daedalus delta and TELOS re-authorization. The plan must stop at escalation until an attributable, stable Eye ruling (for example, an AM-N artifact) exists.",
+      "scope": "plan-escalation",
+      "objection_hash": "sha256:2c8bf90bccd8d6f8c7455c87d962872008bdfd4bd7205a7b0c5b04b55c9561ed",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The manifest-driven memory-root discovery is called exact, closed, and fail-closed, but no lexical/realpath containment or symlink policy is specified for `manifest.json#entry_points.memory_dirs`. A declared traversal path or symlinked directory can make ingestion scan outside the repository-authoritative inventory. Snapshot ingestion has containment checks; record discovery needs equivalent validation and traversal/symlink escape fixtures.",
+      "scope": "atropos/ingest.mjs manifest discovery",
+      "objection_hash": "sha256:6811a820fa574e05dd9a578a444bb1fbd2e32d70ba1924d5d3d6263ac6633add",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The READ-ONLY oracle omits Node's global dynamic built-in loader `process.getBuiltinModule`. On Node versions permitted by the `Node >=18` range where that API exists, `process.getBuiltinModule('node:fs').writeFileSync(...)` bypasses every listed import and dynamic-loading prohibition. The proposed static oracle would therefore accept a concretely write-capable runtime despite claiming no dynamic loading. It must reject this API and include a negative fixture.",
+      "scope": "scripts/test-readonly.mjs",
+      "objection_hash": "sha256:40afe76fccb90d6a30ebba9c8dd661f7db4fd8857e3b02ec1cfc070cf15cca87",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

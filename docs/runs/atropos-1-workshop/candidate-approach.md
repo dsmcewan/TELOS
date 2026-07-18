@@ -1,4 +1,4 @@
-# Candidate approach (rev 9) — Atropos (enrollment quest, cycle 1)
+# Candidate approach (rev 10) — Atropos (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json`.
@@ -98,6 +98,9 @@ Inputs are EXACT + closed (a verifier cannot silently omit a surface and still p
   (`docs/institutional-memory/**` + `docs/institutional-memory/manifest.json#entry_points.memory_dirs` — the
   enrolled components' memory dirs), NOT a hard-coded list, so a newly enrolled component's memory dir is
   automatically in scope (closes the "omitted new component" gap); `*.json` with `status === "SUPERSEDED"`.
+  **Each manifest-declared `memory_dir` is realpath-CONTAINED under the repo root (reject absolute paths, `..`
+  traversal, and symlinks resolving outside the repo — same policy as the snapshot path); a declared root that
+  escapes → throw (fail-closed).**
   **NON-CLAIM (completeness-of-universe):** Atropos verifies consistency over the manifest-authoritative
   inventory it is given; it does NOT independently prove no retirement exists OUTSIDE the manifest's declared
   roots — same honesty as the trust NON-CLAIM.
@@ -140,7 +143,8 @@ for The Eye).
   and NO `fs/promises` in either form (defeats name-based checking / exposes FileHandle writers); (c) NO import of
   `node:child_process`, `node:worker_threads`, `node:vm`, `process.binding`, `process.dlopen`; (d) deny known
   GLOBAL write paths that need no import — `process.report.writeReport`, `process.report.directory`/`filename`
-  assignment, `process.chdir`; (d2) **NO runtime import resolves under `scripts/`** (the excluded dev-only tree)
+  assignment, `process.chdir`, and **`process.getBuiltinModule`** (a global dynamic built-in loader —
+  `process.getBuiltinModule('node:fs').writeFileSync` bypasses import checks on Node ≥18 where present); (d2) **NO runtime import resolves under `scripts/`** (the excluded dev-only tree)
   — closes the hole where a runtime module imports a write-capable helper from an unscanned file; (e) the
   boundary oracle already bans dynamic
   `import()`/`require`/`createRequire`/`Module._load`/`eval`. Plus branch-isolating fixture negatives (each
