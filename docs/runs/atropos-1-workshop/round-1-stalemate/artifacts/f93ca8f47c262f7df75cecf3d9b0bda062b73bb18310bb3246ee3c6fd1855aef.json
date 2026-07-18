@@ -1,0 +1,71 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:65c489f30c7bf58ca8da7e2ff697c84f45eb8ef9856c323ca6642fbf8443aa98",
+  "output_plan_artifact_hash": "sha256:65c489f30c7bf58ca8da7e2ff697c84f45eb8ef9856c323ca6642fbf8443aa98",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:ae2a327d179013bb7e6d816078b642ac2eb2224df7b6e2abcf1e37c114f967f1",
+    "provenance_key": "anthropic:msg_011Cd9PWo1YKaQATphpPGVBH"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:ba679cb9c3bc4532fa341d65489bd64f3aee49e13427ae94f8bcd2e84f522c41",
+    "provenance_key": "openai:chatcmpl-E2wqvKKhTWsC6n9NGCvMM7q6PHpNj",
+    "bound_hash": "sha256:8044f9d8b78bbe8c24e57672d1dc3f0ec7f4a7350da4df6673345b3ddb419cca"
+  },
+  "objections": [
+    {
+      "claim": "The verifier declares the live state `consistent` while two of the three retirement surfaces required by `CHANGE-PROTOCOL.md` are absent. Making weave `supersedes` edges and `SUPERSEDED` records advisory does not satisfy the frozen rule to mark the record, record the edge, and update `CURRENT-AUTHORITY.json`. The proposed oracle therefore positively accepts an incomplete retirement and would not discriminate the frozen-material violation.",
+      "scope": "candidate §§0, 3–5, 7",
+      "objection_hash": "sha256:1989cae135d8e002a2779fd6fd965205608c2c5e85e21eef9c3956785af9ded3",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "`CONTRACTS/supersession.json` is described as both `NORMATIVE` and carrying `becomes_normative_when` for an oracle that has not passed. The frozen taxonomy requires `SPECIFIED-PENDING-IMPLEMENTATION` before that oracle exists and permits `NORMATIVE-CURRENT` only after it passes.",
+      "scope": "candidate §6",
+      "objection_hash": "sha256:c69ac3d2c91c80abb8a51bbf739a3bc5ebeef6ae8dd075ae10fd8e94c0c613a5",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The asserted Eye rulings are anchored only by a date and prose. No `AM-N`, decision id, authorized plan hash, or `authz-N` is supplied. Moreover, the purported ruling that reduces the mandatory three-surface protocol to one normative surface would be an amendment requiring the complete CHANGE-PROTOCOL path; it cannot override frozen material as an unanchored statement inside this draft.",
+      "scope": "candidate §7 and pre-review authority",
+      "objection_hash": "sha256:142de3504cf4f58fd04fd0b75cd23896b98fa8729b4523cba34a6eb9331df757",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "Successor resolution uses non-unique `plan_version` strings without rejecting duplicate versions or duplicate predecessor identities. A duplicate can make lookup ambiguous or implementation-order-dependent while still producing `consistent`. The verdict must resolve version tokens uniquely and terminate each chain in stable SHA-anchored identities.",
+      "scope": "candidate §§2–3",
+      "objection_hash": "sha256:3ef7c1ee04b7ed079908072e64c7d88168ab79f431a9d5043cf5dea822ed104e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The advisory cross-check has no executable identity mapping or edge-direction rule connecting a `CURRENT-AUTHORITY` entry, a `SUPERSEDED` record, and weave edge endpoints. Phrases such as `endpoints/targets disagree` and `still being treated as governing` are not deterministic mechanisms and cannot be tested without heuristics or invented schema semantics.",
+      "scope": "candidate §4",
+      "objection_hash": "sha256:67ee2e244af5abb8b58832e319a4d2362e9314c836928e07c8573c59e83de271",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The memory layout names rendered Markdown and a README but provides no renderer or drift oracle. That leaves human projections able to diverge from machine records, contrary to the frozen machine-first, human-rendered discipline.",
+      "scope": "candidate §6",
+      "objection_hash": "sha256:9b5fc56f017f93a6cf033dcf094427499bd837415cd95362582e222a73ded092",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
