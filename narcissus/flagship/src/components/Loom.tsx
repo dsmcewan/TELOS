@@ -25,6 +25,8 @@ function Warp({ stationIndex, threadPulled, reducedMotion }: {
     group.current.position.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.05;
   });
   const threads = [];
+  // warp threads as round TUBES with a gentle catenary bow toward the viewer on the current band —
+  // the same woven-thread material language as the live-graph view (parity).
   for (let i = 0; i < N; i++) {
     const x = (i - N / 2) * 0.42;
     const band = Math.floor((i / N) * STATION_COUNT);
@@ -32,9 +34,16 @@ function Warp({ stationIndex, threadPulled, reducedMotion }: {
     const color = isCurrent ? "#ef4444" : band < stationIndex ? "#7f1d1d" : "#1f2a3d";
     const h = isCurrent && threadPulled ? 10.5 : 7.6 + ((i * 37) % 7) * 0.12;
     const z = -2.4 - (i % 4) * 0.55;
+    const bow = isCurrent ? (threadPulled ? 0.85 : 0.4) : 0.12; // tension bows the current band forward
+    const curve = new THREE.QuadraticBezierCurve3(
+      new THREE.Vector3(x, -h / 2, z),
+      new THREE.Vector3(x, 0, z + bow),
+      new THREE.Vector3(x, h / 2, z),
+    );
+    const radius = isCurrent ? 0.028 : 0.016;
     threads.push(
-      <mesh key={i} position={[x, 0, z]}>
-        <boxGeometry args={[0.022, h, 0.022]} />
+      <mesh key={i}>
+        <tubeGeometry args={[curve, 16, radius, 6, false]} />
         <meshStandardMaterial
           color={color}
           emissive={color}

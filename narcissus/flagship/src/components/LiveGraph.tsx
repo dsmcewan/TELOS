@@ -28,8 +28,8 @@ const shellFrag = /* glsl */`
     gl_FragColor = vec4(uColor * 2.2, fres * pulse * 0.85);
   }`;
 
-function Graph({ selectedNodeId, reducedMotion, labelHost }: {
-  selectedNodeId: string | null; reducedMotion: boolean; labelHost: React.RefObject<HTMLDivElement>;
+function Graph({ selectedNodeId, reducedMotion, labelHost, theme }: {
+  selectedNodeId: string | null; reducedMotion: boolean; labelHost: React.RefObject<HTMLDivElement>; theme: "dark" | "light";
 }) {
   const group = useRef<THREE.Group>(null);
   const hubId = NODES_BY_BLAST[0].id;
@@ -91,10 +91,15 @@ function Graph({ selectedNodeId, reducedMotion, labelHost }: {
     const t = state.clock.elapsedTime;
     for (const id in materials) materials[id].uniforms.uTime.value = t;
     shellMat.uniforms.uTime.value = t;
-    // selection drama: connected threads brighten, unrelated dim
+    // selection drama: connected threads brighten, unrelated dim. Theme-aware thread color:
+    // light theme gets a WARMER dark-red so threads sit softer on the light grey.
     for (const th of threads) {
       const connected = selectedNodeId && (th.from === selectedNodeId || th.to === selectedNodeId);
       th.mat.uniforms.uBoost.value = selectedNodeId ? (connected ? 2.4 : 0.45) : 1;
+      const isHubThread = th.to === hubId || th.from === hubId;
+      th.mat.uniforms.uColor.value.set(
+        theme === "light" ? (isHubThread ? "#c2410c" : "#9a5b4f") : (isHubThread ? "#b91c1c" : "#7f1d1d"),
+      );
     }
     if (!reducedMotion && group.current) {
       group.current.rotation.y = Math.sin(t * 0.09) * 0.22;
@@ -104,17 +109,34 @@ function Graph({ selectedNodeId, reducedMotion, labelHost }: {
     const host = labelHost.current;
     if (host && group.current) {
       const v = new THREE.Vector3();
+      // 1st pass: project + clamp inward (away from HUD panels / viewport edges)
+      const placed: { el: HTMLElement; x: number; y: number; w: number }[] = [];
       for (const id of LABELED_IDS) {
         const el = host.querySelector<HTMLElement>(`[data-label="${id}"]`);
         const p = LAYOUT[id];
         if (!el || !p) continue;
         v.set(p[0], p[1], p[2]).applyMatrix4(group.current.matrixWorld).project(state.camera);
-        // clamp inward so labels never sit under the HUD panels or clip the viewport edge
         const x = Math.max(16, Math.min(83, (v.x * 0.5 + 0.5) * 100));
         const y = Math.max(9, Math.min(88, (-v.y * 0.5 + 0.5) * 100));
-        el.style.left = `${x}%`;
-        el.style.top = `${y}%`;
+        placed.push({ el, x, y, w: 3.2 + (nodeById(id)!.label.length * 0.62) }); // est. width in vw
       }
+      // 2nd pass: deterministic label<->label repulsion — fixed order (LABELED_IDS), fixed iterations,
+      // no RNG, so identical state projects identically under ?e2e=1.
+      for (let iter = 0; iter < 3; iter++) {
+        for (let i = 0; i < placed.length; i++) {
+          for (let j = i + 1; j < placed.length; j++) {
+            const a = placed[i], b = placed[j];
+            const dx = Math.abs(a.x - b.x), dy = Math.abs(a.y - b.y);
+            const minX = (a.w + b.w) / 2, minY = 4.6; // pill height ≈ 4.6% viewport
+            if (dx < minX && dy < minY) {
+              const push = (minY - dy) / 2 + 0.3;
+              if (a.y <= b.y) { a.y = Math.max(9, a.y - push); b.y = Math.min(88, b.y + push); }
+              else { a.y = Math.min(88, a.y + push); b.y = Math.max(9, b.y - push); }
+            }
+          }
+        }
+      }
+      for (const p of placed) { p.el.style.left = `${p.x}%`; p.el.style.top = `${p.y}%`; }
     }
   });
 
@@ -154,7 +176,7 @@ export function LiveGraphCanvas({ selectedNodeId, reducedMotion, theme }: {
         <ambientLight intensity={0.4} />
         <pointLight position={[0, 0, 9]} intensity={80} color="#ef4444" distance={44} />
         <pointLight position={[-8, 6, 5]} intensity={24} color="#00e5ff" distance={34} />
-        <Graph selectedNodeId={selectedNodeId} reducedMotion={reducedMotion} labelHost={labelHost} />
+        <Graph selectedNodeId={selectedNodeId} reducedMotion={reducedMotion} labelHost={labelHost} theme={theme} />
       </Canvas>
       {/* HTML label overlays — pixel-crisp type, positioned from projected 3D coords; PAINT ONLY */}
       <div ref={labelHost} className="gl-labels" aria-hidden="true">
