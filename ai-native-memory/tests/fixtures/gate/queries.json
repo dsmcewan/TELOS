@@ -1,0 +1,11 @@
+{
+  "component": "example",
+  "governing_authority": { "ref": "A1" },
+  "required_invariants": ["inv-read-only"],
+  "required_non_claims": ["nc-no-proof"],
+  "queries": [
+    { "id": "q-bool", "query": "Does the component write? (boolean)", "answer_kind": "boolean", "expected": false },
+    { "id": "q-enum", "query": "Failure posture? (enum)", "answer_kind": "enum", "expected": "fail-closed" },
+    { "id": "q-set", "query": "Which kinds are deferred? (set)", "answer_kind": "set", "expected": ["node-backed", "unknown"] }
+  ]
+}

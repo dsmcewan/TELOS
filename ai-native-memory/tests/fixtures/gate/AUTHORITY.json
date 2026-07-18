@@ -1,0 +1,4 @@
+{
+  "active": { "ref": "A1", "path": "authority-doc.md", "sha256": "sha256:f0896170615679bd23eff4f66ec82411a1eed4694a48b4030293f3fab34f6436" },
+  "superseded": [ { "ref": "A0" } ]
+}

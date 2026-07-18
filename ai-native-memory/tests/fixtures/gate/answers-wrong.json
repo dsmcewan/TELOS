@@ -1,0 +1,8 @@
+{
+  "reader": "test-reader",
+  "resolved_authority_ref": "A1",
+  "excluded_superseded": ["A0"],
+  "invariants_read": ["inv-read-only"],
+  "non_claims_read": ["nc-no-proof"],
+  "answers": { "q-bool": false, "q-enum": "fail-open", "q-set": ["unknown", "node-backed"] }
+}
