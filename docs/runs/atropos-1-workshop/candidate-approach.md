@@ -1,4 +1,4 @@
-# Candidate approach (rev 12) — Atropos (enrollment quest, cycle 1)
+# Candidate approach (rev 13) — Atropos (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json`.
@@ -57,8 +57,10 @@ detecting via source+membership, not by matching the (distinct) record-kind and 
   `sha256` (string `sha256:<64hex>`), `authorization` (string `authz-N`), `authz_status`
   (string ∈ {AUTHORIZED, NOT_AUTHORIZED}), `superseded_by` (non-empty string), `must_not_govern_new_work`
   (boolean, and === true), `note` (string) — an object/number/null/empty-string in any field → `inconsistent`;
-  **`active_plan` must be `{version: non-empty string, sha256: sha256:<64hex>}`** (BOTH pinned — the terminal
-  authority is content-addressed by `active_plan.sha256`, so "sha256-anchored" is a checked fact, not a label).
+  **`active_plan` must HAVE `{version: non-empty string, sha256: sha256:<64hex>, path: repo-relative string}`**
+  (the fields Atropos uses; the system's `active_plan` legitimately carries others e.g. `component` — Atropos
+  validates the fields it consumes, it does NOT impose a closed shape on the system object). The terminal
+  authority is content-addressed by `active_plan.sha256`, disk-resolved via `active_plan.path` (below).
   **unique `plan_version`**; `active_plan.version` MUST NOT also appear superseded; `must_not_govern_new_work===true`;
   `superseded_by` resolves only to `active_plan.version` or another unique superseded `plan_version` — reject
   self/dangling/cycles (visited-set); every chain TERMINATES at `active_plan.version`. **The terminal authority
@@ -135,8 +137,8 @@ for The Eye).
 ## 5. Oracle + golden
 - `scripts/test-verify.mjs`: discriminating fixtures each FAIL a wrong impl — dangling/self/cyclic
   `superseded_by`; `active_plan.version` also superseded; `must_not_govern_new_work:false`; duplicate
-  `plan_version`; **a per-field negative for EACH pinned check — malformed/empty/extra-key `active_plan`;
-  `active_plan.sha256` that mismatches the on-disk plan bytes; malformed entry `sha256`; malformed
+  `plan_version`; **a per-field negative for EACH pinned check — `active_plan` missing `version`/`sha256`/`path` or with a
+  wrong-typed one; `active_plan.sha256` that mismatches the on-disk plan bytes; malformed entry `sha256`; malformed
   `authorization`; invalid `authz_status`; empty `superseded_by`; non-boolean/false `must_not_govern_new_work`;
   non-string `note`** (each → `inconsistent`, so an impl omitting any check fails); mistyped/extra entry key; a
   `SUPERSEDED`-record candidate + a `supersedes`-edge candidate (each →
@@ -152,8 +154,10 @@ for The Eye).
   bare forms; the boundary oracle also bans bare imports as defense-in-depth) — and every fs import must be a
   NAMED import drawn from a closed READ allowlist (`readFileSync`, `readdirSync`, `realpathSync`, `statSync`,
   `lstatSync`, `existsSync`); `openSync` is EXCLUDED (write-capable via its flag argument); the runtime reads
-  with `readFileSync` only; any other fs named import → fail; (b) NO namespace import of fs (`import * as fs`)
-  and NO `fs/promises` in either form (defeats name-based checking / exposes FileHandle writers); (c) NO import of
+  with `readFileSync` only; any other fs named import → fail; the SAME checks apply to `export … from` RE-EXPORT
+  forms (`export { writeFileSync as x } from 'fs'`, `export * from 'node:fs'`) — a re-exported writer is a
+  violation; (b) NO namespace import of fs (`import * as fs`) and NO `fs/promises` in either form (defeats
+  name-based checking / exposes FileHandle writers); (c) NO import of
   `node:child_process`, `node:worker_threads`, `node:vm`, `process.binding`, `process.dlopen`; (d) deny known
   GLOBAL write paths that need no import — `process.report.writeReport`, `process.report.directory`/`filename`
   assignment, `process.chdir`, and **`process.getBuiltinModule`** (a global dynamic built-in loader —

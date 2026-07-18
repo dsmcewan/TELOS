@@ -1,0 +1,33 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "The candidate declares the four plan-version retirements `consistent` without a `SUPERSEDED` record or `supersedes` edge, directly contradicting the frozen CHANGE-PROTOCOL requirement that retiring an artifact/plan uses all three surfaces. The cited build-mode design ruling cannot silently narrow that frozen requirement. If plan versions structurally cannot be represented as weave nodes, that is a frozen specification defect and must complete the prescribed Eye ruling → Daedalus delta → TELOS re-authorization path before this verifier can encode an exception.",
+        "scope": "plan-escalation"
+      },
+      {
+        "claim": "The active-plan schema and disk-resolution mechanism are internally contradictory. Section 3 requires `active_plan` to have exactly `{version, sha256}` and Section 5 explicitly tests extra active-plan keys as invalid, but disk verification reads `active_plan.path`. No conforming input can supply that path, so the real-data golden cannot perform the promised disk-resolved hash check. The plan must either include and validate a contained `path` field in the closed shape or specify another pinned, deterministic path source.",
+        "scope": "implementation-plan"
+      },
+      {
+        "claim": "The read-only oracle does not cover all ordinary static ESM loading forms. Restricting fs `import` declarations still permits a runtime module to use `export { writeFileSync as x } from 'node:fs'` or `export * from 'node:fs'`, after which another local runtime module can import and invoke the writer. This is a known static-module bypass, not an unenumerated evolving global covered by the NON-CLAIM. The oracle must inspect export-from declarations and include discriminating negative fixtures.",
+        "scope": "oracle"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2ye5Y70UU5U5a3KbYW8aTSk8oOtJ",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2ye5Y70UU5U5a3KbYW8aTSk8oOtJ",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}

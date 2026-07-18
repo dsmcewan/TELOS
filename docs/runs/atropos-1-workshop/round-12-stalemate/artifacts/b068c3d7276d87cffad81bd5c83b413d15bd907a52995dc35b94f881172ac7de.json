@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:53123b71829238fecc819277ed0981444c0f7a57117d0cc90ebea6c0c61be7fa",
+  "output_plan_artifact_hash": "sha256:53123b71829238fecc819277ed0981444c0f7a57117d0cc90ebea6c0c61be7fa",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:9ec998e4c60b87a311bd52bd75c31c60d5363abd4b775e290501e3ec5209cf8d",
+    "provenance_key": "anthropic:msg_011Cd9YGisAMfkhrx2xM8gbz"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:1efd85af50dc45c4d6659ce86de85f3b7d9b6d0a9b7e3cdd5bd2a513ed3905e2",
+    "provenance_key": "openai:chatcmpl-E2ye5Y70UU5U5a3KbYW8aTSk8oOtJ",
+    "bound_hash": "sha256:53123b71829238fecc819277ed0981444c0f7a57117d0cc90ebea6c0c61be7fa"
+  },
+  "objections": [
+    {
+      "claim": "The candidate declares the four plan-version retirements `consistent` without a `SUPERSEDED` record or `supersedes` edge, directly contradicting the frozen CHANGE-PROTOCOL requirement that retiring an artifact/plan uses all three surfaces. The cited build-mode design ruling cannot silently narrow that frozen requirement. If plan versions structurally cannot be represented as weave nodes, that is a frozen specification defect and must complete the prescribed Eye ruling → Daedalus delta → TELOS re-authorization path before this verifier can encode an exception.",
+      "scope": "plan-escalation",
+      "objection_hash": "sha256:274f22440150566b5b10a1efd5ed12f300b970300b08e0a3c0a362b4d4736b2a",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The active-plan schema and disk-resolution mechanism are internally contradictory. Section 3 requires `active_plan` to have exactly `{version, sha256}` and Section 5 explicitly tests extra active-plan keys as invalid, but disk verification reads `active_plan.path`. No conforming input can supply that path, so the real-data golden cannot perform the promised disk-resolved hash check. The plan must either include and validate a contained `path` field in the closed shape or specify another pinned, deterministic path source.",
+      "scope": "implementation-plan",
+      "objection_hash": "sha256:cb2dacac5def31dcc666e295cc93eea927d6f67595b4aa8cccab67b7c53601b5",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The read-only oracle does not cover all ordinary static ESM loading forms. Restricting fs `import` declarations still permits a runtime module to use `export { writeFileSync as x } from 'node:fs'` or `export * from 'node:fs'`, after which another local runtime module can import and invoke the writer. This is a known static-module bypass, not an unenumerated evolving global covered by the NON-CLAIM. The oracle must inspect export-from declarations and include discriminating negative fixtures.",
+      "scope": "oracle",
+      "objection_hash": "sha256:5949d5b803753df18d0e1413537f3bbfc65a0fb6f9dc9e075048f9ce6023e32b",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
