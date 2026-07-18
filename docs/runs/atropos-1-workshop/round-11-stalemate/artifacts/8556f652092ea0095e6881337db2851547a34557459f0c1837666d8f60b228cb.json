@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:9e6196d18c788cda08d2eccdc2b8e4c1c34cb7640b09176c59ea7e4b74697a5d",
+  "output_plan_artifact_hash": "sha256:9e6196d18c788cda08d2eccdc2b8e4c1c34cb7640b09176c59ea7e4b74697a5d",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:70791b0b81ef6ada1de9f6563f2449253ca9dab8588e9b2db1c0df004ae3041a",
+    "provenance_key": "anthropic:msg_011Cd9Xv79GrmJkjiS9MagTk"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:cc5f70a19b5e272872e90f4d11a5f0dc5b957008a6518540efad7bb0033cc735",
+    "provenance_key": "openai:chatcmpl-E2yZZBfiGh5Hf8qLHJHVM5M31k4Gg",
+    "bound_hash": "sha256:9e6196d18c788cda08d2eccdc2b8e4c1c34cb7640b09176c59ea7e4b74697a5d"
+  },
+  "objections": [
+    {
+      "claim": "`verify.mjs` treats a syntactically valid `sha256:<64hex>` as a verified terminal authority without resolving that digest against the plan bytes on disk. Consequently, an arbitrary or corrupted `active_plan.sha256`—and likewise a corrupted superseded-plan digest—can still produce `consistent`. The one-time enrollment integration with `verify-contracts.mjs` does not make the standalone runtime verdict sound after inputs change. Either verify the referenced plan bytes on every verdict or narrow the contract and output to structural consistency and remove the claim that terminal content-addressed authority was checked.",
+      "scope": "candidate/verifier",
+      "objection_hash": "sha256:22d16473a1f4bc1c28e013d3b2efaf14533027d1bc9a91c729b48c3ab396f252",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The specified oracle does not discriminate implementations that omit several normative checks in §3. The fixture list has no explicit negatives for malformed or empty `active_plan` fields, extra `active_plan` keys, malformed entry `sha256`, malformed `authorization`, invalid `authz_status`, empty `superseded_by`, or mistyped `note`; a generic “mistyped/extra key” fixture cannot establish every closed-shape and scalar rule. Because the contract is intended to become `NORMATIVE-CURRENT`, each independently load-bearing rule needs a targeted negative or a systematic field/type mutation matrix.",
+      "scope": "candidate/oracle",
+      "objection_hash": "sha256:10b32eea60921ee9243f95e373d42473ceb55f9d9178ef575fa3bfcbb2df7578",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "Discovery validates containment only for each manifest-declared root, not for every recursively discovered entry. A symlinked JSON file or descendant directory inside a contained memory root can resolve outside the repository and be read as an authoritative record source, violating the claimed closed input set. Discovery must lstat/realpath every traversed path, reject escaping or broken symlinks fail-closed, and include end-to-end fixtures for file- and directory-symlink escapes.",
+      "scope": "candidate/ingestion",
+      "objection_hash": "sha256:45be75b793497d6956c5f9ce3ec9618c7e8d96027389eabb2796df49c02ce984",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

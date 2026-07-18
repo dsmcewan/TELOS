@@ -1,4 +1,4 @@
-# Candidate approach (rev 11) — Atropos (enrollment quest, cycle 1)
+# Candidate approach (rev 12) — Atropos (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json`.
@@ -61,8 +61,13 @@ detecting via source+membership, not by matching the (distinct) record-kind and 
   authority is content-addressed by `active_plan.sha256`, so "sha256-anchored" is a checked fact, not a label).
   **unique `plan_version`**; `active_plan.version` MUST NOT also appear superseded; `must_not_govern_new_work===true`;
   `superseded_by` resolves only to `active_plan.version` or another unique superseded `plan_version` — reject
-  self/dangling/cycles (visited-set); every chain TERMINATES at `active_plan.version` whose `active_plan.sha256`
-  is a well-formed `sha256:<64hex>` (the content-addressed current authority). No `SUPERSEDED` record / weave edge required (structurally inapplicable).
+  self/dangling/cycles (visited-set); every chain TERMINATES at `active_plan.version`. **The terminal authority
+  is DISK-RESOLVED, not just syntactic: `active_plan.sha256` is RECOMPUTED over the on-disk active plan file
+  (`active_plan.path`, `sha256:` + `sha256hex(canonicalize({kind:"candidate", plan: <file text>}))` — the
+  frozen plan-hash scheme) and must equal the recorded digest; a corrupted/arbitrary `active_plan.sha256` →
+  `inconsistent`.** (NON-CLAIM: a SUPERSEDED entry's own `sha256` is syntax-checked only — historical
+  superseded-plan bytes are not re-fetched/present; Atropos does not resurrect retired plan files.) No
+  `SUPERSEDED` record / weave edge required for a plan-version (structurally inapplicable).
   **This CHANGE-PROTOCOL(living)/schema tension was EXPLICITLY ESCALATED to The Eye and RULED a design-level
   applicability determination** — plan-version weave-edge/record surfaces are structurally inapplicable
   (verified fact), not a spec defect, resolved as a technical call (peer-model input), NOT a CHANGE-PROTOCOL
@@ -101,9 +106,10 @@ Inputs are EXACT + closed (a verifier cannot silently omit a surface and still p
   (`docs/institutional-memory/**` + `docs/institutional-memory/manifest.json#entry_points.memory_dirs` — the
   enrolled components' memory dirs), NOT a hard-coded list, so a newly enrolled component's memory dir is
   automatically in scope (closes the "omitted new component" gap); `*.json` with `status === "SUPERSEDED"`.
-  **Each manifest-declared `memory_dir` is realpath-CONTAINED under the repo root (reject absolute paths, `..`
-  traversal, and symlinks resolving outside the repo — same policy as the snapshot path); a declared root that
-  escapes → throw (fail-closed).**
+  **Realpath-CONTAINMENT applies to EVERY recursively discovered entry — each declared `memory_dir` AND each
+  descendant subdirectory AND each `*.json` file — not just the declared roots: any entry whose realpath
+  resolves outside the repo (a symlinked file/dir, an escaping descendant) → throw (fail-closed), so a symlink
+  inside a contained root cannot smuggle in an outside record source.**
   **NON-CLAIM (completeness-of-universe):** Atropos verifies consistency over the manifest-authoritative
   inventory it is given; it does NOT independently prove no retirement exists OUTSIDE the manifest's declared
   roots — same honesty as the trust NON-CLAIM.
@@ -129,7 +135,11 @@ for The Eye).
 ## 5. Oracle + golden
 - `scripts/test-verify.mjs`: discriminating fixtures each FAIL a wrong impl — dangling/self/cyclic
   `superseded_by`; `active_plan.version` also superseded; `must_not_govern_new_work:false`; duplicate
-  `plan_version`; mistyped/extra key; a `SUPERSEDED`-record candidate + a `supersedes`-edge candidate (each →
+  `plan_version`; **a per-field negative for EACH pinned check — malformed/empty/extra-key `active_plan`;
+  `active_plan.sha256` that mismatches the on-disk plan bytes; malformed entry `sha256`; malformed
+  `authorization`; invalid `authz_status`; empty `superseded_by`; non-boolean/false `must_not_govern_new_work`;
+  non-string `note`** (each → `inconsistent`, so an impl omitting any check fails); mistyped/extra entry key; a
+  `SUPERSEDED`-record candidate + a `supersedes`-edge candidate (each →
   `UNREPRESENTABLE…`); a malformed `#superseded` entry (→ `UNSUPPORTED_RETIREMENT_KIND`); **a MULTI-HOP chain
   `v11→v13→v15` where v13 is itself a valid superseded entry → `consistent`** (discriminates transitive
   resolution — an impl requiring every `superseded_by`===`active_plan.version` FAILS this); a chain that does
