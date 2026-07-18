@@ -5,32 +5,36 @@
   "role": "approver",
   "docs_reviewed": [
     "docs/runs/atropos-1-workshop/candidate-approach.md",
-    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json"
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json",
+    "atropos/memory/CONTRACTS/supersession.json"
   ],
-  "proposal_ref": "sha256:ed8a921700a0d814b3f1e2c9fdd56f744f57cc32d84377682354ea363842eeb2",
+  "proposal_ref": "sha256:6451f5d970401492c6187b3fe14fe96ee424d20e993124ff5e90a20b32db42c4",
   "decision": "revise",
   "required_edits": [
-    "Revise §6 to record the actual deferred-ratification lifecycle: implementation and tests were produced under the build-mode directive before TELOS; `authz-N` and the authority triple are attached after ratification; normative activation and enrollment remain gated by the stated evidence and integration checks.",
-    "Remove the claim that the contract and comprehension artifact necessarily preceded implementation. If contemporaneous comprehension evidence actually preceded the build, cite and preserve it accurately; otherwise characterize the gate as post-build validation required before normative activation/enrollment, not as a historical preimplementation condition.",
-    "Replace or clarify `SPECIFIED-PENDING-IMPLEMENTATION` so it does not falsely describe already-built code as awaiting implementation, then recompute the candidate approach content address and resubmit the revised artifact for authorization."
+    "In `atropos/memory/CONTRACTS/supersession.json`, make `note:string` a mandatory member of the exact closed entry key set; add a dedicated negative fixture containing an otherwise-valid entry with only `note` omitted.",
+    "Replace the contract's classification text with the source-based union classification: valid `#superseded` entries are plan-version candidates, malformed `#superseded` entries are unknown, and candidates from `SUPERSEDED` records or `supersedes` edges are node-backed; state their respective inconsistent short-circuits.",
+    "Replace the contract's `<active_plan.path bytes>` hash wording with the exact string input and decoding behavior used by `verify.mjs`, matching the candidate plan's file-text hash scheme.",
+    "Set the contract status to `RATIFICATION-PENDING` and rewrite `becomes_normative_when` to require ratification and authority-triple attachment, preserved GRANTED comprehension evidence, passing named oracles, and completed `verify-contracts.mjs` enrollment integration before transition to `NORMATIVE-CURRENT`.",
+    "Regenerate any derived memory projections, rerun the complete Atropos and institutional-memory verification suites, and update affected assertion counts and content addresses in the resubmitted authorization packet."
   ],
   "hard_stops": [
-    "The hashed plan mandates a contract-with-authz → comprehension gate → implementation sequence, while the disclosed implementation and passing tests predate this deferred TELOS gate. Because `authz-N` could not have existed before this council, that mandatory chronology cannot be true as written."
+    "The candidate approach and the submitted normative contract currently prescribe incompatible verifier semantics, most directly whether `note` is mandatory and how candidates are source-classified.",
+    "The submitted contract claims `NORMATIVE-CURRENT` under a tests-only activation rule while the candidate approach says it must remain ratification-pending until the later activation prerequisites are completed."
   ],
   "confidence": "high",
-  "timestamp": "2026-07-18T16:53:09.357Z",
-  "rationale": "The technical cycle-1 verifier is coherent within its deliberately limited verification scope, and no expansion into mutation, node-backed verification, or authority authentication is warranted. The blocker is instead an internal provenance and lifecycle contradiction. The Eye's build-mode directive may legitimately authorize pre-ratification construction, but the plan must encode that exception and the actual ratification/enrollment sequence; an external honest-sequence note does not make the content-addressed plan's contrary mandatory order true. Approval means authorization as-is, so this cannot be treated as editorial.",
+  "timestamp": "2026-07-18T17:02:14.455Z",
+  "rationale": "The scoped cycle-1 design is coherent with the registered verification meaning, read-only trust posture, and explicit deferral of node-backed verification. Deferred ratification is not itself objectionable. Authorization nevertheless covers the artifacts as submitted, and they do not tell one normative story. The plan requires an exact seven-key superseded-entry shape with mandatory `note:string`; the contract allows `note` to be absent. The plan classifies node-backed candidates only from the record and edge sources, while the contract describes every `#superseded` entry as potentially node-backed and omits the source-union rule. The contract also describes the terminal hash input as path “bytes,” whereas the frozen plan hashes the file text supplied as the `plan` string to canonicalization. Most importantly, the contract's current status and activation clause contradict the plan's expressly pending ratification, authority-triple, comprehension, and enrollment sequence. Ratifying as-is would therefore authorize incompatible semantics and a premature lifecycle claim. These are localized, correctable defects rather than grounds to reject the underlying approach.",
   "provenance": {
     "provider": "openai",
     "model": "gpt-5.6-sol",
-    "response_id": "chatcmpl-E32ZllH0tjaPqFbYfJAeFV6sUBfhw",
+    "response_id": "chatcmpl-E32iWig3YawY8qNuL1pyuOnvhHWgc",
     "source": "ai-peer-mcp/codex_ask",
-    "answered_at": "2026-07-18T16:56:29.883Z",
+    "answered_at": "2026-07-18T17:06:13.222Z",
     "tool": "codex_ask"
   },
   "signature": {
     "alg": "HMAC-SHA256",
-    "value": "1e741f81603e3b35f7e13219470d1d703a826723c9d064c3913c6683609f2c12",
+    "value": "c65cff3d32977fd8cdab27ec8ca297e93609c411e99b281e643e5f4c6f657778",
     "signed_fields": "canonical-minus-signature"
   }
 }

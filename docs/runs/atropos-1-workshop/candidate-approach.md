@@ -56,7 +56,9 @@ detecting via source+membership, not by matching the (distinct) record-kind and 
   array; each entry has EXACTLY the closed keys with PINNED SCALAR TYPES: `plan_version` (non-empty string),
   `sha256` (string `sha256:<64hex>`), `authorization` (string `authz-N`), `authz_status`
   (string ∈ {AUTHORIZED, NOT_AUTHORIZED}), `superseded_by` (non-empty string), `must_not_govern_new_work`
-  (boolean, and === true), `note` (string) — an object/number/null/empty-string in any field → `inconsistent`;
+  (boolean, and === true), plus **`note` as the ONE OPTIONAL member of the closed key set** (string WHEN
+  PRESENT; absence is valid — the real data has 3 of 4 entries without it; wrong type → `inconsistent`) — an
+  object/number/null/empty-string in any REQUIRED field → `inconsistent`;
   **`active_plan` must HAVE `{version: non-empty string, sha256: sha256:<64hex>, path: repo-relative string}`**
   (the fields Atropos uses; the system's `active_plan` legitimately carries others e.g. `component` — Atropos
   validates the fields it consumes, it does NOT impose a closed shape on the system object). The terminal

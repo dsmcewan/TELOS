@@ -40,9 +40,11 @@ const { spawnMcpClient } = await imp("breakout/mcp_client.mjs");
 // ---------- bind the exact plan under authorization ----------
 const PLAN_PATH = "docs/runs/atropos-1-workshop/candidate-approach.md";
 const PREREVIEW_PATH = "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json";
-const EXPECTED_PLAN_REF = "sha256:ed8a921700a0d814b3f1e2c9fdd56f744f57cc32d84377682354ea363842eeb2";
-const REVIEWED_HEAD = "5da2f83"; // matured-approach.md committed head
+const EXPECTED_PLAN_REF = "sha256:6451f5d970401492c6187b3fe14fe96ee424d20e993124ff5e90a20b32db42c4";
+const REVIEWED_HEAD = "a615b59"; // matured-approach.md committed head
 
+const CONTRACT_PATH = "atropos/memory/CONTRACTS/supersession.json";
+const contractText = readFileSync(path.join(ROOT, CONTRACT_PATH), "utf8");
 const planText = readFileSync(path.join(ROOT, PLAN_PATH), "utf8");
 const planRef = "sha256:" + sha256hex(canonicalize({ kind: "candidate", plan: planText }));
 if (planRef !== EXPECTED_PLAN_REF) {
@@ -91,7 +93,7 @@ const dossier = {
   use_case: USE_CASE,
   objective: OBJECTIVE,
   proposal_ref: planRef,
-  required_docs: [PLAN_PATH, PREREVIEW_PATH, "atropos/memory/CONTRACTS/supersession.json"],
+  required_docs: [PLAN_PATH, PREREVIEW_PATH, CONTRACT_PATH],
   write_targets: WRITE_TARGETS,
   protected_paths: [],
   trust_mode: "signed"
@@ -102,7 +104,7 @@ const meta = {
   use_case: USE_CASE,
   proposal_ref: planRef,
   timestamp: TIMESTAMP,
-  docs_reviewed: [PLAN_PATH, PREREVIEW_PATH]
+  docs_reviewed: [PLAN_PATH, PREREVIEW_PATH, CONTRACT_PATH]
 };
 
 // ---------- strict packet schema (native structured output on every chat seat) ----------
@@ -164,7 +166,7 @@ function promptFor(model, _role, dsr) {
   return {
     tool: `${model}_ask`,
     args: {
-      prompt: `Objective:\n${OBJECTIVE}\n\n${FIELD_SEMANTICS}\n\n=== PLAN UNDER AUTHORIZATION (${PLAN_PATH}, ${planRef}) ===\n\n${planText}`,
+      prompt: `Objective:\n${OBJECTIVE}\n\n${FIELD_SEMANTICS}\n\n=== PLAN UNDER AUTHORIZATION (${PLAN_PATH}, ${planRef}) ===\n\n${planText}\n\n=== NORMATIVE CONTRACT UNDER AUTHORIZATION (${CONTRACT_PATH}) ===\n\n${contractText}`,
       system: `You are the ${model} seat on the TELOS authorization council. Judge the plan on the merits against the objective. Approve only what you would stake your seat's signature on. ${FIELD_SEMANTICS}`,
       model,
       max_tokens: 60000,

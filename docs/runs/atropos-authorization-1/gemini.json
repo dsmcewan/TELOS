@@ -5,21 +5,26 @@
   "role": "approver",
   "docs_reviewed": [
     "docs/runs/atropos-1-workshop/candidate-approach.md",
-    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json"
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json",
+    "atropos/memory/CONTRACTS/supersession.json"
   ],
-  "proposal_ref": "sha256:ed8a921700a0d814b3f1e2c9fdd56f744f57cc32d84377682354ea363842eeb2",
-  "decision": "approve",
-  "required_edits": [],
-  "hard_stops": [],
+  "proposal_ref": "sha256:6451f5d970401492c6187b3fe14fe96ee424d20e993124ff5e90a20b32db42c4",
+  "decision": "revise",
+  "required_edits": [
+    "Change 'status': 'NORMATIVE-CURRENT' to 'status': 'RATIFICATION-PENDING' in atropos/memory/CONTRACTS/supersession.json to align with the truthful sequence defined in Section 6."
+  ],
+  "hard_stops": [
+    "The submitted contract json prematurely claims NORMATIVE-CURRENT status, contradicting Section 6 which dictates it must reflect RATIFICATION-PENDING until authorization and the verify-contracts.mjs integration are completed."
+  ],
   "confidence": "high",
-  "timestamp": "2026-07-18T16:53:09.357Z",
-  "rationale": "The plan achieves the cycle-1 objective strictly within the bounds of the pre-review and repository trust model. Its zero-dependency, read-only constraints are rigorously defined and mechanically enforced by dedicated oracles (test-readonly, test-boundary). The deferral of node-backed retirement prevents speculative schema invention while providing a deterministic, verifiable short-circuit (UNREPRESENTABLE_CURRENT_AUTHORITY_REFLECTION). The treatment of active_plan content addressing through disk-resolution and the clear separation between file-level ingestion fail-states versus entry-level validation verdicts leave no remaining structural contradictions.",
+  "timestamp": "2026-07-18T17:02:14.455Z",
+  "rationale": "The technical plan is exceptionally rigorous and perfectly meets the objective's verification, read-only, and boundary constraints. The strategic deferral of node-backed surface representation and identity extraction correctly avoids previous schema and architectural traps. The implementation of the read-only executable oracle using an import allowlist is robust and defensively sound. However, the plan's own rules in Section 6 strictly enforce a truthful historical sequence regarding post-build validation, explicitly requiring the contract to be in a RATIFICATION-PENDING state during this council review. The provided contract artifact violates this self-imposed constraint by arriving with a NORMATIVE-CURRENT status. Reverting this value ensures the lifecycle state remains truthful and transitions only after authorization and integration are formally complete.",
   "provenance": {
     "provider": "google",
     "model": "gemini-3.1-pro-preview",
-    "response_id": "dq9barvrOOPVz7IP7v-hwQg",
+    "response_id": "mLFbavDvDZnAqtsPhNuY-QM",
     "source": "ai-peer-mcp/gemini_ask",
-    "answered_at": "2026-07-18T16:53:19.679Z",
+    "answered_at": "2026-07-18T17:02:38.275Z",
     "tool": "gemini_ask"
   }
 }

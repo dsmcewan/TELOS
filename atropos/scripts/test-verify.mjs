@@ -35,6 +35,7 @@ inconsistent((a) => { a.superseded[0].bogus = 1; }, "unexpected key");
 inconsistent((a) => { delete a.superseded[0].authorization; }, "missing required key");
 inconsistent((a) => { a.superseded[0].sha256 = "deadbeef"; }, "malformed sha256");
 inconsistent((a) => { a.superseded[0].authz_status = "MAYBE"; }, "bad authz_status");
+inconsistent((a) => { a.superseded[0].note = 42; }, "note wrong type (optional member, string when present)");
 inconsistent((a) => { a.superseded[1].plan_version = "v11"; }, "duplicate plan_version");
 inconsistent((a) => { a.superseded[0].superseded_by = "v11"; }, "self-supersession");
 inconsistent((a) => { a.superseded[0].superseded_by = "v99"; }, "dangling superseded_by");

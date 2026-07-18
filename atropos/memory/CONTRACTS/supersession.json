@@ -3,32 +3,37 @@
   "component": "atropos",
   "id": "atropos-supersession",
   "title": "Atropos read-only supersession-consistency verifier — frozen semantics over CURRENT-AUTHORITY#superseded",
+  "lifecycle_note": "DEFERRED RATIFICATION (build-mode, The Eye's recorded directive): the implementation and this contract were produced BEFORE the TELOS gate; the council ratifies or rejects the plan-as-implemented. This contract does not claim documentation preceded code.",
   "authority": {
     "pre_review": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json",
     "design_ruling": "docs/runs/atropos-1-workshop/design-ruling-surface-applicability.json",
-    "note": "read-only verifier (The Eye's ruling); per-entity-kind surface scope + design-not-governance classification resolved via peer-model (codex) collaboration adopted as The Eye's ruling"
+    "plan_ref": "PENDING-RATIFICATION: the content address of docs/runs/atropos-1-workshop/candidate-approach.md at authorization",
+    "authorization": "PENDING-RATIFICATION: authz-atropos-1 attaches when the council authorizes",
+    "decision": "PENDING-RATIFICATION: decision-atropos-cycle-1 content address attaches post-ratification",
+    "note": "read-only verifier (The Eye's ruling); per-entity-kind surface scope resolved via peer-model (codex) collaboration adopted as The Eye's ruling"
   },
-  "input": "CURRENT-AUTHORITY.json (read as data). Populated supersession surface = #superseded (plan-version retirements). Node-backed surfaces (SUPERSEDED records, weave supersedes edges) are 0 and DEFERRED.",
-  "classification": "each #superseded entry -> plan-version | node-backed (UNREPRESENTABLE, deferred) | unknown (UNSUPPORTED_RETIREMENT_KIND)",
+  "input": "CURRENT-AUTHORITY.json (read as data). Populated supersession surface = #superseded (plan-version retirements: 4 real entries v11-v14 -> active v15). Node-backed surfaces (SUPERSEDED records, weave supersedes edges) are 0 in current data and DEFERRED.",
+  "classification": "source-based union over candidates: a VALID #superseded entry (closed shape below) -> plan-version; a MALFORMED #superseded entry -> unknown -> verdict `inconsistent` with UNSUPPORTED_RETIREMENT_KIND; a candidate from a SUPERSEDED record or a `supersedes` weave edge -> node-backed -> verdict `inconsistent` with UNREPRESENTABLE_CURRENT_AUTHORITY_REFLECTION (deferred cycle-1 short-circuit).",
+  "entry_shape": "EXACTLY the closed key set {plan_version: non-empty string, sha256: sha256:<64hex>, authorization: authz-N, authz_status: AUTHORIZED|NOT_AUTHORIZED, superseded_by: non-empty string, must_not_govern_new_work: === true} plus `note` as the ONE OPTIONAL member (string WHEN PRESENT; absence valid — 3 of 4 real entries carry no note; wrong type -> inconsistent). Any missing/mistyped required key or unexpected key -> inconsistent.",
   "normative_verdict": {
     "scope": "plan-version consistency",
     "checks": [
-      "closed entry shape {plan_version, sha256:<64hex>, authorization:authz-N, authz_status:AUTHORIZED|NOT_AUTHORIZED, superseded_by, must_not_govern_new_work===true} + optional note:string",
+      "closed entry shape as in entry_shape",
       "unique plan_version; active_plan.version not itself superseded",
-      "superseded_by resolves with no self / dangling / cycle; chain terminates at active_plan.version",
-      "terminal authority: active_plan.sha256 == sha256:sha256hex(canonicalize({kind:'candidate',plan:<active_plan.path bytes>})), realpath-contained",
-      "file-level anomalies throw; malformed individual entries -> inconsistent (never silent-skip)"
+      "superseded_by resolves with no self / dangling / cycle; every chain terminates at active_plan.version",
+      "terminal authority DISK-RESOLVED: verify.mjs reads active_plan.path (realpath-contained under the repo root, regular file) as UTF-8 TEXT via readFileSync(path,'utf8'), computes 'sha256:'+sha256hex(canonicalize({kind:'candidate',plan:<that text>})) with the sanctioned merkle-dag/vendor.mjs primitives, and requires exact equality with active_plan.sha256",
+      "file-level anomalies throw; malformed individual entries -> verdict `inconsistent` (never silent-skip)"
     ],
-    "golden": "the real 4 entries (v11 authz-004 NOT_AUTHORIZED, v12 authz-005, v13 authz-006, v14 authz-007 NOT_AUTHORIZED) all superseded_by v15 (active) -> `consistent`"
+    "golden": "the real 4 entries (v11 authz-004 NOT_AUTHORIZED, v12 authz-005, v13 authz-006, v14 authz-007 NOT_AUTHORIZED w/ note) all superseded_by v15 (active) -> `consistent`"
   },
   "advisory": "read-only report (retired versions + deferred/unknown); input to TELOS/The Eye, never enforced. Atropos never mutates CURRENT-AUTHORITY.",
   "oracle": {
     "source_of_truth": "atropos/verify.mjs",
-    "test": "atropos/scripts/test-verify.mjs (golden real authority + per-defect negatives) + atropos/scripts/test-readonly.mjs (executable read-only static scan); `npm test` in atropos/ (31 assertions)"
+    "test": "atropos/scripts/test-verify.mjs (golden real authority + per-defect negatives incl. wrong-type note) + atropos/scripts/test-readonly.mjs (executable read-only static scan); `npm test` in atropos/"
   },
-  "becomes_normative_when": "atropos/scripts/test-verify.mjs and test-readonly.mjs pass (met)",
+  "becomes_normative_when": "ALL of: (1) the deferred-ratification council AUTHORIZES and the authority triple {plan sha256, authz-atropos-1, decision-atropos-cycle-1 id} attaches above; (2) the comprehension gate over atropos/memory/comprehension-queries.json returns GRANTED with negatives DENIED, preserved as docs/runs/atropos-1/reader-validation-artifact.json; (3) the named oracles pass; (4) verify-contracts.mjs enrollment integration completes (the atropos manifest entry + the future-atropos-unimplemented -> implemented flip). Until then this contract is RATIFICATION-PENDING.",
   "change_rule": "Any change to the verifier semantics or the surface scope requires a plan amendment (Daedalus) + TELOS re-authorization + updated oracle + adversarial review.",
   "normativity": "NORMATIVE",
-  "status": "NORMATIVE-CURRENT",
+  "status": "RATIFICATION-PENDING",
   "must_not_govern_new_work": false
 }
