@@ -1,0 +1,63 @@
+{
+  "codex": {
+    "name": "codex",
+    "ok": false,
+    "reason": "fetch failed"
+  },
+  "grok": {
+    "name": "grok",
+    "ok": true,
+    "objections": [
+      {
+        "scope": "lachesis/measure.mjs:reverseToDepth / blastRadius; lachesis/scripts/test-metrics.mjs smoke",
+        "claim": "Smoke's blastRadius assertion is tautological for any correct reverseDepends: given edges.find(depends-on).to, the edge's own from is always a 1-hop reverse dependent, so count>=1 holds for every non-empty depends-on graph and does not pin real snapshot blast semantics, multi-hop reachability, or non-trivial radius.",
+        "severity": "high"
+      },
+      {
+        "scope": "lachesis/measure.mjs:riskClass (rel thresholds 0.33/0.66) ; lachesis/scripts/test-metrics.mjs",
+        "claim": "Oracles never discriminate relevance-driven riskClass. Threshold fixtures force relevance low via a dominant distractor and only pin blast cutovers (3/10) plus the coverage floor; an implementation with wrong byRel cutoffs, wrong max(byBlast,byRel) combine, or relevance omitted from class entirely still passes all 41 assertions.",
+        "severity": "high"
+      },
+      {
+        "scope": "lachesis/ingest.mjs:loadWeave record loop",
+        "claim": "Thread-ledger structure is not enforced: header/trailer may appear anywhere, repeat, or interleave; later header lines overwrite pub_key; edges before header or after trailer are accepted. A non-ledger JSONL with the pinned digest and any mid-stream clotho_weave_header/trailer shapes loads successfully—format semantics reduced to 'some header object + some trailer key + edges'.",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/measure.mjs dependencies/blastRadius/relevance vs EDGE_KINDS supersedes/discharges",
+        "claim": "Metrics treat the snapshot as a live multigraph of every accepted edge. supersedes/discharges are ingested then ignored, so historically retired depends-on/verified-by/introduced-by edges still inflate transitive closures, blast radius, weighted in-degree, and riskClass. If the ledger retains superseded edges (name: thread-ledger), measured graph ≠ current weave semantics.",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/ingest.mjs:loadWeave node map write",
+        "claim": "First-seen locator kind wins: if the same bare-hex id reappears with a different loc.kind, the conflict is silently dropped (no throw, no last-write). Fail-closed ingestion claim is false for node/locator identity consistency; nodes Map can disagree with later edges.",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/scripts/test-metrics.mjs transitivity + cycle fixtures",
+        "claim": "Transitivity only asserts dependencies(1).size===2 and blastRadius(3).count===2 (not membership {2,3}/{1,2}). Cycle fixture only checks dependencies self-exclusion, never blastRadius cycle termination/self-exclusion or longer cycles. Wrong closures of equal cardinality, or a broken reverseToDepth that still finishes on acyclic fixtures, pass.",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/ingest.mjs:loadWeave(manifest) vs snapshotPath",
+        "claim": "Trust pin is only snapshot_digest over caller-supplied snapshotPath bytes; manifest.snapshot_path is required then never compared to the path actually read. Manifest cannot bind which path is authoritative—only digest equality—so path/manifest drift is silently allowed whenever contents match (or whenever the caller computes a fresh manifest).",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/ingest.mjs:loadWeave trailer handling",
+        "claim": "Trailer is any JSON object with clotho_weave_trailer !== undefined; body ignored. No check that trailer edge_count/record_count (if present in the real ledger) matches edges.length, so structural trailer claims cannot detect truncated/appended edge sets under a co-updated digest pin.",
+        "severity": "low"
+      },
+      {
+        "scope": "lachesis/scripts/test-metrics.mjs depth + assess surface",
+        "claim": "blastRadius's depth parameter (hop-limited BFS) is never called with finite depth; RISK_BLAST_DEPTH/Infinity path is the only one exercised. assess() is entirely untested. Finite-depth off-by-one or assess field-shape regressions are invisible to the oracle suite.",
+        "severity": "low"
+      },
+      {
+        "scope": "lachesis/ingest.mjs:seenEdge key",
+        "claim": "Edge identity is only (edge_kind,from_node,to_node). Duplicate logical edges with different source_ref are rejected. If the real contract allows multi-attested parallel edges under distinct source_refs, lawful snapshots fail closed; if not, metrics would have double-counted had ingest allowed them—either way the identity rule is un-pinned by tests beyond exact duplicate rows.",
+        "severity": "low"
+      }
+    ]
+  }
+}
