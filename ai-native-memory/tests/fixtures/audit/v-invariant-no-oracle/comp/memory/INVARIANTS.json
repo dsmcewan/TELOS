@@ -1,0 +1,3 @@
+[
+  { "id": "inv-read-only", "kind": "invariant", "statement": "The component never writes.", "normativity": "NORMATIVE", "status": "NORMATIVE-CURRENT" }
+]
