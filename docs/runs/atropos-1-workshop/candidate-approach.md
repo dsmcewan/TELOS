@@ -29,6 +29,11 @@ cross-checks, the committed weave snapshot + the record set) as DATA. Sole sanct
 `scripts/test-boundary.mjs` (reuse the Lachesis oracle design). **READ-ONLY**: Atropos detects/verifies; it
 does NOT mutate `CURRENT-AUTHORITY`, retire records, or delete anything (supersession, never deletion).
 
+**NON-CLAIM (The Eye ruling, cycle 1):** Atropos realizes the **VERIFICATION** of the registered "retires"
+meaning, NOT the mutation. It does NOT perform retirement: authoring a supersession — marking a record
+`SUPERSEDED`, writing the `supersedes` edge, updating `CURRENT-AUTHORITY` — remains a human/controller
+CHANGE-PROTOCOL step. Atropos only checks that an already-performed retirement is consistent, and reports.
+
 ## 2. Ingestion (fail-closed) — `atropos/ingest.mjs#loadSupersession(currentAuthority)`
 - `#superseded` must be an array; each entry must have EXACTLY the closed key set with correct types
   (`plan_version` string, `sha256` `sha256:<64hex>`, `authorization` `authz-N`, `authz_status` ∈
@@ -71,14 +76,13 @@ minted at the TELOS gate); `DECISIONS/` (affirmative + `rejected-alternatives.md
 weave/record cross-checks are advisory + empty in current data); `FAILURE-MODES.md`; `EVIDENCE/`;
 `comprehension-queries.json`; `README.md`. `package.json`: `"type":"module"`, `dependencies` empty.
 
-## 7. Open questions (HELD for The Eye — do not decide unilaterally)
-1. **Verb: verify vs. act.** Registered meaning "retires" (action) vs. the repo's human/controller
-   CHANGE-PROTOCOL retirement + Atropos-as-bookkeeping framing. RECOMMEND cycle-1 = read-only consistency
-   verifier + advisory report. Confirm, or does The Eye want Atropos to mutate `CURRENT-AUTHORITY`?
-2. **Surface set.** `CURRENT-AUTHORITY#superseded` as primary/NORMATIVE; weave `supersedes` + record
-   `SUPERSEDED` as ADVISORY cross-checks (both empty). Confirm.
-3. **Data sparsity.** Real substrate = only the 4 `#superseded` entries + synthetic fixtures. Acceptable for
-   cycle-1, or wait for more real supersession?
+## 7. Rulings (The Eye, 2026-07-18 — resolved; no longer open)
+1. **Verb = READ-ONLY VERIFIER.** Atropos DETECTS + VERIFIES supersession consistency; it NEVER mutates
+   `CURRENT-AUTHORITY`. Cycle-1 realizes the **VERIFICATION** of the registered "retires" meaning, NOT the
+   mutation — see the explicit NON-CLAIM in §1.
+2. **Surface set = as recommended.** `CURRENT-AUTHORITY#superseded` is the NORMATIVE surface; the (empty) weave
+   `supersedes` + record `SUPERSEDED` surfaces are ADVISORY cross-checks.
+3. **Timing = "follow the system."** Build cycle-1 now on the 4 real `#superseded` entries + synthetic fixtures.
 
 ## 8. Non-goals (cycle 1)
 No mutation of `CURRENT-AUTHORITY`/records (read-only); no deletion; no enforcement gate; no `import` of
