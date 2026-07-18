@@ -21,7 +21,8 @@
 export const RISK_BLAST_DEPTH = Infinity; // full transitive reverse closure — depth-deterministic
 
 function requireKnown(weave, nodeId) {
-  if (!weave || !(weave.nodes instanceof Map) || !weave.nodes.has(nodeId)) {
+  // duck-typed: loadWeave returns a frozen { has, size } node view; tests may pass a Map. Both expose has().
+  if (!weave || !weave.nodes || typeof weave.nodes.has !== "function" || !weave.nodes.has(nodeId)) {
     throw new Error(`measure: unknown node id (not present in weave): ${String(nodeId).slice(0, 12)}…`);
   }
 }

@@ -25,6 +25,11 @@ function stripComments(src) {
 export function violations(rawSource, fileDir) {
   const source = stripComments(rawSource);
   const v = [];
+  // fail-closed RAW scan for the string-in-comment evasion (const a="/*"; import x from "clotho/..";
+  // const b="*/"), which comment-stripping would erase: flag a clotho/ specifier in an import/require
+  // POSITION in the raw source. (Comment-BETWEEN cases like `from /*c*/ "clotho/.."` are caught by the
+  // comment-stripped scan below.) Narrow to specifier position so prose comments don't false-positive.
+  if (/(?:\bfrom|\bimport|\brequire|_load)\s*\(?\s*["'][^"']*clotho\//.test(rawSource)) v.push("clotho/ import specifier in raw source (fail-closed)");
   // out-of-profile dynamic/computed loading -> FAIL CLOSED (never silently allowed)
   if (/\bimport\s*\(/.test(source)) v.push("dynamic import()");
   if (/\brequire\s*\(/.test(source)) v.push("require()");
@@ -56,16 +61,24 @@ function runtimeFiles(dir) {
   const out = [];
   for (const ent of readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, ent.name);
+    if (ent.isSymbolicLink()) { out.push(["SYMLINK", full]); continue; } // flagged: not followed
     if (ent.isDirectory()) { if (ent.name !== "scripts" && ent.name !== "node_modules") out.push(...runtimeFiles(full)); }
-    else if (ent.name.endsWith(".mjs")) out.push(full);
+    else if (/\.(mjs|js|cjs)$/.test(ent.name)) out.push(full);
   }
   return out;
 }
 const runtime = runtimeFiles(PKG);
-ok(runtime.length >= 2, `runtime surface discovered (${runtime.length} .mjs files)`);
+ok(runtime.length >= 2, `runtime surface discovered (${runtime.length} entries)`);
 for (const f of runtime) {
+  if (Array.isArray(f)) { ok(false, `runtime symlink present (not followed): ${path.relative(PKG, f[1])}`); continue; }
   const v = violations(readFileSync(f, "utf8"), path.dirname(f));
   ok(v.length === 0, `runtime ${path.relative(PKG, f)} clean (got: ${v.join("; ")})`);
+}
+// the ONE sanctioned external module (merkle-dag/vendor.mjs) must itself import only node: builtins
+{
+  const vsrc = readFileSync(SANCTIONED, "utf8");
+  const vv = violations(vsrc, path.dirname(SANCTIONED)).filter((x) => !/vendor\.mjs|within the package/.test(x));
+  ok(vv.length === 0, `sanctioned vendor.mjs imports only node: builtins (got: ${vv.join("; ")})`);
 }
 
 // 2) discriminating NEGATIVE fixtures — each MUST be flagged

@@ -1,0 +1,63 @@
+{
+  "codex": {
+    "name": "codex",
+    "ok": true,
+    "objections": [
+      {
+        "claim": "`HEX64` uses `$`, which in JavaScript matches before a final line terminator. Consequently `from_node`, `to_node`, `prev_hash`, and `record_hash` values consisting of 64 hex characters followed by `\\n` are accepted. Such node IDs are then distinct Map keys from the actual bare-hex ID and can bypass the exact self-edge comparison. Several `SOURCE_REF_SCHEMES` have the same terminal-newline defect.",
+        "scope": "ingest.mjs: `HEX64`, `SOURCE_REF_SCHEMES`, `hasSignedFields()`, and node-ID validation in `loadWeave()`",
+        "severity": "high"
+      },
+      {
+        "claim": "Locator validation checks only that the locator is an object with a registered `kind`. It accepts malformed identities such as `{ \"kind\": \"code-symbol\" }`, arbitrary payload types, and arbitrary extra identity-bearing fields, without enforcing the real per-kind locator schema. The resulting structural bijection therefore need not be a bijection over valid Clotho locators at all.",
+        "scope": "ingest.mjs: locator loop inside `loadWeave()`",
+        "severity": "high"
+      },
+      {
+        "claim": "`canonKey()` is not actually consistent with the stated `isDeepStrictEqual` semantics. For example, `canonKey(-0) === canonKey(0)`, while `isDeepStrictEqual(-0, 0)` is false; parsed overflow numbers such as `1e400` also serialize as `null` and collide with actual null. Because canonical JSON is not enforced, these values can reach this code and cause false reverse-bijection conflicts.",
+        "scope": "ingest.mjs: `canonKey()` and reverse locator-bijection check",
+        "severity": "medium"
+      },
+      {
+        "claim": "Trailer recognition accepts any non-`undefined` value. A final signed record with `\"clotho_weave_trailer\": null`, a string, or a number is accepted as the trailer, and any edge fields on that record are silently ignored. The trailer payload is never validated as an object or checked for its required structural metadata. Similarly, edge records can carry a falsey reserved `clotho_weave_header` member without rejection.",
+        "scope": "ingest.mjs: header/trailer dispatch in `loadWeave()`",
+        "severity": "high"
+      },
+      {
+        "claim": "The documented canonical-JSONL boundary is not enforced. `Buffer.toString(\"utf8\")` silently replaces invalid UTF-8, `JSON.parse` accepts duplicate object keys using last-key-wins semantics, and filtering all empty lines accepts leading/interior blank records while changing physical line numbering. A digest-pinned but noncanonical or parser-ambiguous ledger can therefore be accepted as a weave snapshot.",
+        "scope": "ingest.mjs: buffer decoding and `split(\"\\n\").filter(...)`/`JSON.parse` processing",
+        "severity": "medium"
+      },
+      {
+        "claim": "The digest-validated snapshot is returned as fully mutable Maps, arrays, edge objects, and locator objects. Callers can add/remove edges or nodes after `loadWeave()` and before measurement, and `measure.mjs` performs no branding or invariant revalidation beyond checking that the queried ID is in a Map. Metrics can therefore be reported over data that no longer corresponds to the pinned committed bytes.",
+        "scope": "ingest.mjs: `loadWeave()` return value; measure.mjs: `requireKnown()` and all metric entry points",
+        "severity": "high"
+      },
+      {
+        "claim": "The path containment check has a check/use race: `realpathSync()` establishes containment, but `readFileSync(snapshotPath)` later reopens the pathname rather than the already-validated file descriptor. A symlink or ancestor-directory swap between those operations can make the read target leave `rootDir`. The digest limits substitution to matching content but does not uphold the asserted path boundary.",
+        "scope": "ingest.mjs: `realpathSync()` containment followed by `readFileSync(snapshotPath)`",
+        "severity": "low"
+      },
+      {
+        "claim": "The boundary oracle's comment stripping is not string-aware and can erase a real forbidden import. For example, valid module source containing `const a=\"/*\"; import x from \"../../clotho/query.mjs\"; const b=\"*/\";` has the import removed by `stripComments()` before scanning and passes. Similar evasions exist with `//` inside string or template literals, contradicting the fail-closed claim.",
+        "scope": "scripts/test-boundary.mjs: `stripComments()` and `violations()`",
+        "severity": "high"
+      },
+      {
+        "claim": "The boundary traversal is not transitive over all executable sources. Relative imports to in-package `.js`/`.cjs` files are allowed, but only `.mjs` files are scanned; symlinked source entries are also skipped by `runtimeFiles()`, while lexical `path.resolve()` treats an in-package symlink to outside code as allowed. The sanctioned external `vendor.mjs` is likewise allowed without scanning its imports. Any of these paths can import or load Clotho while the oracle remains green.",
+        "scope": "scripts/test-boundary.mjs: `runtimeFiles()` and relative-import handling in `violations()`",
+        "severity": "high"
+      },
+      {
+        "claim": "The relevance oracle does not discriminate the claimed zero weight for every other edge kind: it tests only `documented-in`. An implementation that incorrectly gives weight to `motivated-by`, `evidenced-by`, `discharges`, or `supersedes` can pass the isolated semantic tests, and the two golden-node assertions do not establish that property for arbitrary graphs.",
+        "scope": "scripts/test-metrics.mjs: relevance-orientation tests",
+        "severity": "low"
+      }
+    ]
+  },
+  "grok": {
+    "name": "grok",
+    "ok": false,
+    "reason": "fetch failed"
+  }
+}

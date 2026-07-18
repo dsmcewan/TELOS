@@ -16,11 +16,16 @@
 //  * Does NOT verify the Clotho record-hash chain, Ed25519 signatures, header pub_key, or trailer
 //    cryptography — those fields are checked for PRESENCE only.
 //  * These checks are NOT equivalent to Clotho validation or deriveNodeId validation.
+//  * Does NOT enforce a full per-KIND locator field schema (only: locator payload present + non-empty
+//    object); the locator<->id bijection is over structural locator values, not validated Clotho identities.
+//  * The realpath->open TOCTOU window is narrowed (fd read) but not eliminated; the digest still bounds
+//    substitution to matching content.
 
-import { readFileSync, realpathSync } from "node:fs";
+import { readFileSync, realpathSync, openSync, fstatSync, closeSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import path from "node:path";
+import { canonicalize } from "../merkle-dag/vendor.mjs"; // sanctioned reuse (boundary allowlist)
 
 // Closed Clotho sets — FROZEN mirror of clotho/registry.mjs@ed0e05c034317331e874ac511c4182580c192620
 // (Lachesis cannot import the spine). change_rule: re-sync if Clotho's sets change.
@@ -63,7 +68,14 @@ export function loadWeave(manifest, rootDir) {
   if (snapshotPath !== realRoot && !snapshotPath.startsWith(realRoot + path.sep)) {
     throw new Error(`loadWeave: snapshot_path escapes rootDir: ${manifest.snapshot_path}`);
   }
-  const buf = readFileSync(snapshotPath);
+  // read via an fd of the realpath-validated file (narrows the realpath->read TOCTOU window;
+  // residual race remains a NON-CLAIM). fstat confirms a regular file.
+  const fd = openSync(snapshotPath, "r");
+  let buf;
+  try {
+    if (!fstatSync(fd).isFile()) throw new Error("loadWeave: snapshot is not a regular file");
+    buf = readFileSync(fd);
+  } finally { closeSync(fd); }
   if (rawDigest(buf) !== manifest.snapshot_digest) throw new Error(`snapshot digest mismatch (pinned ${manifest.snapshot_digest})`);
 
   const lines = buf.toString("utf8").split("\n").filter((l) => l.length > 0);
@@ -76,18 +88,22 @@ export function loadWeave(manifest, rootDir) {
   for (let i = 0; i < lines.length; i++) {
     let r;
     try { r = JSON.parse(lines[i]); } catch { throw new Error(`line ${i + 1}: unparseable JSON`); }
-    if (!r || typeof r !== "object" || Array.isArray(r)) throw new Error(`line ${i + 1}: record must be a JSON object`);
+    if (r === null || typeof r !== "object" || Array.isArray(r)) throw new Error(`line ${i + 1}: record must be a JSON object`);
+    // canonical-JSON enforcement (matches Clotho's ledger discipline): the line must equal the
+    // canonical serialization of its parse — rejects duplicate keys, non-canonical whitespace/order.
+    if (canonicalize(r) !== lines[i]) throw new Error(`line ${i + 1}: not canonical JSON`);
     // structure: header FIRST and only (lone key), trailer LAST and only, edges strictly between
     if (i === 0) {
-      if (!r.clotho_weave_header || Object.keys(r).length !== 1) throw new Error("line 1: first record must be a lone clotho_weave_header");
+      if (!("clotho_weave_header" in r) || Object.keys(r).length !== 1) throw new Error("line 1: first record must be a lone clotho_weave_header");
       header = r.clotho_weave_header;
-      if (!header || typeof header.pub_key !== "string") throw new Error("line 1: header missing pub_key");
+      if (!header || typeof header !== "object" || typeof header.pub_key !== "string") throw new Error("line 1: header missing pub_key");
       if (header.weave_version !== 1) throw new Error(`line 1: unsupported weave_version ${JSON.stringify(header.weave_version)}`);
       continue;
     }
-    if (r.clotho_weave_header) throw new Error(`line ${i + 1}: misplaced/duplicate header`);
-    if (r.clotho_weave_trailer !== undefined) {
+    if ("clotho_weave_header" in r) throw new Error(`line ${i + 1}: misplaced/duplicate header`);
+    if ("clotho_weave_trailer" in r) {
       if (i !== lines.length - 1) throw new Error(`line ${i + 1}: trailer must be the last record`);
+      if (typeof r.clotho_weave_trailer !== "object" || r.clotho_weave_trailer === null) throw new Error(`line ${i + 1}: trailer body must be an object`);
       if (!hasSignedFields(r)) throw new Error(`line ${i + 1}: trailer missing signed-ledger fields`);
       trailer = r;
       continue;
@@ -101,6 +117,10 @@ export function loadWeave(manifest, rootDir) {
     for (const [n, loc] of [[r.from_node, r.from_locator], [r.to_node, r.to_locator]]) {
       if (!HEX64.test(n)) throw new Error(`line ${i + 1}: node id not bare 64-hex`);
       if (!loc || typeof loc !== "object" || !NODE_KIND_SET.has(loc.kind)) throw new Error(`line ${i + 1}: bad/unknown node locator kind`);
+      // locator PAYLOAD must be present + a non-empty object (NON-CLAIM: full per-kind field schema is future)
+      if (!loc.locator || typeof loc.locator !== "object" || Array.isArray(loc.locator) || Object.keys(loc.locator).length === 0) {
+        throw new Error(`line ${i + 1}: locator payload missing/empty`);
+      }
       // bijection — forward: one id must always carry a structurally-equal locator
       if (nodes.has(n)) {
         if (!isDeepStrictEqual(nodes.get(n), loc)) throw new Error(`line ${i + 1}: same node id ${n.slice(0, 8)} with structurally-unequal locators`);
@@ -124,5 +144,9 @@ export function loadWeave(manifest, rootDir) {
 
   if (!header) throw new Error("missing clotho_weave_header");
   if (!trailer) throw new Error("missing clotho_weave_trailer");
-  return { header, nodes, edges };
+  // freeze the digest-validated weave so callers cannot mutate edges/nodes before measurement
+  for (const e of edges) Object.freeze(e);
+  const idSet = new Set(nodes.keys());
+  const frozenNodes = Object.freeze({ has: (id) => idSet.has(id), get size() { return idSet.size; }, ids: () => [...idSet] });
+  return Object.freeze({ header, nodes: frozenNodes, edges: Object.freeze(edges) });
 }

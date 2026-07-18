@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadWeave, EDGE_KINDS } from "../ingest.mjs";
 import { dependencies, blastRadius, relevance, riskClass, assess } from "../measure.mjs";
+import { canonicalize } from "../../merkle-dag/vendor.mjs"; // fixtures must be canonical for the loader
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "../..");
@@ -60,13 +61,15 @@ const wv = (edges) => {
 }
 // ---- relevance orientation (codex formula: depends-on->TO, verified-by/introduced-by->FROM; others 0) ----
 {
-  const w = wv([e(1, 2, "depends-on"), e(3, 4, "verified-by"), e(5, 6, "introduced-by"), e(7, 8, "documented-in")]);
+  const w = wv([e(1, 2, "depends-on"), e(3, 4, "verified-by"), e(5, 6, "introduced-by"),
+    e(7, 8, "documented-in"), e(9, 10, "motivated-by"), e(11, 12, "evidenced-by"), e(13, 14, "discharges"), e(15, 16, "supersedes")]);
   ok(relevance(w, hid(2)) === 1, "relevance: depends-on credits TO (node2 raw3, M3 -> 1.0)");
   ok(Math.abs(relevance(w, hid(3)) - 2 / 3) < 1e-12, "relevance: verified-by credits FROM (node3 raw2 -> 2/3)");
   ok(Math.abs(relevance(w, hid(5)) - 1 / 3) < 1e-12, "relevance: introduced-by credits FROM (node5 raw1 -> 1/3)");
   ok(relevance(w, hid(1)) === 0, "relevance: depends-on FROM endpoint gets 0");
   ok(relevance(w, hid(4)) === 0, "relevance: verified-by TO endpoint gets 0");
-  ok(relevance(w, hid(8)) === 0, "relevance: documented-in contributes 0 (catches count-all-kinds)");
+  // EVERY other edge kind contributes 0 on BOTH endpoints (catches a count-all-kinds regression)
+  for (const n of [7, 8, 9, 10, 11, 12, 13, 14, 15, 16]) ok(relevance(w, hid(n)) === 0, `relevance: zero-weight kind endpoint ${n} -> 0`);
 }
 // ---- blast DRIVES the class; relevance does NOT feed it ----
 {
@@ -139,7 +142,7 @@ const tmp = mkdtempSync(path.join(tmpdir(), "lachesis-fx-"));
 let fxN = 0;
 function fixture(objs) {
   const name = `fx${fxN++}.jsonl`;
-  writeFileSync(path.join(tmp, name), objs.map((o) => JSON.stringify(o)).join("\n") + "\n");
+  writeFileSync(path.join(tmp, name), objs.map((o) => canonicalize(o)).join("\n") + "\n"); // canonical lines
   const digest = "sha256:" + createHash("sha256").update(readFileSync(path.join(tmp, name))).digest("hex");
   return { manifest: { snapshot_path: name, snapshot_digest: digest } };
 }
@@ -154,13 +157,21 @@ try {
     ok(dependencies(w, hid(1)).has(hid(2)) && dependencies(w, hid(1)).size === 1, "e2e: from->dependent, to->dependency");
     ok(blastRadius(w, hid(2)).nodes.has(hid(1)), "e2e: blastRadius(to) includes from");
   }
-  // bijection: reordered object members = structurally equal = NO conflict (loads)
+  // canonical-JSON enforcement: a non-canonical line (keys out of canonical order) is rejected.
+  // (This also guarantees the bijection's order-insensitivity upstream — locators are always canonical.)
+  throws(() => {
+    const name = "noncanon.jsonl";
+    const l = [canonicalize(HEADER), '{"b":2,"a":1}', canonicalize(TRAILER)].join("\n") + "\n";
+    writeFileSync(path.join(tmp, name), l);
+    const digest = "sha256:" + createHash("sha256").update(readFileSync(path.join(tmp, name))).digest("hex");
+    loadWeave({ snapshot_path: name, snapshot_digest: digest }, tmp);
+  }, "non-canonical line rejected", /not canonical/);
+  // returned weave is frozen: cannot mutate edges before measurement
   {
-    const w = load([HEADER,
-      { ...rec(1, 2, "depends-on"), from_locator: { kind: "code-symbol", locator: { a: 1, b: 2 } } },
-      { ...rec(1, 3, "verified-by"), from_locator: { kind: "code-symbol", locator: { b: 2, a: 1 } } },
-      TRAILER]);
-    ok(w.edges.length === 2, "bijection: reordered members of same locator -> not a conflict");
+    const w = load([HEADER, rec(1, 2, "depends-on"), TRAILER]);
+    let mutated = false;
+    try { w.edges.push({ edge_kind: "depends-on", from: hid(9), to: hid(8) }); mutated = true; } catch { /* frozen */ }
+    ok(!mutated && w.edges.length === 1, "frozen return: edges array cannot be mutated");
   }
   // duplicate (from,to) with DIFFERENT edge_kind is NOT a duplicate (pins (kind,from,to) identity)
   {
