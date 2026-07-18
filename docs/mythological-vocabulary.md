@@ -29,7 +29,7 @@ Use them only with their defined meanings.
 - **Argo** — carries an authorized plan through implementation, verification, and documentation.
 - **Hermes** — API management and inter-system communication: routing, contracts, translation, and delivery.
 - **Medusa** — defensive edge enforcement; blocks or quarantines hostile and nonconforming traffic.
-- **Narcissus** — iterative UI rendering and visual review through repeated reflection.
+- **Narcissus** — production of full-rollout, award-standard front-ends for enrolled products through the reflection loop: iterative UI rendering and visual review, repeated until the surface is genuinely beautiful, distinctive, and functionally complete.
 - **Clotho** — creates and maintains knowledge-graph threads across artifacts and repositories.
 - **Lachesis** — measures dependencies, relevance, risk, and blast radius.
 - **Atropos** — retires obsolete relationships, artifacts, tools, and processes.
