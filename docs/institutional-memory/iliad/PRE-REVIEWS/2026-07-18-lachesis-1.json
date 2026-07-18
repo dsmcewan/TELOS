@@ -1,0 +1,38 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "pre-review-2026-07-18-lachesis-1",
+  "note": "Pre-review for the FIRST enrollment quest of a registered-but-unimplemented future module: Lachesis. Commissioned by The Eye (2026-07-18): 'Do Lachesis, Atropos first, then Narcissus.' This is a NEW COMPONENT build (code), a Clotho consumer, entering via the Iliad lifecycle per enrollment.json#future_modules_note (CHANGE-PROTOCOL + pre-review -> enroll -> retrospective). The Eye's commissioning is the required human approval for the new component boundary.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "docs/runs/lachesis-1 (pre-review + entry ritual); workshop docs/runs/lachesis-1-workshop; branch from main @ 48817db",
+  "next_phase_workshop": "docs/runs/lachesis-1-workshop/ — the next-phase Daedalus workshop matures the APPROACH (via iliad/tools/run-daedalus-workshop.mjs). Then TELOS authorization (a real authz council), then Argo implementation.",
+  "authority_basis": "The Eye directive 2026-07-18 (commission Lachesis) + file:docs/institutional-memory/iliad/CONTRACTS/enrollment.json (lachesis registered-unimplemented) + registered meaning: docs/mythological-vocabulary.md#Lachesis ('measures dependencies, relevance, risk, and blast radius').",
+  "honest_scope": {
+    "registered_meaning_is_the_boundary": "Lachesis MEASURES dependencies, relevance, risk, and blast radius. It does NOT authorize (TELOS), retire (Atropos), weave (Clotho), or render (Narcissus). Exact registered meaning; no extension.",
+    "deliverable_cycle_1": "A new zero-dependency Node ESM package `lachesis/` that CONSUMES Clotho's query surface (clotho/query.mjs: blastRadius, threadsOf, why, reportGaps) over a committed Clotho weave snapshot, and produces: (1) a DETERMINISTIC blast-radius/dependency/relevance measurement for a target node (NORMATIVE — a tested oracle over the fixed weave), and (2) an ADVISORY risk assessment (a risk class) layered on the measurement, as input to TELOS/The Eye — NOT new enforcement. Plus its institutional-memory record set `lachesis/memory/` (IDENTITY, INVARIANTS(.json), CONTRACTS, NON-CLAIMS(.json), comprehension-queries.json, README) mirroring clotho/memory/.",
+    "normativity_split": "The measurement functions are NORMATIVE-CURRENT with executable oracles (deterministic over a pinned weave snapshot). The risk CLASS is ADVISORY (a judgment, not an enforced gate).",
+    "enrollment_flip_flagged_for_the_eye": "Enrolling Lachesis moves it from enrollment.json#future_modules_registered_unimplemented to the enrolled set, and flips verify-contracts's cross-check from 'lachesis: no memory dir (genuinely unbuilt)' to an implemented-module check. This is inherent to enrolling a future module and touches the shared registry + verifier expectation. The workshop must scope exactly which records/oracles verify-contracts will then require, and the change stays minimal + reviewed. This is a routed decision for The Eye at the authorization gate, not resolved unilaterally.",
+    "non_goals_cycle_1": "No authorization/enforcement gate wired (advisory input only); no Atropos/Narcissus work; no change to Clotho's query code (consume only); no new npm dependency (zero-dep)."
+  },
+  "model_review": {
+    "note": "seats env-resolved over build-gate/seats.json; no seat change proposed. Argo implementation seats + TELOS authz council seats resolved at those gates.",
+    "baseline": "docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-17.json",
+    "seats": { "claude": "claude-fable-5", "codex": "gpt-5.6-sol", "build": "session model (claude-opus-4-8)" },
+    "newly_available_models_considered": ["none since the same-day review"],
+    "seat_changes_proposed": []
+  },
+  "capability_review": {
+    "task_loadout_read": "n/a (no frozen task slice yet — this cycle produces the plan the workshop matures)",
+    "prior_retrospectives_read": ["docs/institutional-memory/iliad/RETROSPECTIVES/iliad-workflow-contract-1.json", "docs/institutional-memory/iliad/RETROSPECTIVES/slice-7.json"],
+    "optimizations_adopted": [
+      "front-load implementation mechanics in the candidate approach (the reviewer will demand them — lesson from the workflow-contract cycle's two stalemates)",
+      "NEVER abbreviate an authority/content-address anchor (full 40-hex only) — caught 2x by codex",
+      "use the parameterized workshop harness; session hygiene re-armed (fetch+CURRENT-AUTHORITY before claims; explicit cleanup globs; commit before destructive git ops)"
+    ],
+    "optimizations_deferred_with_reason": ["the enrollment-flip + verify-contracts expectation change, until the authorization gate (Eye decision on the exact required records/oracles)"],
+    "missing_external_capabilities": [],
+    "capability_packets_required": false
+  },
+  "entry_ritual": "docs/runs/lachesis-1/reader-validation-artifact.json (iliad module queries — COMPREHENSION_PASSED / GRANTED)"
+}
