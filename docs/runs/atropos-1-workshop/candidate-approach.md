@@ -1,4 +1,4 @@
-# Candidate approach (rev 10) — Atropos (enrollment quest, cycle 1)
+# Candidate approach (rev 11) — Atropos (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json`.
@@ -71,11 +71,14 @@ detecting via source+membership, not by matching the (distinct) record-kind and 
   adopted peer-model resolution) + the git-commit-pinned peer-model resolution
   `git:7c769d0261dedd363f506bca635786677e7d49f6:docs/runs/atropos-1-workshop/decision-round-1-result.json`
   (codex's resolution WITH real provenance) + the pre-review + the eventual `authz-N`.
-  **WORKSHOP-STAGE anchoring (honest):** at this pre-authorization stage the EXISTING committed evidence is the
-  git-pinned peer-model resolution + this quest's escalation/round evidence; the FULL Eye-authority anchor
-  (a committed record of The Eye's design ruling) does NOT yet exist as an artifact — it is HELD for The Eye /
-  coordinator to commit (analogous to how the authority triple is minted at TELOS/Argo). NOT designed-around;
-  ruled — its committed authority record is a HELD item, not a placeholder.
+  **Anchoring (resolved in BUILD MODE):** per The Eye's recalibration (2026-07-18 — internal-governance
+  micro-decisions are portfolio set-dressing; the build controller makes them in build mode, Eye-governance
+  re-engages at ship), this is a DESIGN determination and now has a committed, content-addressed authority
+  artifact: `docs/runs/atropos-1-workshop/design-ruling-surface-applicability.json`
+  (`sha256:f147d05a5c8bce846d84a4ea5a69c29d2a3de22e94b53ab58fe22132616e9602`), which records the ruling +
+  cites the peer-model resolution. It EXISTS now (not future, not a placeholder) — no circularity. NO
+  CHANGE-PROTOCOL amendment (design decision, not governance). Full Eye-governance (enrollment, durable
+  trust-root) re-engages at ship.
 - **weave-node-backed → deterministic `UNREPRESENTABLE_CURRENT_AUTHORITY_REFLECTION` (DEFERRED, cycle-1):** the
   current committed `CURRENT-AUTHORITY` closed schema represents ONLY plan-versions, so a node-backed retirement's
   required `CURRENT-AUTHORITY` reflection cannot be represented → `inconsistent` reason

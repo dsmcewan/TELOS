@@ -1,0 +1,14 @@
+{
+  "id": "sha256:f147d05a5c8bce846d84a4ea5a69c29d2a3de22e94b53ab58fe22132616e9602",
+  "kind": "decision",
+  "component": "atropos",
+  "title": "Plan-version supersession surface applicability is a design determination (build-mode ruling)",
+  "mode": "BUILD-MODE (build controller makes the design/governance call to keep momentum; fuller Eye-governance re-engages before ship/enrollment)",
+  "ruling": "The per-entity-kind supersession surface applicability is a TECHNICAL DESIGN determination resolved by peer-model collaboration with codex (the peer planning/dev model) — NOT a CHANGE-PROTOCOL amendment. A plan-version is not a weave node kind, so its weave-supersedes-edge and SUPERSEDED-record surfaces are STRUCTURALLY INAPPLICABLE (a verified fact), not demoted; its normative surface is the CURRENT-AUTHORITY.json#superseded entry. Weave-node-backed retirement remains all-three-surface (deferred in cycle-1 as UNREPRESENTABLE under the plan-only schema).",
+  "authority": "build controller in build mode (The Eye/coordinator recalibration 2026-07-18: internal-governance micro-decisions are portfolio set-dressing; build mode makes them). NOT a live-stakes governance amendment. Re-engages Eye governance at ship (enrollment + durable trust-root).",
+  "peer_model_input": "docs/runs/atropos-1-workshop/decision-round-1-result.json (codex Ruling B, with provenance)",
+  "supersedes_draft": "docs/runs/atropos-1-workshop/proposed-change-protocol-clarification.md (no CHANGE-PROTOCOL edit is made)",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}
