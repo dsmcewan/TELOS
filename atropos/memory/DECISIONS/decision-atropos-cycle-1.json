@@ -1,0 +1,16 @@
+{
+  "kind": "decision",
+  "component": "atropos",
+  "id": "sha256:ceffaa737c3f31e7aa2d4bca388b7b885110c5c8886d3c803ddc69fe90fb2998",
+  "title": "Build Atropos cycle 1 as a read-only supersession-consistency verifier (deferred-ratification lifecycle)",
+  "anchored_by": {
+    "plan_ref": "sha256:041b5aaf96639cada7a5c3948586afba2340ef0d8896b851bd324edf980ef5be",
+    "authorization": "authz-atropos-1",
+    "council": "docs/runs/atropos-authorization-1/authorization-summary.json"
+  },
+  "decision": "Implement Atropos cycle-1 as a zero-dependency READ-ONLY verifier over CURRENT-AUTHORITY#superseded (plan-version consistency NORMATIVE; node-backed retirement deferred as UNREPRESENTABLE; retirement itself remains a human CHANGE-PROTOCOL act). Built FIRST under The Eye's build-mode directive, then ratified by the deferred TELOS council: round 1 NOT_AUTHORIZED (codex: the hashed plan claimed a false docs-first history) -> plan made truthful; round 2 gate-blocked (required contract doc reviewed by no packet) -> contract put before the seats; round 3 four seats revised (contract self-declared NORMATIVE-CURRENT against the plan's RATIFICATION-PENDING mandate; note-field semantics refereed by reality: optional) -> artifacts reconciled; round 4 AUTHORIZED 5/5, gate pass, 0 blockers.",
+  "verified": "32 assertions green (golden over the real 4 retirements v11-v14 -> v15 + per-defect negatives + executable read-only oracle); comprehension gate GRANTED with negatives DENIED (docs/runs/atropos-1/reader-validation-artifact.json).",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

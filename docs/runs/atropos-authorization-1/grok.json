@@ -8,23 +8,19 @@
     "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json",
     "atropos/memory/CONTRACTS/supersession.json"
   ],
-  "proposal_ref": "sha256:6451f5d970401492c6187b3fe14fe96ee424d20e993124ff5e90a20b32db42c4",
-  "decision": "revise",
-  "required_edits": [
-    "Set atropos/memory/CONTRACTS/supersession.json status/normativity to RATIFICATION-PENDING (not NORMATIVE-CURRENT/NORMATIVE) until this council authorizes and the authority triple attaches — the live contract must not pre-claim normativity the plan §6 explicitly defers.",
-    "Rewrite becomes_normative_when to match plan §6 exactly: tests pass AND TELOS authorization/authority triple AND enrollment integration with docs/institutional-memory/verify-contracts.mjs (atropos manifest entry + future-atropos-unimplemented→implemented flip); tests-only is insufficient.",
-    "Reconcile #superseded entry shape for note: plan §3 requires EXACTLY the closed key set including note:string; contract currently marks note optional — make contract and verifier pin the same closed shape (required string note, or amend the plan if optional is intended)."
-  ],
+  "proposal_ref": "sha256:041b5aaf96639cada7a5c3948586afba2340ef0d8896b851bd324edf980ef5be",
+  "decision": "approve",
+  "required_edits": [],
   "hard_stops": [],
   "confidence": "high",
-  "timestamp": "2026-07-18T17:02:14.455Z",
-  "rationale": "Cycle-1 scope, registered meaning (verification half of retires only), read-only/zero-dep/fail-closed trust posture, plan-version normative checks, node-backed UNREPRESENTABLE deferral, clotho non-import, and disk-resolved terminal active_plan.sha256 are coherent with the pre-review and stated NON-CLAIMS. Implementation-before-council is an Eye build-mode exception the plan records honestly and does not by itself block ratification. Remaining contradictions are between the matured plan and the contract artifact under authorization (premature NORMATIVE-CURRENT, incomplete becomes_normative_when, note required-vs-optional). Those are fixable metadata/shape alignments; once edited, the plan is approvable AS-IS without expanding scope or reopening deferred node-backed work.",
+  "timestamp": "2026-07-18T17:08:48.813Z",
+  "rationale": "Plan-as-implemented is internally consistent with the registered meaning (verification half of retires only), the trust model (fail-closed closed sets, read-only allowlist oracle, zero-deps, sole merkle-dag/vendor import, no clotho), and its own explicit non-claims/deferrals. NORMATIVE surface is exactly the live populated #superseded plan-version set with closed shape, unique versions, must_not_govern_new_work===true, cycle-free termination at disk-resolved active_plan (canonicalize/sha256hex), and deterministic UNREPRESENTABLE/UNSUPPORTED short-circuits for the two empty/deferred surfaces. CHANGE-PROTOCOL/schema applicability tension is properly ruled and anchored (design-ruling artifact + peer resolution provenance) rather than papered over; no mutation path, no invented schema, no overclaim on completeness or write-proof. Honest deferred-ratification sequencing and post-build comprehension/contract activation gates match The Eye build-mode directive and leave no residual contradiction. Ratify AS-IS.",
   "provenance": {
     "provider": "xai",
     "model": "grok-4.5",
-    "response_id": "6f1bd735-401b-9a38-8c27-16e92ed44710",
+    "response_id": "f6fe6912-fc4f-9d25-b5bd-1ce6da94e9ad",
     "source": "ai-peer-mcp/grok_ask",
-    "answered_at": "2026-07-18T17:02:53.267Z",
+    "answered_at": "2026-07-18T17:08:59.525Z",
     "tool": "grok_ask"
   }
 }

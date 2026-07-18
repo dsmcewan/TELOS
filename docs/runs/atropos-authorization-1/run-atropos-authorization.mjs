@@ -40,8 +40,8 @@ const { spawnMcpClient } = await imp("breakout/mcp_client.mjs");
 // ---------- bind the exact plan under authorization ----------
 const PLAN_PATH = "docs/runs/atropos-1-workshop/candidate-approach.md";
 const PREREVIEW_PATH = "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json";
-const EXPECTED_PLAN_REF = "sha256:6451f5d970401492c6187b3fe14fe96ee424d20e993124ff5e90a20b32db42c4";
-const REVIEWED_HEAD = "a615b59"; // matured-approach.md committed head
+const EXPECTED_PLAN_REF = "sha256:041b5aaf96639cada7a5c3948586afba2340ef0d8896b851bd324edf980ef5be";
+const REVIEWED_HEAD = "4427a2d"; // matured-approach.md committed head
 
 const CONTRACT_PATH = "atropos/memory/CONTRACTS/supersession.json";
 const contractText = readFileSync(path.join(ROOT, CONTRACT_PATH), "utf8");

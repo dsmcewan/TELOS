@@ -8,12 +8,12 @@
     "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json",
     "atropos/memory/CONTRACTS/supersession.json"
   ],
-  "proposal_ref": "sha256:6451f5d970401492c6187b3fe14fe96ee424d20e993124ff5e90a20b32db42c4",
+  "proposal_ref": "sha256:041b5aaf96639cada7a5c3948586afba2340ef0d8896b851bd324edf980ef5be",
   "decision": "approve",
   "required_edits": [],
   "hard_stops": [],
   "confidence": "high",
-  "timestamp": "2026-07-18T17:02:14.455Z",
+  "timestamp": "2026-07-18T17:08:48.813Z",
   "provenance": {
     "provider": "local",
     "model": "agy-checkpoint",
@@ -26,7 +26,7 @@
   },
   "signature": {
     "alg": "HMAC-SHA256",
-    "value": "75b808dad1b299ea48558354db0cc45532fffa9de0b6c9b939e17948a39962b4",
+    "value": "43fe99e04f791101505a858d93d3ad9efdfdfd2c397492469c925cc8518f384c",
     "signed_fields": "canonical-minus-signature"
   }
 }

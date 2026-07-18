@@ -8,23 +8,19 @@
     "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json",
     "atropos/memory/CONTRACTS/supersession.json"
   ],
-  "proposal_ref": "sha256:6451f5d970401492c6187b3fe14fe96ee424d20e993124ff5e90a20b32db42c4",
-  "decision": "revise",
-  "required_edits": [
-    "Change 'status': 'NORMATIVE-CURRENT' to 'status': 'RATIFICATION-PENDING' in atropos/memory/CONTRACTS/supersession.json to align with the truthful sequence defined in Section 6."
-  ],
-  "hard_stops": [
-    "The submitted contract json prematurely claims NORMATIVE-CURRENT status, contradicting Section 6 which dictates it must reflect RATIFICATION-PENDING until authorization and the verify-contracts.mjs integration are completed."
-  ],
+  "proposal_ref": "sha256:041b5aaf96639cada7a5c3948586afba2340ef0d8896b851bd324edf980ef5be",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
   "confidence": "high",
-  "timestamp": "2026-07-18T17:02:14.455Z",
-  "rationale": "The technical plan is exceptionally rigorous and perfectly meets the objective's verification, read-only, and boundary constraints. The strategic deferral of node-backed surface representation and identity extraction correctly avoids previous schema and architectural traps. The implementation of the read-only executable oracle using an import allowlist is robust and defensively sound. However, the plan's own rules in Section 6 strictly enforce a truthful historical sequence regarding post-build validation, explicitly requiring the contract to be in a RATIFICATION-PENDING state during this council review. The provided contract artifact violates this self-imposed constraint by arriving with a NORMATIVE-CURRENT status. Reverting this value ensures the lifecycle state remains truthful and transitions only after authorization and integration are formally complete.",
+  "timestamp": "2026-07-18T17:08:48.813Z",
+  "rationale": "The implemented approach thoroughly satisfies the objective. The plan demonstrates a highly rigorous mapping to the requested constraints: it maintains a strictly read-only posture guaranteed by a static allowlist oracle, enforces zero dependencies outside the sanctioned merkle-dag import, and correctly discriminates between valid plan-version retirements and deferred node-backed surfaces via deterministic short-circuits. Crucially, the disk-resolved terminal authority verification enforces consistency directly against the physical active plan, fulfilling the system's trust model without overclaiming cryptographic authenticity. The fail-closed ingestion logic and closed-shape validation rules are fully consistent with the registered meaning and repository invariants. The deferral of node-backed validation is handled correctly as a specified but unrepresentable short-circuit rather than a silent skip. The plan is authorized for ratification.",
   "provenance": {
     "provider": "google",
     "model": "gemini-3.1-pro-preview",
-    "response_id": "mLFbavDvDZnAqtsPhNuY-QM",
+    "response_id": "IrNbapHUGvXmqtsP7Orn4QU",
     "source": "ai-peer-mcp/gemini_ask",
-    "answered_at": "2026-07-18T17:02:38.275Z",
+    "answered_at": "2026-07-18T17:09:00.433Z",
     "tool": "gemini_ask"
   }
 }

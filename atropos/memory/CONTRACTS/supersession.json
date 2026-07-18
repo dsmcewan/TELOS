@@ -2,19 +2,19 @@
   "kind": "contract",
   "component": "atropos",
   "id": "atropos-supersession",
-  "title": "Atropos read-only supersession-consistency verifier — frozen semantics over CURRENT-AUTHORITY#superseded",
+  "title": "Atropos read-only supersession-consistency verifier \u2014 frozen semantics over CURRENT-AUTHORITY#superseded",
   "lifecycle_note": "DEFERRED RATIFICATION (build-mode, The Eye's recorded directive): the implementation and this contract were produced BEFORE the TELOS gate; the council ratifies or rejects the plan-as-implemented. This contract does not claim documentation preceded code.",
   "authority": {
     "pre_review": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json",
     "design_ruling": "docs/runs/atropos-1-workshop/design-ruling-surface-applicability.json",
-    "plan_ref": "PENDING-RATIFICATION: the content address of docs/runs/atropos-1-workshop/candidate-approach.md at authorization",
-    "authorization": "PENDING-RATIFICATION: authz-atropos-1 attaches when the council authorizes",
-    "decision": "PENDING-RATIFICATION: decision-atropos-cycle-1 content address attaches post-ratification",
+    "plan_ref": "sha256:041b5aaf96639cada7a5c3948586afba2340ef0d8896b851bd324edf980ef5be",
+    "authorization": "authz-atropos-1",
+    "decision": "sha256:ceffaa737c3f31e7aa2d4bca388b7b885110c5c8886d3c803ddc69fe90fb2998",
     "note": "read-only verifier (The Eye's ruling); per-entity-kind surface scope resolved via peer-model (codex) collaboration adopted as The Eye's ruling"
   },
   "input": "CURRENT-AUTHORITY.json (read as data). Populated supersession surface = #superseded (plan-version retirements: 4 real entries v11-v14 -> active v15). Node-backed surfaces (SUPERSEDED records, weave supersedes edges) are 0 in current data and DEFERRED.",
   "classification": "source-based union over candidates: a VALID #superseded entry (closed shape below) -> plan-version; a MALFORMED #superseded entry -> unknown -> verdict `inconsistent` with UNSUPPORTED_RETIREMENT_KIND; a candidate from a SUPERSEDED record or a `supersedes` weave edge -> node-backed -> verdict `inconsistent` with UNREPRESENTABLE_CURRENT_AUTHORITY_REFLECTION (deferred cycle-1 short-circuit).",
-  "entry_shape": "EXACTLY the closed key set {plan_version: non-empty string, sha256: sha256:<64hex>, authorization: authz-N, authz_status: AUTHORIZED|NOT_AUTHORIZED, superseded_by: non-empty string, must_not_govern_new_work: === true} plus `note` as the ONE OPTIONAL member (string WHEN PRESENT; absence valid — 3 of 4 real entries carry no note; wrong type -> inconsistent). Any missing/mistyped required key or unexpected key -> inconsistent.",
+  "entry_shape": "EXACTLY the closed key set {plan_version: non-empty string, sha256: sha256:<64hex>, authorization: authz-N, authz_status: AUTHORIZED|NOT_AUTHORIZED, superseded_by: non-empty string, must_not_govern_new_work: === true} plus `note` as the ONE OPTIONAL member (string WHEN PRESENT; absence valid \u2014 3 of 4 real entries carry no note; wrong type -> inconsistent). Any missing/mistyped required key or unexpected key -> inconsistent.",
   "normative_verdict": {
     "scope": "plan-version consistency",
     "checks": [
@@ -34,6 +34,12 @@
   "becomes_normative_when": "ALL of: (1) the deferred-ratification council AUTHORIZES and the authority triple {plan sha256, authz-atropos-1, decision-atropos-cycle-1 id} attaches above; (2) the comprehension gate over atropos/memory/comprehension-queries.json returns GRANTED with negatives DENIED, preserved as docs/runs/atropos-1/reader-validation-artifact.json; (3) the named oracles pass; (4) verify-contracts.mjs enrollment integration completes (the atropos manifest entry + the future-atropos-unimplemented -> implemented flip). Until then this contract is RATIFICATION-PENDING.",
   "change_rule": "Any change to the verifier semantics or the surface scope requires a plan amendment (Daedalus) + TELOS re-authorization + updated oracle + adversarial review.",
   "normativity": "NORMATIVE",
-  "status": "RATIFICATION-PENDING",
-  "must_not_govern_new_work": false
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false,
+  "activation_evidence": {
+    "ratified": "docs/runs/atropos-authorization-1/authorization-summary.json (round 4: 5/5 approve, gate pass)",
+    "comprehension": "docs/runs/atropos-1/reader-validation-artifact.json (GRANTED; negatives DENIED exit 3)",
+    "oracles": "npm test in atropos/ \u2014 32 assertions green",
+    "integration": "repository-manifest.json entry_points.memory_dirs.atropos + verify-contracts green"
+  }
 }

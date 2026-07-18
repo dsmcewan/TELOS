@@ -8,33 +8,24 @@
     "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json",
     "atropos/memory/CONTRACTS/supersession.json"
   ],
-  "proposal_ref": "sha256:6451f5d970401492c6187b3fe14fe96ee424d20e993124ff5e90a20b32db42c4",
-  "decision": "revise",
-  "required_edits": [
-    "In `atropos/memory/CONTRACTS/supersession.json`, make `note:string` a mandatory member of the exact closed entry key set; add a dedicated negative fixture containing an otherwise-valid entry with only `note` omitted.",
-    "Replace the contract's classification text with the source-based union classification: valid `#superseded` entries are plan-version candidates, malformed `#superseded` entries are unknown, and candidates from `SUPERSEDED` records or `supersedes` edges are node-backed; state their respective inconsistent short-circuits.",
-    "Replace the contract's `<active_plan.path bytes>` hash wording with the exact string input and decoding behavior used by `verify.mjs`, matching the candidate plan's file-text hash scheme.",
-    "Set the contract status to `RATIFICATION-PENDING` and rewrite `becomes_normative_when` to require ratification and authority-triple attachment, preserved GRANTED comprehension evidence, passing named oracles, and completed `verify-contracts.mjs` enrollment integration before transition to `NORMATIVE-CURRENT`.",
-    "Regenerate any derived memory projections, rerun the complete Atropos and institutional-memory verification suites, and update affected assertion counts and content addresses in the resubmitted authorization packet."
-  ],
-  "hard_stops": [
-    "The candidate approach and the submitted normative contract currently prescribe incompatible verifier semantics, most directly whether `note` is mandatory and how candidates are source-classified.",
-    "The submitted contract claims `NORMATIVE-CURRENT` under a tests-only activation rule while the candidate approach says it must remain ratification-pending until the later activation prerequisites are completed."
-  ],
+  "proposal_ref": "sha256:041b5aaf96639cada7a5c3948586afba2340ef0d8896b851bd324edf980ef5be",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
   "confidence": "high",
-  "timestamp": "2026-07-18T17:02:14.455Z",
-  "rationale": "The scoped cycle-1 design is coherent with the registered verification meaning, read-only trust posture, and explicit deferral of node-backed verification. Deferred ratification is not itself objectionable. Authorization nevertheless covers the artifacts as submitted, and they do not tell one normative story. The plan requires an exact seven-key superseded-entry shape with mandatory `note:string`; the contract allows `note` to be absent. The plan classifies node-backed candidates only from the record and edge sources, while the contract describes every `#superseded` entry as potentially node-backed and omits the source-union rule. The contract also describes the terminal hash input as path “bytes,” whereas the frozen plan hashes the file text supplied as the `plan` string to canonicalization. Most importantly, the contract's current status and activation clause contradict the plan's expressly pending ratification, authority-triple, comprehension, and enrollment sequence. Ratifying as-is would therefore authorize incompatible semantics and a premature lifecycle claim. These are localized, correctable defects rather than grounds to reject the underlying approach.",
+  "timestamp": "2026-07-18T17:08:48.813Z",
+  "rationale": "The plan is internally consistent and fit for deferred ratification as implemented. It realizes the registered meaning through read-only verification of the sole currently representable and populated supersession surface, while deterministically failing closed on malformed, unknown, or deferred node-backed candidates rather than silently accepting them. Its terminal disk-hash resolution, closed discovery model, source-based classification, boundary enforcement, executable read-only evidence, and explicit non-claims align with the stated repository trust model. The build-before-authorization sequence is represented truthfully, and the remaining authority attachment, comprehension, oracle, and enrollment requirements are correctly framed as activation conditions rather than facts already achieved. I find no unresolved contradiction or defect requiring amendment before authorization.",
   "provenance": {
     "provider": "openai",
     "model": "gpt-5.6-sol",
-    "response_id": "chatcmpl-E32iWig3YawY8qNuL1pyuOnvhHWgc",
+    "response_id": "chatcmpl-E32otmUPl3b1iG44SVILFzqbPBFfQ",
     "source": "ai-peer-mcp/codex_ask",
-    "answered_at": "2026-07-18T17:06:13.222Z",
+    "answered_at": "2026-07-18T17:10:34.876Z",
     "tool": "codex_ask"
   },
   "signature": {
     "alg": "HMAC-SHA256",
-    "value": "c65cff3d32977fd8cdab27ec8ca297e93609c411e99b281e643e5f4c6f657778",
+    "value": "d21886f5de8d8590597a77c59185c8f59be351870d80cf44c359241242e2d121",
     "signed_fields": "canonical-minus-signature"
   }
 }

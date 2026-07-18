@@ -1,0 +1,31 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "retrospective-atropos-1",
+  "title": "Iliad retrospective — Atropos enrollment quest, cycle 1 (deferred ratification, closed honestly)",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "quest": "Atropos: read-only supersession-consistency verifier over CURRENT-AUTHORITY#superseded. Second future module through the Iliad; first to traverse the DEFERRED-RATIFICATION variant (built before the council under The Eye's build-mode directive, then ratified).",
+  "stages_traversed": {
+    "iliad_pre_review": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json",
+    "daedalus": "docs/runs/atropos-1-workshop/ — 13 rounds; every technical objection resolved; the CHANGE-PROTOCOL-applicability thread was reviewer DRIFT on a ruled point (~6 rounds), diagnosed by the round-monitor analysis.",
+    "argo_first": "BUILD-MODE EXCEPTION (The Eye's recorded directive): implementation preceded the council. atropos/verify.mjs + oracles, reality-first over the real 4 retirements (v11-v14 -> v15); 32 assertions incl. golden + executable read-only oracle.",
+    "telos_deferred_ratification": "docs/runs/atropos-authorization-1/ — FOUR ROUNDS, each catch legitimate: R1 codex refused the hashed plan's false docs-first history -> plan made truthful; R2 the deterministic gate refused (required contract doc reviewed by no packet) -> contract put before the seats; R3 four seats refused the contract's self-declared NORMATIVE-CURRENT contradicting the plan's RATIFICATION-PENDING mandate + note-field semantics (refereed by reality: optional, 3 of 4 real entries lack it) -> artifacts reconciled; R4 AUTHORIZED authz-atropos-1, 5/5 approve, gate pass, 0 blockers.",
+    "comprehension": "docs/runs/atropos-1/reader-validation-artifact.json — GRANTED (deterministic schema, bound to active v15/authz-008); negatives DENIED (exit 3).",
+    "activation": "authority triple attached (plan sha256:041b5aaf…, authz-atropos-1, decision sha256:ceffaa73…); contract flipped NORMATIVE-CURRENT with activation_evidence; manifest entry_points.memory_dirs integration; verify-contracts 211/211.",
+    "clotho": "atropos enrolled in PACKAGE_ROOTS and WOVEN (139 refs in the committed snapshot); compounds through the live graph (build-live-graph.mjs: Atropos verifies what Lachesis measures over Clotho's weave).",
+    "retrospective": "this record."
+  },
+  "lessons": [
+    "Deferred ratification can be made honest, but the truth must live INSIDE the content-addressed artifacts — an honest-sequence note beside the hash does not make the hashed history true (codex, R1).",
+    "The deterministic gate audits the AUDITOR: declaring a required doc that no packet reviewed blocks authorization regardless of unanimous approvals (R2 caught the coordinator's own harness bug).",
+    "Artifacts must agree with each other AND with reality: the contract/plan self-contradiction (R3) and the note-field dispute were both resolved by reconciliation, with the real data as referee.",
+    "Reviewer drift is distinguishable from rigor: the workshop's CHANGE-PROTOCOL thread oscillated on a ruled point for ~6 rounds (drift), while the council's four rounds each surfaced a NEW truthful defect (rigor). The discriminators: re-raised-resolved points vs. narrowing novel objections.",
+    "Every bar was met, never lowered: four council refusals were closed by raising the artifacts' truthfulness, not by overriding the gate — the contrast with the flagship's builder-adjudication (recorded in narcissus-flagship-1) is deliberate and visible."
+  ],
+  "artifacts": {
+    "package": "atropos/ (verify.mjs, scripts/test-verify.mjs, scripts/test-readonly.mjs, memory/) — zero-dependency, read-only, 32 assertions",
+    "council": "docs/runs/atropos-authorization-1/ (4 rounds preserved)",
+    "comprehension": "docs/runs/atropos-1/ (queries in the gate's deterministic schema; pass + negative artifacts)"
+  }
+}
