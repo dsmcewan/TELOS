@@ -1,0 +1,139 @@
+{
+  "codex": {
+    "name": "codex",
+    "ok": true,
+    "objections": [
+      {
+        "claim": "`loadWeave` does not actually anchor the trust root: the caller supplies both `manifest.snapshot_digest` and `rootDir`, so an untrusted caller can choose an arbitrary file, compute its digest, and have it accepted. The tests happen to read the committed manifest, but no exported production entry point fixes or authenticates that manifest or its expected digest.",
+        "scope": "lachesis/ingest.mjs: loadWeave(manifest, rootDir) trust boundary",
+        "severity": "high"
+      },
+      {
+        "claim": "Node IDs are treated as arbitrary 64-hex labels rather than Clotho content addresses. `loadWeave` never verifies the canonical locator-to-ID derivation and does not reject the same locator appearing under two different IDs. Such aliases split one logical node, inflate dependency/blast counts, and make metrics fail to correspond to locator identity.",
+        "scope": "lachesis/ingest.mjs: loadWeave node construction and locator-conflict check",
+        "severity": "high"
+      },
+      {
+        "claim": "`relevance` ignores two of the three advertised `METRIC_EDGE_KINDS`; that exported set is otherwise dead code. Real `verified-by` and `introduced-by` edges are subject-oriented at `from`, so the correction to the old weighting is to credit their `from` endpoint, not silently discard them. Files with materially different verification/introduction support therefore receive identical relevance, and the tests never ask either edge kind to affect relevance or weighted normalization.",
+        "scope": "lachesis/measure.mjs: METRIC_EDGE_KINDS, inDegreeDependsOn(), relevance()",
+        "severity": "high"
+      },
+      {
+        "claim": "The boundary checker is bypassable by valid JavaScript comments because it uses regexes rather than lexical parsing. For example, `import x from /*c*/ \"../../clotho/query.mjs\"`, `import/*c*/(\"../../clotho/query.mjs\")`, and `require/*c*/(\"x\")` evade the corresponding patterns. Loading through an allowed builtin, such as `Module._load(...)` from `node:module`, also evades all dynamic-loading checks, contradicting the claimed fail-closed profile.",
+        "scope": "lachesis/scripts/test-boundary.mjs: violations()",
+        "severity": "high"
+      },
+      {
+        "claim": "Allowed relative imports are checked only by lexical `path.resolve`; their actual targets are neither realpathed nor necessarily scanned. An in-package symlink to `clotho/`, or an allowed `.mjs` importing an in-package `.js`/`node_modules` target, passes containment while `runtimeFiles` skips that target. This permits transitive Clotho imports despite a clean result.",
+        "scope": "lachesis/scripts/test-boundary.mjs: violations() relative-import handling and runtimeFiles()",
+        "severity": "high"
+      },
+      {
+        "claim": "Trailer validation is only an existence test. Any last object with `clotho_weave_trailer !== undefined`, including `{ \"clotho_weave_trailer\": null }` or an otherwise valid edge carrying that property, is accepted and omitted from the graph. The trailer body and its structural `prev_hash`/`record_hash`/`signature` fields are not checked or returned. This is a format-level defect independent of the acknowledged lack of cryptographic chain verification.",
+        "scope": "lachesis/ingest.mjs: loadWeave trailer branch and final return",
+        "severity": "medium"
+      },
+      {
+        "claim": "The documented canonical-JSON-lines contract is not enforced. Empty lines are silently removed, noncanonical whitespace/key ordering and duplicate JSON keys are accepted with JSON.parse's last-key-wins semantics, and `Buffer.toString(\"utf8\")` silently replaces invalid UTF-8. Consequently the measured data can differ from the canonical ledger meaning even though the raw bytes match a supplied digest.",
+        "scope": "lachesis/ingest.mjs: `buf.toString(\"utf8\").split(...).filter(...)` and JSON.parse loop",
+        "severity": "medium"
+      },
+      {
+        "claim": "Locator and relation schemas are largely unchecked. A locator such as `{kind:\"code-symbol\"}` with no locator payload is accepted, arbitrary extra fields are folded into identity, and no edge-kind endpoint constraints are enforced. Thus reversed or nonsensical `verified-by`/`introduced-by` relations are accepted even though metric design relies on their real file-to-test/file-to-commit orientation.",
+        "scope": "lachesis/ingest.mjs: endpoint locator loop and edge validation",
+        "severity": "medium"
+      },
+      {
+        "claim": "The stated argument that relevance is subsumed by blast is false for a legal-looking self-loop: `X depends-on X` contributes one to `X`'s in-degree, while both closure functions delete `X`, producing blast zero. A self-loop can therefore have maximal relevance and low blast, yet `riskClass` ignores relevance. The loader does not reject self-dependencies, and the cycle oracle covers only a two-node cycle.",
+        "scope": "lachesis/measure.mjs: inDegreeDependsOn(), closureExcludingStart(), reverseToDepth(), riskClass(); test-metrics cycle fixture",
+        "severity": "medium"
+      },
+      {
+        "claim": "The blanket no-Clotho-import oracle excludes the entire executable `scripts/` tree. A real static Clotho import added to `test-metrics.mjs`, another test, or build tooling would never be inspected; intentional fixture strings are not a sound reason to exclude whole files when a parser could distinguish strings from imports.",
+        "scope": "lachesis/scripts/test-boundary.mjs: runtimeFiles() directory exclusion",
+        "severity": "medium"
+      },
+      {
+        "claim": "The path checks do not implement their stated policy of rejecting absolute paths and any `..` traversal. An absolute path that resolves inside `rootDir`, or `sub/../snapshot.jsonl`, passes because only final containment is tested. The oracle covers only a traversal whose final target is outside the root.",
+        "scope": "lachesis/ingest.mjs: loadWeave path resolution; test-metrics path-containment fixture",
+        "severity": "low"
+      },
+      {
+        "claim": "The duplicate-edge oracle does not pin the claimed `(edge_kind, from, to)` identity: there is no fixture containing the same endpoints under two different edge kinds. An implementation incorrectly deduplicating solely by `(from,to)` could pass the synthetic suite, with the golden total detecting it only accidentally if the real snapshot contains such overlap.",
+        "scope": "lachesis/scripts/test-metrics.mjs: duplicate-edge ingestion tests",
+        "severity": "low"
+      },
+      {
+        "claim": "All negative ingestion assertions accept any thrown value and never check error type or message. They therefore do not establish the claimed per-branch rejection behavior; a loader throwing earlier for an unrelated bug can satisfy each negative case.",
+        "scope": "lachesis/scripts/test-metrics.mjs: throws() helper and ingestion negatives",
+        "severity": "low"
+      }
+    ]
+  },
+  "grok": {
+    "name": "grok",
+    "ok": true,
+    "objections": [
+      {
+        "scope": "lachesis/ingest.mjs: NODE_KINDS/EDGE_KINDS exports + loadWeave kind checks",
+        "claim": "Exported allowlists are mutable Sets. Any importer can EDGE_KINDS.add('bogus') or .delete('depends-on') and change fail-closed acceptance/rejection (or silently drop metric edges) without touching Lachesis source; freeze/clone-on-read is absent.",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/ingest.mjs loadWeave locator/id binding (for-loop over from_node/to_node)",
+        "claim": "Node ids are not checked as content addresses of their locators: (1) id may be any 64-hex unrelated to locator; (2) the same locator payload may appear under two ids. Metrics then split one logical Clotho node into two graph vertices, under-counting blastRadius/in-degree versus weave locator identity.",
+        "severity": "high"
+      },
+      {
+        "scope": "lachesis/measure.mjs riskClass(coverage) + assess",
+        "claim": "Coverage is an unconstrained caller string; passing coverage='attested-complete' always disables the floor and can yield class 'low' with no attestation resolver or evidence binding. Advisory class is attacker/caller-launderable at the API boundary even for blast < 3.",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/measure.mjs reverseToDepth vs inDegreeDependsOn; ingest allows from_node===to_node",
+        "claim": "Self-loop depends-on is accepted and yields in-degree 1 but blastRadius 0 (start excluded). Stated invariant that blast >= in-degree / relevance is subsumed by blast is false on this input; riskClass can be low/medium while relevance is high.",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/measure.mjs dependencies/blastRadius adjacency build",
+        "claim": "forwardDepends/reverseDepends/inDegreeDependsOn rebuild from weave.edges with no assertion that endpoints exist in weave.nodes. Synthetic or hand-edited weaves can introduce phantom ids into closures/counts that requireKnown never validated; assess(count) can disagree with nodes map cardinality.",
+        "severity": "low"
+      },
+      {
+        "scope": "lachesis/scripts/test-metrics.mjs oracle coverage",
+        "claim": "No synthetic case pins that verified-by/introduced-by/documented-in/etc. do not increment dependencies, blastRadius, or relevance (only depends-on). A regression that counts all edge_kinds can still pass every synthetic metric test; golden numbers are self-computed against the same code path, so they do not independently discriminate that bug class.",
+        "severity": "high"
+      },
+      {
+        "scope": "lachesis/scripts/test-metrics.mjs oracle coverage",
+        "claim": "Closure tests are only chains and 2-cycles. Diamonds/multi-path DAGs, 3-cycles, self-loops, depth=0, and blast/in-degree disagreement are untested—wrong unique-node counting or hop fences could still pass the 41 assertions.",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/scripts/test-metrics.mjs golden block",
+        "claim": "Golden pins two node ids' sizes/ratios and edges.length===4001 only. No pin on depends-on edge count, node map size, per-kind histogram, max in-degree===131 as an explicit edge tally, or that HUB in-degree===131—large classes of partial-parse or double-count bugs can slip if those two closures accidentally match.",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/ingest.mjs loadWeave ledger fields",
+        "claim": "prev_hash/record_hash only matched as /[0-9a-f]{64}/; no check that edge[i].prev_hash equals prior record_hash/header anchor, so chain topology is not enforced. Combined with whole-file digest this is integrity-complete for one pinned path, but any re-pin of manifest.digest accepts permuted/spliced ledgers that still look 'signed' to the loader—tests never discriminate chain order.",
+        "severity": "low"
+      },
+      {
+        "scope": "lachesis/scripts/test-boundary.mjs SANCTIONED merkle-dag/vendor.mjs",
+        "claim": "Boundary oracle allowlists a sibling module by resolved path without scanning that module's imports. A relative import of vendor.mjs satisfies the runtime check even if vendor re-exports clotho/, breaking the claimed no-clotho-import closure as actually enforced.",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/ingest.mjs loadWeave trailer branch",
+        "claim": "Trailer is accepted when clotho_weave_trailer !== undefined on the last line with no schema check (type, signed fields, edge count). A last-line record that is also a plausible edge shape is swallowed as trailer and dropped from metrics; no oracle asserts trailer shape or that edge count matches trailer claims.",
+        "severity": "low"
+      },
+      {
+        "scope": "lachesis/measure.mjs relevance + riskClass comments vs code",
+        "claim": "METRIC_EDGE_KINDS in ingest lists verified-by and introduced-by as metric kinds, but measure hardcodes depends-on only. That drift is untested as an explicit contract; future callers using METRIC_EDGE_KINDS to filter before assess will disagree with actual metric semantics.",
+        "severity": "low"
+      }
+    ]
+  }
+}

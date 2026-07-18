@@ -1,0 +1,129 @@
+{
+  "codex": {
+    "name": "codex",
+    "ok": true,
+    "objections": [
+      {
+        "claim": "`loadWeave` does not validate locator identity. In the endpoint loop it retains only `loc.kind` in `nodes`, ignores the locator payload, and never verifies that the bare content-address `from_node`/`to_node` is the hash of the corresponding locator. Two different locators of the same kind can therefore be conflated under one ID, and one locator can be split across multiple IDs, producing a graph that does not represent the implied nodes in the ledger.",
+        "scope": "ingest.mjs: `loadWeave`, endpoint validation and `nodes.set(n, loc.kind)`",
+        "severity": "high"
+      },
+      {
+        "claim": "The claimed fail-closed ledger structure is much weaker than the actual envelope contract. The first line may contain a header plus unrelated edge/trailer fields and those fields are silently ignored; the last line may be `{ \"clotho_weave_trailer\": null }` or contain edge fields and is accepted as a trailer. Header `weave_version` is not checked, so an incompatible future format can be interpreted with the current registry and metric semantics. Signed edge-record fields are not even structurally required. This is separate from cryptographically verifying the acknowledged hash/signature chain.",
+        "scope": "ingest.mjs: first-record branch, `clotho_weave_trailer !== undefined` branch, and final header/trailer checks",
+        "severity": "high"
+      },
+      {
+        "claim": "The path is not actually constrained under `rootDir`: `path.join(rootDir, manifest.snapshot_path)` permits `../` traversal, and no `realpath` containment check prevents an in-root symlink from resolving outside the root. Thus the comment that the manifest binds a location under `rootDir` is false.",
+        "scope": "ingest.mjs: `const snapshotPath = path.join(rootDir, manifest.snapshot_path)`",
+        "severity": "high"
+      },
+      {
+        "claim": "The digest pin is only relative to caller-supplied values: both `manifest` and `rootDir` are parameters, and this module authenticates neither. A caller can select arbitrary bytes and supply their matching digest. Unless every call site independently anchors the committed manifest and root, `loadWeave` provides consistency with caller input, not a trust root.",
+        "scope": "ingest.mjs: public `loadWeave(manifest, rootDir)` trust boundary",
+        "severity": "medium"
+      },
+      {
+        "claim": "The reader claims canonical JSON-lines and fail-closed anomaly handling but broadens the accepted language with `split(\"\\n\").filter(...)` and ordinary `JSON.parse`. It accepts blank lines in any position, CRLF/noncanonical formatting, duplicate JSON keys, missing final newline, and malformed UTF-8 that `Buffer.toString(\"utf8\")` replaces with U+FFFD. It also reports compressed rather than physical line numbers after ignored blank lines.",
+        "scope": "ingest.mjs: line decoding and parsing in `loadWeave`",
+        "severity": "medium"
+      },
+      {
+        "claim": "All metric entry points silently measure nonexistent or malformed node IDs. `dependencies` and `blastRadius` return empty sets, `relevance` returns zero, and default `riskClass`/`assess` then reports a plausible `medium` result because of the coverage floor. For a loaded weave, absence should be rejected or represented explicitly rather than presented as a measured node. The synthetic tests conceal this because every fixture has an empty `nodes` map.",
+        "scope": "measure.mjs: `dependencies`, `blastRadius`, `relevance`, `riskClass`, and `assess`",
+        "severity": "medium"
+      },
+      {
+        "claim": "Finite blast depth is not validated as a nonnegative integer or `Infinity`. `reverseToDepth` relies on JavaScript coercion, so values such as `\"2\"`, `null`, `NaN`, negative numbers, and fractional depths silently produce inconsistent effective hop limits rather than failing closed.",
+        "scope": "measure.mjs: `reverseToDepth` and exported `blastRadius` depth parameter",
+        "severity": "low"
+      },
+      {
+        "claim": "The risk-threshold oracle does not test blast contribution at all. The blast-10 node is also the maximum-relevance node and is high even if blast is ignored; the blast-3 node has relevance 0.3 and becomes medium solely from the unverified-coverage floor; the blast-2 assertion only says it is not high. An implementation that completely ignores blast radius when choosing the class would pass every current risk assertion.",
+        "scope": "scripts/test-metrics.mjs: `blast thresholds` fixtures and risk-class integration",
+        "severity": "high"
+      },
+      {
+        "claim": "The relevance class cutoffs are not pinned as claimed. Values 0.75 and 0.5 only constrain the high cutoff to a broad interval and do not test inclusivity at 0.66. The 0.33 medium cutoff is completely masked by the default unverified-coverage floor, so removing the relevance-medium branch can still pass. Tests need attested-complete cases immediately below, at, and above both thresholds.",
+        "scope": "scripts/test-metrics.mjs: `relevance DRIVES the class` and coverage fixtures",
+        "severity": "medium"
+      },
+      {
+        "claim": "There is no end-to-end oracle for ingestion field mapping. Metric direction tests construct already-normalized `{from,to,edge_kind}` objects and bypass `loadWeave`; the positive ingestion test checks only edge count. The real smoke test derives its hub and expected inequalities from the same loaded edges, while `max relevance == 1` is largely a consequence of normalization. A loader that systematically swaps `from_node` and `to_node`, drops locator data, or otherwise remaps records can remain self-consistent and escape these checks. Fixed expected node IDs, edge tuples, closures, and risk values from the committed snapshot are needed.",
+        "scope": "scripts/test-metrics.mjs: separation between synthetic metric tests, ingestion positive test, and real-snapshot smoke test",
+        "severity": "high"
+      },
+      {
+        "claim": "The package-boundary oracle is bypassable within its claimed static-import profile. Its `from` regex stops at a newline, so a legal multiline import such as `import { x }\\nfrom \"../../clotho/query.mjs\"` is not detected. It also scans only `ingest.mjs` and `measure.mjs`; either can import an allowed in-package helper whose own Clotho import is never scanned. Lexical `path.resolve` containment likewise does not account for symlinked modules. Consequently a future runtime can import the Clotho spine while this test remains green.",
+        "scope": "scripts/test-boundary.mjs: `violations` static-import regexes and fixed two-file scan",
+        "severity": "high"
+      }
+    ]
+  },
+  "grok": {
+    "name": "grok",
+    "ok": true,
+    "objections": [
+      {
+        "scope": "lachesis/ingest.mjs::loadWeave",
+        "claim": "Comment claims the manifest binds snapshot LOCATION under rootDir, but path.join(rootDir, manifest.snapshot_path) does not resolve+verify containment: an absolute snapshot_path or ../ segments escape rootDir (e.g. path.join(root,'/etc/passwd') => '/etc/passwd'). Digest still must match, yet the advertised location binding is not enforced.",
+        "severity": "high"
+      },
+      {
+        "scope": "lachesis/scripts/test-metrics.mjs (smoke)",
+        "claim": "Real-snapshot checks are near-tautologies for many wrong implementations: max relevance == 1.0 holds for any raw/maxRaw normalization with ≥1 metric edge; hubBlast >= direct depends-on in-degree holds for any reverse closure that includes immediate predecessors; class ∈ {low,medium,high} and edge count alone never pin a golden node id → {dependencies, blast membership, relevance, class} against the committed weave.",
+        "severity": "high"
+      },
+      {
+        "scope": "lachesis/measure.mjs::relevance / RELEVANCE_WEIGHTS",
+        "claim": "depends-on direction is documented and oracled; verified-by and introduced-by only contribute as in-edges to e.to with no Clotho-registry direction pin and no real-snapshot assertion about which endpoint accrues weight. If the committed weave orients those kinds opposite this assumption, relevance and riskClass are systematically wrong while all synthetic fixtures still pass.",
+        "severity": "high"
+      },
+      {
+        "scope": "lachesis/measure.mjs::riskClass blast thresholds",
+        "claim": "byBlast uses absolute cutovers (3/10) on unnormalized reverse-closure size. On a ~4001-edge weave this readily saturates medium/high and loses discrimination; smoke never asserts hub class, class histogram, or that thresholds remain meaningful at real scale.",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/measure.mjs::riskClass coverage floor",
+        "claim": "Default coverage is \"unverified\" and no attestation resolver exists (stated partial). Every production assess/riskClass path therefore cannot return class \"low\" (floor to medium). Tests still treat attested-complete low as live metric semantics; the effective advisory scale on real calls is {medium,high} without being pinned on the real snapshot.",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/scripts/test-metrics.mjs finite-depth blastRadius",
+        "claim": "depth 1/2/full cases only assert .count, not membership. An off-by-one hop implementation or wrong node set with identical cardinality passes the oracle.",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/scripts/test-metrics.mjs blast threshold oracle",
+        "claim": "\"blast 2 -> not high\" accepts any non-high (including coverage-floored medium). With default coverage, byBlast low is never observed as class low; the blast ∈ {0,1,2} → low band and the 0.33 byRel boundary are not discriminated under attested-complete.",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/ingest.mjs::loadWeave structure vs signed ledger",
+        "claim": "Loader never requires prev_hash/record_hash/signature (or trailer tallies) to be present—only edge_kind/endpoints/locators. Any digest-pinned JSONL with header/edges/trailer shape is measured, including chain-broken or signature-stripped bytes; trust reduces to raw digest + partial schema despite \"signed EDGE\" framing.",
+        "severity": "medium"
+      },
+      {
+        "scope": "lachesis/measure.mjs vs METRIC_EDGE_KINDS",
+        "claim": "ingest exports METRIC_EDGE_KINDS but measure hardcodes \"depends-on\" branches and RELEVANCE_WEIGHTS keys separately; no runtime/test coupling prevents drift (e.g. adding a metric kind in one place only). Non-contribution of documented-in/discharges/supersedes to dependencies() is not oracled.",
+        "severity": "low"
+      },
+      {
+        "scope": "lachesis/ingest.mjs::loadWeave edge identity",
+        "claim": "Duplicate detection key is only edge_kind|from_node|to_node; parallel same-kind edges that differ only by source_ref/provenance are rejected. Valid multi-provenance weaves would fail-closed (not hit by current smoke snapshot).",
+        "severity": "low"
+      },
+      {
+        "scope": "lachesis/ingest.mjs::loadWeave middle records",
+        "claim": "JSON null/non-object middle lines skip header/trailer guards then throw TypeError on r.edge_kind access instead of the documented fail-closed Error paths covered by per-branch negatives.",
+        "severity": "low"
+      },
+      {
+        "scope": "lachesis/measure.mjs graph vs weave.nodes",
+        "claim": "Ingest validates locator kinds into weave.nodes but all metrics ignore nodes/kinds and treat every bare-hex id uniformly; kind-confused or cross-domain depends-on edges affect blast/dependencies/relevance equally with no semantic filter.",
+        "severity": "low"
+      }
+    ]
+  }
+}
