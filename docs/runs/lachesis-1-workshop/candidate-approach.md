@@ -1,21 +1,27 @@
-# Candidate approach (rev 8) — Lachesis (enrollment quest, cycle 1)
+# Candidate approach (rev 9) — Lachesis (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-lachesis-1.json`.
 **Registered meaning (fixed):** Lachesis *measures dependencies, relevance, risk, and blast radius*. It does
 metrics. No extension. Authored AI-centric / machine-first (the first-three-modules standard).
 
-Rev 8 resolves the round-7 objections (all oracle-discrimination; architecture stable): positive vocabulary
-acceptance; digest-method discrimination; graph-semantics edge cases (cycle-to-self exclusion, duplicate-edge
-identity); repo-relative `snapshot_path` enforcement; rejected-alternative as content-addressed machine-records;
-an executable package-boundary oracle. (Prior fixes retained: §1 provenance restricted + conditional-root;
-attestation data-source; authority triple; frozen digest ops; real anchors.)
+Rev 9 resolves the round-8 objections (three internal-consistency defects; architecture stable): (1) the
+digest-reuse-vs-boundary contradiction — the boundary oracle now carries a CLOSED ALLOWLIST whose sole entry is
+the sanctioned `merkle-dag/vendor.mjs` reuse; (2) the boundary oracle is made DISCRIMINATING via compliant +
+branch-isolating negative fixture trees (a no-op exit-0 fails acceptance); (3) the circular decision-record
+hash — the record is anchored by the pre-existing plan hash + `authz-N`, its id follows the minus-id rule, and
+the contract cites the triple (no self-reference). (Prior fixes retained: §1 conditional-root; attestation
+data-source; frozen digest ops; positive vocab + digest-method + graph-semantics oracles; path safety; real
+anchors.)
 
-**Digest operations (frozen, used everywhere below):** JSON records (manifest, attestation) are digested as
-`sha256:` + `sha256hex(canonicalize(record))` using the sanctioned shared primitives
-`canonicalize`/`sha256hex` from `merkle-dag/vendor.mjs` (per SCHEMA.md reuse; zero-dep, not the clotho spine).
-The snapshot FILE is digested as `sha256:` + raw-byte sha256 of its UTF-8 bytes (`node:crypto`). Node/edge id
-syntax is CHECKED as `sha256:<64hex>` but NEVER recomputed (see §1 non-claim).
+**Digest operations (frozen, used everywhere below):** JSON records (manifest, attestation, decision) are
+digested as `sha256:` + `sha256hex(canonicalize(record))` using the sanctioned shared primitives
+`canonicalize`/`sha256hex` from `merkle-dag/vendor.mjs` — **the ONE sanctioned cross-package import**, per
+SCHEMA.md reuse (zero-dep, stdlib-only, NOT the clotho spine); it is the sole entry on the boundary oracle's
+allowlist (§5). The snapshot FILE is digested as `sha256:` + raw-byte sha256 of its UTF-8 bytes
+(`node:crypto`). A machine-record's content-address `id` = `sha256:` + `sha256hex(canonicalize(record MINUS
+its own "id" field))` (the frozen minus-id rule — no self-reference). Node/edge id syntax is CHECKED as
+`sha256:<64hex>` but NEVER recomputed (see §1 non-claim).
 
 ## 1. Trust root: a CURRENT-AUTHORITY → manifest → snapshot chain, each link verified (fixes obj. 3)
 
@@ -150,17 +156,26 @@ presence-based completeness — false rule; caller-supplied digest — substitut
 does NOT re-derive content-addresses; consumes a snapshot, not the live ledger); `FAILURE-MODES.md`;
 `EVIDENCE/`; `comprehension-queries.json`; `README.md`. `package.json`: `"type":"module"`, `dependencies` empty.
 **`npm test` runs BOTH `test-metrics.mjs` AND an executable package-boundary oracle
-`scripts/test-boundary.mjs`** that FAILS on: any import from `clotho/`; any non-stdlib (non-`node:`) or
-undeclared runtime import; a dynamic-`import()`/`require()` escape path; or a non-empty `dependencies` field —
-so the load-bearing no-import/zero-dep boundary is machine-enforced, not merely asserted.
+`scripts/test-boundary.mjs`.** The boundary rule is a CLOSED ALLOWLIST: the only permitted non-`node:`
+runtime import is `merkle-dag/vendor.mjs` (`canonicalize`/`sha256hex`) — the one sanctioned reuse (resolving
+the digest-vs-boundary contradiction); EVERYTHING else is rejected: any `clotho/` import, any other
+package-external relative import, any bare-package import, any dynamic `import()`/`require()` escape, any
+undeclared import, or a non-empty `dependencies` field.
+**The boundary oracle is itself DISCRIMINATING** — it runs against controlled fixture package trees, not just
+the real package (a no-op that exits 0 must fail acceptance): a COMPLIANT tree (passes) + branch-isolating
+NEGATIVE trees each flagged — a `clotho/` import, an unauthorized package-external relative import, a
+bare-package import, a dynamic `import()`, a `require()` escape, an undeclared import, and a non-empty
+`dependencies` field.
 
 ## 6. Acceptance sequence (documentation-first)
 
-0. **Authority triple (minted at the preceding TELOS gate, referenced here):** the SPECIFIED-PENDING contract
-   requires the frozen triple — the plan `sha256:` (= the content-address of THIS matured approach), the
-   `authz-N` minted by the TELOS council for this Lachesis quest, and the decision id of
-   `DECISIONS/decision-lachesis-cycle-1.json` (the affirmative record authored from the council's ruling).
-   The contract is authored in Argo (post-authorization), so the triple already exists.
+0. **Authority triple (minted at the preceding TELOS gate, referenced here — no circularity):** the affirmative
+   record `DECISIONS/decision-lachesis-cycle-1.json` is ANCHORED by the two PRE-EXISTING external members — the
+   plan `sha256:` (content-address of THIS matured approach) and the `authz-N` minted by the TELOS council — and
+   its own `id` is `sha256hex(canonicalize(record MINUS "id"))` (the frozen minus-id rule), so the record's id
+   is NOT in its own preimage. The SPECIFIED-PENDING contract then cites the frozen triple {plan `sha256:`,
+   `authz-N`, that decision `id`}. The contract is authored in Argo (post-authorization), so all three already
+   exist.
 1. Author `metrics.json` (SPECIFIED-PENDING-IMPLEMENTATION + the complete authority triple +
    `becomes_normative_when` = test-metrics.mjs passes) + `snapshot-manifest.json` + `coverage-attestations.json`
    + the affirmative decision record + full memory set; render README (`--check`). 2. Comprehension gate:

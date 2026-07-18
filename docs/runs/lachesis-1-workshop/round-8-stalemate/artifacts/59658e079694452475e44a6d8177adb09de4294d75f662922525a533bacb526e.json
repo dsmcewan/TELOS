@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:0d92e7ad6141d6432e479c51c91c05a17b0fe19f32c352839bdf8f77bf581d91",
+  "output_plan_artifact_hash": "sha256:0d92e7ad6141d6432e479c51c91c05a17b0fe19f32c352839bdf8f77bf581d91",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:ec4950fb721e99e893faec656a8ecf7558e9559b76435765fb57b02b7968081e",
+    "provenance_key": "anthropic:msg_011Cd96xHKMJGYzBnEbgx3cT"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:599c2d14da789d4f1f36df5f2f8d991c052e944f3ce2dae8dba86ea1d0c4bd96",
+    "provenance_key": "openai:chatcmpl-E2tSmPDcGQ6PlEMVH4ThzKzQocCJx",
+    "bound_hash": "sha256:0d92e7ad6141d6432e479c51c91c05a17b0fe19f32c352839bdf8f77bf581d91"
+  },
+  "objections": [
+    {
+      "claim": "The required digest implementation and package-boundary rule are mutually incompatible. The approach mandates runtime reuse of `canonicalize`/`sha256hex` from `merkle-dag/vendor.mjs`, while `test-boundary.mjs` must reject every non-`node:` runtime import. Importing the mandated sibling module therefore fails the boundary oracle; reimplementing it violates the frozen reuse rule. The boundary must explicitly allow exactly the sanctioned realpath-resolved `merkle-dag/vendor.mjs` import while continuing to reject `clotho/`, other package-external imports, bare packages, and undeclared dependencies.",
+      "scope": "candidate Digest operations and §5",
+      "objection_hash": "sha256:54d6169205bf284fe6fc3a2950e1821a285cec1db4f8ec50d57c9e465e82c35f",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The package-boundary oracle is not discriminating as specified. It is only run against the expected-compliant package, so a no-op `test-boundary.mjs` that always exits 0 satisfies acceptance. It needs controlled positive and branch-isolating negative fixture trees proving detection of at least: a `clotho/` import, an unauthorized package-external relative import, a bare-package import, dynamic `import()`, direct and aliased `require`/`createRequire`, prohibited code-loading escapes, and a nonempty `dependencies` field.",
+      "scope": "candidate §5 executable package-boundary oracle",
+      "objection_hash": "sha256:07007be6490c68c3c5a946b155fc84e2d077256c5761443eef31d610782e975e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The affirmative decision record is required to be content-addressed while also “carrying the authority triple,” whose third member is that same decision record's id. This creates an undefined self-referential hash preimage, compounded by the absence of an exact rule stating which fields are excluded when computing a machine-record id. The decision must instead be anchored by the already-existing plan hash and `authz-N`, have its id computed by an explicitly defined sanctioned content-address procedure, and only then be referenced as the third anchor by the pending contract; it cannot include its own not-yet-derived id as an authority input.",
+      "scope": "candidate §5–§6 authority triple and decision-record identity",
+      "objection_hash": "sha256:ed6bc967de2e8d6c463b875cc6cc50e2243748e4492ddba3408531cf45825771",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
