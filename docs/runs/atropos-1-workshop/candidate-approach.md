@@ -1,4 +1,4 @@
-# Candidate approach (rev 7) — Atropos (enrollment quest, cycle 1)
+# Candidate approach (rev 8) — Atropos (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json`.
@@ -53,9 +53,11 @@ detecting via source+membership, not by matching the (distinct) record-kind and 
 
 ## 3. NORMATIVE verifier — `atropos/verify.mjs` (plan-version full; node-backed DEFERRED)
 - **plan-version (full, cycle-1):** normative surface = the `#superseded` entry. Checks: `#superseded` is an
-  array; each entry has EXACTLY the closed keys `{plan_version, sha256(sha256:<64hex>), authorization(authz-N),
-  authz_status∈{AUTHORIZED,NOT_AUTHORIZED}, superseded_by, must_not_govern_new_work(bool), note}`; **unique
-  `plan_version`**; `active_plan.version` MUST NOT also appear superseded; `must_not_govern_new_work===true`;
+  array; each entry has EXACTLY the closed keys with PINNED SCALAR TYPES: `plan_version` (non-empty string),
+  `sha256` (string `sha256:<64hex>`), `authorization` (string `authz-N`), `authz_status`
+  (string ∈ {AUTHORIZED, NOT_AUTHORIZED}), `superseded_by` (non-empty string), `must_not_govern_new_work`
+  (boolean, and === true), `note` (string) — an object/number/null/empty-string in any field → `inconsistent`;
+  `active_plan.version` must be a non-empty string. **unique `plan_version`**; `active_plan.version` MUST NOT also appear superseded; `must_not_govern_new_work===true`;
   `superseded_by` resolves only to `active_plan.version` or another unique superseded `plan_version` — reject
   self/dangling/cycles (visited-set); every chain TERMINATES at `active_plan.version` (a stable
   `sha256:`-anchored current authority). No `SUPERSEDED` record / weave edge required (structurally inapplicable).
@@ -102,9 +104,14 @@ Inputs are EXACT + closed (a verifier cannot silently omit a surface and still p
   fail-closed), restricted to `edge_kind === "supersedes"`.
 **Ingestion vs. verifier split (removes the round-7 contradiction):** ingestion throws ONLY on FILE-LEVEL
 anomalies that prevent producing ANY verdict — `CURRENT-AUTHORITY.json` unparseable, `#superseded` not an
-array, a snapshot digest/canonical/containment failure. It does NOT throw on an individual malformed
-`#superseded` ENTRY — per-entry shape is validated by the VERIFIER, which returns `inconsistent`
-(`UNSUPPORTED_RETIREMENT_KIND`) as a VERDICT. (So malformed entries reach classification exactly as §§2/3/5
+array, a snapshot digest/canonical/containment failure, **a malformed/unreadable manifest (cannot enumerate the
+discovery roots), or any unparseable/unreadable `*.json` under a manifest-declared discovery root (a retirement
+record must never be silently SKIPPED — an unreadable candidate source fails closed).** It does NOT throw on an
+individual malformed `#superseded` ENTRY (well-formed file, bad entry) — per-entry shape is validated by the
+VERIFIER, which returns `inconsistent` (`UNSUPPORTED_RETIREMENT_KIND`) as a VERDICT. **The oracle exercises
+discovery END-TO-END:** a fixture memory dir declared by the manifest containing a `status:"SUPERSEDED"` record
+must be DISCOVERED (→ node-backed → `UNREPRESENTABLE`); an unparseable record under a declared root → throw; a
+newly-declared manifest root is picked up. An ingester that skips either would fail these. (So malformed entries reach classification exactly as §§2/3/5
 require; only file-level anomalies fail-closed to a throw.) **Discovery is discriminating: because the candidate
 set is the closed UNION of all three sources, a `SUPERSEDED` record or `supersedes` edge that IS present forces
 a node-backed candidate → `UNREPRESENTABLE…` → `inconsistent` — the verifier cannot omit it and return
@@ -130,7 +137,9 @@ for The Eye).
   and no `node:fs/promises` (defeats name-based checking / exposes FileHandle writers); (c) NO import of
   `node:child_process`, `node:worker_threads`, `node:vm`, `process.binding`, `process.dlopen`; (d) deny known
   GLOBAL write paths that need no import — `process.report.writeReport`, `process.report.directory`/`filename`
-  assignment, `process.chdir`; (e) the boundary oracle already bans dynamic
+  assignment, `process.chdir`; (d2) **NO runtime import resolves under `scripts/`** (the excluded dev-only tree)
+  — closes the hole where a runtime module imports a write-capable helper from an unscanned file; (e) the
+  boundary oracle already bans dynamic
   `import()`/`require`/`createRequire`/`Module._load`/`eval`. Plus branch-isolating fixture negatives (each
   flagged). **NON-CLAIM (honest — corrects the rev-4 overclaim):** a FAIL-CLOSED STATIC check over the KNOWN
   import + named-global write surface — NOT a proof of no-write and NOT a runtime sandbox; a determined write

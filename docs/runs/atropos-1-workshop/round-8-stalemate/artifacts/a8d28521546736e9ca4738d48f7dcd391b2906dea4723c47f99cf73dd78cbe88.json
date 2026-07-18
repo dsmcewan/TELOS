@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:6ec4a6a07826f4549a78eac3f25f60561a6d5e91fa79d7e5a4755c9224dd9c33",
+  "output_plan_artifact_hash": "sha256:6ec4a6a07826f4549a78eac3f25f60561a6d5e91fa79d7e5a4755c9224dd9c33",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:ab9a54344af664c228bb35b445e1d9bfc7ff6d1479f02012965512c8a5b9b821",
+    "provenance_key": "anthropic:msg_011Cd9VrYJWeRZfBAwsLQooG"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:81b9146c167511e8d989c1d19605d11a2d5ddabc415fb65c7e7623cf6b319b2c",
+    "provenance_key": "openai:chatcmpl-E2y9PYfnJIzuDXw4ksej2gAuiDW53",
+    "bound_hash": "sha256:bc9842721ab0a3c766142d1de39b0964bc3632d38c7d944121daf65e504e0d9d"
+  },
+  "objections": [
+    {
+      "claim": "The read-only oracle excludes `scripts/` without forbidding production modules or package entry points from importing those excluded files. A verifier can therefore statically import a write-capable helper under `scripts/` and pass the stated scan, so the oracle does not discriminate a straightforward violation of the READ-ONLY contract.",
+      "scope": "§5 `scripts/test-readonly.mjs` and production-module boundary",
+      "objection_hash": "sha256:31b60c258a5967c72c9c30c938877e34de307ae58fd769ac94909a11a8e8b712",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The plan-version closed shape does not define scalar types for `plan_version`, `superseded_by`, `note`, or `active_plan.version`. An object, number, empty string, or null can therefore satisfy an implementation that checks only the stated keys and selected fields, potentially yielding `consistent` for a malformed authority identity.",
+      "scope": "§§2–3 plan-version classification and verification",
+      "objection_hash": "sha256:bfe60523277ea2f0ab51e0f8af41a1111fe7f02053ff0440b3798010648203fc",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The fail-closed ingestion anomaly list omits malformed/unreadable manifest-discovered JSON and malformed manifest roots, while the oracle list does not explicitly exercise discovery end to end. An ingester that skips an unparseable retirement record or ignores a newly declared memory directory can consequently omit a retirement surface and still return the real-data golden `consistent`.",
+      "scope": "§§4–5 record discovery, fail-closed ingestion, and oracle coverage",
+      "objection_hash": "sha256:d7fdadbab68e6aff111a0a123bb390650a8f86214c044e9004341858efb5988b",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
