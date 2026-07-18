@@ -1,0 +1,71 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:ef0f867bc94f69257bdd50de2c83d80ed35dee06549162da7793274297f07db3",
+  "output_plan_artifact_hash": "sha256:ef0f867bc94f69257bdd50de2c83d80ed35dee06549162da7793274297f07db3",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:f10f6de0bc973550b08eaafd9b3bf971eda9cea32471b74d75919fd72cd4ace7",
+    "provenance_key": "anthropic:msg_011Cd9515p9TB7zJgX5pWwBY"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:d45ab2a45cf3f1d268c5f996bcdd31e3e12ce76924f140366e454d3ee0647a1c",
+    "provenance_key": "openai:chatcmpl-E2t40u3YWkalowhHy6TkLzL11ADbY",
+    "bound_hash": "sha256:ef0f867bc94f69257bdd50de2c83d80ed35dee06549162da7793274297f07db3"
+  },
+  "objections": [
+    {
+      "claim": "The source_ref validator omits the frozen `sha256:` scheme while claiming to implement the SCHEMA.md allowlist. This rejects a valid frozen source_ref kind and is not the required closed set.",
+      "scope": "§2 fail-closed schema validation",
+      "objection_hash": "sha256:b35511807cca53a871c4037291f32311fa2170e5bb2baf13fe30e28d111ac8b6",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The edge-kind allowlist is narrowed to `depends-on|verified-by|introduced-by`, although the frozen Clotho contract requires reuse of its complete closed edge-kind set, including `documented-in`, `evidenced-by`, and `supersedes`. An entire-weave loader must accept all known Clotho kinds and ignore metric-irrelevant ones while rejecting genuinely unknown kinds.",
+      "scope": "§2 fail-closed schema validation",
+      "objection_hash": "sha256:1d44b8475ee10d9f83480cb73c94b138d770aa640e73c34f94050e12847b5aa4",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The snapshot digest is read from a mutable working-tree manifest, but no executable check independently pins and verifies that manifest's exact bytes or content digest against CURRENT-AUTHORITY. References inside the manifest to a pre-review and authority file do not authenticate the manifest itself; changing both snapshot and manifest would satisfy the proposed loader check.",
+      "scope": "§1 snapshot trust root",
+      "objection_hash": "sha256:fc7f58ebf2322e613c77199f55f57085ee134df80f886f97665de3c1abf9bae8",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "`riskClass` compares `blastRadius` to thresholds without specifying the depth argument or a fixed contract depth, even though `blastRadius(depth)` is depth-dependent. Different conforming-looking implementations can therefore assign different risk classes to the same graph.",
+      "scope": "§3 metric semantics",
+      "objection_hash": "sha256:09d02d13df8fb06299b8d34e14f30595f799109032507a2f1c5c8e382529f641",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The completeness-attestation mechanism is underspecified: `signed/pinned` does not define a closed attestation schema, trust anchor, signature or digest verification, or exact snapshot-and-node binding. The oracle also lacks negatives for absent, unauthorized, stale-snapshot, and wrong-node attestations and lacks an explicit test that unverified coverage floors an otherwise-low result to medium. An implementation that accepts arbitrary attestations or returns low unconditionally could pass the listed tests.",
+      "scope": "§4 coverage and §3 metric oracle",
+      "objection_hash": "sha256:cc5bd976d9ddfed447be0ca5940aa1c1336f205a2e22cd9934ad1f96e387ef3e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The listed ingestion negatives do not discriminate all promised rejection branches. They omit explicit fixtures for unknown node and edge kinds, invalid node-id syntax, disallowed source_ref schemes, and each missing or mistyped required field. Consequently the proposed oracle cannot establish that the NORMATIVE contract enforces the complete fail-closed schema.",
+      "scope": "§3 ingestion oracle",
+      "objection_hash": "sha256:6f9ff84f47c324ee98735128765fad199438f53589b835498bbeb97adb0728d4",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

@@ -1,0 +1,45 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "The source_ref validator omits the frozen `sha256:` scheme while claiming to implement the SCHEMA.md allowlist. This rejects a valid frozen source_ref kind and is not the required closed set.",
+        "scope": "§2 fail-closed schema validation"
+      },
+      {
+        "claim": "The edge-kind allowlist is narrowed to `depends-on|verified-by|introduced-by`, although the frozen Clotho contract requires reuse of its complete closed edge-kind set, including `documented-in`, `evidenced-by`, and `supersedes`. An entire-weave loader must accept all known Clotho kinds and ignore metric-irrelevant ones while rejecting genuinely unknown kinds.",
+        "scope": "§2 fail-closed schema validation"
+      },
+      {
+        "claim": "The snapshot digest is read from a mutable working-tree manifest, but no executable check independently pins and verifies that manifest's exact bytes or content digest against CURRENT-AUTHORITY. References inside the manifest to a pre-review and authority file do not authenticate the manifest itself; changing both snapshot and manifest would satisfy the proposed loader check.",
+        "scope": "§1 snapshot trust root"
+      },
+      {
+        "claim": "`riskClass` compares `blastRadius` to thresholds without specifying the depth argument or a fixed contract depth, even though `blastRadius(depth)` is depth-dependent. Different conforming-looking implementations can therefore assign different risk classes to the same graph.",
+        "scope": "§3 metric semantics"
+      },
+      {
+        "claim": "The completeness-attestation mechanism is underspecified: `signed/pinned` does not define a closed attestation schema, trust anchor, signature or digest verification, or exact snapshot-and-node binding. The oracle also lacks negatives for absent, unauthorized, stale-snapshot, and wrong-node attestations and lacks an explicit test that unverified coverage floors an otherwise-low result to medium. An implementation that accepts arbitrary attestations or returns low unconditionally could pass the listed tests.",
+        "scope": "§4 coverage and §3 metric oracle"
+      },
+      {
+        "claim": "The listed ingestion negatives do not discriminate all promised rejection branches. They omit explicit fixtures for unknown node and edge kinds, invalid node-id syntax, disallowed source_ref schemes, and each missing or mistyped required field. Consequently the proposed oracle cannot establish that the NORMATIVE contract enforces the complete fail-closed schema.",
+        "scope": "§3 ingestion oracle"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2t40u3YWkalowhHy6TkLzL11ADbY",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2t40u3YWkalowhHy6TkLzL11ADbY",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}
