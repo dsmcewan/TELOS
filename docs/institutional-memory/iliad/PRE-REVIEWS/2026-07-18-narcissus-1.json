@@ -1,0 +1,41 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "pre-review-2026-07-18-narcissus-1",
+  "note": "Pre-review for the enrollment quest of a registered future module: Narcissus. Commissioned by The Eye (2026-07-18). This cycle produces the PLAN (matured by the Daedalus workshop) for the FLAGSHIP development-story FRONT-END. The Eye APPROVED + APPLIED the vocabulary amendment: Narcissus's registered meaning is now front-end PRODUCTION (not only a review loop) — verified across the vocabulary file + enrollment.json + repository-manifest.json (verify-contracts 215/215). A PRE-QUEST already ran (docs/runs/narcissus-1-prequest/): vocabulary draft, reality-grounded LEXI study (cloned + real tokens), award-winning references, and a live 4-seat adversarial breakout.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "docs/runs/narcissus-1 (pre-review + entry ritual); pre-quest docs/runs/narcissus-1-prequest; workshop docs/runs/narcissus-1-workshop; branch from the Iliad working head",
+  "next_phase_workshop": "docs/runs/narcissus-1-workshop/ — the Daedalus workshop matures the APPROACH (iliad/tools/run-daedalus-workshop.mjs). Then TELOS authorization (a real authz council), then Argo implementation (the actual React/WebGL front-end).",
+  "authority_basis": "The Eye directive 2026-07-18 (commission Narcissus; APPROVE + APPLY the vocabulary amendment; ADOPT the 'WebGL is paint' invariant) + file:docs/institutional-memory/iliad/CONTRACTS/enrollment.json (narcissus) + the AMENDED registered meaning: docs/mythological-vocabulary.md#Narcissus ('production of full-rollout, award-standard front-ends ... through the reflection loop').",
+  "honest_scope": {
+    "registered_meaning_is_the_boundary": "Narcissus PRODUCES full-rollout, award-standard front-ends through the reflection loop (render -> look hard -> refine -> look again, until worthy). It does NOT weave (Clotho), measure (Lachesis), authorize (TELOS), or retire (Atropos). Front-ends are for the enrolled PRODUCTS (ai-forge / forge / saas-forge), NOT for TELOS's zero-dependency governance core (which stays framework-free).",
+    "deliverable_cycle_1": "The FLAGSHIP development-story front-end: a React + WebGL surface telling TELOS's OWN honest self-build story (AI-START-HERE -> Iliad quests -> Daedalus workshops -> TELOS councils -> reality-correction -> 'AI system architecture that CAN'T BE LOST'), sourced from the authored institutional-memory records + the Clotho weave. Direction: the breakout-synthesized 'Loom on Trial / Crucible Weave' (the Clotho weave as a suspended, tension-loaded loom; the visitor moves among discrete forensic STATIONS; stalemates are knots/scars; reality-corrections are fused slag; a reverse-topological 'unraveling' climax).",
+    "normative_architecture_invariant": "'WebGL is PAINT, never TRUTH' (adopted NORMATIVE by The Eye): the Three.js/WebGL canvas is a PURE presentational view-layer; ALL state, interaction, and progression live in a deterministic finite-state machine (XState) + a typed command registry in the DOM; EVERY interactive 3D element is shadowed by an invisible, semantically-correct HTML control (so it is both deterministically E2E-testable AND accessible); a forced test-mode (?e2e=1) freezes RNG (seeded PRNG), pins the physics timestep, and disables springs/settle for deterministic E2E. This invariant is what makes the functional gate blade passable and MUST be a plan invariant.",
+    "gate_two_blades": "(1) AESTHETIC — Eye-judged HUMAN review; beauty has NO deterministic oracle, so the gate is The Eye's judgment over visual evidence (screenshots/renders/live), recorded AS SUCH (do NOT fake an oracle) + mechanizable aesthetic-adjacent checks (a11y, Core-Web-Vitals perf budgets, no-templated-defaults). (2) FUNCTIONAL — a DETERMINISTIC E2E suite asserting EVERY interactive element (buttons, panels, dropdowns, reports, nav, exports) works, driven through the DOM-shadowed controls under ?e2e=1 (browser-driven, e.g. Playwright / chrome-devtools MCP). 'good enough' FAILS both blades.",
+    "evidence_ledger": "Every claim the story makes is grounded in a REAL institutional-memory record (evidence-vs-uncertainty, LEXI's forensic ethos) — the surface cites its sources; it does not narrate unbacked triumph.",
+    "aesthetic_reference": "LEXI (docs/runs/narcissus-1-prequest/lexi-tokens.md — cloned + real tokens): dark near-black canvas (#05070b/#0b0f1a), signature red/crimson accent (#ef4444/#b91c1c) with red bloom-glow, amber alerts, Inter + JetBrains Mono, a mouse-reactive simplex-noise ferrofluid WebGL hero, full light/dark theming. LEXI is the floor; the standard reached for is Awwwards-Site-of-the-Year immersion.",
+    "normativity_split": "The FUNCTIONAL E2E suite is NORMATIVE-CURRENT with an executable oracle (deterministic over ?e2e=1 DOM-shadowed controls). The AESTHETIC verdict is ADVISORY / Eye-judged — a human authority for what a machine cannot certify, NOT a faked oracle.",
+    "enrollment_flip_flagged_for_the_eye": "Enrolling Narcissus (manifest entry_points.memory_dirs + moving out of future_modules_registered_unimplemented + the verify-contracts expectation) is a routed decision for The Eye at the authorization gate, not resolved unilaterally. (The vocabulary amendment itself is already applied.)",
+    "non_goals_cycle_1": "No product BACK-END changes; no other future modules (Hermes/Medusa/Atropos); the front-end targets products, never the zero-dep core; no new governance enforcement (Narcissus produces surfaces, it does not gate merges)."
+  },
+  "model_review": {
+    "note": "seats env-resolved over build-gate/seats.json; no seat change proposed. Argo implementation seats + TELOS authz council seats resolved at those gates. The aesthetic blade adds a HUMAN authority (The Eye) that no seat replaces.",
+    "baseline": "docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-17.json",
+    "seats": { "claude": "claude-fable-5", "codex": "gpt-5.6-sol", "build": "session model (claude-opus-4-8)" },
+    "seat_changes_proposed": []
+  },
+  "capability_review": {
+    "pre_quest_completed": "docs/runs/narcissus-1-prequest/ — vocabulary-amendment (approved+applied), lexi-tokens.md (reality-grounded), award-references.md, breakout-synthesis.md (+ raw round1/round2 JSON).",
+    "prior_retrospectives_read": ["docs/institutional-memory/iliad/RETROSPECTIVES/lachesis-1.json"],
+    "optimizations_adopted": [
+      "Reality-first: cloned LEXI + read the actual tokens/shaders rather than inferring (the Lachesis lesson: a plan defensible in the abstract can be wrong about reality).",
+      "Front-load the hard constraint: the 'WebGL is paint' invariant is carried as NORMATIVE so the workshop cannot converge on a beautiful-but-untestable surface.",
+      "The aesthetic blade has no oracle — record it as Eye-judged rather than manufacture a fake deterministic test.",
+      "NEVER abbreviate an authority/content-address anchor (full 40-hex only); use the parameterized workshop harness; VERIFY adversary claims before implementing."
+    ],
+    "missing_external_capabilities": ["a browser-driver for the functional E2E blade (Playwright / chrome-devtools MCP) at implementation; a 3D-walkthrough plugin (locate at Argo)"],
+    "capability_packets_required": false
+  },
+  "entry_ritual": "docs/runs/narcissus-1/reader-validation-artifact.json (iliad module comprehension gate) — to be passed at quest entry."
+}
