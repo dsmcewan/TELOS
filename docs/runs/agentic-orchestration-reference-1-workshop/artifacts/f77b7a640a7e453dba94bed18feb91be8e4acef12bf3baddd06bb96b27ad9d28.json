@@ -1,0 +1,26 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [],
+    "dispositions": [
+      {
+        "objection_hash": "sha256:825b89fee3d0f2c63a1f88144816a95c64dbb22502a8699b2fb01289a3768757",
+        "action": "resolved",
+        "note": "On closer reading of the frozen SCHEMA.md, status and normativity are distinct fields in the six-dimension record ('status' and 'normativity' are listed separately), and the taxonomy section is titled 'Status / normativity taxonomy', a single closed vocabulary drawn from by two orthogonal fields. Discipline 2 constrains the NORMATIVE label on claims (requiring an oracle); it does not forbid status: NORMATIVE-CURRENT on a record whose normativity is ADVISORY — the currency axis (current vs superseded) is what NORMATIVE-CURRENT vs SUPERSEDED tracks. The pre-review's pairing is therefore coherent under the frozen text, and the candidate's §2 mirrors it faithfully ('status: NORMATIVE-CURRENT with normativity: ADVISORY, matching the approved pre-review'). No genuine defect in the frozen material; withdrawing my escalation as resolved by re-reading, not by any change."
+      }
+    ],
+    "provenance": {
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011Cd8fM2H5hwvepm6PFNrBc",
+      "source": "ai-peer-mcp/claude_ask"
+    }
+  },
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011Cd8fM2H5hwvepm6PFNrBc",
+    "source": "ai-peer-mcp/claude_ask"
+  }
+}

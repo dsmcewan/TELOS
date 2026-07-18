@@ -1,0 +1,41 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [],
+    "dispositions": [
+      {
+        "action": "resolved",
+        "note": "The candidate now places the artifact in a system-reference namespace, indexes it only as a reference, forbids component/role/future-module registration, and stops for governance review if the manifest cannot represent the reference without a boundary or schema change.",
+        "objection_hash": "sha256:aa526babcc35d9eb99851ffade3f5eaafbb0e61dfef2fbd76b8e74ad13286f75"
+      },
+      {
+        "action": "resolved",
+        "note": "The candidate now treats URLs and dates only as provenance metadata, requires exact locally reviewed evidence artifacts with content digests, pins the pre-review and TELOS examples with complete stable references, and rejects abbreviated or mutable terminal anchors.",
+        "objection_hash": "sha256:4ac8c1308f1babeefc89b7c7d32b3e72d0381db9931fbea9727c0b6dea88d9a1"
+      },
+      {
+        "action": "resolved",
+        "note": "The candidate now specifies a deterministic ESM renderer with write and byte-equality check modes, a generated-file notice, machine-record-only substantive content, and acceptance coverage through both the renderer check and local fail-closed checker.",
+        "objection_hash": "sha256:378fcacc14d7e770fad5892bb1dadaa070ce71a2ab94cdfc38cbd98f619aa350"
+      },
+      {
+        "action": "resolved",
+        "note": "The candidate now preserves the five-workflow-versus-agent distinction, qualifies TELOS mappings as evidence-backed related examples rather than proven instantiations, removes advisory-created mandatory checkpoint language, and limits the oracle to structural and provenance claims rather than semantic optimality or safety.",
+        "objection_hash": "sha256:fac1c32808f93644c359fb6b1882e4a804944f5f6140f144ef81594d576ea587"
+      }
+    ],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2oD3tsdD5TO0LRk1HQJkfUiXAL0D",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2oD3tsdD5TO0LRk1HQJkfUiXAL0D",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}

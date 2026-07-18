@@ -1,0 +1,63 @@
+{
+  "record_type": "daedalus-round",
+  "round": 2,
+  "input_plan_artifact_hash": "sha256:85a72e55b8f6f3b7e00d0ebf25623995f1f97c82e25e3cd5fae064b93d62ff01",
+  "output_plan_artifact_hash": "sha256:85a72e55b8f6f3b7e00d0ebf25623995f1f97c82e25e3cd5fae064b93d62ff01",
+  "author": {
+    "seat": "codex",
+    "provenance_ref": "sha256:0bc618276001922370cdc0bab85a367c2e0eff288c099bda3447eb8567ba3eec",
+    "provenance_key": "openai:chatcmpl-E2oD3tsdD5TO0LRk1HQJkfUiXAL0D"
+  },
+  "reviewer": {
+    "seat": "claude",
+    "provenance_ref": "sha256:f77b7a640a7e453dba94bed18feb91be8e4acef12bf3baddd06bb96b27ad9d28",
+    "provenance_key": "anthropic:msg_011Cd8fM2H5hwvepm6PFNrBc",
+    "bound_hash": "sha256:85a72e55b8f6f3b7e00d0ebf25623995f1f97c82e25e3cd5fae064b93d62ff01"
+  },
+  "objections": [],
+  "resolutions": [
+    {
+      "record_type": "objection-resolved",
+      "objection_hash": "sha256:aa526babcc35d9eb99851ffade3f5eaafbb0e61dfef2fbd76b8e74ad13286f75",
+      "actor": {
+        "seat": "codex",
+        "provenance_key": "openai:chatcmpl-E2oD3tsdD5TO0LRk1HQJkfUiXAL0D"
+      }
+    },
+    {
+      "record_type": "objection-resolved",
+      "objection_hash": "sha256:4ac8c1308f1babeefc89b7c7d32b3e72d0381db9931fbea9727c0b6dea88d9a1",
+      "actor": {
+        "seat": "codex",
+        "provenance_key": "openai:chatcmpl-E2oD3tsdD5TO0LRk1HQJkfUiXAL0D"
+      }
+    },
+    {
+      "record_type": "objection-resolved",
+      "objection_hash": "sha256:378fcacc14d7e770fad5892bb1dadaa070ce71a2ab94cdfc38cbd98f619aa350",
+      "actor": {
+        "seat": "codex",
+        "provenance_key": "openai:chatcmpl-E2oD3tsdD5TO0LRk1HQJkfUiXAL0D"
+      }
+    },
+    {
+      "record_type": "objection-resolved",
+      "objection_hash": "sha256:fac1c32808f93644c359fb6b1882e4a804944f5f6140f144ef81594d576ea587",
+      "actor": {
+        "seat": "codex",
+        "provenance_key": "openai:chatcmpl-E2oD3tsdD5TO0LRk1HQJkfUiXAL0D"
+      }
+    },
+    {
+      "record_type": "objection-resolved",
+      "objection_hash": "sha256:825b89fee3d0f2c63a1f88144816a95c64dbb22502a8699b2fb01289a3768757",
+      "actor": {
+        "seat": "claude",
+        "provenance_key": "anthropic:msg_011Cd8fM2H5hwvepm6PFNrBc"
+      }
+    }
+  ],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
