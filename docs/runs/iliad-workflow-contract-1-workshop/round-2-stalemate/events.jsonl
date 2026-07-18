@@ -1,0 +1,1 @@
+{"stage":"negotiation","artifact_refs":["sha256:aa545018a1a6c2868ff5392bf91230027a37c3bc333ad90457a447197df2080e","sha256:ed1c681a5fd06ca8ea4ce54af77193c7ae369c3cdaa149a76fbe9fbc78b3bdcb","sha256:793c061038e539a71c0869c5c1d5a94eafba5b35f0a9c0b9a737b2a740162f43"],"policy_result":{"state":"stalemate","unresolved":4,"round":1},"at":"2026-07-18T05:21:25.572Z"}

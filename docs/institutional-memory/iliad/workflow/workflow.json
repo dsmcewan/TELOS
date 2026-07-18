@@ -1,0 +1,79 @@
+{
+  "id": "sha256:4cf043b6781e3a5a75b9ac4dc7c936aeccaf78799dc0649647553b91cd105116",
+  "kind": "contract",
+  "title": "The Iliad-quest workflow — canonical stage order (advisory record, links the enforced invariants)",
+  "what": "The canonical order a new system traverses to become an enrolled part of The Iliad. The Iliad IS the quest (enter -> trials -> enrolled), not a bookend. This record is ADVISORY: it documents the order and, for the stages whose rules are already enforced, AUTHORITY-LINKS the existing NORMATIVE-CURRENT iliad invariants by content-addressed reference — it does not restate or re-enforce them. The new documentation/reference stage is ADVISORY per The Eye's option (b), 2026-07-18.",
+  "why": "A recorded stage order gives every module a shared place in the quest and makes 'enrollment is earned by traversal, not by proximity' explicit and checkable.",
+  "scope": "The Iliad lifecycle for a questing system. Does not own any stage's internal rules — those stay with each stage's module.",
+  "authority": "git:6d16c8ff7cb120910ed0c2968d321269dd1f57cb + file:docs/institutional-memory/iliad/RETROSPECTIVES/agentic-orchestration-reference-1.json@cc24535a45fb4f496ec8962d8b44696cec008785 (The Eye directive 2026-07-18) + file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-iliad-workflow-contract.json@6e9436a2fc6a8ac9cdc892b1a3020159dbc81b6e",
+  "evidence": [
+    "file:docs/institutional-memory/iliad/INVARIANTS.json@ff6af93f32fdd8a2a67b5a56a5d805b395204690"
+  ],
+  "non_claim": "ADVISORY, not enforced. It does not authorize execution, does not choose stages, does not transfer any stage-module's authority, and does not make the new documentation stage NORMATIVE. Mandatory stage rules (e.g. pre-review-before-implementation, post-review-required) are mandatory solely by their own linked NORMATIVE records, not by this record.",
+  "change_rule": "A reviewed edit under the Iliad lifecycle; check-workflow.mjs (id recompute + exact stage table + ref resolution + render --check) and the existing comprehension gate must pass, and verify-contracts.mjs must run UNCHANGED (no shared-infra change; option b).",
+  "status": "NORMATIVE-CURRENT",
+  "normativity": "ADVISORY",
+  "superseded_by": null,
+  "effective_from_commit": "git:6d16c8ff7cb120910ed0c2968d321269dd1f57cb",
+  "must_not_govern_new_work": false,
+  "quest_premise": "The Iliad is the quest a new system undertakes to become enrolled. Presence in the repository is NOT enrollment; enrollment is earned by completing the quest. (Cf. the AM-40-deferred ai-forge/forge/saas-forge: present on disk, NOT enrolled.)",
+  "stages": [
+    {
+      "order": 1,
+      "stage": "iliad-pre-review",
+      "role": "enter the quest (pre-review + entry-ritual comprehension gate)",
+      "owning_module": "file:docs/institutional-memory/iliad/IDENTITY.md@0ee0b9b59de712249e32ae63f4500f9876c7dd29",
+      "authority_link": "file:docs/institutional-memory/iliad/INVARIANTS.json@ff6af93f32fdd8a2a67b5a56a5d805b395204690#iliad-pre-review-before-implementation",
+      "advisory": false
+    },
+    {
+      "order": 2,
+      "stage": "daedalus",
+      "role": "mature the plan (workshop; convergence is submission, not authorization)",
+      "owning_module": "file:docs/institutional-memory/daedalus/IDENTITY.md@b3512eb56abee7684b05af0477fb412b1c3e6f96",
+      "authority_link": null,
+      "advisory": false
+    },
+    {
+      "order": 3,
+      "stage": "telos",
+      "role": "authorize (council gate + required-seat review + evidence)",
+      "owning_module": "file:docs/institutional-memory/telos/IDENTITY.md@e880398384ad3e5c886e98e08d5941677a1fabc5",
+      "authority_link": null,
+      "advisory": false
+    },
+    {
+      "order": 4,
+      "stage": "argo",
+      "role": "implement + verify + document the authorized plan",
+      "owning_module": "file:docs/institutional-memory/argo/IDENTITY.md@87c8fbadb0b0bb2dabdf8f8cda7d9805cdf1b00e",
+      "authority_link": null,
+      "advisory": false
+    },
+    {
+      "order": 5,
+      "stage": "reference-documentation-module",
+      "role": "author/consult the documentation-reference before the weave (NEW stage)",
+      "owning_module": "file:docs/institutional-memory/REFERENCES/agentic-orchestration/reference.json@924c563aa28a9db833e5fd3a8e1043e55daafa72",
+      "authority_link": null,
+      "advisory": true
+    },
+    {
+      "order": 6,
+      "stage": "clotho",
+      "role": "weave the result into the knowledge graph",
+      "owning_module": "file:clotho/memory/IDENTITY.md@8f040de903f19f3ec0e60bfbd05fe5d4c741de5c",
+      "authority_link": null,
+      "advisory": false
+    },
+    {
+      "order": 7,
+      "stage": "iliad-retrospective",
+      "role": "complete the quest (post-review -> enrolled)",
+      "owning_module": "file:docs/institutional-memory/iliad/IDENTITY.md@0ee0b9b59de712249e32ae63f4500f9876c7dd29",
+      "authority_link": "file:docs/institutional-memory/iliad/INVARIANTS.json@ff6af93f32fdd8a2a67b5a56a5d805b395204690#iliad-post-review-required",
+      "advisory": false
+    }
+  ],
+  "new_stage_promotion": "The reference-documentation-module stage (order 5) is ADVISORY (The Eye option b). It becomes a SPECIFIED-PENDING/NORMATIVE candidate only after a future Eye decision commissions its oracle in the shared verifier; not this cycle."
+}

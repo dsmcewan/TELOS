@@ -1,0 +1,37 @@
+{
+  "kind": "evidence",
+  "id": "iliad-quest-workflow-implementation-evidence",
+  "title": "Implementation-phase evidence — Iliad-quest workflow contract (implemented to the workshop objections)",
+  "what": "Records the acceptance-sequence runs and the resolution of all eight Daedalus-workshop objections. The Daedalus workshop STALEMATED twice (needs-work); The Eye adjudicated (2026-07-18) that codex's objections are the implementation spec and authorized implementing to them. Convergence was not reached; The Eye's ruling is the authorization, not the workshop.",
+  "why": "Honesty: the workshop did not converge. It hardened the requirements through two adversarial stalemates; The Eye ruled to implement to them. The stalemate evidence is preserved (docs/runs/iliad-workflow-contract-1-workshop/round-{1,2}-stalemate/).",
+  "scope": "The Iliad-quest workflow contract (advisory)",
+  "authority": "git:6d16c8ff7cb120910ed0c2968d321269dd1f57cb + file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-iliad-workflow-contract.json@6e9436a2fc6a8ac9cdc892b1a3020159dbc81b6e + The Eye ruling: implement-to-the-objections, 2026-07-18",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "workshop_outcome": {
+    "terminal": "stalemate (both runs) — needs-work, not converged",
+    "runs": ["round-1-stalemate (4 objections)", "round-2-stalemate (4 deeper objections)"],
+    "eye_adjudication": "codex's 8 objections accepted as the implementation spec; implement-to-the-objections authorized (2026-07-18)"
+  },
+  "objection_resolution": [
+    { "objection": "abbreviated authority anchor (git:6d16c8f)", "resolution": "full 40-hex anchors throughout workflow.json; check-workflow verifies every pin resolves" },
+    { "objection": "hand-maintained README fallback", "resolution": "render-workflow.mjs — named destination README.md, deterministic function of workflow.json, --write/--check byte-identical" },
+    { "objection": "no concrete oracle", "resolution": "check-workflow.mjs — local, fail-closed; does NOT touch verify-contracts.mjs/comprehension-gate.mjs" },
+    { "objection": "schema-invalid per-stage normativity", "resolution": "one WHOLLY ADVISORY record; authority-links the existing NORMATIVE iliad invariants (pre-review-before-implementation, post-review-required) instead of restating them" },
+    { "objection": "content-addressed id not defined/verified", "resolution": "id = sha256:+sha256hex(canonicalize(record minus id)) via merkle-dag/vendor.mjs; check-workflow recomputes and compares" },
+    { "objection": "checker does not discriminate wrong stage metadata", "resolution": "check-workflow holds an EXPLICIT canonical 7-stage table (order, stage, owner path, linked-invariant, advisory) and validates each stage EXACTLY — a swapped invariant link or wrong module fails" },
+    { "objection": "comprehension fixtures incomplete", "resolution": "comprehension-queries.json with 4 pinned authority-anchored queries; fixtures/ has a pass + 3 negatives EACH flipping exactly one answer, proving the TARGETED misconception (bookend / enforced / proximity) causes the denial" },
+    { "objection": "renderer has no named destination", "resolution": "render-workflow.mjs writes ONLY ./README.md; --check is read-only and byte-identical" }
+  ],
+  "runs": [
+    { "step": "local oracle", "cmd": "node docs/institutional-memory/iliad/workflow/check-workflow.mjs", "exit": 0, "result": "id recomputes; canonical 7-stage table exact; all pins resolve; linked invariants present; ADVISORY; README projection equal" },
+    { "step": "comprehension gate — positive", "cmd": "gate .../comprehension-queries.json fixtures/pass.json", "exit": 0, "result": "GRANTED" },
+    { "step": "comprehension gate — negatives (each proves its targeted misconception denies)", "cmd": "fixtures/fail-{bookend,enforced,proximity}.json", "exit": 3, "result": "DENIED (all three)" },
+    { "step": "global verifier UNCHANGED (no-disturbance)", "cmd": "node docs/institutional-memory/verify-contracts.mjs", "exit": 0, "result": "215/215 — the ADVISORY addition disturbs no existing normative contract" }
+  ],
+  "shared_infra_unchanged": ["docs/institutional-memory/verify-contracts.mjs", "docs/institutional-memory/comprehension-gate.mjs"],
+  "non_claim": "This proves structural integrity, content-addressing (incl. id recompute), provenance linkage, projection equality, and no-disturbance. It does NOT prove the stage order is optimal. The workshop did NOT converge; The Eye's implement-to-the-objections ruling is the authorization. Submitted for The Eye's acceptance.",
+  "change_rule": "Regenerated whenever the workflow record or tooling changes; every listed command must still produce the listed exit status.",
+  "must_not_govern_new_work": false,
+  "effective_from_commit": "git:6d16c8ff7cb120910ed0c2968d321269dd1f57cb"
+}

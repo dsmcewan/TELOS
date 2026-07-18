@@ -1,0 +1,55 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:286fe2255d255a42f207084ef62218b5adefbef90c79f83c6131af9431e244f8",
+  "output_plan_artifact_hash": "sha256:286fe2255d255a42f207084ef62218b5adefbef90c79f83c6131af9431e244f8",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:ed1c681a5fd06ca8ea4ce54af77193c7ae369c3cdaa149a76fbe9fbc78b3bdcb",
+    "provenance_key": "anthropic:msg_011Cd8xbgSdSmjiRUQRd8jhP"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:793c061038e539a71c0869c5c1d5a94eafba5b35f0a9c0b9a737b2a740162f43",
+    "provenance_key": "openai:chatcmpl-E2rkjahB3Zam94xR6kpOLxRMkbQQH",
+    "bound_hash": "sha256:286fe2255d255a42f207084ef62218b5adefbef90c79f83c6131af9431e244f8"
+  },
+  "objections": [
+    {
+      "claim": "The approach promises a SCHEMA-compliant record but never defines or verifies the required content-addressed `id`. `check-workflow.mjs` only checks references, taxonomy, order, and rendering, so mutation of `workflow.json` while retaining a stale `id` could pass. The implementation must use the repository's Clotho/canonicalization convention to derive the ID and have the checker recompute and compare it.",
+      "scope": "Candidate §§3–4 — workflow record construction and local oracle",
+      "objection_hash": "sha256:6fd30d537b76943de5bfd674cd579abcabf53dd45d1e5e7fa7336fa00ab8cfc2",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The proposed local oracle does not discriminate incorrect stage metadata. It verifies that owner and authority references resolve and that both invariant IDs exist, but it does not require the exact owner, authority link, and advisory marker for each particular stage. Swapping the two invariant links or assigning a valid but wrong module record could therefore pass. The checker needs an explicit canonical stage table and exact comparison of each stage's identity, owner, authority/advisory classification, and position.",
+      "scope": "Candidate §3 — `check-workflow.mjs`",
+      "objection_hash": "sha256:71f2a9a695cbbb4284e389402e4b1b9b55b8401326faacb58607bce5a9fe21b8",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The comprehension-fixture mechanism is incomplete. No change to the authority-anchored `comprehension-queries.json` is listed, so the existing gate has no specified expected facts against which to grade the three new workflow claims. Moreover, merely requiring negative fixtures to exit nonzero does not show that the targeted misconception caused denial. The approach must add pinned, authority-anchored query entries and define each negative as a one-answer mutation of an otherwise passing complete answer set.",
+      "scope": "Candidate §§3–4 — comprehension fixtures and acceptance sequence",
+      "objection_hash": "sha256:468f23e5051f4bfc418822c221dd748132ac40560ac344f948cc354d24d4888c",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "The generated human projection has no destination path or declared integration with the per-component rendered documentation. Consequently `render-workflow.mjs --check` could validate an arbitrary private output without satisfying the frozen machine-first/human-rendered representation requirement. The approach must name the generated artifact and define its deterministic relationship to `workflow.json` without clobbering unrelated rendered content.",
+      "scope": "Candidate §3 — renderer and human projection",
+      "objection_hash": "sha256:ba83c5917f2f5dfb2579839dc31db5b20c8c00bfc1ecad9d525c01716e11c78e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
