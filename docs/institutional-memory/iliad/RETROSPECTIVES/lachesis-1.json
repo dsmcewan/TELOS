@@ -1,0 +1,34 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "retrospective-lachesis-1",
+  "title": "Iliad retrospective — Lachesis enrollment quest, cycle 1 (first future-module build)",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "quest": "Lachesis: the first registered-but-unimplemented future module to traverse the Iliad lifecycle to a completed cycle-1 implementation. Commissioned by The Eye 2026-07-18.",
+  "stages_traversed": {
+    "iliad_pre_review": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-lachesis-1.json (+ entry-ritual comprehension gate)",
+    "daedalus": "docs/runs/lachesis-1-workshop/ — 10 adversarial rounds; converged rev10 (converged-for-submission).",
+    "telos": "docs/runs/lachesis-authorization-1/ — live 5-seat council; authz-lachesis-1; all seats approve, gate pass (ephemeral signers, real provenance).",
+    "argo": "docs/runs/lachesis-argo-1/ — implemented against REALITY + 5 adversarial code-review rounds; cycle-1 declared complete by The Eye with residuals as NON-CLAIMs.",
+    "clotho": "HELD — weaving Lachesis's own build into the knowledge graph is a follow-on (Clotho weaver run).",
+    "iliad_retrospective": "this record."
+  },
+  "held_for_the_eye": [
+    "enrollment-flip: move lachesis from registered-unimplemented to enrolled + change the verify-contracts expectation",
+    "durable trust-root anchoring: pin the snapshot/manifest digest in CURRENT-AUTHORITY"
+  ],
+  "what_happened": "The Daedalus plan converged after 10 rounds and passed a signed 5-seat council — and was STILL wrong about its own input. At Argo reconnaissance, reading the real snapshot revealed the plan mismodeled it (assumed sha256:-prefixed ids, a `kind` field, standalone node records; reality is a signed edge-stream with bare-hex ids, `edge_kind`, locator-implied nodes). The Eye ruled 'code it and watch the next round': implement against reality, let the adversary review a running artifact. Five code-review rounds followed; the first found architecture gaps, the middle found that early fixes were shallow, later rounds drove golden real-snapshot values and delegated two design decisions (relevance formula, identity scope) to the GPT seat, which ruled (3:2:1 corrected-orientation relevance, reported-not-risk-feeding; identity Ruling A = intra-snapshot bijection + explicit NON-CLAIMs). Round 5 saw codex re-raise a finding verified FALSE twice — the signal that real defects were largely exhausted. Cycle-1 declared complete with 100 assertions green over the real snapshot.",
+  "lessons": [
+    "Convergence and authorization are NOT correctness. A plan can survive 10 adversarial rounds + a signed council and still not correspond to reality — because reviewers judge the plan on its own terms; only contact with ground truth tests correspondence. The gates test defensibility, not truth.",
+    "The adversarial pipeline runs at EVERY step (plan, council, code), and reviewing a RUNNING artifact against real data finds what reviewing a fiction cannot.",
+    "Shallow fixes get caught. Patching the surface of a finding (path 'binding' without containment; blast 'tested' but never actually discriminated) is detected by the next round. The fix that bites is golden values from real data.",
+    "The adversary is not infallible either. codex re-raised a false HEX64/terminator finding; verifying it empirically (rather than implementing on its say-so) is the same discipline applied to the reviewer.",
+    "Delegating genuine DESIGN decisions to the GPT seat (The Eye's routing) resolves contested calls without the builder guessing — implement the ruling verbatim.",
+    "Honest limits beat faked completeness: irreducible gaps (deriveNodeId re-derivation, a complete import lexer) are recorded as NON-CLAIMs, not simulated."
+  ],
+  "artifacts": {
+    "package": "lachesis/ (ingest.mjs, measure.mjs, config/, memory/, scripts/) — zero-dependency, 100 assertions",
+    "memory": "lachesis/memory/ (IDENTITY, INVARIANTS, CONTRACTS/metrics.json [NORMATIVE], NON-CLAIMS, DECISIONS, FAILURE-MODES, EVIDENCE, comprehension-queries)"
+  }
+}

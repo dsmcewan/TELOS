@@ -1,0 +1,26 @@
+{
+  "component": "lachesis",
+  "note": "Reader-validation gate. Correct answers affirm scope + honest limits; each negative encodes a real misconception surfaced during the build.",
+  "queries": [
+    {
+      "q": "Does Lachesis's risk class enforce or gate anything?",
+      "correct": "No — the risk class is ADVISORY, an input to TELOS/The Eye; Lachesis measures only.",
+      "negatives": ["It enforces a merge gate", "It authorizes changes below a risk threshold"]
+    },
+    {
+      "q": "How does Lachesis establish that a node id corresponds to its locator?",
+      "correct": "It enforces an intra-snapshot locator<->id BIJECTION (structural equality). It does NOT re-derive the content-address (deriveNodeId) — that is an explicit NON-CLAIM (spine boundary).",
+      "negatives": ["It recomputes from_node = deriveNodeId(from_locator)", "It imports clotho/registry.mjs to verify ids"]
+    },
+    {
+      "q": "Which endpoint does `verified-by` credit for relevance, and does relevance feed the risk class?",
+      "correct": "verified-by credits its FROM endpoint (the verified subject); relevance is REPORTED and does NOT feed riskClass (which is blast-driven).",
+      "negatives": ["verified-by credits the TO (test) endpoint", "relevance is the primary driver of the risk class"]
+    },
+    {
+      "q": "What does the snapshot digest check establish about trust?",
+      "correct": "Integrity RELATIVE TO the supplied manifest only. It is NOT a durable authenticated trust root and does NOT verify the Clotho signature chain — both are explicit NON-CLAIMs.",
+      "negatives": ["It proves the snapshot is authorized by CURRENT-AUTHORITY", "It verifies the Ed25519 signature chain"]
+    }
+  ]
+}

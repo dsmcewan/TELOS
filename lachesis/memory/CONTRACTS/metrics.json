@@ -1,0 +1,46 @@
+{
+  "kind": "contract",
+  "component": "lachesis",
+  "id": "lachesis-metrics",
+  "title": "Lachesis measurement semantics — frozen, deterministic over a pinned Clotho weave snapshot",
+  "authority": {
+    "plan_ref": "sha256:2ff644720bb80fac2f0ec31f92ecaed9bac1986a47ccc94460f987decbc7097b",
+    "authorization": "authz-lachesis-1",
+    "decision": "decision-lachesis-cycle-1",
+    "council": "docs/runs/lachesis-authorization-1/authorization-summary.json",
+    "gpt_seat_rulings": "docs/runs/lachesis-argo-1/decision-round-3-result.json (relevance formula + identity Ruling A, delegated by The Eye 2026-07-18)"
+  },
+  "ingestion": {
+    "input": "a committed Clotho thread-ledger weave snapshot (JSONL): 1 clotho_weave_header + N signed edge records + 1 trailer; nodes are IMPLIED by from_locator/to_locator; node ids are bare 64-hex; edge kind is `edge_kind`.",
+    "fail_closed": [
+      "raw-byte sha256 must equal the manifest-pinned digest (syntax sha256:<64hex>); path bound to the manifest, resolved + realpath-contained under rootDir",
+      "fatal UTF-8 decode; every line must equal its canonical serialization (merkle-dag canonicalize); no blank lines",
+      "structure: lone header first, non-array-object trailer last, edges strictly between; edges carry prev_hash/record_hash/signature (present, NOT crypto-verified)",
+      "closed NODE_KINDS (11) / EDGE_KINDS (8) mirror of clotho/registry.mjs@ed0e05c034317331e874ac511c4182580c192620; closed source_ref schemes; self-edges rejected; duplicate (edge_kind,from,to) rejected",
+      "locator<->node-id BIJECTION both directions via structural equality (order-insensitive objects, order-sensitive arrays); locator payload present + non-empty object"
+    ]
+  },
+  "metrics": {
+    "edge_orientation": "depends-on: from = dependent -> to = dependency",
+    "dependencies": "transitive forward depends-on closure from id, EXCLUDING id (visited-set, cycle-safe)",
+    "blastRadius": "reverse depends-on dependents reachable within `depth` hops (default full transitive), EXCLUDING id (visited-set, cycle-safe); returns count + node set",
+    "relevance": "raw(v) = 3*D(v) + 2*V(v) + 1*I(v); D=# depends-on edges with to==v, V=# verified-by with from==v, I=# introduced-by with from==v; direct edges only; other kinds weight 0; relevance = raw/max(raw), 0 if max 0. REPORTED, does NOT feed riskClass.",
+    "riskClass": "blast-driven: blastRadius(full) >=10 -> high, >=3 -> medium, else low; coverage floor: `low` only when coverage=='attested-complete', else >= medium. ADVISORY."
+  },
+  "golden_evidence": {
+    "snapshot": "docs/runs/clotho-self-weave/thread-ledger.snapshot.jsonl (raw-byte sha256:ea3ca462790c09ed3fe17463feb27b6983a24174e2632f9d72eb82298c2f769f)",
+    "tallies": "4001 edges, 944 nodes, 1673 depends-on edges, max depends-on in-degree 131",
+    "HUB(0fcf5ff7…)": "dependencies=0, blastRadius=177, relevance=1.0 (raw 430/430), class=high",
+    "G2(0328b9ce…)": "dependencies=1, blastRadius=21, relevance=81/430, class=high"
+  },
+  "oracle": {
+    "source_of_truth": "lachesis/ingest.mjs + lachesis/measure.mjs",
+    "test": "lachesis/scripts/test-metrics.mjs (discriminating fixtures + golden real-snapshot values) + lachesis/scripts/test-boundary.mjs (source-profile boundary); `npm test` in lachesis/",
+    "status_note": "100 assertions pass over the real snapshot"
+  },
+  "becomes_normative_when": "lachesis/scripts/test-metrics.mjs and test-boundary.mjs pass (met)",
+  "change_rule": "Any change to the metric semantics, closed sets, or trust posture requires a plan amendment (Daedalus) + TELOS re-authorization + updated oracles + updated adversarial review.",
+  "normativity": "NORMATIVE",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}

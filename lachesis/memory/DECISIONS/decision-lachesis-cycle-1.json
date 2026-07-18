@@ -1,0 +1,17 @@
+{
+  "kind": "decision",
+  "component": "lachesis",
+  "id": "decision-lachesis-cycle-1",
+  "title": "Build Lachesis cycle 1 as a zero-dep metrics engine over the committed Clotho weave snapshot",
+  "anchored_by": {
+    "plan_ref": "sha256:2ff644720bb80fac2f0ec31f92ecaed9bac1986a47ccc94460f987decbc7097b",
+    "authorization": "authz-lachesis-1",
+    "council": "docs/runs/lachesis-authorization-1/authorization-summary.json"
+  },
+  "decision": "Implement Lachesis's four measurements + fail-closed ingestion of the REAL weave snapshot format, correcting the authorized plan's input schema against ground truth (per The Eye 'code it and watch the next round'). Metric semantics + identity scope were RULED by the GPT seat (delegated by The Eye): relevance = 3:2:1 salience with corrected orientation (depends-on->to, verified-by/introduced-by->from), reported not risk-feeding; identity = intra-snapshot bijection (Ruling A) with explicit NON-CLAIMs.",
+  "verified": "100 assertions pass over the real 4001-edge snapshot (docs/runs/lachesis-argo-1 review rounds 1-5). Cycle-1 declared complete by The Eye 2026-07-18 with residuals recorded as NON-CLAIMs.",
+  "held_for_the_eye": "the enrollment-flip (move out of registered-unimplemented + verify-contracts expectation) and durable trust-root anchoring in CURRENT-AUTHORITY.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "must_not_govern_new_work": false
+}
