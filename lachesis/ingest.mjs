@@ -16,6 +16,7 @@
 
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
+import path from "node:path";
 
 // Closed Clotho sets — a PINNED MIRROR of clotho/registry.mjs@ed0e05c034317331e874ac511c4182580c192620
 // (Lachesis cannot import the spine). change_rule: re-sync if Clotho's sets change.
@@ -45,12 +46,18 @@ function validScheme(ref) {
   return typeof ref === "string" && SOURCE_REF_SCHEMES.some((re) => re.test(ref));
 }
 
-// Load + validate a weave snapshot. `manifest` = { snapshot_path, snapshot_digest }.
-// Fail-closed: every anomaly throws; nothing partial reaches the metrics.
-export function loadWeave(snapshotPath, manifest) {
+// Load + validate a weave snapshot. The authorized path comes FROM the manifest
+// (`manifest.snapshot_path`, resolved under `rootDir`) — NOT a caller argument — so the
+// manifest binds a file LOCATION, not merely matching bytes. `manifest` =
+// { snapshot_path, snapshot_digest }. Fail-closed: every anomaly throws; nothing partial
+// reaches the metrics. Ledger STRUCTURE is enforced: exactly one header FIRST, exactly
+// one trailer LAST, edges strictly between.
+export function loadWeave(manifest, rootDir) {
   if (!manifest || typeof manifest.snapshot_digest !== "string" || typeof manifest.snapshot_path !== "string") {
     throw new Error("loadWeave: manifest must be { snapshot_path, snapshot_digest }");
   }
+  if (typeof rootDir !== "string") throw new Error("loadWeave: rootDir required (the manifest binds the path under it)");
+  const snapshotPath = path.join(rootDir, manifest.snapshot_path);
   const buf = readFileSync(snapshotPath);
   const digest = rawDigest(buf);
   if (digest !== manifest.snapshot_digest) {
@@ -66,8 +73,18 @@ export function loadWeave(snapshotPath, manifest) {
   for (let i = 0; i < lines.length; i++) {
     let r;
     try { r = JSON.parse(lines[i]); } catch { throw new Error(`line ${i + 1}: unparseable JSON`); }
-    if (r && r.clotho_weave_header) { header = r.clotho_weave_header; continue; }
-    if (r && r.clotho_weave_trailer !== undefined) { trailer = r; continue; }
+    // structure: header FIRST and only, trailer LAST and only, edges strictly between
+    if (i === 0) {
+      if (!r || !r.clotho_weave_header) throw new Error("line 1: first record must be clotho_weave_header");
+      header = r.clotho_weave_header;
+      continue;
+    }
+    if (r && r.clotho_weave_header) throw new Error(`line ${i + 1}: misplaced/duplicate header`);
+    if (r && r.clotho_weave_trailer !== undefined) {
+      if (i !== lines.length - 1) throw new Error(`line ${i + 1}: trailer must be the last record`);
+      trailer = r;
+      continue;
+    }
 
     // edge record
     const ek = r.edge_kind;
@@ -75,7 +92,11 @@ export function loadWeave(snapshotPath, manifest) {
     for (const [n, loc] of [[r.from_node, r.from_locator], [r.to_node, r.to_locator]]) {
       if (!HEX64.test(n)) throw new Error(`line ${i + 1}: node id not bare 64-hex`);
       if (!loc || !NODE_KINDS.has(loc.kind)) throw new Error(`line ${i + 1}: bad/unknown node locator kind`);
-      if (!nodes.has(n)) nodes.set(n, loc.kind);
+      if (nodes.has(n)) {
+        if (nodes.get(n) !== loc.kind) throw new Error(`line ${i + 1}: locator-kind conflict for node ${n.slice(0, 8)} (${nodes.get(n)} vs ${loc.kind})`);
+      } else {
+        nodes.set(n, loc.kind);
+      }
     }
     if (r.source_ref !== undefined && !validScheme(r.source_ref)) {
       throw new Error(`line ${i + 1}: disallowed source_ref scheme`);
@@ -88,5 +109,9 @@ export function loadWeave(snapshotPath, manifest) {
 
   if (!header || typeof header.pub_key !== "string") throw new Error("missing/invalid clotho_weave_header");
   if (!trailer) throw new Error("missing clotho_weave_trailer");
+  // NON-CLAIM: metrics measure over the edges PRESENT. `supersedes`/`discharges` are accepted
+  // (complete-set discipline) but NOT interpreted as retiring other edges; retirement-aware
+  // measurement is future work. (This pinned snapshot contains 0 supersedes/status records, so
+  // all edges are live — but a future weave encoding retirement would need that handling.)
   return { header, nodes, edges };
 }
