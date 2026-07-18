@@ -1,0 +1,12 @@
+{
+  "name": "ai-native-memory",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "AI-native institutional-memory standard as a Claude Code plugin (zero-dep oracles + skills + agents).",
+  "scripts": {
+    "check": "node --check scripts/lib/record.mjs && node --check scripts/gate.mjs && node --check scripts/audit.mjs && node --check scripts/verify.mjs && node --check scripts/init.mjs",
+    "test": "node tests/run.mjs"
+  },
+  "dependencies": {}
+}
