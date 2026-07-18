@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:b00661897b59b03a02741385d102a3e6caa2ba070b9fa110119e0fce506cc25f",
+  "output_plan_artifact_hash": "sha256:b00661897b59b03a02741385d102a3e6caa2ba070b9fa110119e0fce506cc25f",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:a289a28fcd887583be91e3ba4f758c42b89ee08de657f04467856bb708a2862c",
+    "provenance_key": "anthropic:msg_011Cd9VVhpAhJTQqYhev7vdM"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:1d29d8b1184fce33360fe8c08283da391e159d70e39990b49ede9deab788aaac",
+    "provenance_key": "openai:chatcmpl-E2y4s7an0SqNlWuQMprnWkHnzCbun",
+    "bound_hash": "sha256:b00661897b59b03a02741385d102a3e6caa2ba070b9fa110119e0fce506cc25f"
+  },
+  "objections": [
+    {
+      "claim": "The plan-version exception to the frozen three-surface retirement path depends on an alleged Eye ruling that is not authority-anchored in this artifact. The cited decision record is to be authored later, `git:<40hex>` is a placeholder, the pre-review is only a mutable `file:` reference, and the eventual `authz-N` cannot evidence a prior ruling. Therefore the verifier currently treats missing `SUPERSEDED` record and `supersedes` edge surfaces as consistent based on bare prose, contrary to the frozen CHANGE-PROTOCOL. Supply the existing ruling under a stable identifier and demonstrate the required delta/re-authorization path, or enforce all frozen surfaces.",
+      "scope": "candidate §§3 and 6 — frozen-protocol compliance and authority anchoring",
+      "objection_hash": "sha256:89a1e6154a514c2d6367ede28f0ff5e8bc0c6234151707f1825c3d31181cedf7",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "claim": "Malformed `CURRENT-AUTHORITY.json#superseded` entries have contradictory execution paths. Sections 2, 3, and 5 require them to reach classification and produce `inconsistent` with `UNSUPPORTED_RETIREMENT_KIND`, while §4 requires closed-shape ingestion and says every anomaly throws before any partial result reaches the verifier. Consequently the specified fixture cannot discriminate the promised reason/path. Define the syntactic ingestion boundary so malformed entries are deliberately preserved for classification, or change the result contract and oracle consistently.",
+      "scope": "candidate §§2–5 — ingestion/verifier interface and malformed-entry oracle",
+      "objection_hash": "sha256:4a5fde5b62bf3d651028f65352e513bdff899a8039a78b3880d370c5e025a3ea",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

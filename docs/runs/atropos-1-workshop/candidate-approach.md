@@ -1,4 +1,4 @@
-# Candidate approach (rev 6) — Atropos (enrollment quest, cycle 1)
+# Candidate approach (rev 7) — Atropos (enrollment quest, cycle 1)
 
 **Cycle:** post-Phase-1, Iliad lifecycle. **Pre-review:**
 `file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json`.
@@ -64,8 +64,14 @@ detecting via source+membership, not by matching the (distinct) record-kind and 
   (verified fact), not a spec defect, resolved as a technical call (peer-model input), NOT a CHANGE-PROTOCOL
   amendment. **Its authority terminates in STABLE artifacts, not prose:** the content-addressed affirmative
   decision record `DECISIONS/decision-atropos-cycle-1.json` (authored in Argo; captures The Eye's ruling + the
-  adopted peer-model resolution) + the git-commit-pinned `decision-round-1-result.json` (`git:<40hex>`, codex's
-  resolution with provenance) + the pre-review + the eventual `authz-N`. NOT designed-around; ruled + anchored.
+  adopted peer-model resolution) + the git-commit-pinned peer-model resolution
+  `git:7c769d0261dedd363f506bca635786677e7d49f6:docs/runs/atropos-1-workshop/decision-round-1-result.json`
+  (codex's resolution WITH real provenance) + the pre-review + the eventual `authz-N`.
+  **WORKSHOP-STAGE anchoring (honest):** at this pre-authorization stage the EXISTING committed evidence is the
+  git-pinned peer-model resolution + this quest's escalation/round evidence; the FULL Eye-authority anchor
+  (a committed record of The Eye's design ruling) does NOT yet exist as an artifact — it is HELD for The Eye /
+  coordinator to commit (analogous to how the authority triple is minted at TELOS/Argo). NOT designed-around;
+  ruled — its committed authority record is a HELD item, not a placeholder.
 - **weave-node-backed → deterministic `UNREPRESENTABLE_CURRENT_AUTHORITY_REFLECTION` (DEFERRED, cycle-1):** the
   current committed `CURRENT-AUTHORITY` closed schema represents ONLY plan-versions, so a node-backed retirement's
   required `CURRENT-AUTHORITY` reflection cannot be represented → `inconsistent` reason
@@ -94,11 +100,16 @@ Inputs are EXACT + closed (a verifier cannot silently omit a surface and still p
 - **weave `supersedes` edges** — read via a PINNED `atropos/config/snapshot-manifest.json` using Lachesis's
   exact `loadWeave` (path bound to the manifest + realpath-contained; raw-byte digest; canonical-JSON;
   fail-closed), restricted to `edge_kind === "supersedes"`.
-Every anomaly throws; no partial result reaches the verifier. **Discovery is discriminating: because the
-candidate set is the closed UNION of all three sources, a `SUPERSEDED` record or `supersedes` edge that IS
-present forces a node-backed candidate → `UNREPRESENTABLE…` → `inconsistent` — the verifier cannot omit it and
-return `consistent`.** Trust NON-CLAIM: integrity RELATIVE TO the supplied inputs; no durable authenticated
-root (HELD for The Eye).
+**Ingestion vs. verifier split (removes the round-7 contradiction):** ingestion throws ONLY on FILE-LEVEL
+anomalies that prevent producing ANY verdict — `CURRENT-AUTHORITY.json` unparseable, `#superseded` not an
+array, a snapshot digest/canonical/containment failure. It does NOT throw on an individual malformed
+`#superseded` ENTRY — per-entry shape is validated by the VERIFIER, which returns `inconsistent`
+(`UNSUPPORTED_RETIREMENT_KIND`) as a VERDICT. (So malformed entries reach classification exactly as §§2/3/5
+require; only file-level anomalies fail-closed to a throw.) **Discovery is discriminating: because the candidate
+set is the closed UNION of all three sources, a `SUPERSEDED` record or `supersedes` edge that IS present forces
+a node-backed candidate → `UNREPRESENTABLE…` → `inconsistent` — the verifier cannot omit it and return
+`consistent`.** Trust NON-CLAIM: integrity RELATIVE TO the supplied inputs; no durable authenticated root (HELD
+for The Eye).
 
 ## 5. Oracle + golden
 - `scripts/test-verify.mjs`: discriminating fixtures each FAIL a wrong impl — dangling/self/cyclic

@@ -1,0 +1,31 @@
+{
+  "run": "atropos-1-workshop (next-phase evaluation, Iliad lifecycle; parameterized harness)",
+  "mode": "live",
+  "candidate": "docs/runs/atropos-1-workshop/candidate-approach.md",
+  "specs": [
+    "docs/institutional-memory/SCHEMA.md",
+    "docs/mythological-vocabulary.md",
+    "docs/institutional-memory/CHANGE-PROTOCOL.md"
+  ],
+  "state": "stalemate",
+  "reason": "repeated-candidate-hash",
+  "terminal": "needs-work",
+  "rounds": 1,
+  "final_candidate_ref": "sha256:b00661897b59b03a02741385d102a3e6caa2ba070b9fa110119e0fce506cc25f",
+  "creation_lineage": [
+    {
+      "seat": "claude",
+      "round": 1,
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011Cd9VVhpAhJTQqYhev7vdM"
+    },
+    {
+      "seat": "codex",
+      "round": 1,
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2y4s7an0SqNlWuQMprnWkHnzCbun"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "claim": "The plan-version exception to the frozen three-surface retirement path depends on an alleged Eye ruling that is not authority-anchored in this artifact. The cited decision record is to be authored later, `git:<40hex>` is a placeholder, the pre-review is only a mutable `file:` reference, and the eventual `authz-N` cannot evidence a prior ruling. Therefore the verifier currently treats missing `SUPERSEDED` record and `supersedes` edge surfaces as consistent based on bare prose, contrary to the frozen CHANGE-PROTOCOL. Supply the existing ruling under a stable identifier and demonstrate the required delta/re-authorization path, or enforce all frozen surfaces.",
+        "scope": "candidate §§3 and 6 — frozen-protocol compliance and authority anchoring"
+      },
+      {
+        "claim": "Malformed `CURRENT-AUTHORITY.json#superseded` entries have contradictory execution paths. Sections 2, 3, and 5 require them to reach classification and produce `inconsistent` with `UNSUPPORTED_RETIREMENT_KIND`, while §4 requires closed-shape ingestion and says every anomaly throws before any partial result reaches the verifier. Consequently the specified fixture cannot discriminate the promised reason/path. Define the syntactic ingestion boundary so malformed entries are deliberately preserved for classification, or change the result contract and oracle consistently.",
+        "scope": "candidate §§2–5 — ingestion/verifier interface and malformed-entry oracle"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E2y4s7an0SqNlWuQMprnWkHnzCbun",
+      "source": "ai-peer-mcp/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E2y4s7an0SqNlWuQMprnWkHnzCbun",
+    "source": "ai-peer-mcp/codex_ask"
+  }
+}
