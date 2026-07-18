@@ -1,0 +1,30 @@
+{
+  "build_id": "iliad-atropos-1-authz",
+  "use_case": "iliad-atropos-cycle-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/atropos-1-workshop/candidate-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json"
+  ],
+  "proposal_ref": "sha256:ed8a921700a0d814b3f1e2c9fdd56f744f57cc32d84377682354ea363842eeb2",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-18T16:53:09.357Z",
+  "rationale": "Judged on the merits, the plan is internally coherent, honest about its limits, and consistent with the registered meaning and repository trust model. Key determinations: (1) SCOPE FIDELITY — cycle-1 realizes the verification half of 'retires supersession' over the only populated surface (4 plan-version retirements v11-v14 → v15); this is squarely within the registered meaning without extension, and the mutation half correctly remains a human CHANGE-PROTOCOL act. (2) NON-CLAIM DISCIPLINE — the three deferrals (node-backed verification, completeness-of-universe, cryptographic authentication of CURRENT-AUTHORITY) are all explicit, structurally justified (plan-versions cannot carry weave edges — a verified fact; deriveNodeId reuse is a real boundary tension), and non-dead: the node-backed path emits a deterministic tested short-circuit (UNREPRESENTABLE_CURRENT_AUTHORITY_REFLECTION) rather than silently passing, which is the fail-closed posture the trust model demands. (3) THE VERIFIER IS DISCRIMINATING, NOT VACUOUS — closed-shape entry validation with per-field pinned types and per-field negative fixtures; transitive chain resolution with self/dangling/cycle rejection and a multi-hop fixture (v11→v13→v15) that kills the naive all-point-to-active implementation; and crucially the terminal authority is DISK-RESOLVED (active_plan.sha256 recomputed over on-disk bytes via the sanctioned frozen hash scheme, path realpath-contained, regular-file-checked) rather than merely syntax-checked — the one place cycle-1 can bind CURRENT-AUTHORITY to reality, it does. (4) INGESTION IS CLOSED AND ANCHORED — the candidate set is the union of all three CHANGE-PROTOCOL surfaces, discovery roots derive from the authoritative manifest (not a hard-coded list), realpath containment applies to every discovered entry including symlinked descendants, and the ingestion-throw vs verifier-verdict split is principled: file-level anomalies that prevent any verdict fail closed; per-entry malformation reaches classification as a verdict. A present SUPERSEDED record or supersedes edge forcibly produces inconsistent — the verifier cannot omit a surface and still pass. (5) READ-ONLY ENFORCEMENT — the allowlist oracle (named read-only fs imports only, openSync excluded as write-capable, re-export forms covered, namespace/fs-promises banned, getBuiltinModule and process.report global write paths denied, runtime imports may not resolve under the unscanned scripts/ tree) is materially sounder than a denylist, and the rev-4 overclaim is corrected to 'strong static evidence, not a proof' — the honest framing. (6) GOVERNANCE TENSION RESOLVED, NOT DESIGNED AROUND — the CHANGE-PROTOCOL(living)/schema applicability question was escalated to The Eye, ruled a design determination, and the ruling terminates in a committed content-addressed artifact (design-ruling-surface-applicability.json, sha256:f147d05a…) plus the git-pinned peer-model resolution — stable artifacts, no circularity. (7) SEQUENCE HONESTY — the build-before-council ordering is disclosed per The Eye's build-mode directive, and this council is the deferred authorization stage; the implementation exists with 31 passing assertions including the golden run over the real CURRENT-AUTHORITY, which is evidence FOR the plan's claims rather than a reason to withhold ratification. (8) LIFECYCLE ORDER IS SOUND — SPECIFIED-PENDING-IMPLEMENTATION contract with authority triple, comprehension gate before implementation authority, NORMATIVE-CURRENT only after oracles pass plus verify-contracts integration, submission distinct from authorization. Residual risks are acknowledged inside the plan itself (static oracle is not a sandbox; universe completeness rests on the manifest; historical superseded-plan bytes are syntax-checked only) and each is an explicit NON-CLAIM consistent with the deferred-to-The-Eye trust root. No contradiction remains between the plan, its pre-review, the registered meaning, and its own decisions. I ratify as-is.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011Cd9sUcmM7rURmudHrMxXu",
+    "source": "ai-peer-mcp/claude_ask",
+    "answered_at": "2026-07-18T16:53:33.659Z",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "3a68fc2875c9886f2ef4ff0cf10cfde27c922e88d9f89a18b0ce4fa2c4c706c5",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

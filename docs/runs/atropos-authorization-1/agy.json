@@ -1,0 +1,31 @@
+{
+  "build_id": "iliad-atropos-1-authz",
+  "use_case": "iliad-atropos-cycle-1",
+  "model": "agy",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/atropos-1-workshop/candidate-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json"
+  ],
+  "proposal_ref": "sha256:ed8a921700a0d814b3f1e2c9fdd56f744f57cc32d84377682354ea363842eeb2",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-18T16:53:09.357Z",
+  "provenance": {
+    "provider": "local",
+    "model": "agy-checkpoint",
+    "source": "ai-peer-mcp/agy_checkpoint",
+    "response_id": "agy-77f3393a5c2e92ac3f528aed2e406309192ba816",
+    "answered_at": null,
+    "attestation": "local-deterministic",
+    "engine_version": "agy-checkpoint/1",
+    "tool": "agy_checkpoint"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "aeb5261fcb156741d63523442fe5ef540e0eda943e063ed35e403249d7694505",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

@@ -173,14 +173,21 @@ for The Eye).
   guarantee rests on the SMALL reviewed runtime surface + zero-`dependencies` + the import allowlist + no
   dynamic loading; the oracle is strong evidence, not a proof.
 
-## 6. Anchoring + memory layout
-No CHANGE-PROTOCOL edit (design decision, per ruling). `atropos/memory/CONTRACTS/supersession.json` starts
-**`SPECIFIED-PENDING-IMPLEMENTATION`** with its authority triple = {plan `sha256:` of the matured approach,
-`authz-N` minted at the TELOS gate, the affirmative `decision-atropos-cycle-1` id} (all EXIST by the time the
-contract is authored in Argo, post-authorization — Lachesis pattern). It becomes `NORMATIVE-CURRENT` ONLY WHEN
-`scripts/test-verify.mjs` passes **AND** the enrollment integrates with `docs/institutional-memory/verify-contracts.mjs`
-(the atropos manifest entry + the `future-atropos-unimplemented`→implemented check flip). Anchors to the
-pre-review + authz; NO CHANGE-PROTOCOL anchor.
+## 6. Anchoring + memory layout — ACTUAL lifecycle (deferred ratification, recorded truthfully)
+No CHANGE-PROTOCOL edit (design decision, per ruling). **The real sequence this cycle followed, encoded here
+so the content-addressed plan tells the truth about its own provenance:** under The Eye's explicit build-mode
+directive, the implementation (`atropos/verify.mjs` + oracles, 31 passing assertions incl. the golden run over
+the real `CURRENT-AUTHORITY`) and the memory records were produced BEFORE the TELOS gate. This council is
+therefore a **DEFERRED RATIFICATION**: it ratifies or rejects the plan-as-implemented; `authz-N` and the
+authority triple {plan `sha256:` of this matured approach, `authz-N`, the `decision-atropos-cycle-1` id}
+attach AFTER ratification. The contract does NOT claim documentation preceded code — the comprehension gate
+and contract are **post-build validation**, and the contract's status reflects reality:
+`RATIFICATION-PENDING` until this council authorizes; upon authorization + the authority triple attaching, it
+may claim `NORMATIVE-CURRENT` ONLY WHEN `scripts/test-verify.mjs` passes **AND** the enrollment integrates
+with `docs/institutional-memory/verify-contracts.mjs` (the atropos manifest entry + the
+`future-atropos-unimplemented`→implemented check flip). Anchors to the pre-review + the (post-hoc) authz; NO
+CHANGE-PROTOCOL anchor. The build-mode exception is The Eye's recorded directive, not a precedent: the
+default order for future cycles remains contract → comprehension → implementation.
 
 `atropos/memory/`: `IDENTITY.md`; `INVARIANTS.json`/`.md`; `CONTRACTS/supersession.json`;
 `DECISIONS/{decision-atropos-cycle-1.json, rejected-alternatives.md}`; `NON-CLAIMS.json`/`.md`;
@@ -188,13 +195,15 @@ pre-review + authz; NO CHANGE-PROTOCOL anchor.
 with a renderer + drift oracle:** `scripts/render.mjs` + `scripts/test-render.mjs` (`--check`) so the `.md`
 projections cannot drift from the machine records. `package.json`: `"type":"module"`, `dependencies` empty.
 
-**COMPREHENSION GATE (frozen "Reading ≠ understanding" — precondition to implementation authority):** a
-PASSING artifact from `docs/institutional-memory/comprehension-gate.mjs` over `atropos/memory/comprehension-queries.json`
-(GRANTED, with the negatives DENIED) MUST be produced AND preserved (as `docs/runs/atropos-1/reader-validation-artifact.json`)
-BEFORE Argo exercises implementation authority — same gate Lachesis passed. Acceptance order: author the
-memory set + SPECIFIED-PENDING contract → comprehension gate GRANTED (preserved) → Argo implements
-ingest/detect/verify + oracles until `test-verify.mjs`/`test-boundary.mjs`/`test-readonly.mjs`/`test-render.mjs`
-pass → contract flips NORMATIVE-CURRENT + verify-contracts integration → submit (not authorization).
+**COMPREHENSION GATE — post-build validation (truthful ordering):** in THIS cycle the implementation preceded
+the gate (build-mode). Therefore the comprehension artifact from `docs/institutional-memory/comprehension-gate.mjs`
+over `atropos/memory/comprehension-queries.json` (GRANTED, negatives DENIED, preserved as
+`docs/runs/atropos-1/reader-validation-artifact.json`) is a **required validation BEFORE normative activation
+and enrollment take effect** — not a claimed historical pre-implementation condition. Actual acceptance
+sequence as executed + remaining: implementation + oracles built (DONE, 31 assertions green) → memory set
+authored (DONE) → THIS deferred ratification council → comprehension gate GRANTED (post-build, preserved) →
+contract claims NORMATIVE-CURRENT + verify-contracts integration → complete. Future cycles revert to the
+default contract-first order.
 
 ## 7. Non-goals (cycle 1)
 No mutation of `CURRENT-AUTHORITY`/records (read-only, oracle-enforced); no deletion; no enforcement gate; no

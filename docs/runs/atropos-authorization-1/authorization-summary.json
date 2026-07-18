@@ -1,0 +1,142 @@
+{
+  "build_id": "iliad-atropos-1-authz",
+  "use_case": "iliad-atropos-cycle-1",
+  "objective": "Authorize (RATIFY) the Atropos enrollment-quest cycle-1 matured approach (content address sha256:ed8a921700a0d814b3f1e2c9fdd56f744f57cc32d84377682354ea363842eeb2; Daedalus-matured over 13 adversarial rounds; reviewed head 5da2f83). HONEST SEQUENCE NOTE: under The Eye's build-mode directive the implementation was built BEFORE this council (atropos/ exists: 31 passing assertions incl. a golden run over the real CURRENT-AUTHORITY and an executable read-only oracle); this council is the deferred TELOS authorization stage, ratifying or rejecting the plan on its merits. Judge the PLAN AS IMPLEMENTED on its own terms: Atropos cycle-1 is a zero-dependency, READ-ONLY supersession-consistency verifier over CURRENT-AUTHORITY#superseded (the only populated supersession surface: 4 plan-version retirements v11-v14 -> active v15). (1) NORMATIVE verdict: closed entry shape + types; must_not_govern_new_work===true; unique plan_version; active_plan not itself superseded; superseded_by resolves with no self/dangling/cycle; chain terminates at active_plan.version whose sha256 is DISK-RESOLVED via sanctioned canonicalize/sha256hex. (2) Node-backed retirement (SUPERSEDED records / weave supersedes edges) is UNREPRESENTABLE in the current schema and DEFERRED as an explicit NON-CLAIM. (3) READ-ONLY: never mutates CURRENT-AUTHORITY; retirement stays a human CHANGE-PROTOCOL act; enforced by an executable allowlist oracle (no fs-write APIs). (4) BOUNDARY: never imports clotho/; sole sanctioned import merkle-dag/vendor.mjs. Do NOT require it to perform retirement, verify node-backed surfaces, or cryptographically authenticate CURRENT-AUTHORITY - all explicitly disclaimed. Approve ONLY if the plan is consistent with its pre-review, the registered meaning (verification half of \"retires\"), the repository trust model (fail-closed, closed sets, read-only, zero-dependency), and its own decisions - with no remaining contradiction.",
+  "plan_ref": "sha256:ed8a921700a0d814b3f1e2c9fdd56f744f57cc32d84377682354ea363842eeb2",
+  "reviewed_head": "5da2f83",
+  "enrollment_flip": "HELD for a separate Eye ruling (not authorized by this council)",
+  "timestamp": "2026-07-18T16:53:09.357Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011Cd9sUcmM7rURmudHrMxXu",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-18T16:53:33.659Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-77f3393a5c2e92ac3f528aed2e406309192ba816",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E32ZllH0tjaPqFbYfJAeFV6sUBfhw",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-18T16:56:29.883Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "eb35383e-1459-9a90-a752-78cd0bb0566d",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-18T16:53:20.696Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "dq9barvrOOPVz7IP7v-hwQg",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-18T16:53:19.679Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Revise §6 to record the actual deferred-ratification lifecycle: implementation and tests were produced under the build-mode directive before TELOS; `authz-N` and the authority triple are attached after ratification; normative activation and enrollment remain gated by the stated evidence and integration checks.; Remove the claim that the contract and comprehension artifact necessarily preceded implementation. If contemporaneous comprehension evidence actually preceded the build, cite and preserve it accurately; otherwise characterize the gate as post-build validation required before normative activation/enrollment, not as a historical preimplementation condition.; Replace or clarify `SPECIFIED-PENDING-IMPLEMENTATION` so it does not falsely describe already-built code as awaiting implementation, then recompute the candidate approach content address and resubmit the revised artifact for authorization.",
+      "codex has hard stops: The hashed plan mandates a contract-with-authz → comprehension gate → implementation sequence, while the disclosed implementation and passing tests predate this deferred TELOS gate. Because `authz-N` could not have existed before this council, that mandatory chronology cannot be true as written.",
+      "Required doc was not reviewed by any packet: atropos/memory/CONTRACTS/supersession.json"
+    ],
+    "warnings": [],
+    "provenance": [
+      {
+        "model": "claude",
+        "has_provenance": true,
+        "provider": "anthropic",
+        "response_model": "claude-fable-5",
+        "response_id": "msg_011Cd9sUcmM7rURmudHrMxXu",
+        "source": "ai-peer-mcp/claude_ask"
+      },
+      {
+        "model": "agy",
+        "has_provenance": true,
+        "provider": "local",
+        "response_model": "agy-checkpoint",
+        "response_id": "agy-77f3393a5c2e92ac3f528aed2e406309192ba816",
+        "source": "ai-peer-mcp/agy_checkpoint"
+      },
+      {
+        "model": "codex",
+        "has_provenance": true,
+        "provider": "openai",
+        "response_model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E32ZllH0tjaPqFbYfJAeFV6sUBfhw",
+        "source": "ai-peer-mcp/codex_ask"
+      }
+    ]
+  },
+  "authorized": false,
+  "authorization": {
+    "status": "NOT_AUTHORIZED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

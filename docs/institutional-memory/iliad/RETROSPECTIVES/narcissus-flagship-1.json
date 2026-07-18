@@ -1,0 +1,30 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "retrospective-narcissus-flagship-1",
+  "title": "Iliad retrospective — the Loom on Trial flagship (Narcissus reflection-loop, run manually; product deferred)",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "quest": "Build the flagship development-story front-end ('The Loom on Trial') for the system, through the Narcissus reflection loop RUN MANUALLY (the Narcissus MODULE remains registered-unimplemented — no absorption by proximity; the flagship is a PRODUCT, classified into package_roots_exclude).",
+  "stages_traversed": {
+    "pre_quest": "docs/runs/narcissus-1-prequest/ — vocabulary-amendment draft (Eye-APPROVED and applied verbatim to all three surfaces), LEXI study (real clone), award-tier references, 4-seat breakout ('WebGL is paint, never truth' + Loom on Trial direction).",
+    "iliad_pre_review": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-narcissus-1.json",
+    "daedalus": "converged rev2 (builder-call under build-mode).",
+    "telos": "docs/runs/narcissus-authorization-1/ — HONEST RECORD: the live 5-seat council returned 4/5 approve with codex REVISE; the fail-closed gate therefore said NOT_AUTHORIZED; the builder ADJUDICATED to AUTHORIZED under The Eye's build-mode rule, after verifying each codex point (one already satisfied by the implementation, two packet/process artifacts) — see BUILDER-ADJUDICATION.md. A ship-grade pass would re-run this council rather than rest on the override.",
+    "argo": "narcissus/flagship/ — React/Vite/TS app; WebGL-is-paint + XState + typed command registry + DOM-shadowed controls + ?e2e=1; evidence ledger pinning 7 real records by blob sha; 5 reflection-loop passes (weave-as-hero recomposition, ferrofluid materials, catenary threads, HTML-projected labels, light theme); gates: tsc+vite, coverage 16/16, evidence 7/7, Playwright E2E 14/14; perf ~305KB initial (70% cut), fonts self-hosted.",
+    "aesthetic_blade": "The Eye walked the UI live and RULED: STILLS STAND (the aesthetic blade passed on the stills); loop pivoted to motion + Lighthouse-measured perf (pass 6, in flight).",
+    "clotho": "narcissus/flagship consciously classified as a DEFERRED PRODUCT (package_roots_exclude + enrollment#deferred) — deliberately NOT woven as spine code.",
+    "retrospective": "this record."
+  },
+  "lessons": [
+    "The reflection loop works run manually: render -> The Eye judges -> targeted pass -> repeat. Five passes moved a first render to an Eye-passed frame. The unbuilt Narcissus MODULE is the automation of exactly this loop (visual oracles, content-addressed screenshots, seat bindings for visual review) — the flagship is evidence and a first consumer, not the module.",
+    "The two-blade gate held: the functional blade is deterministic and green (E2E over DOM-shadowed controls, ?e2e=1); the aesthetic blade has no oracle and was judged by The Eye on stills — recorded as such, not faked.",
+    "'WebGL is paint, never truth' (the breakout's unanimous resolution) is what made the functional blade passable — canvas renders, the XState machine owns truth, DOM shadows every interaction.",
+    "HONEST GOVERNANCE NOTE: build-mode traded the council's fail-closed verdict for builder adjudication. The override was verified and documented, but the durable rule stays: anything added survives the quest — a ship-grade pass re-runs the council. (Atropos's skipped council is being closed the same way.)",
+    "Motion and measured perf are the remaining distance to a defensible award-tier claim — stills passed, the living site is unjudged."
+  ],
+  "artifacts": {
+    "app": "narcissus/flagship/ (src, tests/e2e, scripts/verify-*, screenshots 01-07)",
+    "compounding": "narcissus/flagship/scripts/build-live-graph.mjs + src/live-graph.json — Clotho's live weave MEASURED by Lachesis and VERIFIED by Atropos, rendered by the flagship (the three modules interoperating through the live graph)"
+  }
+}

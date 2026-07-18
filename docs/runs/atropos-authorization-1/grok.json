@@ -1,0 +1,25 @@
+{
+  "build_id": "iliad-atropos-1-authz",
+  "use_case": "iliad-atropos-cycle-1",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/atropos-1-workshop/candidate-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json"
+  ],
+  "proposal_ref": "sha256:ed8a921700a0d814b3f1e2c9fdd56f744f57cc32d84377682354ea363842eeb2",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-18T16:53:09.357Z",
+  "rationale": "Cycle-1 plan is internally consistent with the registered meaning (verification half of retires only), the live data surface (4 plan-version retirements), and the repository trust model. Closed entry shape + pinned types, must_not_govern_new_work===true, unique plan_version, active_plan not superseded, superseded_by resolution without self/dangling/cycle, and disk-resolved terminal sha256 via sanctioned canonicalize/sha256hex are all normative and test-discriminated. Node-backed paths are correctly marked UNREPRESENTABLE under the current schema and short-circuit deterministically rather than being silently omitted or half-implemented; full three-surface verifier is explicitly deferred without dead claims. READ-ONLY is enforced by an allowlist oracle over the runtime surface (no fs writers, no child_process/vm/dynamic load, no scripts/ leakage) with honest NON-CLAIM that it is strong static evidence, not a sandbox proof. Boundary is zero-dependency, clotho-free, sole merkle-dag/vendor.mjs import. Design-level surface-applicability ruling is anchored in existing content-addressed artifacts rather than a CHANGE-PROTOCOL edit, matching The Eye's build-mode recalibration. Ingestion is fail-closed and closed-union (manifest-anchored discovery + snapshot digest + realpath containment) so a present SUPERSEDED record or supersedes edge cannot be dropped while still returning consistent. Golden path over real CURRENT-AUTHORITY and the per-check negative fixtures match the stated verdict conditions. No remaining contradiction with pre-review, NON-CLAIMs, or cycle-1 non-goals; nothing is required of the plan that was explicitly disclaimed. Ratify AS-IS.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5",
+    "response_id": "eb35383e-1459-9a90-a752-78cd0bb0566d",
+    "source": "ai-peer-mcp/grok_ask",
+    "answered_at": "2026-07-18T16:53:20.696Z",
+    "tool": "grok_ask"
+  }
+}
