@@ -1,5 +1,5 @@
 {
   "note": "Operational DATA (not a memory record). Closed payload schema {snapshot_path, snapshot_digest} defined by lachesis/memory/CONTRACTS/metrics.json. snapshot_digest = raw-byte sha256 of the file. NEXT-ROUND: this manifest's own digest should be pinned in an authority-anchored root (CURRENT-AUTHORITY) — held pending Eye routing; not wired yet.",
   "snapshot_path": "docs/runs/clotho-self-weave/thread-ledger.snapshot.jsonl",
-  "snapshot_digest": "sha256:ea3ca462790c09ed3fe17463feb27b6983a24174e2632f9d72eb82298c2f769f"
+  "snapshot_digest": "sha256:c8031e92635abdec443b88c15f6bf0dc2b231509678fa3456c9eaab8c949fcc2"
 }

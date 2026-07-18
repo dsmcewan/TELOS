@@ -114,23 +114,23 @@ const wv = (edges) => {
 {
   const manifest = JSON.parse(readFileSync(path.join(ROOT, "lachesis/config/snapshot-manifest.json"), "utf8"));
   const w = loadWeave(manifest, ROOT);
-  ok(w.edges.length === 4001, `golden: 4001 edges (${w.edges.length})`);
-  ok(w.nodes.size === 944, `golden tally: 944 distinct nodes (${w.nodes.size})`);
+  ok(w.edges.length === 4274, `golden: 4274 edges (${w.edges.length})`);
+  ok(w.nodes.size === 1016, `golden tally: 1016 distinct nodes (${w.nodes.size})`);
   const dependsOn = w.edges.filter((x) => x.edge_kind === "depends-on").length;
-  ok(dependsOn === 1673, `golden tally: 1673 depends-on edges (${dependsOn})`);
+  ok(dependsOn === 1692, `golden tally: 1692 depends-on edges (${dependsOn})`);
   const indeg = new Map();
   for (const x of w.edges) if (x.edge_kind === "depends-on") indeg.set(x.to, (indeg.get(x.to) || 0) + 1);
   let maxInd = 0; for (const v of indeg.values()) if (v > maxInd) maxInd = v;
-  ok(maxInd === 131, `golden tally: max depends-on in-degree 131 (${maxInd})`);
+  ok(maxInd === 137, `golden tally: max depends-on in-degree 137 (${maxInd})`);
   const HUB = "0fcf5ff72e47d79ef80d99630502551aefca0459db2fdcc16c706bf07e6dfc19";
   const G2 = "0328b9ce74868e03071be1e4f5c21cbb310e7110c4601495c1199a3a4b9f8656";
   ok(dependencies(w, HUB).size === 0, "golden HUB: dependencies=0");
-  ok(blastRadius(w, HUB).count === 177, "golden HUB: blastRadius=177");
-  ok(relevance(w, HUB) === 1, "golden HUB: relevance=1.0 (raw 430/430)");
+  ok(blastRadius(w, HUB).count === 184, "golden HUB: blastRadius=184 (grew: lachesis+atropos now depend on canonicalize=HUB)");
+  ok(relevance(w, HUB) === 1, "golden HUB: relevance=1.0 (raw 454/454)");
   ok(assess(w, HUB).class === "high", "golden HUB: class=high");
   ok(dependencies(w, G2).size === 1, "golden G2: dependencies=1");
   ok(blastRadius(w, G2).count === 21, "golden G2: blastRadius=21");
-  ok(Math.abs(relevance(w, G2) - 81 / 430) < 1e-9, "golden G2: relevance=81/430");
+  ok(Math.abs(relevance(w, G2) - 81 / 454) < 1e-9, "golden G2: relevance=81/454");
   ok(dependencies(w, HUB).size !== blastRadius(w, HUB).count, "golden: HUB deps != blast (orientation pinned)");
   // digest stamp: a measurement is bound to the checked bytes
   ok(assess(w, HUB).snapshot_digest === manifest.snapshot_digest, "golden: assess() stamps the snapshot_digest");

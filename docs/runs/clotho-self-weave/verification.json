@@ -1,7 +1,7 @@
 {
   "kind": "clotho-self-weave-verification",
-  "node_version": "v24.16.0",
-  "input_repo_head": "841208d6f16ed4b94b48a8556ab5392feac06dc9",
+  "node_version": "v22.23.1",
+  "input_repo_head": "14e54d02fd96aea671b6ca8894c2bec8ad157894",
   "repository_ref": {
     "derived": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
     "ledger_header": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
@@ -10,11 +10,11 @@
   },
   "snapshot": {
     "path": "docs/runs/clotho-self-weave/thread-ledger.snapshot.jsonl",
-    "sha256": "ea3ca462790c09ed3fe17463feb27b6983a24174e2632f9d72eb82298c2f769f",
+    "sha256": "c8031e92635abdec443b88c15f6bf0dc2b231509678fa3456c9eaab8c949fcc2",
     "ledger_verification": "ok",
     "errors": []
   },
-  "trusted_record_count": 4001,
+  "trusted_record_count": 4274,
   "manifest": {
     "weavers": [
       {
@@ -63,7 +63,7 @@
       }
     ],
     "orchestrator_refs": [
-      "file:clotho/inventory.mjs@c60a50dcd479aaa034a855eab01a6498037f8290",
+      "file:clotho/inventory.mjs@7ae6a344b1fe540345ef926439f8beffa1f5dc20",
       "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
       "file:clotho/thread-ledger.mjs@332821afc71c7776b022f7247aa33250592ef78c",
       "file:clotho/weave.mjs@6e5870f60c389c452e15dcab96f26115ec02b954",
@@ -130,11 +130,11 @@
     "command": "node clotho/scripts/test-advisory.mjs",
     "exit_status": 0,
     "units": 72,
-    "outside_scanned": 132,
-    "outside_unclassified": 0,
+    "outside_scanned": 155,
+    "outside_unclassified": 4,
     "clotho_scanned": 27,
     "accepted_edges": 60,
-    "unassigned_sources": 76,
+    "unassigned_sources": 90,
     "note": "Two-direction advisory review signals (D23/D27/D30/D32/D33, AM-35..39), including the D30/D32 loader-construction checks against the exact frozen mapping and the D33 shared-grammar proof — recorded as advisory trusted-code review signals, never as isolation or loader-containment proofs."
   },
   "package_tests": {
@@ -147,6 +147,11 @@
       },
       {
         "package": "ai-forge",
+        "command": "npm test",
+        "exit_status": 0
+      },
+      {
+        "package": "atropos",
         "command": "npm test",
         "exit_status": 0
       },
@@ -167,6 +172,11 @@
       },
       {
         "package": "forge",
+        "command": "npm test",
+        "exit_status": 0
+      },
+      {
+        "package": "lachesis",
         "command": "npm test",
         "exit_status": 0
       },
