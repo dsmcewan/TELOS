@@ -10,7 +10,9 @@
     "preview": "vite preview --port 4317",
     "test:e2e": "playwright test",
     "verify:evidence": "node scripts/verify-evidence.mjs",
-    "verify:coverage": "node scripts/verify-coverage.mjs"
+    "verify:coverage": "node scripts/verify-coverage.mjs",
+    "build:live-graph": "node scripts/build-live-graph.mjs",
+    "prebuild": "node scripts/build-live-graph.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",
