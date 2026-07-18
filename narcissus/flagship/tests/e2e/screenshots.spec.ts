@@ -35,4 +35,11 @@ test("capture flagship views", async ({ page }) => {
   await page.locator('[data-testid="cmd-SELECT_NODE"]').first().click(); // the hub (canonicalize)
   await page.waitForTimeout(700);
   await page.screenshot({ path: path.join(dir, "05-live-graph.png") });
+
+  // STORY VIEW with ferrofluid knots under tension (thread pulled) — confirm the shared shader reads well
+  await page.getByTestId("cmd-EXIT_GRAPH").click();
+  await page.locator('[data-testid="cmd-GO_STATION"][data-index="2"]').click(); // Daedalus / reiteration
+  await page.getByTestId("cmd-PULL_THREAD").click();
+  await page.waitForTimeout(700);
+  await page.screenshot({ path: path.join(dir, "06-story-ferrofluid-knots.png") });
 });

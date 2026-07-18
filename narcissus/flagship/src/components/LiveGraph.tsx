@@ -36,27 +36,71 @@ function Graph({ selectedNodeId, reducedMotion }: { selectedNodeId: string | nul
   const materials = useMemo(() => {
     const m: Record<string, THREE.ShaderMaterial> = {};
     for (const n of NODES) {
+      // depth/value hierarchy WITHOUT lying about risk color: brightness falls off with blast rank +
+      // z-depth (far/minor orbs dimmer), so the field reads dimensional instead of monotone.
+      const weight = n.blast_radius / MAX_BLAST;
+      const z = LAYOUT[n.id]?.[2] ?? 0;
+      const depthDim = 1 + Math.min(0, z) * 0.16;              // farther (negative z) -> dimmer
+      const rankDim = 0.45 + weight * 0.65;                    // minor orbs dimmer, hub full
       m[n.id] = new THREE.ShaderMaterial({
         vertexShader: ferroVert, fragmentShader: ferroFrag,
-        uniforms: { uTime: { value: 0 }, uColor: { value: new THREE.Color(riskColor(n.risk_class)) } },
+        uniforms: {
+          uTime: { value: 0 },
+          uColor: { value: new THREE.Color(riskColor(n.risk_class)) },
+          uDim: { value: Math.max(0.28, rankDim * depthDim) },
+        },
       });
     }
     return m;
   }, []);
 
-  const edgePositions = useMemo(() => {
-    const arr: number[] = [];
+  // Edges as WOVEN THREAD under load: dimensional tubes with a catenary sag, thickness scaled by the
+  // heavier endpoint's blast radius, and an emissive gradient intensifying toward the hub end.
+  const threads = useMemo(() => {
+    const out: { key: string; geo: THREE.TubeGeometry; mat: THREE.ShaderMaterial }[] = [];
+    const threadVert = /* glsl */`
+      varying float vT;
+      void main(){ vT = uv.x; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+    const threadFrag = /* glsl */`
+      uniform vec3 uColor; uniform float uHubEnd; varying float vT;
+      void main(){
+        float towardHub = uHubEnd > 0.5 ? vT : (1.0 - vT);
+        float glow = 0.22 + pow(towardHub, 2.0) * 1.15;   // brightens toward the hub end
+        gl_FragColor = vec4(uColor * glow, 0.9);
+      }`;
     for (const e of EDGES) {
       const a = LAYOUT[e.from]; const b = LAYOUT[e.to];
-      if (a && b) arr.push(a[0], a[1], a[2], b[0], b[1], b[2]);
+      if (!a || !b) continue;
+      const na = nodeById(e.from)!; const nb = nodeById(e.to)!;
+      const va = new THREE.Vector3(...a); const vb = new THREE.Vector3(...b);
+      const mid = va.clone().add(vb).multiplyScalar(0.5);
+      const len = va.distanceTo(vb);
+      mid.y -= 0.16 * len * 0.35;                 // catenary sag — thread under gravity/tension
+      mid.z -= 0.1;
+      const curve = new THREE.QuadraticBezierCurve3(va, mid, vb);
+      const weight = Math.max(na.blast_radius, nb.blast_radius) / MAX_BLAST;
+      const radius = 0.012 + weight * 0.05;       // thickness ∝ heavier endpoint's blast
+      const geo = new THREE.TubeGeometry(curve, 24, radius, 6, false);
+      const hubEnd = e.to === NODES_BY_BLAST[0].id ? 1 : e.from === NODES_BY_BLAST[0].id ? 0 : -1;
+      const mat = new THREE.ShaderMaterial({
+        vertexShader: threadVert, fragmentShader: threadFrag, transparent: true,
+        uniforms: { uColor: { value: new THREE.Color("#b91c1c") }, uHubEnd: { value: hubEnd === 1 ? 1 : 0 } },
+      });
+      if (hubEnd === -1) mat.uniforms.uColor.value = new THREE.Color("#7f1d1d"); // non-hub threads dimmer
+      out.push({ key: `${e.from}-${e.to}`, geo, mat });
     }
-    return new Float32Array(arr);
+    return out;
   }, []);
 
+  // Position-aware labels: nudge inward away from the HUD zones (left panel ~ x < -4.6 in world space at
+  // z≈0, right list ~ x > 5.2) and clamp the vertical extremes, so labels never clip behind the overlays.
   const labels = useMemo(
     () => LABELED_IDS.map((id) => {
       const n = nodeById(id)!;
-      return { id, pos: LAYOUT[id], tex: makeLabelTexture(n.label, riskColor(n.risk_class)) };
+      const p = LAYOUT[id];
+      const x = Math.max(-4.4, Math.min(4.9, p[0]));
+      const y = Math.max(-3.4, Math.min(3.6, p[1]));
+      return { id, pos: [x, y, p[2]] as [number, number, number], tex: makeLabelTexture(n.label, riskColor(n.risk_class)) };
     }),
     [],
   );
@@ -71,12 +115,9 @@ function Graph({ selectedNodeId, reducedMotion }: { selectedNodeId: string | nul
 
   return (
     <group ref={group}>
-      <lineSegments>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[edgePositions, 3]} />
-        </bufferGeometry>
-        <lineBasicMaterial color="#b91c1c" transparent opacity={0.28} toneMapped={false} />
-      </lineSegments>
+      {threads.map((t) => (
+        <mesh key={t.key} geometry={t.geo} material={t.mat} />
+      ))}
 
       {NODES.map((n) => {
         const p = LAYOUT[n.id];

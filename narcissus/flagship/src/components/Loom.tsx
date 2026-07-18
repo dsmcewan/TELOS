@@ -16,7 +16,7 @@ function Warp({ stationIndex, threadPulled, reducedMotion }: {
   // shared ferrofluid material for the tension knots (consistent with the graph hub)
   const knotMat = useMemo(() => new THREE.ShaderMaterial({
     vertexShader: ferroVert, fragmentShader: ferroFrag,
-    uniforms: { uTime: { value: 0 }, uColor: { value: new THREE.Color("#ef4444") } },
+    uniforms: { uTime: { value: 0 }, uColor: { value: new THREE.Color("#ef4444") }, uDim: { value: 1 } },
   }), []);
   useFrame((state) => {
     knotMat.uniforms.uTime.value = state.clock.elapsedTime;
