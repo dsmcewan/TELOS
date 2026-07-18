@@ -74,6 +74,18 @@ forms:
 Never anchor to a mutable label ("the current design doc," "the latest version") — if
 the target can change without the anchor changing, it is not doing its job.
 
+## `authority.source_path` — anchor a contract to its source document
+
+A contract MAY carry an `authority` block naming the document that grounds it. The
+audit's staleness family checks that this path still resolves from the repo root:
+
+```json
+"authority": { "source_path": "docs/specs/2026-07-18-example-design.md" }
+```
+
+If the file no longer exists at that path, the audit reports a FAIL (`staleness`) —
+a load-bearing anchor must never dangle.
+
 ## `derived_from` on queries (hardening 1)
 
 Every entry in `comprehension-queries.json` that asserts an `expected` fact must carry

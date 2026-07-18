@@ -152,7 +152,8 @@ speculative extras. Each is a first-class rule, not a suggestion.
    enforced the promise, and the mirror rotted.*
 
 5. **Staleness sweep.** Anchors must be checked for whether they still resolve at HEAD,
-   how far `as_of` distance has drifted, and whether snapshots are current. *Origin: in
+   how far `as_of` distance has drifted, and whether snapshots are current (contracts
+   declare their anchor via `authority.source_path`, which must resolve). *Origin: in
    the source project, a session-state anchor was found seventy commits stale, and a
    working record went a full day stale before anyone noticed.*
 
@@ -164,17 +165,13 @@ speculative extras. Each is a first-class rule, not a suggestion.
 
 7. **Load-order manifest.** "Complete at load" requires a defined minimal reading
    order, not an assumption that a model will find the right files on its own. *Origin:
-   in the source project, a fresh model with no defined reading order either read
-   everything and blew its context budget, or read too little and filled the gaps with
-   invention — "complete at load" had no operational meaning until a minimal order was
-   written down.*
+   preventive design — 'complete at load' is unbounded without a defined minimal
+   reading order; adopted before a failure occurred.*
 
 8. **Decision provenance.** Every ruling records `decided_by: human |
    model-advisory-adopted-by-human`. Human authority is never silently delegated to a
-   model. *Origin: in the source project, rulings did not record whether a human
-   decided outright or a model's advice was adopted by a human — leaving that
-   distinction unrecorded lets human authority quietly get treated as delegable to a
-   model.*
+   model. *Origin: preventive design — attribution of rulings (human vs. model-advised)
+   was made explicit so authority can never be inferred or misread from prose.*
 
 ## Preserve rejected alternatives
 
