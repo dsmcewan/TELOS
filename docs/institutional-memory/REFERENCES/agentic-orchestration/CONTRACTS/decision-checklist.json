@@ -1,0 +1,44 @@
+{
+  "kind": "contract",
+  "id": "agentic-orchestration-decision-checklist",
+  "title": "Orchestration selection checklist — TELOS-local advisory synthesis",
+  "what": "A five-step selection aid an author works through before committing to an orchestration shape. This is a TELOS-LOCAL SYNTHESIS derived from the cited guidance — it is NOT presented as a verbatim Anthropic checklist.",
+  "why": "Operationalizes simplicity-first: the checklist steers toward the least-complex adequate pattern and forces the ground-truth-checkpoint question before any autonomous loop.",
+  "scope": "agentic-orchestration reference (advisory)",
+  "authority": "git:9d322ddb9c7d679414b3822c3d8128575ddb3a3e + file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-17-agentic-orchestration-reference.json@7ea578d85896a197fce352a6407dacb6f34bcc52 + The Eye ruling accepted 2026-07-17",
+  "evidence": ["file:docs/institutional-memory/REFERENCES/agentic-orchestration/EVIDENCE/anthropic-sources.json@bbbede195988b9781fb79045d88d7e3ad12b8ae5"],
+  "non_claim": "Local synthesis, not a verbatim Anthropic checklist. It recommends; it does not enforce, does not choose the pattern for you, and creates no governing behavior. Any mandatory authorization or checkpoint remains mandatory only by its own TELOS/Argo authority-anchored record.",
+  "change_rule": "A reviewed edit; the checker requires this record be explicitly marked local synthesis (synthesis: true) and carry evidence references.",
+  "status": "NORMATIVE-CURRENT",
+  "normativity": "ADVISORY",
+  "synthesis": true,
+  "steps": [
+    {
+      "n": 1,
+      "step": "Define success and available evaluation evidence.",
+      "detail": "State what 'good' means and what signal (test, oracle, human review) can measure it. No evaluation signal is a warning against any pattern with a feedback loop or an autonomous agent — you would not be able to check its work."
+    },
+    {
+      "n": 2,
+      "step": "Test the simplest adequate form first.",
+      "detail": "Try a single augmented-LLM call (with retrieval/tools) before any multi-step orchestration. If it suffices, stop — do not orchestrate."
+    },
+    {
+      "n": 3,
+      "step": "Classify the task structure.",
+      "detail": "Sequential (prompt chaining), routable (routing), parallelizable (parallelization), dynamically decomposable (orchestrator-workers), or feedback-driven (evaluator-optimizer). Only genuinely open-ended, unpredictable-step tasks point at an autonomous agent."
+    },
+    {
+      "n": 4,
+      "step": "Select the least-complex pattern that addresses the demonstrated failure mode.",
+      "detail": "Add complexity only when evidence shows the simpler tested form is inadequate — not preemptively. More agentic is not more capable if the task did not need it."
+    },
+    {
+      "n": 5,
+      "step": "Define stopping conditions, checkpoint behavior, human escalation, and authorization boundaries proportional to risk.",
+      "detail": "Any autonomous or feedback loop needs an explicit stopping condition and a ground-truth checkpoint. In TELOS, irreversible/outward-facing steps route to The Eye and through the gate — but that requirement lives in the TELOS/Argo records, not here."
+    }
+  ],
+  "must_not_govern_new_work": false,
+  "effective_from_commit": "git:9d322ddb9c7d679414b3822c3d8128575ddb3a3e"
+}

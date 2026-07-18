@@ -1,0 +1,45 @@
+{
+  "kind": "evidence",
+  "id": "agentic-orchestration-telos-worked-examples",
+  "title": "TELOS worked examples — where existing mechanisms resemble or combine the patterns",
+  "what": "Carefully qualified, advisory correspondences between existing TELOS mechanisms and the orchestration patterns. Each is pinned to a real module record by a content-addressed file:@<blob_sha> source_ref. These are observed STRUCTURAL resemblances (related_example), not authority-anchored implementation declarations (instantiated_by).",
+  "why": "The reference adds value by giving existing modules a shared pattern vocabulary; it must do so without over-claiming that a TELOS mechanism is an exact implementation of an Anthropic pattern.",
+  "scope": "agentic-orchestration reference (advisory)",
+  "authority": "git:9d322ddb9c7d679414b3822c3d8128575ddb3a3e (this cycle) + The Eye ruling: pre-review accepted 2026-07-17",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "non_claim": "An advisory correspondence does NOT transfer Anthropic's claims onto the TELOS mechanism, does not create new governing behavior, and does not assert exact semantic equivalence. Any mandatory TELOS behavior remains mandatory solely by its own authority-anchored record, not by this correspondence.",
+  "change_rule": "Adding/altering an example is a reviewed edit here; each pinned file:@<sha> must resolve (git blob present) or the local checker fails closed.",
+  "examples": [
+    {
+      "key": "loadout-harness-parallelization",
+      "related_pattern": "parallelization",
+      "mapping_basis": "The loadout module records harness-level multi-agent workflows (parallel builders, refuter swarms, verification fan-outs) as trust-free-by-substrate. Structurally this is parallelization/sectioning + a synthesis step — independent workers run concurrently and results aggregate.",
+      "pinned_refs": ["file:docs/institutional-memory/loadout/IDENTITY.md@fa30ad89209e6e0f4c320a4fcf63f112721821f9"],
+      "example_non_claim": "The loadout module owns the TRUST rules for these harnesses; this correspondence names the pattern only and transfers no authority."
+    },
+    {
+      "key": "daedalus-orchestrator-workers-plus-evaluator",
+      "related_pattern": "orchestrator-workers + evaluator-optimizer",
+      "mapping_basis": "Daedalus decomposes plan maturation across seats (author/reviewer, or parallel constraint/implementation) and its per-seat verification loop is an evaluate-then-refine step. Structurally this combines worker orchestration with an evaluator-optimizer feedback loop.",
+      "pinned_refs": ["file:docs/institutional-memory/daedalus/IDENTITY.md@b3512eb56abee7684b05af0477fb412b1c3e6f96", "file:docs/daedalus-methodology.md@ab0bc154c1fc7063505a1503605b80fcafc0289c"],
+      "example_non_claim": "Daedalus owns maturation; convergence is submission, not authorization (its own record). This correspondence transfers no authority and does not weaken that rule."
+    },
+    {
+      "key": "held-pr-eye-checkpoint",
+      "related_pattern": "autonomous-agent ground-truth checkpoint (human-in-the-loop)",
+      "mapping_basis": "The held-PR / The Eye protocol is a human ground-truth checkpoint gating autonomous work — structurally the checkpoint the autonomous-agent guidance calls for.",
+      "pinned_refs": ["file:docs/institutional-memory/argo/IDENTITY.md@87c8fbadb0b0bb2dabdf8f8cda7d9805cdf1b00e"],
+      "example_non_claim": "The Eye's authority and the held-PR requirement stand on their own TELOS/Argo records; this correspondence names the pattern and transfers nothing."
+    }
+  ],
+  "cross_cutting_links": [
+    {
+      "rule": "convergence is not authorization",
+      "linked_authority": "file:docs/convergence-is-not-authorization.md@adba89e4cfd7eac2249bb8a3120de9e3667527bb",
+      "note": "Linked to its existing canonical, pinned authority; NOT restated here as a newly created advisory rule and NOT weakened."
+    }
+  ],
+  "must_not_govern_new_work": false,
+  "effective_from_commit": "git:9d322ddb9c7d679414b3822c3d8128575ddb3a3e"
+}

@@ -1,0 +1,73 @@
+{
+  "kind": "evidence",
+  "id": "agentic-orchestration-anthropic-sources",
+  "title": "External source evidence — Anthropic's published agent-building guidance",
+  "what": "The exact external publications this advisory reference draws on, with canonical URL, publisher, retrieval date, and the minimal claims used. A URL is provenance metadata (a locator), NOT a terminal authority anchor; the taxonomy contract pins THIS file by its git blob sha (file:@<sha>).",
+  "why": "Authority-anchored discipline: taxonomy claims must terminate in a reviewable, content-addressed evidence artifact rather than a bare URL or a retrieval date.",
+  "scope": "agentic-orchestration reference (advisory)",
+  "authority": "git:9d322ddb9c7d679414b3822c3d8128575ddb3a3e (this cycle) + The Eye ruling: pre-review accepted 2026-07-17",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "non_claim": "This evidence does not reproduce the publications in full (licensing); it preserves the minimal claims used and their provenance. It does not assert Anthropic endorses TELOS or its worked examples.",
+  "change_rule": "Adding/altering a source is a reviewed edit to this file; the taxonomy's file:@<sha> pin must be updated to the new blob sha or the local checker fails closed.",
+  "retrieval_date": "2026-07-16",
+  "sources": [
+    {
+      "key": "building-effective-agents",
+      "title": "Building Effective Agents",
+      "publisher": "Anthropic (Engineering)",
+      "url": "https://www.anthropic.com/engineering/building-effective-agents",
+      "claims_used": [
+        "The augmented LLM (model + retrieval + tools + memory) is the basic building block.",
+        "Five workflow patterns are distinguished from autonomous agents: prompt chaining, routing, parallelization, orchestrator-workers, evaluator-optimizer.",
+        "Workflows orchestrate LLMs/tools through predefined code paths; agents dynamically direct their own process and tool use.",
+        "Simplicity first: find the simplest solution and increase complexity only when it demonstrably improves outcomes; agentic systems trade latency/cost/compounding-error risk for capability.",
+        "Three agent design principles: simplicity, transparency (show planning steps), a well-crafted agent-computer interface.",
+        "Autonomous agents need ground-truth checkpoints (tests, human review)."
+      ]
+    },
+    {
+      "key": "writing-tools-for-agents",
+      "title": "Writing tools for AI agents",
+      "publisher": "Anthropic (Engineering)",
+      "url": "https://www.anthropic.com/engineering/writing-tools-for-agents",
+      "claims_used": [
+        "Prefer a few high-impact consolidated tools over one-per-endpoint.",
+        "Namespace related tools; return meaningful human-readable context; optimize for token efficiency; write clear descriptions; evaluate on real tasks measuring runtime + tokens."
+      ]
+    },
+    {
+      "key": "claude-agent-sdk-overview",
+      "title": "Claude Agent SDK overview",
+      "publisher": "Anthropic (Claude Docs)",
+      "url": "https://code.claude.com/docs/en/agent-sdk/overview",
+      "claims_used": [
+        "The SDK packages the agent loop, context management (compaction), permissions (allowed/disallowed tools), hooks (PreToolUse/PostToolUse/Stop/...), subagents, and MCP.",
+        "Human-in-the-loop via interactive approvals / AskUserQuestion."
+      ]
+    },
+    {
+      "key": "effective-context-engineering",
+      "title": "Effective context engineering for AI agents",
+      "publisher": "Anthropic (Engineering)",
+      "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents",
+      "claims_used": ["Manage the context window deliberately (compaction/summarization of older turns)."]
+    },
+    {
+      "key": "multi-agent-research-system",
+      "title": "How we built our multi-agent research system",
+      "publisher": "Anthropic (Engineering)",
+      "url": "https://www.anthropic.com/engineering/multi-agent-research-system",
+      "claims_used": ["An orchestrator-workers multi-agent system with a lead agent delegating to subagents is effective for broad, parallelizable research."]
+    },
+    {
+      "key": "effective-harnesses-long-running",
+      "title": "Effective harnesses for long-running agents",
+      "publisher": "Anthropic (Engineering)",
+      "url": "https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents",
+      "claims_used": ["Long-running agents need harnesses that let them resume, verify, and stay on-budget rather than drift."]
+    }
+  ],
+  "must_not_govern_new_work": false,
+  "effective_from_commit": "git:9d322ddb9c7d679414b3822c3d8128575ddb3a3e"
+}

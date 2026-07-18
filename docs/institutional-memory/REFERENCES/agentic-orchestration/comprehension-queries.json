@@ -1,0 +1,55 @@
+{
+  "component": "reference:agentic-orchestration",
+  "note": "Authority-anchored comprehension queries for the agentic-orchestration ADVISORY reference. They encode the likely hallucinations: that the reference enforces, that it picks the pattern for you, that a URL is authority, that it re-grants TELOS authority, that 'autonomous' means unlimited execution. Governing authority is the active plan (context); this reference does not change it.",
+  "governing_authority": {
+    "plan": "docs/runs/clotho-daedalus-delta14/matured-plan-v15.md",
+    "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+    "authorization": "authz-008"
+  },
+  "required_invariants": [],
+  "required_non_claims": ["agentic-orchestration-non-claims"],
+  "queries": [
+    {
+      "id": "workflow-vs-agent",
+      "query": "How does the taxonomy classify its six patterns? (enum: five-workflows-one-agent | six-equivalent-workflows | six-agents)",
+      "answer_kind": "enum",
+      "expected": "five-workflows-one-agent",
+      "authority_anchor": { "contract": "CONTRACTS/pattern-taxonomy.json (5 workflow + 1 agent)" }
+    },
+    {
+      "id": "is-enforced",
+      "query": "Does this reference enforce orchestration behavior?",
+      "answer_kind": "boolean",
+      "expected": false,
+      "authority_anchor": { "record": "reference.json#non_claim; NON-CLAIMS.json", "normativity": "ADVISORY" }
+    },
+    {
+      "id": "auto-selects",
+      "query": "Does the reference choose the orchestration pattern automatically?",
+      "answer_kind": "boolean",
+      "expected": false,
+      "authority_anchor": { "non_claim": "agentic-orchestration-non-claims (no selection engine)" }
+    },
+    {
+      "id": "url-is-terminal-authority",
+      "query": "Is a source URL a terminal authority anchor for a taxonomy claim?",
+      "answer_kind": "boolean",
+      "expected": false,
+      "authority_anchor": { "evidence": "EVIDENCE/anthropic-sources.json (URL is a locator; claims terminate in a pinned file:@sha)" }
+    },
+    {
+      "id": "telos-rules-authority",
+      "query": "Where do mandatory TELOS rules (authorization, held-PR) get their authority? (enum: their-own-authority-anchored-records | this-reference | model-consensus)",
+      "answer_kind": "enum",
+      "expected": "their-own-authority-anchored-records",
+      "authority_anchor": { "evidence": "EVIDENCE/telos-worked-examples.json#example_non_claim" }
+    },
+    {
+      "id": "autonomous-unlimited",
+      "query": "Does naming the autonomous-agent pattern authorize unlimited execution?",
+      "answer_kind": "boolean",
+      "expected": false,
+      "authority_anchor": { "non_claim": "agentic-orchestration-non-claims (no autonomous execution authorized); checklist step 5 (stopping conditions + checkpoint)" }
+    }
+  ]
+}

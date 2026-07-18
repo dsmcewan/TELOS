@@ -1,0 +1,20 @@
+{
+  "kind": "mechanism",
+  "id": "agentic-orchestration-reference",
+  "title": "Agentic-orchestration reference — advisory pattern taxonomy + selection aid",
+  "what": "A system-level ADVISORY reference: (1) Anthropic's orchestration taxonomy (five workflow patterns vs autonomous agents), (2) a TELOS-local advisory selection checklist derived from the cited guidance, and (3) carefully qualified TELOS worked examples. It is a rendered-from-records reference, not a component, role module, runtime, or mythological term.",
+  "why": "The existing modules document the orchestration TRUST surface (loadout) and specific role INSTANTIATIONS (daedalus, telos, argo), but not the pattern-selection methodology — which named orchestration shape to use when. Naming the patterns gives every module a shared vocabulary and makes each a worked example; this is additive and improves the design of the set (the recursive-improvement principle).",
+  "scope": "Advises humans and agents choosing an orchestration shape for a task. Does NOT own seat trust (loadout), authorization (TELOS), maturation (Daedalus), implementation (Argo), or lifecycle policy (The Iliad).",
+  "authority": "git:9d322ddb9c7d679414b3822c3d8128575ddb3a3e (cycle) + file:docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-17-agentic-orchestration-reference.json@7ea578d85896a197fce352a6407dacb6f34bcc52 (approved pre-review) + The Eye ruling: accepted 2026-07-17",
+  "evidence": [
+    "file:docs/institutional-memory/REFERENCES/agentic-orchestration/EVIDENCE/anthropic-sources.json@bbbede195988b9781fb79045d88d7e3ad12b8ae5",
+    "file:docs/institutional-memory/REFERENCES/agentic-orchestration/EVIDENCE/telos-worked-examples.json@9b1ec3ec2b66c214e1acfa28250377d780b0e3b2"
+  ],
+  "non_claim": "This reference does NOT enforce behavior, does NOT grant or transfer authority, does NOT choose a pattern automatically, does NOT prove containment/safety/optimality, and is NOT a substitute for loadout trust rules or TELOS authorization. Existing mandatory TELOS/Argo rules remain mandatory only by their own authority-anchored records.",
+  "change_rule": "A change is a reviewed edit to these records under the Iliad lifecycle; the local checker + renderer --check + the existing comprehension gate must pass, and verify-contracts.mjs must run unchanged. Flipping any record to an enforced normativity is a separate reviewed change, not this cycle.",
+  "status": "NORMATIVE-CURRENT",
+  "normativity": "ADVISORY",
+  "superseded_by": null,
+  "effective_from_commit": "git:9d322ddb9c7d679414b3822c3d8128575ddb3a3e",
+  "must_not_govern_new_work": false
+}
