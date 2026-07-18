@@ -1,0 +1,56 @@
+{
+  "anchoring": {
+    "rationale": "The plan-version exception determines how a living CHANGE-PROTOCOL requirement applies when two named surfaces are structurally unavailable. That interpretation may be correct, but placing it only in an Atropos contract would silently reinterpret the governing protocol. The pre-review is evidence, not governing text, and a TELOS authorization can authorize an implementation but cannot by itself amend or clarify CHANGE-PROTOCOL.",
+    "requirement": "Before atropos/memory/CONTRACTS/supersession.json becomes normative, commit a CHANGE-PROTOCOL.md section with the stable anchor `#supersession-surface-applicability`. That section MUST state the per-kind matrix in this ruling, state that applicable surfaces are cumulative rather than alternatives, state that plan-version record and weave surfaces are structurally inapplicable rather than advisory, state that all three surfaces are mandatory for a weave-node-backed retirement, and preserve Atropos as a read-only verifier while human/controller action authors retirements. It MUST also state that an unrepresented relationship or unknown kind cannot receive a `consistent` verdict. The committed Atropos decision record MUST reference `CHANGE-PROTOCOL.md#supersession-surface-applicability` and the pre-review at `docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-18-atropos-1.json`. The contract MUST reference both that CHANGE-PROTOCOL anchor and the Atropos decision record. The eventual TELOS authorization MUST identify the exact authorized contract digest and the committed CHANGE-PROTOCOL revision containing the anchor. Any future non-plan CURRENT-AUTHORITY reflection encoding MUST be added through CHANGE-PROTOCOL before Atropos accepts it; Atropos MUST NOT invent such a schema.",
+    "ruling": "A small anchored CHANGE-PROTOCOL clarification is REQUIRED; the Atropos pre-review plus eventual TELOS authorization is not sufficient by itself."
+  },
+  "surface_scope": {
+    "consistent_when": "Return `consistent` only when ingestion succeeds, every detected retirement has exactly one unambiguous entity kind, and every normative surface applicable to that kind is present, well-formed, and agrees on retired identity, successor identity, and `must_not_govern_new_work:true`; successor chains must be non-self-referential, acyclic, non-dangling, and terminate at the applicable current authority. A retired identity must not simultaneously be designated current or governing. Missing, conflicting, duplicate, ambiguous, unsupported, or structurally unrepresentable required data produces `inconsistent` with the affected identity, surface, and deterministic reason code. Absence of a record or weave edge for a plan-version is not an error because those surfaces are inapplicable. Record and weave checks are not globally advisory: they are normative for weave-node-backed retirements. The current committed snapshot is consistent because its only detected retirements are the four plan-versions and they satisfy the plan-version rules.",
+    "kind_detection": "Build the retirement candidate set from the union of CURRENT-AUTHORITY.json#superseded entries, committed records with status exactly `SUPERSEDED`, and committed weave edges with relation exactly `supersedes`. Classify a candidate as `plan-version` only when its authoritative identity is the `plan_version` field of a valid closed-shape CURRENT-AUTHORITY#superseded entry and successor lookup uses the active_plan.version/plan_version namespace; a string resembling `vN` is not sufficient. Classify it as `weave-node-backed artifact/record` only when its retired identity resolves to a committed record and matching weave node whose kind is one of `code-symbol`, `repository-file`, `test`, `commit`, `concern`, `obligation`, `contract-clause`, `doc-section`, or `run-evidence`. A relationship may use this class only if it has such a first-class record/node identity. Namespace collisions, disagreement between record kind and weave kind, an identity appearing as both a plan-version and a weave node, a bare relationship edge with no first-class node identity, or any other unknown representation is `inconsistent`, never silently assigned the smaller plan surface set.",
+    "per_kind": [
+      {
+        "checks": [
+          "Require CURRENT-AUTHORITY.json#superseded to be an array and each plan entry to have exactly the closed keys `plan_version`, `sha256`, `authorization`, `authz_status`, `superseded_by`, `must_not_govern_new_work`, and `note`, with the specified types and lexical forms.",
+          "Require unique `plan_version` values; the active_plan.version MUST NOT also occur as a superseded plan_version.",
+          "Require `must_not_govern_new_work === true`.",
+          "Resolve `superseded_by` only against active_plan.version or another unique superseded plan_version. Reject self-successors, dangling successors, and cycles. Every chain MUST terminate at active_plan.version.",
+          "Do not require or synthesize a record with status `SUPERSEDED` or a weave `supersedes` edge for a plan-version. Their absence is inapplicable, not advisory and not defective."
+        ],
+        "entity_kind": "plan-version",
+        "normative_surfaces": [
+          "CURRENT-AUTHORITY.json#superseded entry",
+          "entry.superseded_by",
+          "entry.must_not_govern_new_work === true"
+        ]
+      },
+      {
+        "checks": [
+          "For retired record R, require R.status exactly `SUPERSEDED`, a single stable R.superseded_by value S, and R.must_not_govern_new_work exactly true.",
+          "Require R's ID to resolve to a committed weave node of the same kind, and require S to resolve to a committed successor record/node. Reject R equal to S.",
+          "Require a weave edge with relation `supersedes` from successor S to retired identity R. Reject a missing edge, reverse-only edge, duplicate contradictory edges, or any edge naming a different successor.",
+          "Require a CURRENT-AUTHORITY#superseded reflection identifying R and S, excluding R from governing/current authority, and agreeing with the record and weave edge. Because the currently committed closed schema represents only plan-versions, any node-backed retirement encountered under that schema MUST return `inconsistent` with reason `UNREPRESENTABLE_CURRENT_AUTHORITY_REFLECTION`; it MUST NOT be downgraded to an advisory warning or encoded by invented fields.",
+          "If S is itself superseded, require the same complete three-surface tuple for S; reject dangling chains and cycles, and require the terminal successor to be the applicable current authority.",
+          "Any future schema that represents non-plan reflections must be defined by an anchored CHANGE-PROTOCOL amendment before the verifier accepts it."
+        ],
+        "entity_kind": "weave-node-backed artifact/record, including a relationship only when represented by a first-class record/node",
+        "normative_surfaces": [
+          "record status `SUPERSEDED` plus `superseded_by` and `must_not_govern_new_work:true`",
+          "weave `supersedes` edge from successor to retired identity",
+          "CURRENT-AUTHORITY.json reflection of the same retired and successor identities"
+        ]
+      },
+      {
+        "checks": [
+          "Do not infer plan-version status from spelling and do not waive record, weave, or CURRENT-AUTHORITY requirements by analogy.",
+          "Return `inconsistent` with reason `UNSUPPORTED_RETIREMENT_KIND` until CHANGE-PROTOCOL defines a first-class identity, applicable surface matrix, and CURRENT-AUTHORITY representation for the kind."
+        ],
+        "entity_kind": "unrepresented relationship or other unknown/non-node retirement",
+        "normative_surfaces": [
+          "No reduced surface set is authorized; representation requires an anchored CHANGE-PROTOCOL definition"
+        ]
+      }
+    ],
+    "rationale": "Ruling A would convert two expressly named CHANGE-PROTOCOL surfaces into optional checks for kinds where those surfaces are structurally applicable, allowing an incomplete artifact retirement to pass. Ruling B preserves every mandated surface while recognizing the verified structural fact that plan-versions are not weave nodes and have no record surface. This is an applicability rule, not a demotion. It also keeps Atropos read-only: failures are reported, while humans/controllers remain responsible for authoring all required surfaces.",
+    "ruling": "B"
+  }
+}
