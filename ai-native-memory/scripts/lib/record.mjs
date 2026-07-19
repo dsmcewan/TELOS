@@ -5,8 +5,9 @@
 // npm integrity sha512-shc1dbU90Yl/xq1QrC7QRtfcwURZuVRfPhZbDoldJ1cn1gzDvBaBWlv0eFolj5+0znnPJz5TXLxsN77X/12KTA==
 // License: ./vendor/LICENSE.es-module-lexer.txt
 import { createHash } from "node:crypto";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, realpathSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   ImportType,
   initSync as initModuleLexerSync,
@@ -142,13 +143,83 @@ export function importSpecifiers(source) {
   return importAnalysis(source).specifiers;
 }
 
+function isWithinPath(root, candidate) {
+  const relative = path.relative(root, candidate);
+  return relative === ""
+    || (relative !== ".."
+      && !relative.startsWith(`..${path.sep}`)
+      && !path.isAbsolute(relative));
+}
+
+function nearestExistingRealPath(candidate) {
+  let current = candidate;
+  while (true) {
+    try {
+      return realpathSync(current);
+    } catch (error) {
+      if (error?.code !== "ENOENT" && error?.code !== "ENOTDIR") throw error;
+      const parent = path.dirname(current);
+      if (parent === current) throw error;
+      current = parent;
+    }
+  }
+}
+
+function relativeImportProblem({
+  packageRoot,
+  physicalPackageRoot,
+  importingFile,
+  relativeFile,
+  specifier
+}) {
+  if (!specifier.startsWith("./") && !specifier.startsWith("../")) {
+    return `${relativeFile}: non-portable import ${specifier}`;
+  }
+
+  let candidate;
+  try {
+    candidate = fileURLToPath(
+      new URL(specifier, pathToFileURL(importingFile))
+    );
+  } catch (error) {
+    return `${relativeFile}: cannot resolve relative import ${specifier}: ${error.message}`;
+  }
+
+  if (!isWithinPath(packageRoot, candidate)) {
+    return `${relativeFile}: relative import escapes plugin root: ${specifier}`;
+  }
+
+  if (!physicalPackageRoot) {
+    return `${relativeFile}: cannot verify physical containment of relative import ${specifier}`;
+  }
+  let physicalCandidate;
+  try {
+    physicalCandidate = nearestExistingRealPath(candidate);
+  } catch (error) {
+    return `${relativeFile}: cannot verify physical containment of relative import`
+      + ` ${specifier}: ${error.message}`;
+  }
+  if (!isWithinPath(physicalPackageRoot, physicalCandidate)) {
+    return `${relativeFile}: relative import escapes plugin root through filesystem link:`
+      + ` ${specifier}`;
+  }
+  return null;
+}
+
 export function packageBoundaryProblems(root) {
   const problems = [];
+  const packageRoot = path.resolve(root);
   let packageJson;
   try {
-    packageJson = readJson(path.join(root, "package.json"));
+    packageJson = readJson(path.join(packageRoot, "package.json"));
   } catch (error) {
     return [error.message];
+  }
+  let physicalPackageRoot = null;
+  try {
+    physicalPackageRoot = realpathSync(packageRoot);
+  } catch (error) {
+    problems.push(`cannot resolve plugin root ${packageRoot}: ${error.message}`);
   }
   const dependencies = packageJson?.dependencies;
   if (!Object.hasOwn(packageJson || {}, "dependencies")
@@ -193,7 +264,7 @@ export function packageBoundaryProblems(root) {
     }
   }
 
-  const scripts = path.join(root, "scripts");
+  const scripts = path.join(packageRoot, "scripts");
   const walk = (directory) => {
     let entries;
     try {
@@ -204,7 +275,7 @@ export function packageBoundaryProblems(root) {
     }
     for (const entry of entries) {
       const file = path.join(directory, entry.name);
-      const relativeFile = path.relative(root, file);
+      const relativeFile = path.relative(packageRoot, file);
       if (entry.isSymbolicLink()) {
         problems.push(`${relativeFile}: script scan does not follow symlinks`);
       } else if (entry.isDirectory()) {
@@ -227,11 +298,15 @@ export function packageBoundaryProblems(root) {
           continue;
         }
         for (const specifier of analysis.specifiers) {
-          if (!specifier.startsWith("node:") && !specifier.startsWith(".")) {
-            problems.push(
-              `${relativeFile}: non-portable import ${specifier}`
-            );
-          }
+          if (specifier.startsWith("node:")) continue;
+          const problem = relativeImportProblem({
+            packageRoot,
+            physicalPackageRoot,
+            importingFile: file,
+            relativeFile,
+            specifier
+          });
+          if (problem) problems.push(problem);
         }
         for (const offset of analysis.unverifiableDynamicImports) {
           const prefix = source.slice(0, offset);

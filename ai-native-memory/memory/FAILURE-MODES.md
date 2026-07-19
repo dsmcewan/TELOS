@@ -101,8 +101,12 @@ reads the contract's `zero_dependencies` field and directly checks `package.json
 grammar-aware import record across `.js`, `.cjs`, and `.mjs` files under `scripts/`. Import
 analysis uses the in-plugin vendored `es-module-lexer` 2.3.1 parser, recognizes static, dynamic,
 source-phase, and defer-phase imports and re-exports, ignores only `import.meta`, and fails closed
-when a real import has no lexer-resolved string or the source cannot be parsed. The boundary
-requires an explicit empty `dependencies` object and rejects runtime declarations through
+when a real import has no lexer-resolved string or the source cannot be parsed. Non-`node:`
+specifiers must begin with exactly `./` or `../`; they are resolved with Node file-URL semantics,
+then rejected if either the normalized lexical path or the real path of the target (or its nearest
+existing ancestor) leaves the plugin root. This also closes percent-dot, query/fragment, file-link,
+and directory-link/junction ambiguities. The boundary requires an explicit empty `dependencies`
+object and rejects runtime declarations through
 `optionalDependencies`, `peerDependencies`, `bundledDependencies`, or `bundleDependencies`;
 `devDependencies` remain outside the runtime claim. It therefore avoids recursion while
 terminating the contract's zero-dependency claim itself.

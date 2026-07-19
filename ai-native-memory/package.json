@@ -5,7 +5,7 @@
   "private": true,
   "description": "AI-native institutional-memory standard as a Claude Code plugin (zero-dep oracles + skills + agents).",
   "scripts": {
-    "check": "node --check scripts/lib/record.mjs && node --check scripts/gate.mjs && node --check scripts/audit.mjs && node --check scripts/verify.mjs && node --check scripts/init.mjs",
+    "check": "node --check scripts/lib/record.mjs && node --check scripts/lib/vendor/es-module-lexer.mjs && node --check scripts/gate.mjs && node --check scripts/audit.mjs && node --check scripts/verify.mjs && node --check scripts/init.mjs",
     "test": "node tests/run.mjs"
   },
   "dependencies": {}

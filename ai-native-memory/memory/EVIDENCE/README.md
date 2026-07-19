@@ -20,7 +20,9 @@ substitute for running the oracles yourself — this is an index, not a cache of
   substituting an unrelated oracle.
 - `tests/test-lib.mjs` — the vendored primitives (`canonicalize`, `sha256hex`, `contentAddress`,
   package-boundary inspection, `finding`, and `printFindings`) behave as specified, including
-  isolated runtime-dependency and non-portable import failures.
+  isolated runtime-dependency failures and import-boundary failures for malformed relative
+  prefixes, URL-normalized lexical escapes, conversion errors, and physical escapes through file
+  links or directory links/junctions.
 - `tests/test-audit.mjs` — one passing fixture tree and one violating fixture tree per audit
   family (three-representation, taxonomy, query-freshness, mirror-sync, staleness) under
   `tests/fixtures/audit/`; every check is proven capable of both passing and failing.
@@ -39,7 +41,9 @@ substitute for running the oracles yourself — this is an index, not a cache of
   `gate.mjs` against `memory/comprehension-queries.json`,
   `memory/answers-example.json`, and `CURRENT-AUTHORITY.json`, then requires the passing answers to
   GRANT and one flipped answer to DENY; invokes `verify.mjs` against `verify-map.json` and requires
-  all declared contract oracles to pass; and scans static, side-effect, and string-literal dynamic
-  imports and re-exports in every `.js`, `.cjs`, and `.mjs` script under `scripts/`, allowing only
-  `node:*` or relative in-plugin paths. An isolated fake package proves both direct dogfood and the
-  terminating oracle reject the same boundary violations without recursion.
+  all declared contract oracles to pass; and applies the shared grammar-aware boundary check to
+  every `.js`, `.cjs`, and `.mjs` script under `scripts/`. That check allows only `node:*` or exact
+  `./` and `../` specifiers whose URL-resolved lexical and nearest-existing-ancestor real paths
+  remain inside the plugin. An isolated fake package proves both direct dogfood and the terminating
+  oracle reject the same lexical, URL-conversion, file-link, and directory-link/junction violations
+  without recursion.

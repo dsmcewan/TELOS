@@ -22,6 +22,7 @@ import {
   finding,
   printFindings
 } from "../scripts/lib/record.mjs";
+import { symlinkOrSkip } from "./lib/symlink.mjs";
 
 // canonicalize: key order does not matter; array order does
 assert.equal(canonicalize({ b: 2, a: 1 }), canonicalize({ a: 1, b: 2 }));
@@ -129,8 +130,9 @@ assert.deepEqual(
   "a leading hashbang and the following regex are not import records"
 );
 const packageRoot = mkdtempSync(path.join(tmpdir(), "anm-boundary-"));
+const outsideRoot = mkdtempSync(path.join(tmpdir(), "anm-boundary-outside-"));
 try {
-  mkdirSync(path.join(packageRoot, "scripts"));
+  mkdirSync(path.join(packageRoot, "scripts", "nested"), { recursive: true });
   writeFileSync(
     path.join(packageRoot, "package.json"),
     JSON.stringify({
@@ -144,7 +146,16 @@ try {
   );
   writeFileSync(
     path.join(packageRoot, "scripts", "portable.mjs"),
-    'import "node:path"; import "./relative.mjs";\n'
+    [
+      'import "node:path";',
+      'import "./relative.mjs";',
+      'import "../inside-root.mjs?../../../../traversal-looking";'
+    ].join("\n")
+  );
+  writeFileSync(path.join(packageRoot, "inside-root.mjs"), "export {};\n");
+  writeFileSync(
+    path.join(packageRoot, "scripts", "nested", "legitimate-parent.mjs"),
+    'import "../portable.mjs";\n'
   );
   assert.deepEqual(packageBoundaryProblems(packageRoot), []);
 
@@ -199,7 +210,141 @@ try {
     path.join(packageRoot, "scripts", "parser-error.mjs"),
     'import "unterminated\n'
   );
+  writeFileSync(
+    path.join(packageRoot, "scripts", "lexical-escape.mjs"),
+    'import "../../outside-lexical.mjs";\n'
+  );
+  writeFileSync(
+    path.join(packageRoot, "scripts", "percent-normalized-escape.mjs"),
+    'import "./%2e%2e/%2e%2e/outside-percent.mjs";\n'
+  );
+  writeFileSync(
+    path.join(packageRoot, "scripts", "mixed-percent-dot-escape.mjs"),
+    'import "./.%2e/%2e./outside-mixed.mjs";\n'
+  );
+  writeFileSync(
+    path.join(packageRoot, "scripts", "invalid-dot-prefix.mjs"),
+    'import ".external";\n'
+  );
+  writeFileSync(
+    path.join(packageRoot, "scripts", "invalid-three-dot-prefix.mjs"),
+    'import ".../external";\n'
+  );
+  writeFileSync(
+    path.join(packageRoot, "scripts", "url-conversion-error.mjs"),
+    'import "./encoded%2Fslash.mjs";\n'
+  );
+  writeFileSync(
+    path.join(outsideRoot, "external-file.mjs"),
+    "export {};\n"
+  );
+  mkdirSync(path.join(outsideRoot, "external-directory"));
+  writeFileSync(
+    path.join(outsideRoot, "external-directory", "existing.mjs"),
+    "export {};\n"
+  );
+  const fileLinkCreated = symlinkOrSkip(
+    path.join(outsideRoot, "external-file.mjs"),
+    path.join(packageRoot, "linked-file.mjs"),
+    { type: "file", label: "package-boundary external file target" }
+  );
+  const directoryLinkCreated = symlinkOrSkip(
+    path.join(outsideRoot, "external-directory"),
+    path.join(packageRoot, "linked-directory"),
+    { type: "dir", label: "package-boundary external directory target" }
+  );
+  if (process.platform === "win32") {
+    assert.equal(
+      directoryLinkCreated,
+      true,
+      "native Windows directory-junction containment coverage must run"
+    );
+  }
+  if (fileLinkCreated) {
+    writeFileSync(
+      path.join(packageRoot, "scripts", "file-link-escape.mjs"),
+      'import "../linked-file.mjs";\n'
+    );
+  }
+  if (directoryLinkCreated) {
+    writeFileSync(
+      path.join(packageRoot, "scripts", "directory-link-escape.mjs"),
+      'import "../linked-directory/missing/external.mjs";\n'
+    );
+  }
   const executableProblems = packageBoundaryProblems(packageRoot);
+  const hasBoundaryFinding = (file, detail) =>
+    executableProblems.some((problem) =>
+      problem.startsWith(`${path.join("scripts", file)}:`)
+      && problem.includes(detail)
+    );
+  assert.deepEqual(
+    {
+      lexicalEscapeRejected: hasBoundaryFinding(
+        "lexical-escape.mjs",
+        "relative import escapes plugin root"
+      ),
+      percentNormalizedEscapeRejected: hasBoundaryFinding(
+        "percent-normalized-escape.mjs",
+        "relative import escapes plugin root"
+      ),
+      mixedPercentDotEscapeRejected: hasBoundaryFinding(
+        "mixed-percent-dot-escape.mjs",
+        "relative import escapes plugin root"
+      ),
+      invalidDotPrefixRejected: hasBoundaryFinding(
+        "invalid-dot-prefix.mjs",
+        "non-portable import .external"
+      ),
+      invalidThreeDotPrefixRejected: hasBoundaryFinding(
+        "invalid-three-dot-prefix.mjs",
+        "non-portable import .../external"
+      ),
+      urlConversionErrorRejected: hasBoundaryFinding(
+        "url-conversion-error.mjs",
+        "cannot resolve relative import ./encoded%2Fslash.mjs"
+      ),
+      containedParentImportAccepted: !executableProblems.some((problem) =>
+        problem.startsWith(
+          `${path.join("scripts", "nested", "legitimate-parent.mjs")}:`
+        )
+      ),
+      traversalLookingQueryAccepted: !executableProblems.some((problem) =>
+        problem.startsWith(`${path.join("scripts", "portable.mjs")}:`)
+      )
+    },
+    {
+      lexicalEscapeRejected: true,
+      percentNormalizedEscapeRejected: true,
+      mixedPercentDotEscapeRejected: true,
+      invalidDotPrefixRejected: true,
+      invalidThreeDotPrefixRejected: true,
+      urlConversionErrorRejected: true,
+      containedParentImportAccepted: true,
+      traversalLookingQueryAccepted: true
+    },
+    "relative imports must be exact, URL-resolved, lexically contained, and conversion-safe"
+  );
+  if (fileLinkCreated) {
+    assert.equal(
+      hasBoundaryFinding(
+        "file-link-escape.mjs",
+        "relative import escapes plugin root through filesystem link"
+      ),
+      true,
+      "an in-root file symlink to an external target must be rejected"
+    );
+  }
+  if (directoryLinkCreated) {
+    assert.equal(
+      hasBoundaryFinding(
+        "directory-link-escape.mjs",
+        "relative import escapes plugin root through filesystem link"
+      ),
+      true,
+      "an in-root directory symlink or junction to an external target must be rejected"
+    );
+  }
   for (const specifier of [
     "external-js",
     "external-cjs",
@@ -280,6 +425,7 @@ try {
   );
 } finally {
   rmSync(packageRoot, { recursive: true, force: true });
+  rmSync(outsideRoot, { recursive: true, force: true });
 }
 // findings
 const f = finding("FAIL", "three-representation", "x/memory", "missing INVARIANTS.json");
