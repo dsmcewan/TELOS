@@ -1,1 +1,0 @@
-{ "kind": "contract", "id": "c1", "status": "NORMATIVE-CURRENT", "oracle": { "test": "oracle-pass.mjs" } }

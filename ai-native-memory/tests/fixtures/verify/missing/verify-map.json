@@ -1,0 +1,6 @@
+[
+  {
+    "contract": "memory/CONTRACTS/missing.json",
+    "oracle": "oracle-pass.mjs"
+  }
+]

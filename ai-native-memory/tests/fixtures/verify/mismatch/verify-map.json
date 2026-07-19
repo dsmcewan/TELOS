@@ -1,0 +1,6 @@
+[
+  {
+    "contract": "memory/CONTRACTS/contract.json",
+    "oracle": "oracle-fail.mjs"
+  }
+]

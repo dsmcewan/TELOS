@@ -1,3 +1,3 @@
 [
-  { "contract": "memory/CONTRACTS/plugin.json", "oracle": "tests/test-lib.mjs" }
+  { "contract": "memory/CONTRACTS/plugin.json", "oracle": "tests/oracle-plugin-contract.mjs" }
 ]

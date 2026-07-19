@@ -1,0 +1,7 @@
+{
+  "kind": "contract",
+  "id": "fixture-contract",
+  "title": "Fixture contract",
+  "status": "NORMATIVE-CURRENT",
+  "oracle": { "test": "oracle-fail.mjs" }
+}
