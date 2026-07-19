@@ -21,7 +21,7 @@ const LOCK_RETRY_MS = 10;
 const WINDOWS_ILLEGAL_SEGMENT = /[<>:"|?*\u0000-\u001f]/;
 const WINDOWS_RESERVED_BASENAME =
   /^(?:con|prn|aux|nul|clock\$|conin\$|conout\$|com[1-9]|lpt[1-9])(?:\..*)?$/i;
-const address = (record) => ({ ...record, id: contentAddress(record) });
+const buildRecord = (record) => ({ ...record, id: contentAddress(record) });
 const sleep = (milliseconds) =>
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
 
@@ -244,10 +244,10 @@ Rules: machine records are the source of truth; human docs are rendered projecti
     const name = component.segments.at(-1);
     const memory = `${component.portable}/memory`;
     const invariants = [
-      address({
+      buildRecord({
         kind: "invariant",
         statement: "REPLACE: a load-bearing always-true property.",
-        oracle: null,
+        oracle: "",
         evidence: [],
         normativity: "NORMATIVE",
         status: "SPECIFIED-PENDING-IMPLEMENTATION",
@@ -255,16 +255,16 @@ Rules: machine records are the source of truth; human docs are rendered projecti
       })
     ];
     const nonClaims = [
-      address({
+      buildRecord({
         kind: "non-claim",
         statement: "REPLACE: something this component deliberately does NOT do or prove.",
-        oracle: null,
+        oracle: "",
         evidence: [],
         status: "SPECIFIED-PENDING-IMPLEMENTATION",
         becomes_normative_when: ""
       })
     ];
-    const contract = address({
+    const contract = buildRecord({
       kind: "contract",
       title: `${name} — frozen semantics`,
       status: "SPECIFIED-PENDING-IMPLEMENTATION",
@@ -272,7 +272,7 @@ Rules: machine records are the source of truth; human docs are rendered projecti
       becomes_normative_when: "",
       lifecycle: "docs-first",
       decided_by: "human",
-      oracle: { test: "NAME-THE-ORACLE-TEST-FILE" },
+      oracle: { test: "" },
       evidence: []
     });
 

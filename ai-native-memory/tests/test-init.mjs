@@ -88,9 +88,9 @@ function assertComponent(root, component) {
       assert.deepEqual(record.evidence, []);
       assert.equal(record.id, contentAddress(record));
       if (record.kind === "invariant" || record.kind === "non-claim") {
-        assert.equal(record.oracle, null);
+        assert.equal(record.oracle, "");
       } else {
-        assert.equal(record.oracle.test, "NAME-THE-ORACLE-TEST-FILE");
+        assert.equal(record.oracle.test, "");
       }
     }
   }
