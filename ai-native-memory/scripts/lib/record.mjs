@@ -2,6 +2,30 @@
 // Deliberately self-contained: the plugin never imports from a host repo's packages.
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import path from "node:path";
+
+export const RECORD_KINDS = new Set([
+  "mechanism",
+  "decision",
+  "rejected-alternative",
+  "non-claim",
+  "invariant",
+  "open-question",
+  "contract",
+  "evidence"
+]);
+
+export const RECORD_STATUSES = new Set([
+  "NORMATIVE-CURRENT",
+  "SUPERSEDED",
+  "SPECIFIED-PENDING-IMPLEMENTATION",
+  "RATIFICATION-PENDING",
+  "MODEL-PROPOSAL",
+  "REJECTED-ALTERNATIVE",
+  "OPEN-QUESTION",
+  "HUMAN-AUTHORIZED-EXCEPTION",
+  "ADVISORY"
+]);
 
 // Deterministic JSON: object keys sorted at every level, arrays in given order, no whitespace.
 export function canonicalize(v) {
@@ -20,6 +44,45 @@ export function sha256hex(input) {
 export function contentAddress(record) {
   const { id, ...rest } = record;
   return "sha256:" + sha256hex(canonicalize(rest));
+}
+
+export function hasValidContentAddress(record) {
+  return typeof record?.id === "string"
+    && /^sha256:[0-9a-f]{64}$/.test(record.id)
+    && record.id === contentAddress(record);
+}
+
+export function renderRecordList(title, records) {
+  const rows = records.map((record) =>
+    `- **${record.id}** [${record.status || "unspecified"}] ${record.statement}`
+  );
+  return `# ${title} (rendered)\n\n${rows.join("\n")}\n`;
+}
+
+export function resolveWithin(root, relativePath) {
+  if (typeof relativePath !== "string" || !relativePath || path.isAbsolute(relativePath)) {
+    throw new Error("path must be nonempty and repository-relative");
+  }
+  const base = path.resolve(root);
+  const resolved = path.resolve(base, relativePath);
+  const relative = path.relative(base, resolved);
+  if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    throw new Error(`path escapes repository root: ${relativePath}`);
+  }
+  return resolved;
+}
+
+export function importSpecifiers(source) {
+  const found = [];
+  const patterns = [
+    /\bfrom\s+["']([^"']+)["']/g,
+    /\bimport\s+["']([^"']+)["']/g,
+    /\bimport\s*\(\s*["']([^"']+)["']\s*\)/g
+  ];
+  for (const pattern of patterns) {
+    for (const match of source.matchAll(pattern)) found.push(match[1]);
+  }
+  return found;
 }
 
 export function readJson(p) {
