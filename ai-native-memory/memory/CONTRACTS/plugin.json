@@ -1,6 +1,6 @@
 {
   "kind": "contract",
-  "id": "plugin",
+  "id": "sha256:15d030c8b52bef1d50b7a7a5b8c76fc6b6635cc052d5d8ed8eddab431b560acd",
   "title": "ai-native-memory — the plugin's own frozen semantics",
   "status": "NORMATIVE-CURRENT",
   "normativity": "NORMATIVE",
@@ -9,12 +9,11 @@
   "oracle": { "test": "tests/run.mjs" },
   "verify_note": "tests/run.mjs (the full suite) is the CI entry point for this contract. verify-map.json points its oracle at tests/test-lib.mjs instead, because run.mjs enumerates and spawns every tests/test-*.mjs file including test-dogfood.mjs itself — pointing verify at run.mjs would make verify.mjs's self-verify step recurse into a process that (transitively) re-invokes verify.mjs. test-lib.mjs is a real, terminating, zero-dependency oracle that still proves the contract's machinery (canonicalize/sha256hex/contentAddress/finding/printFindings) is live.",
   "zero_dependencies": true,
-  "exit_codes": ["0", "1", "2", "3"],
+  "exit_codes": ["0", "1", "2"],
   "exit_code_meaning": {
     "0": "clean / GRANTED — no FAIL findings, or comprehension gate passed",
     "1": "cannot-run — malformed input, unreadable file, or (gate.mjs only) authority hash drift",
-    "2": "findings present — audit.mjs or verify.mjs found at least one FAIL",
-    "3": "DENIED — gate.mjs comprehension check failed on at least one answer"
+    "2": "findings present / DENIED — audit.mjs or verify.mjs found at least one FAIL, or gate.mjs rejected at least one comprehension check"
   },
   "record_kinds": [
     "mechanism",

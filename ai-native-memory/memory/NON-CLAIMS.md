@@ -1,11 +1,5 @@
-# ai-native-memory — non-claims (rendered)
+# Non-claims (rendered)
 
-Rendered projection of `NON-CLAIMS.json`. What this plugin deliberately does NOT claim or prove.
-
-- **anm-audit-not-a-proof** — a clean `audit.mjs` sweep is static structural consistency, not a
-  semantic proof that the prose is true or that any invariant's oracle actually ran.
-- **anm-no-authority-authentication** — `AUTHORITY.json` pins a document by content hash, which
-  detects drift, not who published it or whether they had standing to govern.
-- **anm-agents-advise** — the plugin's agents report and interpret; they never hold decision
-  authority. Humans decide (`decided_by: human`) or deterministic oracle exit codes decide — never
-  an agent's self-report taken at face value.
+- **sha256:bdb84e2177db3ebaa690047ea189b75e963f107ba5a3a78360091b0a8ce336dc** [NORMATIVE-CURRENT] audit.mjs performs static structural checks (three-representation, taxonomy, query-freshness, mirror-sync, staleness) over the shape and cross-references of record files. It does not prove the records' prose is semantically true, does not execute or sandbox any invariant's oracle, and a clean audit is not a correctness proof — it is evidence the record set is internally consistent and load-bearing claims have machine backing.
+- **sha256:06251018e69f2191a518dee2e27928164f72fd8ce6171d129818a72bc8a5e0ca** [NORMATIVE-CURRENT] CURRENT-AUTHORITY.json pins the active governing document by content hash (sha256 of its raw bytes), which detects drift between the pinned reference and disk. It does not authenticate who wrote or published that document, does not verify a signature or provenance chain, and does not establish that the document's author had standing to govern. Hash pinning proves 'this is the same bytes I last read', not 'this is the right person's document'.
+- **sha256:90a67965e1eaba76350078ccc718f031c1ca9a817a9224f17b93e6449973a6bd** [NORMATIVE-CURRENT] The plugin's agents (memory-auditor, comprehension-grader, adversarial-reviewer) report findings and interpretations; none of them holds decision authority. Every NORMATIVE status, every supersession, and every implementation-authority grant is decided by a human (decided_by: human) or by deterministic oracle exit code — never by an agent's self-report accepted at face value.

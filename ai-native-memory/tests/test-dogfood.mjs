@@ -5,26 +5,18 @@ import { spawnSync } from "node:child_process";
 import { readdirSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { auditAuthorityRoot, auditMemoryDir } from "../scripts/audit.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, "..");
 
-// 1. self-audit: zero FAIL findings on the plugin's own AUTHORITY.json + memory/ record set.
-// NOTE: deliberately NOT auditRoot(ROOT) — that would sweep tests/fixtures/audit/v-* (the
-// deliberate violation trees) and fail by design. This checks exactly the plugin's own record
-// set: the AUTHORITY root check plus its own memory/ directory.
-const findings = [...(() => {
-  const out = [];
-  auditAuthorityRoot(ROOT, out);
-  return out;
-})(), ...auditMemoryDir(path.join(ROOT, "memory"), ROOT)].filter((f) => f.level === "FAIL");
-assert.deepEqual(findings, [], "self-audit clean: " + JSON.stringify(findings));
+// 1. self-audit: the public whole-root audit is clean.
+const audit = spawnSync(process.execPath, [path.join(ROOT, "scripts", "audit.mjs"), ROOT], { encoding: "utf8" });
+assert.equal(audit.status, 0, `whole-root self-audit:\n${audit.stdout}\n${audit.stderr}`);
 
 // 2. self-gate: the example answers GRANT; a flipped answer DENIES
 const gate = (answers) => spawnSync(process.execPath, [path.join(ROOT, "scripts", "gate.mjs"),
   path.join(ROOT, "memory", "comprehension-queries.json"), answers,
-  "--authority", path.join(ROOT, "AUTHORITY.json")], { encoding: "utf8" });
+  "--authority", path.join(ROOT, "CURRENT-AUTHORITY.json")], { encoding: "utf8" });
 assert.equal(gate(path.join(ROOT, "memory", "answers-example.json")).status, 0, "self-gate GRANTED");
 // negative: flip one answer in a temp copy
 const a = JSON.parse(readFileSync(path.join(ROOT, "memory", "answers-example.json"), "utf8"));

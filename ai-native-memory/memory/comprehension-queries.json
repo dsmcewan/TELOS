@@ -20,19 +20,19 @@
       "id": "exit-codes",
       "query": "What is the closed set of exit codes the plugin's oracles use?",
       "answer_kind": "set",
-      "expected": ["0", "1", "2", "3"],
+      "expected": ["0", "1", "2"],
       "derived_from": { "file": "CONTRACTS/plugin.json", "pointer": "exit_codes" }
     }
   ],
   "required_invariants": [
-    "anm-zero-dependencies",
-    "anm-fail-closed-exits",
-    "anm-no-host-imports",
-    "anm-every-check-can-fail"
+    "sha256:0f37cb1e3c6a99946b6c9986f215b18c2c6ad04945ba09efa4fa0efb4367a139",
+    "sha256:ab9d7e85170d2a382fede47c06ef3d0e80ae7bee3f3a09acfab209751d7aeed4",
+    "sha256:c48c2c66179c139fe7357ef514caee726833250f984f71fbfe47b1f7eef77084",
+    "sha256:046900c40c5d7ed441e60d553a64aa547ad9623219c8429067e35afac7ab1ece"
   ],
   "required_non_claims": [
-    "anm-audit-not-a-proof",
-    "anm-no-authority-authentication",
-    "anm-agents-advise"
+    "sha256:bdb84e2177db3ebaa690047ea189b75e963f107ba5a3a78360091b0a8ce336dc",
+    "sha256:06251018e69f2191a518dee2e27928164f72fd8ce6171d129818a72bc8a5e0ca",
+    "sha256:90a67965e1eaba76350078ccc718f031c1ca9a817a9224f17b93e6449973a6bd"
   ]
 }

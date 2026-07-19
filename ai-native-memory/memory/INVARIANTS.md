@@ -1,14 +1,6 @@
-# ai-native-memory — invariants (rendered)
+# Invariants (rendered)
 
-Rendered projection of `INVARIANTS.json`. Machine records are the source of truth; regenerate this
-file when the JSON changes — do not hand-edit facts here.
-
-- **anm-zero-dependencies** — the plugin declares no runtime dependencies and every oracle imports
-  only `node:*` stdlib modules or in-plugin relative paths. Oracle: `tests/test-dogfood.mjs`.
-- **anm-fail-closed-exits** — every oracle (`audit.mjs`, `gate.mjs`, `verify.mjs`) exits nonzero on
-  missing or unverifiable evidence; nothing silently passes. Oracle: `tests/run.mjs` (runs
-  `test-gate.mjs` and `test-audit.mjs`, among others).
-- **anm-no-host-imports** — no script under `scripts/` imports from a host repository's packages;
-  every import is `node:*` or a relative in-plugin path. Oracle: `tests/test-dogfood.mjs`.
-- **anm-every-check-can-fail** — no audit check ships without a fixture proving it can fail; every
-  audit family has a violation fixture the check actually flags. Oracle: `tests/test-audit.mjs`.
+- **sha256:0f37cb1e3c6a99946b6c9986f215b18c2c6ad04945ba09efa4fa0efb4367a139** [NORMATIVE-CURRENT] The plugin's package.json declares no runtime dependencies (dependencies: {}); every oracle imports only node:* stdlib modules or in-plugin relative paths. This is proven, not asserted — it is one of the assertions test-dogfood.mjs checks on every run, alongside the plugin's self-audit/self-gate/self-verify.
+- **sha256:ab9d7e85170d2a382fede47c06ef3d0e80ae7bee3f3a09acfab209751d7aeed4** [NORMATIVE-CURRENT] Every oracle (audit.mjs, gate.mjs, verify.mjs) is fail-closed: missing or unverifiable evidence produces a nonzero exit, never a silent pass. Covered by test-gate.mjs (DENIED on a wrong or missing answer, cannot-run on authority drift) and test-audit.mjs (every audit-family FAIL fixture actually fails); tests/run.mjs runs both as part of the full suite.
+- **sha256:c48c2c66179c139fe7357ef514caee726833250f984f71fbfe47b1f7eef77084** [NORMATIVE-CURRENT] No script under scripts/ imports from a host repository's packages. Every import is either a node:* stdlib module or a relative in-plugin path (./ or ../), so the plugin is fully portable into any repository.
+- **sha256:046900c40c5d7ed441e60d553a64aa547ad9623219c8429067e35afac7ab1ece** [NORMATIVE-CURRENT] No audit check ships without a fixture proving it can fail. Every audit-family (three-representation, taxonomy, query-freshness, mirror-sync, staleness) has at least one violation fixture under tests/fixtures/audit/ that the corresponding check actually flags, alongside one passing fixture that stays clean.
