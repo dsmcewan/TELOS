@@ -16,7 +16,9 @@ function stripSignature(obj) {
 function sortValue(value) {
   if (Array.isArray(value)) return value.map(sortValue);
   if (value && typeof value === "object") {
-    return Object.keys(value).sort().reduce((acc, k) => { acc[k] = sortValue(value[k]); return acc; }, {});
+    const sorted = Object.create(null);
+    for (const k of Object.keys(value).sort()) sorted[k] = sortValue(value[k]);
+    return sorted;
   }
   return value;
 }

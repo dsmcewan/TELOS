@@ -15,11 +15,6 @@
     "authority": { "decision": "D19", "authorization": "authz-008" }
   },
   {
-    "id": "no-orchestrator-yet",
-    "statement": "Task 4a commits the git and code weaver inventories/closures only (D17/AM-17). The test/doc/ledger weavers, the orchestrator inventory, atomic publication (D20/D28), and D34 re-derivation are LATER tasks (4b/5), not present or claimed here.",
-    "authority": { "decisions": ["D17", "AM-17"], "authorization": "authz-008" }
-  },
-  {
     "id": "test-weaver-executes-no-command",
     "task": "4b",
     "statement": "The test-weaver executes NO command. Package check/test command strings are parsed only as text to infer verified-by edges; nothing is run.",

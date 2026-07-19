@@ -68,7 +68,11 @@ try {
   // --- duplicate heading path: no edge to either ambiguous section ---
   const dupEdges = edges.filter((e) => e.to_locator.locator.path === "docs/dup.md");
   assert.equal(dupEdges.length, 0, "no edge to either section of a duplicate heading path");
-  assert.ok(warnings.some((w) => /duplicate-heading-path/.test(w.message) && w.weaver === "clotho-doc-weaver"), "duplicate-heading-path warned");
+  const duplicateWarnings = warnings.filter((w) => w.code === "duplicate-heading-path" && w.path === "docs/dup.md");
+  assert.equal(duplicateWarnings.length, 1, "duplicate-heading-path emits one canonical typed warning per ambiguous address");
+  assert.deepEqual(Object.keys(duplicateWarnings[0]).sort(), ["code", "detail", "path", "weaver"], "warning obeys the typed warning contract");
+  assert.equal(duplicateWarnings[0].weaver, "clotho-doc-weaver");
+  assert.match(duplicateWarnings[0].detail, /Same/, "warning detail identifies the ambiguous heading path");
 
   // --- deterministic: byte-equal over two runs ---
   const a = weave(mkCtx()), b = weave(mkCtx());

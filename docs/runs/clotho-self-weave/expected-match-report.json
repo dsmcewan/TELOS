@@ -43,7 +43,7 @@
         "edge_kind": "depends-on",
         "from_kind": "code-symbol",
         "from_locator_match": {
-          "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+          "blob_sha": "5b22afae5d045a897323f97ea61aa5057df2aab0",
           "path": "build-gate/proposal-gate.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "checkColdReview"
@@ -55,14 +55,14 @@
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "deriveExecutableRef"
         },
-        "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
+        "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0"
       },
       "matched_fact": {
         "subject": "edge",
         "edge_kind": "depends-on",
         "from_kind": "code-symbol",
         "from_locator": {
-          "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+          "blob_sha": "5b22afae5d045a897323f97ea61aa5057df2aab0",
           "path": "build-gate/proposal-gate.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "checkColdReview"
@@ -74,7 +74,7 @@
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "deriveExecutableRef"
         },
-        "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
+        "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0"
       }
     },
     {
@@ -84,7 +84,7 @@
         "edge_kind": "depends-on",
         "from_kind": "code-symbol",
         "from_locator_match": {
-          "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+          "blob_sha": "5b22afae5d045a897323f97ea61aa5057df2aab0",
           "path": "build-gate/proposal-gate.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "checkProposalRefBinding"
@@ -96,14 +96,14 @@
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "deriveExecutableRef"
         },
-        "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
+        "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0"
       },
       "matched_fact": {
         "subject": "edge",
         "edge_kind": "depends-on",
         "from_kind": "code-symbol",
         "from_locator": {
-          "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+          "blob_sha": "5b22afae5d045a897323f97ea61aa5057df2aab0",
           "path": "build-gate/proposal-gate.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "checkProposalRefBinding"
@@ -115,7 +115,7 @@
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "deriveExecutableRef"
         },
-        "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
+        "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0"
       }
     },
     {
@@ -125,7 +125,7 @@
         "edge_kind": "depends-on",
         "from_kind": "code-symbol",
         "from_locator_match": {
-          "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+          "blob_sha": "5b22afae5d045a897323f97ea61aa5057df2aab0",
           "path": "build-gate/proposal-gate.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "collectCreationLineage"
@@ -137,14 +137,14 @@
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "deriveExecutableRef"
         },
-        "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
+        "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0"
       },
       "matched_fact": {
         "subject": "edge",
         "edge_kind": "depends-on",
         "from_kind": "code-symbol",
         "from_locator": {
-          "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+          "blob_sha": "5b22afae5d045a897323f97ea61aa5057df2aab0",
           "path": "build-gate/proposal-gate.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "collectCreationLineage"
@@ -156,7 +156,7 @@
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "deriveExecutableRef"
         },
-        "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
+        "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0"
       }
     },
     {
@@ -166,7 +166,7 @@
         "edge_kind": "depends-on",
         "from_kind": "code-symbol",
         "from_locator_match": {
-          "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+          "blob_sha": "5b22afae5d045a897323f97ea61aa5057df2aab0",
           "path": "build-gate/proposal-gate.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "collectReviewLineage"
@@ -178,14 +178,14 @@
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "deriveExecutableRef"
         },
-        "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
+        "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0"
       },
       "matched_fact": {
         "subject": "edge",
         "edge_kind": "depends-on",
         "from_kind": "code-symbol",
         "from_locator": {
-          "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+          "blob_sha": "5b22afae5d045a897323f97ea61aa5057df2aab0",
           "path": "build-gate/proposal-gate.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "collectReviewLineage"
@@ -197,7 +197,7 @@
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "deriveExecutableRef"
         },
-        "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
+        "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0"
       }
     },
     {
@@ -207,7 +207,7 @@
         "edge_kind": "depends-on",
         "from_kind": "code-symbol",
         "from_locator_match": {
-          "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+          "blob_sha": "5b22afae5d045a897323f97ea61aa5057df2aab0",
           "path": "build-gate/proposal-gate.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "validateProposalLifecycle"
@@ -219,14 +219,14 @@
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "deriveExecutableRef"
         },
-        "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
+        "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0"
       },
       "matched_fact": {
         "subject": "edge",
         "edge_kind": "depends-on",
         "from_kind": "code-symbol",
         "from_locator": {
-          "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+          "blob_sha": "5b22afae5d045a897323f97ea61aa5057df2aab0",
           "path": "build-gate/proposal-gate.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "validateProposalLifecycle"
@@ -238,7 +238,7 @@
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "deriveExecutableRef"
         },
-        "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
+        "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0"
       }
     },
     {
@@ -248,7 +248,7 @@
         "edge_kind": "depends-on",
         "from_kind": "code-symbol",
         "from_locator_match": {
-          "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+          "blob_sha": "5b22afae5d045a897323f97ea61aa5057df2aab0",
           "path": "build-gate/proposal-gate.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "verifyWrittenPlan"
@@ -260,14 +260,14 @@
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "deriveExecutableRef"
         },
-        "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
+        "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0"
       },
       "matched_fact": {
         "subject": "edge",
         "edge_kind": "depends-on",
         "from_kind": "code-symbol",
         "from_locator": {
-          "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+          "blob_sha": "5b22afae5d045a897323f97ea61aa5057df2aab0",
           "path": "build-gate/proposal-gate.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "verifyWrittenPlan"
@@ -279,7 +279,7 @@
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
           "symbol": "deriveExecutableRef"
         },
-        "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
+        "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0"
       }
     },
     {
@@ -335,11 +335,11 @@
         },
         "to_kind": "test",
         "to_locator_match": {
-          "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+          "blob_sha": "5b22afae5d045a897323f97ea61aa5057df2aab0",
           "path": "build-gate/proposal-gate.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
         },
-        "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
+        "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0"
       },
       "matched_fact": {
         "subject": "edge",
@@ -353,11 +353,11 @@
         },
         "to_kind": "test",
         "to_locator": {
-          "blob_sha": "df84a7dbf89e306e52928d8a54fb0baf76a753c3",
+          "blob_sha": "5b22afae5d045a897323f97ea61aa5057df2aab0",
           "path": "build-gate/proposal-gate.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
         },
-        "source_ref": "file:build-gate/proposal-gate.mjs@df84a7dbf89e306e52928d8a54fb0baf76a753c3"
+        "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0"
       }
     },
     {
@@ -491,9 +491,9 @@
           ],
           "path": "docs/ROADMAP.md",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-          "text_sha256": "dddbbe3832931c0443777a6a9c6ac6b1e9b82cb64c4b5844c162e54178b99438"
+          "text_sha256": "c876c8ef1b5e0a2782f567818095420aa898e85f5bb3c47fd547e3aee7a726e4"
         },
-        "source_ref": "file:docs/ROADMAP.md@0a312f516760a21a1032eda6987cb57203ed1706"
+        "source_ref": "file:docs/ROADMAP.md@7592a0c2014be8575dbbd5d9598993aae35eaec9"
       },
       "matched_fact": {
         "subject": "edge",
@@ -513,9 +513,9 @@
           ],
           "path": "docs/ROADMAP.md",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-          "text_sha256": "dddbbe3832931c0443777a6a9c6ac6b1e9b82cb64c4b5844c162e54178b99438"
+          "text_sha256": "c876c8ef1b5e0a2782f567818095420aa898e85f5bb3c47fd547e3aee7a726e4"
         },
-        "source_ref": "file:docs/ROADMAP.md@0a312f516760a21a1032eda6987cb57203ed1706"
+        "source_ref": "file:docs/ROADMAP.md@7592a0c2014be8575dbbd5d9598993aae35eaec9"
       }
     },
     {
@@ -534,14 +534,14 @@
         "to_locator_match": {
           "heading_path": [
             "TELOS — STATUS",
-            "Clotho Phase 1 — slice state (as of 2026-07-17)",
+            "Clotho Phase 1 — slice state (as of 2026-07-19)",
             "Flagship acceptance runs in `npm test`"
           ],
           "path": "docs/STATUS.md",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-          "text_sha256": "40344cd408bef1049f417c4a470d148523a4393fddf7bc5fee6f929926d8290b"
+          "text_sha256": "14164668fa45bc0ce073aec852a83bb955e2746df4250af43c931c2c8978c34e"
         },
-        "source_ref": "file:docs/STATUS.md@19288f6b71da9abf4f08a3ecb5f4e5fc9b610b67"
+        "source_ref": "file:docs/STATUS.md@20e5ec2a60c8ac38576fcd9762fb2ac7911356f4"
       },
       "matched_fact": {
         "subject": "edge",
@@ -557,14 +557,14 @@
         "to_locator": {
           "heading_path": [
             "TELOS — STATUS",
-            "Clotho Phase 1 — slice state (as of 2026-07-17)",
+            "Clotho Phase 1 — slice state (as of 2026-07-19)",
             "Flagship acceptance runs in `npm test`"
           ],
           "path": "docs/STATUS.md",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-          "text_sha256": "40344cd408bef1049f417c4a470d148523a4393fddf7bc5fee6f929926d8290b"
+          "text_sha256": "14164668fa45bc0ce073aec852a83bb955e2746df4250af43c931c2c8978c34e"
         },
-        "source_ref": "file:docs/STATUS.md@19288f6b71da9abf4f08a3ecb5f4e5fc9b610b67"
+        "source_ref": "file:docs/STATUS.md@20e5ec2a60c8ac38576fcd9762fb2ac7911356f4"
       }
     },
     {

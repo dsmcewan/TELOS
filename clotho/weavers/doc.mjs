@@ -55,10 +55,17 @@ export function weave(ctx) {
     const sourceRef = `file:${docPath}@${doc.blob_sha}`;
     const kind = docPath.startsWith(CONTRACT_ROOT) ? "contract-clause" : "doc-section";
     const { sections, duplicatePaths } = splitMarkdownSections(bytes);
+    for (const duplicatePath of [...duplicatePaths].sort()) {
+      warnings.push({
+        weaver: WEAVER_ID,
+        code: "duplicate-heading-path",
+        path: docPath,
+        detail: `duplicate heading path ${duplicatePath}`
+      });
+    }
     for (const sec of sections) {
       // A fatal duplicate heading path: mark absent, no edge to either section.
       if (duplicatePaths.has(JSON.stringify(sec.heading_path))) {
-        warnings.push({ weaver: WEAVER_ID, message: `duplicate-heading-path ${docPath} ${JSON.stringify(sec.heading_path)}` });
         continue;
       }
       const secText = bytes.toString("utf8", sec.startByte, sec.endByte);

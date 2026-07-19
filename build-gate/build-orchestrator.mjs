@@ -82,7 +82,9 @@ export function makeTeamDispatch({ routeFor, callTeam, baseDir, dossier, maxAtte
         if (resolved === null) return { ok: false, reason: `team ${team.id} path escapes baseDir: ${f.path}` };
         if (!declared.has(resolved)) return { ok: false, reason: `team ${team.id} wrote a file not declared by its node spec: ${f.path}` };
         mkdirSync(path.dirname(resolved), { recursive: true });
-        writeFileSync(resolved, typeof f.content === "string" ? f.content : String(f.content ?? ""));
+        const rechecked = resolveUnder(baseDir, f.path);
+        if (rechecked === null || rechecked !== resolved) return { ok: false, reason: `team ${team.id} path escapes baseDir: ${f.path}` };
+        writeFileSync(rechecked, typeof f.content === "string" ? f.content : String(f.content ?? ""));
       }
       // The team checks its OWN work before submitting. On pass, settle (the signer
       // key_id MUST be in plan.authorized_signers or the ledger gate rejects it).

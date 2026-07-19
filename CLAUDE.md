@@ -31,7 +31,8 @@ governs mythology used as project vocabulary.)
 
 ## Layout
 
-Each top-level directory is an independent, self-contained Node package:
+Executable areas are package-scoped; documentation and contracts are not packages.
+The current machine map is `repository-manifest.json` and wins over this summary:
 
 - `build-gate/` — the gate (`gate.mjs`), per-seat HMAC signing (`sign.mjs`), and the
   council orchestrator (`council.mjs`).
@@ -43,6 +44,15 @@ Each top-level directory is an independent, self-contained Node package:
   signed ledger, a pure `done()` merge gate (`ledger-gate.mjs`), verification obligations
   (`obligation.mjs`), and the signed proposal-lifecycle ledger + primitives
   (`proposal-ledger.mjs`).
+- `saas-forge/`, `ai-forge/`, and `forge/` — composed product generators over the
+  trust spine.
+- `clotho/` — provenance-aware knowledge-graph weaver. `lachesis/` and `atropos/`
+  are its consciously enrolled measurement and supersession-verification spine
+  packages; preserve each package's explicit non-claims.
+- `ai-native-memory/` — portable zero-dependency institutional-memory plugin/product;
+  it is not a mythological role and its Iliad enrollment remains deferred.
+- `narcissus/flagship/` — implemented React/TypeScript/Vite product. It is distinct
+  from the registered, still-unimplemented Narcissus role module.
 - `contracts/` — the human-readable protocol the gate enforces (incl.
   `Proposal Lifecycle.md`: audited judgment, cold review, verification obligations).
 - `docs/` — status, specs, plans, and run evidence.
@@ -77,23 +87,40 @@ so the packages are not fully isolated — preserve those cross-package relative
 
 ## Conventions
 
-- **Runtime:** Node ≥ 18, ESM only (`"type": "module"`, `.mjs` files). **Zero runtime
-  dependencies** — do not add npm packages or a lockfile; use only the Node standard library
-  (`node:fs/promises`, `node:crypto`, `node:path`, etc. with the `node:` prefix).
-- **Style:** match the surrounding code — double-quoted strings, semicolons, 2-space indent,
-  named top-level `const` config sets, small pure functions. No bundler, no transpiler, no TypeScript.
+- **Core and plugin packages:** Node ≥ 18, ESM only (`"type": "module"`, `.mjs`
+  files), zero dependencies, and no package lockfiles. Use only Node standard-library
+  imports with the `node:` prefix plus the package's existing reviewed relative imports.
+- **Flagship product exception:** `narcissus/flagship/` requires Node
+  `^20.19.0 || >=22.12.0`, uses React/TypeScript/Vite, and must keep its tracked
+  `package-lock.json`. Install it with `npm ci`; do not hand-edit the lockfile or add
+  dependencies without a reviewed product change.
+- **Style:** match the surrounding package. The zero-dependency `.mjs` packages use
+  double-quoted strings, semicolons, 2-space indent, named top-level `const` config
+  sets, and small pure functions. The flagship follows its existing TypeScript/React
+  toolchain.
 - Keep modules executable as scripts where they already are (`#!/usr/bin/env node` shebang).
 
 ## Testing — always run before proposing changes
 
-Each package is tested with `npm test` (which first runs `npm run check`, a `node --check`
-syntax pass over every file). There is no shared root script — test the package(s) you touched:
+Use each package's own scripts; most zero-dependency packages make `npm test` run a
+`node --check` syntax pass first. `ai-native-memory` exposes that pass separately, and
+the flagship has its own locked frontend pipeline. There is no shared root script —
+run the exact commands below for the package(s) you touched:
 
 ```bash
 cd build-gate            && npm test   # gate, sign, trust, council, stress (+ runs breakout)
 cd breakout              && npm test
 cd connectors/ai-peer-mcp && npm test
 cd merkle-dag            && npm test
+cd saas-forge            && npm test
+cd ai-forge              && npm test
+cd forge                 && npm test
+cd clotho                && npm test
+cd ai-native-memory      && npm run check && npm test
+cd lachesis              && npm test
+cd atropos               && npm test
+cd narcissus/flagship    && npm ci && npm test && npm run verify:evidence \
+                           && npm run verify:coverage && npm run build && npm run test:e2e
 ```
 
 `build-gate`'s test suite also runs `breakout`'s, so changes touching either should be
@@ -124,4 +151,6 @@ This is the core invariant of the project. When changing gate, signing, or prove
 ## Pull requests
 
 - Keep changes scoped; run the affected package's `npm test` and report the result.
-- Don't add dependencies, build tooling, or commit runtime/secret artifacts.
+- Do not add dependencies or build tooling to zero-dependency packages. In the
+  flagship, keep dependency changes reviewed and lockfile-backed. Never commit
+  runtime or secret artifacts.

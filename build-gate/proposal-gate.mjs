@@ -1,9 +1,9 @@
 // proposal-gate.mjs — pure, synchronous proposal-lifecycle verification. Reconstructs ALL proposal
 // state FROM the ledger (decision 8): a miswired orchestrator cannot weaken the gate by omitting a
 // concern/hold from a preview. The authority for the plan hash is always the recompute from disk.
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import { canonicalize, sha256hex } from "../merkle-dag/vendor.mjs";
+import { canonicalize, sha256hex, resolveUnder } from "../merkle-dag/vendor.mjs";
 import { recompute, readPlan } from "../merkle-dag/merkle.mjs";
 import { checkObligationAnchors, deriveExecutableRef } from "../merkle-dag/obligation.mjs";
 import {
@@ -16,6 +16,12 @@ import { resolve as resolveCheck, checkContractRef } from "./check-registry.mjs"
 // Inputs the review manifest is ALLOWED to contain (decision 13). Anything else — the proposal
 // ledger, Daedalus rounds, prior packets/decisions, consensus summaries — is contamination.
 const ALLOWED_EVIDENCE_KINDS = new Set(["candidate-plan", "review-contract", "source-doc", "evidence"]);
+
+function isControlPlaneEvidencePath(value) {
+  const normalized = String(value || "").replaceAll("\\", "/").toLowerCase();
+  const segments = normalized.split("/");
+  return segments.includes(".telos") || segments.some((segment) => segment.includes("proposal"));
+}
 
 // verifyWrittenPlan: recompute is the AUTHORITY; the immutable candidate must match.
 export function verifyWrittenPlan(telosDir) {
@@ -99,9 +105,20 @@ export function checkColdReview({ telosDir, events, packets, planHash, signed, b
     if (manifest.plan_hash !== planHash) continue;
     for (const ev of manifest.evidence || []) {
       if (ev.kind && !ALLOWED_EVIDENCE_KINDS.has(ev.kind)) { blockers.push(`review manifest contamination: disallowed input kind '${ev.kind}'`); continue; }
-      if (String(ev.path || "").includes(".telos/") || String(ev.path || "").includes("proposal")) { blockers.push(`review manifest contamination: control-plane path '${ev.path}'`); continue; }
-      const abs = baseDir ? path.resolve(baseDir, ev.path) : null;
-      if (abs && existsSync(abs)) { const h = "sha256:" + sha256hex(readFileSync(abs)); if (h !== ev.sha256) blockers.push(`review evidence '${ev.path}' sha256 does not re-derive from disk`); }
+      if (isControlPlaneEvidencePath(ev.path)) { blockers.push(`review manifest contamination: control-plane path '${ev.path}'`); continue; }
+      if (!baseDir) { blockers.push(`review evidence '${ev.path}' cannot be verified without baseDir`); continue; }
+      const abs = resolveUnder(baseDir, ev.path);
+      if (abs === null) { blockers.push(`review evidence '${ev.path}' escapes baseDir`); continue; }
+      let bytes;
+      try {
+        if (!statSync(abs).isFile()) throw new Error("not a regular file");
+        bytes = readFileSync(abs);
+      } catch {
+        blockers.push(`review evidence '${ev.path}' is missing or not a regular file`);
+        continue;
+      }
+      const h = "sha256:" + sha256hex(bytes);
+      if (h !== ev.sha256) blockers.push(`review evidence '${ev.path}' sha256 does not re-derive from disk`);
     }
   }
   return { blockers, warnings };

@@ -9,7 +9,7 @@
 //
 // A check is { id, description, run: () => {ok, detail} | Promise<...> }.
 
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, lstatSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 
@@ -72,12 +72,73 @@ export async function runVerifiedBreakout(input, checks) {
 // gate (executing packet-declared commands would be a worse hole than the one
 // this closes). All paths are resolved under and confined to `baseDir`.
 
-function resolveUnder(baseDir, p) {
-  if (typeof p !== "string" || !p) return null;
-  const resolved = path.resolve(baseDir, p);
-  const rel = path.relative(baseDir, resolved);
-  if (rel.startsWith("..") || path.isAbsolute(rel)) return null; // escapes baseDir
+function isPathUnder(base, candidate) {
+  const rel = path.relative(base, candidate);
+  return rel === "" || (!path.isAbsolute(rel) && rel !== ".." && !rel.startsWith(`..${path.sep}`));
+}
+
+// Resolve p under baseDir with physical confinement. Existing components are
+// lstat-checked in the caller's original order so `link/../safe` cannot hide a
+// symlink during normalization. A missing final file is allowed beneath safe
+// existing parents; symlinks/junctions and ambiguous filesystem errors fail
+// closed. Absolute paths remain compatible only when they are actually inside
+// baseDir (gate records historically carry absolute paths).
+export function resolveUnder(baseDir, p) {
+  if (typeof baseDir !== "string" || !baseDir || typeof p !== "string" || !p) return null;
+
+  let base;
+  let baseReal;
+  try {
+    base = path.resolve(baseDir);
+    const baseStat = lstatSync(base);
+    if (!baseStat.isDirectory() || baseStat.isSymbolicLink()) return null;
+    baseReal = (realpathSync.native || realpathSync)(base);
+  } catch {
+    return null;
+  }
+
+  const original = process.platform === "win32" ? p.replaceAll("/", path.sep) : p;
+  const resolved = path.resolve(base, original);
+  if (!isPathUnder(base, resolved)) return null;
+
+  let components;
+  if (path.isAbsolute(original)) {
+    const originalParts = original.slice(path.parse(original).root.length).split(path.sep);
+    if (originalParts.includes("..")) return null;
+    components = path.relative(base, resolved).split(path.sep);
+  } else {
+    components = original.split(path.sep);
+  }
+
+  let cursor = base;
+  for (const component of components) {
+    if (component === "" || component === ".") continue;
+    if (component === "..") {
+      cursor = path.dirname(cursor);
+      if (!isPathUnder(base, cursor)) return null;
+      continue;
+    }
+    cursor = path.join(cursor, component);
+    if (!isPathUnder(base, cursor)) return null;
+    try {
+      const stat = lstatSync(cursor);
+      if (stat.isSymbolicLink()) return null;
+      const real = (realpathSync.native || realpathSync)(cursor);
+      if (!isPathUnder(baseReal, real)) return null;
+    } catch (error) {
+      if (error?.code !== "ENOENT") return null;
+    }
+  }
+
   return resolved;
+}
+
+function unsafePathCheck(id, p) {
+  return {
+    id,
+    description: `unsafe/escaping path: ${p}`,
+    run: () => ({ ok: false, detail: `path '${p}' is outside the allowed base dir` }),
+  };
 }
 
 export function safeCheckFromSpec(spec, baseDir) {
@@ -85,9 +146,7 @@ export function safeCheckFromSpec(spec, baseDir) {
   if (spec.type !== "file_exists" && spec.type !== "file_contains") return { skip: true };
   const id = spec.id || `${spec.type}:${spec.path}`;
   const resolved = resolveUnder(baseDir, spec.path);
-  if (resolved === null) {
-    return { id, description: `unsafe/escaping path: ${spec.path}`, run: () => ({ ok: false, detail: `path '${spec.path}' is outside the allowed base dir` }) };
-  }
+  if (resolved === null) return unsafePathCheck(id, spec.path);
   if (spec.type === "file_exists") return fileExistsCheck(id, resolved);
   return fileContainsCheck(id, resolved, spec.needle);
 }
@@ -102,12 +161,22 @@ export function buildCheck(spec, baseDir) {
   if (!spec || typeof spec !== "object") {
     return { id: "invalid", description: "invalid check spec", run: () => ({ ok: false, detail: "invalid check spec" }) };
   }
-  const resolve = (p) => (baseDir && typeof p === "string" ? path.resolve(baseDir, p) : p);
+  const confined = baseDir !== undefined && baseDir !== null;
+  const resolve = (p) => (confined ? resolveUnder(baseDir, p) : p);
   const id = spec.id || `${spec.type}:${spec.path || spec.command || "check"}`;
-  if (spec.type === "file_exists") return fileExistsCheck(id, resolve(spec.path));
-  if (spec.type === "file_contains") return fileContainsCheck(id, resolve(spec.path), spec.needle);
+  if (spec.type === "file_exists") {
+    const resolved = resolve(spec.path);
+    return confined && resolved === null ? unsafePathCheck(id, spec.path) : fileExistsCheck(id, resolved);
+  }
+  if (spec.type === "file_contains") {
+    const resolved = resolve(spec.path);
+    return confined && resolved === null ? unsafePathCheck(id, spec.path) : fileContainsCheck(id, resolved, spec.needle);
+  }
   if (spec.type === "command") {
-    return commandCheck(id, spec.description || id, spec.command, spec.args || [], { cwd: resolve(spec.cwd), expectExit: spec.expectExit ?? 0 });
+    const cwdInput = spec.cwd === undefined ? "." : spec.cwd;
+    const cwd = confined ? resolve(cwdInput) : spec.cwd;
+    if (confined && cwd === null) return unsafePathCheck(id, cwdInput);
+    return commandCheck(id, spec.description || id, spec.command, spec.args || [], { cwd, expectExit: spec.expectExit ?? 0 });
   }
   return { id, description: `unknown check type: ${spec.type}`, run: () => ({ ok: false, detail: `unknown check type '${spec.type}'` }) };
 }

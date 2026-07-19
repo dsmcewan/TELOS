@@ -4,12 +4,12 @@ topic: clotho
 status: living
 kind: decision
 task: "5"
-status_taxonomy: SPECIFIED-PENDING-IMPLEMENTATION
+status_taxonomy: NORMATIVE-CURRENT
 authority: v15 sha256:05a48700… · authz-008
-note: Frozen Task 5 decisions (queries, complete-weave driver, advisory invariant). Design substrate — code not yet written.
+note: Task 5 decisions implemented and oracle-backed; delivered at git:321473a.
 ---
 
-# Task 5 — decision records (design substrate)
+# Task 5 — normative decision records
 
 ## D35 / AM-37 — closed normative coverage schema
 
@@ -23,7 +23,7 @@ note: Frozen Task 5 decisions (queries, complete-weave driver, advisory invarian
 - **scope** — `query.mjs`, Task 5. **authority** — D35/AM-37/D11 + Eye directive, authz-008.
 - **non_claim** — `coverage: "verified"` asserts producers executed at publication time, NOT
   that Clotho covers every module JS could reach.
-- **status** — `SPECIFIED-PENDING-IMPLEMENTATION`; **becomes_normative_when**
+- **status** — `NORMATIVE-CURRENT`; **oracle**
   `clotho/scripts/test-query.mjs` proves the closed schema + coverageUnknown legality + rejection.
 - **contract** — `clotho/memory/CONTRACTS/coverage-schema.json`.
 
@@ -36,7 +36,7 @@ note: Frozen Task 5 decisions (queries, complete-weave driver, advisory invarian
 - **why** — closes the window between derivation and publication; a source that changed under
   the weave must not be published as covered.
 - **scope** — `weave.mjs`, Task 5. **authority** — D34/AM-38/D28, authz-008.
-- **status** — `SPECIFIED-PENDING-IMPLEMENTATION`; **becomes_normative_when**
+- **status** — `NORMATIVE-CURRENT`; **oracle**
   `clotho/scripts/test-weave.mjs` proves re-derivation + hash recheck + abort-on-drift + atomic publish.
 
 ## D10 / AM-39 — producer == attribution (append-time)
@@ -47,13 +47,13 @@ note: Frozen Task 5 decisions (queries, complete-weave driver, advisory invarian
   the weave aborts.
 - **why** — provenance integrity: a weaver may not attribute output to another producer.
 - **scope** — `weave.mjs`, Task 5. **authority** — D10/AM-39, authz-008.
-- **status** — `SPECIFIED-PENDING-IMPLEMENTATION`; **becomes_normative_when**
+- **status** — `NORMATIVE-CURRENT`; **oracle**
   `clotho/scripts/test-weave.mjs` proves rejection of mismatched edges/warnings.
 
 ## D26/D29 completeness gate · D19/AM-20 inventory-equality-at-close · D28 atomic no-replace publish
 
 - **what** — the driver enforces counted-iterator completeness before append/close (D26/D29),
   proves committed-inventory equality at close (D19/AM-20), and publishes via exclusive
-  no-replace `linkSync` (D28/D20). **status** — `SPECIFIED-PENDING-IMPLEMENTATION`;
-  **becomes_normative_when** `clotho/scripts/test-weave.mjs` proves the accounting gate, close
+  no-replace `linkSync` (D28/D20). **status** — `NORMATIVE-CURRENT`;
+  **oracle** `clotho/scripts/test-weave.mjs` proves the accounting gate, close
   equality, and atomic publish (+ `published-cleanup-incomplete` residue handling).

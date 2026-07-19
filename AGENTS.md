@@ -23,12 +23,24 @@ filenames, dates, model consensus, and self-reported completion.
 3. Read `docs/institutional-memory/CHANGE-PROTOCOL.md`; escalate scope or
    specification ambiguity to The Eye instead of silently reinterpreting it.
 4. For implementation work, answer the applicable component
-   `memory/comprehension-queries.json` and obtain an exit-0 result from:
+   `memory/comprehension-queries.json`. For TELOS role/component records, obtain
+   an exit-0 result from:
 
    ```bash
    node docs/institutional-memory/comprehension-gate.mjs \
-     <component>/memory/comprehension-queries.json <your-answers.json>
+     <path-to-memory-dir>/comprehension-queries.json <your-answers.json>
    ```
+
+   `ai-native-memory` uses its plugin-native query schema and authority record:
+
+   ```bash
+   node ai-native-memory/scripts/gate.mjs \
+     ai-native-memory/memory/comprehension-queries.json <your-answers.json> \
+     --authority ai-native-memory/CURRENT-AUTHORITY.json
+   ```
+
+   Exit 0 is a required entry precondition, not the implementation-authority
+   decision itself; The Eye remains the authority holder.
 
 5. Confirm the record set still matches disk before relying on it:
 

@@ -64,6 +64,11 @@ thing that *certifies* — a team's claim is data; the disk is truth.
 
 ## Components
 
+For the current authoritative classification—including implemented components,
+registered role modules, products, and deferred enrollment—start with
+`AI-START-HERE.md` and `repository-manifest.json`. This section is a working
+overview, not an authority record.
+
 **The substrate (engine):**
 
 - **`build-gate/`** — the gate (`gate.mjs`), per-model HMAC signing (`sign.mjs`), the
@@ -108,6 +113,18 @@ thing that *certifies* — a team's claim is data; the disk is truth.
   market-ready, each team put through an adversarial breakout-on-facts.
 - **`ai-forge/`** — pattern-library-driven forge for AI architectures; Phase A: the
   RAG pattern (7 workstreams, fully converged over the real gate + Ed25519 ledger).
+- **`forge/`** — reusable ratchet/driver/manifest/claims/operator package.
+- **`clotho/`** — provenance-aware knowledge-graph weaver with a signed,
+  append-only thread ledger and deterministic query surface.
+- **`lachesis/`** and **`atropos/`** — consciously enrolled, zero-dependency
+  spine packages for dependency/relevance/risk/blast-radius measurement and
+  read-only supersession consistency, respectively.
+- **`ai-native-memory/`** — implemented portable institutional-memory
+  plugin/product with dogfood records; it has no mythological role and remains
+  deferred for conscious Iliad enrollment.
+- **`narcissus/flagship/`** — implemented React/TypeScript/Vite front-end product.
+  It is distinct from the registered Narcissus role module, which remains
+  unimplemented; product enrollment is also deferred.
 
 ## Autonomous builder (agentic-teams)
 
@@ -254,7 +271,12 @@ and the gate independently re-verifies every team's record on disk.
 
 ## Test
 
-Node ≥ 18, zero runtime dependencies. CI runs every package on ubuntu (Node 18 & 20).
+The core, forge, plugin, and enrolled spine packages are Node ≥ 18 ESM with zero
+dependencies; CI runs them on Ubuntu under Node 18 and 20. The
+`narcissus/flagship` product is the explicit exception: it requires Node
+`^20.19.0 || >=22.12.0`, uses a tracked npm lockfile, and runs in a separate
+Node-20 CI job with install, audit, unit, evidence, coverage, build, and browser
+tests.
 
 ```bash
 cd build-gate            && npm test   # gate, sign, trust, council, teams, decompose,
@@ -265,6 +287,14 @@ cd breakout              && npm test
 cd connectors/ai-peer-mcp && npm test  # provenance, structured requests, smoke
 cd merkle-dag            && npm test   # 10 suites incl. obligations + proposal-ledger + end-to-end harness
 cd saas-forge            && npm test   # 7 teams generate + breakout-survive + gate pass
+cd ai-forge              && npm test
+cd forge                 && npm test
+cd clotho                && npm test   # 14 tests incl. real-repository flagship
+cd ai-native-memory      && npm run check && npm test
+cd lachesis              && npm test
+cd atropos               && npm test
+cd narcissus/flagship    && npm ci && npm test && npm run verify:evidence \
+                           && npm run verify:coverage && npm run build && npm run test:e2e
 ```
 
 ## Docs & evidence

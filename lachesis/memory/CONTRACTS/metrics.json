@@ -28,15 +28,39 @@
     "riskClass": "blast-driven: blastRadius(full) >=10 -> high, >=3 -> medium, else low; coverage floor: `low` only when coverage=='attested-complete', else >= medium. ADVISORY."
   },
   "golden_evidence": {
-    "snapshot": "docs/runs/clotho-self-weave/thread-ledger.snapshot.jsonl (raw-byte sha256:ea3ca462790c09ed3fe17463feb27b6983a24174e2632f9d72eb82298c2f769f)",
-    "tallies": "4001 edges, 944 nodes, 1673 depends-on edges, max depends-on in-degree 131",
-    "HUB(0fcf5ff7…)": "dependencies=0, blastRadius=177, relevance=1.0 (raw 430/430), class=high",
-    "G2(0328b9ce…)": "dependencies=1, blastRadius=21, relevance=81/430, class=high"
+    "snapshot": {
+      "path": "docs/runs/clotho-self-weave/thread-ledger.snapshot.jsonl",
+      "raw_byte_sha256": "sha256:c3e0627250732fc4da82318366504139a50a131d9976aeb84d4119ffaede320d"
+    },
+    "tallies": {
+      "edges": 4463,
+      "nodes": 1067,
+      "depends_on_edges": 1741,
+      "max_depends_on_in_degree": 138
+    },
+    "subjects": {
+      "hub": {
+        "node_id": "673b41a4b843c7eccab063692ad3ff8a0922da434b4cc2d0dc07338ebb028bb3",
+        "dependencies": 0,
+        "blast_radius": 185,
+        "relevance_raw": 457,
+        "relevance_max_raw": 457,
+        "risk_class": "high"
+      },
+      "g2": {
+        "node_id": "0328b9ce74868e03071be1e4f5c21cbb310e7110c4601495c1199a3a4b9f8656",
+        "dependencies": 1,
+        "blast_radius": 22,
+        "relevance_raw": 84,
+        "relevance_max_raw": 457,
+        "risk_class": "high"
+      }
+    }
   },
   "oracle": {
     "source_of_truth": "lachesis/ingest.mjs + lachesis/measure.mjs",
     "test": "lachesis/scripts/test-metrics.mjs (discriminating fixtures + golden real-snapshot values) + lachesis/scripts/test-boundary.mjs (source-profile boundary); `npm test` in lachesis/",
-    "status_note": "100 assertions pass over the real snapshot"
+    "status_note": "82 assertions pass, including the current real-snapshot golden projection"
   },
   "becomes_normative_when": "lachesis/scripts/test-metrics.mjs and test-boundary.mjs pass (met)",
   "change_rule": "Any change to the metric semantics, closed sets, or trust posture requires a plan amendment (Daedalus) + TELOS re-authorization + updated oracles + updated adversarial review.",

@@ -1,6 +1,6 @@
 // test-ledger-gate.mjs — 8-case test suite for ledger-gate.mjs
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, appendFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, appendFileSync, existsSync, symlinkSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { computePlan, writePlan, mutateNode } from "../merkle.mjs";
@@ -355,6 +355,44 @@ function buildObligationFixture({ settleAuthTest = true, requiredResult = "pass"
   assert.equal(r.merge_status, "blocked", "Case 14: non-pass required_result stays blocked");
   assert.equal(r.reason, "undischarged verification obligation");
   console.log("Case 14 OK: non-pass required_result blocks despite settlement");
+}
+
+// Case 15: an escaping test cwd is rejected. It must not silently fall back to
+// baseDir and execute there.
+{
+  const { ws, telosDir } = buildGreenFixture({
+    testB: {
+      cmd: "node",
+      args: ["-e", "require('node:fs').writeFileSync('cwd-fallback-ran.txt','x')"],
+      cwd: "../escape"
+    }
+  });
+  const r = verify(telosDir, { baseDir: ws });
+  const nodeB = r.nodes.find((n) => n.id === "B");
+  assert.equal(nodeB.checks.test, "PATH_ESCAPE", "Case 15: escaping cwd is an explicit path failure");
+  assert.equal(nodeB.ok, false, "Case 15: escaping cwd blocks the node");
+  assert.equal(existsSync(path.join(ws, "cwd-fallback-ran.txt")), false, "Case 15: command did not run in fallback baseDir");
+  console.log("Case 15 OK: escaping test cwd rejected without baseDir fallback");
+}
+
+// Case 16: a lexically contained cwd that is physically redirected through a
+// symlink/junction is rejected before the test can execute outside baseDir.
+{
+  const { ws, telosDir } = buildGreenFixture({
+    testB: {
+      cmd: "node",
+      args: ["-e", "require('node:fs').writeFileSync('cwd-physical-ran.txt','x')"],
+      cwd: "escape-link"
+    }
+  });
+  const outside = mkdtempSync(path.join(os.tmpdir(), "telos-gate-outside-"));
+  symlinkSync(outside, path.join(ws, "escape-link"), process.platform === "win32" ? "junction" : "dir");
+  const r = verify(telosDir, { baseDir: ws });
+  const nodeB = r.nodes.find((n) => n.id === "B");
+  assert.equal(nodeB.checks.test, "PATH_ESCAPE", "Case 16: symlink/junction cwd is an explicit path failure");
+  assert.equal(nodeB.ok, false, "Case 16: physical cwd escape blocks the node");
+  assert.equal(existsSync(path.join(outside, "cwd-physical-ran.txt")), false, "Case 16: command never ran outside baseDir");
+  console.log("Case 16 OK: physical test cwd escape rejected");
 }
 
 console.log("test-ledger-gate.mjs OK");

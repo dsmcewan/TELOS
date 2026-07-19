@@ -1,6 +1,6 @@
 // test-artifact.mjs — 5-case test suite for artifact.mjs
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, symlinkSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { computeDiskTreeHash, hasEscape } from "../artifact.mjs";
@@ -46,5 +46,15 @@ const r5a = computeDiskTreeHash(["c.txt"], base);
 writeFileSync(path.join(base, "c.txt"), Buffer.from([0x41, 0x42, 0x44])); // flip last byte
 const r5b = computeDiskTreeHash(["c.txt"], base);
 assert.notEqual(r5a.tree_hash, r5b.tree_hash, "Case 5: byte flip changes tree_hash");
+
+// --- Case 6: Physical escape through a symlink/junction is never read or hashed ---
+{
+  const outside = mkdtempSync(path.join(os.tmpdir(), "telos-artifact-outside-"));
+  writeFileSync(path.join(outside, "secret.txt"), "outside secret");
+  symlinkSync(outside, path.join(base, "escape-link"), process.platform === "win32" ? "junction" : "dir");
+  const r6 = computeDiskTreeHash(["escape-link/secret.txt"], base);
+  assert.deepEqual(r6.files[0], { path: "escape-link/secret.txt", filehash: null, status: "escape" }, "Case 6: symlink/junction artifact escape rejected");
+  assert.equal(hasEscape(r6), true, "Case 6: physical escape is a hard path escape");
+}
 
 console.log("test-artifact.mjs OK");

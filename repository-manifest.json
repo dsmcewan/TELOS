@@ -9,7 +9,7 @@
     }
   },
   "note": "Machine-readable system map. A repository scanner should build its architectural map from THIS file, not by ranking README language. Each claim carries a grade + evidence; a scanner verifies claims against evidence and rejects any claim contradicted by a NON-CLAIMS record. Roles are registered mythological terms (docs/mythological-vocabulary.md) \u2014 no coined names.",
-  "as_of": "2026-07-17",
+  "as_of": "2026-07-19",
   "active_authority": {
     "pointer": "CURRENT-AUTHORITY.json"
   },
@@ -18,7 +18,7 @@
     "schema": "docs/institutional-memory/SCHEMA.md",
     "comprehension_gate": "docs/institutional-memory/comprehension-gate.mjs",
     "contract_verifier": "docs/institutional-memory/verify-contracts.mjs",
-    "example_readers": "docs/institutional-memory/examples/ (reader-{component}-{correct|hallucinating}.json \u2014 worked pass/deny runs per module)",
+    "example_readers": "docs/institutional-memory/examples/ contains non-exhaustive worked TELOS-gate fixtures with module-specific names; ai-native-memory uses memory/answers-example.json with its native gate, and Atropos fixtures live in its run evidence",
     "memory_dirs": {
       "clotho": "clotho/memory/",
       "daedalus": "docs/institutional-memory/daedalus/",
@@ -27,7 +27,8 @@
       "loadout": "docs/institutional-memory/loadout/",
       "iliad": "docs/institutional-memory/iliad/",
       "lachesis": "lachesis/memory/",
-      "atropos": "atropos/memory/"
+      "atropos": "atropos/memory/",
+      "ai-native-memory": "ai-native-memory/memory/"
     }
   },
   "normative_docs": [
@@ -51,13 +52,13 @@
       "name": "clotho",
       "role": "Clotho",
       "role_meaning": "creates and maintains knowledge-graph threads across artifacts and repositories",
-      "status": "implementation (Phase 1: tasks 0-4a accepted; 4b-7 remain)",
+      "status": "implemented (Phase 1 complete; tasks 0-7 accepted)",
       "purpose": "provenance-aware knowledge-graph weaver over the TELOS spine",
       "trust_domain": "advisory / non-sandboxed",
       "memory_dir": "clotho/memory/",
       "claims": [
         {
-          "statement": "PACKAGE_ROOTS is exactly the five TELOS-spine packages with an explicit tested exclusion of the three products (AM-40)",
+          "statement": "PACKAGE_ROOTS is exactly the seven consciously enrolled TELOS-spine packages with an explicit tested exclusion of the five deferred products (AM-40 plus Iliad enrollment)",
           "grade": "executable",
           "evidence": [
             "clotho/scripts/test-inventory.mjs",
@@ -88,70 +89,113 @@
             "clotho/scripts/test-inventory.mjs",
             "docs/institutional-memory/verify-contracts.mjs"
           ]
+        },
+        {
+          "statement": "Phase 1 tasks 0-7 are accepted; the committed self-weave executes all five weavers and its reproduction, flagship, and closure oracles pass",
+          "grade": "executable",
+          "evidence": [
+            "CURRENT-AUTHORITY.json#implementation_authority",
+            "docs/runs/clotho-self-weave/summary.json",
+            "clotho/scripts/test-flagship.mjs"
+          ]
         }
       ],
       "non_claims": [
         "not a JavaScript sandbox",
         "not a complete ECMAScript parser",
         "does not prove loader analysis or containment",
-        "no orchestrator / test / doc / ledger weaver yet (tasks 4b/5)"
+        "does not authorize, enforce risk classes, or retire artifacts"
       ],
-      "deferred_backlog": "docs/runs/clotho-impl-slice-4a/DEFERRED-MINOR-FIXES.md",
-      "specified_pending": {
-        "note": "Frozen v15 tasks not yet implemented. Their machine-first design substrate (contracts, invariants, decisions, comprehension queries) exists under clotho/memory/ with status SPECIFIED-PENDING-IMPLEMENTATION; an implementer loads it and must pass the per-task comprehension gate before writing code. Claims are grade:cited (frozen spec), not executable (no code yet).",
-        "tasks": [
-          {
-            "task": "4b",
-            "subject": "test/doc/ledger weavers",
-            "decisions": [
-              "D25",
-              "D31",
-              "duplicate-heading-path"
-            ],
-            "queries": "clotho/memory/comprehension-queries.4b.json",
-            "grade": "cited"
-          },
-          {
-            "task": "5",
-            "subject": "queries + complete-weave driver + advisory invariant",
-            "decisions": [
-              "D35",
-              "AM-37",
-              "D34",
-              "AM-38",
-              "D10",
-              "AM-39",
-              "D26",
-              "D29",
-              "D19",
-              "D28"
-            ],
-            "queries": "clotho/memory/comprehension-queries.5.json",
-            "grade": "cited"
-          },
-          {
-            "task": "6",
-            "subject": "flagship acceptance + skipped-source coverage failure",
-            "decisions": [
-              "D3",
-              "D33",
-              "AM-34"
-            ],
-            "queries": "clotho/memory/comprehension-queries.6.json",
-            "grade": "cited"
-          },
-          {
-            "task": "7",
-            "subject": "reproduction evidence + documentation",
-            "decisions": [
-              "D8",
-              "D34"
-            ],
-            "queries": "clotho/memory/comprehension-queries.7.json",
-            "grade": "cited"
-          }
-        ]
-      }
+      "deferred_backlog": "docs/runs/clotho-impl-slice-4a/DEFERRED-MINOR-FIXES.md"
+    },
+    {
+      "name": "lachesis",
+      "role": "Lachesis",
+      "role_meaning": "measures dependencies, relevance, risk, and blast radius",
+      "status": "implemented / enrolled",
+      "purpose": "zero-dependency metrics engine over the committed Clotho weave snapshot",
+      "trust_domain": "deterministic measurement; risk class advisory; manifest-relative snapshot integrity only",
+      "memory_dir": "lachesis/memory/",
+      "claims": [
+        {
+          "statement": "dependency, blast-radius, relevance, and risk semantics are pinned to the current committed snapshot by discriminating and golden oracles",
+          "grade": "executable",
+          "evidence": [
+            "lachesis/scripts/test-metrics.mjs",
+            "lachesis/memory/CONTRACTS/metrics.json",
+            "docs/institutional-memory/verify-contracts.mjs"
+          ]
+        },
+        {
+          "statement": "the package is zero-dependency and never imports from clotho/",
+          "grade": "executable",
+          "evidence": [
+            "lachesis/scripts/test-boundary.mjs"
+          ]
+        }
+      ],
+      "non_claims": [
+        "does not authorize or enforce its advisory risk class",
+        "does not re-derive Clotho content-addressed node identity",
+        "does not verify the Clotho signature chain or establish a durable trust root"
+      ]
+    },
+    {
+      "name": "atropos",
+      "role": "Atropos",
+      "role_meaning": "retires obsolete relationships, artifacts, tools, and processes",
+      "status": "implemented / enrolled",
+      "purpose": "cycle-1 read-only supersession-consistency verifier over CURRENT-AUTHORITY.json#superseded",
+      "trust_domain": "deterministic read-only verification; retirement action remains human-governed",
+      "memory_dir": "atropos/memory/",
+      "claims": [
+        {
+          "statement": "the real v11-v14 retirement chain resolves consistently to the disk-verified active v15 authority",
+          "grade": "executable",
+          "evidence": [
+            "atropos/scripts/test-verify.mjs",
+            "atropos/memory/CONTRACTS/supersession.json"
+          ]
+        },
+        {
+          "statement": "cycle 1 is read-only, zero-dependency, and does not import from clotho/",
+          "grade": "executable",
+          "evidence": [
+            "atropos/scripts/test-readonly.mjs",
+            "atropos/package.json"
+          ]
+        }
+      ],
+      "non_claims": [
+        "does not mutate CURRENT-AUTHORITY.json or perform a retirement",
+        "does not authenticate authority or authorize action",
+        "node-backed retirement remains deferred in cycle 1"
+      ]
+    },
+    {
+      "name": "ai-native-memory",
+      "role": null,
+      "role_note": "implemented plugin/product component; no mythological role is asserted",
+      "status": "implemented (Iliad enrollment deferred)",
+      "purpose": "portable, zero-dependency institutional-memory plugin with fail-closed audit, verify, gate, and initialization commands",
+      "trust_domain": "deterministic local record validation; host-provided oracle execution is explicit",
+      "memory_dir": "ai-native-memory/memory/",
+      "claims": [
+        {
+          "statement": "the plugin's frozen semantics, zero-dependency boundary, dogfood record set, and six test groups are executable",
+          "grade": "executable",
+          "evidence": [
+            "ai-native-memory/tests/oracle-plugin-contract.mjs",
+            "ai-native-memory/tests/run.mjs",
+            "ai-native-memory/memory/CONTRACTS/plugin.json"
+          ]
+        }
+      ],
+      "non_claims": [
+        "is not a mythological role module",
+        "is not enrolled in the Iliad lifecycle while AM-40 deferral remains active",
+        "does not replace repository-specific documentation or CI"
+      ]
     },
     {
       "name": "build-gate",
@@ -284,7 +328,7 @@
       "role": "Argo",
       "role_meaning": "carries an authorized plan through implementation, verification, and documentation",
       "kind": "role module \u2014 a workflow with code touchpoints; NO autonomous Argo runner exists (system non-claim, preserved)",
-      "status": "active (slice 4a accepted by The Eye with a deferred backlog; 4b next; 4b/5/6/7 specified-pending)",
+      "status": "active (slices 4a, 4b, 5, 6, and 7 accepted; no next or pending slice)",
       "code": [
         "docs/institutional-memory/comprehension-gate.mjs (the entry ritual)"
       ],
@@ -313,6 +357,7 @@
         "no autonomous Argo runner exists",
         "a passing gate artifact is a precondition, not implementation authority (The Eye grants)",
         "the comprehension gate is open-book (proves record-reading + authority resolution, not deep understanding)",
+        "only authority_anchor.pointer fields are live-resolved authority; other anchor metadata is an evidence citation from the reviewed query artifact",
         "acceptance is not a zero-defect claim (slice 4a carries a deferred backlog)",
         "Argo does not choose scope (ambiguities escalate; never designed around)"
       ]
@@ -345,6 +390,32 @@
       ]
     }
   ],
+  "products": [
+    {
+      "name": "narcissus/flagship",
+      "kind": "product",
+      "status": "implemented",
+      "path": "narcissus/flagship/",
+      "distinct_from_role_module": "narcissus",
+      "iliad_enrollment": "deferred",
+      "purpose": "award-standard TELOS development-story front-end (Loom on Trial)",
+      "claims": [
+        {
+          "statement": "the implemented React/Vite product exposes runnable build, unit-test, and evidence-verification entry points",
+          "grade": "executable",
+          "evidence": [
+            "narcissus/flagship/package.json",
+            "narcissus/flagship/src/App.tsx",
+            "narcissus/flagship/scripts/verify-evidence.mjs"
+          ]
+        }
+      ],
+      "non_claims": [
+        "does not implement the registered Narcissus role module",
+        "is not enrolled in the Iliad lifecycle while AM-40 deferral remains active"
+      ]
+    }
+  ],
   "future_modules": [
     {
       "name": "hermes",
@@ -367,7 +438,7 @@
     {
       "name": "loadout",
       "kind": "capability module \u2014 the development loadout (tools, seat backends, plugins, review harness, per-task optimization reviews); named from the code's own term seat-registry.mjs#withLoadout, not a mythological role",
-      "status": "active (seat routes pinned + probed; loadout extension declared; per-task reviews for slices 4b/5/6/7)",
+      "status": "active (seat routes pinned + probed; loadout extension declared; historical per-task reviews retained for completed slices 4b/5/6/7)",
       "code": [
         "build-gate/seat-registry.mjs",
         "breakout/seat_router.mjs"

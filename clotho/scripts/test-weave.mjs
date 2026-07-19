@@ -30,6 +30,8 @@ import { verifyLedger } from "../thread-ledger.mjs";
 import { canonicalJson, deriveNodeId } from "../registry.mjs";
 import { REQUIRED_INVENTORY_IDS, WEAVERS } from "../inventory.mjs";
 import { splitMarkdownSections } from "../weavers/util.mjs";
+import { weave as docWeave } from "../weavers/doc.mjs";
+import { weave as ledgerWeave } from "../weavers/ledger.mjs";
 
 // ---- fixture constants -------------------------------------------------------
 
@@ -353,7 +355,7 @@ function recordingOpenFile(lines, failWhen = null) {
   } finally { cleanup(fx); }
 }
 
-// ---- 5. abort contract: weaver throw / fatal warning (D22) -------------------
+// ---- 5. abort contract: weaver throw / real fatal warnings (D22) -------------
 {
   const boom = (ctx) => { void ctx; throw new Error("fixture weaver exploded"); };
   const d = await drive({ weaverImpls: { [CODE_ID]: boom } });
@@ -363,12 +365,98 @@ function recordingOpenFile(lines, failWhen = null) {
   } finally { cleanup(d.fx); }
 }
 {
-  const fatal = (ctx) => { consumeAll(ctx, DOC_ID); return { edges: [], warnings: [{ weaver: DOC_ID, code: "root-escape", path: "docs", detail: "fixture fatal" }] }; };
-  const d = await drive({ weaverImpls: { [DOC_ID]: fatal } });
+  const fx = mkFixture();
+  writeFileSync(path.join(fx.root, "docs", "d.md"), "# Same\nalpha one\n# Same\nalpha two\n");
+  const d = await drive({ weaverImpls: { [DOC_ID]: docWeave } }, { fixture: fx });
   try {
-    assertAborted(d.res, d.dest, d.tmp, "fatal-warning", "FATAL_WARNING_CODES warning aborts before close and publication");
+    assertAborted(d.res, d.dest, d.tmp, "fatal-warning", "real doc duplicate-heading-path aborts before close and publication");
     assert.equal(d.res.error.weaver, DOC_ID);
   } finally { cleanup(d.fx); }
+}
+{
+  const ledgerFailures = [
+    {
+      label: "malformed JSON",
+      expectedCode: "invalid-ledger-entry",
+      write(fx) { writeFileSync(path.join(fx.root, "led.jsonl"), "{not-json}\n"); }
+    },
+    {
+      label: "malformed schema",
+      expectedCode: "invalid-ledger-entry",
+      write(fx) {
+        writeFileSync(path.join(fx.root, "led.jsonl"), JSON.stringify({
+          entryKind: "concern", evidenceText: "alpha", prev_hash: ""
+        }) + "\n");
+      }
+    },
+    {
+      label: "unknown entry kind",
+      expectedCode: "invalid-ledger-entry",
+      write(fx) {
+        const bad = ledgerEntry("", { entryKind: "decision", evidenceText: "alpha" });
+        writeFileSync(path.join(fx.root, "led.jsonl"), bad.json + "\n");
+      }
+    },
+    {
+      label: "non-string discharge evidence",
+      expectedCode: "invalid-ledger-entry",
+      write(fx) {
+        const bad = ledgerEntry("", {
+          entryKind: "obligation", evidenceText: "alpha", dischargeEvidence: 7
+        });
+        writeFileSync(path.join(fx.root, "led.jsonl"), bad.json + "\n");
+      }
+    },
+    {
+      label: "non-object contract clause ref",
+      expectedCode: "invalid-ledger-entry",
+      write(fx) {
+        const bad = ledgerEntry("", {
+          entryKind: "obligation", evidenceText: "alpha", contractClauseRef: []
+        });
+        writeFileSync(path.join(fx.root, "led.jsonl"), bad.json + "\n");
+      }
+    },
+    {
+      label: "content hash mismatch",
+      expectedCode: "invalid-content-address",
+      write(fx) {
+        writeFileSync(path.join(fx.root, "led.jsonl"), JSON.stringify({
+          entryKind: "concern",
+          entryHash: "0".repeat(64),
+          evidenceText: "alpha",
+          dischargeEvidence: null,
+          contractClauseRef: null,
+          prev_hash: ""
+        }) + "\n");
+      }
+    },
+    {
+      label: "chain failure",
+      expectedCode: "chain-failure",
+      write(fx) {
+        const bad = ledgerEntry("f".repeat(64), { entryKind: "concern", evidenceText: "alpha" });
+        writeFileSync(path.join(fx.root, "led.jsonl"), bad.json + "\n");
+      }
+    },
+    {
+      label: "duplicate contract heading path",
+      expectedCode: "duplicate-heading-path",
+      write(fx) {
+        writeFileSync(path.join(fx.root, "contracts", "C.md"), "# Same\nalpha one\n# Same\nalpha two\n");
+      }
+    }
+  ];
+  for (const tc of ledgerFailures) {
+    const fx = mkFixture();
+    tc.write(fx);
+    const d = await drive({ weaverImpls: { [LEDGER_ID]: ledgerWeave } }, { fixture: fx });
+    try {
+      assertAborted(d.res, d.dest, d.tmp, "fatal-warning", `real ledger ${tc.label}`);
+      assert.equal(d.res.error.weaver, LEDGER_ID, `${tc.label}: real ledger weaver identified`);
+      assert.match(d.res.error.detail, new RegExp(tc.expectedCode), `${tc.label}: driver reports the typed fatal code`);
+    } finally { cleanup(d.fx); }
+  }
 }
 
 // ---- 6. append and close failures clean up (descriptor, temp, destination) ---

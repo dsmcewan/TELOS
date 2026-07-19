@@ -3,10 +3,9 @@
 // so holds/expirations/adjudications/evidence can safely span processes. recordDecision writes the
 // closed POLICY_CONTRACT_V1 certificate itself; a bare "authorized" is not constructible.
 import { createPublicKey, createPrivateKey } from "node:crypto";
-import path from "node:path";
 import { createHash } from "node:crypto";
-import { readFileSync, existsSync } from "node:fs";
-import { canonicalize, sha256hex } from "../merkle-dag/vendor.mjs";
+import { readFileSync, statSync } from "node:fs";
+import { canonicalize, sha256hex, resolveUnder } from "../merkle-dag/vendor.mjs";
 import {
   PROPOSAL_KEY_ID, POLICY_CONTRACT_V1, POLICY_CHECK_KEYS,
   makeProposalEvent, atomicAppendProposalEvent, writeProposalArtifact,
@@ -95,11 +94,27 @@ export function makeProposalRecorder({ telosDir, signerFor, proposalId = null } 
 // buildReviewManifest — two-step invocation identity (decision 15) to avoid a dependency cycle:
 // build manifest -> obtain review_manifest_ref -> derive review_call_ref -> invocation context.
 export function buildReviewManifest({ telosDir, planHash, seat, role, workstream = null, reviewContract, evidenceFiles = [], baseDir, materialized = {} }) {
+  if (evidenceFiles.length > 0 && !baseDir) {
+    throw new Error("review evidence requires a baseDir so its bytes can be verified");
+  }
+  const evidence = evidenceFiles.map((ef) => {
+    const abs = resolveUnder(baseDir, ef.path);
+    if (abs === null) throw new Error(`review evidence '${ef.path}' escapes baseDir`);
+    let bytes;
+    try {
+      if (!statSync(abs).isFile()) {
+        throw new Error("not a regular file");
+      }
+      bytes = readFileSync(abs);
+    } catch {
+      throw new Error(`review evidence '${ef.path}' is missing or not a regular file`);
+    }
+    return {
+      path: ef.path, kind: ef.kind || "source-doc",
+      sha256: "sha256:" + createHash("sha256").update(bytes).digest("hex")
+    };
+  }).sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
   const contractRef = writeProposalArtifact(telosDir, { kind: "review-contract", ...reviewContract }).ref;
-  const evidence = evidenceFiles.map((ef) => ({
-    path: ef.path, kind: ef.kind || "source-doc",
-    sha256: baseDir && existsSync(path.resolve(baseDir, ef.path)) ? "sha256:" + createHash("sha256").update(readFileSync(path.resolve(baseDir, ef.path))).digest("hex") : ef.sha256
-  })).sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
   const manifest = { plan_hash: planHash, review_contract_ref: contractRef, evidence };
   const review_input_hash = computeReviewInputHash(manifest);
   const { ref: manifestRef } = writeProposalArtifact(telosDir, { kind: "review-manifest", ...manifest });

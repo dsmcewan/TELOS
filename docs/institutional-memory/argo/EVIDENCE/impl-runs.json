@@ -16,8 +16,40 @@
         "deferred_backlog": "DEFERRED-MINOR-FIXES.md (The Eye's stopping-rule acceptance)",
         "runner": "run-slice-4a-review.mjs (signed council review harness; does NOT merge)"
       }
+    },
+    {
+      "dir": "docs/runs/clotho-impl-slice-4b/",
+      "task": "4b",
+      "contents": {
+        "entry_ritual": "reader-validation-artifact.json",
+        "acceptance": "harvested implementation accepted through PR #126 and The Eye's merge decision"
+      }
+    },
+    {
+      "dir": "docs/runs/clotho-impl-slice-5/",
+      "task": "5",
+      "contents": {
+        "entry_ritual": "reader-validation-artifact.json",
+        "acceptance": "query surface, driver, and first real-repository weave accepted through PR #126"
+      }
+    },
+    {
+      "dir": "docs/runs/clotho-impl-slice-6/",
+      "task": "6",
+      "contents": {
+        "entry_ritual": "reader-validation-artifact.json",
+        "acceptance": "flagship and escalation-path proof accepted through PR #126"
+      }
+    },
+    {
+      "dir": "docs/runs/clotho-impl-slice-7/",
+      "task": "7",
+      "contents": {
+        "entry_ritual": "reader-validation-artifact.json",
+        "acceptance": "Phase 1 closure and reproduction evidence accepted through PR #126"
+      }
     }
   ],
   "earlier_precedent": "Slice 1 (Task 1 scaffold) was accepted via PR #110 ('The Eye accepts Clotho Phase 1 Slice 1'); its review evidence predates the per-slice run-directory convention",
-  "pending_substrate": "clotho/memory/ — SPECIFIED-PENDING-IMPLEMENTATION records + comprehension-queries.{4b,5,6,7}.json for the remaining slices"
+  "current_state": "Clotho Phase 1 complete: slices 4a, 4b, 5, 6, and 7 accepted; no next or pending slice. Historical per-task query files remain as evidence."
 }

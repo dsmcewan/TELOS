@@ -18,6 +18,18 @@ assert.deepEqual(verifyPacket(signed, "s3cr3t"), { ok: true, reason: "ok" });
 const tampered = { ...signed, decision: "reject" };
 assert.equal(verifyPacket(tampered, "s3cr3t").ok, false, "mutated field must fail verify");
 
+// Every own enumerable JSON key is signed, including "__proto__". Building the
+// fixture through JSON.parse guarantees this is an own data property rather
+// than object-literal prototype syntax.
+{
+  const packet = JSON.parse('{"model":"claude","decision":"approve","build_id":"b-proto","__proto__":{"reviewed":true}}');
+  const protoSigned = signPacket(packet, "s3cr3t");
+  assert.match(canonicalize(packet), /"__proto__"/, "canonical form retains own __proto__ key");
+  const protoTampered = JSON.parse(JSON.stringify(protoSigned));
+  protoTampered.__proto__.reviewed = false;
+  assert.equal(verifyPacket(protoTampered, "s3cr3t").ok, false, "post-sign __proto__ tamper must fail verify");
+}
+
 // wrong secret
 assert.equal(verifyPacket(signed, "wrong").ok, false, "wrong secret must fail verify");
 

@@ -4,7 +4,7 @@
 // hands a respec up for the substrate's outer halt->mutate->re-dispatch loop.
 // Rule 3 stays load-bearing throughout. Keyless: real Ed25519 ledger + real gate.
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, symlinkSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { readLedger } from "../../merkle-dag/crypto.mjs";
@@ -39,6 +39,16 @@ const node = (id) => ({
   const escape = await runNodeTest({ id: "e", files: [], test: { cmd: "node", args: ["-e", ""], cwd: "../escape" } }, baseDir);
   assert.equal(escape.ok, false, "cwd escape rejected");
   assert.match(escape.detail, /escapes baseDir/);
+
+  const outside = mkdtempSync(path.join(os.tmpdir(), "telos-adapt-outside-"));
+  symlinkSync(outside, path.join(baseDir, "escape-link"), process.platform === "win32" ? "junction" : "dir");
+  const physicalEscape = await runNodeTest({
+    id: "physical-e", files: [],
+    test: { cmd: "node", args: ["-e", "require('node:fs').writeFileSync('ran.txt','x')"], cwd: "escape-link" }
+  }, baseDir);
+  assert.equal(physicalEscape.ok, false, "symlink/junction cwd escape rejected");
+  assert.match(physicalEscape.detail, /escapes baseDir/);
+  assert.equal(existsSync(path.join(outside, "ran.txt")), false, "test never ran outside baseDir");
 
   const noCmd = await runNodeTest({ id: "n", files: [], test: {} }, baseDir);
   assert.equal(noCmd.ok, false, "no test command => not ok");

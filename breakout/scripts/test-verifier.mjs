@@ -219,4 +219,47 @@ const selfName = thisFile.split(/[\\/]/).pop();
   console.log("test-verifier empty-needle bypass OK");
 }
 
+// 12. baseDir confinement is physical as well as lexical in both verifier
+//     modes. Read-only gate checks and live-built file checks must not follow a
+//     symlink/junction to evidence outside baseDir.
+{
+  const { mkdtempSync, mkdirSync, symlinkSync, writeFileSync } = await import("node:fs");
+  const os = await import("node:os");
+  const path = (await import("node:path")).default;
+
+  const root = mkdtempSync(path.join(os.tmpdir(), "telos-verifier-confinement-"));
+  const base = path.join(root, "base");
+  const outside = path.join(root, "outside");
+  mkdirSync(base);
+  mkdirSync(outside);
+  writeFileSync(path.join(outside, "evidence.txt"), "outside-marker");
+  symlinkSync(outside, path.join(base, "escape-link"), process.platform === "win32" ? "junction" : "dir");
+
+  const specs = [
+    { type: "file_exists", path: "../outside/evidence.txt" },
+    { type: "file_contains", path: "../outside/evidence.txt", needle: "outside-marker" },
+    { type: "file_exists", path: "escape-link/evidence.txt" },
+    { type: "file_contains", path: "escape-link/evidence.txt", needle: "outside-marker" },
+  ];
+
+  const confinementResults = [];
+  for (const spec of specs) {
+    const gateResult = reverifyRecord({ checks: [spec] }, base);
+    const liveResult = await verifyChecks([buildCheck(spec, base)]);
+    confinementResults.push({
+      type: spec.type,
+      path: spec.path,
+      gatePass: gateResult.allPass,
+      livePass: liveResult.allPass,
+    });
+  }
+  assert.deepEqual(
+    confinementResults,
+    specs.map((spec) => ({ type: spec.type, path: spec.path, gatePass: false, livePass: false })),
+    "file_exists/file_contains must reject lexical and physical escapes in both verifier modes"
+  );
+
+  console.log("test-verifier physical confinement OK");
+}
+
 console.log("verifier: all tests passed");

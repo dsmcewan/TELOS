@@ -57,6 +57,12 @@ function append(telosDir, stage, extra = {}) {
   assert.equal(verifyProposalEvent(e, publicJwk), true);
   const tampered = { ...e, stage: "decision" };
   assert.equal(verifyProposalEvent(tampered, publicJwk), false, "tamper breaks sig");
+  const protoFields = JSON.parse('{"proposal_id":"proposal-test","sequence":1,"stage":"draft","plan_hash":null,"parent_event_hash":null,"artifact_refs":[],"actor":{},"provenance":null,"policy_result":null,"recorded_at":"t","__proto__":{"reviewed":true}}');
+  const protoEvent = makeProposalEvent(protoFields, privatePem);
+  assert.equal(verifyProposalEvent(protoEvent, publicJwk), true, "own __proto__ event signs and verifies");
+  const protoTampered = JSON.parse(JSON.stringify(protoEvent));
+  protoTampered.__proto__.reviewed = false;
+  assert.equal(verifyProposalEvent(protoTampered, publicJwk), false, "post-sign __proto__ tamper must fail Ed25519 verification");
   assert.throws(() => makeProposalEvent({ stage: "bogus", sequence: 1 }, privatePem), "bad stage throws");
   assert.throws(() => makeProposalEvent({ stage: "draft", sequence: 0 }, privatePem), "bad sequence throws");
   console.log("Case 2 OK: event signing + shape validation");

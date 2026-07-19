@@ -41,21 +41,21 @@
       "id": "accepted-slices",
       "query": "Which slices has The Eye accepted (by task id)?",
       "answer_kind": "set",
-      "expected": ["4a"],
+      "expected": ["4a", "4b", "5", "6", "7"],
       "authority_anchor": { "pointer": "CURRENT-AUTHORITY.json#implementation_authority.accepted_slices", "contract": "docs/institutional-memory/argo/CONTRACTS/accepted-slices.json" }
     },
     {
       "id": "next-slice",
       "query": "Which slice is next? (enum: 4b | 5 | none)",
       "answer_kind": "enum",
-      "expected": "4b",
+      "expected": "none",
       "authority_anchor": { "pointer": "CURRENT-AUTHORITY.json#implementation_authority.next_slice" }
     },
     {
       "id": "pending-slices",
       "query": "Which slices are SPECIFIED-PENDING-IMPLEMENTATION?",
       "answer_kind": "set",
-      "expected": ["4b", "5", "6", "7"],
+      "expected": [],
       "authority_anchor": { "pointer": "CURRENT-AUTHORITY.json#implementation_authority.specified_pending_slices" }
     },
     {

@@ -62,8 +62,8 @@
   ],
   "next_slice": null,
   "specified_pending_slices": [],
-  "design_substrate": "clotho/memory/ (SPECIFIED-PENDING-IMPLEMENTATION records + per-task comprehension queries clotho/memory/comprehension-queries.<task>.json)",
-  "why": "The Argo ledger is the honest answer to 'what has actually been implemented and accepted' — one slice (4a), 13 signed review rounds, a deterministic slice gate at meets, and an acceptance that DEFERRED known minors rather than pretending zero defects. A future model must read the backlog as part of the acceptance, not as contradicting it.",
+  "design_substrate": "clotho/memory/ (all Phase 1 records are NORMATIVE-CURRENT; historical per-task comprehension queries for 4b/5/6/7 remain as entry-ritual evidence)",
+  "why": "The Argo ledger is the honest answer to 'what has actually been implemented and accepted': slices 4a, 4b, 5, 6, and 7 are accepted, with no next or pending slice. Slice 4a's deferred backlog remains part of its bounded acceptance rather than a contradiction or a zero-defect claim.",
   "change_rule": "A new accepted slice appends an entry (slice gate meets -> signed required-seat review -> The Eye's acceptance -> merge; update CURRENT-AUTHORITY.json + this contract in the same change or verify-contracts fails). Entries are never rewritten.",
   "oracle": {
     "source_of_truth": "CURRENT-AUTHORITY.json#implementation_authority + the review records on disk",
