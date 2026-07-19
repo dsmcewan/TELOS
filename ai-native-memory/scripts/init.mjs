@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 // init.mjs — scaffolds a machine-first record set. Authored files are never overwritten.
 import {
-  existsSync,
   lstatSync,
   mkdirSync,
   readFileSync,
@@ -19,6 +18,9 @@ const MANIFEST = "MEMORY-MANIFEST.json";
 const MANIFEST_LOCK = ".MEMORY-MANIFEST.lock";
 const LOCK_TIMEOUT_MS = 5000;
 const LOCK_RETRY_MS = 10;
+const WINDOWS_ILLEGAL_SEGMENT = /[<>:"|?*\u0000-\u001f]/;
+const WINDOWS_RESERVED_BASENAME =
+  /^(?:con|prn|aux|nul|clock\$|conin\$|conout\$|com[1-9]|lpt[1-9])(?:\..*)?$/i;
 const address = (record) => ({ ...record, id: contentAddress(record) });
 const sleep = (milliseconds) =>
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
@@ -40,6 +42,13 @@ function validateComponent(value) {
     || segments.join("/") !== value
     || path.posix.normalize(value) !== value) {
     throw new Error(`component path must use canonical forward-slash segments: ${value}`);
+  }
+  if (segments.some((segment) =>
+    WINDOWS_ILLEGAL_SEGMENT.test(segment)
+    || /[. ]$/.test(segment)
+    || WINDOWS_RESERVED_BASENAME.test(segment)
+  )) {
+    throw new Error(`component path contains a non-portable Windows segment: ${value}`);
   }
   return { portable: value, segments };
 }
@@ -72,15 +81,28 @@ function main() {
     return { target, segments };
   }
 
+  function lstatIfPresent(file) {
+    try {
+      return lstatSync(file);
+    } catch (error) {
+      if (error.code === "ENOENT") return null;
+      throw error;
+    }
+  }
+
   function assertExistingAncestors(portableRelative) {
     const { target, segments } = targetFor(portableRelative);
     let cursor = root;
-    for (const segment of segments) {
+    for (const [index, segment] of segments.entries()) {
       cursor = path.join(cursor, segment);
-      if (!existsSync(cursor)) continue;
+      const stat = lstatIfPresent(cursor);
+      if (!stat) continue;
       const real = realpathSync(cursor);
       if (!isWithin(realRoot, real)) {
         throw new Error(`scaffold path escapes repository root through symlink: ${portableRelative}`);
+      }
+      if (index < segments.length - 1 && !lstatSync(real).isDirectory()) {
+        throw new Error(`scaffold path has a non-directory ancestor: ${portableRelative}`);
       }
     }
     return target;
@@ -99,6 +121,10 @@ function main() {
       console.log(`write: ${portableRelative}`);
     } catch (error) {
       if (error.code !== "EEXIST") throw error;
+      const existing = lstatIfPresent(target);
+      if (!existing || existing.isSymbolicLink() || !existing.isFile()) {
+        throw new Error(`refusing non-regular scaffold collision: ${portableRelative}`);
+      }
       console.log(`skip: ${portableRelative}`);
     }
   }
@@ -129,8 +155,8 @@ function main() {
   }
 
   function parseManifest(file) {
-    if (!existsSync(file)) return { exists: false, raw: null, components: [] };
-    const stat = lstatSync(file);
+    const stat = lstatIfPresent(file);
+    if (!stat) return { exists: false, raw: null, components: [] };
     if (!stat.isFile() || stat.isSymbolicLink()) {
       throw new Error(`${MANIFEST} must be a regular generated file`);
     }
@@ -158,7 +184,7 @@ function main() {
     return { exists: true, raw, components };
   }
 
-  function reconcileManifest() {
+  function runManifestTransaction(writeScaffold) {
     const manifestFile = assertExistingAncestors(MANIFEST);
     const lock = acquireManifestLock();
     let temporary = null;
@@ -169,6 +195,7 @@ function main() {
         ...(component ? [component.portable] : [])
       ])].sort();
       const content = JSON.stringify({ version: 1, components }, null, 2) + "\n";
+      writeScaffold();
       if (current.raw === content) {
         console.log(`skip: ${MANIFEST}`);
         return;
@@ -220,7 +247,8 @@ Rules: machine records are the source of truth; human docs are rendered projecti
       address({
         kind: "invariant",
         statement: "REPLACE: a load-bearing always-true property.",
-        oracle: "",
+        oracle: null,
+        evidence: [],
         normativity: "NORMATIVE",
         status: "SPECIFIED-PENDING-IMPLEMENTATION",
         becomes_normative_when: ""
@@ -230,7 +258,8 @@ Rules: machine records are the source of truth; human docs are rendered projecti
       address({
         kind: "non-claim",
         statement: "REPLACE: something this component deliberately does NOT do or prove.",
-        oracle: "",
+        oracle: null,
+        evidence: [],
         status: "SPECIFIED-PENDING-IMPLEMENTATION",
         becomes_normative_when: ""
       })
@@ -243,7 +272,8 @@ Rules: machine records are the source of truth; human docs are rendered projecti
       becomes_normative_when: "",
       lifecycle: "docs-first",
       decided_by: "human",
-      oracle: { test: "" }
+      oracle: { test: "NAME-THE-ORACLE-TEST-FILE" },
+      evidence: []
     });
 
     componentEntries = [
@@ -280,9 +310,10 @@ Rules: machine records are the source of truth; human docs are rendered projecti
   for (const [relative] of [...rootEntries, [MANIFEST, ""], ...componentEntries]) {
     assertExistingAncestors(relative);
   }
-  reconcileManifest();
-  for (const [relative, content] of rootEntries) put(relative, content);
-  for (const [relative, content] of componentEntries) put(relative, content);
+  runManifestTransaction(() => {
+    for (const [relative, content] of rootEntries) put(relative, content);
+    for (const [relative, content] of componentEntries) put(relative, content);
+  });
 }
 
 try {

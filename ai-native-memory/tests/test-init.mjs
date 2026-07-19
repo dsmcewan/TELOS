@@ -2,9 +2,11 @@
 import assert from "node:assert/strict";
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readlinkSync,
   readdirSync,
   rmSync,
   symlinkSync,
@@ -83,7 +85,13 @@ function assertComponent(root, component) {
     for (const record of records) {
       assert.equal(record.status, "SPECIFIED-PENDING-IMPLEMENTATION");
       assert.equal(record.becomes_normative_when, "");
+      assert.deepEqual(record.evidence, []);
       assert.equal(record.id, contentAddress(record));
+      if (record.kind === "invariant" || record.kind === "non-claim") {
+        assert.equal(record.oracle, null);
+      } else {
+        assert.equal(record.oracle.test, "NAME-THE-ORACLE-TEST-FILE");
+      }
     }
   }
 
@@ -115,12 +123,28 @@ try {
     "C:\\absolute",
     "\\\\server\\share",
     "C:drive-relative",
+    "nested/C:escape",
     "../escape",
     "widget/../escape",
     "widget//nested",
     "widget/./nested",
     "widget/",
-    "widget\\nested"
+    "widget\\nested",
+    "reserved/CON",
+    "reserved/con.txt",
+    "reserved/PRN.md",
+    "reserved/AUX",
+    "reserved/NUL.json",
+    "reserved/COM1.log",
+    "reserved/LPT9",
+    "illegal/bad:name",
+    "illegal/bad<name",
+    "illegal/bad|name",
+    "illegal/bad?name",
+    "illegal/bad*name",
+    "illegal/control\u0001name",
+    "illegal/trailing.",
+    "illegal/trailing "
   ];
   for (const component of invalidComponents) {
     const root = makeRoot("anm invalid ");
@@ -149,6 +173,11 @@ try {
     assert.ok(existsSync(path.join(lifecycleRoot, file)), `base scaffolded: ${file}`);
   }
   assert.deepEqual(readJson(lifecycleRoot, "MEMORY-MANIFEST.json").components, []);
+  assert.equal(readJson(lifecycleRoot, "CURRENT-AUTHORITY.json").active, null);
+  assert.equal(
+    typeof readJson(lifecycleRoot, "LOAD-ORDER.json").token_budget.guidance,
+    "string"
+  );
 
   const widget = runInit(lifecycleRoot, "widget");
   assert.equal(widget.status, 0, widget.stderr);
@@ -200,6 +229,54 @@ try {
   const unreadableManifest = runInit(unreadableManifestRoot, "widget");
   assert.notEqual(unreadableManifest.status, 0, unreadableManifest.stdout + unreadableManifest.stderr);
   assert.equal(existsSync(path.join(unreadableManifestRoot, "widget")), false);
+
+  const danglingManifestRoot = makeRoot("anm dangling manifest ");
+  const danglingOutside = makeRoot("anm dangling outside ");
+  const danglingTarget = path.join(danglingOutside, "missing-manifest.json");
+  const danglingManifestPath = path.join(danglingManifestRoot, "MEMORY-MANIFEST.json");
+  symlinkSync(danglingTarget, danglingManifestPath);
+  const danglingManifest = runInit(danglingManifestRoot, "widget");
+  assert.notEqual(danglingManifest.status, 0, danglingManifest.stdout + danglingManifest.stderr);
+  assert.equal(lstatSync(danglingManifestPath).isSymbolicLink(), true);
+  assert.equal(readlinkSync(danglingManifestPath), danglingTarget);
+  assert.deepEqual(readdirSync(danglingOutside), [], "dangling manifest target remains untouched");
+  assert.equal(existsSync(path.join(danglingManifestRoot, "widget")), false);
+
+  function assertCollisionLeavesManifest(setup, label) {
+    const root = makeRoot(`anm collision ${label} `);
+    assert.equal(runInit(root).status, 0);
+    const manifestPath = path.join(root, "MEMORY-MANIFEST.json");
+    const manifestBefore = readFileSync(manifestPath);
+    setup(root);
+    const result = runInit(root, "widget");
+    assert.notEqual(result.status, 0, `${label} must fail:\n${result.stdout}\n${result.stderr}`);
+    assert.deepEqual(readFileSync(manifestPath), manifestBefore, `${label}: manifest unchanged`);
+    assert.deepEqual(readJson(root, "MEMORY-MANIFEST.json").components, []);
+  }
+
+  assertCollisionLeavesManifest((root) => {
+    writeFileSync(path.join(root, "widget"), "component root collision\n");
+  }, "component-root-file");
+
+  assertCollisionLeavesManifest((root) => {
+    mkdirSync(path.join(root, "widget", "memory", "FAILURE-MODES.md"), { recursive: true });
+  }, "later-directory");
+
+  assertCollisionLeavesManifest((root) => {
+    mkdirSync(path.join(root, "widget", "memory"), { recursive: true });
+    const target = path.join(root, "existing-authored-file.md");
+    writeFileSync(target, "inside root\n");
+    symlinkSync(target, path.join(root, "widget", "memory", "IDENTITY.md"));
+  }, "authored-symlink");
+
+  if (process.platform !== "win32") {
+    assertCollisionLeavesManifest((root) => {
+      const memory = path.join(root, "widget", "memory");
+      mkdirSync(memory, { recursive: true });
+      const fifo = spawnSync("mkfifo", [path.join(memory, "README.md")], { encoding: "utf8" });
+      assert.equal(fifo.status, 0, fifo.stderr);
+    }, "authored-fifo");
+  }
 
   const authoredRoot = makeRoot("anm authored ");
   const authored = "# authored start file\n";
