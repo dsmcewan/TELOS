@@ -29,9 +29,10 @@ fine."
 
 The three-representation check (`audit.mjs`) FAILs if `INVARIANTS.md` or `NON-CLAIMS.md` exists
 without a corresponding `.json` machine record, and FAILs any invariant entry missing an `oracle`
-field. It also recomputes every record's content-addressed `id` and byte-derives the expected
-Markdown from JSON; a stale ID or rendered-byte mismatch FAILs. Prose alone is never treated as a
-NORMATIVE claim.
+field. It also requires every `INVARIANTS.json` entry to have `kind: "invariant"` and every
+`NON-CLAIMS.json` entry to have `kind: "non-claim"`, recomputes every record's content-addressed
+`id`, and byte-derives the expected Markdown from JSON. A wrong-container kind, stale ID, or
+rendered-byte mismatch FAILs. Prose alone is never treated as a NORMATIVE claim.
 
 ## Comprehension queries drifting from their source contracts
 
@@ -57,6 +58,10 @@ array, duplicate or malformed required content addresses, and required IDs that 
 sibling `INVARIANTS.json` or `NON-CLAIMS.json` records of the correct kind. Missing, malformed, or
 non-content-addressed sibling record files make the gate unable to run (exit `1`). Consequently a
 freshly generated, still-empty scaffold cannot certify a reader even after authority is bound.
+Every query must also have a unique nonempty trimmed ID, nonempty trimmed query text, supported
+`answer_kind`, and an `expected` value of the exact declared type; submitted answers must have that
+same type. Boolean-looking strings and nonarray set values are DENIED even when query and answer
+contain the same malformed value.
 
 ## Invalid lifecycle, provenance, or pending transition
 
@@ -89,5 +94,9 @@ Naming `tests/run.mjs` as the plugin contract's oracle would make self-verificat
 both name the terminating `tests/oracle-plugin-contract.mjs`. That dedicated oracle runs the five
 non-dogfood tests (`test-lib`, `test-audit`, `test-gate`, `test-init`, and `test-verify`), but first
 reads the contract's `zero_dependencies` field and directly checks `package.json` plus the complete
-static/side-effect/string-literal-dynamic import boundary under `scripts/`. It therefore avoids
-recursion while terminating the contract's zero-dependency claim itself.
+static/side-effect/re-export/string-literal-dynamic import boundary across `.js`, `.cjs`, and
+`.mjs` files under `scripts/`. The boundary requires an explicit empty `dependencies` object and
+rejects runtime declarations through `optionalDependencies`, `peerDependencies`,
+`bundledDependencies`, or `bundleDependencies`; `devDependencies` remain outside the runtime
+claim. It therefore avoids recursion while terminating the contract's zero-dependency claim
+itself.

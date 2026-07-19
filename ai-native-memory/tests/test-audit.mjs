@@ -139,6 +139,52 @@ try {
   const passing = stage("passing");
   assert.equal(auditRoot(passing).filter((finding) => finding.level === "FAIL").length, 0);
 
+  for (const [base, record, expectedKind] of [
+    [
+      "INVARIANTS",
+      {
+        kind: "contract",
+        title: "Smuggled contract",
+        statement: "This contract does not belong in the invariant container.",
+        status: "ADVISORY",
+        lifecycle: "docs-first",
+        oracle: { test: "scripts/test-example.mjs" },
+        evidence: []
+      },
+      "invariant"
+    ],
+    [
+      "NON-CLAIMS",
+      {
+        kind: "invariant",
+        statement: "This invariant does not belong in the non-claim container.",
+        status: "NORMATIVE-CURRENT",
+        lifecycle: "docs-first",
+        oracle: "scripts/test-example.mjs",
+        evidence: []
+      },
+      "non-claim"
+    ]
+  ]) {
+    const wrongContainerKind = stage("passing", (root) => {
+      const memory = path.join(root, "comp", "memory");
+      const file = path.join(memory, `${base}.json`);
+      const records = JSON.parse(readFileSync(file, "utf8"));
+      records.push(address(record));
+      writeJson(file, records);
+      writeFileSync(
+        path.join(memory, `${base}.md`),
+        renderRecordList(base === "INVARIANTS" ? "Invariants" : "Non-claims", records)
+      );
+    });
+    assert.ok(
+      failures(wrongContainerKind, "three-representation").some((finding) =>
+        finding.detail.includes(`must have kind ${expectedKind}`)
+      ),
+      `${base}.json rejects a correctly addressed record of the wrong kind`
+    );
+  }
+
   const missingQueryDocument = stage("passing", (root) => {
     rmSync(path.join(root, "comp", "memory", "comprehension-queries.json"));
   });

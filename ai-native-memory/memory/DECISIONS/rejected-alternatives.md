@@ -38,7 +38,8 @@ Pointing `verify-map.json`'s oracle at `run.mjs` would make that self-verify ste
 process that (transitively) re-invokes itself. Instead the contract and map both name
 `tests/oracle-plugin-contract.mjs`, a terminating oracle that runs the five non-dogfood tests:
 `test-lib`, `test-audit`, `test-gate`, `test-init`, and `test-verify`. Before those tests it directly
-checks the contract's `zero_dependencies` field, `package.json`, and every recognized import under
+checks the contract's `zero_dependencies` field, every runtime dependency declaration in
+`package.json`, and every recognized import or re-export across `.js`, `.cjs`, and `.mjs` under
 `scripts/`, so the contract's dependency boundary terminates in that oracle rather than in
 `test-dogfood`. This avoids recursion while still testing the contract directly; the full suite
 remains the package test entry point.

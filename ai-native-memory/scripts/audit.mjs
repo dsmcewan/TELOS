@@ -246,9 +246,18 @@ function auditThreeRep(dir, out, root) {
     const recs = parsed.value;
     if (!Array.isArray(recs)) { out.push(finding("FAIL", "three-representation", where, `${base}.json must be an array of records`)); continue; }
     const recordsAreObjects = recs.every(isRecord);
+    const expectedKind = base === "INVARIANTS" ? "invariant" : "non-claim";
     for (const r of recs) {
       validateRecord(r, `${where}/${base}.json`, root, out);
       if (!isRecord(r)) continue;
+      if (r.kind !== expectedKind) {
+        out.push(finding(
+          "FAIL",
+          "three-representation",
+          where,
+          `${base}.json entries must have kind ${expectedKind}; got ${r.kind || "missing"}`
+        ));
+      }
       if (!r.id || !r.statement) out.push(finding("FAIL", "three-representation", where, `${base}.json entry missing id/statement: ${JSON.stringify(r).slice(0, 80)}`));
       if (base === "INVARIANTS" && !r.oracle) out.push(finding("FAIL", "three-representation", where, `invariant ${r.id} has no oracle ref (NORMATIVE claims need executable verification)`));
     }

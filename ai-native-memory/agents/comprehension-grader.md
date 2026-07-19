@@ -13,7 +13,10 @@ of sync with the records it's supposed to anchor to.
 1. **Author deterministic queries FROM the machine records.** For a named component, read its
    `IDENTITY.md`, `INVARIANTS.json`, `CONTRACTS/`, and `NON-CLAIMS.json`. Every query you write must
    have an `expected` value that is read directly off a machine record — never invented, never
-   inferred from prose, never your own judgment about what a good answer would be.
+   inferred from prose, never your own judgment about what a good answer would be. Give it a unique
+   nonempty trimmed `id`, nonempty trimmed `query` text, and `answer_kind` exactly `boolean`, `enum`,
+   or `set`; the `expected` value and submitted answer must be respectively boolean, string, or
+   array. Matching two values of the wrong type is never a pass.
 2. **Every `expected` value carries a `derived_from` pointer** that names the exact record and field
    it came from (e.g. `"derived_from": { "file": "CONTRACTS/component.json", "pointer": "status" }`),
    so the chain terminates in a contract value, not in model opinion. If you cannot point at the

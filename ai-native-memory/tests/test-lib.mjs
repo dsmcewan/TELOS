@@ -47,19 +47,56 @@ assert.equal(
   renderRecordList("Example invariants", [addressed]),
   `# Example invariants (rendered)\n\n- **${addressed.id}** [unspecified] s\n`
 );
-assert.equal(resolveWithin("/repo", "component/memory"), "/repo/component/memory");
-assert.throws(() => resolveWithin("/repo", "../outside"), /escapes repository root/);
-assert.throws(() => resolveWithin("/repo", "/outside"), /repository-relative/);
+const platformRoot = path.join(path.parse(path.resolve(".")).root, "repo");
+assert.equal(
+  resolveWithin(platformRoot, path.join("component", "memory")),
+  path.resolve(platformRoot, "component", "memory")
+);
+assert.throws(() => resolveWithin(platformRoot, "../outside"), /escapes repository root/);
+assert.throws(
+  () => resolveWithin(platformRoot, path.join(path.parse(platformRoot).root, "outside")),
+  /repository-relative/
+);
 assert.deepEqual(
   importSpecifiers('import x from "node:x"; import "./side.mjs"; await import("../dynamic.mjs");'),
   ["node:x", "./side.mjs", "../dynamic.mjs"]
+);
+assert.deepEqual(
+  importSpecifiers(`
+    // import "comment-only";
+    const ordinary = "import('string-only')";
+    const template = \`export * from "template-only"\`;
+    import /* binding trivia */ value
+      /* before from */ from /* before specifier */ "external-static";
+    import /* side-effect trivia */ "external-side-effect";
+    export { value } /* re-export trivia */ from /* before specifier */ "external-reexport";
+    export * /* star trivia */ from /* before specifier */ "external-star";
+    await import(/* first-argument trivia */ "external-dynamic", { with: { type: "json" } });
+    await import(runtimeSelected);
+    await import("node:" + runtimeSelected);
+    await import("./" + runtimeSelected);
+  `),
+  [
+    "external-static",
+    "external-side-effect",
+    "external-reexport",
+    "external-star",
+    "external-dynamic"
+  ]
 );
 const packageRoot = mkdtempSync(path.join(tmpdir(), "anm-boundary-"));
 try {
   mkdirSync(path.join(packageRoot, "scripts"));
   writeFileSync(
     path.join(packageRoot, "package.json"),
-    JSON.stringify({ dependencies: {} })
+    JSON.stringify({
+      dependencies: {},
+      optionalDependencies: {},
+      peerDependencies: {},
+      bundledDependencies: [],
+      bundleDependencies: [],
+      devDependencies: { allowed: "1.0.0" }
+    })
   );
   writeFileSync(
     path.join(packageRoot, "scripts", "portable.mjs"),
@@ -82,13 +119,71 @@ try {
     JSON.stringify({ dependencies: {} })
   );
   writeFileSync(
-    path.join(packageRoot, "scripts", "non-portable.mjs"),
-    'await import("external-package");\n'
+    path.join(packageRoot, "scripts", "non-portable.js"),
+    'import "external-js";\n'
   );
-  assert.ok(
-    packageBoundaryProblems(packageRoot).some((problem) =>
-      problem.includes("non-portable import external-package")
-    )
+  writeFileSync(
+    path.join(packageRoot, "scripts", "non-portable.cjs"),
+    'void import("external-cjs");\n'
+  );
+  writeFileSync(
+    path.join(packageRoot, "scripts", "non-portable.mjs"),
+    'await import(/* runtime */ "external-dynamic", {});\n'
+  );
+  writeFileSync(
+    path.join(packageRoot, "scripts", "non-portable-reexport.mjs"),
+    'export * from "external-reexport";\n'
+  );
+  const executableProblems = packageBoundaryProblems(packageRoot);
+  for (const specifier of [
+    "external-js",
+    "external-cjs",
+    "external-dynamic",
+    "external-reexport"
+  ]) {
+    assert.ok(
+      executableProblems.some((problem) =>
+        problem.includes(`non-portable import ${specifier}`)
+      ),
+      `${specifier} must be rejected across the complete executable-source boundary`
+    );
+  }
+
+  for (const field of [
+    "optionalDependencies",
+    "peerDependencies",
+    "bundledDependencies",
+    "bundleDependencies"
+  ]) {
+    const value = field.endsWith("Dependencies") && field.startsWith("bundle")
+      ? ["surprise"]
+      : { surprise: "1.0.0" };
+    writeFileSync(
+      path.join(packageRoot, "package.json"),
+      JSON.stringify({ dependencies: {}, [field]: value })
+    );
+    assert.ok(
+      packageBoundaryProblems(packageRoot).some((problem) => problem.includes(field)),
+      `${field} must not declare runtime packages`
+    );
+  }
+
+  writeFileSync(
+    path.join(packageRoot, "scripts", "import-like-text.js"),
+    `
+      // import "comment-package";
+      /* export * from "block-comment-package"; */
+      const first = "import('ordinary-string-package')";
+      const second = 'export { x } from "ordinary-string-reexport"';
+    `
+  );
+  const textProblems = packageBoundaryProblems(packageRoot);
+  assert.equal(
+    textProblems.some((problem) =>
+      /comment-package|block-comment-package|ordinary-string-package|ordinary-string-reexport/.test(problem)
+    ),
+    false,
+    "import-like text in comments and ordinary strings is not an import"
   );
 } finally {
   rmSync(packageRoot, { recursive: true, force: true });

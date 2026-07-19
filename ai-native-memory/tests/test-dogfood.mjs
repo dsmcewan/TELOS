@@ -2,7 +2,15 @@
 // The inheritance proof: the plugin audits, gates, and verifies ITSELF.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { readdirSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+  rmSync
+} from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -41,7 +49,7 @@ const scan = (dir) => {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, e.name);
     if (e.isDirectory()) { scan(full); continue; }
-    if (!e.name.endsWith(".mjs")) continue;
+    if (!/\.(?:cjs|js|mjs)$/.test(e.name)) continue;
     const source = readFileSync(full, "utf8");
     for (const specifier of importSpecifiers(source)) {
       assert.ok(
@@ -52,4 +60,80 @@ const scan = (dir) => {
   }
 };
 scan(path.join(ROOT, "scripts"));
+
+// 6. the same boundary check fails closed in both direct dogfood and the
+// terminating contract oracle, without recursively spawning itself.
+const fakeRoot = mkdtempSync(path.join(tmpdir(), "anm-dogfood-boundary-"));
+try {
+  for (const directory of [
+    "scripts",
+    "tests",
+    path.join("memory", "CONTRACTS")
+  ]) {
+    mkdirSync(path.join(fakeRoot, directory), { recursive: true });
+  }
+  writeFileSync(
+    path.join(fakeRoot, "package.json"),
+    JSON.stringify({
+      dependencies: {},
+      optionalDependencies: { hiddenRuntime: "1.0.0" }
+    })
+  );
+  writeFileSync(
+    path.join(fakeRoot, "scripts", "runtime.js"),
+    'import "external-runtime";\n'
+  );
+  writeFileSync(
+    path.join(fakeRoot, "memory", "CONTRACTS", "plugin.json"),
+    JSON.stringify({ zero_dependencies: true })
+  );
+  for (const test of [
+    "test-lib.mjs",
+    "test-audit.mjs",
+    "test-gate.mjs",
+    "test-init.mjs",
+    "test-verify.mjs"
+  ]) {
+    writeFileSync(path.join(fakeRoot, "tests", test), "process.exit(0);\n");
+  }
+
+  const fakeProblems = packageBoundaryProblems(fakeRoot);
+  const terminatingOracle = spawnSync(process.execPath, [
+    path.join(ROOT, "tests", "oracle-plugin-contract.mjs"),
+    "--root",
+    fakeRoot
+  ], {
+    encoding: "utf8",
+    timeout: 10_000
+  });
+  assert.deepEqual(
+    {
+      directJsImportRejected: fakeProblems.some((problem) =>
+        problem.includes("non-portable import external-runtime")
+      ),
+      directOptionalDependencyRejected: fakeProblems.some((problem) =>
+        problem.includes("optionalDependencies")
+      ),
+      oracleStatus: terminatingOracle.status,
+      oracleSignal: terminatingOracle.signal,
+      oracleSpawnError: terminatingOracle.error?.message || null,
+      oracleReportedBoundary: /external-runtime|optionalDependencies/.test(
+        terminatingOracle.stderr
+      ),
+      oracleRemainedTerminating: /6\/7 checks passed/.test(terminatingOracle.stdout)
+    },
+    {
+      directJsImportRejected: true,
+      directOptionalDependencyRejected: true,
+      oracleStatus: 1,
+      oracleSignal: null,
+      oracleSpawnError: null,
+      oracleReportedBoundary: true,
+      oracleRemainedTerminating: true
+    }
+  );
+} finally {
+  rmSync(fakeRoot, { recursive: true, force: true });
+}
+
 console.log("test-dogfood: all assertions passed");

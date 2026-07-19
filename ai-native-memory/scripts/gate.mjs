@@ -41,7 +41,7 @@ try { queries = readJson(physicalQueriesPath); answers = readJson(answersPath); 
 catch (e) { die(e.message); }
 
 // 0. authority-drift check (fail-closed)
-const active = authority.active;
+const active = authority?.active;
 if (!active || !active.ref || !active.path || !/^sha256:[0-9a-f]{64}$/.test(active.sha256 || "")) die("authority.active {ref,path,sha256} required");
 let real;
 try { real = "sha256:" + sha256hex(readFileSync(path.resolve(path.dirname(authorityPath), active.path))); }
@@ -87,21 +87,51 @@ const checks = [];
 const failures = [];
 const record = (id, ok, detail) => { checks.push({ id, ok, detail }); if (!ok) failures.push(`${id}: ${detail}`); };
 const asSet = (a) => new Set(Array.isArray(a) ? a : []);
-const setEq = (a, b) => { const x = asSet(a), y = asSet(b); return x.size === y.size && [...x].every((v) => y.has(v)); };
+const isRecord = (value) =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+const isNonemptyString = (value) =>
+  typeof value === "string" && value.trim().length > 0;
+const answerKinds = new Set(["boolean", "enum", "set"]);
+const expectedType = (kind) =>
+  kind === "set" ? "array" : kind === "enum" ? "string" : kind;
+const matchesAnswerKind = (kind, value) =>
+  kind === "set"
+    ? Array.isArray(value)
+    : kind === "boolean"
+      ? typeof value === "boolean"
+      : kind === "enum" && typeof value === "string";
+const setEq = (a, b) => {
+  if (!Array.isArray(a) || !Array.isArray(b)) return false;
+  const x = new Set(a);
+  const y = new Set(b);
+  return x.size === y.size && [...x].every((value) => y.has(value));
+};
+const queryDocument = isRecord(queries) ? queries : {};
+const answerDocument = isRecord(answers) ? answers : {};
 
-record("resolved_active_authority", answers.resolved_authority_ref === active.ref,
-  `reader resolved ${JSON.stringify(answers.resolved_authority_ref)}, expected ${JSON.stringify(active.ref)}`);
-record("queries_bound_to_active", queries.governing_authority && queries.governing_authority.ref === active.ref,
-  `queries bound to ${JSON.stringify(queries.governing_authority)}, expected ref ${JSON.stringify(active.ref)}`);
+record(
+  "queries_document",
+  isRecord(queries),
+  isRecord(queries) ? "queries document is an object" : "queries document must be an object"
+);
+record(
+  "answers_document",
+  isRecord(answers),
+  isRecord(answers) ? "answers document is an object" : "answers document must be an object"
+);
+record("resolved_active_authority", answerDocument.resolved_authority_ref === active.ref,
+  `reader resolved ${JSON.stringify(answerDocument.resolved_authority_ref)}, expected ${JSON.stringify(active.ref)}`);
+record("queries_bound_to_active", queryDocument.governing_authority && queryDocument.governing_authority.ref === active.ref,
+  `queries bound to ${JSON.stringify(queryDocument.governing_authority)}, expected ref ${JSON.stringify(active.ref)}`);
 const supersededRefs = (authority.superseded || []).map((s) => s.ref).filter(Boolean);
-const excluded = asSet(answers.excluded_superseded);
+const excluded = asSet(answerDocument.excluded_superseded);
 const missing = supersededRefs.filter((r) => !excluded.has(r));
 record("excluded_superseded", missing.length === 0,
   missing.length ? `superseded refs not excluded: ${missing.join(", ")}` : "all superseded refs excluded");
 
 const contentAddress = /^sha256:[0-9a-f]{64}$/;
 const validateRequired = (field, singular, records) => {
-  const required = queries[field];
+  const required = queryDocument[field];
   const values = Array.isArray(required) ? required : [];
   const nonempty = Array.isArray(required) && required.length > 0;
   record(
@@ -148,36 +178,118 @@ const requiredNonClaims = validateRequired(
   "non_claim",
   nonClaimRecords
 );
-const queryList = Array.isArray(queries.queries) ? queries.queries : [];
-const queriesNonempty = Array.isArray(queries.queries) && queries.queries.length > 0;
+const queryList = Array.isArray(queryDocument.queries) ? queryDocument.queries : [];
+const queriesNonempty = Array.isArray(queryDocument.queries)
+  && queryDocument.queries.length > 0;
 record(
   "queries_nonempty",
   queriesNonempty,
-  queriesNonempty ? `queries contains ${queries.queries.length} item(s)` : "queries must be a nonempty array"
+  queriesNonempty
+    ? `queries contains ${queryDocument.queries.length} item(s)`
+    : "queries must be a nonempty array"
 );
 
-const given = answers.answers || {};
+const querySchemas = [];
+const validQueryIds = [];
 for (const [index, q] of queryList.entries()) {
-  if (!q || typeof q !== "object" || Array.isArray(q) || typeof q.id !== "string") {
-    record(`query_structure:${index}`, false, "query must be an object with a string id");
+  const objectOk = isRecord(q);
+  record(
+    `query_object:${index}`,
+    objectOk,
+    objectOk ? "query is an object" : "query must be an object"
+  );
+  if (!objectOk) {
     continue;
   }
-  const v = given[q.id];
-  let ok;
-  if (v === undefined) ok = false;
-  else if (q.answer_kind === "set") ok = setEq(v, q.expected);
-  else if (q.answer_kind === "boolean" || q.answer_kind === "enum") ok = v === q.expected;
-  else ok = false;
-  record(`answer:${q.id}`, ok, ok ? "match" : `got ${JSON.stringify(v)} expected ${JSON.stringify(q.expected)}`);
+  const idOk = isNonemptyString(q.id) && q.id === q.id.trim();
+  record(
+    `query_id:${index}`,
+    idOk,
+    idOk ? `query id is ${q.id}` : "query id must be a nonempty trimmed string"
+  );
+  if (idOk) validQueryIds.push(q.id);
+  const textOk = isNonemptyString(q.query) && q.query === q.query.trim();
+  record(
+    `query_text:${index}`,
+    textOk,
+    textOk ? "query text is nonempty" : "query text must be a nonempty trimmed string"
+  );
+  const kindOk = answerKinds.has(q.answer_kind);
+  record(
+    `query_answer_kind:${index}`,
+    kindOk,
+    kindOk
+      ? `answer_kind ${q.answer_kind} is supported`
+      : "answer_kind must be boolean, enum, or set"
+  );
+  const expectedOk = kindOk && matchesAnswerKind(q.answer_kind, q.expected);
+  record(
+    `query_expected_type:${index}`,
+    expectedOk,
+    expectedOk
+      ? `expected is ${expectedType(q.answer_kind)}`
+      : `expected must be ${kindOk ? expectedType(q.answer_kind) : "typed for a supported answer_kind"}`
+  );
+  querySchemas.push({ q, idOk, textOk, kindOk, expectedOk });
 }
-for (const id of requiredInvariants) record(`invariant_read:${id}`, asSet(answers.invariants_read).has(id), `invariant ${id} not acknowledged`);
-for (const id of requiredNonClaims) record(`non_claim_read:${id}`, asSet(answers.non_claims_read).has(id), `non-claim ${id} not acknowledged`);
+const queryIdsUnique = new Set(validQueryIds).size === validQueryIds.length;
+record(
+  "query_ids_unique",
+  queryIdsUnique,
+  queryIdsUnique ? "query IDs are unique" : "query IDs must be unique"
+);
+
+const givenOk = isRecord(answerDocument.answers);
+record(
+  "answers_object",
+  givenOk,
+  givenOk ? "answers is an object" : "answers must be an object keyed by query ID"
+);
+const given = givenOk ? answerDocument.answers : {};
+for (const { q, idOk, textOk, kindOk, expectedOk } of querySchemas) {
+  if (!idOk || !kindOk || !queryIdsUnique) continue;
+  const value = given[q.id];
+  const answerTypeOk = Object.hasOwn(given, q.id)
+    && matchesAnswerKind(q.answer_kind, value);
+  record(
+    `answer_type:${q.id}`,
+    answerTypeOk,
+    answerTypeOk
+      ? `answer is ${expectedType(q.answer_kind)}`
+      : `answer must be ${expectedType(q.answer_kind)}`
+  );
+  if (!textOk || !expectedOk || !answerTypeOk) continue;
+  const ok = q.answer_kind === "set"
+    ? setEq(value, q.expected)
+    : value === q.expected;
+  record(
+    `answer:${q.id}`,
+    ok,
+    ok ? "match" : `got ${JSON.stringify(value)} expected ${JSON.stringify(q.expected)}`
+  );
+}
+for (const id of requiredInvariants) {
+  const acknowledged = asSet(answerDocument.invariants_read).has(id);
+  record(
+    `invariant_read:${id}`,
+    acknowledged,
+    `invariant ${id} ${acknowledged ? "acknowledged" : "not acknowledged"}`
+  );
+}
+for (const id of requiredNonClaims) {
+  const acknowledged = asSet(answerDocument.non_claims_read).has(id);
+  record(
+    `non_claim_read:${id}`,
+    acknowledged,
+    `non-claim ${id} ${acknowledged ? "acknowledged" : "not acknowledged"}`
+  );
+}
 
 const passed = failures.length === 0;
 const artifact = {
   gate: "comprehension-gate",
-  component: queries.component || null,
-  reader: answers.reader || null,
+  component: queryDocument.component || null,
+  reader: answerDocument.reader || null,
   active_authority: { ref: active.ref, path: active.path, sha256: active.sha256 },
   authority_hash_verified: true,
   comprehension_checks: { passed: checks.filter((c) => c.ok).length, failed: failures.length, checks },

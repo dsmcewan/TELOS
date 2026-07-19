@@ -110,15 +110,265 @@ export function isPortableExecutablePath(value) {
     && /\.(?:cjs|js|mjs)$/.test(segments.at(-1));
 }
 
+const isIdentifierStart = (character) => /[A-Za-z_$]/.test(character);
+const isIdentifierPart = (character) => /[A-Za-z0-9_$]/.test(character);
+const REGEX_PREFIX_KEYWORDS = new Set([
+  "await",
+  "case",
+  "delete",
+  "do",
+  "else",
+  "in",
+  "instanceof",
+  "new",
+  "of",
+  "return",
+  "throw",
+  "typeof",
+  "void",
+  "yield"
+]);
+const TWO_CHARACTER_PUNCTUATORS = new Set([
+  "&&",
+  "++",
+  "--",
+  "=>",
+  "==",
+  ">=",
+  "<=",
+  "!=",
+  "??",
+  "||",
+  "?."
+]);
+
+function regexMayStart(previous) {
+  if (!previous) return true;
+  if (previous.type === "identifier") {
+    return REGEX_PREFIX_KEYWORDS.has(previous.value);
+  }
+  return previous.type === "punctuator"
+    && ![")", "]", "}", ".", "++", "--"].includes(previous.value);
+}
+
+function javascriptTokens(source) {
+  const tokens = [];
+  let index = 0;
+  let previous = null;
+
+  const push = (type, value) => {
+    const token = { type, value };
+    tokens.push(token);
+    previous = token;
+  };
+
+  const scanQuotedString = () => {
+    const quote = source[index];
+    let value = "";
+    index++;
+    while (index < source.length) {
+      const character = source[index];
+      if (character === "\\") {
+        value += source.slice(index, index + 2);
+        index += 2;
+      } else if (character === quote) {
+        index++;
+        break;
+      } else {
+        value += character;
+        index++;
+      }
+    }
+    push("string", value);
+  };
+
+  const scanRegex = () => {
+    let inCharacterClass = false;
+    index++;
+    while (index < source.length) {
+      const character = source[index];
+      if (character === "\\") {
+        index += 2;
+      } else if (character === "[") {
+        inCharacterClass = true;
+        index++;
+      } else if (character === "]") {
+        inCharacterClass = false;
+        index++;
+      } else if (character === "/" && !inCharacterClass) {
+        index++;
+        while (/[A-Za-z]/.test(source[index] || "")) index++;
+        break;
+      } else if (character === "\n" || character === "\r") {
+        break;
+      } else {
+        index++;
+      }
+    }
+    push("regex", "/");
+  };
+
+  let scanCode;
+  const scanTemplate = () => {
+    index++;
+    while (index < source.length) {
+      const character = source[index];
+      if (character === "\\") {
+        index += 2;
+      } else if (character === "`") {
+        index++;
+        push("template", "");
+        return;
+      } else if (character === "$" && source[index + 1] === "{") {
+        index += 2;
+        previous = null;
+        scanCode(true);
+      } else {
+        index++;
+      }
+    }
+    push("template", "");
+  };
+
+  scanCode = (stopAtTemplateBrace = false) => {
+    let braceDepth = 0;
+    while (index < source.length) {
+      const character = source[index];
+      if (/\s/.test(character)) {
+        index++;
+        continue;
+      }
+      if (character === "/" && source[index + 1] === "/") {
+        index += 2;
+        while (index < source.length && !/[\r\n]/.test(source[index])) index++;
+        continue;
+      }
+      if (character === "/" && source[index + 1] === "*") {
+        index += 2;
+        while (index < source.length
+          && !(source[index] === "*" && source[index + 1] === "/")) {
+          index++;
+        }
+        index = Math.min(index + 2, source.length);
+        continue;
+      }
+      if (stopAtTemplateBrace && character === "}" && braceDepth === 0) {
+        index++;
+        return;
+      }
+      if (character === "'" || character === "\"") {
+        scanQuotedString();
+        continue;
+      }
+      if (character === "`") {
+        scanTemplate();
+        continue;
+      }
+      if (isIdentifierStart(character)) {
+        const start = index;
+        index++;
+        while (isIdentifierPart(source[index] || "")) index++;
+        push("identifier", source.slice(start, index));
+        continue;
+      }
+      if (/[0-9]/.test(character)) {
+        const start = index;
+        index++;
+        while (/[A-Za-z0-9_.]/.test(source[index] || "")) index++;
+        push("number", source.slice(start, index));
+        continue;
+      }
+      if (character === "/" && regexMayStart(previous)) {
+        scanRegex();
+        continue;
+      }
+      const pair = source.slice(index, index + 2);
+      const punctuator = TWO_CHARACTER_PUNCTUATORS.has(pair)
+        ? pair
+        : character;
+      index += punctuator.length;
+      push("punctuator", punctuator);
+      if (stopAtTemplateBrace && punctuator === "{") {
+        braceDepth++;
+      } else if (stopAtTemplateBrace && punctuator === "}") {
+        braceDepth--;
+      }
+    }
+  };
+
+  scanCode();
+  return tokens;
+}
+
+function afterBalanced(tokens, index, open, close) {
+  let depth = 0;
+  for (let cursor = index; cursor < tokens.length; cursor++) {
+    if (tokens[cursor].value === open) depth++;
+    if (tokens[cursor].value === close) {
+      depth--;
+      if (depth === 0) return cursor + 1;
+    }
+  }
+  return tokens.length;
+}
+
+function importDeclarationSpecifier(tokens, index) {
+  let cursor = index + 1;
+  if (tokens[cursor]?.type === "string") return tokens[cursor].value;
+  if (tokens[cursor]?.value === ".") return null;
+  if (tokens[cursor]?.value === "(") {
+    return tokens[cursor + 1]?.type === "string"
+      && [")", ","].includes(tokens[cursor + 2]?.value)
+      ? tokens[cursor + 1].value
+      : null;
+  }
+
+  if (tokens[cursor]?.type === "identifier") {
+    cursor++;
+    if (tokens[cursor]?.value === ",") cursor++;
+  }
+  if (tokens[cursor]?.value === "*") {
+    cursor++;
+    if (tokens[cursor]?.value === "as") cursor += 2;
+  } else if (tokens[cursor]?.value === "{") {
+    cursor = afterBalanced(tokens, cursor, "{", "}");
+  }
+  return tokens[cursor]?.value === "from" && tokens[cursor + 1]?.type === "string"
+    ? tokens[cursor + 1].value
+    : null;
+}
+
+function exportDeclarationSpecifier(tokens, index) {
+  let cursor = index + 1;
+  if (tokens[cursor]?.value === "*") {
+    cursor++;
+    if (tokens[cursor]?.value === "as") cursor += 2;
+  } else if (tokens[cursor]?.value === "{") {
+    cursor = afterBalanced(tokens, cursor, "{", "}");
+  } else {
+    return null;
+  }
+  return tokens[cursor]?.value === "from" && tokens[cursor + 1]?.type === "string"
+    ? tokens[cursor + 1].value
+    : null;
+}
+
 export function importSpecifiers(source) {
+  const tokens = javascriptTokens(source);
   const found = [];
-  const patterns = [
-    /\bfrom\s+["']([^"']+)["']/g,
-    /\bimport\s+["']([^"']+)["']/g,
-    /\bimport\s*\(\s*["']([^"']+)["']\s*\)/g
-  ];
-  for (const pattern of patterns) {
-    for (const match of source.matchAll(pattern)) found.push(match[1]);
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const previousToken = tokens[index - 1];
+    if (token.type !== "identifier"
+      || (previousToken?.value === "." || previousToken?.value === "?.")) {
+      continue;
+    }
+    const specifier = token.value === "import"
+      ? importDeclarationSpecifier(tokens, index)
+      : token.value === "export"
+        ? exportDeclarationSpecifier(tokens, index)
+        : null;
+    if (specifier !== null) found.push(specifier);
   }
   return found;
 }
@@ -132,7 +382,8 @@ export function packageBoundaryProblems(root) {
     return [error.message];
   }
   const dependencies = packageJson?.dependencies;
-  if (!dependencies
+  if (!Object.hasOwn(packageJson || {}, "dependencies")
+    || !dependencies
     || typeof dependencies !== "object"
     || Array.isArray(dependencies)
     || Object.keys(dependencies).length > 0) {
@@ -142,6 +393,35 @@ export function packageBoundaryProblems(root) {
     problems.push(
       `package.json runtime dependencies must be an empty object${names.length ? `: ${names.join(", ")}` : ""}`
     );
+  }
+  for (const field of ["optionalDependencies", "peerDependencies"]) {
+    if (!Object.hasOwn(packageJson || {}, field)) continue;
+    const declarations = packageJson[field];
+    const valid = declarations
+      && typeof declarations === "object"
+      && !Array.isArray(declarations)
+      && Object.keys(declarations).length === 0;
+    if (!valid) {
+      const names = declarations
+        && typeof declarations === "object"
+        && !Array.isArray(declarations)
+        ? Object.keys(declarations).sort()
+        : [];
+      problems.push(
+        `package.json ${field} must be absent or an empty object${names.length ? `: ${names.join(", ")}` : ""}`
+      );
+    }
+  }
+  for (const field of ["bundledDependencies", "bundleDependencies"]) {
+    if (!Object.hasOwn(packageJson || {}, field)) continue;
+    const declarations = packageJson[field];
+    if (!((Array.isArray(declarations) && declarations.length === 0)
+      || declarations === false)) {
+      const names = Array.isArray(declarations) ? declarations : [];
+      problems.push(
+        `package.json ${field} must be absent, false, or an empty array${names.length ? `: ${names.join(", ")}` : ""}`
+      );
+    }
   }
 
   const scripts = path.join(root, "scripts");
@@ -159,7 +439,7 @@ export function packageBoundaryProblems(root) {
         problems.push(`${path.relative(root, file)}: script scan does not follow symlinks`);
       } else if (entry.isDirectory()) {
         walk(file);
-      } else if (entry.isFile() && entry.name.endsWith(".mjs")) {
+      } else if (entry.isFile() && /\.(?:cjs|js|mjs)$/.test(entry.name)) {
         let source;
         try {
           source = readFileSync(file, "utf8");

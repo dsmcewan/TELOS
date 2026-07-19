@@ -44,9 +44,12 @@ of the machine records, never the source of truth themselves.
 4. **Machine-first, human-rendered.** The machine records (JSON, or any structured
    format a script can parse) are the source of truth. `INVARIANTS.md` and
    `NON-CLAIMS.md` are byte-derived from their JSON records by a deterministic renderer,
-   so they cannot silently drift out of sync with what is actually enforced. After
-   changing a record, recompute its content-addressed `id` and regenerate the rendered
-   Markdown. Never hand-edit facts into a rendered `.md` file.
+   so they cannot silently drift out of sync with what is actually enforced.
+   `INVARIANTS.json` contains only `kind: "invariant"` records and
+   `NON-CLAIMS.json` only `kind: "non-claim"` records; a valid record of another kind
+   is still invalid in the wrong container. After changing a record, recompute its
+   content-addressed `id` and regenerate the rendered Markdown. Never hand-edit facts
+   into a rendered `.md` file.
 
 5. **Reading ≠ understanding.** A model having read the documentation is not the same
    as a model having understood it correctly enough to act. No implementation authority
@@ -140,6 +143,11 @@ speculative extras. Each is a first-class rule, not a suggestion.
    A comprehension document must contain at least one query, plus nonempty
    `required_invariants` and `required_non_claims` arrays. Those arrays contain unique,
    valid content addresses that resolve to sibling machine records of the correct kind.
+   Each query has a unique nonempty trimmed `id`, nonempty trimmed `query` text,
+   `answer_kind` exactly `boolean`, `enum`, or `set`, and an `expected` value whose
+   type is respectively boolean, string, or array. A submitted answer must have that
+   same exact type before the gate compares it; two equally mistyped values never
+   constitute comprehension.
    A missing, malformed, unreadable, or unresolved `derived_from` pointer is a FAIL, as
    is a resolved value that does not equal `expected`.
 

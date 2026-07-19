@@ -14,9 +14,10 @@ why they happened, and in what order to fix them.
    - `node ${CLAUDE_PLUGIN_ROOT}/scripts/audit.mjs <scope>` (default scope `.`)
    - `node ${CLAUDE_PLUGIN_ROOT}/scripts/verify.mjs <verify-map.json>` when the host repo has one
    Audit validates record structure, lifecycle and decision provenance, content-addressed IDs,
-   byte-derived Markdown, nonempty required-record resolution, derivations, staleness, physical
-   record containment, and that declared oracle paths exist. Verify executes each contract's
-   declared oracle and independently refuses hidden symlinked record sets.
+   container-specific kinds, byte-derived Markdown, nonempty required-record resolution,
+   derivations, staleness, physical record containment, and that declared oracle paths exist.
+   Verify executes each contract's declared oracle and independently refuses hidden symlinked
+   record sets.
 2. Read every finding. Do not summarize before you have looked at each one — a summary written
    before reading the full set is a guess, not an audit.
 3. **Rank by blast radius**, not by order of appearance. A dangling authority anchor (a record

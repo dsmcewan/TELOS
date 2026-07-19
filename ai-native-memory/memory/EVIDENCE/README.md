@@ -14,8 +14,9 @@ substitute for running the oracles yourself — this is an index, not a cache of
 
 - `tests/oracle-plugin-contract.mjs` — the terminating oracle named by both
   `memory/CONTRACTS/plugin.json` and `verify-map.json`; it directly checks the contract's
-  `zero_dependencies` flag, the empty runtime-dependency set, and the complete script-import
-  boundary, then runs the five non-dogfood tests. This avoids recursive self-verification without
+  `zero_dependencies` flag, the explicit empty `dependencies` object, the absence of declarations
+  in other runtime dependency fields, and the complete `.js`/`.cjs`/`.mjs` script-import boundary,
+  then runs the five non-dogfood tests. This avoids recursive self-verification without
   substituting an unrelated oracle.
 - `tests/test-lib.mjs` — the vendored primitives (`canonicalize`, `sha256hex`, `contentAddress`,
   package-boundary inspection, `finding`, and `printFindings`) behave as specified, including
@@ -25,8 +26,9 @@ substitute for running the oracles yourself — this is an index, not a cache of
   `tests/fixtures/audit/`; every check is proven capable of both passing and failing.
 - `tests/test-gate.mjs` — a passing answer set GRANTs, a wrong answer DENIES, a missing
   superseded-exclusion DENIES, empty/duplicate/dangling/wrong-kind required records DENY, missing
-  sibling machine records make the gate refuse to run, and a drifted authority document makes the
-  gate refuse to run.
+  sibling machine records make the gate refuse to run, malformed query schemas and mistyped
+  submitted answers DENY, successful acknowledgements report success accurately, and a drifted
+  authority document makes the gate refuse to run.
 - `tests/test-verify.mjs` — an all-green verify-map exits `0`; a failing oracle and a missing
   contract each exit `2`; hidden symlinked record sets and escaping primary contract records are
   findings; an isolated fake runtime dependency makes the terminating plugin oracle fail.
@@ -38,4 +40,6 @@ substitute for running the oracles yourself — this is an index, not a cache of
   `memory/answers-example.json`, and `CURRENT-AUTHORITY.json`, then requires the passing answers to
   GRANT and one flipped answer to DENY; invokes `verify.mjs` against `verify-map.json` and requires
   all declared contract oracles to pass; and scans static, side-effect, and string-literal dynamic
-  imports in every script under `scripts/`, allowing only `node:*` or relative in-plugin paths.
+  imports and re-exports in every `.js`, `.cjs`, and `.mjs` script under `scripts/`, allowing only
+  `node:*` or relative in-plugin paths. An isolated fake package proves both direct dogfood and the
+  terminating oracle reject the same boundary violations without recursion.

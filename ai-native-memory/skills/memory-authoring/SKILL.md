@@ -28,9 +28,10 @@ repo-level files written on first run:
 - `README.md` — the deterministic index of the generated record set.
 - `IDENTITY.md` — what this component IS and is NOT, in a couple of paragraphs. State
   the boundary plainly.
-- `INVARIANTS.json` + `INVARIANTS.md` — the machine record and its rendered projection.
+- `INVARIANTS.json` + `INVARIANTS.md` — `kind: "invariant"` machine records and their
+  rendered projection.
 - `NON-CLAIMS.json` + `NON-CLAIMS.md` — likewise, for what this component deliberately
-  does not do or prove.
+  does not do or prove; every entry has `kind: "non-claim"`.
 - `CONTRACTS/*.json` — one file per frozen interface or protocol.
 - `DECISIONS/rejected-alternatives.md` — paths considered and not taken.
 - `FAILURE-MODES.md` — how this component fails, and that it fails closed.
@@ -120,7 +121,13 @@ Every entry in `comprehension-queries.json` that asserts an `expected` fact must
 a `derived_from` pointer into the machine record that fact comes from, e.g.:
 
 ```json
-{ "id": "q-1", "expected": "...", "derived_from": { "file": "CONTRACTS/example.json", "pointer": "status" } }
+{
+  "id": "q-1",
+  "query": "What is the current contract status?",
+  "answer_kind": "enum",
+  "expected": "NORMATIVE-CURRENT",
+  "derived_from": { "file": "CONTRACTS/example.json", "pointer": "status" }
+}
 ```
 
 `derived_from.file` names the machine file, `derived_from.pointer` is the path into it
@@ -136,7 +143,10 @@ The query document itself is load-bearing. `queries`, `required_invariants`, and
 unique `sha256:<64hex>` content addresses that resolve against the sibling
 `INVARIANTS.json` or `NON-CLAIMS.json` record of the correct kind. The gate treats a
 missing or malformed sibling file as cannot-run, and it DENIES empty, duplicate,
-invalid, dangling, or wrong-kind required IDs.
+invalid, dangling, or wrong-kind required IDs. Every query needs a unique nonempty
+trimmed `id`, nonempty trimmed `query` text, and `answer_kind` exactly `boolean`,
+`enum`, or `set`. Its `expected` value is respectively a boolean, string, or array,
+and the submitted answer must have that same exact type before equality is graded.
 
 ## `mirror_of` + `values` on mirrored sets (hardening 4)
 
