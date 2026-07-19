@@ -34,7 +34,7 @@ assert.match(sha256hex("x"), /^[0-9a-f]{64}$/);
 const rec = { kind: "invariant", statement: "s", id: "sha256:junk" };
 const { id, ...rest } = rec;
 assert.equal(contentAddress(rec), "sha256:" + sha256hex(canonicalize(rest)));
-// shared record, rendering, path-safety, and literal-import primitives
+// shared record, rendering, path-safety, and grammar-aware import-analysis primitives
 const addressed = { kind: "invariant", statement: "s" };
 addressed.id = contentAddress(addressed);
 assert.equal(hasValidContentAddress(addressed), true);
@@ -87,8 +87,19 @@ assert.deepEqual(
 const reviewerSource = [
   'import café from "external-unicode";',
   'import \\u0062inding from "external-escaped-binding";',
+  'import source moduleValue from "external-source";',
+  'import.source("external-source-call");',
+  'import defer * as deferredModule from "external-defer";',
+  'import.defer("external-defer-call");',
   'if (ready) /import("regex-only")/.test(value);',
   'if (ready) {} /import("regex-after-block")/.test(value);',
+  'function declared() {} /import("regex-function-only")/.test(value);',
+  'class Declared {} /import("regex-class-only")/.test(value);',
+  'labeled: {}; /import("regex-labeled-only")/.test(value);',
+  'while (ready) { break\n/import("regex-break-only")/.test(value); }',
+  'while (ready) { continue\n/import("regex-continue-only")/.test(value); }',
+  'const objectMethods = { import(value = "object-method-default") { return value; } };',
+  'class MethodNames { import(value = "class-method-default") { return value; } }',
   'await import(("external-parenthesized"));',
   'await import(`external-template`);',
   'const ordinaryTemplate = `import("template-value-only")`; ',
@@ -99,10 +110,23 @@ assert.deepEqual(
   [
     "external-unicode",
     "external-escaped-binding",
-    "external-parenthesized",
+    "external-source",
+    "external-source-call",
+    "external-defer",
+    "external-defer-call",
     "external-template"
   ],
-  "the import scanner must handle valid identifiers and literal dynamic forms without reading regex/template text"
+  "grammar-aware import analysis must recognize every import phase without reading methods, regex, or template text"
+);
+const hashbangSource = [
+  "#!/usr/bin/env node",
+  '; /import("regex-hashbang-only")/.test(value);',
+  'import "external-after-hashbang";'
+].join("\n");
+assert.deepEqual(
+  importSpecifiers(hashbangSource),
+  ["external-after-hashbang"],
+  "a leading hashbang and the following regex are not import records"
 );
 const packageRoot = mkdtempSync(path.join(tmpdir(), "anm-boundary-"));
 try {
@@ -159,6 +183,10 @@ try {
     `${reviewerSource}\n`
   );
   writeFileSync(
+    path.join(packageRoot, "scripts", "hashbang-cases.mjs"),
+    `${hashbangSource}\n`
+  );
+  writeFileSync(
     path.join(packageRoot, "scripts", "unverifiable.mjs"),
     [
       "await import(`external-${runtimeSelected}`);",
@@ -166,6 +194,10 @@ try {
       "await import(runtimeSelected);",
       "await import((runtimeSelected));"
     ].join("\n")
+  );
+  writeFileSync(
+    path.join(packageRoot, "scripts", "parser-error.mjs"),
+    'import "unterminated\n'
   );
   const executableProblems = packageBoundaryProblems(packageRoot);
   for (const specifier of [
@@ -175,8 +207,12 @@ try {
     "external-reexport",
     "external-unicode",
     "external-escaped-binding",
-    "external-parenthesized",
-    "external-template"
+    "external-source",
+    "external-source-call",
+    "external-defer",
+    "external-defer-call",
+    "external-template",
+    "external-after-hashbang"
   ]) {
     assert.ok(
       executableProblems.some((problem) =>
@@ -189,12 +225,18 @@ try {
     executableProblems.filter((problem) =>
       problem.includes("cannot statically verify dynamic import")
     ).length,
-    4,
-    "every real dynamic import that cannot reduce to one literal string must fail closed"
+    5,
+    "every real import without a lexer-resolved specifier must fail closed, including parenthesized literals"
+  );
+  assert.ok(
+    executableProblems.some((problem) =>
+      problem.includes("parser-error.mjs: cannot parse JavaScript module")
+    ),
+    "lexer parse errors are deterministic package-boundary problems"
   );
   assert.equal(
     executableProblems.some((problem) =>
-      /regex-only|template-value-only/.test(problem)
+      /regex-(?:only|after-block|function-only|class-only|labeled-only|break-only|continue-only|hashbang-only)|template-value-only/.test(problem)
     ),
     false,
     "regex and ordinary-template contents are not executable imports"

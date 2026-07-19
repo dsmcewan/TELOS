@@ -88,6 +88,13 @@ try {
     "await import(runtimeSelected);\n"
   );
   writeFileSync(
+    path.join(fakeRoot, "scripts", "grammar.mjs"),
+    [
+      'import source moduleValue from "external-source";',
+      'const methods = { import(value = "method-default") { return value; } };'
+    ].join("\n")
+  );
+  writeFileSync(
     path.join(fakeRoot, "memory", "CONTRACTS", "plugin.json"),
     JSON.stringify({ zero_dependencies: true })
   );
@@ -121,6 +128,12 @@ try {
       directUnverifiableDynamicRejected: fakeProblems.some((problem) =>
         problem.includes("cannot statically verify dynamic import")
       ),
+      directSourcePhaseRejected: fakeProblems.some((problem) =>
+        problem.includes("non-portable import external-source")
+      ),
+      methodNameNotRejected: !fakeProblems.some((problem) =>
+        problem.startsWith("scripts/grammar.mjs: cannot statically verify")
+      ),
       oracleStatus: terminatingOracle.status,
       oracleSignal: terminatingOracle.signal,
       oracleSpawnError: terminatingOracle.error?.message || null,
@@ -129,17 +142,21 @@ try {
       ),
       oracleReportedUnverifiableDynamic:
         /cannot statically verify dynamic import/.test(terminatingOracle.stderr),
+      oracleReportedSourcePhase: /external-source/.test(terminatingOracle.stderr),
       oracleRemainedTerminating: /6\/7 checks passed/.test(terminatingOracle.stdout)
     },
     {
       directJsImportRejected: true,
       directOptionalDependencyRejected: true,
       directUnverifiableDynamicRejected: true,
+      directSourcePhaseRejected: true,
+      methodNameNotRejected: true,
       oracleStatus: 1,
       oracleSignal: null,
       oracleSpawnError: null,
       oracleReportedBoundary: true,
       oracleReportedUnverifiableDynamic: true,
+      oracleReportedSourcePhase: true,
       oracleRemainedTerminating: true
     }
   );
