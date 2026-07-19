@@ -204,7 +204,14 @@ function auditQueryFreshness(dir, out, root) {
       continue;
     }
     if (!existsSync(src)) { out.push(finding("FAIL", "query-freshness", where, `query ${query.id}: derived_from file missing: ${query.derived_from.file}`)); continue; }
-    const actual = dig(readAuditJson(src), query.derived_from.pointer);
+    let actual;
+    try {
+      actual = dig(readAuditJson(src), query.derived_from.pointer);
+    } catch (error) {
+      if (!(error instanceof AuditCannotRunError)) throw error;
+      out.push(finding("FAIL", "query-freshness", where, `query ${query.id}: ${error.message}`));
+      continue;
+    }
     if (actual === undefined) { out.push(finding("FAIL", "query-freshness", where, `query ${query.id}: derived_from pointer missing: ${query.derived_from.pointer}`)); continue; }
     const expected = query.answer_kind === "set" ? [...(query.expected || [])].sort() : query.expected;
     const got = query.answer_kind === "set" && Array.isArray(actual) ? [...actual].sort() : actual;

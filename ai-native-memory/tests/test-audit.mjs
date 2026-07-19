@@ -139,6 +139,21 @@ try {
   assert.equal(malformedResult.status, 1, malformedResult.stdout + malformedResult.stderr);
   assert.match(malformedResult.stderr, /^AUDIT_ERROR:/);
 
+  const malformedDerivedJson = stage("passing", (root) => {
+    const derived = path.join(root, "comp", "memory", "DERIVED");
+    mkdirSync(derived);
+    writeFileSync(path.join(derived, "invalid.json"), "{\n");
+    const file = path.join(root, "comp", "memory", "comprehension-queries.json");
+    const document = JSON.parse(readFileSync(file, "utf8"));
+    document.queries[0].derived_from.file = "DERIVED/invalid.json";
+    writeJson(file, document);
+  });
+  const malformedDerivedResult = auditCli(malformedDerivedJson);
+  assert.equal(malformedDerivedResult.status, 2, malformedDerivedResult.stdout + malformedDerivedResult.stderr);
+  assert.match(malformedDerivedResult.stdout, /"level":"FAIL","check":"query-freshness"/);
+  assert.match(malformedDerivedResult.stdout, /invalid JSON/);
+  assert.match(malformedDerivedResult.stdout, /audit: 1 FAIL, \d+ WARN/);
+
   const unavailableGit = stage("passing", (root) => {
     rmSync(path.join(root, "CURRENT-AUTHORITY.json"));
     const file = path.join(root, "comp", "memory", "CONTRACTS", "example.json");
