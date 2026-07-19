@@ -9,7 +9,6 @@ import {
   readlinkSync,
   readdirSync,
   rmSync,
-  symlinkSync,
   writeFileSync
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -21,6 +20,7 @@ import {
   renderRecordList,
   sha256hex
 } from "../scripts/lib/record.mjs";
+import { symlinkOrSkip } from "./lib/symlink.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const INIT = path.join(HERE, "..", "scripts", "init.mjs");
@@ -166,11 +166,17 @@ try {
 
   const symlinkRoot = makeRoot("anm symlink ");
   const outside = makeRoot("anm outside ");
-  symlinkSync(outside, path.join(symlinkRoot, "linked"), "dir");
-  const symlinkResult = runInit(symlinkRoot, "linked/widget");
-  assert.notEqual(symlinkResult.status, 0, symlinkResult.stdout + symlinkResult.stderr);
-  assert.equal(existsSync(path.join(symlinkRoot, "MEMORY-MANIFEST.json")), false);
-  assert.deepEqual(readdirSync(outside), [], "symlink escape wrote nothing outside");
+  const directorySymlinkCreated = symlinkOrSkip(
+    outside,
+    path.join(symlinkRoot, "linked"),
+    { type: "dir", label: "init component directory escape" }
+  );
+  if (directorySymlinkCreated) {
+    const symlinkResult = runInit(symlinkRoot, "linked/widget");
+    assert.notEqual(symlinkResult.status, 0, symlinkResult.stdout + symlinkResult.stderr);
+    assert.equal(existsSync(path.join(symlinkRoot, "MEMORY-MANIFEST.json")), false);
+    assert.deepEqual(readdirSync(outside), [], "symlink escape wrote nothing outside");
+  }
 
   const lifecycleRoot = makeRoot();
   const base = runInit(lifecycleRoot);
@@ -289,20 +295,26 @@ try {
   const danglingOutside = makeRoot("anm dangling outside ");
   const danglingTarget = path.join(danglingOutside, "missing-manifest.json");
   const danglingManifestPath = path.join(danglingManifestRoot, "MEMORY-MANIFEST.json");
-  symlinkSync(danglingTarget, danglingManifestPath);
-  const danglingManifest = runInit(danglingManifestRoot, "widget");
-  assert.notEqual(danglingManifest.status, 0, danglingManifest.stdout + danglingManifest.stderr);
-  assert.equal(lstatSync(danglingManifestPath).isSymbolicLink(), true);
-  assert.equal(readlinkSync(danglingManifestPath), danglingTarget);
-  assert.deepEqual(readdirSync(danglingOutside), [], "dangling manifest target remains untouched");
-  assert.equal(existsSync(path.join(danglingManifestRoot, "widget")), false);
+  const danglingManifestCreated = symlinkOrSkip(
+    danglingTarget,
+    danglingManifestPath,
+    { label: "init dangling manifest" }
+  );
+  if (danglingManifestCreated) {
+    const danglingManifest = runInit(danglingManifestRoot, "widget");
+    assert.notEqual(danglingManifest.status, 0, danglingManifest.stdout + danglingManifest.stderr);
+    assert.equal(lstatSync(danglingManifestPath).isSymbolicLink(), true);
+    assert.equal(readlinkSync(danglingManifestPath), danglingTarget);
+    assert.deepEqual(readdirSync(danglingOutside), [], "dangling manifest target remains untouched");
+    assert.equal(existsSync(path.join(danglingManifestRoot, "widget")), false);
+  }
 
   function assertCollisionLeavesManifest(setup, label) {
     const root = makeRoot(`anm collision ${label} `);
     assert.equal(runInit(root).status, 0);
     const manifestPath = path.join(root, "MEMORY-MANIFEST.json");
     const manifestBefore = readFileSync(manifestPath);
-    setup(root);
+    if (setup(root) === false) return;
     const result = runInit(root, "widget");
     assert.notEqual(result.status, 0, `${label} must fail:\n${result.stdout}\n${result.stderr}`);
     assert.deepEqual(readFileSync(manifestPath), manifestBefore, `${label}: manifest unchanged`);
@@ -321,7 +333,11 @@ try {
     mkdirSync(path.join(root, "widget", "memory"), { recursive: true });
     const target = path.join(root, "existing-authored-file.md");
     writeFileSync(target, "inside root\n");
-    symlinkSync(target, path.join(root, "widget", "memory", "IDENTITY.md"));
+    return symlinkOrSkip(
+      target,
+      path.join(root, "widget", "memory", "IDENTITY.md"),
+      { label: "init authored file collision" }
+    );
   }, "authored-symlink");
 
   if (process.platform !== "win32") {

@@ -110,8 +110,14 @@ export function isPortableExecutablePath(value) {
     && /\.(?:cjs|js|mjs)$/.test(segments.at(-1));
 }
 
-const isIdentifierStart = (character) => /[A-Za-z_$]/.test(character);
-const isIdentifierPart = (character) => /[A-Za-z0-9_$]/.test(character);
+const IDENTIFIER_START = /[$_\p{ID_Start}]/u;
+const IDENTIFIER_PART = /[$_\u200C\u200D\p{ID_Continue}]/u;
+const isIdentifierStart = (character) =>
+  typeof character === "string" && character.length > 0
+  && IDENTIFIER_START.test(character);
+const isIdentifierPart = (character) =>
+  typeof character === "string" && character.length > 0
+  && IDENTIFIER_PART.test(character);
 const REGEX_PREFIX_KEYWORDS = new Set([
   "await",
   "case",
@@ -128,25 +134,128 @@ const REGEX_PREFIX_KEYWORDS = new Set([
   "void",
   "yield"
 ]);
-const TWO_CHARACTER_PUNCTUATORS = new Set([
+const CONTROL_PAREN_KEYWORDS = new Set([
+  "catch",
+  "for",
+  "if",
+  "switch",
+  "while",
+  "with"
+]);
+const BLOCK_PREFIX_KEYWORDS = new Set([
+  "do",
+  "else",
+  "finally",
+  "try"
+]);
+const PUNCTUATORS = [
+  ">>>=",
+  "&&=",
+  "**=",
+  "...",
+  "===",
+  "!==",
+  ">>>",
+  "<<=",
+  ">>=",
+  "??=",
+  "||=",
+  "=>",
   "&&",
   "++",
   "--",
-  "=>",
   "==",
   ">=",
   "<=",
   "!=",
   "??",
   "||",
-  "?."
-]);
+  "?.",
+  "**",
+  "<<",
+  ">>",
+  "+=",
+  "-=",
+  "*=",
+  "/=",
+  "%=",
+  "&=",
+  "|=",
+  "^="
+];
+
+const isKeyword = (token, value) =>
+  token?.type === "identifier"
+  && token.value === value
+  && token.escaped !== true;
+
+function codePoint(source, index) {
+  const point = source.codePointAt(index);
+  if (point === undefined) return null;
+  const value = String.fromCodePoint(point);
+  return { value, next: index + value.length };
+}
+
+function unicodeEscape(source, index) {
+  if (source[index] !== "\\" || source[index + 1] !== "u") return null;
+  if (source[index + 2] === "{") {
+    const close = source.indexOf("}", index + 3);
+    if (close < 0) return null;
+    const digits = source.slice(index + 3, close);
+    if (!/^[0-9A-Fa-f]{1,6}$/.test(digits)) return null;
+    const point = Number.parseInt(digits, 16);
+    if (point > 0x10FFFF) return null;
+    return { value: String.fromCodePoint(point), next: close + 1 };
+  }
+  const digits = source.slice(index + 2, index + 6);
+  if (!/^[0-9A-Fa-f]{4}$/.test(digits)) return null;
+  return {
+    value: String.fromCodePoint(Number.parseInt(digits, 16)),
+    next: index + 6
+  };
+}
+
+function literalEscape(source, index) {
+  const next = source[index + 1];
+  if (next === "\r" && source[index + 2] === "\n") {
+    return { value: "", next: index + 3 };
+  }
+  if (next === "\n" || next === "\r" || next === "\u2028" || next === "\u2029") {
+    return { value: "", next: index + 2 };
+  }
+  const unicode = unicodeEscape(source, index);
+  if (unicode) return unicode;
+  if (next === "x") {
+    const digits = source.slice(index + 2, index + 4);
+    if (/^[0-9A-Fa-f]{2}$/.test(digits)) {
+      return {
+        value: String.fromCodePoint(Number.parseInt(digits, 16)),
+        next: index + 4
+      };
+    }
+  }
+  const simple = {
+    b: "\b",
+    f: "\f",
+    n: "\n",
+    r: "\r",
+    t: "\t",
+    v: "\v",
+    "0": "\0"
+  };
+  return {
+    value: Object.hasOwn(simple, next) ? simple[next] : (next || ""),
+    next: Math.min(index + 2, source.length)
+  };
+}
 
 function regexMayStart(previous) {
   if (!previous) return true;
   if (previous.type === "identifier") {
-    return REGEX_PREFIX_KEYWORDS.has(previous.value);
+    return previous.escaped !== true
+      && REGEX_PREFIX_KEYWORDS.has(previous.value);
   }
+  if (previous.regexAfter === true) return true;
   return previous.type === "punctuator"
     && ![")", "]", "}", ".", "++", "--"].includes(previous.value);
 }
@@ -155,34 +264,41 @@ function javascriptTokens(source) {
   const tokens = [];
   let index = 0;
   let previous = null;
+  const parenContexts = [];
+  const braceContexts = [];
 
-  const push = (type, value) => {
-    const token = { type, value };
+  const push = (type, value, start, extra = {}) => {
+    const token = { type, value, start, ...extra };
     tokens.push(token);
     previous = token;
+    return token;
   };
 
   const scanQuotedString = () => {
+    const start = index;
     const quote = source[index];
     let value = "";
     index++;
     while (index < source.length) {
       const character = source[index];
       if (character === "\\") {
-        value += source.slice(index, index + 2);
-        index += 2;
+        const escape = literalEscape(source, index);
+        value += escape.value;
+        index = escape.next;
       } else if (character === quote) {
         index++;
         break;
       } else {
-        value += character;
-        index++;
+        const point = codePoint(source, index);
+        value += point.value;
+        index = point.next;
       }
     }
-    push("string", value);
+    push("string", value, start);
   };
 
   const scanRegex = () => {
+    const start = index;
     let inCharacterClass = false;
     index++;
     while (index < source.length) {
@@ -205,29 +321,39 @@ function javascriptTokens(source) {
         index++;
       }
     }
-    push("regex", "/");
+    push("regex", "/", start);
   };
 
   let scanCode;
   const scanTemplate = () => {
+    const start = index;
+    const token = push("template", "", start, { hasInterpolation: false });
+    let value = "";
     index++;
     while (index < source.length) {
       const character = source[index];
       if (character === "\\") {
-        index += 2;
+        const escape = literalEscape(source, index);
+        value += escape.value;
+        index = escape.next;
       } else if (character === "`") {
         index++;
-        push("template", "");
+        token.value = value;
+        previous = token;
         return;
       } else if (character === "$" && source[index + 1] === "{") {
+        token.hasInterpolation = true;
         index += 2;
         previous = null;
         scanCode(true);
       } else {
-        index++;
+        const point = codePoint(source, index);
+        value += point.value;
+        index = point.next;
       }
     }
-    push("template", "");
+    token.value = value;
+    previous = token;
   };
 
   scanCode = (stopAtTemplateBrace = false) => {
@@ -264,30 +390,88 @@ function javascriptTokens(source) {
         scanTemplate();
         continue;
       }
-      if (isIdentifierStart(character)) {
+      const initialPoint = codePoint(source, index);
+      if (initialPoint && isIdentifierStart(initialPoint.value)) {
         const start = index;
-        index++;
-        while (isIdentifierPart(source[index] || "")) index++;
-        push("identifier", source.slice(start, index));
+        let value = initialPoint.value;
+        let escaped = false;
+        let point;
+        index = initialPoint.next;
+        while (index < source.length) {
+          const escape = unicodeEscape(source, index);
+          if (escape && isIdentifierPart(escape.value)) {
+            escaped = true;
+            value += escape.value;
+            index = escape.next;
+            continue;
+          }
+          point = codePoint(source, index);
+          if (!point || !isIdentifierPart(point.value)) break;
+          value += point.value;
+          index = point.next;
+        }
+        push("identifier", value, start, { escaped });
+        continue;
+      }
+      const escapedStart = unicodeEscape(source, index);
+      if (escapedStart && isIdentifierStart(escapedStart.value)) {
+        const start = index;
+        let value = escapedStart.value;
+        index = escapedStart.next;
+        while (index < source.length) {
+          const escape = unicodeEscape(source, index);
+          if (escape && isIdentifierPart(escape.value)) {
+            value += escape.value;
+            index = escape.next;
+            continue;
+          }
+          const point = codePoint(source, index);
+          if (!point || !isIdentifierPart(point.value)) break;
+          value += point.value;
+          index = point.next;
+        }
+        push("identifier", value, start, { escaped: true });
         continue;
       }
       if (/[0-9]/.test(character)) {
         const start = index;
         index++;
         while (/[A-Za-z0-9_.]/.test(source[index] || "")) index++;
-        push("number", source.slice(start, index));
+        push("number", source.slice(start, index), start);
         continue;
       }
       if (character === "/" && regexMayStart(previous)) {
         scanRegex();
         continue;
       }
-      const pair = source.slice(index, index + 2);
-      const punctuator = TWO_CHARACTER_PUNCTUATORS.has(pair)
-        ? pair
-        : character;
+      const start = index;
+      const punctuator = PUNCTUATORS.find((candidate) =>
+        source.startsWith(candidate, index)
+      ) || character;
       index += punctuator.length;
-      push("punctuator", punctuator);
+      let regexAfter = false;
+      if (punctuator === "(") {
+        parenContexts.push(
+          previous?.type === "identifier"
+          && previous.escaped !== true
+          && CONTROL_PAREN_KEYWORDS.has(previous.value)
+        );
+      } else if (punctuator === ")") {
+        regexAfter = parenContexts.pop() === true;
+      } else if (punctuator === "{") {
+        braceContexts.push(
+          !previous
+          || previous.regexAfter === true
+          || (previous.type === "punctuator"
+            && [";", "{"].includes(previous.value))
+          || (previous.type === "identifier"
+            && previous.escaped !== true
+            && BLOCK_PREFIX_KEYWORDS.has(previous.value))
+        );
+      } else if (punctuator === "}") {
+        regexAfter = braceContexts.pop() === true;
+      }
+      push("punctuator", punctuator, start, { regexAfter });
       if (stopAtTemplateBrace && punctuator === "{") {
         braceDepth++;
       } else if (stopAtTemplateBrace && punctuator === "}") {
@@ -312,15 +496,34 @@ function afterBalanced(tokens, index, open, close) {
   return tokens.length;
 }
 
+function literalDynamicSpecifier(tokens, openIndex) {
+  let cursor = openIndex + 1;
+  let wrappers = 0;
+  while (tokens[cursor]?.value === "(") {
+    wrappers++;
+    cursor++;
+  }
+  const literal = tokens[cursor];
+  if (literal?.type !== "string"
+    && !(literal?.type === "template" && literal.hasInterpolation === false)) {
+    return null;
+  }
+  cursor++;
+  for (let count = 0; count < wrappers; count++) {
+    if (tokens[cursor]?.value !== ")") return null;
+    cursor++;
+  }
+  return [")", ","].includes(tokens[cursor]?.value)
+    ? literal.value
+    : null;
+}
+
 function importDeclarationSpecifier(tokens, index) {
   let cursor = index + 1;
   if (tokens[cursor]?.type === "string") return tokens[cursor].value;
   if (tokens[cursor]?.value === ".") return null;
   if (tokens[cursor]?.value === "(") {
-    return tokens[cursor + 1]?.type === "string"
-      && [")", ","].includes(tokens[cursor + 2]?.value)
-      ? tokens[cursor + 1].value
-      : null;
+    return literalDynamicSpecifier(tokens, cursor);
   }
 
   if (tokens[cursor]?.type === "identifier") {
@@ -329,11 +532,11 @@ function importDeclarationSpecifier(tokens, index) {
   }
   if (tokens[cursor]?.value === "*") {
     cursor++;
-    if (tokens[cursor]?.value === "as") cursor += 2;
+    if (isKeyword(tokens[cursor], "as")) cursor += 2;
   } else if (tokens[cursor]?.value === "{") {
     cursor = afterBalanced(tokens, cursor, "{", "}");
   }
-  return tokens[cursor]?.value === "from" && tokens[cursor + 1]?.type === "string"
+  return isKeyword(tokens[cursor], "from") && tokens[cursor + 1]?.type === "string"
     ? tokens[cursor + 1].value
     : null;
 }
@@ -342,25 +545,36 @@ function exportDeclarationSpecifier(tokens, index) {
   let cursor = index + 1;
   if (tokens[cursor]?.value === "*") {
     cursor++;
-    if (tokens[cursor]?.value === "as") cursor += 2;
+    if (isKeyword(tokens[cursor], "as")) cursor += 2;
   } else if (tokens[cursor]?.value === "{") {
     cursor = afterBalanced(tokens, cursor, "{", "}");
   } else {
     return null;
   }
-  return tokens[cursor]?.value === "from" && tokens[cursor + 1]?.type === "string"
+  return isKeyword(tokens[cursor], "from") && tokens[cursor + 1]?.type === "string"
     ? tokens[cursor + 1].value
     : null;
 }
 
-export function importSpecifiers(source) {
+function importAnalysis(source) {
   const tokens = javascriptTokens(source);
-  const found = [];
+  const specifiers = [];
+  const unverifiableDynamicImports = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     const previousToken = tokens[index - 1];
     if (token.type !== "identifier"
-      || (previousToken?.value === "." || previousToken?.value === "?.")) {
+      || token.escaped === true
+      || [".", "?.", "#"].includes(previousToken?.value)) {
+      continue;
+    }
+    if (token.value === "import" && tokens[index + 1]?.value === "(") {
+      const specifier = literalDynamicSpecifier(tokens, index + 1);
+      if (specifier === null) {
+        unverifiableDynamicImports.push(token.start);
+      } else {
+        specifiers.push(specifier);
+      }
       continue;
     }
     const specifier = token.value === "import"
@@ -368,9 +582,13 @@ export function importSpecifiers(source) {
       : token.value === "export"
         ? exportDeclarationSpecifier(tokens, index)
         : null;
-    if (specifier !== null) found.push(specifier);
+    if (specifier !== null) specifiers.push(specifier);
   }
-  return found;
+  return { specifiers, unverifiableDynamicImports };
+}
+
+export function importSpecifiers(source) {
+  return importAnalysis(source).specifiers;
 }
 
 export function packageBoundaryProblems(root) {
@@ -447,12 +665,21 @@ export function packageBoundaryProblems(root) {
           problems.push(`cannot read ${path.relative(root, file)}: ${error.message}`);
           continue;
         }
-        for (const specifier of importSpecifiers(source)) {
+        const analysis = importAnalysis(source);
+        for (const specifier of analysis.specifiers) {
           if (!specifier.startsWith("node:") && !specifier.startsWith(".")) {
             problems.push(
               `${path.relative(root, file)}: non-portable import ${specifier}`
             );
           }
+        }
+        for (const offset of analysis.unverifiableDynamicImports) {
+          const prefix = source.slice(0, offset);
+          const lines = prefix.split(/\r\n|[\n\r\u2028\u2029]/);
+          problems.push(
+            `${path.relative(root, file)}: cannot statically verify dynamic import`
+            + ` at line ${lines.length}, column ${lines.at(-1).length + 1}`
+          );
         }
       }
     }

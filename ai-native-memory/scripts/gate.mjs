@@ -6,12 +6,17 @@
 import { readFileSync, realpathSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import {
+  canonicalize,
   hasValidContentAddress,
   readJson,
   sha256hex
 } from "./lib/record.mjs";
 
 const die = (msg) => { console.error("GATE_ERROR: " + msg); process.exit(1); };
+const isRecord = (value) =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+const isNonemptyString = (value) =>
+  typeof value === "string" && value.trim().length > 0;
 const [, , queriesPath, answersPath, ...rest] = process.argv;
 if (!queriesPath || !answersPath) die("usage: gate.mjs <queries.json> <answers.json> --authority <AUTHORITY.json> [--out <artifact.json>]");
 const flag = (name) => { const i = rest.indexOf(name); return i >= 0 ? rest[i + 1] : null; };
@@ -41,6 +46,25 @@ try { queries = readJson(physicalQueriesPath); answers = readJson(answersPath); 
 catch (e) { die(e.message); }
 
 // 0. authority-drift check (fail-closed)
+if (!Array.isArray(authority?.superseded)) {
+  die("authority.superseded must be an array of {ref} objects");
+}
+const supersededRefs = [];
+const seenSupersededRefs = new Set();
+for (const [index, superseded] of authority.superseded.entries()) {
+  if (!isRecord(superseded)) {
+    die(`authority.superseded[${index}] must be an object with a ref`);
+  }
+  if (!isNonemptyString(superseded.ref)
+    || superseded.ref !== superseded.ref.trim()) {
+    die(`authority.superseded[${index}].ref must be a nonempty trimmed string`);
+  }
+  if (seenSupersededRefs.has(superseded.ref)) {
+    die(`authority.superseded refs must be unique: ${superseded.ref}`);
+  }
+  seenSupersededRefs.add(superseded.ref);
+  supersededRefs.push(superseded.ref);
+}
 const active = authority?.active;
 if (!active || !active.ref || !active.path || !/^sha256:[0-9a-f]{64}$/.test(active.sha256 || "")) die("authority.active {ref,path,sha256} required");
 let real;
@@ -87,10 +111,6 @@ const checks = [];
 const failures = [];
 const record = (id, ok, detail) => { checks.push({ id, ok, detail }); if (!ok) failures.push(`${id}: ${detail}`); };
 const asSet = (a) => new Set(Array.isArray(a) ? a : []);
-const isRecord = (value) =>
-  value !== null && typeof value === "object" && !Array.isArray(value);
-const isNonemptyString = (value) =>
-  typeof value === "string" && value.trim().length > 0;
 const answerKinds = new Set(["boolean", "enum", "set"]);
 const expectedType = (kind) =>
   kind === "set" ? "array" : kind === "enum" ? "string" : kind;
@@ -102,8 +122,8 @@ const matchesAnswerKind = (kind, value) =>
       : kind === "enum" && typeof value === "string";
 const setEq = (a, b) => {
   if (!Array.isArray(a) || !Array.isArray(b)) return false;
-  const x = new Set(a);
-  const y = new Set(b);
+  const x = new Set(a.map(canonicalize));
+  const y = new Set(b.map(canonicalize));
   return x.size === y.size && [...x].every((value) => y.has(value));
 };
 const queryDocument = isRecord(queries) ? queries : {};
@@ -123,7 +143,6 @@ record("resolved_active_authority", answerDocument.resolved_authority_ref === ac
   `reader resolved ${JSON.stringify(answerDocument.resolved_authority_ref)}, expected ${JSON.stringify(active.ref)}`);
 record("queries_bound_to_active", queryDocument.governing_authority && queryDocument.governing_authority.ref === active.ref,
   `queries bound to ${JSON.stringify(queryDocument.governing_authority)}, expected ref ${JSON.stringify(active.ref)}`);
-const supersededRefs = (authority.superseded || []).map((s) => s.ref).filter(Boolean);
 const excluded = asSet(answerDocument.excluded_superseded);
 const missing = supersededRefs.filter((r) => !excluded.has(r));
 record("excluded_superseded", missing.length === 0,

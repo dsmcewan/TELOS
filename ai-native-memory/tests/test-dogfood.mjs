@@ -84,6 +84,10 @@ try {
     'import "external-runtime";\n'
   );
   writeFileSync(
+    path.join(fakeRoot, "scripts", "unverifiable.mjs"),
+    "await import(runtimeSelected);\n"
+  );
+  writeFileSync(
     path.join(fakeRoot, "memory", "CONTRACTS", "plugin.json"),
     JSON.stringify({ zero_dependencies: true })
   );
@@ -114,21 +118,28 @@ try {
       directOptionalDependencyRejected: fakeProblems.some((problem) =>
         problem.includes("optionalDependencies")
       ),
+      directUnverifiableDynamicRejected: fakeProblems.some((problem) =>
+        problem.includes("cannot statically verify dynamic import")
+      ),
       oracleStatus: terminatingOracle.status,
       oracleSignal: terminatingOracle.signal,
       oracleSpawnError: terminatingOracle.error?.message || null,
       oracleReportedBoundary: /external-runtime|optionalDependencies/.test(
         terminatingOracle.stderr
       ),
+      oracleReportedUnverifiableDynamic:
+        /cannot statically verify dynamic import/.test(terminatingOracle.stderr),
       oracleRemainedTerminating: /6\/7 checks passed/.test(terminatingOracle.stdout)
     },
     {
       directJsImportRejected: true,
       directOptionalDependencyRejected: true,
+      directUnverifiableDynamicRejected: true,
       oracleStatus: 1,
       oracleSignal: null,
       oracleSpawnError: null,
       oracleReportedBoundary: true,
+      oracleReportedUnverifiableDynamic: true,
       oracleRemainedTerminating: true
     }
   );

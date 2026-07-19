@@ -9,12 +9,12 @@ import {
   readFileSync,
   renameSync,
   rmSync,
-  symlinkSync,
   writeFileSync
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { symlinkOrSkip } from "./lib/symlink.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FX = path.join(HERE, "fixtures", "verify");
 const V = path.join(HERE, "..", "scripts", "verify.mjs");
@@ -49,6 +49,9 @@ const entry = (contract = "memory/CONTRACTS/contract.json", cwd) => ({
 const writeMap = (staged, map) => {
   writeFileSync(path.join(staged, "verify-map.json"), `${JSON.stringify(map, null, 2)}\n`);
 };
+const selfTerminationDiagnostic = process.platform === "win32"
+  ? /exited 1/
+  : /signal SIGTERM/;
 assert.equal(run("passing").status, 0, "declared oracle exits 0");
 assert.equal(run("failing").status, 2, "declared failing oracle exits 2");
 assert.equal(run("missing").status, 2, "missing contract exits 2");
@@ -58,29 +61,45 @@ assert.equal(run("duplicate").status, 2, "duplicate contract entry rejected");
 assert.equal(run("uncovered").status, 2, "uncovered normative contract rejected");
 assert.equal(run("cwd-escape").status, 2, "oracle cwd cannot escape repository root");
 
+let contractSymlinkCreated;
 const contractSymlinkEscape = run("passing", ({ staged, temporary }) => {
   const contract = path.join(staged, "memory", "CONTRACTS", "contract.json");
   const outside = path.join(temporary, "outside-contract.json");
   cpSync(contract, outside);
   rmSync(contract);
-  symlinkSync(outside, contract);
+  contractSymlinkCreated = symlinkOrSkip(
+    outside,
+    contract,
+    { label: "verify contract escape" }
+  );
 });
 
+let oracleSymlinkCreated;
 const oracleSymlinkEscape = run("passing", ({ staged, temporary }) => {
   const oracle = path.join(staged, "oracle-pass.mjs");
   const outside = path.join(temporary, "outside-oracle.mjs");
   cpSync(oracle, outside);
   rmSync(oracle);
-  symlinkSync(outside, oracle);
+  oracleSymlinkCreated = symlinkOrSkip(
+    outside,
+    oracle,
+    { label: "verify oracle escape" }
+  );
 });
 
+let cwdSymlinkCreated;
 const cwdSymlinkEscape = run("passing", ({ staged, temporary }) => {
   const outside = path.join(temporary, "outside-cwd");
   mkdirSync(outside);
-  symlinkSync(outside, path.join(staged, "cwd-link"), "dir");
+  cwdSymlinkCreated = symlinkOrSkip(
+    outside,
+    path.join(staged, "cwd-link"),
+    { type: "dir", label: "verify cwd escape" }
+  );
   writeMap(staged, [entry(undefined, "cwd-link")]);
 });
 
+let hiddenMemorySymlinkCreated;
 const hiddenMemorySymlink = run("passing", ({ staged, temporary }) => {
   const outsideMemory = path.join(temporary, "outside-memory");
   const outsideContracts = path.join(outsideMemory, "CONTRACTS");
@@ -90,15 +109,24 @@ const hiddenMemorySymlink = run("passing", ({ staged, temporary }) => {
     path.join(outsideContracts, "hidden.json")
   );
   mkdirSync(path.join(staged, "hidden"));
-  symlinkSync(outsideMemory, path.join(staged, "hidden", "memory"), "dir");
+  hiddenMemorySymlinkCreated = symlinkOrSkip(
+    outsideMemory,
+    path.join(staged, "hidden", "memory"),
+    { type: "dir", label: "verify hidden memory escape" }
+  );
 });
 
+let hiddenContractSymlinkCreated;
 const hiddenContractSymlink = run("passing", ({ staged, temporary }) => {
   const outside = path.join(temporary, "outside-contract.json");
   cpSync(path.join(staged, "memory", "CONTRACTS", "contract.json"), outside);
   const contracts = path.join(staged, "hidden", "memory", "CONTRACTS");
   mkdirSync(contracts, { recursive: true });
-  symlinkSync(outside, path.join(contracts, "hidden.json"));
+  hiddenContractSymlinkCreated = symlinkOrSkip(
+    outside,
+    path.join(contracts, "hidden.json"),
+    { label: "verify hidden contract escape" }
+  );
 });
 
 const dotSegmentDuplicate = run("passing", ({ staged }) => {
@@ -108,10 +136,12 @@ const dotSegmentDuplicate = run("passing", ({ staged }) => {
   ]);
 });
 
+let symlinkAliasCreated;
 const symlinkAliasDuplicate = run("passing", ({ staged }) => {
-  symlinkSync(
+  symlinkAliasCreated = symlinkOrSkip(
     "contract.json",
-    path.join(staged, "memory", "CONTRACTS", "alias.json")
+    path.join(staged, "memory", "CONTRACTS", "alias.json"),
+    { label: "verify canonical alias duplicate" }
   );
   writeMap(staged, [
     entry(),
@@ -124,23 +154,21 @@ for (const cwd of ["", false, null, 0]) {
   const result = run("passing", ({ staged }) => writeMap(staged, [entry(undefined, cwd)]));
   falsyCwdStatuses[JSON.stringify(cwd)] = result.status;
 }
+for (const [label, created, result] of [
+  ["contract symlink escape", contractSymlinkCreated, contractSymlinkEscape],
+  ["oracle symlink escape", oracleSymlinkCreated, oracleSymlinkEscape],
+  ["cwd symlink escape", cwdSymlinkCreated, cwdSymlinkEscape],
+  ["hidden memory symlink", hiddenMemorySymlinkCreated, hiddenMemorySymlink],
+  ["hidden contract symlink", hiddenContractSymlinkCreated, hiddenContractSymlink],
+  ["symlink alias duplicate", symlinkAliasCreated, symlinkAliasDuplicate]
+]) {
+  if (created) assert.equal(result.status, 2, label);
+}
 assert.deepEqual({
-  contractSymlinkEscape: contractSymlinkEscape.status,
-  oracleSymlinkEscape: oracleSymlinkEscape.status,
-  cwdSymlinkEscape: cwdSymlinkEscape.status,
-  hiddenMemorySymlink: hiddenMemorySymlink.status,
-  hiddenContractSymlink: hiddenContractSymlink.status,
   dotSegmentDuplicate: dotSegmentDuplicate.status,
-  symlinkAliasDuplicate: symlinkAliasDuplicate.status,
   falsyCwdStatuses
 }, {
-  contractSymlinkEscape: 2,
-  oracleSymlinkEscape: 2,
-  cwdSymlinkEscape: 2,
-  hiddenMemorySymlink: 2,
-  hiddenContractSymlink: 2,
   dotSegmentDuplicate: 2,
-  symlinkAliasDuplicate: 2,
   falsyCwdStatuses: {
     "\"\"": 2,
     "false": 2,
@@ -149,10 +177,15 @@ assert.deepEqual({
   }
 }, "physical containment, canonical identity, and provided cwd validation");
 
+let duplicateOrderingSymlinkCreated;
 const duplicateOrdering = run("passing", ({ staged }) => {
   const contracts = path.join(staged, "memory", "CONTRACTS");
   cpSync(path.join(contracts, "contract.json"), path.join(contracts, "second.json"));
-  symlinkSync("second.json", path.join(contracts, "second-alias.json"));
+  duplicateOrderingSymlinkCreated = symlinkOrSkip(
+    "second.json",
+    path.join(contracts, "second-alias.json"),
+    { label: "verify duplicate finding order" }
+  );
   writeMap(staged, [
     entry(undefined, false),
     entry("memory/CONTRACTS/./contract.json"),
@@ -163,16 +196,18 @@ const duplicateOrdering = run("passing", ({ staged }) => {
   map[2].oracle = "missing-oracle.mjs";
   writeMap(staged, map);
 });
-assert.deepEqual(
-  findings(duplicateOrdering)
-    .filter((item) => item.detail === "duplicate contract entry")
-    .map((item) => item.path),
-  [
-    "memory/CONTRACTS/./contract.json",
-    "memory/CONTRACTS/second-alias.json"
-  ],
-  "canonical duplicates are findings before oracle and cwd validation"
-);
+if (duplicateOrderingSymlinkCreated) {
+  assert.deepEqual(
+    findings(duplicateOrdering)
+      .filter((item) => item.detail === "duplicate contract entry")
+      .map((item) => item.path),
+    [
+      "memory/CONTRACTS/./contract.json",
+      "memory/CONTRACTS/second-alias.json"
+    ],
+    "canonical duplicates are findings before oracle and cwd validation"
+  );
+}
 
 const contractDirectory = run("passing", ({ staged }) => {
   writeMap(staged, [entry("memory/CONTRACTS")]);
@@ -206,7 +241,11 @@ const signaledOracle = run("passing", ({ staged }) => {
   );
 });
 assert.equal(signaledOracle.status, 2, "signaled oracle is a finding");
-assert.match(output(signaledOracle), /signal SIGTERM/, "oracle signal diagnostic");
+assert.match(
+  output(signaledOracle),
+  selfTerminationDiagnostic,
+  "oracle termination diagnostic"
+);
 
 const temporaryOracle = mkdtempSync(path.join(tmpdir(), "anm-plugin-oracle-"));
 try {
@@ -244,7 +283,13 @@ try {
     { encoding: "utf8" }
   );
   assert.equal(result.status, 1, "plugin oracle preserves failing exit semantics");
-  assert.match(output(result), /test-lib\.mjs.*signal SIGTERM/, "plugin oracle signal diagnostic");
+  assert.match(
+    output(result),
+    process.platform === "win32"
+      ? /test-lib\.mjs.*exited 1/
+      : /test-lib\.mjs.*signal SIGTERM/,
+    "plugin oracle termination diagnostic"
+  );
 
   writeFileSync(
     path.join(temporaryOracle, "tests", "test-lib.mjs"),

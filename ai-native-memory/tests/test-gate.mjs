@@ -6,12 +6,12 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
-  symlinkSync,
   writeFileSync
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { symlinkOrSkip } from "./lib/symlink.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FX = path.join(HERE, "fixtures", "gate");
@@ -152,6 +152,73 @@ try {
   });
   assertDeniedWithCheck(malformedEnumExpected, "query_expected_type:1");
 
+  const structuredSetEquivalent = stagedResult((root) => {
+    const queries = readJson(root, "queries.json");
+    const answers = readJson(root, "answers-pass.json");
+    queries.queries.find((query) => query.id === "q-set").expected = [
+      { alpha: 1, nested: { beta: [2, 3], gamma: "x" } },
+      ["member", { delta: true, epsilon: null }]
+    ];
+    answers.answers["q-set"] = [
+      ["member", { epsilon: null, delta: true }],
+      { nested: { gamma: "x", beta: [2, 3] }, alpha: 1 }
+    ];
+    writeJson(root, "queries.json", queries);
+    writeJson(root, "answers-pass.json", answers);
+  });
+  assert.equal(
+    structuredSetEquivalent.status,
+    0,
+    structuredSetEquivalent.stdout + structuredSetEquivalent.stderr
+  );
+
+  const structuredSetDifferent = stagedResult((root) => {
+    const queries = readJson(root, "queries.json");
+    const answers = readJson(root, "answers-pass.json");
+    queries.queries.find((query) => query.id === "q-set").expected = [
+      { alpha: 1, nested: { beta: [2, 3], gamma: "x" } }
+    ];
+    answers.answers["q-set"] = [
+      { nested: { gamma: "x", beta: [2, 4] }, alpha: 1 }
+    ];
+    writeJson(root, "queries.json", queries);
+    writeJson(root, "answers-pass.json", answers);
+  });
+  assert.equal(
+    structuredSetDifferent.status,
+    2,
+    structuredSetDifferent.stdout + structuredSetDifferent.stderr
+  );
+
+  for (const [label, superseded, remove] of [
+    ["string entry", ["A0"], false],
+    ["missing ref", [{}], false],
+    ["blank ref", [{ ref: "   " }], false],
+    ["duplicate ref", [{ ref: "A0" }, { ref: "A0" }], false],
+    ["nonarray", { ref: "A0" }, false],
+    ["missing field", undefined, true]
+  ]) {
+    const malformedAuthority = stagedResult((root) => {
+      const authority = readJson(root, "AUTHORITY.json");
+      if (remove) {
+        delete authority.superseded;
+      } else {
+        authority.superseded = superseded;
+      }
+      writeJson(root, "AUTHORITY.json", authority);
+    });
+    assert.equal(
+      malformedAuthority.status,
+      1,
+      `${label}:\n${malformedAuthority.stdout}\n${malformedAuthority.stderr}`
+    );
+    assert.match(
+      malformedAuthority.stderr,
+      /^GATE_ERROR: .*authority\.superseded/m,
+      label
+    );
+  }
+
   for (const [field, value, check] of [
     ["id", "   ", "query_id:0"],
     ["query", "   ", "query_text:0"]
@@ -264,20 +331,27 @@ try {
   );
   assert.match(invalidSiblingAddress.stderr, /content-addressed invariant records/);
 
+  let siblingSymlinkCreated;
   const siblingSymlinkEscape = stagedResult((root) => {
     const outside = mkdtempSync(path.join(tmpdir(), "anm-gate-outside-"));
     roots.push(outside);
     const sibling = path.join(root, "INVARIANTS.json");
     cpSync(sibling, path.join(outside, "INVARIANTS.json"));
     rmSync(sibling);
-    symlinkSync(path.join(outside, "INVARIANTS.json"), sibling);
+    siblingSymlinkCreated = symlinkOrSkip(
+      path.join(outside, "INVARIANTS.json"),
+      sibling,
+      { label: "gate sibling record escape" }
+    );
   });
-  assert.equal(
-    siblingSymlinkEscape.status,
-    1,
-    siblingSymlinkEscape.stdout + siblingSymlinkEscape.stderr
-  );
-  assert.match(siblingSymlinkEscape.stderr, /escapes query record directory/);
+  if (siblingSymlinkCreated) {
+    assert.equal(
+      siblingSymlinkEscape.status,
+      1,
+      siblingSymlinkEscape.stdout + siblingSymlinkEscape.stderr
+    );
+    assert.match(siblingSymlinkEscape.stderr, /escapes query record directory/);
+  }
 
   const drifted = stage((root) => {
     const doc = path.join(root, "authority-doc.md");

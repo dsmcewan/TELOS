@@ -61,7 +61,11 @@ freshly generated, still-empty scaffold cannot certify a reader even after autho
 Every query must also have a unique nonempty trimmed ID, nonempty trimmed query text, supported
 `answer_kind`, and an `expected` value of the exact declared type; submitted answers must have that
 same type. Boolean-looking strings and nonarray set values are DENIED even when query and answer
-contain the same malformed value.
+contain the same malformed value. Set arrays are compared as canonical JSON members, so outer
+member order and object-key order are irrelevant while nested-array order remains significant.
+Before grading, `authority.superseded` must be an array of unique objects with one nonempty
+trimmed `ref`; a missing array, string entry, missing/blank ref, duplicate ref, or nonarray value
+is a cannot-run `GATE_ERROR` (exit `1`).
 
 ## Invalid lifecycle, provenance, or pending transition
 

@@ -147,7 +147,9 @@ speculative extras. Each is a first-class rule, not a suggestion.
    `answer_kind` exactly `boolean`, `enum`, or `set`, and an `expected` value whose
    type is respectively boolean, string, or array. A submitted answer must have that
    same exact type before the gate compares it; two equally mistyped values never
-   constitute comprehension.
+   constitute comprehension. A set's outer array is compared as canonical JSON
+   members: outer order and object-key order are irrelevant, but nested-array order
+   remains significant.
    A missing, malformed, unreadable, or unresolved `derived_from` pointer is a FAIL, as
    is a resolved value that does not equal `expected`.
 

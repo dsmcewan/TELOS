@@ -8,7 +8,6 @@ import {
   mkdirSync,
   readFileSync,
   rmSync,
-  symlinkSync,
   writeFileSync
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -20,6 +19,7 @@ import {
   sha256hex
 } from "../scripts/lib/record.mjs";
 import { auditRoot } from "../scripts/audit.mjs";
+import { symlinkOrSkip } from "./lib/symlink.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FX = path.join(HERE, "fixtures", "audit");
@@ -36,13 +36,13 @@ function address(record) {
   return copy;
 }
 
-function outsideSymlink(link, contents) {
+function outsideSymlink(link, contents, label) {
   const outside = mkdtempSync(path.join(tmpdir(), "anm-audit-outside-"));
   roots.push(outside);
   const target = path.join(outside, "target");
   writeFileSync(target, contents);
   rmSync(link, { force: true });
-  symlinkSync(target, link);
+  return symlinkOrSkip(target, link, { label });
 }
 
 function normalizeTree(root) {
@@ -197,6 +197,70 @@ try {
     writeJson(file, document);
   });
   assert.ok(failures(emptyQueries, "query-freshness").length >= 1);
+
+  const structurallyFreshSet = stage("passing", (root) => {
+    const contractFile = path.join(
+      root,
+      "comp",
+      "memory",
+      "CONTRACTS",
+      "example.json"
+    );
+    const contract = JSON.parse(readFileSync(contractFile, "utf8"));
+    contract.structured_members = [
+      { alpha: 1, nested: { beta: [2, 3], gamma: "x" } },
+      ["member", { delta: true, epsilon: null }]
+    ];
+    writeJson(contractFile, address(contract));
+    const queryFile = path.join(
+      root,
+      "comp",
+      "memory",
+      "comprehension-queries.json"
+    );
+    const document = JSON.parse(readFileSync(queryFile, "utf8"));
+    document.queries[0].answer_kind = "set";
+    document.queries[0].expected = [
+      ["member", { epsilon: null, delta: true }],
+      { nested: { gamma: "x", beta: [2, 3] }, alpha: 1 }
+    ];
+    document.queries[0].derived_from.pointer = "structured_members";
+    writeJson(queryFile, document);
+  });
+  assert.equal(
+    failures(structurallyFreshSet, "query-freshness").length,
+    0,
+    "query freshness uses the same canonical structured-set semantics as the gate"
+  );
+
+  const structurallyDriftedSet = stage("passing", (root) => {
+    const contractFile = path.join(
+      root,
+      "comp",
+      "memory",
+      "CONTRACTS",
+      "example.json"
+    );
+    const contract = JSON.parse(readFileSync(contractFile, "utf8"));
+    contract.structured_members = [
+      { alpha: 1, nested: { beta: [2, 3], gamma: "x" } }
+    ];
+    writeJson(contractFile, address(contract));
+    const queryFile = path.join(
+      root,
+      "comp",
+      "memory",
+      "comprehension-queries.json"
+    );
+    const document = JSON.parse(readFileSync(queryFile, "utf8"));
+    document.queries[0].answer_kind = "set";
+    document.queries[0].expected = [
+      { nested: { gamma: "x", beta: [2, 4] }, alpha: 1 }
+    ];
+    document.queries[0].derived_from.pointer = "structured_members";
+    writeJson(queryFile, document);
+  });
+  assert.ok(failures(structurallyDriftedSet, "query-freshness").length >= 1);
 
   for (const field of ["required_invariants", "required_non_claims"]) {
     const emptyRequired = stage("passing", (root) => {
@@ -366,64 +430,99 @@ try {
   });
   assert.ok(failures(mirrorTraversal, "mirror-sync").length >= 1);
 
+  let querySymlinkCreated;
   const querySymlink = stage("passing", (root) => {
     const link = path.join(root, "comp", "memory", "CONTRACTS", "outside-query.json");
-    outsideSymlink(link, JSON.stringify({ status: "NORMATIVE-CURRENT" }));
+    querySymlinkCreated = outsideSymlink(
+      link,
+      JSON.stringify({ status: "NORMATIVE-CURRENT" }),
+      "audit query source escape"
+    );
     const file = path.join(root, "comp", "memory", "comprehension-queries.json");
     const document = JSON.parse(readFileSync(file, "utf8"));
     document.queries[0].derived_from.file = "CONTRACTS/outside-query.json";
     writeJson(file, document);
   });
-  assert.ok(failures(querySymlink, "query-freshness").length >= 1);
+  if (querySymlinkCreated) {
+    assert.ok(failures(querySymlink, "query-freshness").length >= 1);
+  }
 
   const memoryTarget = stage("passing");
   const memorySymlinkRoot = mkdtempSync(path.join(tmpdir(), "anm-audit-memory-link-"));
   roots.push(memorySymlinkRoot);
   mkdirSync(path.join(memorySymlinkRoot, "comp"));
-  symlinkSync(
+  const memorySymlinkCreated = symlinkOrSkip(
     path.join(memoryTarget, "comp", "memory"),
     path.join(memorySymlinkRoot, "comp", "memory"),
-    "dir"
+    { type: "dir", label: "audit memory directory escape" }
   );
-  assert.ok(
-    failures(memorySymlinkRoot, "three-representation").length >= 1,
-    "a conventionally named memory symlink is never silently skipped"
-  );
-  const memorySymlinkCli = auditCli(memorySymlinkRoot);
-  assert.equal(
-    memorySymlinkCli.status,
-    2,
-    `public root audit rejects a memory symlink:\n${memorySymlinkCli.stdout}\n${memorySymlinkCli.stderr}`
-  );
-  assert.match(memorySymlinkCli.stdout, /memory directory must not be a symlink/);
+  if (memorySymlinkCreated) {
+    assert.ok(
+      failures(memorySymlinkRoot, "three-representation").length >= 1,
+      "a conventionally named memory symlink is never silently skipped"
+    );
+    const memorySymlinkCli = auditCli(memorySymlinkRoot);
+    assert.equal(
+      memorySymlinkCli.status,
+      2,
+      `public root audit rejects a memory symlink:\n${memorySymlinkCli.stdout}\n${memorySymlinkCli.stderr}`
+    );
+    assert.match(memorySymlinkCli.stdout, /memory directory must not be a symlink/);
+  }
 
+  let primaryRecordSymlinkCreated;
   const primaryRecordSymlink = stage("passing", (root) => {
     const file = path.join(root, "comp", "memory", "INVARIANTS.json");
-    outsideSymlink(file, readFileSync(file, "utf8"));
+    primaryRecordSymlinkCreated = outsideSymlink(
+      file,
+      readFileSync(file, "utf8"),
+      "audit primary record escape"
+    );
   });
-  assert.ok(
-    failures(primaryRecordSymlink, "three-representation").length >= 1,
-    "a primary record file cannot escape through a symlink"
-  );
-  assert.equal(auditCli(primaryRecordSymlink).status, 2);
+  if (primaryRecordSymlinkCreated) {
+    assert.ok(
+      failures(primaryRecordSymlink, "three-representation").length >= 1,
+      "a primary record file cannot escape through a symlink"
+    );
+    assert.equal(auditCli(primaryRecordSymlink).status, 2);
+  }
 
+  let mirrorSymlinkCreated;
   const mirrorSymlink = stage("passing", (root) => {
     const link = path.join(root, "comp", "memory", "CONTRACTS", "outside-mirror.json");
-    outsideSymlink(link, JSON.stringify({ value: "scripts/test-example.mjs" }));
+    mirrorSymlinkCreated = outsideSymlink(
+      link,
+      JSON.stringify({ value: "scripts/test-example.mjs" }),
+      "audit mirror source escape"
+    );
     const file = path.join(root, "comp", "memory", "CONTRACTS", "mirror.json");
     const record = JSON.parse(readFileSync(file, "utf8"));
     record.mirror_of = { file: "CONTRACTS/outside-mirror.json", pointer: "value" };
     writeJson(file, address(record));
   });
-  assert.ok(failures(mirrorSymlink, "mirror-sync").length >= 1);
+  if (mirrorSymlinkCreated) {
+    assert.ok(failures(mirrorSymlink, "mirror-sync").length >= 1);
+  }
 
+  let oracleSymlinkCreated;
   const oracleSymlink = stage("passing", (root) => {
-    outsideSymlink(path.join(root, "scripts", "test-example.mjs"), "process.exit(0);\n");
+    oracleSymlinkCreated = outsideSymlink(
+      path.join(root, "scripts", "test-example.mjs"),
+      "process.exit(0);\n",
+      "audit oracle escape"
+    );
   });
-  assert.ok(failures(oracleSymlink, "taxonomy").length >= 1);
+  if (oracleSymlinkCreated) {
+    assert.ok(failures(oracleSymlink, "taxonomy").length >= 1);
+  }
 
+  let snapshotSymlinkCreated;
   const snapshotSymlink = stage("passing", (root) => {
-    outsideSymlink(path.join(root, "snapshot-source.txt"), "current\n");
+    snapshotSymlinkCreated = outsideSymlink(
+      path.join(root, "snapshot-source.txt"),
+      "current\n",
+      "audit snapshot source escape"
+    );
     const file = path.join(root, "comp", "memory", "CONTRACTS", "example.json");
     const record = JSON.parse(readFileSync(file, "utf8"));
     record.snapshot = {
@@ -432,13 +531,22 @@ try {
     };
     writeJson(file, address(record));
   });
-  assert.ok(failures(snapshotSymlink, "staleness").length >= 1);
+  if (snapshotSymlinkCreated) {
+    assert.ok(failures(snapshotSymlink, "staleness").length >= 1);
+  }
 
+  let authoritySymlinkCreated;
   const authoritySymlink = stage("passing", (root) => {
     const file = path.join(root, "authority-doc.md");
-    outsideSymlink(file, readFileSync(file, "utf8"));
+    authoritySymlinkCreated = outsideSymlink(
+      file,
+      readFileSync(file, "utf8"),
+      "audit authority source escape"
+    );
   });
-  assert.ok(failures(authoritySymlink, "staleness").length >= 1);
+  if (authoritySymlinkCreated) {
+    assert.ok(failures(authoritySymlink, "staleness").length >= 1);
+  }
 
   const unknownKind = stage("passing", (root) => {
     const file = path.join(root, "comp", "memory", "CONTRACTS", "example.json");

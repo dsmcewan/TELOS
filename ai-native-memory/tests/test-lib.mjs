@@ -84,6 +84,26 @@ assert.deepEqual(
     "external-dynamic"
   ]
 );
+const reviewerSource = [
+  'import café from "external-unicode";',
+  'import \\u0062inding from "external-escaped-binding";',
+  'if (ready) /import("regex-only")/.test(value);',
+  'if (ready) {} /import("regex-after-block")/.test(value);',
+  'await import(("external-parenthesized"));',
+  'await import(`external-template`);',
+  'const ordinaryTemplate = `import("template-value-only")`; ',
+  "void import.meta.url;"
+].join("\n");
+assert.deepEqual(
+  importSpecifiers(reviewerSource),
+  [
+    "external-unicode",
+    "external-escaped-binding",
+    "external-parenthesized",
+    "external-template"
+  ],
+  "the import scanner must handle valid identifiers and literal dynamic forms without reading regex/template text"
+);
 const packageRoot = mkdtempSync(path.join(tmpdir(), "anm-boundary-"));
 try {
   mkdirSync(path.join(packageRoot, "scripts"));
@@ -134,12 +154,29 @@ try {
     path.join(packageRoot, "scripts", "non-portable-reexport.mjs"),
     'export * from "external-reexport";\n'
   );
+  writeFileSync(
+    path.join(packageRoot, "scripts", "reviewer-cases.mjs"),
+    `${reviewerSource}\n`
+  );
+  writeFileSync(
+    path.join(packageRoot, "scripts", "unverifiable.mjs"),
+    [
+      "await import(`external-${runtimeSelected}`);",
+      'await import("external-" + runtimeSelected);',
+      "await import(runtimeSelected);",
+      "await import((runtimeSelected));"
+    ].join("\n")
+  );
   const executableProblems = packageBoundaryProblems(packageRoot);
   for (const specifier of [
     "external-js",
     "external-cjs",
     "external-dynamic",
-    "external-reexport"
+    "external-reexport",
+    "external-unicode",
+    "external-escaped-binding",
+    "external-parenthesized",
+    "external-template"
   ]) {
     assert.ok(
       executableProblems.some((problem) =>
@@ -148,6 +185,20 @@ try {
       `${specifier} must be rejected across the complete executable-source boundary`
     );
   }
+  assert.equal(
+    executableProblems.filter((problem) =>
+      problem.includes("cannot statically verify dynamic import")
+    ).length,
+    4,
+    "every real dynamic import that cannot reduce to one literal string must fail closed"
+  );
+  assert.equal(
+    executableProblems.some((problem) =>
+      /regex-only|template-value-only/.test(problem)
+    ),
+    false,
+    "regex and ordinary-template contents are not executable imports"
+  );
 
   for (const field of [
     "optionalDependencies",

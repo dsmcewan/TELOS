@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  canonicalize,
   DECISION_PROVENANCE,
   RECORD_KINDS,
   RECORD_LIFECYCLES,
@@ -298,6 +299,12 @@ function auditTaxonomy(dir, out, root) {
 
 const dig = (obj, pointer) => pointer.split(".").reduce((o, k) => (o && typeof o === "object" ? o[k] : undefined), obj);
 const deepEq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const structuralSetEq = (a, b) => {
+  if (!Array.isArray(a) || !Array.isArray(b)) return false;
+  const x = new Set(a.map(canonicalize));
+  const y = new Set(b.map(canonicalize));
+  return x.size === y.size && [...x].every((value) => y.has(value));
+};
 
 function auditRequiredQueryRecords(document, dir, out, root, where) {
   for (const {
@@ -452,9 +459,10 @@ function auditQueryFreshness(dir, out, root) {
       continue;
     }
     if (actual === undefined) { out.push(finding("FAIL", "query-freshness", where, `query ${query.id}: derived_from pointer missing: ${query.derived_from.pointer}`)); continue; }
-    const expected = query.answer_kind === "set" ? [...(query.expected || [])].sort() : query.expected;
-    const got = query.answer_kind === "set" && Array.isArray(actual) ? [...actual].sort() : actual;
-    if (!deepEq(expected, got)) out.push(finding("FAIL", "query-freshness", where, `query ${query.id}: expected ${JSON.stringify(query.expected)} but source now says ${JSON.stringify(actual)} (queries drifted from the contract)`));
+    const matches = query.answer_kind === "set"
+      ? structuralSetEq(query.expected, actual)
+      : deepEq(query.expected, actual);
+    if (!matches) out.push(finding("FAIL", "query-freshness", where, `query ${query.id}: expected ${JSON.stringify(query.expected)} but source now says ${JSON.stringify(actual)} (queries drifted from the contract)`));
   }
 }
 

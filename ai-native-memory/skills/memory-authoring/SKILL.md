@@ -20,7 +20,9 @@ repo-level files written on first run:
   ground rules before it reads anything else.
 - `CURRENT-AUTHORITY.json` — `{ active: {ref, path, sha256}, superseded: [] }`. `active` is the
   governing document currently in force; it starts `null` until a human binds it — no
-  record may claim `NORMATIVE` status against an unbound authority.
+  record may claim `NORMATIVE` status against an unbound authority. `superseded` is
+  always present and contains unique `{ "ref": "<nonempty trimmed label>" }` objects;
+  malformed entries make the comprehension gate unable to run.
 - `LOAD-ORDER.json` — the minimal reading order for a fresh model (see below).
 - `MEMORY-MANIFEST.json` — the sorted, unique component-memory membership list.
 
@@ -147,6 +149,9 @@ invalid, dangling, or wrong-kind required IDs. Every query needs a unique nonemp
 trimmed `id`, nonempty trimmed `query` text, and `answer_kind` exactly `boolean`,
 `enum`, or `set`. Its `expected` value is respectively a boolean, string, or array,
 and the submitted answer must have that same exact type before equality is graded.
+For a set query, the outer array is a mathematical set: member order and object-key
+order do not matter, while the canonical JSON structure of each member (including
+nested-array order) does.
 
 ## `mirror_of` + `values` on mirrored sets (hardening 4)
 

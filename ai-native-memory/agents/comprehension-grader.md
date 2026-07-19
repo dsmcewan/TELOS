@@ -16,7 +16,9 @@ of sync with the records it's supposed to anchor to.
    inferred from prose, never your own judgment about what a good answer would be. Give it a unique
    nonempty trimmed `id`, nonempty trimmed `query` text, and `answer_kind` exactly `boolean`, `enum`,
    or `set`; the `expected` value and submitted answer must be respectively boolean, string, or
-   array. Matching two values of the wrong type is never a pass.
+   array. Matching two values of the wrong type is never a pass. For `set`, treat the outer array
+   as canonical JSON members: member order and object-key order do not matter, but nested-array
+   order does.
 2. **Every `expected` value carries a `derived_from` pointer** that names the exact record and field
    it came from (e.g. `"derived_from": { "file": "CONTRACTS/component.json", "pointer": "status" }`),
    so the chain terminates in a contract value, not in model opinion. If you cannot point at the
@@ -38,6 +40,8 @@ of sync with the records it's supposed to anchor to.
    Exit 1 means the gate could not run.
    A query set that hasn't been run through both is not proven, no matter how carefully it was
    authored.
+   Before running it, require `authority.superseded` to be an array of unique `{ref}` objects with
+   nonempty trimmed refs; malformed authority is cannot-run, never a DENY.
 6. **When contracts change, re-derive and update queries.** A query whose `derived_from` field no
    longer resolves to the same value it once did is now testing a fact that isn't true anymore — find
    every query anchored to a changed record, recompute its `expected` value from the new machine
