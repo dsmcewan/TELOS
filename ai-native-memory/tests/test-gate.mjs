@@ -20,10 +20,10 @@ const art = JSON.parse(readFileSync(out, "utf8"));
 assert.equal(art.result, "COMPREHENSION_PASSED");
 assert.equal(art.implementation_authority, "GRANTED");
 rmSync(out);
-// wrong answer -> 3
-assert.equal(run("answers-wrong.json").status, 3);
-// missing superseded exclusion -> 3
-assert.equal(run("answers-missing-exclusion.json").status, 3);
+// wrong answer -> 2
+assert.equal(run("answers-wrong.json").status, 2);
+// missing superseded exclusion -> 2
+assert.equal(run("answers-missing-exclusion.json").status, 2);
 // drifted authority -> 1 (mutate the doc so the hash no longer matches)
 const doc = path.join(FX, "authority-doc.md");
 const orig = readFileSync(doc, "utf8");

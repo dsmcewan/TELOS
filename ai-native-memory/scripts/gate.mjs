@@ -2,7 +2,7 @@
 // gate.mjs — deterministic comprehension gate. "Reading is not evidence of understanding."
 // Grades a reader's answers against authority-anchored queries; verifies the active
 // authority doc's hash against disk FIRST (a drifted authority certifies no one).
-// Exit 0 GRANTED / 3 DENIED / 1 cannot-run.
+// Exit 0 GRANTED / 2 DENIED / 1 cannot-run.
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { readJson, sha256hex } from "./lib/record.mjs";
@@ -71,4 +71,4 @@ const artifact = {
 const json = JSON.stringify(artifact, null, 2);
 if (outPath) writeFileSync(outPath, json);
 console.log(json);
-process.exit(passed ? 0 : 3);
+process.exit(passed ? 0 : 2);

@@ -31,7 +31,7 @@ const a = JSON.parse(readFileSync(path.join(ROOT, "memory", "answers-example.jso
 a.answers[Object.keys(a.answers)[0]] = "WRONG";
 const tmp = path.join(HERE, "tmp-neg-answers.json");
 writeFileSync(tmp, JSON.stringify(a));
-try { assert.equal(gate(tmp).status, 3, "flipped answer DENIED"); } finally { rmSync(tmp); }
+try { assert.equal(gate(tmp).status, 2, "flipped answer DENIED"); } finally { rmSync(tmp); }
 
 // 3. self-verify
 const v = spawnSync(process.execPath, [path.join(ROOT, "scripts", "verify.mjs"), path.join(ROOT, "verify-map.json")], { encoding: "utf8" });
