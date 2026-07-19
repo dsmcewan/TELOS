@@ -1,0 +1,21 @@
+{
+  "reader": "dogfood-self-gate",
+  "resolved_authority_ref": "spec-2026-07-18",
+  "excluded_superseded": [],
+  "invariants_read": [
+    "anm-zero-dependencies",
+    "anm-fail-closed-exits",
+    "anm-no-host-imports",
+    "anm-every-check-can-fail"
+  ],
+  "non_claims_read": [
+    "anm-audit-not-a-proof",
+    "anm-no-authority-authentication",
+    "anm-agents-advise"
+  ],
+  "answers": {
+    "plugin-status": "NORMATIVE-CURRENT",
+    "zero-deps": true,
+    "exit-codes": ["0", "1", "2", "3"]
+  }
+}

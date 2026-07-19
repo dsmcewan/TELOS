@@ -109,7 +109,7 @@ function auditStaleness(dir, out, root) {
   }
 }
 
-function auditAuthorityRoot(root, out) {
+export function auditAuthorityRoot(root, out) {
   const ap = path.join(root, "AUTHORITY.json");
   if (!existsSync(ap)) return;
   let a;

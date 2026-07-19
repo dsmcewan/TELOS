@@ -1,0 +1,34 @@
+[
+  {
+    "id": "anm-zero-dependencies",
+    "kind": "invariant",
+    "statement": "The plugin's package.json declares no runtime dependencies (dependencies: {}); every oracle imports only node:* stdlib modules or in-plugin relative paths. This is proven, not asserted — it is one of the assertions test-dogfood.mjs checks on every run, alongside the plugin's self-audit/self-gate/self-verify.",
+    "oracle": "tests/test-dogfood.mjs",
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "anm-fail-closed-exits",
+    "kind": "invariant",
+    "statement": "Every oracle (audit.mjs, gate.mjs, verify.mjs) is fail-closed: missing or unverifiable evidence produces a nonzero exit, never a silent pass. Covered by test-gate.mjs (DENIED on a wrong or missing answer, cannot-run on authority drift) and test-audit.mjs (every audit-family FAIL fixture actually fails); tests/run.mjs runs both as part of the full suite.",
+    "oracle": "tests/run.mjs",
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "anm-no-host-imports",
+    "kind": "invariant",
+    "statement": "No script under scripts/ imports from a host repository's packages. Every import is either a node:* stdlib module or a relative in-plugin path (./ or ../), so the plugin is fully portable into any repository.",
+    "oracle": "tests/test-dogfood.mjs",
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  },
+  {
+    "id": "anm-every-check-can-fail",
+    "kind": "invariant",
+    "statement": "No audit check ships without a fixture proving it can fail. Every audit-family (three-representation, taxonomy, query-freshness, mirror-sync, staleness) has at least one violation fixture under tests/fixtures/audit/ that the corresponding check actually flags, alongside one passing fixture that stays clean.",
+    "oracle": "tests/test-audit.mjs",
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT"
+  }
+]

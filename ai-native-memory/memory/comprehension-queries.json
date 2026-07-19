@@ -1,0 +1,38 @@
+{
+  "component": "ai-native-memory",
+  "governing_authority": { "ref": "spec-2026-07-18" },
+  "queries": [
+    {
+      "id": "plugin-status",
+      "query": "What is the status of the plugin's own frozen-semantics contract (memory/CONTRACTS/plugin.json)?",
+      "answer_kind": "enum",
+      "expected": "NORMATIVE-CURRENT",
+      "derived_from": { "file": "CONTRACTS/plugin.json", "pointer": "status" }
+    },
+    {
+      "id": "zero-deps",
+      "query": "Does the plugin declare any runtime dependencies?",
+      "answer_kind": "boolean",
+      "expected": true,
+      "derived_from": { "file": "CONTRACTS/plugin.json", "pointer": "zero_dependencies" }
+    },
+    {
+      "id": "exit-codes",
+      "query": "What is the closed set of exit codes the plugin's oracles use?",
+      "answer_kind": "set",
+      "expected": ["0", "1", "2", "3"],
+      "derived_from": { "file": "CONTRACTS/plugin.json", "pointer": "exit_codes" }
+    }
+  ],
+  "required_invariants": [
+    "anm-zero-dependencies",
+    "anm-fail-closed-exits",
+    "anm-no-host-imports",
+    "anm-every-check-can-fail"
+  ],
+  "required_non_claims": [
+    "anm-audit-not-a-proof",
+    "anm-no-authority-authentication",
+    "anm-agents-advise"
+  ]
+}
