@@ -14,7 +14,15 @@ const tests = [
 let failed = 0;
 for (const test of tests) {
   const result = spawnSync(process.execPath, [path.join(HERE, test)], { stdio: "inherit" });
-  if (result.status !== 0) failed++;
+  if (result.status !== 0) {
+    failed++;
+    const detail = result.error
+      ? `spawn failed: ${result.error.message}`
+      : result.signal
+        ? `terminated by signal ${result.signal}`
+        : `exited ${result.status}`;
+    console.error(`oracle-plugin-contract: ${test} ${detail}`);
+  }
 }
 console.log(`oracle-plugin-contract: ${tests.length - failed}/${tests.length} checks passed`);
 process.exit(failed ? 1 : 0);
