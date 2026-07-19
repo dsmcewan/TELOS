@@ -12,9 +12,16 @@ running the gate that day.
 
 ## Missing or malformed input
 
-`gate.mjs`, `audit.mjs`, and `verify.mjs` all exit `1` on unreadable files or invalid JSON — a
-"cannot-run" state distinct from a graded failure. The plugin never treats "I could not check this"
-as equivalent to "this checked out fine."
+Exit `1` is the command-level "cannot-run" state. `gate.mjs` uses it when its queries, answers, or
+current-authority input cannot be read or parsed. `audit.mjs` uses it when the selected audit root
+cannot be treated as a readable audit root, including a primary record the sweep must parse.
+`verify.mjs` uses it when the verify-map itself is unreadable, malformed, or not an array.
+
+Once those primary inputs are accepted, subordinate data problems are graded findings at exit `2`.
+For example, malformed or unreadable JSON reached through a query's `derived_from` pointer becomes
+a `query-freshness` FAIL, and a malformed or unreadable contract named by a valid verify-map becomes
+a `verify` FAIL. Normal audit, verify, and comprehension findings likewise use exit `2`. The plugin
+never treats "I could not check this" as equivalent to "this checked out fine."
 
 ## A load-bearing claim with no machine record
 

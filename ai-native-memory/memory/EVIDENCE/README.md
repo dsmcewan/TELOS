@@ -8,7 +8,7 @@ substitute for running the oracles yourself — this is an index, not a cache of
 - `cd ai-native-memory && npm run check` — syntax pass (`node --check`) over every script.
 - `cd ai-native-memory && npm test` — runs every `tests/test-*.mjs` file via `tests/run.mjs`,
   including `tests/test-dogfood.mjs`, which is the plugin auditing, gating, and verifying itself
-  against this exact `memory/` directory and this repository's `AUTHORITY.json`.
+  through the public commands against the whole plugin root and its `CURRENT-AUTHORITY.json`.
 
 ## What each test file proves
 
@@ -26,10 +26,10 @@ substitute for running the oracles yourself — this is an index, not a cache of
   contract each exit `2`.
 - `tests/test-init.mjs` — scaffolding is idempotent (a second run never overwrites) and starts
   every generated contract honestly at `SPECIFIED-PENDING-IMPLEMENTATION`, never `NORMATIVE-CURRENT`.
-- `tests/test-dogfood.mjs` — the inheritance proof. It runs `auditAuthorityRoot` plus
-  `auditMemoryDir` against this plugin's own `AUTHORITY.json` and `memory/` (not the deliberate
-  violation fixtures under `tests/fixtures/`, which live outside this scope on purpose) and asserts
-  zero `FAIL` findings; runs `gate.mjs` against `memory/comprehension-queries.json` and
-  `memory/answers-example.json` and asserts `GRANTED`, then flips one answer and asserts `DENIED`;
-  runs `verify.mjs` against `verify-map.json` and asserts all-green; and scans every script under
-  `scripts/` to assert every import is `node:*` or a relative in-plugin path.
+- `tests/test-dogfood.mjs` — the inheritance proof. It invokes the public
+  `scripts/audit.mjs` command against the whole plugin root and requires a clean exit; invokes
+  `gate.mjs` against `memory/comprehension-queries.json`,
+  `memory/answers-example.json`, and `CURRENT-AUTHORITY.json`, then requires the passing answers to
+  GRANT and one flipped answer to DENY; invokes `verify.mjs` against `verify-map.json` and requires
+  all declared contract oracles to pass; and scans static, side-effect, and string-literal dynamic
+  imports in every script under `scripts/`, allowing only `node:*` or relative in-plugin paths.
