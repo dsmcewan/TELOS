@@ -35,6 +35,7 @@ export const PACKAGE_ROOTS = Object.freeze([
 // — inclusion and exclusion are both committed, reviewed decisions.
 export const PACKAGE_ROOTS_EXCLUDE = Object.freeze([
   "ai-forge",
+  "ai-native-memory",
   "forge",
   "narcissus/flagship",
   "saas-forge"

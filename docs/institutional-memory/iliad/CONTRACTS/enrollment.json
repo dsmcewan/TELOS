@@ -106,6 +106,7 @@
   "future_modules_note": "Registered myths with defined system responsibilities and NO implementation (meanings VERBATIM from docs/mythological-vocabulary.md; verify-contracts parses the registry and cross-checks each). Atropos's discipline is partially expressed today via supersession records (must_not_govern_new_work); Lachesis's risk measurement is explicitly non-claimed by Clotho Phase 1. Implementing one follows CHANGE-PROTOCOL + this lifecycle (pre-review -> enroll -> retrospective).",
   "deferred_pending_conscious_enrollment": [
     "ai-forge",
+    "ai-native-memory",
     "forge",
     "narcissus/flagship",
     "saas-forge"
