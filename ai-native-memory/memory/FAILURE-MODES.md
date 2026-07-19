@@ -45,8 +45,8 @@ oracle that does not terminate cleanly is a documentation bug in the host reposi
 
 ## Self-recursion in the plugin's own verify oracle
 
-Naively wiring the plugin's own `verify-map.json` to point its `plugin` contract's oracle at
-`tests/run.mjs` would make `verify.mjs`'s self-verify step spawn a process that itself spawns
-`test-dogfood.mjs`, which calls `verify.mjs` again. This is avoided by design, not by luck: the
-verify-map instead names `tests/test-lib.mjs`, a real, terminating, leaf oracle; see
-`DECISIONS/rejected-alternatives.md` for the record of why.
+Naming `tests/run.mjs` as the plugin contract's oracle would make self-verification spawn
+`test-dogfood.mjs`, which calls `verify.mjs` again. The contract and `verify-map.json` instead
+both name the terminating `tests/oracle-plugin-contract.mjs`. That dedicated oracle runs the five
+non-dogfood tests (`test-lib`, `test-audit`, `test-gate`, `test-init`, and `test-verify`) and
+therefore avoids recursion without substituting an unrelated test.

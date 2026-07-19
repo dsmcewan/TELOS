@@ -35,6 +35,7 @@ adding real authentication is future work, not a hidden gap.
 `tests/run.mjs`, the full suite. But `run.mjs` spawns every `tests/test-*.mjs` file, including
 `test-dogfood.mjs` — and `test-dogfood.mjs` itself calls `verify.mjs` against `verify-map.json`.
 Pointing `verify-map.json`'s oracle at `run.mjs` would make that self-verify step recurse into a
-process that (transitively) re-invokes itself. Instead `verify-map.json` points at
-`tests/test-lib.mjs`, a real, terminating, zero-dependency oracle, and `plugin.json` records in its
-body that the full suite remains the CI entry point for the contract as a whole.
+process that (transitively) re-invokes itself. Instead the contract and map both name
+`tests/oracle-plugin-contract.mjs`, a terminating oracle that runs the five non-dogfood tests:
+`test-lib`, `test-audit`, `test-gate`, `test-init`, and `test-verify`. This avoids recursion while
+still testing the contract directly; the full suite remains the package test entry point.

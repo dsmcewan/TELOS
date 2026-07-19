@@ -87,14 +87,8 @@ for (const entry of map) {
     continue;
   }
   let cpath;
-  let opath;
-  let cwd;
   try {
     cpath = resolveExistingWithin(physicalBase, entry.contract, "contract", "file");
-    opath = resolveExistingWithin(physicalBase, entry.oracle, "oracle", "file");
-    cwd = Object.hasOwn(entry, "cwd")
-      ? resolveExistingWithin(physicalBase, entry.cwd, "cwd", "directory")
-      : physicalBase;
   } catch (error) {
     out.push(finding("FAIL", "verify", entry.contract, error.message));
     continue;
@@ -105,6 +99,17 @@ for (const entry of map) {
     continue;
   }
   seen.add(contractIdentity);
+  let opath;
+  let cwd;
+  try {
+    opath = resolveExistingWithin(physicalBase, entry.oracle, "oracle", "file");
+    cwd = Object.hasOwn(entry, "cwd")
+      ? resolveExistingWithin(physicalBase, entry.cwd, "cwd", "directory")
+      : physicalBase;
+  } catch (error) {
+    out.push(finding("FAIL", "verify", entry.contract, error.message));
+    continue;
+  }
   let contract;
   try {
     contract = readJson(cpath);

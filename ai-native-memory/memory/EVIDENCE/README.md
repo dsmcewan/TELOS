@@ -12,10 +12,11 @@ substitute for running the oracles yourself — this is an index, not a cache of
 
 ## What each test file proves
 
+- `tests/oracle-plugin-contract.mjs` — the terminating oracle named by both
+  `memory/CONTRACTS/plugin.json` and `verify-map.json`; it runs the five non-dogfood tests and
+  avoids recursive self-verification without substituting an unrelated oracle.
 - `tests/test-lib.mjs` — the vendored primitives (`canonicalize`, `sha256hex`, `contentAddress`,
-  `finding`, `printFindings`) behave as specified. This is also the leaf oracle named in
-  `verify-map.json` for `memory/CONTRACTS/plugin.json` (see `DECISIONS/rejected-alternatives.md`
-  for why it is not `tests/run.mjs`).
+  `finding`, `printFindings`) behave as specified.
 - `tests/test-audit.mjs` — one passing fixture tree and one violating fixture tree per audit
   family (three-representation, taxonomy, query-freshness, mirror-sync, staleness) under
   `tests/fixtures/audit/`; every check is proven capable of both passing and failing.

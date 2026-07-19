@@ -37,6 +37,10 @@ const run = (fixture, prepare = () => {}) => {
   }
 };
 const output = (result) => `${result.stdout || ""}${result.stderr || ""}`;
+const findings = (result) => (result.stdout || "")
+  .split("\n")
+  .filter((line) => line.startsWith("{"))
+  .map((line) => JSON.parse(line));
 const entry = (contract = "memory/CONTRACTS/contract.json", cwd) => ({
   contract,
   oracle: "oracle-pass.mjs",
@@ -120,6 +124,31 @@ assert.deepEqual({
     "0": 2
   }
 }, "physical containment, canonical identity, and provided cwd validation");
+
+const duplicateOrdering = run("passing", ({ staged }) => {
+  const contracts = path.join(staged, "memory", "CONTRACTS");
+  cpSync(path.join(contracts, "contract.json"), path.join(contracts, "second.json"));
+  symlinkSync("second.json", path.join(contracts, "second-alias.json"));
+  writeMap(staged, [
+    entry(undefined, false),
+    entry("memory/CONTRACTS/./contract.json"),
+    entry("memory/CONTRACTS/second.json"),
+    entry("memory/CONTRACTS/second-alias.json")
+  ]);
+  const map = JSON.parse(readFileSync(path.join(staged, "verify-map.json"), "utf8"));
+  map[2].oracle = "missing-oracle.mjs";
+  writeMap(staged, map);
+});
+assert.deepEqual(
+  findings(duplicateOrdering)
+    .filter((item) => item.detail === "duplicate contract entry")
+    .map((item) => item.path),
+  [
+    "memory/CONTRACTS/./contract.json",
+    "memory/CONTRACTS/second-alias.json"
+  ],
+  "canonical duplicates are findings before oracle and cwd validation"
+);
 
 const contractDirectory = run("passing", ({ staged }) => {
   writeMap(staged, [entry("memory/CONTRACTS")]);
