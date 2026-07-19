@@ -25,13 +25,15 @@ of the machine records, never the source of truth themselves.
    identifier — a content hash, a decision id, a commit, a ledger entry — never a
    mutable label or bare prose. "The config file" is not an anchor; `sha256:<hex>` of
    that file's bytes is. If the anchor can change without anyone noticing, it is not an
-   anchor.
+   anchor. The repository's current binding lives in `CURRENT-AUTHORITY.json`.
 
 2. **`NORMATIVE` requires an oracle.** A claim may only carry `NORMATIVE-CURRENT` status
    if it has an executable verification — a test, a property check, a fixture — that
    currently passes. A claim without a passing oracle behind it is, at best, `ADVISORY`:
    documented intent, never enforced. This is the rule that stops the memory layer
-   itself from becoming a new source of drift.
+   itself from becoming a new source of drift. The structural audit validates that a
+   declared oracle path resolves to a regular file; verification executes each
+   contract's declared oracle and requires exit `0`.
 
 3. **Three representations.** Every load-bearing claim exists in three forms: human
    prose (why this is true, why it matters), a machine-readable contract (the exact
@@ -40,16 +42,18 @@ of the machine records, never the source of truth themselves.
    incomplete, no matter how well the prose reads.
 
 4. **Machine-first, human-rendered.** The machine records (JSON, or any structured
-   format a script can parse) are the source of truth. Human-readable `.md` documents
-   are *generated from* the machine records, so they cannot silently drift out of sync
-   with what is actually enforced. Never hand-edit facts into a rendered `.md` file —
-   edit the machine record and regenerate.
+   format a script can parse) are the source of truth. `INVARIANTS.md` and
+   `NON-CLAIMS.md` are byte-derived from their JSON records by a deterministic renderer,
+   so they cannot silently drift out of sync with what is actually enforced. After
+   changing a record, recompute its content-addressed `id` and regenerate the rendered
+   Markdown. Never hand-edit facts into a rendered `.md` file.
 
 5. **Reading ≠ understanding.** A model having read the documentation is not the same
    as a model having understood it correctly enough to act. No implementation authority
    is granted until a reader submits an answer set and a deterministic comprehension
    gate grades it against machine-derived expected answers and returns GRANTED. A
-   confident wrong answer is still DENIED.
+   confident wrong answer is still DENIED. The gate exits `0` for GRANTED, `2` for
+   DENIED, and `1` only when it cannot run.
 
 ## Closed record kinds
 
@@ -131,6 +135,8 @@ speculative extras. Each is a first-class rule, not a suggestion.
    and left to rot. *Origin: in the source project, comprehension queries and their
    example answers drifted in lockstep with the system they described — the queries
    still named five components after growth had made it seven, and nothing caught it.*
+   A missing, malformed, unreadable, or unresolved `derived_from` pointer is a FAIL, as
+   is a resolved value that does not equal `expected`.
 
 2. **Three-representation auditor.** A load-bearing claim missing its machine record or
    its oracle reference is a FAIL, not a warning. *Origin: in the source project, two
@@ -152,10 +158,13 @@ speculative extras. Each is a first-class rule, not a suggestion.
    enforced the promise, and the mirror rotted.*
 
 5. **Staleness sweep.** Anchors must be checked for whether they still resolve at HEAD,
-   how far `as_of` distance has drifted, and whether snapshots are current (contracts
-   declare their anchor via `authority.source_path`, which must resolve). *Origin: in
-   the source project, a session-state anchor was found seventy commits stale, and a
-   working record went a full day stale before anyone noticed.*
+   how far `as_of` distance has drifted, and whether snapshots are current. An `as_of`
+   commit that resolves but trails HEAD produces WARN; a supplied but unresolved commit
+   FAILs. A snapshot whose source is missing, whose hash is malformed, or whose current
+   bytes do not match its pinned hash FAILs. Contracts declare document anchors via
+   `authority.source_path`, which must resolve. *Origin: in the source project, a
+   session-state anchor was found seventy commits stale, and a working record went a
+   full day stale before anyone noticed.*
 
 6. **Reviewer-drift monitor.** Adversarial review loops self-score against proven
    discriminators rather than running indefinitely on faith. *Origin: in the source

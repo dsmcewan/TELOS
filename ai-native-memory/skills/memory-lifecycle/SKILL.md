@@ -27,10 +27,13 @@ Change to a system with institutional memory moves through these stages, in orde
 4. **Comprehension-gated implementation authority** — before anyone writes code against
    the authorized plan, they must submit answers to `comprehension-queries.json` and be
    GRANTED by the deterministic comprehension gate. Reading the plan is not the same as
-   having understood it; see `memory-standard`'s fifth discipline.
+   having understood it; see `memory-standard`'s fifth discipline. The gate exits `0`
+   for GRANTED, `2` for DENIED, and `1` only when it cannot run.
 5. **Oracles green** — implementation proceeds until every oracle the plan named as
    `becomes_normative_when` actually exists and passes. Only then do the affected
-   records flip from `SPECIFIED-PENDING-IMPLEMENTATION` to `NORMATIVE-CURRENT`.
+   records flip from `SPECIFIED-PENDING-IMPLEMENTATION` to `NORMATIVE-CURRENT`. Audit
+   proves the declared oracle path exists; verification executes contract oracles and
+   requires exit `0`.
 6. **Host-index integration** — the change is folded into the host repository's own
    index of itself: at minimum its repository manifest, and its knowledge graph too if
    the host maintains one. A change that is correct but invisible to the host's own
@@ -99,10 +102,10 @@ like a second valid authority merely because it still physically exists in the r
 ## The human authority gate
 
 A human role — assigned by the host repository, not by this plugin — holds final
-authority over: binding `AUTHORITY.json`'s `active` entry, granting authorization at
-the council stage, ratifying `RATIFICATION-PENDING` records, and adjudicating an
-escalated drift-monitor thread. Models advise; humans rule; records attribute which
-happened via `decided_by`.
+authority over: binding `CURRENT-AUTHORITY.json`'s `active` entry, granting
+authorization at the council stage, ratifying `RATIFICATION-PENDING` records, and
+adjudicating an escalated drift-monitor thread. Models advise; humans rule; records
+attribute which happened via `decided_by`.
 
 This gate is not a formality. A model's confidence, however well-calibrated, is not the
 same thing as human authorization, and this standard does not let the two be conflated

@@ -13,11 +13,13 @@ why they happened, and in what order to fix them.
 1. Run the oracles against the host repository:
    - `node ${CLAUDE_PLUGIN_ROOT}/scripts/audit.mjs <scope>` (default scope `.`)
    - `node ${CLAUDE_PLUGIN_ROOT}/scripts/verify.mjs <verify-map.json>` when the host repo has one
+   Audit validates record structure, content-addressed IDs, byte-derived Markdown, derivations,
+   staleness, and that declared oracle paths exist. Verify executes each contract's declared oracle.
 2. Read every finding. Do not summarize before you have looked at each one — a summary written
    before reading the full set is a guess, not an audit.
 3. **Rank by blast radius**, not by order of appearance. A dangling authority anchor (a record
    pointing at a governing document that no longer exists, or whose hash no longer matches) outranks
-   a stale `as_of` timestamp, because everything anchored to that authority is now unverifiable —
+   an `as_of` commit that resolves behind HEAD, because everything anchored to that authority is now unverifiable —
    one root finding can invalidate many downstream NORMATIVE claims. Work outward from the findings
    that other findings depend on.
 4. **Trace root cause**, not just symptom. For every FAIL, determine: did the *contract* move (the
@@ -44,7 +46,10 @@ why they happened, and in what order to fix them.
   reclassify a FAIL as a WARN, hedge it into "probably fine," or omit it because it looks minor.
   Report every FAIL, at full severity, every time.
 - **If the authority file itself is drifted, that finding outranks everything.** A drifted
-  `AUTHORITY.json` (its bound document's hash no longer matches disk) means no other NORMATIVE claim
-  in the repo can be trusted to be anchored to what it claims — surface this first, before any other
-  ranking, and say plainly that no other finding can be fully resolved until the authority record is
-  fixed.
+  `CURRENT-AUTHORITY.json` (its bound document's hash no longer matches disk) means no other
+  NORMATIVE claim in the repo can be trusted to be anchored to what it claims — surface this first,
+  before any other ranking, and say plainly that no other finding can be fully resolved until the
+  authority record is fixed.
+- **Treat unresolved derivation and snapshot drift mechanically.** A missing, malformed, unreadable,
+  or unresolved `derived_from` is a FAIL. A resolving `as_of` commit behind HEAD is a WARN; an
+  unresolved commit or a missing, malformed, or hash-drifted snapshot is a FAIL.

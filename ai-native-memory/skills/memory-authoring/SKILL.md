@@ -18,12 +18,14 @@ repo-level files written on first run:
 **Repo-level (written once):**
 - `AI-START-HERE.md` — the entry point; tells a fresh model the load order and the
   ground rules before it reads anything else.
-- `AUTHORITY.json` — `{ active: {ref, path, sha256}, superseded: [] }`. `active` is the
+- `CURRENT-AUTHORITY.json` — `{ active: {ref, path, sha256}, superseded: [] }`. `active` is the
   governing document currently in force; it starts `null` until a human binds it — no
   record may claim `NORMATIVE` status against an unbound authority.
 - `LOAD-ORDER.json` — the minimal reading order for a fresh model (see below).
+- `MEMORY-MANIFEST.json` — the sorted, unique component-memory membership list.
 
 **Per-component (under `<component>/memory/`):**
+- `README.md` — the deterministic index of the generated record set.
 - `IDENTITY.md` — what this component IS and is NOT, in a couple of paragraphs. State
   the boundary plainly.
 - `INVARIANTS.json` + `INVARIANTS.md` — the machine record and its rendered projection.
@@ -36,13 +38,14 @@ repo-level files written on first run:
 - `comprehension-queries.json` — the deterministic queries a reader must answer
   correctly before being granted implementation authority.
 
-New contract and invariant templates are scaffolded as `SPECIFIED-PENDING-IMPLEMENTATION`
-carrying the placeholder `"NAME-THE-ORACLE-TEST-FILE"` in place of a real oracle
-reference — honest about being unproven from minute one, rather than defaulting to a
-status the record hasn't earned. The author must replace the placeholder with the real
-oracle test path before the record can be trusted. The structural audit does not verify
-that the oracle file actually exists on disk — that proof belongs to `verify.mjs` (which
-runs the oracles), not to the audit.
+New contract, invariant, and non-claim templates are scaffolded as
+`SPECIFIED-PENDING-IMPLEMENTATION` with empty `oracle`, `evidence`, and
+`becomes_normative_when` values. This is honest about being unproven from minute one,
+rather than defaulting to a status the record has not earned. Before a contract or
+invariant becomes `NORMATIVE-CURRENT`, replace the empty transition and oracle with a
+real repository-relative test path. The structural audit validates that the declared
+oracle path resolves to a regular file; `verify.mjs` executes each contract's declared
+oracle and requires exit `0`.
 
 ## Content addressing
 
@@ -58,7 +61,8 @@ keys sorted at every level, arrays kept in given order, no incidental whitespace
 SHA-256 the result. Two records with identical content, minus `id`, produce the same
 address. This is what makes a record's identity tamper-evident: if the content changes,
 the address changes, and any anchor pointing at the old address now fails to resolve —
-loudly, not silently.
+loudly, not silently. Recompute the content-addressed `id` after every machine-record
+change; retaining the old address is a taxonomy FAIL.
 
 ## Anchor forms
 
@@ -90,6 +94,21 @@ audit's staleness family checks that this path still resolves from the repo root
 If the file no longer exists at that path, the audit reports a FAIL (`staleness`) —
 a load-bearing anchor must never dangle.
 
+## `as_of` and snapshot staleness declarations (hardening 5)
+
+An optional `as_of` value is a commit anchor. Audit requires it to resolve in the
+current repository. An unresolved commit is a FAIL; a commit that resolves but trails
+HEAD produces a WARN containing its commit distance.
+
+An optional snapshot pins current source bytes:
+
+```json
+"snapshot": { "source_path": "path/to/source", "sha256": "sha256:<64 hex chars>" }
+```
+
+Audit FAILs when the source is missing, the hash is malformed, or the current source
+bytes do not match the pinned hash.
+
 ## `derived_from` on queries (hardening 1)
 
 Every entry in `comprehension-queries.json` that asserts an `expected` fact must carry
@@ -102,9 +121,10 @@ a `derived_from` pointer into the machine record that fact comes from, e.g.:
 `derived_from.file` names the machine file, `derived_from.pointer` is the path into it
 (dot-notation into the parsed JSON) that produces the expected value. A query without
 `derived_from` is a query someone typed by hand and will eventually forget to update —
-exactly the drift hardening 1 exists to catch. An audit walks every query, resolves its
-`derived_from` pointer against current disk state, and flags any query whose hand-typed
-`expected` no longer matches what the pointer actually resolves to.
+exactly the drift hardening 1 exists to catch. An audit walks every query and requires
+`derived_from` to be a `{file, pointer}` object. Missing or malformed derivation,
+unreadable or missing files, unresolved pointers, and values that differ from
+`expected` are all FAIL findings.
 
 ## `mirror_of` + `values` on mirrored sets (hardening 4)
 
@@ -162,7 +182,7 @@ human formally ratifies it; see `memory-lifecycle` for that path in full.
 {
   "order": [
     "AI-START-HERE.md",
-    "AUTHORITY.json",
+    "CURRENT-AUTHORITY.json",
     "<component>/memory/IDENTITY.md",
     "<component>/memory/INVARIANTS.json",
     "<component>/memory/CONTRACTS/",
@@ -183,9 +203,11 @@ for the task at hand.
 ## Render/drift discipline
 
 Machine records (`.json`) are the source of truth. Rendered documents (`.md`) are
-generated FROM the machine records — `README.md`, `INVARIANTS.md`, `NON-CLAIMS.md`.
+byte-derived FROM the machine records by the deterministic renderer —
+`INVARIANTS.md` and `NON-CLAIMS.md`; the scaffolded `README.md` is a deterministic
+index of the generated record set.
 When a fact changes, edit the machine record and regenerate the rendered file; never
 hand-edit a fact directly into the `.md`. A rendered file that has drifted from its
 source machine record is worse than no rendered file at all, because it looks
-authoritative while being wrong. If your tooling has no renderer yet, treat the `.md`
-as a stub pointing back at the machine record rather than duplicating facts by hand.
+authoritative while being wrong. Recompute the record's content-addressed `id` before
+regenerating the rendered bytes.

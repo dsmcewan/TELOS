@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
   cpSync,
+  existsSync,
   mkdtempSync,
   mkdirSync,
   readFileSync,
@@ -333,7 +334,10 @@ try {
     assert.ok(failures(stage(name), check).length >= 1, `${name} produces ${check} FAIL`);
   }
 } finally {
-  for (const root of roots) rmSync(root, { recursive: true, force: true });
+  for (const root of roots) {
+    rmSync(root, { recursive: true, force: true });
+    assert.equal(existsSync(root), false, `temporary audit root removed: ${root}`);
+  }
 }
 
 console.log("test-audit: all assertions passed");

@@ -5,7 +5,7 @@ How this plugin fails, and that it fails closed.
 ## Authority drift
 
 If the active governing document's bytes on disk no longer hash to the value pinned in
-`AUTHORITY.json`, `gate.mjs` refuses to run at all (exit `1`, not a DENIED `3`) — "a drifted
+`CURRENT-AUTHORITY.json`, `gate.mjs` refuses to run at all (exit `1`, not a DENIED `2`) — "a drifted
 authority cannot certify anyone." `audit.mjs`'s `auditAuthorityRoot` check independently flags the
 same drift as a `FAIL` finding (exit `2`) so it surfaces on a routine sweep even if no one is
 running the gate that day.
@@ -20,7 +20,9 @@ as equivalent to "this checked out fine."
 
 The three-representation check (`audit.mjs`) FAILs if `INVARIANTS.md` or `NON-CLAIMS.md` exists
 without a corresponding `.json` machine record, and FAILs any invariant entry missing an `oracle`
-field. Prose alone is never treated as a NORMATIVE claim.
+field. It also recomputes every record's content-addressed `id` and byte-derives the expected
+Markdown from JSON; a stale ID or rendered-byte mismatch FAILs. Prose alone is never treated as a
+NORMATIVE claim.
 
 ## Comprehension queries drifting from their source contracts
 
@@ -28,19 +30,28 @@ The query-freshness check re-derives each query's `expected` value from the mach
 `derived_from` pointer names, at audit time. If a contract changes and the queries are not
 regenerated to match, the audit FAILs — the exact failure this hardening exists to catch (queries
 and answers drifting in lockstep, invisible to a gate that only checks internal consistency between
-queries and answers, never against the contract itself).
+queries and answers, never against the contract itself). Missing or malformed derivation, unreadable
+or missing files, and unresolved pointers also FAIL.
+
+## Stale commit and snapshot evidence
+
+An `as_of` commit that resolves but trails HEAD produces a WARN with its commit distance. An
+unresolved `as_of` commit FAILs. A snapshot FAILs when its source is missing, its hash is malformed,
+or its current bytes do not match the pinned hash.
 
 ## A wrong or incomplete comprehension answer
 
-`gate.mjs` DENIES (exit `3`) on any single wrong answer, any unacknowledged required invariant or
+`gate.mjs` DENIES (exit `2`) on any single wrong answer, any unacknowledged required invariant or
 non-claim, or any un-excluded superseded authority reference. There is no partial credit and no
 majority-vote pass; every check must hold.
 
 ## A verify-map oracle that fails or is missing
 
-`verify.mjs` FAILs (exit `2`) if a named contract file is missing or malformed, if a named oracle
-file does not exist, or if a named oracle exits nonzero when run. A verify-map entry naming an
-oracle that does not terminate cleanly is a documentation bug in the host repository's own
+The structural audit validates that each NORMATIVE contract or invariant names an oracle path that
+exists as a regular file, but it does not execute that file. `verify.mjs` executes each contract's
+declared oracle and FAILs (exit `2`) if a named contract file is missing or malformed, if a named
+oracle file does not exist, or if that oracle exits nonzero. A verify-map entry naming an oracle
+that does not terminate cleanly is a documentation bug in the host repository's own
 `verify-map.json`, not a silent pass.
 
 ## Self-recursion in the plugin's own verify oracle
