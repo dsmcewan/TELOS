@@ -11,7 +11,7 @@
     },
     {
       "id": "zero-deps",
-      "query": "Does the plugin declare any runtime dependencies?",
+      "query": "Is the plugin zero-dependency (no runtime dependencies declared)? (boolean)",
       "answer_kind": "boolean",
       "expected": true,
       "derived_from": { "file": "CONTRACTS/plugin.json", "pointer": "zero_dependencies" }

@@ -71,6 +71,7 @@ function auditQueryFreshness(dir, out, root) {
   try { q = readJson(qp); } catch (e) { out.push(finding("FAIL", "query-freshness", where, e.message)); return; }
   for (const query of q.queries || []) {
     if (!query.derived_from) { out.push(finding("WARN", "query-freshness", where, `query ${query.id}: no derived_from — expected fact is not machine-derivable`)); continue; }
+    if (typeof query.derived_from !== "object" || query.derived_from === null || typeof query.derived_from.file !== "string" || typeof query.derived_from.pointer !== "string") { out.push(finding("WARN", "query-freshness", where, `query ${query.id}: derived_from must be { file, pointer }`)); continue; }
     const src = path.join(dir, query.derived_from.file);
     if (!existsSync(src)) { out.push(finding("WARN", "query-freshness", where, `query ${query.id}: derived_from file missing: ${query.derived_from.file}`)); continue; }
     let actual;

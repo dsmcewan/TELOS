@@ -15,9 +15,9 @@ of sync with the records it's supposed to anchor to.
    have an `expected` value that is read directly off a machine record — never invented, never
    inferred from prose, never your own judgment about what a good answer would be.
 2. **Every `expected` value carries a `derived_from` pointer** that names the exact record and field
-   it came from (e.g. `derived_from: "CONTRACTS/component.json#status"`), so the chain terminates in
-   a contract value, not in model opinion. If you cannot point at the source field, you cannot write
-   the query.
+   it came from (e.g. `"derived_from": { "file": "CONTRACTS/component.json", "pointer": "status" }`),
+   so the chain terminates in a contract value, not in model opinion. If you cannot point at the
+   source field, you cannot write the query.
 3. **Generate negative answer fixtures.** For every passing answer set, produce one negative fixture
    per query that flips exactly that one answer (and leaves everything else matching). Each negative
    fixture must fail the gate on exactly the query you flipped — if it fails on a different check too,

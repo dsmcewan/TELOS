@@ -37,8 +37,12 @@ repo-level files written on first run:
   correctly before being granted implementation authority.
 
 New contract and invariant templates are scaffolded as `SPECIFIED-PENDING-IMPLEMENTATION`
-with an empty `becomes_normative_when` — honest about being unproven from minute one,
-rather than defaulting to a status the record hasn't earned.
+carrying the placeholder `"NAME-THE-ORACLE-TEST-FILE"` in place of a real oracle
+reference — honest about being unproven from minute one, rather than defaulting to a
+status the record hasn't earned. The author must replace the placeholder with the real
+oracle test path before the record can be trusted. The structural audit does not verify
+that the oracle file actually exists on disk — that proof belongs to `verify.mjs` (which
+runs the oracles), not to the audit.
 
 ## Content addressing
 
