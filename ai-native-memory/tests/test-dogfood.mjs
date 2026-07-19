@@ -5,6 +5,7 @@ import { spawnSync } from "node:child_process";
 import { readdirSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { importSpecifiers } from "../scripts/lib/record.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, "..");
@@ -27,7 +28,7 @@ try { assert.equal(gate(tmp).status, 2, "flipped answer DENIED"); } finally { rm
 
 // 3. self-verify
 const v = spawnSync(process.execPath, [path.join(ROOT, "scripts", "verify.mjs"), path.join(ROOT, "verify-map.json")], { encoding: "utf8" });
-assert.equal(v.status, 0, "self-verify green: " + v.stdout);
+assert.equal(v.status, 0, `self-verify green:\n${v.stdout}\n${v.stderr}`);
 
 // 4. no-host-imports: every script imports only node:* or ./ paths
 const scan = (dir) => {
@@ -35,8 +36,12 @@ const scan = (dir) => {
     const full = path.join(dir, e.name);
     if (e.isDirectory()) { scan(full); continue; }
     if (!e.name.endsWith(".mjs")) continue;
-    for (const m of readFileSync(full, "utf8").matchAll(/from\s+["']([^"']+)["']/g)) {
-      assert.ok(m[1].startsWith("node:") || m[1].startsWith("."), `${e.name}: non-portable import ${m[1]}`);
+    const source = readFileSync(full, "utf8");
+    for (const specifier of importSpecifiers(source)) {
+      assert.ok(
+        specifier.startsWith("node:") || specifier.startsWith("."),
+        `${e.name}: non-portable import ${specifier}`
+      );
     }
   }
 };
