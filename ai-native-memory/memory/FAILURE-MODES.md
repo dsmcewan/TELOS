@@ -17,11 +17,13 @@ current-authority input cannot be read or parsed. `audit.mjs` uses it when the s
 cannot be treated as a readable audit root, including a primary record the sweep must parse.
 `verify.mjs` uses it when the verify-map itself is unreadable, malformed, or not an array.
 
-Once those primary inputs are accepted, subordinate data problems are graded findings at exit `2`.
-For example, malformed or unreadable JSON reached through a query's `derived_from` pointer becomes
-a `query-freshness` FAIL, and a malformed or unreadable contract named by a valid verify-map becomes
-a `verify` FAIL. Normal audit, verify, and comprehension findings likewise use exit `2`. The plugin
-never treats "I could not check this" as equivalent to "this checked out fine."
+Certain subordinate data problems are graded findings at exit `2`. For example, malformed or
+unreadable JSON reached through a query's `derived_from` pointer becomes a `query-freshness` FAIL,
+and a malformed or unreadable contract named by a valid verify-map becomes a `verify` FAIL. Normal
+audit, verify, and comprehension findings likewise use exit `2`. Other unreadable audit
+dependencies, including mirror sources or snapshot bytes, can still make the audit unable to run
+and exit `1`. The plugin never treats "I could not check this" as equivalent to "this checked out
+fine."
 
 ## A load-bearing claim with no machine record
 
