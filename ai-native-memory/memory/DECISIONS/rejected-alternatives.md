@@ -37,5 +37,8 @@ adding real authentication is future work, not a hidden gap.
 Pointing `verify-map.json`'s oracle at `run.mjs` would make that self-verify step recurse into a
 process that (transitively) re-invokes itself. Instead the contract and map both name
 `tests/oracle-plugin-contract.mjs`, a terminating oracle that runs the five non-dogfood tests:
-`test-lib`, `test-audit`, `test-gate`, `test-init`, and `test-verify`. This avoids recursion while
-still testing the contract directly; the full suite remains the package test entry point.
+`test-lib`, `test-audit`, `test-gate`, `test-init`, and `test-verify`. Before those tests it directly
+checks the contract's `zero_dependencies` field, `package.json`, and every recognized import under
+`scripts/`, so the contract's dependency boundary terminates in that oracle rather than in
+`test-dogfood`. This avoids recursion while still testing the contract directly; the full suite
+remains the package test entry point.

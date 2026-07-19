@@ -1,7 +1,13 @@
 {
-  "kind": "contract", "id": "example", "title": "Example contract",
-  "status": "SUPERSEDED", "normativity": "NORMATIVE",
-  "oracle": { "test": "scripts/test-example.mjs" },
+  "kind": "contract",
+  "id": "sha256:af933088b7f632beb3f6009d7dd89da35e0c68eaca44b79fa81a2467eab3d264",
+  "title": "Example contract",
+  "status": "SUPERSEDED",
+  "normativity": "NORMATIVE",
+  "oracle": {
+    "test": "scripts/test-example.mjs"
+  },
   "lifecycle": "docs-first",
-  "decided_by": "human"
+  "decided_by": "human",
+  "evidence": []
 }

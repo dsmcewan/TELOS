@@ -1,6 +1,17 @@
 {
-  "kind": "contract", "id": "mirror", "title": "Mirrored closed set", "status": "NORMATIVE-CURRENT",
-  "normativity": "NORMATIVE", "oracle": { "test": "scripts/test-example.mjs" }, "lifecycle": "docs-first",
-  "mirror_of": { "file": "CONTRACTS/example.json", "pointer": "oracle.test" },
-  "values": "scripts/other.mjs"
+  "kind": "contract",
+  "id": "sha256:fff789b71204b9f085d708f7b10a7279683d3bc00e509c26fd8af484ee39fbf8",
+  "title": "Mirrored closed set",
+  "status": "NORMATIVE-CURRENT",
+  "normativity": "NORMATIVE",
+  "oracle": {
+    "test": "scripts/test-example.mjs"
+  },
+  "lifecycle": "docs-first",
+  "mirror_of": {
+    "file": "CONTRACTS/example.json",
+    "pointer": "oracle.test"
+  },
+  "values": "scripts/other.mjs",
+  "evidence": []
 }

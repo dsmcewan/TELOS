@@ -1,11 +1,20 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import {
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync
+} from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import {
   canonicalize,
   sha256hex,
   contentAddress,
   hasValidContentAddress,
   importSpecifiers,
+  packageBoundaryProblems,
   renderRecordList,
   resolveWithin,
   RECORD_KINDS,
@@ -45,6 +54,45 @@ assert.deepEqual(
   importSpecifiers('import x from "node:x"; import "./side.mjs"; await import("../dynamic.mjs");'),
   ["node:x", "./side.mjs", "../dynamic.mjs"]
 );
+const packageRoot = mkdtempSync(path.join(tmpdir(), "anm-boundary-"));
+try {
+  mkdirSync(path.join(packageRoot, "scripts"));
+  writeFileSync(
+    path.join(packageRoot, "package.json"),
+    JSON.stringify({ dependencies: {} })
+  );
+  writeFileSync(
+    path.join(packageRoot, "scripts", "portable.mjs"),
+    'import "node:path"; import "./relative.mjs";\n'
+  );
+  assert.deepEqual(packageBoundaryProblems(packageRoot), []);
+
+  writeFileSync(
+    path.join(packageRoot, "package.json"),
+    JSON.stringify({ dependencies: { surprise: "1.0.0" } })
+  );
+  assert.ok(
+    packageBoundaryProblems(packageRoot).some((problem) =>
+      problem.includes("runtime dependencies")
+    )
+  );
+
+  writeFileSync(
+    path.join(packageRoot, "package.json"),
+    JSON.stringify({ dependencies: {} })
+  );
+  writeFileSync(
+    path.join(packageRoot, "scripts", "non-portable.mjs"),
+    'await import("external-package");\n'
+  );
+  assert.ok(
+    packageBoundaryProblems(packageRoot).some((problem) =>
+      problem.includes("non-portable import external-package")
+    )
+  );
+} finally {
+  rmSync(packageRoot, { recursive: true, force: true });
+}
 // findings
 const f = finding("FAIL", "three-representation", "x/memory", "missing INVARIANTS.json");
 assert.deepEqual(Object.keys(f).sort(), ["check", "detail", "level", "path"]);

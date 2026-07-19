@@ -1,3 +1,10 @@
 [
-  { "id": "nc-no-proof", "kind": "non-claim", "statement": "Static scan, not a proof or sandbox.", "status": "NORMATIVE-CURRENT" }
+  {
+    "id": "sha256:0b16d97ea4b4394e6362dc29cb0c2f9ad4006421105adec39aa972af03f39e84",
+    "kind": "non-claim",
+    "statement": "Static scan, not a proof or sandbox.",
+    "status": "NORMATIVE-CURRENT",
+    "lifecycle": "docs-first",
+    "evidence": []
+  }
 ]

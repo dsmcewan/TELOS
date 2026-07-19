@@ -247,6 +247,7 @@ Rules: machine records are the source of truth; human docs are rendered projecti
       buildRecord({
         kind: "invariant",
         statement: "REPLACE: a load-bearing always-true property.",
+        lifecycle: "docs-first",
         oracle: "",
         evidence: [],
         normativity: "NORMATIVE",
@@ -258,6 +259,7 @@ Rules: machine records are the source of truth; human docs are rendered projecti
       buildRecord({
         kind: "non-claim",
         statement: "REPLACE: something this component deliberately does NOT do or prove.",
+        lifecycle: "docs-first",
         oracle: "",
         evidence: [],
         status: "SPECIFIED-PENDING-IMPLEMENTATION",

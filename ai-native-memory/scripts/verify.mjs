@@ -36,6 +36,12 @@ function resolveExistingWithin(root, relative, label, type) {
 
 function findContractFiles(root, out) {
   const contracts = [];
+  const isWithinRoot = (target) => {
+    const relative = path.relative(root, target);
+    return relative !== ".."
+      && !relative.startsWith(`..${path.sep}`)
+      && !path.isAbsolute(relative);
+  };
   const readDirectory = (dir) => {
     try {
       return readdirSync(dir, { withFileTypes: true });
@@ -46,17 +52,74 @@ function findContractFiles(root, out) {
   };
   const walk = (dir) => {
     for (const entry of readDirectory(dir)) {
-      if (entry.isSymbolicLink() || !entry.isDirectory() || SKIP.has(entry.name)) continue;
       const full = path.join(dir, entry.name);
+      if (entry.isSymbolicLink()) {
+        if (entry.name === "memory") {
+          out.push(finding(
+            "FAIL",
+            "verify",
+            relativePath(root, full),
+            "conventionally named memory directory must not be a symlink"
+          ));
+        }
+        continue;
+      }
+      if (!entry.isDirectory() || SKIP.has(entry.name)) continue;
       if (entry.name !== "memory") {
         walk(full);
         continue;
       }
-      const contractDir = path.join(full, "CONTRACTS");
-      if (!existsSync(contractDir)) continue;
-      for (const contract of readDirectory(contractDir)) {
-        if (contract.isFile() && contract.name.endsWith(".json")) {
-          contracts.push(path.join(contractDir, contract.name));
+      const lexicalContractDir = path.join(full, "CONTRACTS");
+      if (!existsSync(lexicalContractDir)) continue;
+      let contractDir;
+      try {
+        contractDir = realpathSync(lexicalContractDir);
+      } catch (error) {
+        out.push(finding(
+          "FAIL",
+          "verify",
+          relativePath(root, lexicalContractDir),
+          `cannot resolve contract directory: ${error.message}`
+        ));
+        continue;
+      }
+      if (!isWithinRoot(contractDir)) {
+        out.push(finding(
+          "FAIL",
+          "verify",
+          relativePath(root, lexicalContractDir),
+          "contract directory path escapes repository root"
+        ));
+        continue;
+      }
+      for (const contract of readDirectory(lexicalContractDir)) {
+        if (!contract.name.endsWith(".json")) continue;
+        const contractPath = path.join(lexicalContractDir, contract.name);
+        if (contract.isSymbolicLink()) {
+          let target;
+          try {
+            target = realpathSync(contractPath);
+          } catch (error) {
+            out.push(finding(
+              "FAIL",
+              "verify",
+              relativePath(root, contractPath),
+              `cannot resolve contract record symlink: ${error.message}`
+            ));
+            continue;
+          }
+          if (!isWithinRoot(target)) {
+            out.push(finding(
+              "FAIL",
+              "verify",
+              relativePath(root, contractPath),
+              "contract record path escapes repository root through symlink"
+            ));
+            continue;
+          }
+          contracts.push(contractPath);
+        } else if (contract.isFile()) {
+          contracts.push(contractPath);
         }
       }
     }

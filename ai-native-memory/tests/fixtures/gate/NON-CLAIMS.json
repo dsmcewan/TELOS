@@ -1,0 +1,10 @@
+[
+  {
+    "id": "sha256:2d5b9ac9d135dff129812898ff61148a1b7253eb57eb72a1c092d48c5717522e",
+    "kind": "non-claim",
+    "statement": "The gate does not prove semantic truth.",
+    "lifecycle": "docs-first",
+    "evidence": [],
+    "status": "NORMATIVE-CURRENT"
+  }
+]

@@ -81,6 +81,26 @@ const cwdSymlinkEscape = run("passing", ({ staged, temporary }) => {
   writeMap(staged, [entry(undefined, "cwd-link")]);
 });
 
+const hiddenMemorySymlink = run("passing", ({ staged, temporary }) => {
+  const outsideMemory = path.join(temporary, "outside-memory");
+  const outsideContracts = path.join(outsideMemory, "CONTRACTS");
+  mkdirSync(outsideContracts, { recursive: true });
+  cpSync(
+    path.join(staged, "memory", "CONTRACTS", "contract.json"),
+    path.join(outsideContracts, "hidden.json")
+  );
+  mkdirSync(path.join(staged, "hidden"));
+  symlinkSync(outsideMemory, path.join(staged, "hidden", "memory"), "dir");
+});
+
+const hiddenContractSymlink = run("passing", ({ staged, temporary }) => {
+  const outside = path.join(temporary, "outside-contract.json");
+  cpSync(path.join(staged, "memory", "CONTRACTS", "contract.json"), outside);
+  const contracts = path.join(staged, "hidden", "memory", "CONTRACTS");
+  mkdirSync(contracts, { recursive: true });
+  symlinkSync(outside, path.join(contracts, "hidden.json"));
+});
+
 const dotSegmentDuplicate = run("passing", ({ staged }) => {
   writeMap(staged, [
     entry(),
@@ -108,6 +128,8 @@ assert.deepEqual({
   contractSymlinkEscape: contractSymlinkEscape.status,
   oracleSymlinkEscape: oracleSymlinkEscape.status,
   cwdSymlinkEscape: cwdSymlinkEscape.status,
+  hiddenMemorySymlink: hiddenMemorySymlink.status,
+  hiddenContractSymlink: hiddenContractSymlink.status,
   dotSegmentDuplicate: dotSegmentDuplicate.status,
   symlinkAliasDuplicate: symlinkAliasDuplicate.status,
   falsyCwdStatuses
@@ -115,6 +137,8 @@ assert.deepEqual({
   contractSymlinkEscape: 2,
   oracleSymlinkEscape: 2,
   cwdSymlinkEscape: 2,
+  hiddenMemorySymlink: 2,
+  hiddenContractSymlink: 2,
   dotSegmentDuplicate: 2,
   symlinkAliasDuplicate: 2,
   falsyCwdStatuses: {
@@ -186,8 +210,17 @@ assert.match(output(signaledOracle), /signal SIGTERM/, "oracle signal diagnostic
 
 const temporaryOracle = mkdtempSync(path.join(tmpdir(), "anm-plugin-oracle-"));
 try {
-  const oracle = path.join(temporaryOracle, "oracle-plugin-contract.mjs");
-  cpSync(PLUGIN_ORACLE, oracle);
+  mkdirSync(path.join(temporaryOracle, "memory", "CONTRACTS"), { recursive: true });
+  mkdirSync(path.join(temporaryOracle, "scripts"), { recursive: true });
+  mkdirSync(path.join(temporaryOracle, "tests"), { recursive: true });
+  writeFileSync(
+    path.join(temporaryOracle, "memory", "CONTRACTS", "plugin.json"),
+    `${JSON.stringify({ zero_dependencies: true }, null, 2)}\n`
+  );
+  writeFileSync(
+    path.join(temporaryOracle, "scripts", "portable.mjs"),
+    'import "node:path";\n'
+  );
   for (const test of [
     "test-lib.mjs",
     "test-audit.mjs",
@@ -195,15 +228,50 @@ try {
     "test-init.mjs",
     "test-verify.mjs"
   ]) {
-    writeFileSync(path.join(temporaryOracle, test), "process.exit(0);\n");
+    writeFileSync(path.join(temporaryOracle, "tests", test), "process.exit(0);\n");
   }
   writeFileSync(
-    path.join(temporaryOracle, "test-lib.mjs"),
+    path.join(temporaryOracle, "tests", "test-lib.mjs"),
     'process.kill(process.pid, "SIGTERM");\n'
   );
-  const result = spawnSync(process.execPath, [oracle], { encoding: "utf8" });
+  writeFileSync(
+    path.join(temporaryOracle, "package.json"),
+    `${JSON.stringify({ dependencies: {} }, null, 2)}\n`
+  );
+  const result = spawnSync(
+    process.execPath,
+    [PLUGIN_ORACLE, "--root", temporaryOracle],
+    { encoding: "utf8" }
+  );
   assert.equal(result.status, 1, "plugin oracle preserves failing exit semantics");
   assert.match(output(result), /test-lib\.mjs.*signal SIGTERM/, "plugin oracle signal diagnostic");
+
+  writeFileSync(
+    path.join(temporaryOracle, "tests", "test-lib.mjs"),
+    "process.exit(0);\n"
+  );
+  writeFileSync(
+    path.join(temporaryOracle, "package.json"),
+    `${JSON.stringify({ dependencies: { surprise: "1.0.0" } }, null, 2)}\n`
+  );
+  const dependencyResult = spawnSync(
+    process.execPath,
+    [PLUGIN_ORACLE, "--root", temporaryOracle],
+    { encoding: "utf8" }
+  );
+  assert.equal(dependencyResult.status, 1, "runtime dependency fails terminating oracle");
+  assert.match(output(dependencyResult), /runtime dependencies/, "dependency failure diagnostic");
+
+  writeFileSync(
+    path.join(temporaryOracle, "package.json"),
+    `${JSON.stringify({ dependencies: {} }, null, 2)}\n`
+  );
+  const cleanResult = spawnSync(
+    process.execPath,
+    [PLUGIN_ORACLE, "--root", temporaryOracle],
+    { encoding: "utf8" }
+  );
+  assert.equal(cleanResult.status, 0, output(cleanResult));
 } finally {
   rmSync(temporaryOracle, { recursive: true, force: true });
 }

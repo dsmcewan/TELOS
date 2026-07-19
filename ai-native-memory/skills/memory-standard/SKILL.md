@@ -101,11 +101,13 @@ HUMAN-AUTHORIZED-EXCEPTION · ADVISORY
   ambiguity is exactly what a successor model will exploit by accident.
 - **`SPECIFIED-PENDING-IMPLEMENTATION`** — the design-substrate state: the rule is
   frozen and authority-anchored, but the code implementing it does not exist yet, so
-  there is no passing oracle. This status MUST carry a nonempty `becomes_normative_when`
-  field naming the oracle (the test file, the check) that will exist once the work is
-  done. This is documentation-first by design: an implementer loads the record, treats
-  it as the target to build against, and the record flips to `NORMATIVE-CURRENT` only
-  when that named oracle exists and passes.
+  there is no passing oracle. This status MUST carry `becomes_normative_when` as a
+  canonical, portable repository-relative `.js`, `.cjs`, or `.mjs` path naming the
+  executable oracle that will exist once the work is done. The path may be absent while
+  the record remains pending; blank values, placeholders, prose, absolute paths, and
+  traversal are invalid. This is documentation-first by design: an implementer loads
+  the record, treats it as the target to build against, and the record flips to
+  `NORMATIVE-CURRENT` only when that named oracle exists and passes.
 - **`RATIFICATION-PENDING`** — the deferred-ratification path: work proceeded
   build-first, ahead of the normal docs-first order, under explicit human direction. The
   record documents what was built and states plainly that ratification (the formal
@@ -135,6 +137,9 @@ speculative extras. Each is a first-class rule, not a suggestion.
    and left to rot. *Origin: in the source project, comprehension queries and their
    example answers drifted in lockstep with the system they described — the queries
    still named five components after growth had made it seven, and nothing caught it.*
+   A comprehension document must contain at least one query, plus nonempty
+   `required_invariants` and `required_non_claims` arrays. Those arrays contain unique,
+   valid content addresses that resolve to sibling machine records of the correct kind.
    A missing, malformed, unreadable, or unresolved `derived_from` pointer is a FAIL, as
    is a resolved value that does not equal `expected`.
 
@@ -181,6 +186,11 @@ speculative extras. Each is a first-class rule, not a suggestion.
    model-advisory-adopted-by-human`. Human authority is never silently delegated to a
    model. *Origin: preventive design — attribution of rulings (human vs. model-advised)
    was made explicit so authority can never be inferred or misread from prose.*
+
+Record discovery is also fail-closed. A conventionally named `memory` directory may
+not be a symlink, and primary record files must remain physically contained beneath
+the repository before they are parsed. A symlink cannot hide records from audit or
+verification.
 
 ## Preserve rejected alternatives
 

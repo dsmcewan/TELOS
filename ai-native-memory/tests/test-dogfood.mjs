@@ -5,16 +5,22 @@ import { spawnSync } from "node:child_process";
 import { readdirSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { importSpecifiers } from "../scripts/lib/record.mjs";
+import {
+  importSpecifiers,
+  packageBoundaryProblems
+} from "../scripts/lib/record.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, "..");
 
-// 1. self-audit: the public whole-root audit is clean.
+// 1. the package and every script satisfy the zero-dependency/import boundary.
+assert.deepEqual(packageBoundaryProblems(ROOT), []);
+
+// 2. self-audit: the public whole-root audit is clean.
 const audit = spawnSync(process.execPath, [path.join(ROOT, "scripts", "audit.mjs"), ROOT], { encoding: "utf8" });
 assert.equal(audit.status, 0, `whole-root self-audit:\n${audit.stdout}\n${audit.stderr}`);
 
-// 2. self-gate: the example answers GRANT; a flipped answer DENIES
+// 3. self-gate: the example answers GRANT; a flipped answer DENIES
 const gate = (answers) => spawnSync(process.execPath, [path.join(ROOT, "scripts", "gate.mjs"),
   path.join(ROOT, "memory", "comprehension-queries.json"), answers,
   "--authority", path.join(ROOT, "CURRENT-AUTHORITY.json")], { encoding: "utf8" });
@@ -26,11 +32,11 @@ const tmp = path.join(HERE, "tmp-neg-answers.json");
 writeFileSync(tmp, JSON.stringify(a));
 try { assert.equal(gate(tmp).status, 2, "flipped answer DENIED"); } finally { rmSync(tmp); }
 
-// 3. self-verify
+// 4. self-verify
 const v = spawnSync(process.execPath, [path.join(ROOT, "scripts", "verify.mjs"), path.join(ROOT, "verify-map.json")], { encoding: "utf8" });
 assert.equal(v.status, 0, `self-verify green:\n${v.stdout}\n${v.stderr}`);
 
-// 4. no-host-imports: every script imports only node:* or ./ paths
+// 5. no-host-imports: every script imports only node:* or ./ paths
 const scan = (dir) => {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, e.name);

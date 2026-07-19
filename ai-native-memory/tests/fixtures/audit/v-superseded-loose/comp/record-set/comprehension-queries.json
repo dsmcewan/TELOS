@@ -1,1 +1,24 @@
-{ "component": "comp", "governing_authority": { "ref": "A1" }, "queries": [], "required_invariants": [], "required_non_claims": [] }
+{
+  "component": "comp",
+  "governing_authority": {
+    "ref": "A1"
+  },
+  "queries": [
+    {
+      "id": "q-status",
+      "query": "Contract status?",
+      "answer_kind": "enum",
+      "expected": "SUPERSEDED",
+      "derived_from": {
+        "file": "CONTRACTS/example.json",
+        "pointer": "status"
+      }
+    }
+  ],
+  "required_invariants": [
+    "sha256:cecf04544ce5534fbffc996731197932a108e6ce2b1f92ae03d463332a161cf1"
+  ],
+  "required_non_claims": [
+    "sha256:0b16d97ea4b4394e6362dc29cb0c2f9ad4006421105adec39aa972af03f39e84"
+  ]
+}

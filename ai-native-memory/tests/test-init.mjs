@@ -16,10 +16,15 @@ import { tmpdir } from "node:os";
 import { spawn, spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { contentAddress, renderRecordList } from "../scripts/lib/record.mjs";
+import {
+  contentAddress,
+  renderRecordList,
+  sha256hex
+} from "../scripts/lib/record.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const INIT = path.join(HERE, "..", "scripts", "init.mjs");
+const GATE = path.join(HERE, "..", "scripts", "gate.mjs");
 const roots = [];
 
 function makeRoot(prefix = "anm init ") {
@@ -50,6 +55,10 @@ function runInitConcurrent(root, component) {
 
 function readJson(root, relativePath) {
   return JSON.parse(readFileSync(path.join(root, ...relativePath.split("/")), "utf8"));
+}
+
+function writeJsonFile(file, value) {
+  writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
 }
 
 function componentFiles(component) {
@@ -86,11 +95,13 @@ function assertComponent(root, component) {
       assert.equal(record.status, "SPECIFIED-PENDING-IMPLEMENTATION");
       assert.equal(record.becomes_normative_when, "");
       assert.deepEqual(record.evidence, []);
+      assert.equal(record.lifecycle, "docs-first");
       assert.equal(record.id, contentAddress(record));
       if (record.kind === "invariant" || record.kind === "non-claim") {
         assert.equal(record.oracle, "");
       } else {
         assert.equal(record.oracle.test, "");
+        assert.equal(record.decided_by, "human");
       }
     }
   }
@@ -206,6 +217,50 @@ try {
   assert.equal(nested.status, 0, nested.stderr);
   assert.deepEqual(readJson(nestedRoot, "MEMORY-MANIFEST.json").components, ["packages/widget"]);
   assertComponent(nestedRoot, "packages/widget");
+
+  const uncertifiedRoot = makeRoot("anm uncertified ");
+  assert.equal(runInit(uncertifiedRoot, "widget").status, 0);
+  const authorityDocument = "Fixture governing authority.\n";
+  writeFileSync(path.join(uncertifiedRoot, "authority.md"), authorityDocument);
+  writeJsonFile(path.join(uncertifiedRoot, "CURRENT-AUTHORITY.json"), {
+    active: {
+      ref: "A1",
+      path: "authority.md",
+      sha256: `sha256:${sha256hex(authorityDocument)}`
+    },
+    superseded: []
+  });
+  const emptyQueriesPath = path.join(
+    uncertifiedRoot,
+    "widget",
+    "memory",
+    "comprehension-queries.json"
+  );
+  const emptyQueries = JSON.parse(readFileSync(emptyQueriesPath, "utf8"));
+  emptyQueries.governing_authority.ref = "A1";
+  writeJsonFile(emptyQueriesPath, emptyQueries);
+  const emptyAnswersPath = path.join(uncertifiedRoot, "answers.json");
+  writeJsonFile(emptyAnswersPath, {
+    reader: "fresh-scaffold",
+    resolved_authority_ref: "A1",
+    excluded_superseded: [],
+    invariants_read: [],
+    non_claims_read: [],
+    answers: {}
+  });
+  const uncertifiedGate = spawnSync(process.execPath, [
+    GATE,
+    emptyQueriesPath,
+    emptyAnswersPath,
+    "--authority",
+    path.join(uncertifiedRoot, "CURRENT-AUTHORITY.json")
+  ], { encoding: "utf8" });
+  assert.equal(
+    uncertifiedGate.status,
+    2,
+    `fresh empty scaffold must remain uncertified:\n${uncertifiedGate.stdout}\n${uncertifiedGate.stderr}`
+  );
+  assert.match(uncertifiedGate.stdout, /queries_nonempty/);
 
   for (const manifest of [
     "{\n",

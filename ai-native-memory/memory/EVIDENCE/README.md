@@ -13,17 +13,23 @@ substitute for running the oracles yourself — this is an index, not a cache of
 ## What each test file proves
 
 - `tests/oracle-plugin-contract.mjs` — the terminating oracle named by both
-  `memory/CONTRACTS/plugin.json` and `verify-map.json`; it runs the five non-dogfood tests and
-  avoids recursive self-verification without substituting an unrelated oracle.
+  `memory/CONTRACTS/plugin.json` and `verify-map.json`; it directly checks the contract's
+  `zero_dependencies` flag, the empty runtime-dependency set, and the complete script-import
+  boundary, then runs the five non-dogfood tests. This avoids recursive self-verification without
+  substituting an unrelated oracle.
 - `tests/test-lib.mjs` — the vendored primitives (`canonicalize`, `sha256hex`, `contentAddress`,
-  `finding`, `printFindings`) behave as specified.
+  package-boundary inspection, `finding`, and `printFindings`) behave as specified, including
+  isolated runtime-dependency and non-portable import failures.
 - `tests/test-audit.mjs` — one passing fixture tree and one violating fixture tree per audit
   family (three-representation, taxonomy, query-freshness, mirror-sync, staleness) under
   `tests/fixtures/audit/`; every check is proven capable of both passing and failing.
 - `tests/test-gate.mjs` — a passing answer set GRANTs, a wrong answer DENIES, a missing
-  superseded-exclusion DENIES, and a drifted authority document makes the gate refuse to run.
+  superseded-exclusion DENIES, empty/duplicate/dangling/wrong-kind required records DENY, missing
+  sibling machine records make the gate refuse to run, and a drifted authority document makes the
+  gate refuse to run.
 - `tests/test-verify.mjs` — an all-green verify-map exits `0`; a failing oracle and a missing
-  contract each exit `2`.
+  contract each exit `2`; hidden symlinked record sets and escaping primary contract records are
+  findings; an isolated fake runtime dependency makes the terminating plugin oracle fail.
 - `tests/test-init.mjs` — scaffolding is idempotent (a second run never overwrites) and starts
   every generated contract honestly at `SPECIFIED-PENDING-IMPLEMENTATION`, never `NORMATIVE-CURRENT`.
 - `tests/test-dogfood.mjs` — the inheritance proof. It invokes the public

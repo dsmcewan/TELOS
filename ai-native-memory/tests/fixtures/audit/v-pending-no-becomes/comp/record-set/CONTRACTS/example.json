@@ -1,7 +1,13 @@
 {
-  "kind": "contract", "id": "example", "title": "Example contract",
-  "status": "SPECIFIED-PENDING-IMPLEMENTATION", "normativity": "NORMATIVE",
-  "oracle": { "test": "scripts/test-example.mjs" },
+  "kind": "contract",
+  "id": "sha256:07881ad5d4aa059255bb8ea9a9771f5407830e99eab2291463931667161776e9",
+  "title": "Example contract",
+  "status": "SPECIFIED-PENDING-IMPLEMENTATION",
+  "normativity": "NORMATIVE",
+  "oracle": {
+    "test": "scripts/test-example.mjs"
+  },
   "lifecycle": "docs-first",
-  "decided_by": "human"
+  "decided_by": "human",
+  "evidence": []
 }

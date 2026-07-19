@@ -1,13 +1,13 @@
 {
   "kind": "contract",
-  "id": "sha256:54c4d759b305fd5293230d9e150163a5c06d3489ca54fc497aa03fa6f28e4890",
+  "id": "sha256:24c9606f8ba3abd7a9404c2b149b78b52df316871dae32da886dedef2ee298f8",
   "title": "ai-native-memory — the plugin's own frozen semantics",
   "status": "NORMATIVE-CURRENT",
   "normativity": "NORMATIVE",
   "lifecycle": "docs-first",
   "decided_by": "human",
   "oracle": { "test": "tests/oracle-plugin-contract.mjs" },
-  "verify_note": "tests/oracle-plugin-contract.mjs is the terminating oracle for this contract and runs the five focused checks for its frozen semantics.",
+  "verify_note": "tests/oracle-plugin-contract.mjs directly proves zero_dependencies and the complete script-import boundary, then runs the five focused checks for the remaining frozen semantics without invoking test-dogfood.mjs.",
   "zero_dependencies": true,
   "exit_codes": ["0", "1", "2"],
   "exit_code_meaning": {

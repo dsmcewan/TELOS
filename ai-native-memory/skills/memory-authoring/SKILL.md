@@ -40,12 +40,17 @@ repo-level files written on first run:
 
 New contract, invariant, and non-claim templates are scaffolded as
 `SPECIFIED-PENDING-IMPLEMENTATION` with empty `oracle`, `evidence`, and
-`becomes_normative_when` values. This is honest about being unproven from minute one,
-rather than defaulting to a status the record has not earned. Before a contract or
-invariant becomes `NORMATIVE-CURRENT`, replace the empty transition and oracle with a
-real repository-relative test path. The structural audit validates that the declared
-oracle path resolves to a regular file; `verify.mjs` executes each contract's declared
-oracle and requires exit `0`.
+`becomes_normative_when` values, and every generated record carries
+`lifecycle: "docs-first"`; the generated contract also carries
+`decided_by: "human"`. This is honest about being unproven from minute one, rather than
+defaulting to a status the record has not earned. The empty transition is intentionally
+audit-red, and the empty query/required-record sets are intentionally gate-denied.
+Before a record can advance, replace the transition with a canonical, portable
+repository-relative `.js`, `.cjs`, or `.mjs` oracle path. That future path may remain
+absent while the record is pending. Before a contract or invariant becomes
+`NORMATIVE-CURRENT`, the named oracle must exist. The structural audit validates that
+the declared oracle path resolves to a regular file; `verify.mjs` executes each
+contract's declared oracle and requires exit `0`.
 
 ## Content addressing
 
@@ -126,6 +131,13 @@ exactly the drift hardening 1 exists to catch. An audit walks every query and re
 unreadable or missing files, unresolved pointers, and values that differ from
 `expected` are all FAIL findings.
 
+The query document itself is load-bearing. `queries`, `required_invariants`, and
+`required_non_claims` are all nonempty arrays. Each required-record array contains
+unique `sha256:<64hex>` content addresses that resolve against the sibling
+`INVARIANTS.json` or `NON-CLAIMS.json` record of the correct kind. The gate treats a
+missing or malformed sibling file as cannot-run, and it DENIES empty, duplicate,
+invalid, dangling, or wrong-kind required IDs.
+
 ## `mirror_of` + `values` on mirrored sets (hardening 4)
 
 If a record's closed set (values, kinds, whatever) is declared to mirror another
@@ -145,7 +157,8 @@ it, it is not enforced, it is a hope.
 
 ## `decided_by` provenance (hardening 8)
 
-Any record of kind `decision` (and any contract carrying a ruling) states who decided:
+Any record of kind `decision` (and any contract carrying a ruling) states who decided.
+If `decided_by` appears on any record, its value is closed to:
 
 ```
 "decided_by": "human" | "model-advisory-adopted-by-human"
@@ -159,7 +172,7 @@ authority gate that grants `human` provenance is described in `memory-lifecycle`
 
 ## `lifecycle` (hardening 3)
 
-Every hashed contract or invariant states its actual build order:
+Every hashed record states its actual build order:
 
 ```
 "lifecycle": "docs-first" | "build-first-then-ratified"

@@ -1,8 +1,16 @@
 {
-  "kind": "contract", "id": "example", "title": "Example contract",
-  "status": "NORMATIVE-CURRENT", "normativity": "NORMATIVE",
-  "oracle": { "test": "scripts/test-example.mjs" },
+  "kind": "contract",
+  "id": "sha256:e41687db1270b35413dc66371c556ba6efb487a718a3e933da819e7163c88859",
+  "title": "Example contract",
+  "status": "NORMATIVE-CURRENT",
+  "normativity": "NORMATIVE",
+  "oracle": {
+    "test": "scripts/test-example.mjs"
+  },
   "lifecycle": "docs-first",
   "decided_by": "human",
-  "authority": { "source_path": "does/not/exist.md" }
+  "authority": {
+    "source_path": "does/not/exist.md"
+  },
+  "evidence": []
 }

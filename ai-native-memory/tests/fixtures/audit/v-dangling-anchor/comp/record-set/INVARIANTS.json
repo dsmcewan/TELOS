@@ -1,3 +1,12 @@
 [
-  { "id": "inv-read-only", "kind": "invariant", "statement": "The component never writes.", "oracle": "scripts/test-readonly.mjs", "normativity": "NORMATIVE", "status": "NORMATIVE-CURRENT" }
+  {
+    "id": "sha256:cecf04544ce5534fbffc996731197932a108e6ce2b1f92ae03d463332a161cf1",
+    "kind": "invariant",
+    "statement": "The component never writes.",
+    "oracle": "scripts/test-readonly.mjs",
+    "normativity": "NORMATIVE",
+    "status": "NORMATIVE-CURRENT",
+    "lifecycle": "docs-first",
+    "evidence": []
+  }
 ]

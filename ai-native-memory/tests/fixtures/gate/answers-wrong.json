@@ -2,7 +2,7 @@
   "reader": "test-reader",
   "resolved_authority_ref": "A1",
   "excluded_superseded": ["A0"],
-  "invariants_read": ["inv-read-only"],
-  "non_claims_read": ["nc-no-proof"],
+  "invariants_read": ["sha256:4c16966c2e3e0961a776f8d4d3075b54ee5d8e53668b0262d22556b5307f55d1"],
+  "non_claims_read": ["sha256:2d5b9ac9d135dff129812898ff61148a1b7253eb57eb72a1c092d48c5717522e"],
   "answers": { "q-bool": false, "q-enum": "fail-open", "q-set": ["unknown", "node-backed"] }
 }

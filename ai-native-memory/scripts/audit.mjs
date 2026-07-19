@@ -6,9 +6,12 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  DECISION_PROVENANCE,
   RECORD_KINDS,
+  RECORD_LIFECYCLES,
   RECORD_STATUSES,
   hasValidContentAddress,
+  isPortableExecutablePath,
   readJson,
   finding,
   printFindings,
@@ -18,8 +21,6 @@ import {
 } from "./lib/record.mjs";
 
 const SKIP = new Set(["node_modules", ".git"]);
-const PLACEHOLDER = /^(?:NAME-|REPLACE:|PLACEHOLDER)/;
-const TRANSITION_PLACEHOLDER = /^(?:NAME-|REPLACE:|PLACEHOLDER\b|TODO\b|TBD\b)/i;
 const CONTENT_ADDRESS = /^sha256:[0-9a-f]{64}$/;
 const isRegularFile = (file) => existsSync(file) && statSync(file).isFile();
 const isRecord = (record) => Boolean(record) && typeof record === "object" && !Array.isArray(record);
@@ -77,6 +78,26 @@ function resolveContained(root, relativePath) {
   return resolved;
 }
 
+function primaryPath(file, root, check, recordPath, out) {
+  try {
+    return resolveContained(root, path.relative(root, file));
+  } catch (error) {
+    if (error instanceof AuditCannotRunError) throw error;
+    out.push(finding("FAIL", check, recordPath, error.message));
+    return null;
+  }
+}
+
+function readPrimaryJson(file, root, check, recordPath, out) {
+  const contained = primaryPath(file, root, check, recordPath, out);
+  return contained ? { ok: true, value: readAuditJson(contained) } : { ok: false };
+}
+
+function readPrimaryFile(file, root, check, recordPath, out) {
+  const contained = primaryPath(file, root, check, recordPath, out);
+  return contained ? { ok: true, value: readAuditFile(contained) } : { ok: false };
+}
+
 function recordOracle(record) {
   if (record.kind === "contract") return record.oracle?.test;
   if (record.kind === "invariant") return record.oracle;
@@ -97,11 +118,65 @@ function validateRecord(record, recordPath, root, out) {
   if (!hasValidContentAddress(record)) {
     out.push(finding("FAIL", "taxonomy", recordPath, "id must equal sha256(canonicalize(record minus id))"));
   }
+  if (!RECORD_LIFECYCLES.has(record.lifecycle)) {
+    out.push(finding(
+      "FAIL",
+      "taxonomy",
+      recordPath,
+      "lifecycle must be docs-first or build-first-then-ratified"
+    ));
+  }
+  if (Object.hasOwn(record, "decided_by")
+    && !DECISION_PROVENANCE.has(record.decided_by)) {
+    out.push(finding(
+      "FAIL",
+      "taxonomy",
+      recordPath,
+      "decided_by must be human or model-advisory-adopted-by-human"
+    ));
+  }
+  const contractCarriesRuling = record.kind === "contract"
+    && (
+      Object.hasOwn(record, "ruling")
+      || Object.hasOwn(record, "rulings")
+      || Object.hasOwn(record, "decision")
+      || (
+        isRecord(record.authority)
+        && (
+          Object.hasOwn(record.authority, "ruling")
+          || Object.hasOwn(record.authority, "decision")
+        )
+      )
+    );
+  if ((record.kind === "decision" || contractCarriesRuling)
+    && !DECISION_PROVENANCE.has(record.decided_by)) {
+    out.push(finding(
+      "FAIL",
+      "taxonomy",
+      recordPath,
+      `${record.kind === "decision" ? "decision" : "contract ruling"} requires decided_by provenance`
+    ));
+  }
+  if ((record.kind === "invariant" || record.kind === "non-claim")
+    && !isTrimmed(record.statement)) {
+    out.push(finding(
+      "FAIL",
+      "taxonomy",
+      recordPath,
+      `${record.kind} requires a nonempty statement`
+    ));
+  }
+  if (record.kind === "contract" && !isTrimmed(record.title)) {
+    out.push(finding("FAIL", "taxonomy", recordPath, "contract requires a nonempty title"));
+  }
+  if (Object.hasOwn(record, "evidence") && !Array.isArray(record.evidence)) {
+    out.push(finding("FAIL", "taxonomy", recordPath, "evidence must be an array when present"));
+  }
   if (record.status === "NORMATIVE-CURRENT") {
     const oracle = recordOracle(record);
     if ((record.kind === "contract" || record.kind === "invariant")
-      && (typeof oracle !== "string" || !oracle || PLACEHOLDER.test(oracle))) {
-      out.push(finding("FAIL", "taxonomy", recordPath, "NORMATIVE-CURRENT requires a non-placeholder oracle"));
+      && !isPortableExecutablePath(oracle)) {
+      out.push(finding("FAIL", "taxonomy", recordPath, "NORMATIVE-CURRENT requires a portable repository-relative JavaScript oracle path"));
     } else if (oracle) {
       try {
         const oraclePath = resolveContained(root, oracle);
@@ -115,9 +190,13 @@ function validateRecord(record, recordPath, root, out) {
     }
   }
   if (record.status === "SPECIFIED-PENDING-IMPLEMENTATION"
-    && (!isTrimmed(record.becomes_normative_when)
-      || TRANSITION_PLACEHOLDER.test(record.becomes_normative_when))) {
-    out.push(finding("FAIL", "taxonomy", recordPath, "pending record requires a real becomes_normative_when"));
+    && !isPortableExecutablePath(record.becomes_normative_when)) {
+    out.push(finding(
+      "FAIL",
+      "taxonomy",
+      recordPath,
+      "pending record requires becomes_normative_when naming a portable repository-relative JavaScript oracle path"
+    ));
   }
   if (record.status === "SUPERSEDED"
     && !(isTrimmed(record.superseded_by)
@@ -127,12 +206,23 @@ function validateRecord(record, recordPath, root, out) {
   }
 }
 
-export function findMemoryDirs(root) {
+export function findMemoryDirs(root, findings = []) {
   const out = [];
   const walk = (dir) => {
     for (const e of readdirSync(dir, { withFileTypes: true })) {
-      if (e.isSymbolicLink() || !e.isDirectory() || SKIP.has(e.name)) continue;
       const full = path.join(dir, e.name);
+      if (e.isSymbolicLink()) {
+        if (e.name === "memory") {
+          findings.push(finding(
+            "FAIL",
+            "three-representation",
+            rel(root, full),
+            "conventionally named memory directory must not be a symlink"
+          ));
+        }
+        continue;
+      }
+      if (!e.isDirectory() || SKIP.has(e.name)) continue;
       if (e.name === "memory") out.push(full);
       else walk(full);
     }
@@ -151,7 +241,9 @@ function auditThreeRep(dir, out, root) {
       out.push(finding("FAIL", "three-representation", where, `${base}.md/${base} present without machine record ${base}.json (prose-only load-bearing claim)`));
       continue;
     }
-    const recs = readAuditJson(j);
+    const parsed = readPrimaryJson(j, root, "three-representation", where, out);
+    if (!parsed.ok) continue;
+    const recs = parsed.value;
     if (!Array.isArray(recs)) { out.push(finding("FAIL", "three-representation", where, `${base}.json must be an array of records`)); continue; }
     const recordsAreObjects = recs.every(isRecord);
     for (const r of recs) {
@@ -164,8 +256,18 @@ function auditThreeRep(dir, out, root) {
     const title = base === "INVARIANTS" ? "Invariants" : "Non-claims";
     if (!existsSync(rendered)) {
       out.push(finding("FAIL", "three-representation", where, `${base}.json has no rendered ${base}.md projection`));
-    } else if (recordsAreObjects && readAuditFile(rendered).toString("utf8") !== renderRecordList(title, recs)) {
-      out.push(finding("FAIL", "three-representation", where, `${base}.md drifted from ${base}.json`));
+    } else if (recordsAreObjects) {
+      const renderedBytes = readPrimaryFile(
+        rendered,
+        root,
+        "three-representation",
+        where,
+        out
+      );
+      if (renderedBytes.ok
+        && renderedBytes.value.toString("utf8") !== renderRecordList(title, recs)) {
+        out.push(finding("FAIL", "three-representation", where, `${base}.md drifted from ${base}.json`));
+      }
     }
   }
 }
@@ -176,23 +278,151 @@ function auditTaxonomy(dir, out, root) {
   if (!existsSync(cdir)) return;
   for (const f of readdirSync(cdir).filter((f) => f.endsWith(".json"))) {
     const p = path.join(cdir, f);
-    const c = readAuditJson(p);
+    const recordPath = `${where}/CONTRACTS/${f}`;
+    const parsed = readPrimaryJson(p, root, "taxonomy", recordPath, out);
+    if (!parsed.ok) continue;
+    const c = parsed.value;
     validateRecord(c, `${where}/CONTRACTS/${f}`, root, out);
     if (!isRecord(c)) continue;
-    if (!c.lifecycle) out.push(finding("WARN", "taxonomy", `${where}/CONTRACTS/${f}`, "no lifecycle field (truthful build order: docs-first | build-first-then-ratified)"));
-    if (!c.decided_by && c.kind === "decision") out.push(finding("WARN", "taxonomy", `${where}/CONTRACTS/${f}`, "decision without decided_by provenance"));
   }
 }
 
 const dig = (obj, pointer) => pointer.split(".").reduce((o, k) => (o && typeof o === "object" ? o[k] : undefined), obj);
 const deepEq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
+function auditRequiredQueryRecords(document, dir, out, root, where) {
+  for (const {
+    field,
+    file,
+    kind,
+    singular
+  } of [
+    {
+      field: "required_invariants",
+      file: "INVARIANTS.json",
+      kind: "invariant",
+      singular: "invariant"
+    },
+    {
+      field: "required_non_claims",
+      file: "NON-CLAIMS.json",
+      kind: "non-claim",
+      singular: "non-claim"
+    }
+  ]) {
+    const required = document[field];
+    if (!Array.isArray(required) || required.length === 0) {
+      out.push(finding(
+        "FAIL",
+        "query-freshness",
+        where,
+        `${field} must be a nonempty array`
+      ));
+    }
+    const ids = Array.isArray(required) ? required : [];
+    if (!ids.every((id) => typeof id === "string" && CONTENT_ADDRESS.test(id))) {
+      out.push(finding(
+        "FAIL",
+        "query-freshness",
+        where,
+        `${field} entries must be content-addressed record IDs`
+      ));
+    }
+    if (new Set(ids).size !== ids.length) {
+      out.push(finding(
+        "FAIL",
+        "query-freshness",
+        where,
+        `${field} must not contain duplicate IDs`
+      ));
+    }
+
+    const recordFile = path.join(dir, file);
+    if (!existsSync(recordFile)) {
+      out.push(finding(
+        "FAIL",
+        "query-freshness",
+        where,
+        `${field} cannot resolve because ${file} is missing`
+      ));
+      continue;
+    }
+    const parsed = readPrimaryJson(
+      recordFile,
+      root,
+      "query-freshness",
+      where,
+      out
+    );
+    if (!parsed.ok) continue;
+    if (!Array.isArray(parsed.value)) {
+      out.push(finding(
+        "FAIL",
+        "query-freshness",
+        where,
+        `${file} must be an array of records`
+      ));
+      continue;
+    }
+    const records = parsed.value;
+    for (const id of new Set(ids.filter((value) => CONTENT_ADDRESS.test(value)))) {
+      if (!records.some((record) =>
+        isRecord(record) && record.kind === kind && record.id === id
+      )) {
+        out.push(finding(
+          "FAIL",
+          "query-freshness",
+          where,
+          `required ${singular} ID does not resolve to a sibling ${kind} record: ${id}`
+        ));
+      }
+    }
+  }
+}
+
 function auditQueryFreshness(dir, out, root) {
   const where = rel(root, dir);
   const qp = path.join(dir, "comprehension-queries.json");
-  if (!existsSync(qp)) return;
-  const q = readAuditJson(qp);
-  for (const query of q.queries || []) {
+  if (!existsSync(qp)) {
+    out.push(finding(
+      "FAIL",
+      "query-freshness",
+      where,
+      "load-bearing comprehension-queries.json is missing"
+    ));
+    return;
+  }
+  const parsed = readPrimaryJson(qp, root, "query-freshness", where, out);
+  if (!parsed.ok) return;
+  const q = parsed.value;
+  if (!isRecord(q)) {
+    out.push(finding(
+      "FAIL",
+      "query-freshness",
+      where,
+      "comprehension-queries.json must be an object"
+    ));
+    return;
+  }
+  auditRequiredQueryRecords(q, dir, out, root, where);
+  if (!Array.isArray(q.queries) || q.queries.length === 0) {
+    out.push(finding(
+      "FAIL",
+      "query-freshness",
+      where,
+      "queries must be a nonempty array"
+    ));
+  }
+  for (const query of Array.isArray(q.queries) ? q.queries : []) {
+    if (!isRecord(query)) {
+      out.push(finding(
+        "FAIL",
+        "query-freshness",
+        where,
+        "each query must be an object"
+      ));
+      continue;
+    }
     if (!query.derived_from) { out.push(finding("FAIL", "query-freshness", where, `query ${query.id}: no derived_from — expected fact is not machine-derivable`)); continue; }
     if (typeof query.derived_from !== "object" || query.derived_from === null || typeof query.derived_from.file !== "string" || typeof query.derived_from.pointer !== "string") { out.push(finding("FAIL", "query-freshness", where, `query ${query.id}: derived_from must be { file, pointer }`)); continue; }
     let src;
@@ -224,7 +454,16 @@ function auditMirrorSync(dir, out, root) {
   const cdir = path.join(dir, "CONTRACTS");
   if (!existsSync(cdir)) return;
   for (const f of readdirSync(cdir).filter((f) => f.endsWith(".json"))) {
-    const c = readAuditJson(path.join(cdir, f));
+    const recordPath = `${where}/CONTRACTS/${f}`;
+    const parsed = readPrimaryJson(
+      path.join(cdir, f),
+      root,
+      "mirror-sync",
+      recordPath,
+      out
+    );
+    if (!parsed.ok) continue;
+    const c = parsed.value;
     if (!isRecord(c)) continue;
     if (!c.mirror_of) continue;
     let src;
@@ -291,9 +530,18 @@ function auditStaleness(dir, out, root) {
   const cdir = path.join(dir, "CONTRACTS");
   if (existsSync(cdir)) {
     for (const f of readdirSync(cdir).filter((f) => f.endsWith(".json"))) {
-      const c = readAuditJson(path.join(cdir, f));
+      const recordPath = `${where}/CONTRACTS/${f}`;
+      const parsed = readPrimaryJson(
+        path.join(cdir, f),
+        root,
+        "staleness",
+        recordPath,
+        out
+      );
+      if (!parsed.ok) continue;
+      const c = parsed.value;
       if (!isRecord(c)) continue;
-      auditDeclaredStaleness(c, `${where}/CONTRACTS/${f}`, root, out);
+      auditDeclaredStaleness(c, recordPath, root, out);
     }
   }
 }
@@ -337,7 +585,7 @@ export function auditMemoryDir(dir, root = dir) {
 export function auditRoot(root) {
   const out = [];
   auditAuthorityRoot(root, out);
-  for (const dir of findMemoryDirs(root)) out.push(...auditMemoryDir(dir, root));
+  for (const dir of findMemoryDirs(root, out)) out.push(...auditMemoryDir(dir, root));
   return out;
 }
 

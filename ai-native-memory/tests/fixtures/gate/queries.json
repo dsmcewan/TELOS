@@ -1,8 +1,8 @@
 {
   "component": "example",
   "governing_authority": { "ref": "A1" },
-  "required_invariants": ["inv-read-only"],
-  "required_non_claims": ["nc-no-proof"],
+  "required_invariants": ["sha256:4c16966c2e3e0961a776f8d4d3075b54ee5d8e53668b0262d22556b5307f55d1"],
+  "required_non_claims": ["sha256:2d5b9ac9d135dff129812898ff61148a1b7253eb57eb72a1c092d48c5717522e"],
   "queries": [
     { "id": "q-bool", "query": "Does the component write? (boolean)", "answer_kind": "boolean", "expected": false },
     { "id": "q-enum", "query": "Failure posture? (enum)", "answer_kind": "enum", "expected": "fail-closed" },

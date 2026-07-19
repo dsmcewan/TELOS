@@ -52,7 +52,26 @@ or its current bytes do not match the pinned hash.
 
 `gate.mjs` DENIES (exit `2`) on any single wrong answer, any unacknowledged required invariant or
 non-claim, or any un-excluded superseded authority reference. There is no partial credit and no
-majority-vote pass; every check must hold.
+majority-vote pass; every check must hold. It also DENIES an empty query array, an empty required
+array, duplicate or malformed required content addresses, and required IDs that do not resolve to
+sibling `INVARIANTS.json` or `NON-CLAIMS.json` records of the correct kind. Missing, malformed, or
+non-content-addressed sibling record files make the gate unable to run (exit `1`). Consequently a
+freshly generated, still-empty scaffold cannot certify a reader even after authority is bound.
+
+## Invalid lifecycle, provenance, or pending transition
+
+Every hashed record must carry `lifecycle: docs-first | build-first-then-ratified`. A decision and
+any contract carrying a ruling must carry `decided_by`, and any present `decided_by` value is closed
+to `human | model-advisory-adopted-by-human`. Invariants and non-claims require nonempty statements;
+contracts require nonempty titles; any present `evidence` value must be an array. A pending record's
+`becomes_normative_when` must be a portable repository-relative JavaScript oracle path. Missing or
+invalid values are taxonomy FAIL findings; pending future paths may remain absent until implemented.
+
+## Hidden or escaping record sets
+
+A directory entry conventionally named `memory` that is a symlink is a deterministic finding in
+both audit and verify. Primary machine records are physically contained before parsing, so a record
+file symlink cannot escape the repository and import apparently valid records from elsewhere.
 
 ## A verify-map oracle that fails or is missing
 
@@ -68,5 +87,7 @@ that does not terminate cleanly is a documentation bug in the host repository's 
 Naming `tests/run.mjs` as the plugin contract's oracle would make self-verification spawn
 `test-dogfood.mjs`, which calls `verify.mjs` again. The contract and `verify-map.json` instead
 both name the terminating `tests/oracle-plugin-contract.mjs`. That dedicated oracle runs the five
-non-dogfood tests (`test-lib`, `test-audit`, `test-gate`, `test-init`, and `test-verify`) and
-therefore avoids recursion without substituting an unrelated test.
+non-dogfood tests (`test-lib`, `test-audit`, `test-gate`, `test-init`, and `test-verify`), but first
+reads the contract's `zero_dependencies` field and directly checks `package.json` plus the complete
+static/side-effect/string-literal-dynamic import boundary under `scripts/`. It therefore avoids
+recursion while terminating the contract's zero-dependency claim itself.
