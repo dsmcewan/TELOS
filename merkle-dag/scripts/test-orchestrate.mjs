@@ -1,6 +1,6 @@
 // test-orchestrate.mjs — 13-case test suite for orchestrate.mjs
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, symlinkSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -725,6 +725,22 @@ function makeDispatch(ws) {
   assert.ok(!escapeNodeReport.ok, "Case 14: escape node is blocked in final report");
 
   console.log("Case 14 OK: cwd-escape rejection — ../escape blocked, no ledger entry, safe node settled");
+}
+
+// Physical cwd containment: a lexically-contained symlink/junction must not
+// redirect the Rule-3 test outside baseDir.
+{
+  const ws = mkdtempSync(path.join(os.tmpdir(), "telos-orch-physical-"));
+  const outside = mkdtempSync(path.join(os.tmpdir(), "telos-orch-outside-"));
+  symlinkSync(outside, path.join(ws, "escape-link"), process.platform === "win32" ? "junction" : "dir");
+  const v = await defaultVerifyNode({
+    id: "physical-escape",
+    files: [],
+    test: { cmd: "node", args: ["-e", "require('node:fs').writeFileSync('ran.txt','x')"], cwd: "escape-link" }
+  }, ws);
+  assert.equal(v.ok, false, "defaultVerifyNode rejects symlink/junction cwd escape");
+  assert.match(v.detail, /escapes baseDir/);
+  assert.equal(existsSync(path.join(outside, "ran.txt")), false, "Rule-3 test never ran outside baseDir");
 }
 
 // ---------------------------------------------------------------------------

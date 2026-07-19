@@ -4,12 +4,12 @@ topic: clotho
 status: living
 kind: decision
 task: "4b"
-status_taxonomy: SPECIFIED-PENDING-IMPLEMENTATION
+status_taxonomy: NORMATIVE-CURRENT
 authority: v15 sha256:05a48700… · authz-008
-note: Frozen Task 4b decisions (test/doc/ledger weavers). Design substrate — code not yet written; each record flips to NORMATIVE-CURRENT when its named oracle passes.
+note: Task 4b decisions implemented and oracle-backed; accepted at git:af64b88.
 ---
 
-# Task 4b — decision records (design substrate)
+# Task 4b — normative decision records
 
 ## D25 — command-inferred verified-by provenance
 
@@ -23,8 +23,8 @@ note: Frozen Task 4b decisions (test/doc/ledger weavers). Design substrate — c
 - **scope** — the test-weaver (`test.mjs`), Task 4b. **authority** — D25 (spec v2.4), authz-008.
 - **non_claim** — no command is executed; command strings are parsed only as text.
 - **change_rule** — plan amendment → re-authorization → implementation review.
-- **status** — `SPECIFIED-PENDING-IMPLEMENTATION`; **becomes_normative_when**
-  `clotho/scripts/test-test.mjs` proves both provenance cases by exact-output tests.
+- **status** — `NORMATIVE-CURRENT`; **oracle**
+  `clotho/scripts/test-weaver-test.mjs` proves both provenance cases by exact-output tests.
 - **contract** — `clotho/memory/CONTRACTS/verified-by-provenance.json`.
 
 ## D31 — independent contract-files consumption
@@ -44,8 +44,8 @@ note: Frozen Task 4b decisions (test/doc/ledger weavers). Design substrate — c
 - **scope** — the ledger weaver (`ledger.mjs`), Task 4b. **authority** — D31 (spec v2.7), authz-008.
 - **non_claim** — no generic JSON fallback; identifier matching only over adapter-declared fields.
 - **change_rule** — plan amendment → re-authorization → implementation review.
-- **status** — `SPECIFIED-PENDING-IMPLEMENTATION`; **becomes_normative_when**
-  `clotho/scripts/test-ledger-weaver.mjs` proves independence + full counted consumption + the
+- **status** — `NORMATIVE-CURRENT`; **oracle**
+  `clotho/scripts/test-weaver-ledger.mjs` proves independence + full counted consumption + the
   discharges matrix.
 - **contract** — `clotho/memory/CONTRACTS/discharges-matrix.json`.
 
@@ -55,6 +55,8 @@ note: Frozen Task 4b decisions (test/doc/ledger weavers). Design substrate — c
   heading to the byte before the next heading of any level; section hashes are SHA-256 of those
   exact bytes; duplicate `{path, heading_path}` in one file is fatal `duplicate-heading-path`
   (address marked absent, no edge to either ambiguous section).
-- **authority** — Task 4b, authz-008. **status** — `SPECIFIED-PENDING-IMPLEMENTATION`;
-  **becomes_normative_when** `clotho/scripts/test-doc.mjs` proves the split + duplicate-heading
-  fatal behavior. **non_claim** — `alphabet` does not match `alpha` (token match, not substring).
+- **authority** — Task 4b, authz-008. **status** — `NORMATIVE-CURRENT`;
+  **oracle** `clotho/scripts/test-weaver-doc.mjs` proves the split + canonical
+  `duplicate-heading-path` fatal behavior, and `clotho/scripts/test-weave.mjs` proves
+  the real driver aborts without publication. **non_claim** — `alphabet` does not
+  match `alpha` (token match, not substring).

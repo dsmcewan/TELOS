@@ -1,7 +1,7 @@
 // test-proposal-gate.mjs — verifyWrittenPlan, proposal_ref binding, cold review, and the
 // ledger-reconstructing validateProposalLifecycle.
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, symlinkSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { generateKeypair } from "../../merkle-dag/crypto.mjs";
@@ -11,7 +11,13 @@ import {
   PROPOSAL_KEY_ID, makeProposalEvent, atomicAppendProposalEvent, writeProposalArtifact,
   computeReviewInputHash, deriveProposalId
 } from "../../merkle-dag/proposal-ledger.mjs";
-import { verifyWrittenPlan, checkProposalRefBinding, checkColdReview, validateProposalLifecycle } from "../proposal-gate.mjs";
+import {
+  verifyWrittenPlan,
+  checkProposalRefBinding,
+  checkColdReview,
+  validateProposalLifecycle
+} from "../proposal-gate.mjs";
+import { buildReviewManifest } from "../proposal-recorder.mjs";
 
 // A lifecycle-mode candidate: plan carries a proposal-controller signer + lifecycle metadata.
 function candidate({ proposalId = "proposal-x" } = {}) {
@@ -81,6 +87,100 @@ const append = (telosDir, privatePem, publicJwk, proposalId, stage, extra = {}) 
   let events = readProposalEvents(telosDir).events;
   const clean = checkColdReview({ telosDir, events, packets: [], planHash: plan.plan_hash, signed: true, baseDir: ws });
   assert.equal(clean.blockers.length, 0, "clean manifest passes: " + clean.blockers.join(";"));
+  const { makeExecutionLifecycleVerifier } = await import("../proposal-orchestrator.mjs");
+  const executionCheck = makeExecutionLifecycleVerifier(ws)({ telosDir, nowMs: 0 });
+  assert.ok(
+    !executionCheck.blockers.some((b) => /cannot be verified without baseDir/.test(b)),
+    "execution-time lifecycle re-verification retains baseDir for evidence-bearing reviews"
+  );
+
+  // Evidence must bind to bytes that exist as a regular file. A caller-supplied
+  // digest cannot stand in for missing/unreadable bytes at construction time.
+  assert.throws(
+    () => buildReviewManifest({
+      telosDir, planHash: plan.plan_hash, seat: "codex", role: "approver",
+      reviewContract: { objective: "review" },
+      evidenceFiles: [{ path: "missing.txt", kind: "source-doc", sha256: "sha256:attacker-controlled" }],
+      baseDir: ws
+    }),
+    /missing or not a regular file/,
+    "manifest construction rejects missing evidence instead of trusting a supplied digest"
+  );
+  mkdirSync(path.join(ws, "review-directory"));
+  assert.throws(
+    () => buildReviewManifest({
+      telosDir, planHash: plan.plan_hash, seat: "codex", role: "approver",
+      reviewContract: { objective: "review" },
+      evidenceFiles: [{ path: "review-directory", kind: "source-doc", sha256: "sha256:attacker-controlled" }],
+      baseDir: ws
+    }),
+    /missing or not a regular file/,
+    "manifest construction rejects non-file evidence"
+  );
+
+  const unavailableManifests = [
+    {
+      label: "missing",
+      evidence: [{ path: "missing.txt", sha256: "sha256:attacker-controlled", kind: "source-doc" }]
+    },
+    {
+      label: "non-file",
+      evidence: [{ path: "review-directory", sha256: "sha256:attacker-controlled", kind: "source-doc" }]
+    }
+  ];
+  for (const unavailable of unavailableManifests) {
+    const unavailableManifest = {
+      plan_hash: plan.plan_hash,
+      review_contract_ref: contractRef,
+      evidence: unavailable.evidence
+    };
+    const { ref: unavailableRef } = writeProposalArtifact(telosDir, unavailableManifest);
+    append(telosDir, privatePem, publicJwk, proposalId, "review", {
+      artifact_refs: [unavailableRef],
+      fields: { review_input_hash: computeReviewInputHash(unavailableManifest) }
+    });
+    events = readProposalEvents(telosDir).events;
+    const unavailableResult = checkColdReview({
+      telosDir, events, packets: [], planHash: plan.plan_hash, signed: true, baseDir: ws
+    });
+    assert.ok(
+      unavailableResult.blockers.some((b) =>
+        b.includes(`review evidence '${unavailable.evidence[0].path}' is missing or not a regular file`)),
+      `cold review rejects ${unavailable.label} evidence instead of accepting its supplied digest`
+    );
+  }
+
+  // A review evidence path is a baseDir-confined artifact input. Neither
+  // manifest construction nor cold-review re-verification may hash bytes
+  // reached through a symlink/junction outside the workspace.
+  const outside = mkdtempSync(path.join(os.tmpdir(), "telos-pg-outside-"));
+  writeFileSync(path.join(outside, "secret.txt"), "outside review bytes\n");
+  symlinkSync(outside, path.join(ws, "escape-link"), process.platform === "win32" ? "junction" : "dir");
+  assert.throws(
+    () => buildReviewManifest({
+      telosDir, planHash: plan.plan_hash, seat: "codex", role: "approver",
+      reviewContract: { objective: "review" },
+      evidenceFiles: [{ path: "escape-link/secret.txt", kind: "source-doc" }],
+      baseDir: ws
+    }),
+    /escapes baseDir/,
+    "manifest construction rejects physical evidence escape"
+  );
+  const escapeManifest = {
+    plan_hash: plan.plan_hash,
+    review_contract_ref: contractRef,
+    evidence: [{
+      path: "escape-link/secret.txt",
+      sha256: "sha256:" + require_sha(path.join(outside, "secret.txt")),
+      kind: "source-doc"
+    }]
+  };
+  const { ref: escapeRef } = writeProposalArtifact(telosDir, escapeManifest);
+  append(telosDir, privatePem, publicJwk, proposalId, "review", { artifact_refs: [escapeRef], fields: { review_input_hash: computeReviewInputHash(escapeManifest) } });
+  events = readProposalEvents(telosDir).events;
+  const escaped = checkColdReview({ telosDir, events, packets: [], planHash: plan.plan_hash, signed: true, baseDir: ws });
+  assert.ok(escaped.blockers.some((b) => /review evidence .* escapes baseDir/.test(b)), "cold review rejects physical evidence escape");
+
   // contaminated manifest referencing the proposal ledger
   const badManifest = { plan_hash: plan.plan_hash, review_contract_ref: contractRef, evidence: [{ path: ".telos/proposal.jsonl", sha256: "sha256:x", kind: "evidence" }] };
   const { ref: bRef } = writeProposalArtifact(telosDir, badManifest);
@@ -88,6 +188,27 @@ const append = (telosDir, privatePem, publicJwk, proposalId, stage, extra = {}) 
   events = readProposalEvents(telosDir).events;
   const contaminated = checkColdReview({ telosDir, events, packets: [], planHash: plan.plan_hash, signed: true, baseDir: ws });
   assert.ok(contaminated.blockers.some((b) => /contamination/.test(b)), "contaminated manifest blocked");
+
+  for (const controlPlanePath of [".TELOS/keys/controller.pub", ".telos\\keys\\controller.pub"]) {
+    const platformVariant = {
+      plan_hash: plan.plan_hash,
+      review_contract_ref: contractRef,
+      evidence: [{ path: controlPlanePath, sha256: "sha256:attacker-controlled", kind: "evidence" }]
+    };
+    const { ref: variantRef } = writeProposalArtifact(telosDir, platformVariant);
+    append(telosDir, privatePem, publicJwk, proposalId, "review", {
+      artifact_refs: [variantRef],
+      fields: { review_input_hash: computeReviewInputHash(platformVariant) }
+    });
+    events = readProposalEvents(telosDir).events;
+    const variantResult = checkColdReview({
+      telosDir, events, packets: [], planHash: plan.plan_hash, signed: true, baseDir: ws
+    });
+    assert.ok(
+      variantResult.blockers.some((b) => b === `review manifest contamination: control-plane path '${controlPlanePath}'`),
+      `control-plane classification rejects ${JSON.stringify(controlPlanePath)} across case/separator variants`
+    );
+  }
   console.log("Case 4 OK: manifest contamination blocked");
 }
 

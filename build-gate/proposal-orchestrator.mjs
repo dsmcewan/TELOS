@@ -99,6 +99,18 @@ export function mintVerificationNodes(verificationRequests, tasks) {
   return { nodes, obligationDefs, errors };
 }
 
+export function makeExecutionLifecycleVerifier(baseDir) {
+  return ({ telosDir, nowMs }) =>
+    validateProposalLifecycle({
+      telosDir,
+      baseDir,
+      requiredModels: [],
+      packets: [],
+      nowMs,
+      forceSignedDisjointness: true
+    });
+}
+
 function blocked(phase, reasons, extra = {}) { return { phase, ok: false, decision: extra.decision || null, blocked: Array.isArray(reasons) ? reasons : [reasons], ...extra }; }
 
 /**
@@ -169,8 +181,7 @@ export async function runProposalLifecycle({
   const authorizedSigners = { ...authorizedSignersFor(teams, keyring), [PROPOSAL_KEY_ID]: controllerPubJwk };
 
   // The execution-time lifecycle-state re-verification (decision 6), forcing signed disjointness.
-  const lifecycleVerify = ({ telosDir: td, nowMs: nm }) =>
-    validateProposalLifecycle({ telosDir: td, requiredModels: [], packets: [], nowMs: nm, forceSignedDisjointness: true });
+  const lifecycleVerify = makeExecutionLifecycleVerifier(baseDir);
 
   // 2. Recorder + draft. recordDraft derives the proposal_id from the draft artifact ref.
   const recorder = makeProposalRecorder({ telosDir, signerFor });

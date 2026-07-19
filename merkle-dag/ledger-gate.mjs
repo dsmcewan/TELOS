@@ -53,8 +53,12 @@ export function verify(telosDir, { baseDir } = {}) {
         else if (disk.tree_hash !== entry.artifact_tree_hash) { checks.artifact = "ARTIFACT_MISMATCH"; skip("test"); b.push(`${node.id}: disk artifacts != signed tree (drift)`); }
         else {
           const t = node.test || {};
-          const cwd = resolveUnder(baseDir, t.cwd || ".") || baseDir;
+          const cwd = resolveUnder(baseDir, t.cwd || ".");
           if (!t.cmd) { checks.test = "TEST_FAILED"; b.push(`${node.id}: node has no test command`); }
+          else if (cwd === null) {
+            checks.test = "PATH_ESCAPE";
+            b.push(`${node.id}: test cwd escapes baseDir`);
+          }
           else {
             const spec = spawnCommand(t.cmd, t.args || []);
             const res = spawnSync(spec.command, spec.args, { cwd, encoding: "utf8", timeout: TEST_TIMEOUT_MS, killSignal: "SIGTERM" });

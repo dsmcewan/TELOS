@@ -99,7 +99,7 @@ Legend: ⬜ not started · 🟡 in progress · ✅ done
 
 ## Clotho Phase 1 — provenance-aware knowledge-graph weaver (2026-07)
 
-**State: slices 0–6 accepted; slice 7 (Phase 1 closure) in delivery.** Authority:
+**State: slices 0–7 accepted; Phase 1 complete.** Authority:
 `CURRENT-AUTHORITY.json` (plan v15 `sha256:05a48700…`, authz-008); current honest
 status: `docs/STATUS.md`.
 
@@ -112,10 +112,10 @@ entry ritual → implement → enroll → retrospective → next-phase Daedalus 
 - **Slices 0–4a** (scaffold, CI, registry/ledger, git+code weavers) — PR #117.
 - **Slices 4b/5/6** (test/doc/ledger weavers; query surface + complete-weave
   driver; flagship acceptance) — PR #126. First real-repository weave: 3892
-  edges, five weavers, signed ledger, `published` clean; successive delivery
-  weaves 3898 → 3954 edges. Flagship acceptance (`deriveExecutableRef`, all
-  eight groups, 76-fact unscored review set) runs in `cd clotho && npm test`
-  (14 tests). Task 6 set the escalation precedent: proved-unsatisfiable →
+  edges, five weavers, signed ledger, `published` clean. Flagship acceptance
+  (`deriveExecutableRef`, all eight groups, exact matched set plus an unscored
+  review-set complement) runs in `cd clotho && npm test` (14 tests). Task 6 set
+  the escalation precedent: proved-unsatisfiable →
   CHANGE-PROTOCOL escalation → The Eye's reviewed-data ruling → green.
 - **Institutional memory + role modules + the Iliad lifecycle** (2026-07-17):
   machine-first records with executable oracles (`verify-contracts.mjs`,
@@ -123,11 +123,14 @@ entry ritual → implement → enroll → retrospective → next-phase Daedalus 
   enrollment registry with mandatory retrospectives; the suite named by The Eye
   ("AI Systems Architects Best Practices Suite: Rapid Full Deployment and SDLC
   Recursive Suite").
-- **Slice 7 (in delivery):** STATUS/ROADMAP current + convention-conformant
-  history moves (this change, agent-D) and the reproduction evidence run
-  `docs/runs/clotho-self-weave/` (agent-R); acceptance requires the final
-  evidence run from committed bytes, the Eye's re-binding of the expected
-  flagship artifact against the integrated HEAD, and all package suites green.
+- **Slice 7 (accepted):** documentation/history housekeeping plus the committed
+  reproduction evidence under `docs/runs/clotho-self-weave/`; the reproduction
+  re-verifies from committed bytes and all v15 records are NORMATIVE-CURRENT.
+- **Post-Phase-1 implementations:** Lachesis and Atropos are implemented,
+  consciously enrolled spine packages. `ai-native-memory` is an implemented
+  portable plugin/product component with deferred Iliad enrollment. The
+  registered Narcissus role remains unimplemented; `narcissus/flagship` is a
+  distinct implemented product with deferred enrollment.
 
 ## What's next (Phase-2-class candidates — named, not authorized)
 
@@ -141,18 +144,16 @@ Iliad lifecycle); naming here is not authorization.
 2. **README renderer + drift gate** — generate `clotho/memory/README.md` from
    the machine records and gate hand-drift (OPEN-QUESTIONS candidate, deferred
    out of slice 7 deliberately).
-3. **Warning-shape harmonization amendment** — `{weaver, code, path, detail}`
-   (frozen v15) vs `{weaver, message}` (accepted weavers); a small Daedalus
-   delta when the weavers are next touched (slice-5 retrospective).
-4. **Future modules** — Hermes (API management / inter-system communication),
-   Medusa (defensive edge enforcement), Narcissus (iterative UI rendering and
-   visual review), Lachesis (dependency/risk/blast-radius measurement), Atropos
-   (retirement of obsolete artifacts): registered-unimplemented, names reserved
-   with meaning (`docs/mythological-vocabulary.md`); implementing one follows
+3. **Future role modules** — Hermes (API management / inter-system
+   communication), Medusa (defensive edge enforcement), and Narcissus
+   (full-rollout front-ends through iterative rendering and visual review):
+   registered-unimplemented, names reserved with meaning
+   (`docs/mythological-vocabulary.md`); implementing one follows
    CHANGE-PROTOCOL + the Iliad lifecycle.
-5. **Forge products** (`ai-forge`, `forge`, `saas-forge`) remain AM-40-deferred
+4. **Deferred products/plugins** (`ai-forge`, `ai-native-memory`, `forge`,
+   `narcissus/flagship`, `saas-forge`) remain AM-40-deferred
    pending conscious enrollment at the Iliad — never absorption by proximity.
-6. Older open items (issues #30/#37): composable-workstream-library
+5. Older open items (issues #30/#37): composable-workstream-library
    generalization (deferred beyond C.2, unchanged).
 
 ## Decisions log
@@ -195,11 +196,11 @@ Iliad lifecycle); naming here is not authorization.
   executable oracles; every subsequent implementation is lifecycle-governed
   (pre-review → entry ritual → implement → enroll → retrospective → next-phase
   Daedalus review).
-- **2026-07-17 — Slice 7 (Phase 1 closure) delivery split.** Two disjoint
-  writers per the matured approach (`docs/runs/clotho-slice7-daedalus/`):
-  agent-D — STATUS/ROADMAP + path-sensitivity-checked history moves (this
-  change); agent-R — the self-weave reproduction evidence. Acceptance pending
-  the final committed-byte evidence run and The Eye's review.
+- **2026-07-17 — Slice 7 (Phase 1 closure) accepted.** Two disjoint writers
+  followed the matured approach (`docs/runs/clotho-slice7-daedalus/`):
+  agent-D produced STATUS/ROADMAP plus path-sensitivity-checked history moves;
+  agent-R produced the self-weave reproduction evidence. The final
+  committed-byte evidence run and The Eye's review completed acceptance.
 
 ## Out of scope (YAGNI — revisit only if needed)
 

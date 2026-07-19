@@ -31,6 +31,9 @@ jobs:
           - ai-forge
           - forge
           - clotho
+          - ai-native-memory
+          - lachesis
+          - atropos
     name: ${{ matrix.package }} (node ${{ matrix.node-version }})
     steps:
       - name: Checkout repository
@@ -45,9 +48,29 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Check ai-native-memory scripts
+        if: matrix.package == 'ai-native-memory'
+        working-directory: ai-native-memory
+        run: npm run check
+
       - name: Run tests
         working-directory: ${{ matrix.package }}
         run: npm test
+
+  repository-portability:
+    runs-on: ubuntu-latest
+    name: repository paths are portable
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Reject paths that cannot be checked out on Windows
+        run: node .github/scripts/check-portable-paths.mjs
 
   # The institutional-memory layer's own oracle: every NORMATIVE machine record
   # (contracts, invariants, authority chains, env surface) must equal what the
@@ -58,6 +81,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Committed self-weave verification re-derives the repository root and
+          # intentionally rejects shallow history.
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -66,3 +93,53 @@ jobs:
 
       - name: Verify contracts against code, workflows, and disk
         run: node docs/institutional-memory/verify-contracts.mjs
+
+      - name: Verify committed Clotho self-weave against current bytes
+        run: node docs/runs/clotho-self-weave/run.mjs --verify-committed
+
+  narcissus-flagship:
+    runs-on: ubuntu-latest
+    name: narcissus flagship
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # The live graph and evidence ledger are derived from tracked history.
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: narcissus/flagship/package-lock.json
+
+      - name: Install locked dependencies
+        working-directory: narcissus/flagship
+        run: npm ci
+
+      - name: Audit production and development dependencies
+        working-directory: narcissus/flagship
+        run: npm audit --audit-level=moderate
+
+      - name: Run verifier regression tests
+        working-directory: narcissus/flagship
+        run: npm test
+
+      - name: Verify evidence pins and command coverage
+        working-directory: narcissus/flagship
+        run: |
+          npm run verify:evidence
+          npm run verify:coverage
+
+      - name: Build production bundle
+        working-directory: narcissus/flagship
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        working-directory: narcissus/flagship
+        run: npx playwright install --with-deps chromium
+
+      - name: Run end-to-end tests
+        working-directory: narcissus/flagship
+        run: npm run test:e2e

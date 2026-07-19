@@ -4,12 +4,12 @@ topic: clotho
 status: living
 kind: decision
 task: "6,7"
-status_taxonomy: SPECIFIED-PENDING-IMPLEMENTATION
+status_taxonomy: NORMATIVE-CURRENT
 authority: v15 sha256:05a48700… · authz-008
-note: Frozen Task 6 (flagship acceptance) and Task 7 (reproduction evidence) decisions. Design substrate — code not yet written.
+note: Task 6 and Task 7 decisions implemented and oracle-backed; Phase 1 closed at git:983aad5.
 ---
 
-# Tasks 6 & 7 — decision records (design substrate)
+# Tasks 6 & 7 — normative decision records
 
 ## Task 6 · D3 — review set + hand-audited flagship
 
@@ -25,7 +25,7 @@ note: Frozen Task 6 (flagship acceptance) and Task 7 (reproduction evidence) dec
   **authority** — D3, D33/AM-34, authz-008.
 - **non_claim** — the flagship proves the expected 8-group set + closure equality, NOT that
   Clotho covers every module JS could reach.
-- **status** — `SPECIFIED-PENDING-IMPLEMENTATION`; **becomes_normative_when**
+- **status** — `NORMATIVE-CURRENT`; **oracle**
   `clotho/scripts/test-flagship.mjs` proves the eight groups, review set, coverage, and closure.
 
 ## Task 7 · D8 — self-weave exclusion + reproduction from committed bytes
@@ -41,6 +41,6 @@ note: Frozen Task 6 (flagship acceptance) and Task 7 (reproduction evidence) dec
   **authority** — D8, D34, authz-008.
 - **non_claim** — Clotho Phase 1 is advisory / non-sandbox; the self-weave proves reproduction and
   the coverage manifest, NOT loader containment (reaffirms `no-loader-containment`).
-- **status** — `SPECIFIED-PENDING-IMPLEMENTATION`; **becomes_normative_when**
+- **status** — `NORMATIVE-CURRENT`; **oracle**
   `docs/runs/clotho-self-weave/run.mjs` + `clotho/scripts/test-flagship.mjs` prove reproduction
   from committed bytes and the D8 exclusion.

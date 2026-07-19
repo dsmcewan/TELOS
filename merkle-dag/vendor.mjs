@@ -4,7 +4,7 @@
 //   resolveUnder  <- me/codex/breakout/verifier.mjs (path confinement)
 //   maxConcurrency <- concurrency governance (relocated from council.mjs)
 import { createHash } from "node:crypto";
-import { existsSync } from "node:fs";
+import { existsSync, lstatSync, realpathSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -14,7 +14,9 @@ import path from "node:path";
 function sortValue(value) {
   if (Array.isArray(value)) return value.map(sortValue);
   if (value && typeof value === "object") {
-    return Object.keys(value).sort().reduce((acc, k) => { acc[k] = sortValue(value[k]); return acc; }, {});
+    const sorted = Object.create(null);
+    for (const k of Object.keys(value).sort()) sorted[k] = sortValue(value[k]);
+    return sorted;
   }
   return value;
 }
@@ -43,12 +45,52 @@ export function maxConcurrency(hint) {
   return Math.max(1, Math.min(Math.floor(hint), upper));
 }
 
-// Resolve p under baseDir; return null if it escapes (`..`/absolute). Confinement.
+function isPathUnder(base, candidate) {
+  const rel = path.relative(base, candidate);
+  return rel === "" || (!path.isAbsolute(rel) && rel !== ".." && !rel.startsWith(`..${path.sep}`));
+}
+
+// Resolve p under baseDir with physical confinement. Every existing component
+// from baseDir downward is lstat-checked in the caller's original component
+// order, before normalization can erase a symlink followed by "..". Missing
+// components (including a final file that a worker will create) are allowed
+// beneath safe existing parents. Any ambiguity or filesystem error fails closed.
 export function resolveUnder(baseDir, p) {
-  if (typeof p !== "string" || !p) return null;
-  const resolved = path.resolve(baseDir, p);
-  const rel = path.relative(baseDir, resolved);
-  if (rel.startsWith("..") || path.isAbsolute(rel)) return null;
+  if (typeof baseDir !== "string" || !baseDir || typeof p !== "string" || !p) return null;
+  if (path.isAbsolute(p) || path.parse(p).root !== "") return null;
+
+  let base;
+  let baseReal;
+  try {
+    base = path.resolve(baseDir);
+    const baseStat = lstatSync(base);
+    if (!baseStat.isDirectory() || baseStat.isSymbolicLink()) return null;
+    baseReal = (realpathSync.native || realpathSync)(base);
+  } catch {
+    return null;
+  }
+
+  const original = process.platform === "win32" ? p.replaceAll("/", path.sep) : p;
+  let cursor = base;
+  for (const component of original.split(path.sep)) {
+    if (component === "" || component === ".") continue;
+    if (component === "..") {
+      cursor = path.dirname(cursor);
+      continue;
+    }
+    cursor = path.join(cursor, component);
+    try {
+      const stat = lstatSync(cursor);
+      if (stat.isSymbolicLink()) return null;
+      const real = (realpathSync.native || realpathSync)(cursor);
+      if (!isPathUnder(baseReal, real)) return null;
+    } catch (error) {
+      if (error?.code !== "ENOENT") return null;
+    }
+  }
+
+  const resolved = path.resolve(base, p);
+  if (!isPathUnder(base, resolved)) return null;
   return resolved;
 }
 

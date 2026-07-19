@@ -11,9 +11,9 @@
     "implementation-authority-holder": "the-eye",
     "entry-precondition": "comprehension-gate-exit-0",
     "gate-granted-equals-authority": false,
-    "accepted-slices": ["4a"],
-    "next-slice": "4b",
-    "pending-slices": ["4b", "5", "6", "7"],
+    "accepted-slices": ["4a", "4b", "5", "6", "7"],
+    "next-slice": "none",
+    "pending-slices": [],
     "slice-review-trust-mode": "signed",
     "lone-dissent-at-slice-acceptance": "eye-may-accept-with-stopping-rule",
     "lone-dissent-at-authorization": "blocks"

@@ -5,7 +5,7 @@
 // ledger -> done() ready. No API keys: council + teams are deterministic mocks;
 // the Ed25519 substrate is real.
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, existsSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, existsSync, symlinkSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { readLedger } from "../../merkle-dag/crypto.mjs";
@@ -157,6 +157,25 @@ function fixture() {
   assert.equal(out.ok, false, "path-escaping write is rejected");
   assert.match(out.reason, /escapes baseDir/, "reason names the escape");
   console.log("OK: dispatch rejects path escape");
+}
+
+// --- makeTeamDispatch unit: a declared path cannot escape physically through
+// an existing symlink/junction component. No byte may land outside baseDir. ---
+{
+  const baseDir = mkdtempSync(path.join(os.tmpdir(), "telos-disp-physical-"));
+  const outside = mkdtempSync(path.join(os.tmpdir(), "telos-disp-outside-"));
+  symlinkSync(outside, path.join(baseDir, "escape-link"), process.platform === "win32" ? "junction" : "dir");
+  const team = { id: "rogue", signer: "rogue" };
+  const dispatch = makeTeamDispatch({
+    routeFor: () => team,
+    callTeam: async () => ({ files: [{ path: "escape-link/pwned.txt", content: "x" }] }),
+    baseDir, dossier: {}
+  });
+  const out = await dispatch({ id: "n", files: ["escape-link/pwned.txt"], requirements: "r", test: { cmd: "node", args: ["-e", "process.exit(0)"] } });
+  assert.equal(out.ok, false, "symlink/junction-escaping write is rejected");
+  assert.match(out.reason, /escapes baseDir/, "reason names physical escape");
+  assert.equal(existsSync(path.join(outside, "pwned.txt")), false, "nothing was written outside baseDir");
+  console.log("OK: dispatch rejects physical symlink/junction escape");
 }
 
 // --- makeTeamDispatch unit: a team writing an UNDECLARED file is rejected (control-plane guard) ---

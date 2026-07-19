@@ -42,7 +42,7 @@ ritual (the comprehension gate) every implementer must pass first.
 | slice 4a evidence | `docs/runs/clotho-impl-slice-4a/` — 13 review rounds × 5 seats, `gate-result.json`, `DEFERRED-MINOR-FIXES.md` |
 | accepted-slice ledger | `CONTRACTS/accepted-slices.json` ↔ `CURRENT-AUTHORITY.json#implementation_authority` |
 | protocol | `CONTRACTS/implementation-protocol.json` (incl. the dissent asymmetry) |
-| pending-slice substrate | `clotho/memory/` (SPECIFIED-PENDING-IMPLEMENTATION + `comprehension-queries.{4b,5,6,7}.json`) |
+| completed Phase 1 substrate | `clotho/memory/` (all records NORMATIVE-CURRENT; historical `comprehension-queries.{4b,5,6,7}.json` retained as entry-ritual evidence) |
 
 Verification, one command each:
 ```

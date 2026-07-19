@@ -46,9 +46,13 @@ function superPath(v) {
 // ---- 2. clotho package-roots contract == inventory.mjs -------------------------
 try {
   const contract = readJson("clotho/memory/CONTRACTS/package-roots.json");
+  const queries = readJson("clotho/memory/comprehension-queries.json");
   const inv = await imp("clotho/inventory.mjs");
+  const expectedFor = (id) => queries.queries.find((query) => query.id === id)?.expected;
   check("contract:package-roots==PACKAGE_ROOTS", eqArr(contract.package_roots, inv.PACKAGE_ROOTS), `contract=${JSON.stringify(contract.package_roots)} code=${JSON.stringify(inv.PACKAGE_ROOTS)}`);
   check("contract:package-roots-exclude==PACKAGE_ROOTS_EXCLUDE", eqArr(contract.package_roots_exclude, inv.PACKAGE_ROOTS_EXCLUDE), `contract=${JSON.stringify(contract.package_roots_exclude)} code=${JSON.stringify(inv.PACKAGE_ROOTS_EXCLUDE)}`);
+  check("comprehension:package-roots==contract", eqArr(expectedFor("package-roots"), contract.package_roots), `queries=${JSON.stringify(expectedFor("package-roots"))} contract=${JSON.stringify(contract.package_roots)}`);
+  check("comprehension:excluded-roots==contract", eqArr(expectedFor("excluded-roots"), contract.package_roots_exclude), `queries=${JSON.stringify(expectedFor("excluded-roots"))} contract=${JSON.stringify(contract.package_roots_exclude)}`);
 } catch (e) { check("contract:package-roots", false, e.message); }
 
 // ---- 2b. inventory-id-table contract == inventory.REQUIRED_INVENTORY_IDS -------
@@ -96,16 +100,145 @@ try {
   }
 } catch (e) { check("discipline:invariants", false, e.message); }
 
-// ---- 4. role modules (docs/institutional-memory/<role>/) -----------------------
-// Role modules are enumerated FROM DISK (readdirSync), not a hand-list — any
-// institutional-memory subdirectory carrying a CONTRACTS/ dir is swept, so a new
-// module or a new contract file cannot be silently skipped.
+// ---- 4. every registered OR conventionally discovered memory directory ---------
+// The manifest owns canonical component names, but cannot be the only discovery
+// source: otherwise deleting a memory_dirs entry also deletes its verification.
+// Discover <component>/memory/CONTRACTS recursively plus direct
+// docs/institutional-memory/<role>/CONTRACTS directories, cross-check exact
+// registration, then sweep the union so even an unregistered record set is checked.
 const IM_DIR = path.join(ROOT, "docs/institutional-memory");
-const roleModules = readdirSync(IM_DIR, { withFileTypes: true })
-  .filter((d) => d.isDirectory() && existsSync(path.join(IM_DIR, d.name, "CONTRACTS")))
-  .map((d) => d.name);
-for (const mod of roleModules) {
-  const cdir = path.join(IM_DIR, mod, "CONTRACTS");
+const NON_REPOSITORY_SEGMENTS = new Set([
+  ".git", ".telos", ".superpowers", "node_modules", "dist", "build",
+  "coverage", ".cache", "test-results", "playwright-report", "target",
+  "tmp", "temp"
+]);
+
+function relativeDir(base, absolute) {
+  const rel = path.relative(base, absolute).split(path.sep).join("/");
+  return rel.endsWith("/") ? rel : `${rel}/`;
+}
+
+function conventionalMemoryDirForFile(file) {
+  const rel = file.replaceAll("\\", "/");
+  const segments = rel.split("/");
+  if (segments.some((segment) => NON_REPOSITORY_SEGMENTS.has(segment))) return null;
+  if (segments.some((segment, index) => segment === "fixtures" && segments[index - 1] === "tests")) return null;
+
+  const institutional = rel.match(/^docs\/institutional-memory\/([^/]+)\/CONTRACTS\/[^/]+\.json$/);
+  if (institutional) return `docs/institutional-memory/${institutional[1]}/`;
+  const component = rel.match(/^(.+\/memory)\/CONTRACTS\/[^/]+\.json$/);
+  return component ? `${component[1]}/` : null;
+}
+
+function discoverConventionalMemoryDirs(base) {
+  const listing = spawnSync(
+    "git",
+    ["ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+    { cwd: base, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
+  );
+  if (listing.status !== 0) {
+    throw new Error(`git ls-files failed (${listing.status}): ${listing.stderr.trim()}`);
+  }
+  const found = new Set();
+  for (const file of listing.stdout.split("\0").filter(Boolean)) {
+    const memoryDir = conventionalMemoryDirForFile(file);
+    if (memoryDir) found.add(memoryDir);
+  }
+  return [...found].sort();
+}
+
+function compareMemoryRegistration(registered, discovered) {
+  const byPath = new Map(registered.map(([name, rel]) => [rel, name]));
+  const discoveredSet = new Set(discovered);
+  const unregistered = discovered.filter((rel) => !byPath.has(rel));
+  const registeredNotDiscovered = registered.filter(([, rel]) => !discoveredSet.has(rel));
+  const union = new Map(registered.map(([name, rel]) => [rel, { name, rel }]));
+  for (const rel of discovered) {
+    if (!union.has(rel)) union.set(rel, { name: `unregistered:${rel}`, rel });
+  }
+  return {
+    unregistered,
+    registeredNotDiscovered,
+    union: [...union.values()].sort((a, b) => a.rel.localeCompare(b.rel))
+  };
+}
+
+let registeredMemoryDirs = [];
+try {
+  const manifest = readJson("repository-manifest.json");
+  const dirs = manifest.entry_points?.memory_dirs;
+  if (!dirs || typeof dirs !== "object" || Array.isArray(dirs)) throw new Error("repository-manifest.json entry_points.memory_dirs must be an object");
+  registeredMemoryDirs = Object.entries(dirs)
+    .map(([name, rel]) => {
+      if (typeof rel !== "string" || rel.length === 0) throw new Error(`memory_dirs.${name} must be a nonempty path string`);
+      return [name, relativeDir(ROOT, path.resolve(ROOT, rel))];
+    })
+    .sort(([a], [b]) => a.localeCompare(b));
+  const pathOwners = new Map();
+  for (const [mod, rel] of registeredMemoryDirs) {
+    const abs = path.resolve(ROOT, rel);
+    const contained = abs.startsWith(ROOT + path.sep);
+    check(`discipline:memory-dir-contained(${mod})`, contained, contained ? rel : `manifest path escapes repository: ${rel}`);
+    check(`discipline:memory-dir-exists(${mod})`, contained && existsSync(abs), contained && existsSync(abs) ? rel : `missing manifest-registered memory dir: ${rel}`);
+    const previous = pathOwners.get(rel);
+    check(`discipline:memory-dir-unique-path(${mod})`, !previous, previous ? `${rel} is already registered as ${previous}` : rel);
+    pathOwners.set(rel, mod);
+  }
+} catch (e) {
+  check("discipline:manifest-memory-dirs", false, e.message);
+}
+
+let sweepMemoryDirs = registeredMemoryDirs.map(([name, rel]) => ({ name, rel }));
+try {
+  const discoveredMemoryDirs = discoverConventionalMemoryDirs(ROOT);
+  const comparison = compareMemoryRegistration(registeredMemoryDirs, discoveredMemoryDirs);
+  check("discipline:memory-dir-registration-exact",
+    comparison.unregistered.length === 0 && comparison.registeredNotDiscovered.length === 0,
+    comparison.unregistered.length
+      ? `unregistered conventional memory dirs: ${comparison.unregistered.join(", ")}`
+      : comparison.registeredNotDiscovered.length
+        ? `registered paths are not conventional memory dirs with CONTRACTS/: ${comparison.registeredNotDiscovered.map(([, rel]) => rel).join(", ")}`
+        : `${discoveredMemoryDirs.length} discovered paths exactly registered`);
+  sweepMemoryDirs = comparison.union;
+
+  const selfCheck = compareMemoryRegistration(
+    [["known", "known/memory/"]],
+    ["known/memory/", "rogue/memory/"]
+  );
+  check("discipline:unregistered-memory-dir-self-check",
+    deepEq(selfCheck.unregistered, ["rogue/memory/"])
+      && selfCheck.union.some(({ rel }) => rel === "rogue/memory/"),
+    "synthetic rogue/memory/ is both reported unregistered and retained in the verification union");
+  const discoverySelfCheck = [
+    "known/memory/CONTRACTS/a.json",
+    "docs/institutional-memory/known/CONTRACTS/a.json",
+    "ai-native-memory/tests/fixtures/rogue/memory/CONTRACTS/a.json",
+    ".telos/rogue/memory/CONTRACTS/a.json",
+    ".superpowers/rogue/memory/CONTRACTS/a.json",
+    "known/memory/CONTRACTS/README.md"
+  ].map(conventionalMemoryDirForFile);
+  check("discipline:memory-dir-discovery-filter-self-check",
+    deepEq(discoverySelfCheck, [
+      "known/memory/",
+      "docs/institutional-memory/known/",
+      null,
+      null,
+      null,
+      null
+    ]),
+    "candidate contracts are discovered; fixture/runtime/non-JSON paths are excluded");
+} catch (e) {
+  check("discipline:memory-dir-discovery", false, e.message);
+}
+
+for (const { name: mod, rel } of sweepMemoryDirs) {
+  const memoryDir = path.resolve(ROOT, rel);
+  if (!memoryDir.startsWith(ROOT + path.sep)) continue;
+  const cdir = path.join(memoryDir, "CONTRACTS");
+  if (!existsSync(cdir)) {
+    check(`discipline:contracts-dir(${mod})`, false, `manifest-registered memory dir has no CONTRACTS/: ${rel}`);
+    continue;
+  }
   for (const f of readdirSync(cdir).filter((n) => n.endsWith(".json"))) {
     try {
       const c = JSON.parse(readFileSync(path.join(cdir, f), "utf8"));
@@ -119,7 +252,7 @@ for (const mod of roleModules) {
       }
     } catch (e) { check(`discipline:contract(${mod}/${f})`, false, e.message); }
   }
-  const invPath = path.join(IM_DIR, mod, "INVARIANTS.json");
+  const invPath = path.join(memoryDir, "INVARIANTS.json");
   if (existsSync(invPath)) {
     try {
       for (const inv of JSON.parse(readFileSync(invPath, "utf8"))) {
@@ -135,7 +268,77 @@ for (const mod of roleModules) {
   }
 }
 
-// ---- 4a. daedalus: workshop-protocol contract == build-gate/daedalus.mjs -------
+// ---- 4a. Lachesis metrics contract == live committed snapshot + implementation -
+// The package oracle already pins these values. Recompute the projection here so a
+// green package test cannot coexist with a stale NORMATIVE memory contract.
+try {
+  const c = readJson("lachesis/memory/CONTRACTS/metrics.json");
+  const manifest = readJson("lachesis/config/snapshot-manifest.json");
+  const { loadWeave } = await imp("lachesis/ingest.mjs");
+  const { dependencies, blastRadius, riskClass } = await imp("lachesis/measure.mjs");
+  const weave = loadWeave(manifest, ROOT);
+  const golden = c.golden_evidence;
+  const goldenShape = golden
+    && golden.snapshot && typeof golden.snapshot.path === "string" && typeof golden.snapshot.raw_byte_sha256 === "string"
+    && golden.tallies && Number.isInteger(golden.tallies.edges)
+    && golden.subjects && golden.subjects.hub && golden.subjects.g2;
+  check("lachesis:metrics-golden-schema", !!goldenShape,
+    goldenShape ? "structured snapshot, tallies, and subject projections present" : "golden_evidence must contain structured snapshot, tallies, and subjects.{hub,g2}");
+
+  if (goldenShape) {
+    const dependsOn = weave.edges.filter((e) => e.edge_kind === "depends-on");
+    const inDegree = new Map();
+    const rawRelevance = new Map(weave.nodes.ids().map((id) => [id, 0]));
+    for (const edge of weave.edges) {
+      if (edge.edge_kind === "depends-on") {
+        inDegree.set(edge.to, (inDegree.get(edge.to) || 0) + 1);
+        rawRelevance.set(edge.to, (rawRelevance.get(edge.to) || 0) + 3);
+      } else if (edge.edge_kind === "verified-by") {
+        rawRelevance.set(edge.from, (rawRelevance.get(edge.from) || 0) + 2);
+      } else if (edge.edge_kind === "introduced-by") {
+        rawRelevance.set(edge.from, (rawRelevance.get(edge.from) || 0) + 1);
+      }
+    }
+    const maxInDegree = Math.max(0, ...inDegree.values());
+    const maxRaw = Math.max(0, ...rawRelevance.values());
+    const projectionOf = (subject) => {
+      const id = subject.node_id;
+      return {
+        node_id: id,
+        dependencies: dependencies(weave, id).size,
+        blast_radius: blastRadius(weave, id).count,
+        relevance_raw: rawRelevance.get(id),
+        relevance_max_raw: maxRaw,
+        risk_class: riskClass(weave, id, "attested-complete").class
+      };
+    };
+    const actual = {
+      snapshot: {
+        path: manifest.snapshot_path,
+        raw_byte_sha256: manifest.snapshot_digest
+      },
+      tallies: {
+        edges: weave.edges.length,
+        nodes: weave.nodes.size,
+        depends_on_edges: dependsOn.length,
+        max_depends_on_in_degree: maxInDegree
+      },
+      subjects: {
+        hub: projectionOf(golden.subjects.hub),
+        g2: projectionOf(golden.subjects.g2)
+      }
+    };
+    check("lachesis:metrics-golden==live-snapshot", deepEq(golden, actual),
+      deepEq(golden, actual) ? "contract deep-equals live snapshot projection" : `contract=${JSON.stringify(golden)} live=${JSON.stringify(actual)}`);
+    check("lachesis:metrics-hub-is-max-relevance",
+      rawRelevance.get(golden.subjects.hub.node_id) === maxRaw,
+      `hub raw=${rawRelevance.get(golden.subjects.hub.node_id)} max=${maxRaw}`);
+  }
+} catch (e) {
+  check("lachesis:metrics-projection", false, e.message);
+}
+
+// ---- 4b. daedalus: workshop-protocol contract == build-gate/daedalus.mjs -------
 // The constants are deep-equaled and the state machine is PROBED (each claimed
 // terminal is reached through the real deriveWorkshopState/deriveParallelState),
 // so the contract cannot describe a protocol the code does not enforce.
@@ -188,7 +391,7 @@ try {
     `state=${reused.state} reason=${reused.reason}`);
 } catch (e) { check("daedalus:workshop-protocol", false, e.message); }
 
-// ---- 4b. daedalus: plan-version-chain contract == disk + CURRENT-AUTHORITY -----
+// ---- 4c. daedalus: plan-version-chain contract == disk + CURRENT-AUTHORITY -----
 try {
   const c = readJson("docs/institutional-memory/daedalus/CONTRACTS/plan-version-chain.json");
   const auth = readJson("CURRENT-AUTHORITY.json");
@@ -324,6 +527,17 @@ try {
   const bad = run("reader-hallucinating.json");
   check("argo:entry-ritual-denies-hallucinating-reader", bad.status === 3, `exit=${bad.status} (expected 3)`);
 } catch (e) { check("argo:implementation-protocol", false, e.message); }
+
+// ---- 6c. host comprehension schema + live-pointer regression suite ------------
+// This covers Argo/Daedalus/TELOS pointer projections, stale and unsupported
+// anchors, pass-detail wording, and Lachesis correct/misconception readers.
+try {
+  const test = spawnSync(process.execPath, [path.join(HERE, "test-comprehension-gate.mjs")], { encoding: "utf8" });
+  check("comprehension:host-schema-and-live-pointers", test.status === 0,
+    test.status === 0 ? test.stdout.trim() : `exit=${test.status} stdout=${test.stdout.trim()} stderr=${test.stderr.trim()}`);
+} catch (e) {
+  check("comprehension:host-schema-and-live-pointers", false, e.message);
+}
 
 // ---- 7a. loadout: seat-backends contract == seat-registry.mjs ------------------
 try {
@@ -563,6 +777,87 @@ try {
     check(`iliad:future-${fm.name}-registered-verbatim`, text === fm.role_meaning,
       text === fm.role_meaning ? "meaning verbatim from the vocabulary" : `vocabulary='${(text || "TERM NOT REGISTERED").slice(0, 60)}…' record='${fm.role_meaning.slice(0, 60)}…'`);
     check(`iliad:future-${fm.name}-unimplemented`, !implemented.has(fm.name), implemented.has(fm.name) ? "has a memory dir — not future" : "no memory dir (genuinely unbuilt)");
+  }
+
+  // Current implementation classification is load-bearing onboarding data.
+  const componentByName = new Map((manifest.components || []).map((c) => [c.name, c]));
+  const roleByName = new Map((manifest.role_modules || []).map((m) => [m.name, m]));
+  const productByName = new Map((manifest.products || []).map((p) => [p.name, p]));
+  const futureNames = new Set((manifest.future_modules || []).map((m) => m.name));
+  check("classification:clotho-phase-1-complete",
+    componentByName.get("clotho")?.status === "implemented (Phase 1 complete; tasks 0-7 accepted)"
+      && !(componentByName.get("clotho")?.specified_pending?.tasks || []).length,
+    `status=${componentByName.get("clotho")?.status} pending=${(componentByName.get("clotho")?.specified_pending?.tasks || []).length}`);
+  check("classification:argo-slices-complete",
+    roleByName.get("argo")?.status === "active (slices 4a, 4b, 5, 6, and 7 accepted; no next or pending slice)",
+    `status=${roleByName.get("argo")?.status}`);
+  for (const name of ["lachesis", "atropos"]) {
+    const component = componentByName.get(name);
+    check(`classification:${name}-implemented-enrolled`,
+      component?.status === "implemented / enrolled" && implemented.has(name) && !futureNames.has(name),
+      `component_status=${component?.status} memory_registered=${implemented.has(name)} future=${futureNames.has(name)}`);
+  }
+  const aiNativeMemory = componentByName.get("ai-native-memory");
+  const aiNativeDeferred = (enr.deferred_pending_conscious_enrollment || []).includes("ai-native-memory");
+  check("classification:ai-native-memory-implemented-deferred",
+    aiNativeMemory?.role === null
+      && aiNativeMemory?.status === "implemented (Iliad enrollment deferred)"
+      && aiNativeMemory?.memory_dir === "ai-native-memory/memory/"
+      && manifest.entry_points?.memory_dirs?.["ai-native-memory"] === aiNativeMemory.memory_dir
+      && aiNativeDeferred
+      && !futureNames.has("ai-native-memory"),
+    `role=${aiNativeMemory?.role} status=${aiNativeMemory?.status} memory_dir=${aiNativeMemory?.memory_dir} registered=${manifest.entry_points?.memory_dirs?.["ai-native-memory"]} deferred=${aiNativeDeferred} future=${futureNames.has("ai-native-memory")}`);
+  const aiNativePackage = readJson("ai-native-memory/package.json");
+  check("classification:ai-native-memory-runnable-package",
+    aiNativePackage.name === "ai-native-memory"
+      && typeof aiNativePackage.scripts?.test === "string"
+      && existsSync(path.join(ROOT, "ai-native-memory/tests/oracle-plugin-contract.mjs")),
+    `name=${aiNativePackage.name} test=${!!aiNativePackage.scripts?.test} contract_oracle=${existsSync(path.join(ROOT, "ai-native-memory/tests/oracle-plugin-contract.mjs"))}`);
+  const flagship = productByName.get("narcissus/flagship");
+  const flagshipDeferred = (enr.deferred_pending_conscious_enrollment || []).includes("narcissus/flagship");
+  check("classification:narcissus-module-vs-flagship-product",
+    futureNames.has("narcissus") && !implemented.has("narcissus")
+      && flagship?.kind === "product"
+      && flagship?.status === "implemented"
+      && flagship?.distinct_from_role_module === "narcissus"
+      && flagship?.iliad_enrollment === "deferred"
+      && flagshipDeferred,
+    `future_module=${futureNames.has("narcissus")} memory_registered=${implemented.has("narcissus")} product_status=${flagship?.status} distinct_from=${flagship?.distinct_from_role_module} product_enrollment=${flagship?.iliad_enrollment} registry_deferred=${flagshipDeferred}`);
+  check("classification:narcissus-flagship-package-path",
+    flagship?.path === "narcissus/flagship/"
+      && existsSync(path.join(ROOT, flagship.path, "package.json")),
+    `manifest_path=${flagship?.path} package_json=${flagship?.path ? existsSync(path.join(ROOT, flagship.path, "package.json")) : false}`);
+  if (flagship?.path && existsSync(path.join(ROOT, flagship.path, "package.json"))) {
+    const flagshipPackage = JSON.parse(readFileSync(path.join(ROOT, flagship.path, "package.json"), "utf8"));
+    check("classification:narcissus-flagship-runnable-package",
+      flagshipPackage.name === "narcissus-flagship"
+        && typeof flagshipPackage.scripts?.build === "string"
+        && typeof flagshipPackage.scripts?.test === "string"
+        && typeof flagshipPackage.scripts?.["verify:evidence"] === "string",
+      `name=${flagshipPackage.name} build=${!!flagshipPackage.scripts?.build} test=${!!flagshipPackage.scripts?.test} verify:evidence=${!!flagshipPackage.scripts?.["verify:evidence"]}`);
+  }
+  const executableClaims = (flagship?.claims || []).filter((claim) => claim.grade === "executable");
+  const flagshipEvidence = executableClaims.flatMap((claim) => claim.evidence || []);
+  const missingFlagshipEvidence = flagshipEvidence.filter((rel) => !existsSync(path.join(ROOT, rel)));
+  check("classification:narcissus-flagship-executable-evidence",
+    executableClaims.length > 0 && flagshipEvidence.length > 0 && missingFlagshipEvidence.length === 0,
+    executableClaims.length === 0
+      ? "no executable product claim"
+      : missingFlagshipEvidence.length
+        ? `missing: ${missingFlagshipEvidence.join(", ")}`
+        : `${flagshipEvidence.length} evidence paths resolve`);
+
+  const onboarding = readFileSync(path.join(ROOT, "AI-START-HERE.md"), "utf8").replace(/\s+/g, " ");
+  const onboardingClaims = [
+    ["clotho", "Clotho Phase 1 is complete"],
+    ["argo", "Argo has accepted slices 4a, 4b, 5, 6, and 7; no next or pending slice remains"],
+    ["lachesis-atropos", "Lachesis and Atropos are implemented and enrolled"],
+    ["ai-native-memory", "`ai-native-memory` is an implemented portable plugin/product component"],
+    ["narcissus-module", "The Narcissus module remains registered and unimplemented"],
+    ["narcissus-product", "`narcissus/flagship` is an implemented product"]
+  ];
+  for (const [id, claim] of onboardingClaims) {
+    check(`classification:onboarding-${id}`, onboarding.includes(claim), onboarding.includes(claim) ? claim : `AI-START-HERE.md missing current claim: ${claim}`);
   }
 } catch (e) { check("iliad:future-modules", false, e.message); }
 

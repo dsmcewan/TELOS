@@ -35,16 +35,29 @@ begin from accumulated truth.**
 ## Prove you understood it — before you get implementation authority
 
 Reading files is **not** evidence of understanding. Answer the component's
-`memory/comprehension-queries.json` and run:
+`memory/comprehension-queries.json`. For TELOS role/component records, run:
 
 ```
-node docs/institutional-memory/comprehension-gate.mjs <component>/memory/comprehension-queries.json <your-answers.json>
+node docs/institutional-memory/comprehension-gate.mjs <path-to-memory-dir>/comprehension-queries.json <your-answers.json>
 ```
 
-It grades your answers **deterministically** against authority-anchored facts. You have
-**no implementation authority until it exits 0.** (Example runs:
-`docs/institutional-memory/examples/reader-correct.json` passes;
-`reader-hallucinating.json` — which answers "eight packages" and "proves containment" — is
+`ai-native-memory` is a portable plugin with its own query schema and authority
+record, so its dogfood gate is intentionally routed through the plugin oracle:
+
+```
+node ai-native-memory/scripts/gate.mjs ai-native-memory/memory/comprehension-queries.json <your-answers.json> --authority ai-native-memory/CURRENT-AUTHORITY.json
+```
+
+Both routes grade answers **deterministically**. In the TELOS gate, facts carrying
+`authority_anchor.pointer` are additionally live-resolved against
+`CURRENT-AUTHORITY.json`; other anchor metadata is an evidence citation, not a runtime
+authority resolver. The plugin gate validates its separate query schema and grades
+against the plugin's reviewed expectations; `ai-native-memory/scripts/audit.mjs`
+separately re-derives those `derived_from` anchors from sibling records. Exit 0 is a
+required entry precondition; it does not
+replace The Eye's implementation-authority decision. (Example runs:
+`docs/institutional-memory/examples/reader-correct.json` passes the entry ritual;
+`reader-hallucinating.json` — which includes every package and "proves containment" — is
 **denied**.)
 
 Also confirm reality matches the records:
@@ -66,15 +79,30 @@ comprehension queries — load it before touching that role's code or workflow.
 | **Argo** | carries an authorized plan through implementation, verification, documentation | `docs/institutional-memory/argo/` |
 | **The Iliad** | lifecycle umbrella for enrolled sub-systems (pre-review → enroll → retrospective) | `docs/institutional-memory/iliad/` |
 
+## Current implementation classification
+
+**Clotho Phase 1 is complete.** **Argo has accepted slices 4a, 4b, 5, 6, and
+7; no next or pending slice remains.** **Lachesis and Atropos are implemented
+and enrolled** as zero-dependency spine packages, with their component memory
+under `lachesis/memory/` and `atropos/memory/`.
+
+**`ai-native-memory` is an implemented portable plugin/product component.** It
+has no mythological role, and its Iliad enrollment remains deferred under AM-40;
+its dogfood records live under `ai-native-memory/memory/`.
+
+The module/product boundary is deliberate: **The Narcissus module remains
+registered and unimplemented**, while **`narcissus/flagship` is an implemented
+product** that remains deferred pending conscious Iliad enrollment. Filesystem
+proximity and a product directory do not implement or enroll the registered
+Narcissus role.
+
 **Future modules (registered, UNIMPLEMENTED)** — names reserved WITH meaning; no code
 exists. Do not coin them for other purposes, and do not assume the components exist:
 **Hermes** (API management & inter-system communication) · **Medusa** (defensive edge
-enforcement) · **Narcissus** (iterative UI rendering & visual review) · **Lachesis**
-(dependencies/relevance/risk/blast-radius) · **Atropos** (retirement of obsolete
-artifacts — discipline partially expressed today via supersession records). Machine
-index: `repository-manifest.json#future_modules` (verify-contracts cross-checks it
-against the vocabulary verbatim). Implementing one: CHANGE-PROTOCOL + the Iliad
-lifecycle.
+enforcement) · **Narcissus** (production of full-rollout front-ends through iterative
+UI rendering and visual review). Machine index:
+`repository-manifest.json#future_modules` (verify-contracts cross-checks it against
+the vocabulary verbatim). Implementing one: CHANGE-PROTOCOL + the Iliad lifecycle.
 
 **Route by what you are about to do** (load that module's memory dir FIRST, then
 pass its `comprehension-queries.json` through the gate):
@@ -85,6 +113,8 @@ pass its `comprehension-queries.json` through the gate):
 | touch the gate, council, signing, or an authz run | `telos/` | required trio vs advisory; one dissent blocks; refusals are the system working |
 | implement a slice, review, or merge | `argo/` | comprehension gate first; The Eye accepts; the dissent asymmetry |
 | touch `clotho/` code | `clotho/memory/` | AM-40 roots; AM-41 profile; advisory/non-sandboxed posture |
+| measure dependencies, relevance, risk, or blast radius | `lachesis/memory/` | measurement only; risk class advisory; no Clotho identity or signature-chain overclaim |
+| verify recorded supersession consistency | `atropos/memory/` | cycle 1 is read-only; retirement action remains human-governed |
 | choose tools/seats for a run, or START any task | `loadout/` (+ your task's `TASK-LOADOUTS/task-<id>.json`) | seat routes are pinned; a loadout server can never shadow a seat; missing capabilities must be surfaced, never worked around |
 | create a NEW implementation / sub-system | `iliad/` (pre-review first; read the latest retrospective) | lifecycle: pre-review → enrolled sub-system → retrospective; 'delivered' is refused without the retrospective |
 

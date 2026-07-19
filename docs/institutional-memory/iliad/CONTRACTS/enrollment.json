@@ -103,7 +103,7 @@
     }
   ],
   "enrolled_as_package_roots_note": "lachesis and atropos were built through the Iliad (pre-review -> daedalus -> argo) as zero-dep code capabilities and CONSCIOUSLY ENROLLED into clotho/memory/CONTRACTS/package-roots.json#package_roots (AM-40 conscious-enrollment). As spine code packages they are governed directly (per this registry's note) and woven into the graph; their quest records + retrospectives live in their own memory dirs. They are therefore no longer 'registered-unimplemented'.",
-  "future_modules_note": "Registered myths with defined system responsibilities and NO implementation (meanings VERBATIM from docs/mythological-vocabulary.md; verify-contracts parses the registry and cross-checks each). Atropos's discipline is partially expressed today via supersession records (must_not_govern_new_work); Lachesis's risk measurement is explicitly non-claimed by Clotho Phase 1. Implementing one follows CHANGE-PROTOCOL + this lifecycle (pre-review -> enroll -> retrospective).",
+  "future_modules_note": "The entries still listed in future_modules_registered_unimplemented are registered myths with defined system responsibilities and NO role implementation (meanings VERBATIM from docs/mythological-vocabulary.md; verify-contracts parses the registry and cross-checks each). Lachesis and Atropos have left that list through conscious implementation and enrollment. Implementing a remaining role follows CHANGE-PROTOCOL + this lifecycle (pre-review -> enroll -> retrospective).",
   "deferred_pending_conscious_enrollment": [
     "ai-forge",
     "ai-native-memory",

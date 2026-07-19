@@ -206,7 +206,7 @@ export const ORCHESTRATOR_FILES = Object.freeze([
 export const FATAL_WARNING_CODES = Object.freeze([
   "attribution-violation",
   "chain-failure",
-  "duplicate-heading-address",
+  "duplicate-heading-path",
   "incomplete-source-consumption",
   "invalid-content-address",
   "invalid-ledger-entry",

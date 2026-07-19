@@ -1,5 +1,5 @@
 {
-  "note": "A reader that reconstructed system reality from the institutional-memory records. The comprehension-gate GRANTS implementation authority for this answer set.",
+  "note": "A reader that reconstructed system reality from the institutional-memory records. The comprehension gate passes this entry ritual and emits its legacy GRANTED label; that result is a precondition and does not itself confer implementation authority.",
   "reader": "example-correct-reader",
   "resolved_plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
   "resolved_authorization": "authz-008",
@@ -7,8 +7,8 @@
   "invariants_read": ["d33-fail-closed-profile", "d33-deny-based-regex"],
   "non_claims_read": ["not-a-js-parser", "no-loader-containment"],
   "answers": {
-    "package-roots": ["breakout", "build-gate", "clotho", "connectors/ai-peer-mcp", "merkle-dag"],
-    "excluded-roots": ["ai-forge", "forge", "saas-forge"],
+    "package-roots": ["atropos", "breakout", "build-gate", "clotho", "connectors/ai-peer-mcp", "lachesis", "merkle-dag"],
+    "excluded-roots": ["ai-forge", "ai-native-memory", "forge", "narcissus/flagship", "saas-forge"],
     "excluded-reason": "filesystem-proximity-does-not-establish-architectural-membership",
     "new-package-behavior": "fails-classification-test-until-explicitly-assigned",
     "loader-containment": false

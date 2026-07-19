@@ -32,7 +32,8 @@ function testGitLsFiles(repoRoot) {
 import {
   PACKAGE_ROOTS, PACKAGE_ROOTS_EXCLUDE, DOC_ROOTS, DOC_WEAVER_EXCLUDE, GLOBAL_EXCLUDE, CONTRACT_FILES,
   LEDGER_SOURCES, RUN_SOURCES, WEAVERS, REQUIRED_INVENTORY_IDS,
-  LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS, WEAVER_IMPL_FILES, PERMITTED_EXTERNAL_CLOSURE_FILES
+  LOADER_CAPABLE_BUILTIN_SAFE_EXPORTS, WEAVER_IMPL_FILES, PERMITTED_EXTERNAL_CLOSURE_FILES,
+  ORCHESTRATOR_FILES, ORCHESTRATOR_ENTRY_MODULES, FATAL_WARNING_CODES
 } from "../inventory.mjs";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -190,6 +191,48 @@ const abs = (rel) => path.join(REPO_ROOT, ...rel.split("/"));
   assert.ok(sortedUnique(PACKAGE_ROOTS), "PACKAGE_ROOTS sorted + unique");
   assert.ok(sortedUnique(PACKAGE_ROOTS_EXCLUDE), "PACKAGE_ROOTS_EXCLUDE sorted + unique");
   assert.ok(statSyncFs(abs("clotho/package.json")).isFile()); // sanity
+}
+
+// ---- 8. Phase-1-complete memory projection ----------------------------------
+{
+  const nonClaims = JSON.parse(readFileSync(abs("clotho/memory/NON-CLAIMS.json"), "utf8"));
+  assert.ok(Array.isArray(nonClaims), "NON-CLAIMS machine source is an array");
+  const nonClaimsMarkdown = readFileSync(abs("clotho/memory/NON-CLAIMS.md"), "utf8");
+  const humanNonClaimIds = [...nonClaimsMarkdown.matchAll(/^- \*\*`([^`]+)`\*\*/gm)]
+    .map((match) => match[1]);
+  assert.deepEqual(
+    humanNonClaimIds,
+    nonClaims.map((entry) => entry.id),
+    "NON-CLAIMS.md human-view ids exactly match NON-CLAIMS.json in order"
+  );
+  assert.equal(nonClaims.some((entry) => entry.id === "no-orchestrator-yet"), false,
+    "completed Task 5 must not retain the false no-orchestrator-yet non-claim");
+
+  assert.deepEqual(ORCHESTRATOR_ENTRY_MODULES, ["clotho/thread-ledger.mjs", "clotho/weave.mjs"],
+    "the current complete-weave orchestrator entry points are committed");
+  for (const entry of ORCHESTRATOR_ENTRY_MODULES) {
+    assert.ok(ORCHESTRATOR_FILES.includes(entry), `orchestrator inventory contains ${entry}`);
+    assert.ok(statSync(abs(entry)).isFile(), `orchestrator entry ${entry} exists`);
+  }
+
+  const memoryReadme = readFileSync(abs("clotho/memory/README.md"), "utf8");
+  assert.doesNotMatch(memoryReadme, /SPECIFIED-PENDING-IMPLEMENTATION|does not yet\s+provide the orchestrator|Next:\s*Task 4b/i,
+    "human memory projection contains no pre-Task-4b pending marker");
+
+  assert.deepEqual(FATAL_WARNING_CODES, [
+    "attribution-violation",
+    "chain-failure",
+    "duplicate-heading-path",
+    "incomplete-source-consumption",
+    "invalid-content-address",
+    "invalid-ledger-entry",
+    "publication-time-drift",
+    "root-escape",
+    "source-count-mismatch",
+    "symlink-input",
+    "unexpected-source-consumption",
+    "unsupported-ledger-format"
+  ], "fatal-warning inventory uses the one canonical duplicate-heading-path code");
 }
 
 console.log("test-inventory: all assertions passed");
