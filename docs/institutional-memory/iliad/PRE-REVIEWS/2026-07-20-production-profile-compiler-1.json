@@ -1,0 +1,63 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "pre-review-2026-07-20-production-profile-compiler-1",
+  "note": "Pre-review for the deterministic production profile compiler quest. The Eye approved the revised written design on 2026-07-20 and explicitly required both full TELOS lifecycle traversal and TELOS-first self-application before enrollment. This record enters the quest and authorizes no implementation.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "docs/runs/production-profile-compiler-1 (Iliad entry ritual); candidate plan docs/superpowers/plans/2026-07-20-deterministic-production-profile-compiler.md; workshop docs/runs/production-profile-compiler-1-workshop; branch feature/deterministic-production-profile-compiler from origin/main git:34875f0bad41b90366b7402529cbdb0ec069d227",
+  "next_phase_workshop": "After the file-specific candidate plan is written and self-reviewed, docs/runs/production-profile-compiler-1-workshop/ must mature it through the real Daedalus workflow. Convergence is submission only. A real TELOS authorization over the exact matured plan must follow before Argo implementation.",
+  "authority_basis": "The Eye approval in this session + approved design file:docs/superpowers/specs/2026-07-20-deterministic-production-profile-compiler-design.md@1c12c6b36de31b62de7d6a0f1ce02db3f13ded69 (raw sha256 1a0d7b96fb4d4a35313355846a205bfd7c0f6c9fa093c957ba186f5b1bac0ba6). Existing authz-008 does not authorize this feature.",
+  "honest_scope": {
+    "deliverable": "A zero-runtime-dependency deterministic production profile compiler integrated into the existing build-gate proposal lifecycle and merkle-dag obligation path: 11 domains, 31 stable obligations, 8 closed check kinds, post-build profile-drift blocking, a synthetic bank-style egress demonstration, and a TELOS first-host self-profile run.",
+    "jurisdiction_boundary": "The controller and The Eye own dossier facts, signal resolutions, policy selection, authorization, acceptance, and enrollment. Models may implement the authorized work but cannot author or lower the effective profile, choose skips, replace registered checks, or convert missing evidence into acceptance.",
+    "quest_boundary": "The currently enrolled spine governs creation of the candidate. The candidate then governs a separately authorized TELOS self-hosting proposal before reference documentation, Clotho weave, retrospective, or enrollment can complete. The self-run is acceptance evidence, never retroactive creation authority.",
+    "compatibility_boundary": "Legacy non-market and obligation-free plans remain byte-identical. Activated production builds fail closed. A fresh host must not require TELOS institutional files; missing host adapters produce typed blockers.",
+    "evidence_boundary": "Runtime, structural, and process evidence remain distinct. Passing checks prove only their bounded predicates; the feature does not certify security, scalability, legal compliance, or operational effectiveness.",
+    "non_goals": "No remote policy packs, autonomous legal classification, live provider calls in tests or demonstrations, real personal data, dependency additions, or TELOS-specific self bypass."
+  },
+  "model_review": {
+    "note": "Seat intent is resolved from the latest repository model review and build-gate/seats.json. Actual models are proven only by per-seat provenance in the later workshop and authorization records. No seat change is proposed.",
+    "baseline": "docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-17.json",
+    "seats": {
+      "claude": "claude-fable-5",
+      "codex": "gpt-5.6-sol",
+      "grok": "grok-4.5",
+      "gemini": "gemini-3.1-pro-preview",
+      "agy": "local deterministic (no model id)"
+    },
+    "newly_available_models_considered": [
+      "No newer model generation is recorded in the repository baseline. This pre-review does not claim to verify external provider catalogs."
+    ],
+    "seat_changes_proposed": []
+  },
+  "capability_review": {
+    "task_loadout_read": "n/a — no Argo slice is frozen or authorized; this quest-entry cycle produces the candidate plan. Each later SPECIFIED-PENDING implementation slice must receive its own TASK-LOADOUTS record before code.",
+    "prior_retrospectives_read": [
+      "docs/institutional-memory/iliad/RETROSPECTIVES/agentic-orchestration-reference-1.json",
+      "docs/institutional-memory/iliad/RETROSPECTIVES/lachesis-1.json",
+      "docs/institutional-memory/iliad/RETROSPECTIVES/atropos-1.json",
+      "docs/institutional-memory/iliad/RETROSPECTIVES/narcissus-flagship-1.json"
+    ],
+    "optimizations_adopted": [
+      "Fetch origin and read CURRENT-AUTHORITY before load-bearing repository claims; verified this branch is based on current origin/main git:34875f0bad41b90366b7402529cbdb0ec069d227.",
+      "Map current code and tests before freezing interfaces. Plan review must test correspondence with repository reality, not merely internal defensibility.",
+      "Carry full content hashes and exact file paths; never abbreviate an authority anchor in governing artifacts.",
+      "Treat every deterministic gate as an auditor of the coordinator too: missing sources, stale contracts, no-op checks, and artifact disagreement must block even when model packets approve.",
+      "Do not use a build-mode override for ship-grade work. Daedalus convergence remains submission, TELOS dissent remains blocking, and actual seat provenance is preserved.",
+      "Do not fake an oracle for legal applicability or production effectiveness. Keep human jurisdiction and the three evidence tiers explicit.",
+      "Require the TELOS self-hosting negative controls before any dogfood claim or enrollment, so the candidate cannot receive a privileged self path."
+    ],
+    "optimizations_deferred_with_reason": [
+      "The local shell provides Node v24.15.0, not Node 18 or 20. Local Node 24 results are supplementary only; the existing GitHub Actions Node 18/20 matrix is the required portability evidence.",
+      "Remote policy packs remain deferred by the approved design to avoid widening the initial trust root and supply-chain surface."
+    ],
+    "missing_external_capabilities": [],
+    "capability_conditions": [
+      "Real Daedalus and TELOS seat calls are required at their stages. Provider, credential, or funding failure stops the quest; it does not authorize model substitution or replay as fresh provenance.",
+      "GitHub Actions must supply the required Node 18/20 matrix before acceptance. A missing matrix is a blocker, not a skipped check."
+    ],
+    "capability_packets_required": false
+  },
+  "entry_ritual": "docs/runs/production-profile-compiler-1/reader-validation-artifact.json — Iliad queries, COMPREHENSION_PASSED 19/19 with active-plan hash verified and authz-004 through authz-007 excluded. The artifact's legacy implementation_authority GRANTED label is a comprehension precondition only and does not supersede The Eye or TELOS authorization."
+}
