@@ -76,10 +76,18 @@ records from the has-passing-oracle rule but requires a nonempty `becomes_normat
   `CURRENT-AUTHORITY.json` matches disk. Fail-closed; exit 0 only if all match.
 - **`docs/institutional-memory/comprehension-gate.mjs`** — the reader-validation gate.
   A reader submits an answer set; the gate grades it **deterministically** against the
-  reviewed expectations in `comprehension-queries.json`, verifies the active plan hash
-  against disk, and checks the
+  reviewed expectations in a query artifact registered by component and canonical path
+  in `repository-manifest.json#entry_points.comprehension_query_artifacts`, verifies the
+  active plan hash against disk, and checks the
   reader excluded superseded authorizations. Exit 0 → implementation authority may be
   granted; a wrong answer ("include every package", "proves containment") → **DENIED**.
+  An unregistered path or a query document whose self-declared component differs from
+  its manifest owner is a gate error. Every result artifact records the manifest-owned
+  repository-relative path and the SHA-256 digest of the exact raw query bytes graded;
+  the gate validates one opened file identity and grades/hashes those same bytes.
+  Registry profiles are closed: `module` entries must belong to a manifest-declared
+  module and stay under its memory directory; `advisory-reference` entries must use a
+  `reference:` component id. Only the latter may omit invariant acknowledgements.
   `authority_anchor.pointer` is runtime-resolved from `CURRENT-AUTHORITY.json` through
   a closed set of supported pointers; its embedded `expected` value must match the
   resolved value. An unknown pointer, malformed query set, or resolved-value shape/drift
@@ -87,9 +95,9 @@ records from the has-passing-oracle rule but requires a nonempty `becomes_normat
   Other fields inside `authority_anchor` are legacy evidence citations only: the gate
   reports them as such and does **not** claim to resolve their semantics at runtime.
   Likewise, `governing_authority.plan_ref` declares which active plan the reviewed query
-  set targets and is checked for staleness; it is not a content hash of the query file.
-  The reviewed query artifact is therefore an explicit trust input. Its schema requires
-  nonempty question text, acknowledgement lists, and anchor objects; known
+  set targets and is checked for staleness; the separately emitted query-artifact digest
+  binds the reviewed input bytes. Its schema requires nonempty question text,
+  acknowledgement lists, and anchor objects; known
   authority-backed query IDs are bound to a closed live-pointer profile so deleting a
   pointer cannot silently downgrade it to an in-band citation. Reader exclusions must
   exactly equal the authority record's validated superseded-authorization set.

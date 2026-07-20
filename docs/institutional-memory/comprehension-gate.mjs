@@ -20,7 +20,16 @@
 // CURRENT-AUTHORITY.json (so a drifted authority record cannot certify anyone),
 // then grades the reader.
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import {
+  closeSync,
+  fstatSync,
+  openSync,
+  readFileSync,
+  realpathSync,
+  statSync,
+  writeFileSync
+} from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 
@@ -43,9 +52,9 @@ const answerEq = (kind, a, b) => kind === "set" ? setEq(a, b) : a === b;
 const ANSWER_KINDS = new Set(["set", "boolean", "enum"]);
 const isTrimmedString = (value) =>
   typeof value === "string" && value.length > 0 && value === value.trim();
-const isUniqueStringArray = (value) =>
+const isUniqueStringArray = (value, { allowEmpty = false } = {}) =>
   Array.isArray(value)
-  && value.length > 0
+  && (allowEmpty || value.length > 0)
   && value.every(isTrimmedString)
   && new Set(value).size === value.length;
 const REQUIRED_LIVE_POINTERS = new Map([
@@ -66,7 +75,145 @@ const REQUIRED_LIVE_POINTERS = new Map([
 
 function die(msg) { console.error("GATE_ERROR: " + msg); process.exit(1); }
 
-function validateQueries(document) {
+function registeredQueryArtifact(callerPath) {
+  let manifest;
+  try {
+    manifest = readJson(path.join(ROOT, "repository-manifest.json"));
+  } catch (error) {
+    die(`cannot read repository-manifest.json: ${error.message}`);
+  }
+  const registrations = manifest?.entry_points?.comprehension_query_artifacts;
+  if (!Array.isArray(registrations) || registrations.length === 0) {
+    die("INVALID QUERY REGISTRY: repository-manifest.json entry_points.comprehension_query_artifacts must be a non-empty array");
+  }
+  const authoritativeMemoryDirs = manifest?.entry_points?.memory_dirs;
+  if (!authoritativeMemoryDirs || typeof authoritativeMemoryDirs !== "object"
+    || Array.isArray(authoritativeMemoryDirs)) {
+    die("INVALID QUERY REGISTRY: repository-manifest.json entry_points.memory_dirs must be an object");
+  }
+
+  const moduleOwners = new Map();
+  for (const section of ["components", "role_modules", "capability_modules"]) {
+    const entries = manifest?.[section];
+    if (!Array.isArray(entries)) {
+      die(`INVALID QUERY REGISTRY: repository-manifest.json ${section} must be an array`);
+    }
+    for (const entry of entries) {
+      if (!isTrimmedString(entry?.name)) continue;
+      if (moduleOwners.has(entry.name)) {
+        die(`INVALID QUERY REGISTRY: duplicate manifest module name ${JSON.stringify(entry.name)}`);
+      }
+      moduleOwners.set(entry.name, entry);
+    }
+  }
+
+  const rootRealPath = realpathSync(ROOT);
+  const byAbsolutePath = new Map();
+  for (const [index, registration] of registrations.entries()) {
+    if (!registration || typeof registration !== "object" || Array.isArray(registration)
+      || Object.keys(registration).sort().join(",") !== "component,path,profile") {
+      die(`INVALID QUERY REGISTRY: entry ${index} must contain exactly component, path, and profile`);
+    }
+    if (!isTrimmedString(registration.component)) {
+      die(`INVALID QUERY REGISTRY: entry ${index} component must be a nonempty trimmed string`);
+    }
+    if (!["module", "advisory-reference"].includes(registration.profile)) {
+      die(`INVALID QUERY REGISTRY: entry ${index} profile must be module or advisory-reference`);
+    }
+    const manifestPath = registration.path;
+    const segments = typeof manifestPath === "string" ? manifestPath.split("/") : [];
+    if (!isTrimmedString(manifestPath)
+      || path.posix.isAbsolute(manifestPath)
+      || manifestPath.includes("\\")
+      || path.posix.normalize(manifestPath) !== manifestPath
+      || segments.some((segment) => segment === "." || segment === "..")) {
+      die(`INVALID QUERY REGISTRY: entry ${index} path must be a normalized repository-relative POSIX path`);
+    }
+    if (registration.profile === "module") {
+      const owner = moduleOwners.get(registration.component);
+      if (!owner) {
+        die(`INVALID QUERY REGISTRY: module component ${JSON.stringify(registration.component)} is not manifest-declared`);
+      }
+      const memoryDir = authoritativeMemoryDirs[registration.component];
+      if (!isTrimmedString(memoryDir) || memoryDir !== owner.memory_dir) {
+        die(`INVALID QUERY REGISTRY: ${registration.component} memory_dir must agree between its module entry and entry_points.memory_dirs`);
+      }
+      const normalizedMemoryDir = memoryDir.endsWith("/") ? memoryDir.slice(0, -1) : memoryDir;
+      const relativeToMemoryDir = path.posix.relative(normalizedMemoryDir, manifestPath);
+      if (!isTrimmedString(normalizedMemoryDir)
+        || path.posix.isAbsolute(normalizedMemoryDir)
+        || normalizedMemoryDir.includes("\\")
+        || path.posix.normalize(normalizedMemoryDir) !== normalizedMemoryDir
+        || relativeToMemoryDir === ""
+        || relativeToMemoryDir === ".."
+        || relativeToMemoryDir.startsWith("../")
+        || path.posix.isAbsolute(relativeToMemoryDir)) {
+        die(`INVALID QUERY REGISTRY: ${manifestPath} is outside ${registration.component}'s memory_dir ${memoryDir}`);
+      }
+    } else if (!registration.component.startsWith("reference:")) {
+      die(`INVALID QUERY REGISTRY: advisory-reference component ${JSON.stringify(registration.component)} must start with "reference:"`);
+    }
+    const absolutePath = path.join(ROOT, ...segments);
+    if (byAbsolutePath.has(absolutePath)) {
+      die(`INVALID QUERY REGISTRY: duplicate path ${JSON.stringify(manifestPath)}`);
+    }
+    let artifactRealPath;
+    try {
+      artifactRealPath = realpathSync(absolutePath);
+    } catch (error) {
+      die(`INVALID QUERY REGISTRY: cannot resolve ${manifestPath}: ${error.message}`);
+    }
+    if (!statSync(artifactRealPath).isFile()) {
+      die(`INVALID QUERY REGISTRY: ${manifestPath} is not a regular file`);
+    }
+    const relativeRealPath = path.relative(rootRealPath, artifactRealPath);
+    if (relativeRealPath === ".."
+      || relativeRealPath.startsWith(`..${path.sep}`)
+      || path.isAbsolute(relativeRealPath)) {
+      die(`INVALID QUERY REGISTRY: ${manifestPath} resolves outside the repository`);
+    }
+    const expectedRealPath = path.join(rootRealPath, ...segments);
+    if (artifactRealPath !== expectedRealPath) {
+      die(`INVALID QUERY REGISTRY: ${manifestPath} must not traverse a symbolic link`);
+    }
+    byAbsolutePath.set(absolutePath, {
+      component: registration.component,
+      profile: registration.profile,
+      path: manifestPath,
+      absolutePath
+    });
+  }
+
+  const requestedPath = path.resolve(callerPath);
+  const registration = byAbsolutePath.get(requestedPath);
+  if (!registration) {
+    die(`UNREGISTERED QUERY ARTIFACT: ${requestedPath}`);
+  }
+  let descriptor;
+  try {
+    descriptor = openSync(registration.absolutePath, "r");
+    const openedFile = fstatSync(descriptor);
+    if (!openedFile.isFile()) {
+      throw new Error("opened artifact is not a regular file");
+    }
+    const currentRealPath = realpathSync(registration.absolutePath);
+    const currentPathFile = statSync(currentRealPath);
+    const expectedRealPath = path.join(rootRealPath, ...registration.path.split("/"));
+    if (currentRealPath !== expectedRealPath) {
+      throw new Error("registered path traversed a symbolic link after validation");
+    }
+    if (openedFile.dev !== currentPathFile.dev || openedFile.ino !== currentPathFile.ino) {
+      throw new Error("registered path changed while it was being opened");
+    }
+    return { ...registration, bytes: readFileSync(descriptor) };
+  } catch (error) {
+    die(`QUERY ARTIFACT RACE: cannot securely read ${registration.path}: ${error.message}`);
+  } finally {
+    if (descriptor !== undefined) closeSync(descriptor);
+  }
+}
+
+function validateQueries(document, registration) {
   if (!isTrimmedString(document?.component)) {
     die("INVALID QUERIES: component must be a nonempty trimmed string");
   }
@@ -74,8 +221,9 @@ function validateQueries(document) {
     die("INVALID QUERIES: queries must be a non-empty array");
   }
   for (const field of ["required_invariants", "required_non_claims"]) {
-    if (!isUniqueStringArray(document[field])) {
-      die(`INVALID QUERIES: ${field} must be a non-empty array of unique nonempty trimmed strings`);
+    const allowEmpty = registration.profile === "advisory-reference" && field === "required_invariants";
+    if (!isUniqueStringArray(document[field], { allowEmpty })) {
+      die(`INVALID QUERIES: ${field} must be ${allowEmpty ? "an array" : "a non-empty array"} of unique nonempty trimmed strings`);
     }
   }
   const ids = new Set();
@@ -117,11 +265,11 @@ function validateQueries(document) {
       }
     }
   }
-  const requiredPointers = REQUIRED_LIVE_POINTERS.get(document.component);
+  const requiredPointers = REQUIRED_LIVE_POINTERS.get(registration.component);
   for (const [id, pointer] of requiredPointers || []) {
     const query = document.queries.find((entry) => entry.id === id);
     if (!query || query.authority_anchor.pointer !== pointer) {
-      die(`INVALID QUERIES: component ${JSON.stringify(document.component)} requires query ${JSON.stringify(id)} to use live pointer ${JSON.stringify(pointer)}`);
+      die(`INVALID QUERIES: component ${JSON.stringify(registration.component)} requires query ${JSON.stringify(id)} to use live pointer ${JSON.stringify(pointer)}`);
     }
   }
 }
@@ -227,11 +375,20 @@ if (!queriesPath || !answersPath) die("usage: comprehension-gate.mjs <queries.js
 const outIdx = rest.indexOf("--out");
 const outPath = outIdx >= 0 ? rest[outIdx + 1] : null;
 
+const queryRegistration = registeredQueryArtifact(queriesPath);
+const queryBytes = queryRegistration.bytes;
 let queries, answers, authority;
-try { queries = readJson(path.resolve(queriesPath)); } catch (e) { die(`cannot read queries: ${e.message}`); }
+try { queries = JSON.parse(queryBytes.toString("utf8")); } catch (e) { die(`cannot parse queries: ${e.message}`); }
 try { answers = readJson(path.resolve(answersPath)); } catch (e) { die(`cannot read answers: ${e.message}`); }
 try { authority = readJson(path.join(ROOT, "CURRENT-AUTHORITY.json")); } catch (e) { die(`cannot read CURRENT-AUTHORITY.json: ${e.message}`); }
-validateQueries(queries);
+if (queries?.component !== queryRegistration.component) {
+  die(`QUERY COMPONENT MISMATCH: ${queryRegistration.path} is registered to ${JSON.stringify(queryRegistration.component)}, but declares ${JSON.stringify(queries?.component)}`);
+}
+validateQueries(queries, queryRegistration);
+const queryArtifact = {
+  path: queryRegistration.path,
+  sha256: `sha256:${createHash("sha256").update(queryBytes).digest("hex")}`
+};
 
 // ---- 0. verify the authority record against system reality (fail-closed) ------
 const active = authority.active_plan;
@@ -337,6 +494,7 @@ const artifact = {
   gate: "comprehension-gate",
   component: queries.component || null,
   reader: answers.reader || null,
+  query_artifact: queryArtifact,
   active_authority: { plan: active.path, plan_ref: active.sha256, authorization: activeAuthz },
   plan_hash_verified: true,
   authority_resolved: passed ? activeAuthz : null,

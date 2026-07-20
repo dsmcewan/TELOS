@@ -9,15 +9,18 @@
   },
   "scripts": {
     "dev": "vite",
+    "predev": "npm run check:live-graph",
     "build": "tsc -b && vite build",
     "preview": "vite preview --port 4317",
     "test": "npm run test:unit",
-    "test:unit": "node --test scripts/test-verify-evidence.mjs",
-    "test:e2e": "playwright test",
+    "test:unit": "node --test scripts/test-build-live-graph.mjs scripts/test-verify-evidence.mjs",
+    "test:e2e": "playwright test tests/e2e/flagship.spec.ts",
+    "capture:evidence": "playwright test tests/e2e/screenshots.spec.ts tests/e2e/motion.capture.spec.ts",
     "verify:evidence": "node scripts/verify-evidence.mjs",
     "verify:coverage": "node scripts/verify-coverage.mjs",
     "build:live-graph": "node scripts/build-live-graph.mjs",
-    "prebuild": "node scripts/build-live-graph.mjs"
+    "check:live-graph": "node scripts/build-live-graph.mjs --check",
+    "prebuild": "npm run check:live-graph"
   },
   "dependencies": {
     "@react-three/fiber": "^8.17.10",

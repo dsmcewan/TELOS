@@ -132,6 +132,10 @@ jobs:
           npm run verify:evidence
           npm run verify:coverage
 
+      - name: Verify committed live graph is current
+        working-directory: narcissus/flagship
+        run: npm run check:live-graph
+
       - name: Build production bundle
         working-directory: narcissus/flagship
         run: npm run build
@@ -143,3 +147,28 @@ jobs:
       - name: Run end-to-end tests
         working-directory: narcissus/flagship
         run: npm run test:e2e
+
+      - name: Require a clean tracked checkout
+        run: git diff --exit-code -- .
+
+  required-ci:
+    if: ${{ always() }}
+    needs:
+      - test
+      - repository-portability
+      - institutional-memory
+      - narcissus-flagship
+    runs-on: ubuntu-latest
+    name: required CI
+    steps:
+      - name: Require every CI job group to succeed
+        env:
+          TEST_RESULT: ${{ needs.test.result }}
+          PORTABILITY_RESULT: ${{ needs.repository-portability.result }}
+          MEMORY_RESULT: ${{ needs.institutional-memory.result }}
+          NARCISSUS_RESULT: ${{ needs.narcissus-flagship.result }}
+        run: |
+          test "$TEST_RESULT" = "success"
+          test "$PORTABILITY_RESULT" = "success"
+          test "$MEMORY_RESULT" = "success"
+          test "$NARCISSUS_RESULT" = "success"

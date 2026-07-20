@@ -19,6 +19,78 @@
     "comprehension_gate": "docs/institutional-memory/comprehension-gate.mjs",
     "contract_verifier": "docs/institutional-memory/verify-contracts.mjs",
     "example_readers": "docs/institutional-memory/examples/ contains non-exhaustive worked TELOS-gate fixtures with module-specific names; ai-native-memory uses memory/answers-example.json with its native gate, and Atropos fixtures live in its run evidence",
+    "comprehension_query_artifacts": [
+      {
+        "component": "atropos",
+        "profile": "module",
+        "path": "atropos/memory/comprehension-queries.json"
+      },
+      {
+        "component": "clotho",
+        "profile": "module",
+        "path": "clotho/memory/comprehension-queries.json"
+      },
+      {
+        "component": "clotho",
+        "profile": "module",
+        "path": "clotho/memory/comprehension-queries.4b.json"
+      },
+      {
+        "component": "clotho",
+        "profile": "module",
+        "path": "clotho/memory/comprehension-queries.5.json"
+      },
+      {
+        "component": "clotho",
+        "profile": "module",
+        "path": "clotho/memory/comprehension-queries.6.json"
+      },
+      {
+        "component": "clotho",
+        "profile": "module",
+        "path": "clotho/memory/comprehension-queries.7.json"
+      },
+      {
+        "component": "argo",
+        "profile": "module",
+        "path": "docs/institutional-memory/argo/comprehension-queries.json"
+      },
+      {
+        "component": "daedalus",
+        "profile": "module",
+        "path": "docs/institutional-memory/daedalus/comprehension-queries.json"
+      },
+      {
+        "component": "iliad",
+        "profile": "module",
+        "path": "docs/institutional-memory/iliad/comprehension-queries.json"
+      },
+      {
+        "component": "reference:iliad-quest-workflow",
+        "profile": "advisory-reference",
+        "path": "docs/institutional-memory/iliad/workflow/comprehension-queries.json"
+      },
+      {
+        "component": "loadout",
+        "profile": "module",
+        "path": "docs/institutional-memory/loadout/comprehension-queries.json"
+      },
+      {
+        "component": "reference:agentic-orchestration",
+        "profile": "advisory-reference",
+        "path": "docs/institutional-memory/REFERENCES/agentic-orchestration/comprehension-queries.json"
+      },
+      {
+        "component": "telos",
+        "profile": "module",
+        "path": "docs/institutional-memory/telos/comprehension-queries.json"
+      },
+      {
+        "component": "lachesis",
+        "profile": "module",
+        "path": "lachesis/memory/comprehension-queries.json"
+      }
+    ],
     "memory_dirs": {
       "clotho": "clotho/memory/",
       "daedalus": "docs/institutional-memory/daedalus/",
