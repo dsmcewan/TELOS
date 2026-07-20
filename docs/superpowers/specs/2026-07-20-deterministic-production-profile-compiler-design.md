@@ -3,7 +3,9 @@
 **Date:** 2026-07-20
 
 **Status:** Written design candidate. The Eye approved the architectural direction and research scope in
-this session; this document still requires written-spec review. It grants no implementation authority.
+this session and directed that the change traverse the TELOS process and govern TELOS itself before
+enrollment. This revised document still requires written-spec review. It grants no implementation
+authority.
 
 **Target:** TELOS `build-gate` proposal lifecycle and `merkle-dag` obligation mechanism
 
@@ -13,9 +15,15 @@ this session; this document still requires written-spec review. It grants no imp
 
 The active repository authorization is `authz-008`, bound to the completed Clotho v15 plan. It does not
 authorize this work. This document is a quest-entry design artifact created from The Eye's direction.
-Before implementation, this design must be reviewed, converted into a file-specific implementation plan,
-pre-reviewed through Iliad, matured through the normal adversarial plan process, authorized against its
-exact content hash, and passed through the comprehension gate.
+Before implementation, this design must be reviewed, entered through Iliad pre-review and its entry
+ritual, matured into a file-specific plan through Daedalus, authorized by TELOS against the exact matured
+plan hash, and passed into Argo through the comprehension gate. The resulting implementation must then
+complete the reference-documentation, Clotho, and Iliad-retrospective stages before enrollment.
+
+Two gates are intentionally distinct. The currently enrolled TELOS spine governs creation of the
+compiler candidate. Once that candidate exists, the candidate must run a real self-hosting production
+profile proposal against TELOS before the quest can complete. The self-hosting run is acceptance and
+enrollment evidence; it is not retroactive authority to create the compiler.
 
 The production profile is controller input. Models may advise on it, but models do not author the
 effective profile, choose its policy, remove obligations, select substitute checks, or declare that a
@@ -102,6 +110,7 @@ conformance with any of them.
 | `PPC-D13` | Re-run classification after implementation and before final settlement. New repository facts introduced by the build can invalidate the plan. |
 | `PPC-D14` | Use synthetic data and loopback-only services in all shipped demonstrations. No real personal data or live AI provider is permitted. |
 | `PPC-D15` | Add a versioned policy certificate rather than silently changing the meaning of the existing closed `POLICY_CONTRACT_V1`. |
+| `PPC-D16` | Make TELOS the first non-synthetic host governed by the compiler. The candidate may not be enrolled or described as dogfooded until TELOS's controller-authored self-profile passes the same compiler, policy, registry, proposal gate, post-build re-scan, obligation discharge, and settlement path used by host repositories. |
 
 ## Rejected alternatives
 
@@ -154,7 +163,8 @@ Version 1 covers eleven production domains:
 11. AI use, data egress, agent authority, output provenance, and consequential decisions.
 
 The first implementation includes the compiler, policy catalog, check-contract extensions, proposal and
-settlement integration, negative fixtures, and a synthetic bank-style demonstration.
+settlement integration, negative fixtures, a synthetic bank-style demonstration, and a TELOS
+first-host self-profile run through the actual proposal lifecycle.
 
 ## Non-goals
 
@@ -242,6 +252,15 @@ documentation must not describe a weaker tier as proving a stronger claim.
 
 Required host adapters are explicit. A fresh host with no adapter receives a typed blocking finding; the
 compiler never silently drops an obligation because TELOS-specific files are absent.
+
+### `PPC-I11` — no privileged self path
+
+TELOS's self-profile is ordinary production input. It uses the same schema, built-in policy bytes, check
+registry, source records, proposal reconstruction, post-build scanner, and settlement checks as any
+other host. No repository-name condition, TELOS-only waiver, reduced catalog, fixture-only registry,
+pre-recorded success, direct ledger insertion, or alternate settlement path may make the self-run pass.
+The existing `build-gate/examples/self/` packet-gate fixture is useful prior evidence, but it does not
+satisfy this invariant unless it is migrated through the production-profile proposal lifecycle.
 
 ## End-to-end architecture
 
@@ -1255,6 +1274,79 @@ provider, or real personal data.
 The demo is deterministic, self-cleaning, loopback-only, and runs with Node.js 18. Its summary includes
 the before/after plan hashes, obligation IDs, check outcomes, and explicit non-claims.
 
+## TELOS self-profile and first-host dogfood
+
+The synthetic bank demonstration proves one incident-shaped control path. It does not prove
+self-application. Before the compiler is enrolled, TELOS must be the first non-synthetic repository whose
+real profile compiles into obligations and whose obligations settle through the production gate.
+
+### Bootstrap and quest boundary
+
+There is no circular grant of authority:
+
+1. The currently enrolled Iliad, Daedalus, TELOS, Argo, reference-documentation, and Clotho mechanisms
+   govern design, planning, authorization, implementation, verification, documentation, and weave of the
+   compiler candidate.
+2. The candidate remains unenrolled after its package tests pass.
+3. A dedicated self-hosting proposal then uses the candidate compiler to profile the TELOS repository,
+   place the resulting obligations in a real Merkle plan, and settle them through the real gate.
+4. A self-hosting failure returns the change to the authorized revision protocol. It cannot be waived by
+   calling the candidate experimental, by substituting the synthetic demo, or by editing enrollment
+   records.
+5. Reference-documentation, Clotho weave, Iliad post-review, and enrollment complete only after the
+   self-hosting evidence is green.
+
+The dedicated proposal is acceptance evidence inside this quest. It does not rewrite the implementation
+plan or claim that the candidate authorized its own creation.
+
+### Controller-authored TELOS profile
+
+The dedicated self-hosting proposal must name a tracked, exact TELOS production dossier authored under
+controller jurisdiction. Before TELOS authorization freezes the self-hosting plan, The Eye must approve
+the dossier values and evidence bindings. The builder may implement controls demanded by the dossier but
+may not author or weaken the effective profile.
+
+The dossier must not declare less than facts already inherent in the repository:
+
+- `proposal_lifecycle` and `market_bound` are true;
+- content-addressed governance records and ledgers make persistence durable;
+- AI is enabled with an agentic role;
+- the current external provider/connector inventory is explicit and external egress is true wherever a
+  connector crosses the local trust boundary;
+- model seats can write and execute, so `can_write` and `can_execute` are true; and
+- data classification covers all repository and operator material eligible to enter model context, not
+  merely the synthetic demonstration marker.
+
+The remaining closed facts, including exposure, identity, tenancy, retention, residency, availability,
+provider handling, and transaction authority, are explicit controller declarations. The scanner may
+escalate those declarations or require classification; it may not fill an unknown with a convenient
+minimum. Any unresolved current provider, data, or authority signal blocks the self-hosting proposal.
+
+### Required self-hosting run
+
+The committed run must:
+
+1. reconstruct the controller-authored dossier from disk and compile it against a clean TELOS checkout;
+2. invoke the production proposal orchestrator, workshop boundary, Merkle planner, proposal gate, and
+   TELOS authorization with the versioned policy certificate rather than calling compiler helpers as a
+   substitute;
+3. restart from disk before authorization verification to prove durable reconstruction;
+4. run every applicable registry check against the candidate implementation, using loopback fake
+   providers and synthetic inputs for runtime boundaries;
+5. re-scan final repository state and settle every obligation through the normal verification-node and
+   `done()` path;
+6. prove that deleting an obligation, substituting a no-op check, lowering a confirmed AI egress, write,
+   or execute fact, or adding a new confirmed provider fact produces the expected blocking result;
+7. re-derive and compare a committed `verified-summary.json` containing plan and profile references,
+   obligation IDs, check outcomes, negative-control finding codes, and explicit non-claims; and
+8. remove temporary `.telos/` state and leave the tracked checkout clean.
+
+The run may not call a live model provider, contain real personal data, or trust the committed summary as
+an input to the pass decision. Any model-review packets are fresh quest records bound to the exact
+self-hosting dossier and plan; the reproducible run verifies their hashes and provenance offline. The
+older packet-only self fixture cannot substitute for those records. A root README dogfood claim,
+production-profile release tag, or institutional enrollment is prohibited until this run is green.
+
 ## Scalability
 
 The compiler's work is bounded by registered files, semantic facts, policy rules, and obligations:
@@ -1366,6 +1458,16 @@ No compiler branch or check kind ships without one passing fixture and at least 
 - every expected production source maps to exactly one live obligation and vetted node;
 - all obligations must discharge before success.
 
+### TELOS self-hosting tests
+
+- the self-profile enters through the production proposal lifecycle and survives a process restart;
+- the compiled profile cannot be lowered below confirmed TELOS repository facts;
+- all applicable production obligations discharge through registered checks and `done()`;
+- deleting an obligation, substituting a no-op, or bypassing the post-build scan blocks;
+- the existing packet-only self fixture cannot satisfy the production self-hosting assertion by itself;
+- the committed summary is re-derived from candidate code and exact artifacts; and
+- the self-hosting run uses no external network and leaves the tracked checkout clean.
+
 ### Domain fixtures
 
 Every catalog rule has:
@@ -1381,7 +1483,8 @@ Every catalog rule has:
 
 - `npm --prefix merkle-dag test`;
 - `npm --prefix build-gate test`;
-- production demo run;
+- `node docs/runs/production-profile-demo/run.mjs`;
+- `node docs/runs/production-profile-self/run.mjs`;
 - `node docs/institutional-memory/verify-contracts.mjs`;
 - import audit proving no non-`node:`/non-relative imports in new scripts;
 - tracked checkout clean after all verification.
@@ -1390,6 +1493,11 @@ Every catalog rule has:
 
 ```text
 build-gate/
+├── examples/
+│   └── self/
+│       ├── dossier.json
+│       ├── production-controls.json
+│       └── packets/
 ├── production-profile/
 │   ├── cli.mjs
 │   ├── compiler.mjs
@@ -1423,6 +1531,12 @@ docs/runs/production-profile-demo/
 ├── fixtures/
 └── README.md
 
+docs/runs/production-profile-self/
+├── run.mjs
+├── verified-summary.json
+├── fixtures/
+└── README.md
+
 docs/production-profile.md
 README.md
 ```
@@ -1434,18 +1548,24 @@ requires them.
 ## Governance and rollout
 
 1. The Eye reviews this written design.
-2. A file-specific implementation plan is authored.
-3. Iliad pre-review records intended lifecycle and scope before code.
-4. The plan is matured through adversarial review.
-5. Authorization binds the exact matured plan hash.
-6. The implementer passes the relevant comprehension gate.
-7. Work proceeds test-first in authorized slices.
-8. The feature is enrolled into institutional contracts only after all package, demo, portability, and
-   self-verification evidence is green.
-9. Iliad post-review and retrospective record actual provenance and deviations.
+2. Iliad pre-review records seats, capabilities, prior retrospectives, intended scope, and the entry
+   comprehension result before code.
+3. Daedalus matures a file-specific candidate plan through adversarial review.
+4. TELOS authorization binds the exact matured implementation-plan hash.
+5. Argo admits the implementer through its comprehension gate and executes test-first authorized slices.
+6. After package, negative, bank-demo, and portability checks pass, the controller starts the dedicated
+   self-hosting proposal. The candidate fixes its production obligations before workshop, and TELOS
+   separately authorizes the exact self-hosting plan and controller dossier before verification and
+   settlement.
+7. The reference-documentation stage records the implemented contract and bounded claims.
+8. Clotho weaves the implementation and its verified evidence.
+9. Iliad post-review records actual provenance, deviations, and feed-forward optimizations.
+10. Institutional enrollment occurs only when every preceding stage is complete and contract
+    verification is green.
 
 The rollout migrates in-tree proposal-lifecycle and market-bound fixtures to explicit minimal profiles in
 the same authorized change. There is no period where activated builds silently bypass the compiler.
+The production-profile self-hosting gate supplements every quest stage above; it replaces none of them.
 
 ## Acceptance criteria
 
@@ -1471,6 +1591,16 @@ the same authorized change. There is no period where activated builds silently b
   triggered but unsupported host evidence fails explicitly.
 - `PPC-A17`: The root README explains the production-profile problem, links the deterministic demo, and
   distinguishes enforced evidence from legal or operational certification.
+- `PPC-A18`: The compiler change has commit-anchored evidence for the canonical Iliad pre-review,
+  Daedalus, TELOS, Argo, reference-documentation, Clotho, and Iliad-retrospective stages before
+  enrollment.
+- `PPC-A19`: A controller-approved TELOS self-profile enters the actual production proposal lifecycle,
+  is authorized against its exact dossier and plan, survives disk reconstruction, compiles all
+  applicable obligations, and settles only after their registered checks pass.
+- `PPC-A20`: No TELOS-specific bypass exists, and self-hosting negative controls prove that a removed
+  obligation, no-op check, lowered confirmed fact, or new post-build provider fact blocks.
+- `PPC-A21`: The self-hosting evidence is deterministically re-derived, uses no live provider or real
+  personal data, leaves the tracked checkout clean, and precedes any dogfood claim or enrollment.
 
 ## Explicit non-claims
 
@@ -1480,6 +1610,9 @@ the same authorized change. There is no period where activated builds silently b
 - A process record proves only that an authorized signer attested to the recorded run and that its hashes
   and freshness verify.
 - A runtime fixture proves only the bounded scenario against the tested build.
+- A green TELOS self-hosting run proves only that TELOS satisfied its declared profile and bounded
+  executable evidence contracts at the verified commit; it is not universal certification of TELOS or
+  proof that every future host will pass.
 - Repository scanning is not data discovery, a privacy inventory, or a complete software bill of
   materials.
 - An unresolved production risk cannot be converted into acceptance by adding prose.
