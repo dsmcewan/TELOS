@@ -6,16 +6,43 @@
 > makes the thing that *builds* never be the thing that *certifies*: a build's
 > claim is data; the disk is the truth.
 
-**A multi-model build system where nothing merges on a model's say-so.**
-Independent AI model **seats** (claude / grok / codex / agy / gemini) produce
-signed, provenance-bound approval packets; a deterministic **gate** certifies
-merge-readiness from disk + signatures + provenance — never from a model's
-self-report. The same trust spine drives software from idea to merged, verified
-artifacts, and now governs the plan *before* it runs (see **Proposal Lifecycle**
-below): a candidate must survive adversarial cold review and produce a verified
-implementation contract before any irreversible step.
+**AI-native systems engineering with a deterministic trust spine.** Models may
+propose, implement, and review, but merge-readiness comes from disk evidence,
+content hashes, signatures, provenance, and reproducible checks—not a model's
+self-report.
 
-## How it works
+The required council is exactly `claude`, `agy`, and `codex`; `grok` and
+`gemini` are advisory. `agy` is a deterministic local governance attestation,
+not a remote model. A gate result can certify `merge_status: "ready"`.
+Implementation authority, acceptance, and merge remain separate human decisions
+held by **The Eye**.
+
+Core packages: **Node ≥18 · zero runtime dependencies · MIT**
+
+## Two-minute fail-closed proof
+
+From a fresh clone—no install, API key, service, or network access:
+
+```bash
+node docs/runs/fail-closed-demo/run.mjs
+```
+
+Expected:
+
+```text
+BLOCKED  tampered required-seat packet: signature invalid
+HALTED   out-of-bounds action: not executed; needs-human recorded
+VERIFIED HMAC gate + Ed25519 decision ledger; tamper rejected
+{"ok":true,"gate":{"status":"blocked","reason":"invalid-signature","tampered_packet_rejected":true},"operator":{"status":"needs-human","action_executed":false,"inbox_open":1,"ledger_verified":true,"tampered_ledger_rejected":true,"signature_algorithm":"Ed25519"}}
+```
+
+The script signs a valid required-seat trio, changes one signed field, and
+requires the real gate to reject it specifically for signature invalidity. It
+then proposes an over-cap operator action, proves the action was never called,
+records `needs-human`, verifies the Ed25519 decision ledger, changes one ledger
+field, and requires verification to fail.
+
+## Governed build path
 
 ```mermaid
 flowchart TD
@@ -57,74 +84,96 @@ flowchart TD
     class SPINE spine;
 ```
 
-Read it two ways: the top half (seats → approval gate) is TELOS deciding
-*whether* work is merge-ready; the whole pipeline is the **autonomous builder**
-taking an idea to verified, merged artifacts. The thing that *builds* is never the
-thing that *certifies* — a team's claim is data; the disk is truth.
+The diagram is the **governed build path**, not the complete repository map. The
+required seats produce HMAC-signed, provenance-bound packets; the gate blocks or
+certifies merge-readiness; build workers write and self-correct; independent
+verification re-derives disk state; and the controller records settlement in an
+Ed25519 ledger. The terminal is `merge_status: "ready"`, never an autonomous
+merge.
 
-## Components
+## From authority to implementation
 
-For the current authoritative classification—including implemented components,
-registered role modules, products, and deferred enrollment—start with
-`AI-START-HERE.md` and `repository-manifest.json`. This section is a working
-overview, not an authority record.
+TELOS inherits an institution before it executes a plan:
 
-**The substrate (engine):**
+1. [`CURRENT-AUTHORITY.json`](CURRENT-AUTHORITY.json) names the one active plan
+   and authorization; superseded records cannot govern new work.
+2. Institutional memory and the applicable comprehension gate establish what a
+   worker must understand before implementation.
+3. **Daedalus** matures implementation plans. Convergence is submission, not
+   authorization.
+4. **TELOS** governs review evidence and records the model council's
+   authorization outcome.
+5. **The Eye** grants non-delegable implementation authority and accepts or
+   refuses completed slices.
+6. **Argo** is the implementation role carrying authorized work through code,
+   verification, and documentation. No autonomous Argo service exists.
+7. **Clotho** creates and maintains graph threads, **Lachesis** measures
+   dependency and blast radius, and **Atropos** currently verifies recorded
+   supersession consistency. Retirement action remains human-governed.
 
-- **`build-gate/`** — the gate (`gate.mjs`), per-model HMAC signing (`sign.mjs`), the
-  dynamic-workflow council orchestrator (`council.mjs`: per-job seat sizing +
-  CPU-bounded fan-out + `liveSeatCaller`), strict-mode JSON Schemas for the three
-  contracts (`schemas.mjs`), per-model strength profiles (`model-profiles.mjs`),
-  and the seat→backend registry (`seat-registry.mjs`: routes each council tool to
-  ai-peer-mcp or a claude-plugins seat server, `TELOS_PLUGINS_DIR`-configurable).
-- **`breakout/`** — self-challenge with verdict-on-facts (`verifier.mjs`, `live.mjs`),
-  a minimal MCP stdio client (`mcp_client.mjs`: Content-Length or ndjson framing),
-  and the multi-server seat router (`seat_router.mjs`: same `callTool` surface
-  `liveSeatCaller` already consumes, fail-closed on unrouted tools).
-- **`connectors/ai-peer-mcp/`** — MCP server exposing the model backends
-  (`claude_ask` / `grok_ask` / `codex_ask` / `gemini_ask` / `agy_checkpoint`) with
-  **real per-seat provenance** and **provider-native structured output** (each
-  contract schema is translated to that provider's native form — OpenAI/xAI
-  `json_schema` strict, Anthropic forced tool call, Gemini `responseSchema`).
-- **`merkle-dag/`** — content-addressed planning + verified delegation + a pure
-  `done()` evaluator (`ledger-gate.mjs`): immutable `plan.json`, append-only signed
-  `ledger.jsonl`, Ed25519 settlement, forward-invalidation by hash. Also
-  **verification obligations** (`obligation.mjs`: content-addressed obligation
-  identity, done()-time discharge) and the **signed proposal-lifecycle ledger**
-  (`proposal-ledger.mjs`: hash-chained `.telos/proposal.jsonl`, atomic single-lock
-  append, `POLICY_CONTRACT_V1` + layered authorization verifiers).
+Start with [`AI-START-HERE.md`](AI-START-HERE.md) for the exact load order and
+[`repository-manifest.json`](repository-manifest.json) for the architectural
+map.
 
-**The autonomous layers (composed on the substrate, no new trust surface):**
+## When automation must stop
 
-- **`build-gate/` agentic-teams** — `teams.mjs` (the team roster as data),
-  `decompose.mjs` (idea → validated task DAG), `build-orchestrator.mjs`
-  (`buildProject` — the full lifecycle), `teamPrompts.mjs` (live wiring over
-  `ai-peer-mcp`), `situation.mjs` (project sense), `test-runner.mjs` (runtime
-  self-correction).
-- **`build-gate/` proposal-lifecycle (Daedalus)** — audited-judgment governance
-  BEFORE execution (opt-in `dossier.proposal_lifecycle === true`; legacy advisory
-  mode is byte-identical). `daedalus.mjs` (the bounded claude/codex planning
-  workshop), `concerns.mjs` (typed concerns/holds/controller-only dispositions),
-  `risk-policy.mjs`, `evidence.mjs` (closed-whitelist sandboxed verifier),
-  `proposal-gate.mjs` (reconstructs proposal state from the ledger),
-  `proposal-recorder.mjs` (sole-writer), `standing.mjs` (pure calibration). See
-  `contracts/Proposal Lifecycle.md`.
-- **`saas-forge/`** — a 7-team SaaS generator that drives a project to
-  market-ready, each team put through an adversarial breakout-on-facts.
-- **`ai-forge/`** — pattern-library-driven forge for AI architectures; Phase A: the
-  RAG pattern (7 workstreams, fully converged over the real gate + Ed25519 ledger).
-- **`forge/`** — reusable ratchet/driver/manifest/claims/operator package.
-- **`clotho/`** — provenance-aware knowledge-graph weaver with a signed,
-  append-only thread ledger and deterministic query surface.
-- **`lachesis/`** and **`atropos/`** — consciously enrolled, zero-dependency
-  spine packages for dependency/relevance/risk/blast-radius measurement and
-  read-only supersession consistency, respectively.
-- **`ai-native-memory/`** — implemented portable institutional-memory
-  plugin/product with dogfood records; it has no mythological role and remains
-  deferred for conscious Iliad enrollment.
-- **`narcissus/flagship/`** — implemented React/TypeScript/Vite front-end product.
-  It is distinct from the registered Narcissus role module, which remains
-  unimplemented; product enrollment is also deferred.
+The crossroad-ads Phase 2 operator is deliberately **ARMED, awaiting go-live**:
+it can create only `PAUSED` campaign objects, while activation remains a human
+action. Missing credentials, quota failures, and out-of-bounds budget changes
+become `needs-human` records and halt instead of fabricating success.
+
+The mechanism and keyless negative controls are committed in
+[`OPS-README.md`](docs/runs/crossroad-ads/OPS-README.md),
+[`test-ads-ops.mjs`](docs/runs/crossroad-ads/test-ads-ops.mjs),
+[`operator.mjs`](forge/operator.mjs), and
+[`test-operator.mjs`](forge/scripts/test-operator.mjs). The live
+`workdir/needs-human.jsonl`, `workdir/INBOX.md`, and operator ledger are
+runtime/gitignored artifacts; this README does not pretend a particular signed
+go-live refusal is committed.
+
+## System map
+
+The complete package classification comes from
+[`package-roots.json`](clotho/memory/CONTRACTS/package-roots.json) and the
+[`Iliad enrollment contract`](docs/institutional-memory/iliad/CONTRACTS/enrollment.json).
+
+| Boundary | Current members | Status |
+| --- | --- | --- |
+| Enrolled TELOS spine | `atropos`, `breakout`, `build-gate`, `clotho`, `connectors/ai-peer-mcp`, `lachesis`, `merkle-dag` | Implemented and consciously enrolled |
+| Products beside the spine | `ai-forge`, `ai-native-memory`, `forge`, `narcissus/flagship`, `saas-forge` | Implemented; Iliad enrollment deferred |
+| Active role/capability modules | Daedalus, TELOS, Argo, The Iliad, `loadout` | Protocol/code/run lineage; no autonomous role services |
+| Registered future roles | [Hermes, Medusa, Narcissus](docs/mythological-vocabulary.md#registered-terms) | Meanings reserved; unimplemented |
+
+`contracts/` contains the human-readable protocols; it is a reference boundary,
+not another package root. The implemented `narcissus/flagship` product is
+distinct from the registered, unimplemented Narcissus role.
+
+### AI-native memory
+
+[`ai-native-memory/`](ai-native-memory/) packages the repository's
+institutional-memory discipline as a portable, zero-dependency Claude Code
+plugin/product. It ships `/memory-init`, `/memory-audit`, `/memory-verify`, and
+`/memory-gate`; memory-standard, authoring, and lifecycle skills; and auditor,
+comprehension, and adversarial-review agents. Its own authority and `memory/`
+records dogfood the same audit, verification, and comprehension oracles.
+
+`memory-init` scaffolds host-local authority and record files, so a fresh host
+does not need TELOS paths. The TELOS dogfood authority path is evidence for this
+repository, not a portability requirement. See the
+[`package metadata`](ai-native-memory/package.json),
+[`plugin metadata`](ai-native-memory/.claude-plugin/plugin.json), and
+[`dogfood evidence`](ai-native-memory/memory/EVIDENCE/README.md). Marketplace
+publication and Iliad enrollment remain deferred.
+
+## Terminology
+
+| Term | Meaning here |
+| --- | --- |
+| **telos** | The goal or contract being pursued. **TELOS** is the registered governance role and repository name. |
+| **seat** | One independently routed build or review participant with its own packet and provenance. |
+| **gate** | Deterministic validation that blocks on missing, invalid, or contradictory evidence. |
+| **breakout** | Adversarial self-challenge plus verification against facts on disk. |
+| **agy** | The deterministic local governance checkpoint/attestation occupying one required seat. |
 
 ## Autonomous builder (agentic-teams)
 
@@ -158,25 +207,32 @@ idea + telos
   to self-correct (bounded), then the substrate's halt → mutate → re-dispatch gives
   a second, outer adaptation level.
 
-## Proposal Lifecycle (Daedalus)
+## Proposal lifecycle: Daedalus → TELOS → Argo
 
-The agentic-teams path answers *whether work is merge-ready*. The proposal
-lifecycle answers a prior question — *is this plan mature enough to authorize?* —
-by putting a candidate through audited judgment before any irreversible step. It
-implements `contracts/Proposal Lifecycle.md` and adds **no new root of trust**:
-every decision reduces to the existing primitives (content hashes, signatures,
-provenance, deterministic policy, re-verifiable evidence, disk as ground truth).
+The agentic-teams path answers whether built evidence is merge-ready. The
+proposal lifecycle begins earlier and keeps three events separate:
 
-```
+1. **Daedalus convergence** — planning seats stop objecting and submit a frozen
+   candidate.
+2. **TELOS authorization** — required model seats review the exact candidate;
+   one required dissent blocks and the signed run records `AUTHORIZED` or
+   `NOT_AUTHORIZED`.
+3. **The Eye's implementation authority** — the human authority holder decides
+   whether Argo may carry that plan through implementation, verification, and
+   documentation.
+
+Model convergence does not authorize. A TELOS council result does not execute.
+Argo does not choose scope, and no autonomous Argo service exists.
+
+```text
 idea + telos
-  → draft
-  → Daedalus workshop (claude/codex negotiation; content-addressed rounds)
-  → compileAndHashPlan() → immutable candidate (obligations + lifecycle bound into plan_hash)
-  → COLD REVIEW of the exact written plan hash (creation/review lineage disjoint, provider-scoped)
-  → typed concerns → holds / dispositions / verification obligations
-  → deterministic decision: authorized | revise | blocked | human-review-required
-  → runBuild(): reads the authorized decision + closed policy certificate FROM DISK, keyed by the
-       recomputed plan hash — then Rule-3 execution + obligation discharge
+  → Daedalus workshop → converged candidate with content-addressed rounds
+  → compileAndHashPlan() → immutable candidate + obligations
+  → TELOS cold review of the exact plan hash
+  → typed concerns + deterministic gate → AUTHORIZED | NOT_AUTHORIZED
+  → The Eye grants or refuses implementation authority
+  → Argo carries the authorized plan through code + verification + documentation
+  → The Eye accepts or refuses the slice; maintainers decide merge
 ```
 
 The governing rule, and the one most likely to catch a design flaw: **no mutable
@@ -269,55 +325,108 @@ and the gate independently re-verifies every team's record on disk.
   secrets. Runtime `.telos/` artifacts (plan/ledger) are created ephemerally in the
   build tree.
 
-## Test
+## Honest boundaries
 
-The core, forge, plugin, and enrolled spine packages are Node ≥ 18 ESM with zero
-dependencies; CI runs them on Ubuntu under Node 18 and 20. The
+- The gate, ledgers, metrics, supersession verifier, plugin oracles, forges, and
+  their tests run locally. Provider-backed council calls require the provider's
+  configured credentials.
+- TELOS authorization certifies only the checked merge-readiness predicates. It
+  does not execute code or merge a branch.
+- No autonomous Argo or Iliad service exists. Those names describe governed
+  roles and lifecycle protocols.
+- Model consensus is not human authority. The Eye's implementation and
+  acceptance authority is non-delegable.
+- Per-seat HMAC is an integrity and binding floor for the honest-but-careless
+  threat model. One owner holding every seat secret can forge those packets; it
+  is not non-repudiation.
+- The gate checks provenance shape, uniqueness, and signature binding from disk.
+  It cannot prove a well-formed response id was genuinely issued without
+  re-contacting the provider.
+- Clotho is advisory and non-sandboxed. Green checks prove only the predicates
+  they execute.
+- Implemented sibling products are not thereby enrolled in the TELOS spine.
+
+## Verification
+
+The core, forge, plugin, and enrolled spine packages are Node ≥18 ESM with zero
+runtime dependencies. CI runs them under Node 18 and 20. The
 `narcissus/flagship` product is the explicit exception: it requires Node
-`^20.19.0 || >=22.12.0`, uses a tracked npm lockfile, and runs in a separate
-Node-20 CI job with install, audit, unit, evidence, coverage, build, and browser
-tests.
+`^20.19.0 || >=22.12.0`, uses a tracked npm lockfile, and has its own install,
+audit, unit, evidence, graph, build, and browser pipeline.
+
+Fast public proof:
 
 ```bash
-cd build-gate            && npm test   # gate, sign, trust, council, teams, decompose,
-                                       #   build-orchestrator, schemas, situation, concerns,
-                                       #   proposal-gate, check-registry, proposal-orchestrator,
-                                       #   daedalus, proposal-lifecycle, standing, + breakout
-cd breakout              && npm test
-cd connectors/ai-peer-mcp && npm test  # provenance, structured requests, smoke
-cd merkle-dag            && npm test   # 10 suites incl. obligations + proposal-ledger + end-to-end harness
-cd saas-forge            && npm test   # 7 teams generate + breakout-survive + gate pass
-cd ai-forge              && npm test
-cd forge                 && npm test
-cd clotho                && npm test   # 14 tests incl. real-repository flagship
-cd ai-native-memory      && npm run check && npm test
-cd lachesis              && npm test
-cd atropos               && npm test
-cd narcissus/flagship    && npm ci && npm test && npm run verify:evidence \
-                           && npm run verify:coverage && npm run build && npm run test:e2e
+node docs/runs/fail-closed-demo/run.mjs
+node docs/institutional-memory/verify-contracts.mjs
+node docs/runs/clotho-self-weave/run.mjs --verify-committed
+```
+
+Complete local package suite, with every command safe to paste independently
+from the repository root:
+
+```bash
+npm --prefix build-gate test
+npm --prefix breakout test
+npm --prefix connectors/ai-peer-mcp test
+npm --prefix merkle-dag test
+npm --prefix saas-forge test
+npm --prefix ai-forge test
+npm --prefix forge test
+npm --prefix clotho test
+npm --prefix ai-native-memory run check
+npm --prefix ai-native-memory test
+npm --prefix lachesis test
+npm --prefix atropos test
+```
+
+Flagship pipeline under Node 20:
+
+```bash
+npm --prefix narcissus/flagship ci
+npm --prefix narcissus/flagship audit --audit-level=moderate
+npm --prefix narcissus/flagship test
+npm --prefix narcissus/flagship run verify:evidence
+npm --prefix narcissus/flagship run verify:coverage
+npm --prefix narcissus/flagship run check:live-graph
+npm --prefix narcissus/flagship run build
+(cd narcissus/flagship && npx playwright install --with-deps chromium)
+npm --prefix narcissus/flagship run test:e2e
 ```
 
 ## Docs & evidence
 
-- `docs/STATUS.md` — current status.
-- `docs/proposal-lifecycle-implementation.md` — implementation reference for the audited-judgment
-  proposal-lifecycle subsystem (composed flow, module map, enforcement mechanisms, trust boundaries).
-- `docs/history/` — superseded dated records (design specs, plans, apply-instructions) from earlier
-  phases, kept for provenance; not maintained against the shipping code.
-- `docs/runs/` — runnable evidence: `live-council/` (distinct per-seat provenance;
-  fail-closed without a key; signed-mode pass), `agentic-teams/` +
-  `agentic-teams-live/` + `agentic-teams-situational/` + `agentic-teams-market/`
-  (idea → `merge_status: "ready"` over the real gate + Ed25519 ledger + merkle-dag),
-  and `proposal-lifecycle/` (keyless audited-judgment evidence: `run-lifecycle-e2e.mjs`
-  drives revise→authorize→discharge→ready through `buildProject`, with a negative
-  control proving the verification obligation is load-bearing at Rule 3).
-- `contracts/` — the human-readable protocols the gate enforces (build gate,
-  prototype workflow, hierarchical workflow, agentic-teams autonomous builder,
-  proposal lifecycle — audited judgment + cold review + verification obligations).
+- [`AI-START-HERE.md`](AI-START-HERE.md) — onboarding order and component routing.
+- [`CURRENT-AUTHORITY.json`](CURRENT-AUTHORITY.json) — the one active plan,
+  authorization, implementation holder, and superseded chain.
+- [`repository-manifest.json`](repository-manifest.json) — architectural map,
+  role ownership, claims, and explicit non-claims.
+- [`docs/institutional-memory/`](docs/institutional-memory/) — machine-first
+  authority, invariants, decisions, comprehension gates, and executable
+  contract verification.
+- [`docs/runs/clotho-self-weave/`](docs/runs/clotho-self-weave/) — committed,
+  signed knowledge-graph snapshot and read-only reproduction verifier.
+- [`ai-native-memory/memory/EVIDENCE/README.md`](ai-native-memory/memory/EVIDENCE/README.md)
+  — portable plugin dogfood and inheritance evidence.
+- [`docs/runs/crossroad-ads/`](docs/runs/crossroad-ads/) — bounded `PAUSED` ads
+  operator, `needs-human` behavior, and keyless negative controls.
+- [`narcissus/flagship/src/evidence-ledger.json`](narcissus/flagship/src/evidence-ledger.json),
+  [`live-graph.json`](narcissus/flagship/src/live-graph.json), and
+  [`screenshots/`](narcissus/flagship/screenshots/) — the implemented “Loom on
+  Trial” product's evidence, graph, and visual proof.
+- [`docs/runs/`](docs/runs/) — authorization refusals and successes, Argo slice
+  evidence, proposal-lifecycle runs, Clotho evidence, and product runs.
+- [`contracts/`](contracts/) — human-readable protocols enforced by the gate.
+- [`docs/history/`](docs/history/) — superseded records retained for provenance;
+  they do not govern current work.
 
-## Provenance / layout note
+## Provenance
 
-Extracted from a larger multi-model vault, where the live deployment runs under a
-`me/codex/` tree wired into an MCP client. `validateProtectedPaths` derives its
-root from the deployment layout; in this standalone repo the engine is primarily a
-reference + evidence artifact. Authored by `claude-code`.
+TELOS is human-directed and developed with multiple model seats. The repository
+dogfoods its own deterministic review, evidence, signature, negative-control,
+and institutional-memory mechanisms; generated text or code is still data, not
+authority or certification.
+
+The project began inside a larger multi-model vault. This repository now
+contains standalone executable packages and committed evidence, while live
+provider wiring remains credential-dependent and environment-specific.
