@@ -142,7 +142,7 @@ The complete package classification comes from
 | Enrolled TELOS spine | `atropos`, `breakout`, `build-gate`, `clotho`, `connectors/ai-peer-mcp`, `lachesis`, `merkle-dag` | Implemented and consciously enrolled |
 | Products beside the spine | `ai-forge`, `ai-native-memory`, `forge`, `narcissus/flagship`, `saas-forge` | Implemented; Iliad enrollment deferred |
 | Active role/capability modules | Daedalus, TELOS, Argo, The Iliad, `loadout` | Protocol/code/run lineage; no autonomous role services |
-| Registered future roles | Hermes, Medusa, Narcissus | Meanings reserved; unimplemented |
+| Registered future roles | [Hermes, Medusa, Narcissus](docs/mythological-vocabulary.md#registered-terms) | Meanings reserved; unimplemented |
 
 `contracts/` contains the human-readable protocols; it is a reference boundary,
 not another package root. The implemented `narcissus/flagship` product is
@@ -160,7 +160,8 @@ records dogfood the same audit, verification, and comprehension oracles.
 `memory-init` scaffolds host-local authority and record files, so a fresh host
 does not need TELOS paths. The TELOS dogfood authority path is evidence for this
 repository, not a portability requirement. See the
-[`plugin metadata`](ai-native-memory/.claude-plugin/plugin.json) and
+[`package metadata`](ai-native-memory/package.json),
+[`plugin metadata`](ai-native-memory/.claude-plugin/plugin.json), and
 [`dogfood evidence`](ai-native-memory/memory/EVIDENCE/README.md). Marketplace
 publication and Iliad enrollment remain deferred.
 
