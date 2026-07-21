@@ -10,7 +10,8 @@
 
 ## Global Constraints
 
-- The approved design is `/home/colchis/Projects/TELOS/docs/superpowers/specs/2026-07-21-daedalus-family-multi-model-seat-lifecycle-design.md`, commit `f7482daf7318cfb7341a739154ebb9b49d77d8c5`, SHA-256 `5c972b176df402d22a65273520d2342541cd213717e80c8460577a7ad6c920c9`.
+- The approved design is `/home/colchis/Projects/TELOS/docs/superpowers/specs/2026-07-21-daedalus-family-multi-model-seat-lifecycle-design.md`, commit `f7482daf7318cfb7341a739154ebb9b49d77d8c5`, raw file SHA-256 `5c972b176df402d22a65273520d2342541cd213717e80c8460577a7ad6c920c9`.
+- TELOS authorization identity is the canonical candidate ref `sha256hex(canonicalize({ kind: "candidate", plan: planText }))`, not the raw file SHA-256. Raw SHA-256 may be recorded only as a transport-integrity checksum.
 - This document is a candidate plan. `authz-008` governs Clotho v15 only and does not authorize this implementation. The Eye must authorize this exact plan root before Task 1 begins.
 - Implement in `/home/colchis/plugins/multi-model-seats`; do not edit `/mnt/c/Users/dsmce/.codex/plugins/cache/multi-model-local/multi-model-seats/0.5.2` as source.
 - Do not modify upstream Superpowers. Map the lifecycle onto `brainstorming`, `writing-plans`, `executing-plans` or `subagent-driven-development`, `requesting-code-review`, `receiving-code-review`, `verification-before-completion`, and `finishing-a-development-branch`.
@@ -60,11 +61,12 @@
 - [ ] Compute the candidate plan root and compare it with the Eye authorization record supplied for this work.
 
 ```bash
+node --input-type=module -e 'import { readFileSync } from "node:fs"; import { canonicalize, sha256hex } from "/home/colchis/Projects/TELOS/merkle-dag/vendor.mjs"; const plan = readFileSync("/home/colchis/Projects/TELOS/docs/superpowers/plans/2026-07-21-daedalus-family-multi-model-seat-lifecycle.md", "utf8"); console.log("sha256:" + sha256hex(canonicalize({ kind: "candidate", plan })));'
+jq -r '.active_authorization.authorizes_plan, .implementation_authority.governs' /home/colchis/Projects/TELOS/CURRENT-AUTHORITY.json
 sha256sum /home/colchis/Projects/TELOS/docs/superpowers/plans/2026-07-21-daedalus-family-multi-model-seat-lifecycle.md
-jq -r '.active_authorization.authorizes_plan' /home/colchis/Projects/TELOS/CURRENT-AUTHORITY.json
 ```
 
-Expected: the second command prints `sha256:<first-command-digest>`, and `/home/colchis/Projects/TELOS/CURRENT-AUTHORITY.json#implementation_authority.governs` names the same ref. If either check differs, stop before touching plugin source and return the mismatch to Daedalus/The Eye.
+Expected: the first command's canonical candidate ref equals both refs printed by the second command. The third command is recorded separately as a raw transport-integrity checksum and must never be substituted for the canonical authorization ref. If either authority ref differs, stop before touching plugin source and return the mismatch to Daedalus/The Eye.
 
 - [ ] Re-prove the TELOS records and confirm plugin-source baseline tests.
 
