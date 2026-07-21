@@ -1,0 +1,29 @@
+{
+  "build_id": "daedalus-family-lifecycle-authz-009",
+  "use_case": "multi-model-seats-daedalus-family-lifecycle",
+  "model": "grok",
+  "role": "advisory",
+  "docs_reviewed": [
+    "docs/superpowers/plans/2026-07-21-daedalus-family-multi-model-seat-lifecycle.md",
+    "docs/superpowers/specs/2026-07-21-daedalus-family-multi-model-seat-lifecycle-design.md"
+  ],
+  "proposal_ref": "sha256:7f47efe360ba7cc7e890804d1fa4b6a16be8b21b274b28550ecdefa77cb059c5",
+  "decision": "revise",
+  "required_edits": [
+    "Fix the Task 1/3 artifact hashing contract: given sha256Ref(string) hashes raw UTF-8 bytes while putArtifact writes canonical JSON, Task 3 Step 4 must require putArtifact to ref the exact bytes written (const bytes = canonicalJson(value); ref = sha256Ref(bytes); write bytes) and readArtifact must recompute from those bytes. Add an explicit string-artifact put/read round-trip assertion in core or store tests so requirement/evidence strings cannot diverge.",
+    "In Task 2 Step 4, specify fail-closed profile transition validation that (a) allows on_pass value \"$reentry\" only for stage id daedalus-recovery, (b) allows on_pass/on_non_pass/reentry_stage null only for stage id closed, and (c) requires every other transition target to be a defined stage id. The committed daedalus-family-v1.json is otherwise at risk of being rejected by the stated validator.",
+    "In Task 4 Step 3, fully specify stage_base_hashes, stage_entries, and heads updates for createLifecycleState, partial required-seat pass, successful on_pass advance, non-pass, and recovery pass (including what P2/C2 independent reviewers must parent). The current rules define recovery/non-pass well but leave successful forward-advance base/head evolution implementer-defined."
+  ],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-21T19:08:45.882Z",
+  "rationale": "The plan correctly preserves TELOS boundaries (Eye exact-root authority; model consensus non-authoritative; Grok/Gemini mandatory only at P2/C2 and advisory at council handoff; claude/agy/codex trio unchanged; agy outside the v1 profile), targets plugin source rather than the Codex cache, forbids seat substitution and automatic caps while retaining signed Eye pause/cancel/amend/adjudicate paths, and is otherwise test-driven, zero-dependency Node ESM, append-only Merkle-DAG, and fail-closed. Design open questions are answered (plugin-local disk truth + export packet; content-addressed-note synthetic). The three required edits are concrete implementation-readiness defects, not philosophy gaps: string artifact ref mismatch will break store round-trips/demo requirement freezes; $reentry/null transitions are in the golden profile but omitted from validator rules; engine base/head evolution on happy-path advance is under-specified relative to the cold-review independence rules. No hard stops—authority, non-goals, and acceptance surface are sound once those edits land. Non-blocking: tighten controller_signature to real base64url charset checks; keep private-key and live-provider exclusion as written.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5",
+    "response_id": "47577124-af96-991b-b1ee-8baf70c911e1",
+    "source": "ai-peer-mcp/grok_ask",
+    "answered_at": "2026-07-21T19:11:13.896Z",
+    "tool": "grok_ask"
+  }
+}

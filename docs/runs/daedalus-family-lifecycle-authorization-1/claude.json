@@ -1,0 +1,30 @@
+{
+  "build_id": "daedalus-family-lifecycle-authz-009",
+  "use_case": "multi-model-seats-daedalus-family-lifecycle",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/superpowers/plans/2026-07-21-daedalus-family-multi-model-seat-lifecycle.md",
+    "docs/superpowers/specs/2026-07-21-daedalus-family-multi-model-seat-lifecycle-design.md"
+  ],
+  "proposal_ref": "sha256:7f47efe360ba7cc7e890804d1fa4b6a16be8b21b274b28550ecdefa77cb059c5",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-21T19:08:45.882Z",
+  "rationale": "I certify this exact plan (canonical candidate ref sha256:7f47efe360ba7cc7e890804d1fa4b6a16be8b21b274b28550ecdefa77cb059c5) for submission to The Eye. This approval grants no implementation authority and does not start Task 1; only a separate Eye decision can do that.\n\nAuthority boundaries are correctly preserved throughout. The plan explicitly states that authz-008 governs Clotho v15 only, requires Eye authorization of this exact plan root before Task 1, distinguishes the canonical candidate ref from raw file SHA-256 (transport checksum only), and encodes the boundary in verifiable policy data: telos_handoff pins authorization_required_seats to claude/agy/codex with grok/gemini advisory, profile_gate_results_are_authority is false, and Task 2 tests assert these values. The export packet's authority_claim (model_consensus_is_authority: false, eye_authorization_required: true, mutates_telos_authority: false) is machine-checked in Task 7, and Final Verification re-runs contract verification to prove CURRENT-AUTHORITY.json was untouched.\n\nThe no-automatic-caps rule is correctly scoped: automatic_limits are all null in the profile, Task 4 tests 25 consecutive non-pass/recovery cycles remain active, yet eye-pause/cancel/amend/adjudicate are preserved as separately signed decision nodes with seat-eye enforcement and adjudicate-only-from-paused semantics. Seat substitution is forbidden at three layers: profile flag (allow_seat_substitution must be false, fail-closed), engine (seat-not-required rejection), and adapter (PROVIDER_MISMATCH without actor mutation).\n\nImplementation-readiness is strong: exact file paths targeting the source plugin (not the Codex cache), closed schemas with unknown-field rejection, TDD ordering with explicit ERR_MODULE_NOT_FOUND failure confirmation before each implementation step, zero-dependency Node 18+ ESM with node: imports only, and no shell invocation in disk-truth. Fail-closed behavior is pervasive: missing parents, duplicate refs, signature drift, artifact drift, reused provenance response IDs, symlinks, stale roots, and secret-bearing values all throw or produce non-pass nodes. Secrets are redacted and asserted absent at persistence boundaries; only the SPKI public key persists; private reasoning is discarded rather than hashed.\n\nRe-derivation sufficiency holds: canonical JSON with golden vectors, deterministic lifecycle root from sorted leaves, verifyLifecycleStore reads-only from disk with the persisted public key, disk-truth tree hashing with exact-root comparison, and the demo re-verifies the JSONL from disk and matches the summary root. The Merkle-DAG decision-record requirement covers every mandated event class (pass, non-pass, death, mutation, retry, invalidation, Eye actions) with append-changes-root semantics.\n\nNon-blocking observations for the implementer's awareness: (1) the append-before-apply ordering in Task 8 means an engine-rejected decision could persist in the store; the engine remains the transition authority and stored-but-unsatisfying nodes are consistent with the design's stated invalidation model, but the implementer should confirm verify() tolerates such nodes. (2) The eye-plan-authorization stage's on_non_pass routes to daedalus-recovery, which correctly treats Eye return as a routable non-pass rather than a terminal result, consistent with pass-or-return. (3) Expected baseline counts (301/301 contracts, 4 plugin tests) are environment assertions the preconditions correctly verify before any edit. None of these are defects in the plan text; they are execution-time attention points already governed by the plan's fail-closed rules.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011CdFjFHP1JRaHA2A4FPvTH",
+    "source": "ai-peer-mcp/claude_ask",
+    "answered_at": "2026-07-21T19:09:11.219Z",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "b31c91b2b2a084376ddfb53eba4511e71e8d9dca243f379258729b71c5d21a38",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

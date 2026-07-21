@@ -1,0 +1,46 @@
+{
+  "build_id": "daedalus-family-lifecycle-authz-009",
+  "use_case": "multi-model-seats-daedalus-family-lifecycle",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/superpowers/plans/2026-07-21-daedalus-family-multi-model-seat-lifecycle.md",
+    "docs/superpowers/specs/2026-07-21-daedalus-family-multi-model-seat-lifecycle-design.md"
+  ],
+  "proposal_ref": "sha256:7f47efe360ba7cc7e890804d1fa4b6a16be8b21b274b28550ecdefa77cb059c5",
+  "decision": "revise",
+  "required_edits": [
+    "Add a production controller/CLI and corresponding skill commands for initialization, status, resume after process restart, artifact ingestion, serialized seat invocation, decision append/apply, recovery, explicit mutation, Eye-action ingestion, disk verification, and export. It must use the same fail-closed path as the tests, support an externally supplied signer without persisting its private key in lifecycle records, and include restart/resume and concurrent-review serialization tests.",
+    "Add deterministic disk-only replay, for example replayLifecycleStore({ dir, profile }), which verifies the store and profile, reconstructs the initial requirement and every transition through applyDecision, and derives the closed state, heads, effective plan and implementation roots, evidence set, and export. Build the TELOS export only from this replay result; require its evidence refs to equal the verified on-disk decision evidence; enforce the canonical TELOS candidate envelope/root; and test byte-identical export regeneration plus reordered, inserted, deleted, stale, and incomplete logs.",
+    "Make JSON and byte hashing separate and unambiguous. sha256Ref must hash canonical JSON bytes for every JSON type; add a dedicated raw-byte SHA-256 function for source files and command streams. Require artifact files to contain exactly their canonical bytes, not merely parse to an equivalent value. Add golden tests distinguishing strings from null/numbers, rejecting whitespace or key-order drift on disk, hashing non-UTF-8/binary files, and matching TELOS canonical-candidate vectors.",
+    "Separate recovery-attempt lineage from governed-artifact mutation. A provider death or retry must be able to grow the DAG without changing the plan or implementation artifact. Define explicit mutation transitions and enforce that every plan mutation reruns P1, P2, and Eye plan authorization, while every implementation mutation reruns C1, C2, disk truth, and Eye acceptance. Prevent retrospective recovery from bypassing those gates, require the accepted implementation root to equal the current root at closure, and define signed Eye amendment/adjudication semantics that update exact policy or requirement roots without arbitrary stage jumps.",
+    "Require each Eye transition to resolve and verify a separately signed Eye/TELOS authority artifact whose action, scope, target, policy, and exact subject root match the node; a controller signature alone may record but must not manufacture Eye authority. Bind every model node to a closed provenance artifact whose provider and model equal the actor and profile, whose attempt and response identifiers satisfy uniqueness rules, and whose issued/failed status is compatible with the verdict. Add forged-Eye, actor/provenance mismatch, failed-provenance pass, wrong-root authority, and provider-spoof replay tests. Also strengthen execution preconditions to verify the full active Eye implementation-authorization record and target scope, not only two matching ref strings.",
+    "Define closed schemas for findings, dispositions, provenance, authority evidence, command evidence, manifests, requirements, canonical plan candidates, and implementation artifacts. Restrict putArtifact to those typed envelopes, prohibit raw prompts/provider responses/conversations and private-reasoning fields, strengthen credential-key/value rejection, and add negative tests for unknown nested fields and representative API, OAuth, cloud-access, cookie/session, PEM, and authorization credentials.",
+    "Replace the git-baseline block with an explicit fail-closed branch: if an existing checkout is dirty, do not stage or commit it and create an isolated worktree from a declared commit; if it is unversioned, audit exclusions and forbidden files before initializing and stage an explicit source allowlist rather than git add . Add a precondition test or scripted check proving unknown and secret files cannot enter the baseline commit."
+  ],
+  "hard_stops": [
+    "The planned deliverable has no production lifecycle runner or resumable controller path. Only the synthetic demo composes the store, engine, adapters, Eye actions, disk verification, and export, while the skill merely says to record gates without an operational command that can do so.",
+    "Gate order, effective state, and the TELOS export cannot be re-derived from disk. LifecycleState remains in memory, store verification does not replay policy transitions, and export construction trusts caller-supplied state and evidence refs.",
+    "The content-addressing definition is unsound: sha256Ref hashes strings as raw bytes but other JSON values as canonical JSON, so distinct JSON values such as \"null\" and null share a ref. The store also does not explicitly require persisted bytes to be canonical, and disk-tree hashing does not define exact binary-byte hashing.",
+    "Recovery and Eye-action semantics can violate the plan's own invalidation rules. Every recovery is forced to mutate the governed artifact; an Iliad-retrospective failure can mutate an implementation and re-enter retrospective without rerunning C1, C2, disk truth, or Eye acceptance; Eye amendment cannot change the immutable profile/policy ref; and adjudication may name an arbitrary stage without a gate-order-safe transition.",
+    "Eye authority and required-seat provenance are not authenticated by the proposed verifier. A controller-signed node labeled actor.seat \"eye\", \"grok\", or another required seat is accepted without verifying a separately signed Eye record or binding provenance provider/model/status to the actor, profile, verdict, and exact subject root.",
+    "The persistence boundary does not enforce the prohibition on private reasoning and credentials. Findings and dispositions are unbounded arrays, putArtifact accepts arbitrary JSON, and the heuristic secret scanner misses credential classes and private-reasoning fields.",
+    "The git-baseline precondition contradicts its safety prose: when a repository already exists, the displayed commands still run git add . and commit, which can capture unknown work or sensitive files instead of preserving the checkout and creating an isolated worktree."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-07-21T19:08:45.882Z",
+  "rationale": "The candidate has a strong governance-oriented skeleton: it identifies the correct plugin source, keeps the installed cache non-authoritative, preserves the existing claude/agy/codex council trio, confines Grok and Gemini to P2/C2, rejects seat substitution and automatic caps, uses test-first Node ESM modules, separates provider transport from authority, and specifies signed decision records, deterministic negative controls, disk verification, and exact-root Eye boundaries.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "chatcmpl-E4A7elVflCWf8f0vn2jO3JfDErM1p",
+    "source": "ai-peer-mcp/codex_ask",
+    "answered_at": "2026-07-21T19:14:31.221Z",
+    "tool": "codex_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "0ee0e5ac0b9a229c7e8df133d26e3335cd23a34f30116ace7194db1e85029ac6",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

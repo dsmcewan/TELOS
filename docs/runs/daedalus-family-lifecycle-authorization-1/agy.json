@@ -1,0 +1,31 @@
+{
+  "build_id": "daedalus-family-lifecycle-authz-009",
+  "use_case": "multi-model-seats-daedalus-family-lifecycle",
+  "model": "agy",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/superpowers/plans/2026-07-21-daedalus-family-multi-model-seat-lifecycle.md",
+    "docs/superpowers/specs/2026-07-21-daedalus-family-multi-model-seat-lifecycle-design.md"
+  ],
+  "proposal_ref": "sha256:7f47efe360ba7cc7e890804d1fa4b6a16be8b21b274b28550ecdefa77cb059c5",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-21T19:08:45.882Z",
+  "provenance": {
+    "provider": "local",
+    "model": "agy-checkpoint",
+    "source": "ai-peer-mcp/agy_checkpoint",
+    "response_id": "agy-15e7141f6a01489f53bd564cb0bba075391ee63e",
+    "answered_at": null,
+    "attestation": "local-deterministic",
+    "engine_version": "agy-checkpoint/1",
+    "tool": "agy_checkpoint"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "34e9f638403948d7fe2e45afcd917443ad54f2be13478339175d32482ffb7e9d",
+    "signed_fields": "canonical-minus-signature"
+  }
+}
