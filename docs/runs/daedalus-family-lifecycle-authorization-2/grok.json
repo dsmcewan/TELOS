@@ -1,0 +1,25 @@
+{
+  "build_id": "daedalus-family-lifecycle-authz-010",
+  "use_case": "multi-model-seats-daedalus-family-lifecycle",
+  "model": "grok",
+  "role": "advisory",
+  "docs_reviewed": [
+    "docs/superpowers/plans/2026-07-21-daedalus-family-multi-model-seat-lifecycle.md",
+    "docs/superpowers/specs/2026-07-21-daedalus-family-multi-model-seat-lifecycle-design.md"
+  ],
+  "proposal_ref": "sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-22T00:13:27.203Z",
+  "rationale": "The plan is internally consistent with the hardened design and the stated TELOS boundaries: exact-root Eye authority, model consensus non-authoritative, Grok/Gemini mandatory only at P2/C2, advisory in the existing claude/agy/codex trio, agy outside the v1 profile, no seat substitution, no automatic caps, and explicit Eye pause/cancel/amend/adjudicate as the only terminal human overrides. Implementation target, zero-dependency Node ESM, fail-closed typed envelopes, crash-atomic signed journals (decision/operation/checkpoint), prepared-invocation recovery, disk-only replay as sole derived state, distinct implementation artifact vs tree_root binding, Icarus-only lifecycle-round checkpoint/precompact semantics with mechanics read-only, and detached-verifiable handoff that cannot mutate TELOS authority are all specified with test-first tasks, golden vectors, negative controls, and re-derivation paths sufficient to reconstruct artifacts, signatures, provenance, gate order, disk truth, and export from disk. Synthetic content-addressed-note proof is correctly fenced as non-product; production dogfood may stop at PRODUCTION_LIFECYCLE_PENDING without faking seats or authority. Pre-Task-1 Eye grant gate and authz-008 non-authorization are explicit. Minor File-header/table omissions (e.g. test-lifecycle-journal.mjs in Task 3 Files) are covered by steps/commits and are non-blocking. I stake the Grok seat on certifying and submitting this exact plan root to The Eye only; no implementation authority and no Task 1 start are granted by this approval.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5",
+    "response_id": "d4d73896-31cb-955c-bcfe-719dbc4c9b23",
+    "source": "ai-peer-mcp/grok_ask",
+    "answered_at": "2026-07-22T00:14:34.908Z",
+    "tool": "grok_ask"
+  }
+}

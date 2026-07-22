@@ -1,0 +1,132 @@
+{
+  "authorization_id": "authz-010",
+  "build_id": "daedalus-family-lifecycle-authz-010",
+  "use_case": "multi-model-seats-daedalus-family-lifecycle",
+  "objective": "Certify and submit the exact Daedalus-family multi-model-seat lifecycle plan at canonical candidate ref sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b to The Eye. Council approval remains authorization only: it certifies and submits this exact plan to The Eye, grants no implementation authority, and cannot start Task 1. The implementation target is the source plugin at /home/colchis/plugins/multi-model-seats; the installed Codex cache is not source. The plan passed Icarus R2/R3 close-out and requires strict per-round checkpoint/precompact semantics: after every Daedalus/Icarus review-fix round, Icarus alone consolidates validated findings and dispositions into the plugin-owned lifecycle-round checkpoint before precompact/rotation; mechanics remain read-only and non-authoritative. The plan must preserve TELOS authority boundaries: model consensus is not authorization; The Eye authorizes exact roots; Grok and Gemini are mandatory only inside profile gates P2/C2 and remain advisory in the existing TELOS authorization council; the TELOS required authorization trio remains claude/agy/codex. The plan requires a signed append-only Merkle-DAG decision record for every pass, non-pass, provider death, mutation, retry, invalidation, and Eye action; required-seat substitution is forbidden; private reasoning and credentials are not persisted. There are no automatic lifecycle round/retry/time/cost caps. That rule does not remove explicit Eye pause/cancel/amend/adjudicate authority and does not modify existing TELOS council policy. Approve only if the plan is internally consistent, implementation-ready, test-driven, zero-dependency Node ESM, fail-closed, and sufficient to re-derive canonical artifacts, signatures, provenance, gate order, disk truth, and the exact TELOS export from disk. Approval certifies and submits only this exact plan to The Eye; a separate Eye decision is required for implementation authority and before Task 1 may start. Return revise for any concrete defect that must be corrected before submission.",
+  "plan_ref": "sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b",
+  "plan_file_sha256": "sha256:5b6fa08b15761428371b5325598090a6e84b8545d7d8929a66b37b782ab651d3",
+  "reviewed_head": "c3fd3afe22fc7c284ce29c10c5885610686f7d69",
+  "extends": "authz-008",
+  "timestamp": "2026-07-22T00:13:27.203Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "medium",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011CdG8UkxV8injM5pUrHso3",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-22T00:14:00.118Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-15e7141f6a01489f53bd564cb0bba075391ee63e",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": false,
+      "reason": "read ECONNRESET"
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "d4d73896-31cb-955c-bcfe-719dbc4c9b23",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-22T00:14:34.908Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "KQtgasbtGY-O6dkP_MCA2QU",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-22T00:13:39.707Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "Missing required codex approval packet."
+    ],
+    "warnings": [],
+    "provenance": [
+      {
+        "model": "claude",
+        "has_provenance": true,
+        "provider": "anthropic",
+        "response_model": "claude-fable-5",
+        "response_id": "msg_011CdG8UkxV8injM5pUrHso3",
+        "source": "ai-peer-mcp/claude_ask"
+      },
+      {
+        "model": "agy",
+        "has_provenance": true,
+        "provider": "local",
+        "response_model": "agy-checkpoint",
+        "response_id": "agy-15e7141f6a01489f53bd564cb0bba075391ee63e",
+        "source": "ai-peer-mcp/agy_checkpoint"
+      },
+      {
+        "model": "codex",
+        "has_provenance": false,
+        "provider": null,
+        "response_model": null,
+        "response_id": null,
+        "source": null
+      }
+    ]
+  },
+  "authorized": false,
+  "authorization": {
+    "status": "NOT_AUTHORIZED",
+    "plan_ref": "sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b",
+    "note": "Fail-closed: see gate blockers and seat decisions."
+  }
+}
