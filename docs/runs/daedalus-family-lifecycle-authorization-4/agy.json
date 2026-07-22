@@ -1,0 +1,45 @@
+{
+  "build_id": "daedalus-family-lifecycle-authz-012",
+  "use_case": "multi-model-seats-daedalus-family-lifecycle",
+  "model": "agy",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/superpowers/plans/2026-07-21-daedalus-family-multi-model-seat-lifecycle.md",
+    "docs/superpowers/specs/2026-07-21-daedalus-family-multi-model-seat-lifecycle-design.md"
+  ],
+  "proposal_ref": "sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-22T02:02:09.840Z",
+  "retry_ref": "sha256:d69ac2d5bd3bb34947c6734d3fee5c7ea47003c4e4bcad65dbc51af88b3add05",
+  "retry_of": "authz-011",
+  "prior_attempt_ref": "sha256:ddf45293740e8dc8ceb7d4c4c5b91a50666dad598fbe33ee2299aca1b4104fe2",
+  "prior_retry_ref": "sha256:bbdca869177ecf56c39a9d4bae84cc9d3fd7a820aa200527cc36f0d29621367a",
+  "prior_summary_raw_sha256": "sha256:c87588d1c7d70f1e5bd83220502092c87038eb9f3af9b0e5a38690bfc8c0504c",
+  "prior_disk_tree_ref": "sha256:509c0f9c667689b822d88e137431ad5a9800d0af6bedac1a5e6126d1792e0d3d",
+  "prior_attempt_commit": "git:12f6bfc70390863e218249e2b6424947ff2933e2",
+  "prior_attempt_tree": "git:2cada61b75d20a99b77f1a95edf41032a0591011",
+  "prior_attempt_directory_tree": "git:9fdee07fb7b2969bb05f840dd7a4d44a5451f66a",
+  "prior_failure_set_ref": "sha256:54288488d612807e4cb20292af96fa88c0f4b917949916a0d01f6415d67a1ffc",
+  "transport_policy": {
+    "council_max_concurrency": 1,
+    "per_seat_automatic_retries": 0
+  },
+  "provenance": {
+    "provider": "local",
+    "model": "agy-checkpoint",
+    "source": "ai-peer-mcp/agy_checkpoint",
+    "response_id": "agy-15e7141f6a01489f53bd564cb0bba075391ee63e",
+    "answered_at": null,
+    "attestation": "local-deterministic",
+    "engine_version": "agy-checkpoint/1",
+    "tool": "agy_checkpoint"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "98478ff4d5a4cc0d8ba39925f916b1fd5a261408c0aee2e6fe03c3a8b927925e",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

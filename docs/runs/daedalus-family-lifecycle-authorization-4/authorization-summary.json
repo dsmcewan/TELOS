@@ -1,0 +1,160 @@
+{
+  "authorization_id": "authz-012",
+  "build_id": "daedalus-family-lifecycle-authz-012",
+  "use_case": "multi-model-seats-daedalus-family-lifecycle",
+  "objective": "Conduct a fresh signed five-seat council retry for the unchanged Daedalus-family multi-model-seat lifecycle plan at canonical candidate ref sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b. This attempt is authz-012, retry_of authz-011, prior_attempt_ref sha256:ddf45293740e8dc8ceb7d4c4c5b91a50666dad598fbe33ee2299aca1b4104fe2, retry_ref sha256:d69ac2d5bd3bb34947c6734d3fee5c7ea47003c4e4bcad65dbc51af88b3add05, and authority_predecessor authz-008. Daedalus routed the prior versioned seat-failure set sha256:54288488d612807e4cb20292af96fa88c0f4b917949916a0d01f6415d67a1ffc through daedalus-recovery with mutation false: claude approver, codex approver, and grok advisory each failed with SOCKET_HANG_UP / socket hang up; the prior attempt was not a terminal failure. The retry is bound to prior commit git:12f6bfc70390863e218249e2b6424947ff2933e2 with sole parent git:643308f1abdf0f82095c874797111b8cd6caa55a, full repository tree git:2cada61b75d20a99b77f1a95edf41032a0591011, attempt-directory tree git:9fdee07fb7b2969bb05f840dd7a4d44a5451f66a, prior retry sha256:bbdca869177ecf56c39a9d4bae84cc9d3fd7a820aa200527cc36f0d29621367a, canonical prior summary sha256:ddf45293740e8dc8ceb7d4c4c5b91a50666dad598fbe33ee2299aca1b4104fe2, raw prior summary sha256:c87588d1c7d70f1e5bd83220502092c87038eb9f3af9b0e5a38690bfc8c0504c, and prior disk tree sha256:509c0f9c667689b822d88e137431ad5a9800d0af6bedac1a5e6126d1792e0d3d; the plan remains the candidate reviewed at git:c3fd3afe22fc7c284ce29c10c5885610686f7d69. Transport policy is council_max_concurrency 1 and per_seat_automatic_retries 0: invoke all five fresh seats exactly once, serially, with no in-process retry. Call claude, agy, codex, grok, and gemini afresh. Prior packets are immutable historical evidence only and must never be loaded, copied, or reused as this attempt's decisions. Council approval remains authorization only: it certifies and submits this exact unchanged plan to The Eye, grants no implementation authority, cannot start Task 1, and does not modify CURRENT-AUTHORITY.json. The implementation target is the source plugin at /home/colchis/plugins/multi-model-seats; the installed Codex cache is not source. The plan passed Icarus R2/R3 close-out and requires strict per-round checkpoint/precompact semantics: after every Daedalus/Icarus review-fix round, Icarus alone consolidates validated findings and dispositions into the plugin-owned lifecycle-round checkpoint before precompact/rotation; mechanics remain read-only and non-authoritative. The plan must preserve TELOS authority boundaries: model consensus is not authorization; The Eye authorizes exact roots; Grok and Gemini are mandatory only inside profile gates P2/C2 and remain advisory in the existing TELOS authorization council; the TELOS required authorization trio remains claude/agy/codex. The plan requires a signed append-only Merkle-DAG decision record for every pass, non-pass, provider death, mutation, retry, invalidation, and Eye action; required-seat substitution is forbidden; private reasoning and credentials are not persisted. There are no automatic lifecycle round/retry/time/cost caps. That rule does not remove explicit Eye pause/cancel/amend/adjudicate authority and does not modify existing TELOS council policy. Approve only if the plan is internally consistent, implementation-ready, test-driven, zero-dependency Node ESM, fail-closed, and sufficient to re-derive canonical artifacts, signatures, provenance, gate order, disk truth, and the exact TELOS export from disk. Approval certifies and submits only this exact plan to The Eye; a separate Eye decision is required for implementation authority and before Task 1 may start. Return revise for any concrete defect that must be corrected before submission.",
+  "plan_ref": "sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b",
+  "plan_file_sha256": "sha256:5b6fa08b15761428371b5325598090a6e84b8545d7d8929a66b37b782ab651d3",
+  "retry_ref": "sha256:d69ac2d5bd3bb34947c6734d3fee5c7ea47003c4e4bcad65dbc51af88b3add05",
+  "retry_of": "authz-011",
+  "prior_attempt_ref": "sha256:ddf45293740e8dc8ceb7d4c4c5b91a50666dad598fbe33ee2299aca1b4104fe2",
+  "prior_retry_ref": "sha256:bbdca869177ecf56c39a9d4bae84cc9d3fd7a820aa200527cc36f0d29621367a",
+  "prior_summary_raw_sha256": "sha256:c87588d1c7d70f1e5bd83220502092c87038eb9f3af9b0e5a38690bfc8c0504c",
+  "prior_disk_tree_ref": "sha256:509c0f9c667689b822d88e137431ad5a9800d0af6bedac1a5e6126d1792e0d3d",
+  "prior_attempt_commit": "git:12f6bfc70390863e218249e2b6424947ff2933e2",
+  "prior_attempt_tree": "git:2cada61b75d20a99b77f1a95edf41032a0591011",
+  "prior_attempt_directory_tree": "git:9fdee07fb7b2969bb05f840dd7a4d44a5451f66a",
+  "prior_failure_set_ref": "sha256:54288488d612807e4cb20292af96fa88c0f4b917949916a0d01f6415d67a1ffc",
+  "transport_policy": {
+    "council_max_concurrency": 1,
+    "per_seat_automatic_retries": 0
+  },
+  "reviewed_head": "12f6bfc70390863e218249e2b6424947ff2933e2",
+  "plan_reviewed_head": "c3fd3afe22fc7c284ce29c10c5885610686f7d69",
+  "prior_commit_parent": "git:643308f1abdf0f82095c874797111b8cd6caa55a",
+  "extends": "authz-008",
+  "timestamp": "2026-07-22T02:02:09.840Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011CdGGme6tQrVW966patyRR",
+        "source": "ai-peer-mcp/claude_ask",
+        "answered_at": "2026-07-22T02:02:39.499Z",
+        "tool": "claude_ask"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-15e7141f6a01489f53bd564cb0bba075391ee63e",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E4GaC5djpCMnHfxSichkqt1B2vzc9",
+        "source": "ai-peer-mcp/codex_ask",
+        "answered_at": "2026-07-22T02:09:33.664Z",
+        "tool": "codex_ask"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5",
+        "response_id": "87d37b5c-fd42-989c-9342-849d9f1295ac",
+        "source": "ai-peer-mcp/grok_ask",
+        "answered_at": "2026-07-22T02:09:59.664Z",
+        "tool": "grok_ask"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "eiZgapXVJMCGz7IP0quloAw",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-22T02:10:11.595Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Define and test a `daedalus-recovery` non-pass self-loop. It must append the failure/death decision, preserve governed roots plus the saved failed/return stage, update DAG lineage deterministically, remain in recovery, and support repeated recovery failures without caps or provider substitution.; Add an exact Eye transition table covering node stage, transition kind, signed authority action, allowed verdict, parent rule, state advancement, and root assignments for requirement freeze, plan authorization, implementation acceptance, pause, cancel, amendment, adjudication, and returns. Add separately signed return actions if ordinary Eye non-pass edges remain. Move actor verification to a function that receives the node or extend the verifier interface accordingly.; Integrate cold-review checkpoint verification into controller preflight for Grok/Gemini P2/C2 invocations and into production export eligibility. Derive required checkpoint boundaries from replay so missing, stale, or omitted rounds fail closed without making checkpoints authorization. Define an exact operation-bound Icarus finding-resolution/disposition artifact or another signed derivation path compatible with empty literal-pass dispositions, and test attempted bypasses.; Move journal continuity checks to a sequence validator that receives the prior verified chain; move cross-artifact installation checks to store/replay validation with an explicit resolver. Specify the exact closed `lifecycle.json` schema, all immutable configuration refs, canonical bytes, and detached-verification vectors.; Change the export API so one trusted operation has `runtimeDir`, `checkoutDir`, and prospective `outDir` available before reading or writing. Enforce runtime/checkout separation during initialization as well. Choose one output contract—preferably a nonexistent child under a resolved existing parent—and update the demo and tests consistently.; Replace the impossible transaction-wide bad-signer no-mutation assertion with a per-record guarantee: an invalid signature publishes no bytes for that record, while any earlier valid append-only prefix remains intact and is projected as the appropriate recoverable pending state. For disk evidence, explicitly choose and test whether validation/signing precedes persistence or whether content-addressed ambient evidence may remain without a lifecycle decision.; Require a clean checkout at the exact authorized source path and stop on dirtiness, or parameterize every task and obtain a new Eye grant for the alternate worktree. For unversioned sources, reject unknown top-level entries before initialization or explicitly ignore them so the resulting repository is demonstrably clean.; Remove contiguous credential-shaped literals from the candidate/test recipe, or introduce a narrowly defined fixture mechanism that cannot whitelist real candidate credentials. Add a golden test that the complete revised authorized plan is accepted as `{ \"kind\": \"candidate\", \"plan\": planText }` and hashes to its declared canonical candidate ref.",
+      "codex has hard stops: The recovery semantics cannot represent failure at `daedalus-recovery`: the profile routes recovery non-passes back to recovery and the global contract requires every death/non-pass to be recorded, but Task 4 requires every recovery decision to be a pass. A Daedalus outage, refusal, or malformed response during recovery would therefore produce a decision that replay cannot apply.; Normal Eye-gate semantics are not exact. Ordinary stages require `transition.kind: \"decision\"`, while Eye actions require `transition.kind: \"eye-action\"`; the plan does not unambiguously define how `freeze-requirements`, `authorize-plan`, and `accept-implementation` advance their stages, set authority roots, or represent an Eye return/non-pass.; Strict lifecycle-round checkpoints are documented but not enforced by the production transition path. Task 11 does not modify controller/replay gate preflight, so P2/C2 can begin without the required current Icarus checkpoint, and production eligibility does not derive and require one checkpoint for every applicable review-fix round. The proposed checkpoint also requires verified closed dispositions without defining a normal signed record path that can produce them while literal passes must have empty dispositions.; Several mandatory validation tests cannot be implemented through the specified interfaces: a stateless Task 1 decision validator cannot detect duplicate/skipped journal indices or a wrong predecessor; `verifyEyeAuthorityStatic` cannot validate a decision actor because it receives no node; and standalone installation-proof validation cannot compare referenced package-manifest bodies without a resolver.; The handoff API cannot enforce its required three-way realpath separation. `buildHandoffBundle` does not receive `outDir`, while `writeHandoffBundle` receives neither the trusted runtime path nor equivalent authenticated source metadata. The plan also conflicts over whether the handoff directory must be nonexistent or may be a pre-created empty directory.; Task 8's blanket assertion that every bad signer result leaves the complete runtime and artifact tree unchanged conflicts with the append-only transaction order: later signatures are requested only after signed start/prepared records and, in some routes, evidence artifacts have already been durably published. Those committed prefixes cannot be rolled back and are expressly intended to be resumable.; The dirty-checkout fallback creates an isolated worktree at a different path but all tasks and the Eye scope remain bound to `/home/colchis/plugins/multi-model-seats`. Continuing there would either execute against the wrong checkout or exceed the exact authorized target. The unversioned baseline path can also leave excluded unknown top-level files untracked, contradicting the required clean source state.; The supplied persistence scanner rejects the plan's own candidate text: this plan contains token-shaped test literals such as `Bearer abcdefghijklmnopqrstuvwxyz`, and the specified `assertPersistable` scans the complete candidate `plan` string with a matching credential regex. The exact authorized candidate therefore cannot safely participate in the proposed production lifecycle."
+    ],
+    "warnings": [],
+    "provenance": [
+      {
+        "model": "claude",
+        "has_provenance": true,
+        "provider": "anthropic",
+        "response_model": "claude-fable-5",
+        "response_id": "msg_011CdGGme6tQrVW966patyRR",
+        "source": "ai-peer-mcp/claude_ask"
+      },
+      {
+        "model": "agy",
+        "has_provenance": true,
+        "provider": "local",
+        "response_model": "agy-checkpoint",
+        "response_id": "agy-15e7141f6a01489f53bd564cb0bba075391ee63e",
+        "source": "ai-peer-mcp/agy_checkpoint"
+      },
+      {
+        "model": "codex",
+        "has_provenance": true,
+        "provider": "openai",
+        "response_model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E4GaC5djpCMnHfxSichkqt1B2vzc9",
+        "source": "ai-peer-mcp/codex_ask"
+      }
+    ]
+  },
+  "authorized": false,
+  "authorization": {
+    "status": "NOT_AUTHORIZED",
+    "plan_ref": "sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b",
+    "note": "Fail-closed: see gate blockers and seat decisions."
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "schema_version": "telos.authorization-retry.v1",
+  "node_type": "authorization-retry",
+  "candidate_ref": "sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b",
+  "authority_predecessor": "authz-008",
+  "retry_of": "authz-011",
+  "prior_attempt_ref": "sha256:ddf45293740e8dc8ceb7d4c4c5b91a50666dad598fbe33ee2299aca1b4104fe2",
+  "prior_summary_raw_sha256": "sha256:c87588d1c7d70f1e5bd83220502092c87038eb9f3af9b0e5a38690bfc8c0504c",
+  "prior_disk_tree_ref": "sha256:509c0f9c667689b822d88e137431ad5a9800d0af6bedac1a5e6126d1792e0d3d",
+  "prior_attempt_commit": "git:12f6bfc70390863e218249e2b6424947ff2933e2",
+  "prior_attempt_tree": "git:2cada61b75d20a99b77f1a95edf41032a0591011",
+  "failure": {
+    "record_version": "telos.authorization-seat-failure-set.v1",
+    "terminal_failure": false,
+    "failures": [
+      {
+        "kind": "provider-death",
+        "seat": "claude",
+        "role": "approver",
+        "expected_provider": "anthropic",
+        "reason_code": "SOCKET_HANG_UP",
+        "observed_reason": "socket hang up"
+      },
+      {
+        "kind": "provider-death",
+        "seat": "codex",
+        "role": "approver",
+        "expected_provider": "openai",
+        "reason_code": "SOCKET_HANG_UP",
+        "observed_reason": "socket hang up"
+      },
+      {
+        "kind": "provider-death",
+        "seat": "grok",
+        "role": "advisory",
+        "expected_provider": "xai",
+        "reason_code": "SOCKET_HANG_UP",
+        "observed_reason": "socket hang up"
+      }
+    ]
+  },
+  "transport_policy": {
+    "council_max_concurrency": 1,
+    "per_seat_automatic_retries": 0
+  },
+  "route": "daedalus-recovery",
+  "mutation": false
+}

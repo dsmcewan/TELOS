@@ -1,0 +1,44 @@
+{
+  "build_id": "daedalus-family-lifecycle-authz-012",
+  "use_case": "multi-model-seats-daedalus-family-lifecycle",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/superpowers/plans/2026-07-21-daedalus-family-multi-model-seat-lifecycle.md",
+    "docs/superpowers/specs/2026-07-21-daedalus-family-multi-model-seat-lifecycle-design.md"
+  ],
+  "proposal_ref": "sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b",
+  "retry_ref": "sha256:d69ac2d5bd3bb34947c6734d3fee5c7ea47003c4e4bcad65dbc51af88b3add05",
+  "retry_of": "authz-011",
+  "prior_attempt_ref": "sha256:ddf45293740e8dc8ceb7d4c4c5b91a50666dad598fbe33ee2299aca1b4104fe2",
+  "prior_retry_ref": "sha256:bbdca869177ecf56c39a9d4bae84cc9d3fd7a820aa200527cc36f0d29621367a",
+  "prior_summary_raw_sha256": "sha256:c87588d1c7d70f1e5bd83220502092c87038eb9f3af9b0e5a38690bfc8c0504c",
+  "prior_disk_tree_ref": "sha256:509c0f9c667689b822d88e137431ad5a9800d0af6bedac1a5e6126d1792e0d3d",
+  "prior_attempt_commit": "git:12f6bfc70390863e218249e2b6424947ff2933e2",
+  "prior_attempt_tree": "git:2cada61b75d20a99b77f1a95edf41032a0591011",
+  "prior_attempt_directory_tree": "git:9fdee07fb7b2969bb05f840dd7a4d44a5451f66a",
+  "prior_failure_set_ref": "sha256:54288488d612807e4cb20292af96fa88c0f4b917949916a0d01f6415d67a1ffc",
+  "transport_policy": {
+    "council_max_concurrency": 1,
+    "per_seat_automatic_retries": 0
+  },
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-22T02:02:09.840Z",
+  "rationale": "Fresh independent review for retry authz-012 (retry_of authz-011, retry_ref sha256:d69ac2d5...; prior seat failures were transport-level SOCKET_HANG_UP, not substantive objections, and no prior packet content was consulted or reused). The plan at canonical candidate ref sha256:88e15cc7... is evaluated on its own merits.\n\nInternal consistency: The plan is coherent end to end. The authority boundary is stated correctly and repeatedly: authz-008 governs Clotho v15 only; Task 1 cannot begin until The Eye publishes an exact grant bound to the candidate ref, plugin checkout path, and task range 1-11, verified by canonical-bytes checks, pinned tracked Ed25519 trust key, reviewed-HEAD binding, and in-memory negative controls (mutated root/scope/range/key-id/signature must fail). The candidate-ref identity (canonicalize({kind:\"candidate\",plan})) is correctly distinguished from raw file SHA-256 as transport-only. The implementation/tree-root distinction (artifact ref vs embedded tree_root) is applied consistently across engine, replay, disk truth, Eye acceptance, closure, demo assertions, and export verification, with explicit tests that the two refs are never equated.\n\nImplementation readiness: Concrete file footprint with per-module responsibilities, exact closed schemas (decision node, operation records, provenance states issued/rejected/failed, authority artifacts, checkpoint payload), an exact profile JSON with stage topology and validator oracle (REQUIRED_PATH), an exact lineage table as reducer oracle, and a non-circular prepared-commitment construction that resolves the operation_prepared_ref chicken-and-egg cleanly. The source-vs-installed-cache boundary is honored, including installed-root discovery via machine-readable metadata rather than hard-coded cache paths.\n\nTest-driven: Every task is failure-first with ERR_MODULE_NOT_FOUND confirmation before implementation, extensive negative controls (out-of-order gates, self-approval, seat substitution, provider spoof, malformed provenance, truncated evidence, stale authorization, journal tamper/swap/gap/duplicate, kill-point crash injection at every publication syscall, CAS races, signer misbehavior before any byte is published), and a spawned end-to-end demo with one adversarial non-pass routed through Daedalus recovery.\n\nZero-dependency Node ESM: node:test, node:crypto/fs/path, .mjs, no shell for command execution, injected provider doubles, external signer interface keeping private keys out of the plugin.\n\nFail-closed: closed envelopes rejecting unknown fields recursively; pass requires empty findings/dispositions enforced at schema, adapter (PASS_HAS_OBJECTIONS), reducer, and replay layers; recovery is deterministic, provider-free, and clock-free; advisory locks never grant authority with exclusive journal-index publication as the only fence; capability-gated internal routes prevent generic decision appends.\n\nRe-derivation sufficiency: disk-only replay as sole authoritative state; disk truth with open/close manifest snapshot equality; detached-verifiable handoff bundle with complete reachability closure (journals, checkpoints, typed artifacts, raw blobs, Git objects with header-hash verification) and separately supplied pinned Eye trust; gate order enforced by profile prerequisites plus engine/replay validation; the exact TELOS export preserved via telos_handoff declaring the claude/agy/codex required trio with grok/gemini advisory and profile_gate_results_are_authority:false.\n\nTELOS boundaries preserved: model consensus is never authorization; Grok/Gemini mandatory only within P2/C2; every state change publishes a signed append-only journal record; no automatic caps while explicit Eye pause/cancel/amend/adjudicate authority is retained via prefix-bound, one-time-use authority artifacts; required-seat substitution forbidden and tested; credentials and private reasoning rejected at persistence boundaries with redaction never used to launder forbidden artifacts.\n\nNon-blocking observations (commentary only): the plan is unusually long and its strict-checkpoint and install-proof sections are dense, which raises implementation effort but not correctness risk since exact oracles and error codes are specified; the Step 8 UNC marketplace path guidance is environment-specific operational advice and appropriately fails safe if marketplace validation breaks; the decision_count >= 18 demo floor is a reasonable minimum rather than an exact count, which is acceptable given the deterministic fixture scenario is fully specified.\n\nThis approval certifies and submits the exact unchanged plan to The Eye only. It grants no implementation authority; Task 1 cannot start until a separate Eye decision publishes the exact grant the plan's own preconditions demand.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011CdGGme6tQrVW966patyRR",
+    "source": "ai-peer-mcp/claude_ask",
+    "answered_at": "2026-07-22T02:02:39.499Z",
+    "tool": "claude_ask"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "099ba08cc49a9c96cd6923d6dcfebfe2eb3defac86bd521ac6eb4696b5ea798b",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

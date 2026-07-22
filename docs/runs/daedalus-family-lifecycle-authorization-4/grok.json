@@ -1,0 +1,39 @@
+{
+  "build_id": "daedalus-family-lifecycle-authz-012",
+  "use_case": "multi-model-seats-daedalus-family-lifecycle",
+  "model": "grok",
+  "role": "advisory",
+  "docs_reviewed": [
+    "docs/superpowers/plans/2026-07-21-daedalus-family-multi-model-seat-lifecycle.md",
+    "docs/superpowers/specs/2026-07-21-daedalus-family-multi-model-seat-lifecycle-design.md"
+  ],
+  "proposal_ref": "sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b",
+  "retry_ref": "sha256:d69ac2d5bd3bb34947c6734d3fee5c7ea47003c4e4bcad65dbc51af88b3add05",
+  "retry_of": "authz-011",
+  "prior_attempt_ref": "sha256:ddf45293740e8dc8ceb7d4c4c5b91a50666dad598fbe33ee2299aca1b4104fe2",
+  "prior_retry_ref": "sha256:bbdca869177ecf56c39a9d4bae84cc9d3fd7a820aa200527cc36f0d29621367a",
+  "prior_summary_raw_sha256": "sha256:c87588d1c7d70f1e5bd83220502092c87038eb9f3af9b0e5a38690bfc8c0504c",
+  "prior_disk_tree_ref": "sha256:509c0f9c667689b822d88e137431ad5a9800d0af6bedac1a5e6126d1792e0d3d",
+  "prior_attempt_commit": "git:12f6bfc70390863e218249e2b6424947ff2933e2",
+  "prior_attempt_tree": "git:2cada61b75d20a99b77f1a95edf41032a0591011",
+  "prior_attempt_directory_tree": "git:9fdee07fb7b2969bb05f840dd7a4d44a5451f66a",
+  "prior_failure_set_ref": "sha256:54288488d612807e4cb20292af96fa88c0f4b917949916a0d01f6415d67a1ffc",
+  "transport_policy": {
+    "council_max_concurrency": 1,
+    "per_seat_automatic_retries": 0
+  },
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-22T02:02:09.840Z",
+  "rationale": "Fresh independent review of the unchanged candidate at sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b (authz-012, no-mutation retry of authz-011). The plan is internally consistent with the hardened design, implementation-ready, strictly test-driven (fail-first per task), zero-dependency Node ESM, and fail-closed at every persistence, gate, provenance, journal, replay, and export boundary.\n\nAuthority boundaries are preserved exactly: model consensus is never authorization; The Eye alone authorizes exact roots; Grok/Gemini are mandatory only inside profile P2/C2 and remain advisory in the existing TELOS council; the required TELOS trio stays claude/agy/codex; agy stays outside the v1 profile; council approval certifies submission only and cannot start Task 1 or mutate CURRENT-AUTHORITY.json. Preconditions correctly demand a fresh Eye grant bound to this plan root, plugin checkout, and tasks 1-11 before any implementation write.\n\nPass-or-return, no automatic caps, forbidden seat substitution, signed append-only Merkle-DAG coverage for every pass/non-pass/death/mutation/retry/invalidation/Eye action, crash-atomic journals with CAS fencing, disk-only replay as sole derived state, separate implementation-artifact vs embedded tree-root binding, Icarus-only lifecycle-round checkpoint ownership before precompact, closed typed envelopes with credential/private-reasoning rejection, injected provider doubles, and detached-verifiable handoff (synthetic-test vs production) are all specified with negative controls sufficient to re-derive canonical artifacts, signatures, provenance, gate order, disk truth, and the TELOS export from disk. Source target is the plugin checkout; cache is never source. No concrete defect requires revision before submission to The Eye.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5",
+    "response_id": "87d37b5c-fd42-989c-9342-849d9f1295ac",
+    "source": "ai-peer-mcp/grok_ask",
+    "answered_at": "2026-07-22T02:09:59.664Z",
+    "tool": "grok_ask"
+  }
+}
