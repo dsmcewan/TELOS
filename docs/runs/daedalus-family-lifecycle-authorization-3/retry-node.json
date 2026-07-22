@@ -1,0 +1,19 @@
+{
+  "schema_version": "telos.authorization-retry.v1",
+  "node_type": "authorization-retry",
+  "candidate_ref": "sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b",
+  "authority_predecessor": "authz-008",
+  "retry_of": "authz-010",
+  "prior_attempt_ref": "sha256:c49747274771ec76a9071d295cf28c982396bc6395ea400aa131d76e71df027c",
+  "prior_summary_raw_sha256": "sha256:77961b570070da844097aba3ae7b6823475fdb6a28295cbdce92fd1b628db08a",
+  "prior_disk_tree_ref": "sha256:535b04fb6667b753d1cffc6fb7abfba5609608efe79cb188e079b054fd0b2e58",
+  "prior_attempt_commit": "git:643308f1abdf0f82095c874797111b8cd6caa55a",
+  "prior_attempt_tree": "git:2a664055b4e436069f5829bac6274e6b8f5d13b6",
+  "failure": {
+    "kind": "provider-death",
+    "seat": "codex",
+    "reason_code": "ECONNRESET"
+  },
+  "route": "daedalus-recovery",
+  "mutation": false
+}

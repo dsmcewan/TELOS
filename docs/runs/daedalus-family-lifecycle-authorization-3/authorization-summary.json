@@ -1,0 +1,125 @@
+{
+  "authorization_id": "authz-011",
+  "build_id": "daedalus-family-lifecycle-authz-011",
+  "use_case": "multi-model-seats-daedalus-family-lifecycle",
+  "objective": "Conduct a fresh signed five-seat council retry for the unchanged Daedalus-family multi-model-seat lifecycle plan at canonical candidate ref sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b. This attempt is authz-011, retry_of authz-010, prior_attempt_ref sha256:c49747274771ec76a9071d295cf28c982396bc6395ea400aa131d76e71df027c, and retry_ref sha256:bbdca869177ecf56c39a9d4bae84cc9d3fd7a820aa200527cc36f0d29621367a. Daedalus routed the prior codex ECONNRESET provider death through daedalus-recovery with mutation false. The retry is bound to prior commit git:643308f1abdf0f82095c874797111b8cd6caa55a, prior tree git:2a664055b4e436069f5829bac6274e6b8f5d13b6, prior raw summary sha256:77961b570070da844097aba3ae7b6823475fdb6a28295cbdce92fd1b628db08a, and prior disk tree sha256:535b04fb6667b753d1cffc6fb7abfba5609608efe79cb188e079b054fd0b2e58; the plan remains the candidate reviewed at git:c3fd3afe22fc7c284ce29c10c5885610686f7d69. Call claude, agy, codex, grok, and gemini afresh. Prior packets are immutable historical evidence only and must never be loaded, copied, or reused as this attempt's decisions. Council approval remains authorization only: it certifies and submits this exact unchanged plan to The Eye, grants no implementation authority, cannot start Task 1, and does not modify CURRENT-AUTHORITY.json. The implementation target is the source plugin at /home/colchis/plugins/multi-model-seats; the installed Codex cache is not source. The plan passed Icarus R2/R3 close-out and requires strict per-round checkpoint/precompact semantics: after every Daedalus/Icarus review-fix round, Icarus alone consolidates validated findings and dispositions into the plugin-owned lifecycle-round checkpoint before precompact/rotation; mechanics remain read-only and non-authoritative. The plan must preserve TELOS authority boundaries: model consensus is not authorization; The Eye authorizes exact roots; Grok and Gemini are mandatory only inside profile gates P2/C2 and remain advisory in the existing TELOS authorization council; the TELOS required authorization trio remains claude/agy/codex. The plan requires a signed append-only Merkle-DAG decision record for every pass, non-pass, provider death, mutation, retry, invalidation, and Eye action; required-seat substitution is forbidden; private reasoning and credentials are not persisted. There are no automatic lifecycle round/retry/time/cost caps. That rule does not remove explicit Eye pause/cancel/amend/adjudicate authority and does not modify existing TELOS council policy. Approve only if the plan is internally consistent, implementation-ready, test-driven, zero-dependency Node ESM, fail-closed, and sufficient to re-derive canonical artifacts, signatures, provenance, gate order, disk truth, and the exact TELOS export from disk. Approval certifies and submits only this exact plan to The Eye; a separate Eye decision is required for implementation authority and before Task 1 may start. Return revise for any concrete defect that must be corrected before submission.",
+  "plan_ref": "sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b",
+  "plan_file_sha256": "sha256:5b6fa08b15761428371b5325598090a6e84b8545d7d8929a66b37b782ab651d3",
+  "retry_ref": "sha256:bbdca869177ecf56c39a9d4bae84cc9d3fd7a820aa200527cc36f0d29621367a",
+  "retry_of": "authz-010",
+  "prior_attempt_ref": "sha256:c49747274771ec76a9071d295cf28c982396bc6395ea400aa131d76e71df027c",
+  "reviewed_head": "643308f1abdf0f82095c874797111b8cd6caa55a",
+  "plan_reviewed_head": "c3fd3afe22fc7c284ce29c10c5885610686f7d69",
+  "prior_attempt_commit": "git:643308f1abdf0f82095c874797111b8cd6caa55a",
+  "prior_attempt_tree": "git:2a664055b4e436069f5829bac6274e6b8f5d13b6",
+  "prior_disk_tree_ref": "sha256:535b04fb6667b753d1cffc6fb7abfba5609608efe79cb188e079b054fd0b2e58",
+  "extends": "authz-008",
+  "timestamp": "2026-07-22T01:31:35.988Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": false,
+      "state": "failed",
+      "reason": "socket hang up"
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-15e7141f6a01489f53bd564cb0bba075391ee63e",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": false,
+      "state": "failed",
+      "reason": "socket hang up"
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": false,
+      "state": "failed",
+      "reason": "socket hang up"
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview",
+        "response_id": "vx1gaqySJeydz7IPw9bRyQo",
+        "source": "ai-peer-mcp/gemini_ask",
+        "answered_at": "2026-07-22T01:32:58.059Z",
+        "tool": "gemini_ask"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "Missing required claude approval packet.",
+      "Missing required codex approval packet."
+    ],
+    "warnings": [
+      "No Grok advisory packet present."
+    ],
+    "provenance": [
+      {
+        "model": "claude",
+        "has_provenance": false,
+        "provider": null,
+        "response_model": null,
+        "response_id": null,
+        "source": null
+      },
+      {
+        "model": "agy",
+        "has_provenance": true,
+        "provider": "local",
+        "response_model": "agy-checkpoint",
+        "response_id": "agy-15e7141f6a01489f53bd564cb0bba075391ee63e",
+        "source": "ai-peer-mcp/agy_checkpoint"
+      },
+      {
+        "model": "codex",
+        "has_provenance": false,
+        "provider": null,
+        "response_model": null,
+        "response_id": null,
+        "source": null
+      }
+    ]
+  },
+  "authorized": false,
+  "authorization": {
+    "status": "NOT_AUTHORIZED",
+    "plan_ref": "sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b",
+    "note": "Fail-closed: see gate blockers and seat decisions."
+  }
+}

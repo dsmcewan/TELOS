@@ -1,0 +1,28 @@
+{
+  "build_id": "daedalus-family-lifecycle-authz-011",
+  "use_case": "multi-model-seats-daedalus-family-lifecycle",
+  "model": "gemini",
+  "role": "advisory",
+  "docs_reviewed": [
+    "docs/superpowers/plans/2026-07-21-daedalus-family-multi-model-seat-lifecycle.md",
+    "docs/superpowers/specs/2026-07-21-daedalus-family-multi-model-seat-lifecycle-design.md"
+  ],
+  "proposal_ref": "sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b",
+  "retry_ref": "sha256:bbdca869177ecf56c39a9d4bae84cc9d3fd7a820aa200527cc36f0d29621367a",
+  "retry_of": "authz-010",
+  "prior_attempt_ref": "sha256:c49747274771ec76a9071d295cf28c982396bc6395ea400aa131d76e71df027c",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-07-22T01:31:35.988Z",
+  "rationale": "The exact unchanged Daedalus-family multi-model-seat lifecycle plan is internally consistent, exhaustively test-driven, and meticulously enforces strict governance boundaries. Its architecture leverages zero-dependency Node ESM primitives to guarantee deterministic disk-only replay, crash-atomic Merkle-DAG journals, closed canonical artifact envelopes, and physically disjoint detached-verifiable export bundles. The explicit pass-or-return failure handling prevents arbitrary state mutation, ensures there are no hidden round caps, and strictly forbids seat substitution. Icarus's read-only mechanics over round checkpoints correctly assert continuity without claiming implementation authority or mutating TELOS workflow definitions. Crucially, the plan distinguishes exactly between model consensus—which drives the internal DAG—and actual authority, reserving explicit exact-root authorization decisions exclusively for The Eye and the existing TELOS required trio (claude/agy/codex), while preserving Grok and Gemini as mandatory solely within internal P2/C2 gates. As this is a no-mutation recovery retry (due to a prior transient ECONNRESET), the pristine state of the candidate ref sha256:88e15cc7b72f19c64c6131fb5bf805f3368723139d0a514232e406b3a056de8b is confirmed as implementation-ready. This approval certifies the exact plan to The Eye; it deliberately grants no implementation authority and authorizes no tasks to begin until an explicitly signed Eye authorization artifact is received.",
+  "provenance": {
+    "provider": "google",
+    "model": "gemini-3.1-pro-preview",
+    "response_id": "vx1gaqySJeydz7IPw9bRyQo",
+    "source": "ai-peer-mcp/gemini_ask",
+    "answered_at": "2026-07-22T01:32:58.059Z",
+    "tool": "gemini_ask"
+  }
+}
