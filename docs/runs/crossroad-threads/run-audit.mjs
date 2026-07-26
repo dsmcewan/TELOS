@@ -33,7 +33,7 @@ const workdir = path.join(here, "workdir");
 const telosDir = path.join(workdir, ".telos");
 const sourceDir = path.join(workdir, "source");
 await mkdir(telosDir, { recursive: true });
-const CHECK_NODE = fileURLToPath(new URL("../../../saas-forge/checks/check-node.mjs", import.meta.url));
+const CHECK_NODE = fileURLToPath(new URL("../../../forge/checks/check-node.mjs", import.meta.url));
 
 const loadJson = (p, fallback) => { try { return JSON.parse(readFileSync(p, "utf8")); } catch { return fallback; } };
 const saveJson = (p, v) => writeFileSync(p, JSON.stringify(v, null, 2) + "\n");
