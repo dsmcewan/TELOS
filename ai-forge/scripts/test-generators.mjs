@@ -6,7 +6,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { generatorDispatch, makePatternGenerators } from "../generators.mjs";
 
-const CHECK_NODE = fileURLToPath(new URL("../checks/check-node.mjs", import.meta.url));
+const CHECK_NODE = fileURLToPath(new URL("../../forge/checks/check-node.mjs", import.meta.url));
 const dir = mkdtempSync(path.join(os.tmpdir(), "aiforge-gen-"));
 
 // generator writes the workstream's files; dispatch returns the signer

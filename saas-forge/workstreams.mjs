@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 import { renderArchitectureMarkdown, stackLibraries, designTools } from "./research.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const CHECK_NODE = path.join(here, "checks", "check-node.mjs");
+const CHECK_NODE = path.join(here, "..", "forge", "checks", "check-node.mjs");
 
 // 1x1 PNG (non-empty) standing in for a rendered verification screenshot.
 const PNG_1x1 = Buffer.from(

@@ -3,7 +3,7 @@
 // machinery consumes these helpers. render/checks take a pattern-supplied ctx.
 import { fileURLToPath } from "node:url";
 
-const CHECK_NODE = fileURLToPath(new URL("./checks/check-node.mjs", import.meta.url));
+const CHECK_NODE = fileURLToPath(new URL("../forge/checks/check-node.mjs", import.meta.url));
 
 export function validatePattern(pattern) {
   const errors = [];
