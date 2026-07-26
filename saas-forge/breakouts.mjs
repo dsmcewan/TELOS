@@ -11,25 +11,10 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { runBreakout } from "../breakout/breakout.mjs";
-import { reverifyRecord } from "../breakout/verifier.mjs";
+import { factBreakout } from "../forge/breakouts.mjs";
 import { WORKSTREAMS } from "./workstreams.mjs";
 
-// Fact challenger/builder for one team. `repair` (optional) regenerates failing
-// artifacts in live mode; offline it is a no-op, so unmet checks honestly survive.
-export function factBreakout({ checks, baseDir, repair }) {
-  return {
-    challenge: () => {
-      const r = reverifyRecord({ checks }, baseDir);
-      if (r.reverifiable === 0) return { blockers: ["no re-verifiable product evidence for this team"] };
-      return { blockers: r.failing.map((f) => f.detail || f.description || f.id) };
-    },
-    revise: async (state, blockers) => {
-      if (typeof repair === "function") await repair(state.workstream, blockers);
-      // Evidence is the artifact on disk; the next challenge re-reads it.
-      return { evidence: state.evidence, resolved: [] };
-    }
-  };
-}
+export { factBreakout };
 
 /**
  * Run every team's breakout against the built project. Returns one record per
@@ -50,7 +35,6 @@ export async function runTeamBreakouts({ baseDir, architecture, maxRounds = 3, m
         evidence: `${ws.id} artifacts: ${ws.files.join(", ")}`, maxRounds },
       fns
     );
-    // Attach the deterministic specs so the gate can independently re-verify.
     records.push({ ...record, checks, lens: ws.lens, signer: ws.signer, isUi: !!ws.isUi, finding: ws.finding, findingsKey: ws.findingsKey });
 
     // Persist the fight log as run evidence: every round's blockers and

@@ -9,27 +9,9 @@
 // verdict is anchored to these checks.
 
 import { runBreakout } from "../breakout/breakout.mjs";
-import { reverifyRecord } from "../breakout/verifier.mjs";
+import { factBreakout } from "../forge/breakouts.mjs";
 
-// Fact challenger/builder for one workstream. `repair` (optional) regenerates
-// failing artifacts in live mode; offline it is a no-op, so unmet checks
-// honestly survive.
-// NOTE: copied verbatim from saas-forge/breakouts.mjs (human-approved Phase A
-// duplication — each forge owns its own copy so the two can diverge independently).
-export function factBreakout({ checks, baseDir, repair }) {
-  return {
-    challenge: () => {
-      const r = reverifyRecord({ checks }, baseDir);
-      if (r.reverifiable === 0) return { blockers: ["no re-verifiable product evidence for this team"] };
-      return { blockers: r.failing.map((f) => f.detail || f.description || f.id) };
-    },
-    revise: async (state, blockers) => {
-      if (typeof repair === "function") await repair(state.workstream, blockers);
-      // Evidence is the artifact on disk; the next challenge re-reads it.
-      return { evidence: state.evidence, resolved: [] };
-    }
-  };
-}
+export { factBreakout };
 
 /**
  * Run every workstream's breakout against the built project. Returns one record
@@ -56,7 +38,6 @@ export async function runPatternBreakouts({ pattern, ctx, baseDir, maxRounds = 3
         evidence: `${ws.id} artifacts: ${ws.files.join(", ")}`, maxRounds },
       fns
     );
-    // Attach the deterministic specs so the gate can independently re-verify.
     records.push({ ...record, checks, lens: ws.lens, signer: ws.signer, isUi: !!ws.isUi, finding: ws.finding, findingsKey: ws.findingsKey });
   }
   return records;
