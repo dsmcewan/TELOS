@@ -56,11 +56,12 @@ export function predict(input) {
   for (const t of toks) { if (POS.has(t)) p++; if (NEG.has(t)) n++; }
   return p > n ? "positive" : "negative";
 }
+const LABELS = new Set(["positive", "negative"]);
 if (isMain && process.argv.includes("--selftest")) {
   const a = DATASET.map((c) => predict(c.input));
   const b = DATASET.map((c) => predict(c.input));
   assert.deepEqual(a, b, "predict is deterministic");
-  assert.equal(a.length, DATASET.length, "total over dataset inputs");
+  assert.ok(a.every((label) => LABELS.has(label)), "total over dataset inputs: every prediction in the closed output set");
   assert.equal(predict("great love"), "positive");
   console.log("target OK");
 }

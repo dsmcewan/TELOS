@@ -163,7 +163,7 @@ const chunks = readFileSync(path.join(here, "chunks.jsonl"), "utf8")
 const dim = ${ctx.embedDim};
 const vectors = chunks.map((c) => ({ id: c.id, docId: c.docId, vec: embed(c.text, dim) }));
 const index = { dim, topK: ${ctx.topK}, vectors };
-writeFileSync(path.join(here, "index.json"), JSON.stringify(index));
+writeFileSync(path.join(here, "index.json"), JSON.stringify(index) + "\\n");
 console.log("index.build: embedded " + vectors.length + " chunks at dim=" + dim);
 `;
   return { "rag/index.build.mjs": build, "rag/index.json": indexJson };
@@ -268,13 +268,21 @@ function renderEvalHarness(ctx) {
   };
   const run = `#!/usr/bin/env node
 // rag/evals/run.mjs — executable eval harness. Recomputes precision@k and
-// faithfulness over the fixed corpus by calling the REAL retrieval, and exits
-// non-zero if either falls below thresholds. This is the workstream's node test.
+// faithfulness over the fixed corpus by calling the REAL retrieval, binds the
+// stored rag/evals/scorecard.json to that recomputation (precision,
+// faithfulness, dataset size, topK, thresholds must match within EPS — a stale
+// or hand-edited scorecard fails closed), and exits non-zero if either metric
+// falls below thresholds. This is the workstream's node test.
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
 import { retrieve } from "../retrieve.mjs";
 
+const here = path.dirname(fileURLToPath(import.meta.url));
 const QUERIES = ${JSON.stringify(ctx.evalQueries)};
 const TOPK = ${ctx.topK};
 const THRESH = ${JSON.stringify(ctx.thresholds)};
+const EPS = 1e-9; // documented epsilon for stored-vs-recomputed numeric comparisons
 
 let hits = 0, grounded = 0;
 for (const q of QUERIES) {
@@ -286,11 +294,37 @@ const precision = hits / QUERIES.length;
 const faithfulness = grounded / QUERIES.length;
 console.log("evals: precision=" + precision.toFixed(3) + " faithfulness=" + faithfulness.toFixed(3)
   + " (need p>=" + THRESH.precision + " f>=" + THRESH.faithfulness + ")");
+
+const scorecard = JSON.parse(readFileSync(path.join(here, "scorecard.json"), "utf8"));
+if (scorecard.n !== QUERIES.length) {
+  console.error("evals FAIL: scorecard.n=" + scorecard.n + " != dataset size " + QUERIES.length);
+  process.exit(1);
+}
+if (scorecard.topK !== TOPK) {
+  console.error("evals FAIL: scorecard.topK=" + scorecard.topK + " != configured topK " + TOPK);
+  process.exit(1);
+}
+if (Math.abs(scorecard.precision - precision) > EPS) {
+  console.error("evals FAIL: scorecard.precision=" + scorecard.precision + " != recomputed " + precision);
+  process.exit(1);
+}
+if (Math.abs(scorecard.faithfulness - faithfulness) > EPS) {
+  console.error("evals FAIL: scorecard.faithfulness=" + scorecard.faithfulness + " != recomputed " + faithfulness);
+  process.exit(1);
+}
+for (const k of Object.keys(THRESH)) {
+  const stored = (scorecard.thresholds || {})[k];
+  if (Math.abs(stored - THRESH[k]) > EPS) {
+    console.error("evals FAIL: scorecard.thresholds." + k + "=" + stored + " != configured " + THRESH[k]);
+    process.exit(1);
+  }
+}
+
 if (precision < THRESH.precision || faithfulness < THRESH.faithfulness) {
   console.error("evals FAIL: below thresholds");
   process.exit(1);
 }
-console.log("evals OK");
+console.log("evals OK (scorecard bound to executable evaluation)");
 `;
   return {
     "rag/evals/scorecard.json": JSON.stringify(scorecard, null, 2) + "\n",

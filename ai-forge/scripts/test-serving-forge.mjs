@@ -41,7 +41,9 @@ const dossierMeta = { build_id: "serving-e2e", idea_id: "serving", use_case: "se
     render: (ctx) => {
       const out = realDesign.render(ctx);
       const md = out["docs/DESIGN.md"];
-      const block = JSON.parse(md.match(/```json\s*([\s\S]*?)```/)[1]).slice(1);
+      const m = md.match(/```json\s*([\s\S]*?)```/);
+      if (!m) throw new Error("test-serving-forge.mjs: no fenced ```json component block in DESIGN.md");
+      const block = JSON.parse(m[1]).slice(1);
       out["docs/DESIGN.md"] = md.replace(/```json\s*[\s\S]*?```/, "```json\n" + JSON.stringify(block, null, 2) + "\n```");
       return out;
     }

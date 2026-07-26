@@ -127,7 +127,7 @@ export const councilWorkstream = componentWorkstream({
 // --- ledger (+ done) --- (ISOLATED tmpdir; never the project .telos)
 function ledgerSelftest(spineRoot) {
   return `import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { generateKeypair, makeRecord, appendLedger } from "${spineRoot}merkle-dag/crypto.mjs";
@@ -135,21 +135,25 @@ import { computePlan, writePlan } from "${spineRoot}merkle-dag/merkle.mjs";
 import { computeDiskTreeHash } from "${spineRoot}merkle-dag/artifact.mjs";
 import { verify } from "${spineRoot}merkle-dag/ledger-gate.mjs";
 const root = mkdtempSync(path.join(os.tmpdir(), "telos-ledger-"));   // ISOLATED — never the forge's .telos
-const telosDir = path.join(root, ".telos");
-mkdirSync(telosDir, { recursive: true });
-writeFileSync(path.join(root, "a.txt"), "hello");
-const kp = generateKeypair();
-const defs = [{ id: "a", files: ["a.txt"], requirements: "r", test: { cmd: "node", args: ["-e", "process.exit(0)"] }, dependencies: [] }];
-const { plan } = computePlan(defs, { authorizedSigners: { codex: kp.publicJwk } });
-writePlan(telosDir, plan);
-const node = plan.nodes.find((n) => n.id === "a");
-const disk = computeDiskTreeHash(node.files, root);
-const rec = makeRecord({ task_id: "a", effective_hash: node.effective_hash, artifact_tree_hash: disk.tree_hash, artifact_files: disk.files }, "codex", kp.privatePem);
-appendLedger(path.join(telosDir, "ledger.jsonl"), rec);
-assert.equal(verify(telosDir, { baseDir: root }).merge_status, "ready", "settled ledger verifies done()");
-writeFileSync(path.join(root, "a.txt"), "TAMPERED");
-assert.notEqual(verify(telosDir, { baseDir: root }).merge_status, "ready", "tampered artifact blocked");
-console.log("telos/ledger selftest OK");
+try {
+  const telosDir = path.join(root, ".telos");
+  mkdirSync(telosDir, { recursive: true });
+  writeFileSync(path.join(root, "a.txt"), "hello");
+  const kp = generateKeypair();
+  const defs = [{ id: "a", files: ["a.txt"], requirements: "r", test: { cmd: "node", args: ["-e", "process.exit(0)"] }, dependencies: [] }];
+  const { plan } = computePlan(defs, { authorizedSigners: { codex: kp.publicJwk } });
+  writePlan(telosDir, plan);
+  const node = plan.nodes.find((n) => n.id === "a");
+  const disk = computeDiskTreeHash(node.files, root);
+  const rec = makeRecord({ task_id: "a", effective_hash: node.effective_hash, artifact_tree_hash: disk.tree_hash, artifact_files: disk.files }, "codex", kp.privatePem);
+  appendLedger(path.join(telosDir, "ledger.jsonl"), rec);
+  assert.equal(verify(telosDir, { baseDir: root }).merge_status, "ready", "settled ledger verifies done()");
+  writeFileSync(path.join(root, "a.txt"), "TAMPERED");
+  assert.notEqual(verify(telosDir, { baseDir: root }).merge_status, "ready", "tampered artifact blocked");
+  console.log("telos/ledger selftest OK");
+} finally {
+  rmSync(root, { recursive: true, force: true });
+}
 `;
 }
 export const ledgerWorkstream = componentWorkstream({
@@ -160,20 +164,24 @@ export const ledgerWorkstream = componentWorkstream({
 // --- breakout (verdict on facts) ---
 function breakoutSelftest(spineRoot) {
   return `import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { reverifyRecord } from "${spineRoot}breakout/verifier.mjs";
 const dir = mkdtempSync(path.join(os.tmpdir(), "telos-verify-"));
-writeFileSync(path.join(dir, "evidence.txt"), "proof");
-// Verdict-on-facts: rebuild a record's declarative checks against disk, confined to dir.
-const present = reverifyRecord({ checks: [{ type: "file_exists", path: "evidence.txt" }] }, dir);
-assert.equal(present.reverifiable, 1, "present evidence -> re-verifiable");
-assert.equal(present.allPass, true, "present evidence -> meets");
-const absent = reverifyRecord({ checks: [{ type: "file_exists", path: "NOPE.txt" }] }, dir);
-assert.equal(absent.allPass, false, "absent evidence -> blocked");
-assert.equal(absent.failing.length, 1, "absent evidence -> one failing fact");
-console.log("telos/verify selftest OK");
+try {
+  writeFileSync(path.join(dir, "evidence.txt"), "proof");
+  // Verdict-on-facts: rebuild a record's declarative checks against disk, confined to dir.
+  const present = reverifyRecord({ checks: [{ type: "file_exists", path: "evidence.txt" }] }, dir);
+  assert.equal(present.reverifiable, 1, "present evidence -> re-verifiable");
+  assert.equal(present.allPass, true, "present evidence -> meets");
+  const absent = reverifyRecord({ checks: [{ type: "file_exists", path: "NOPE.txt" }] }, dir);
+  assert.equal(absent.allPass, false, "absent evidence -> blocked");
+  assert.equal(absent.failing.length, 1, "absent evidence -> one failing fact");
+  console.log("telos/verify selftest OK");
+} finally {
+  rmSync(dir, { recursive: true, force: true });
+}
 `;
 }
 export const breakoutWorkstream = componentWorkstream({

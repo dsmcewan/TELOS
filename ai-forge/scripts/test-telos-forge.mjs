@@ -42,7 +42,9 @@ const dossierMeta = { build_id: "telos-e2e", idea_id: "telos", use_case: "trust-
     render: (ctx) => {
       const out = realDesign.render(ctx);
       const md = out["docs/DESIGN.md"];
-      const block = JSON.parse(md.match(/```json\s*([\s\S]*?)```/)[1]).slice(1); // drop one component
+      const m = md.match(/```json\s*([\s\S]*?)```/);
+      if (!m) throw new Error("test-telos-forge.mjs: no fenced ```json component block in DESIGN.md");
+      const block = JSON.parse(m[1]).slice(1); // drop one component
       out["docs/DESIGN.md"] = md.replace(/```json\s*[\s\S]*?```/, "```json\n" + JSON.stringify(block, null, 2) + "\n```");
       return out;
     }

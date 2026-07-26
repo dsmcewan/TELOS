@@ -16,7 +16,7 @@ export function makeDesignWorkstream(buildWorkstreams) {
     depends_on: [...(w.dependencies || [])]
   }));
 
-  function render() {
+  function render(ctx) {
     const verifySrc = readFileSync(fileURLToPath(new URL("./design-verify.mjs", import.meta.url)), "utf8");
     const block = "```json\n" + JSON.stringify(components, null, 2) + "\n```";
     const edges = components.flatMap((c) => c.depends_on.map((d) => `  ${d} --> ${c.workstream}`));
@@ -33,7 +33,7 @@ export function makeDesignWorkstream(buildWorkstreams) {
     return { "docs/DESIGN.md": md, "docs/design/verify.mjs": verifySrc };
   }
 
-  function checks() {
+  function checks(ctx) {
     return [
       { type: "file_exists", path: "docs/DESIGN.md" },
       { type: "file_exists", path: "docs/design/verify.mjs" },

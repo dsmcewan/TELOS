@@ -28,7 +28,10 @@ assert.equal(block.find((c) => c.workstream === "beta").model, "claude");
 assert.deepEqual(block.find((c) => c.workstream === "beta").depends_on, ["alpha"]);
 assert.equal(block.find((c) => c.workstream === "alpha").artifact, "a/alpha.txt");
 assert.ok(md.includes("```mermaid"), "includes a mermaid diagram");
-for (const h of ["Component boundaries", "Data flow", "Model/infra choices", "Eval plan", "Risks"]) assert.ok(new RegExp("#+\\s*" + h).test(md), "section " + h);
+for (const h of ["Component boundaries", "Data flow", "Model/infra choices", "Eval plan", "Risks"]) {
+  const esc = h.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  assert.ok(new RegExp("(^|\\n)##\\s*" + esc + "(\\n|$)").test(md), "section " + h + " at the exact ## heading level design-verify.mjs enforces");
+}
 
 // surface checks include existence + the 5 section headers
 const checks = ws.checks({});
