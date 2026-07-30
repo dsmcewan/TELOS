@@ -1,0 +1,14 @@
+{
+  "name": "telos-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "TELOS demo page: in-browser verification of committed evidence.",
+  "scripts": {
+    "check": "node --check verify.js && node --check test/verify.test.mjs",
+    "test": "npm run check && node test/verify.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
