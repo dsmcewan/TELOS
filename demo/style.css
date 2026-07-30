@@ -1,0 +1,34 @@
+:root {
+  --bg: #0b0e11;
+  --panel: #12161b;
+  --edge: #232a32;
+  --fg: #d7dde3;
+  --muted: #8b949e;
+  --verified: #3fb950;
+  --blocked: #f85149;
+  --halted: #d29922;
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--mono); line-height: 1.5; }
+main { max-width: 60rem; margin: 0 auto; padding: 2rem 1rem; }
+.evidence-box { background: var(--panel); border: 1px solid var(--edge); border-radius: 6px; padding: 1rem; margin: 1rem 0; overflow-x: auto; }
+.evidence-box h3 { margin: 0 0 .5rem; font-size: .85rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: .15rem .75rem; }
+dt { color: var(--muted); }
+dd { margin: 0; word-break: break-all; }
+dd.editable { cursor: pointer; border-bottom: 1px dashed var(--edge); }
+dd.editable:hover { color: #fff; border-bottom-color: var(--halted); }
+dd.tampered { color: var(--halted); }
+dd input { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--halted); font: inherit; padding: .1rem .3rem; }
+.demo-controls { display: flex; gap: .75rem; margin: 1rem 0; }
+button { background: var(--panel); color: var(--fg); border: 1px solid var(--edge); border-radius: 6px; padding: .5rem 1.25rem; font: inherit; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+#status-panel { border-radius: 6px; padding: .75rem 1rem; display: flex; gap: .75rem; align-items: baseline; }
+#status-panel strong { letter-spacing: .1em; }
+.status-verified { border: 1px solid var(--verified); color: var(--verified); }
+.status-blocked { border: 1px solid var(--blocked); color: var(--blocked); }
+.status-halted { border: 1px solid var(--halted); color: var(--halted); }
+.status-error { border: 1px solid var(--blocked); color: var(--fg); }
+.demo-footnote, .demo-lede { color: var(--muted); font-size: .9rem; }
+code { color: var(--fg); }

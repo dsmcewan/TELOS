@@ -141,4 +141,20 @@ const readArtifact = (name) =>
   }
 }
 
+// ── page structure smoke test (drift guard for the DOM contract) ────────────
+{
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  for (const needle of [
+    'id="evidence-panel"',
+    'id="status-panel"',
+    'id="btn-verify"',
+    'id="btn-reset"',
+    'src="app.js"',
+    'href="style.css"',
+    "docs/runs/fail-closed-demo/run.mjs"
+  ]) {
+    assert.ok(html.includes(needle), `index.html must contain ${needle}`);
+  }
+}
+
 process.stdout.write("verify.test.mjs: all assertions passed\n");

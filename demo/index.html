@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TELOS — evidence over confidence</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <!-- Task 4 adds hero/build-path/proof/footer around this section. -->
+    <section id="tamper-demo" aria-labelledby="demo-heading">
+      <h2 id="demo-heading">Verify the committed evidence</h2>
+      <p class="demo-lede">
+        This ledger entry was signed with Ed25519 by the real TELOS operator and
+        committed to the repository. Your browser verifies it — click any value
+        to tamper with it, then verify again.
+      </p>
+      <div id="evidence-panel" aria-live="polite"></div>
+      <div class="demo-controls">
+        <button id="btn-verify" type="button">Verify</button>
+        <button id="btn-reset" type="button">Reset</button>
+      </div>
+      <div id="status-panel" role="status"></div>
+      <p class="demo-footnote">
+        Seat packets are HMAC-signed — symmetric, so a browser demo of them
+        would be theater. That half of the proof runs on your machine:
+        <code>node docs/runs/fail-closed-demo/run.mjs</code>
+      </p>
+    </section>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
