@@ -12,7 +12,6 @@ on:
 
 jobs:
   claude:
-    # Only run when @claude is mentioned (or an issue is assigned to Claude)
     if: |
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
@@ -20,11 +19,11 @@ jobs:
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
-      issues: write
+      contents: read
+      pull-requests: read
+      issues: read
       id-token: write
-      actions: read
+      actions: read # Required for Claude to read CI results on PRs
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,11 +31,20 @@ jobs:
           fetch-depth: 1
 
       - name: Run Claude Code
+        id: claude
         uses: anthropics/claude-code-action@v1
         with:
-          # Authenticate with the Claude subscription (Max), NOT metered API credits.
-          # Mint with `claude setup-token` and store as the CLAUDE_CODE_OAUTH_TOKEN repo secret.
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # Responds to @claude mentions in issues and PR comments.
-          # Add `claude_args` to pass CLI options, e.g.:
-          # claude_args: "--max-turns 10 --model claude-sonnet-4-6"
+
+          # This is an optional setting that allows Claude to read CI results on PRs
+          additional_permissions: |
+            actions: read
+
+          # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
+          # prompt: 'Update the pull request description to include a summary of changes.'
+
+          # Optional: Add claude_args to customize behavior and configuration
+          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
+          # or https://code.claude.com/docs/en/cli-reference for available options
+          # claude_args: '--allowed-tools Bash(gh pr *)'
+
