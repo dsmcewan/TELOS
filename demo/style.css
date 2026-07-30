@@ -32,3 +32,16 @@ button:hover { border-color: var(--muted); }
 .status-error { border: 1px solid var(--blocked); color: var(--fg); }
 .demo-footnote, .demo-lede { color: var(--muted); font-size: .9rem; }
 code { color: var(--fg); }
+#hero { margin: 1rem 0 3rem; }
+.hero-kicker { color: var(--muted); letter-spacing: .35em; text-transform: uppercase; margin: 0 0 .5rem; }
+#hero h1 { font-size: 1.6rem; line-height: 1.35; margin: 0 0 1rem; font-weight: 600; }
+.hero-sub { color: var(--muted); max-width: 46rem; }
+.hero-links { display: flex; gap: 1rem; align-items: center; }
+a { color: #58a6ff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+section { margin: 3rem 0; }
+h2 { font-size: 1.1rem; letter-spacing: .05em; }
+#build-path img { max-width: 100%; height: auto; }
+pre { background: var(--panel); border: 1px solid var(--edge); border-radius: 6px; padding: .75rem 1rem; overflow-x: auto; }
+.proof-output code { color: var(--muted); }
+footer { border-top: 1px solid var(--edge); margin-top: 3rem; padding-top: 1rem; color: var(--muted); font-size: .85rem; }

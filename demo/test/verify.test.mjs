@@ -151,7 +151,13 @@ const readArtifact = (name) =>
     'id="btn-reset"',
     'src="app.js"',
     'href="style.css"',
-    "docs/runs/fail-closed-demo/run.mjs"
+    "docs/runs/fail-closed-demo/run.mjs",
+    'id="hero"',
+    'id="build-path"',
+    'id="run-the-proof"',
+    'src="build-path.svg"',
+    "https://github.com/dsmcewan/TELOS",
+    "rubber-stamp its own mistakes"
   ]) {
     assert.ok(html.includes(needle), `index.html must contain ${needle}`);
   }

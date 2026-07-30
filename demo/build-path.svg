@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 170" role="img"
+     aria-label="TELOS governed build path: idea to plan DAG, to model seats, to deterministic gate, to The Eye">
+  <style>
+    .box { fill: #12161b; stroke: #232a32; rx: 6; }
+    .label { fill: #d7dde3; font: 13px ui-monospace, Menlo, Consolas, monospace; text-anchor: middle; }
+    .sub { fill: #8b949e; font: 11px ui-monospace, Menlo, Consolas, monospace; text-anchor: middle; }
+    .arrow { stroke: #8b949e; stroke-width: 1.5; marker-end: url(#head); }
+  </style>
+  <defs>
+    <marker id="head" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8" fill="none" stroke="#8b949e"/>
+    </marker>
+  </defs>
+  <rect class="box" x="10"  y="55" width="150" height="60"/>
+  <text class="label" x="85"  y="80">idea + telos</text>
+  <text class="sub"   x="85"  y="98">goal / contract</text>
+  <rect class="box" x="200" y="55" width="150" height="60"/>
+  <text class="label" x="275" y="80">plan DAG</text>
+  <text class="sub"   x="275" y="98">hashed, immutable</text>
+  <rect class="box" x="390" y="55" width="160" height="60"/>
+  <text class="label" x="470" y="80">model seats</text>
+  <text class="sub"   x="470" y="98">claude · agy · codex</text>
+  <rect class="box" x="590" y="55" width="160" height="60"/>
+  <text class="label" x="670" y="80">deterministic gate</text>
+  <text class="sub"   x="670" y="98">disk + signatures</text>
+  <rect class="box" x="790" y="55" width="120" height="60"/>
+  <text class="label" x="850" y="80">The Eye</text>
+  <text class="sub"   x="850" y="98">human authority</text>
+  <line class="arrow" x1="160" y1="85" x2="196" y2="85"/>
+  <line class="arrow" x1="350" y1="85" x2="386" y2="85"/>
+  <line class="arrow" x1="550" y1="85" x2="586" y2="85"/>
+  <line class="arrow" x1="750" y1="85" x2="786" y2="85"/>
+</svg>
