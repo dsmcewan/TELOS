@@ -78,8 +78,8 @@ gets the whole thesis.
 
 Node script importing `createOperator` from `forge/operator.mjs` exactly as
 `docs/runs/fail-closed-demo/run.mjs` does. Runs the operator segment of the
-fail-closed proof's scenario (an in-bounds action is proposed and its decision
-recorded to the ledger) and writes:
+fail-closed proof's scenario (an out-of-bounds action is proposed, never
+executed, and its needs-human decision is recorded to the ledger) and writes:
 
 - `demo/artifacts/ledger.json` — real Ed25519-signed decision entries;
 - `demo/artifacts/public-key.jwk.json` — the public JWK only, no private
@@ -93,8 +93,11 @@ page fetches only what is on disk. Regeneration is a manual run-and-commit.
 ### Browser verification — `demo/verify.js`
 
 Zero-dependency ES module. The canonicalization function is a line-for-line
-port of `build-gate/sign.mjs`'s `canonicalize` (sorted keys, signature
-stripped), guarded by a Node parity test so it cannot drift. Ed25519 via
+port of `forge/operator.mjs`'s `canonical`/`entryBytes` (sorted keys, `sig`
+stripped) — the routine the ledger signer actually uses. Parity is proven
+end-to-end rather than by string comparison: a Node test creates a fresh
+operator, signs real decisions, and requires the ported verifier to accept
+them — byte-level drift in the port makes signature verification fail. Ed25519 via
 `crypto.subtle.importKey`/`crypto.subtle.verify`; digests via
 `crypto.subtle.digest`. If the browser lacks Ed25519 WebCrypto support, the
 page says so explicitly and shows the local one-liner — fail-closed
