@@ -105,4 +105,40 @@ try {
   rmSync(workdir, { recursive: true, force: true });
 }
 
+// ── committed artifacts must verify (guards artifact drift/corruption) ──────
+const artifactsDir = new URL("../artifacts/", import.meta.url);
+const readArtifact = (name) =>
+  JSON.parse(readFileSync(new URL(name, artifactsDir), "utf8"));
+
+{
+  const ledger = readArtifact("ledger.json");
+  const publicJwk = readArtifact("public-key.jwk.json");
+  const bound = readArtifact("record.json");
+
+  assert.ok(Array.isArray(ledger) && ledger.length >= 1, "ledger.json must be a non-empty array");
+  for (const rec of ledger) {
+    assert.deepEqual(
+      await verifyDecision(rec, publicJwk, subtle),
+      { ok: true, reason: "ok" },
+      "every committed ledger record must verify"
+    );
+    assert.equal(rec.outcome, "needs-human", "scenario decision must be needs-human");
+  }
+  assert.deepEqual(
+    await verifyDigest(bound.record, bound.digest, subtle),
+    { ok: true, reason: "ok" },
+    "committed record digest must verify"
+  );
+  // Single-field tamper on committed artifacts must fail.
+  const t1 = { ...ledger[0], signer: ledger[0].signer + "-tampered" };
+  assert.equal((await verifyDecision(t1, publicJwk, subtle)).reason, "invalid-signature");
+  const t2 = { ...bound.record, resolution: "self-approved" };
+  assert.equal((await verifyDigest(t2, bound.digest, subtle)).reason, "digest-mismatch");
+  // No private material anywhere in artifacts.
+  for (const name of ["ledger.json", "public-key.jwk.json", "record.json"]) {
+    const text = readFileSync(new URL(name, artifactsDir), "utf8");
+    assert.ok(!/PRIVATE KEY|"d"\s*:/.test(text), `${name} must contain no private material`);
+  }
+}
+
 process.stdout.write("verify.test.mjs: all assertions passed\n");

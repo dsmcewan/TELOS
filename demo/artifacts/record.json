@@ -1,0 +1,23 @@
+{
+  "record": {
+    "id": "nh-ms743m5r-k4x2y8",
+    "at": "2026-07-30T06:07:45.903Z",
+    "question": "Rule overspend wants update_budget({\"campaign_id\":\"fixture-campaign\",\"daily_budget_cents\":2501}) but: daily_budget_cents 2501 over cap 2000",
+    "context": {
+      "rule": "overspend",
+      "action": "update_budget",
+      "args": {
+        "campaign_id": "fixture-campaign",
+        "daily_budget_cents": 2501
+      },
+      "snapshot_summary": {
+        "source": "demo-artifact-generation"
+      }
+    },
+    "resolution": null
+  },
+  "digest": {
+    "alg": "SHA-256",
+    "value": "9d1ae140cadfc0ec3c9151c17120f3fedb725d37744b86286fbe872b73d2d212"
+  }
+}
