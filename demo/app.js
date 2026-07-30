@@ -38,6 +38,7 @@ function renderObject(container, obj, path) {
       dd.setAttribute("role", "button");
       dd.addEventListener("click", () => beginEdit(dd, [...path, key]));
       dd.addEventListener("keydown", (e) => {
+        if (e.target !== dd) return;
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); beginEdit(dd, [...path, key]); }
       });
     }
