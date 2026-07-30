@@ -35,6 +35,7 @@ export async function verifyDecision(record, publicJwk, subtle = globalThis.cryp
   const sig = record?.sig;
   if (!sig || typeof sig.value !== "string") return { ok: false, reason: "missing-signature" };
   if (sig.alg !== "Ed25519") return { ok: false, reason: "unsupported-alg" };
+  if (sig.signed_fields !== "all-minus-sig") return { ok: false, reason: "unsupported-signed-fields" };
   let key;
   try {
     key = await subtle.importKey("jwk", publicJwk, { name: "Ed25519" }, false, ["verify"]);

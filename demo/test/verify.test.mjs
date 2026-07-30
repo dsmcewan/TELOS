@@ -101,6 +101,14 @@ try {
     await verifyDecision({ ...record, sig: undefined }, op.publicJwk, subtle),
     { ok: false, reason: "missing-signature" }
   );
+  assert.deepEqual(
+    await verifyDecision(
+      { ...record, sig: { ...record.sig, signed_fields: "nothing-at-all" } },
+      op.publicJwk,
+      subtle
+    ),
+    { ok: false, reason: "unsupported-signed-fields" }
+  );
 } finally {
   rmSync(workdir, { recursive: true, force: true });
 }
@@ -134,6 +142,8 @@ const readArtifact = (name) =>
   assert.equal((await verifyDecision(t1, publicJwk, subtle)).reason, "invalid-signature");
   const t2 = { ...bound.record, resolution: "self-approved" };
   assert.equal((await verifyDigest(t2, bound.digest, subtle)).reason, "digest-mismatch");
+  const t3 = { ...ledger[0], sig: { ...ledger[0].sig, signed_fields: "nothing-at-all" } };
+  assert.equal((await verifyDecision(t3, publicJwk, subtle)).reason, "unsupported-signed-fields");
   // No private material anywhere in artifacts.
   for (const name of ["ledger.json", "public-key.jwk.json", "record.json"]) {
     const text = readFileSync(new URL(name, artifactsDir), "utf8");

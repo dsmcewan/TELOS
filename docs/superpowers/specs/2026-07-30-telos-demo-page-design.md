@@ -141,9 +141,10 @@ demo/
 `demo/test/verify.test.mjs`, run under Node and added to the CI package
 matrix like every other TELOS package suite:
 
-1. **Canonicalize parity** — the browser-port `canonicalize` output equals
-   `build-gate/sign.mjs`'s for a set of fixture objects (nested, arrays,
-   key-order permutations).
+1. **End-to-end signer parity** — a test creates a real operator via
+   `forge/operator.mjs`, signs decisions with it, and the ported verifier
+   must accept them; any byte-level drift in the canonicalization port fails
+   verification.
 2. **Committed artifacts verify** — signature and digest checks pass against
    the committed files using Node crypto.
 3. **Tampered copies fail** — single-field mutations of each artifact fail

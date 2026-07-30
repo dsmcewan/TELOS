@@ -35,7 +35,11 @@ function renderObject(container, obj, path) {
       dd.tabIndex = 0;
       dd.className = "editable";
       dd.title = "Click to tamper with this field";
+      dd.setAttribute("role", "button");
       dd.addEventListener("click", () => beginEdit(dd, [...path, key]));
+      dd.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); beginEdit(dd, [...path, key]); }
+      });
     }
     dl.append(dt, dd);
   }
@@ -43,6 +47,7 @@ function renderObject(container, obj, path) {
 }
 
 function beginEdit(dd, path) {
+  if (dd.querySelector("input")) return;
   const input = document.createElement("input");
   input.value = dd.textContent;
   dd.replaceChildren(input);
