@@ -114,8 +114,8 @@ const wv = (edges) => {
 {
   const manifest = JSON.parse(readFileSync(path.join(ROOT, "lachesis/config/snapshot-manifest.json"), "utf8"));
   const w = loadWeave(manifest, ROOT);
-  ok(w.edges.length === 4463, `golden: 4463 edges (${w.edges.length})`);
-  ok(w.nodes.size === 1067, `golden tally: 1067 distinct nodes (${w.nodes.size})`);
+  ok(w.edges.length === 4554, `golden: 4554 edges (${w.edges.length})`);
+  ok(w.nodes.size === 1097, `golden tally: 1097 distinct nodes (${w.nodes.size})`);
   const dependsOn = w.edges.filter((x) => x.edge_kind === "depends-on").length;
   ok(dependsOn === 1741, `golden tally: 1741 depends-on edges (${dependsOn})`);
   const indeg = new Map();
