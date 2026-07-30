@@ -20,7 +20,7 @@
       "id": "excluded-roots",
       "query": "Which package.json directories are excluded from the weave?",
       "answer_kind": "set",
-      "expected": ["ai-forge", "ai-native-memory", "forge", "narcissus/flagship", "saas-forge"],
+      "expected": ["ai-forge", "ai-native-memory", "demo", "forge", "narcissus/flagship", "saas-forge"],
       "authority_anchor": { "decision": "AM-40", "contract": "clotho/memory/CONTRACTS/package-roots.json" }
     },
     {
