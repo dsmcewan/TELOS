@@ -1,0 +1,21 @@
+[
+  {
+    "kind": "ops-decision",
+    "at": "2026-07-30T06:07:45.904Z",
+    "signer": "telos-demo",
+    "rule": "overspend",
+    "action": "update_budget",
+    "args": {
+      "campaign_id": "fixture-campaign",
+      "daily_budget_cents": 2501
+    },
+    "outcome": "needs-human",
+    "inbox_id": "nh-ms743m5r-k4x2y8",
+    "reason": "daily_budget_cents 2501 over cap 2000",
+    "sig": {
+      "alg": "Ed25519",
+      "value": "Qnc0Df7+1vZOQJUzikZ6EPvyRu9O7BP6Xm0eFq446akg2Kr2wCfCNxQ4d5OoZeVJRJWsMMPn+etJRFmEhITjDA==",
+      "signed_fields": "all-minus-sig"
+    }
+  }
+]

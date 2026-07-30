@@ -8,7 +8,7 @@
   "non_claims_read": ["not-a-js-parser", "no-loader-containment"],
   "answers": {
     "package-roots": ["atropos", "breakout", "build-gate", "clotho", "connectors/ai-peer-mcp", "lachesis", "merkle-dag"],
-    "excluded-roots": ["ai-forge", "ai-native-memory", "forge", "narcissus/flagship", "saas-forge"],
+    "excluded-roots": ["ai-forge", "ai-native-memory", "demo", "forge", "narcissus/flagship", "saas-forge"],
     "excluded-reason": "filesystem-proximity-does-not-establish-architectural-membership",
     "new-package-behavior": "fails-classification-test-until-explicitly-assigned",
     "loader-containment": false

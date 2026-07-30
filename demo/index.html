@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TELOS — evidence over confidence</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header id="hero">
+      <p class="hero-kicker">TELOS</p>
+      <h1>An AI agent that grades its own work can rubber-stamp its own mistakes.</h1>
+      <p class="hero-sub">
+        TELOS separates generation from certification: models may propose,
+        implement, and review, but merge-readiness comes from disk evidence,
+        content hashes, signatures, and provenance — not a model's self-report.
+      </p>
+      <p class="hero-links">
+        <a href="https://github.com/dsmcewan/TELOS">Repository</a>
+        <a href="https://github.com/dsmcewan/TELOS/actions/workflows/ci.yml">
+          <img src="https://github.com/dsmcewan/TELOS/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+      </p>
+    </header>
+
+    <section id="tamper-demo" aria-labelledby="demo-heading">
+      <h2 id="demo-heading">Verify the committed evidence</h2>
+      <p class="demo-lede">
+        This ledger entry was signed with Ed25519 by the real TELOS operator and
+        committed to the repository. Your browser verifies it — click any value
+        to tamper with it, then verify again.
+      </p>
+      <div id="evidence-panel" aria-live="polite"></div>
+      <div class="demo-controls">
+        <button id="btn-verify" type="button">Verify</button>
+        <button id="btn-reset" type="button">Reset</button>
+      </div>
+      <div id="status-panel" role="status"></div>
+      <p class="demo-footnote">
+        Seat packets are HMAC-signed — symmetric, so a browser demo of them
+        would be theater. That half of the proof runs on your machine:
+        <code>node docs/runs/fail-closed-demo/run.mjs</code>
+      </p>
+    </section>
+
+    <section id="build-path" aria-labelledby="build-path-heading">
+      <h2 id="build-path-heading">The governed build path</h2>
+      <img src="build-path.svg" alt="TELOS governed build path: idea to plan DAG, to model seats, to deterministic gate, to The Eye" width="920" height="170">
+      <p>
+        Plans are compiled and content-hashed before any seat sees them. The
+        required council (claude, agy, codex) signs approval packets bound to
+        those hashes. A deterministic gate — not a model — certifies
+        <code>merge_status: "ready"</code> from disk. Acceptance and merge stay
+        with The Eye, a human.
+      </p>
+    </section>
+
+    <section id="run-the-proof" aria-labelledby="proof-heading">
+      <h2 id="proof-heading">Run the real proof</h2>
+      <p>
+        Your browser just verified what it honestly can. Your machine can verify
+        the rest — from a fresh clone, no install, no API key, no network:
+      </p>
+      <pre><code>node docs/runs/fail-closed-demo/run.mjs</code></pre>
+      <pre class="proof-output"><code>BLOCKED  tampered required-seat packet: signature invalid
+HALTED   out-of-bounds action: not executed; needs-human recorded
+VERIFIED HMAC gate + Ed25519 decision ledger; tamper rejected</code></pre>
+    </section>
+
+    <footer>
+      <p>Node ≥18 · zero runtime dependencies · MIT ·
+        <a href="https://github.com/dsmcewan/TELOS">github.com/dsmcewan/TELOS</a></p>
+    </footer>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

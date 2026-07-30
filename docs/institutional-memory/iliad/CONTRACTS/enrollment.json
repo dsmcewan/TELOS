@@ -107,6 +107,7 @@
   "deferred_pending_conscious_enrollment": [
     "ai-forge",
     "ai-native-memory",
+    "demo",
     "forge",
     "narcissus/flagship",
     "saas-forge"
