@@ -422,10 +422,12 @@ npm --prefix narcissus/flagship run test:e2e
 
 ## Provenance
 
-TELOS is human-directed and developed with multiple model seats. The repository
-dogfoods its own deterministic review, evidence, signature, negative-control,
-and institutional-memory mechanisms; generated text or code is still data, not
-authority or certification.
+TELOS is architected and governed by Drason McEwan (**The Eye**); the required
+model seats — `claude`, `agy`, `codex` — and the advisory seats — `grok`,
+`gemini` — collaborate under the deterministic gate described above. The
+repository dogfoods its own deterministic review, evidence, signature,
+negative-control, and institutional-memory mechanisms; generated text or code
+is still data, not authority or certification.
 
 The project began inside a larger multi-model vault. This repository now
 contains standalone executable packages and committed evidence, while live
