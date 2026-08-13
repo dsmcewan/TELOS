@@ -19,6 +19,8 @@ held by **The Eye**.
 
 Core packages: **Node ≥18 · zero runtime dependencies · MIT**
 
+**Live demo:** [dsmcewan.github.io/TELOS](https://dsmcewan.github.io/TELOS/) verifies the committed Ed25519 evidence in your browser, including the signed needs-human record that halted an over-cap ads-budget action.
+
 ## Two-minute fail-closed proof
 
 From a fresh clone—no install, API key, service, or network access:
@@ -422,9 +424,12 @@ npm --prefix narcissus/flagship run test:e2e
 
 ## Provenance
 
-TELOS is architected and governed by Drason McEwan (**The Eye**); the required
-model seats — `claude`, `agy`, `codex` — and the advisory seats — `grok`,
-`gemini` — collaborate under the deterministic gate described above. The
+TELOS is architected and governed by Drason McEwan, who holds **The Eye**.
+The required seats (`claude`, `agy`, `codex`) and advisory seats (`grok`,
+`gemini`) collaborate under the deterministic gate described above. Seat
+fallibility is kept as committed evidence, not cleaned up: see the confident
+domain hallucination from a live `gemini` seat preserved verbatim in
+[docs/runs/plugin-seats/summary.json](docs/runs/plugin-seats/summary.json). The
 repository dogfoods its own deterministic review, evidence, signature,
 negative-control, and institutional-memory mechanisms; generated text or code
 is still data, not authority or certification.
