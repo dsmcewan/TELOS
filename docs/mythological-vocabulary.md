@@ -53,3 +53,9 @@ blame or credit land on a component that did nothing (chat-rendering corruption 
 unless Hermes handled that transport path). That is the content-address rule one layer up — a mutable
 label standing where an identity belongs. A name drifting from its referent is the same defect whether
 it keys an enforcement decision or an attribution.
+
+Note on Narcissus: the shipped `narcissus/flagship` package is a product
+built under the Narcissus banner and enrolled as such in the Iliad registry;
+the Narcissus *role* above (the reflection-loop module) remains
+registered-unimplemented. The enrollment registry and `verify-contracts`
+keep the two distinct.
