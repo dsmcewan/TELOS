@@ -22,7 +22,7 @@ can bind a packet to the response that produced it (never a self-declared id):
 
 This is a scaffold. It does not include API keys.
 
-It is wired into `C:\Users\dsmce\.codex\config.toml` as `mcp_servers.ai_peer`. Restart Codex after changing environment variables so the app can launch the MCP server with the right credentials.
+It is wired into `<codex-config-dir>\config.toml` (on Windows, typically `%USERPROFILE%\.codex\config.toml`) as `mcp_servers.ai_peer`. Restart Codex after changing environment variables so the app can launch the MCP server with the right credentials.
 
 ## Requirements
 
@@ -87,12 +87,12 @@ Use this command in an MCP client configuration (repo-relative):
 node "connectors\ai-peer-mcp\server.mjs"
 ```
 
-The current Codex config entry uses:
+Example Codex config entry (Windows, repo cloned under `<repo-root>`):
 
 ```toml
 [mcp_servers.ai_peer]
 command = 'node.exe'
-args = ['C:\Users\dsmce\OneDrive\Attachments\Desktop\V4\me\codex\connectors\ai-peer-mcp\server.mjs']
+args = ['<repo-root>\connectors\ai-peer-mcp\server.mjs']
 startup_timeout_sec = 120
 
 [mcp_servers.ai_peer.env]
