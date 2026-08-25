@@ -1,126 +1,109 @@
 # TELOS — Engineering Portfolio Brief
 
-## What I built
+> **Hiring-manager path:** TELOS is the governance/agent-systems project in this portfolio. The main README is the technical reference; this page explains the engineering signal quickly.
 
-TELOS is a verification-first governance system for AI-mediated engineering work. It separates proposing work, reviewing it, establishing authority, implementing it, and accepting it so no model or agent can promote its own output simply by asserting confidence.
+## What it solves
 
-The core design principle is:
+TELOS is a verification-first governance system for AI-mediated engineering work. It keeps five events separate: **proposal, review, authorization, implementation, and acceptance**.
+
+The governing rule is:
 
 > **An assertion cannot supply the evidence required to promote itself.**
 
-TELOS asks an upstream question that runtime policy systems usually assume has already been answered:
+An agent can propose work. A model can review it. Neither action, by itself, creates authority.
 
-> **What evidence justifies granting this work authority to proceed?**
+## Why I built it
 
-## The engineering problem
+Agentic development makes it easy for the same probabilistic system to propose a change, critique it, revise it, and then declare itself ready. That can look like independent review while remaining one correlated reasoning path.
 
-Agentic development systems can generate plans and code rapidly, but speed creates an authority problem. A model can propose a change, critique it, revise it, and then confidently declare it ready. If those stages share the same unverified context, apparent review can collapse into self-confirmation.
+TELOS turns promotion into a verifiable state transition. Required review evidence is attributable, bound to exact artifacts, checked deterministically, and preserved in an authority history that distinguishes **what was once valid** from **what governs new work now**.
 
-TELOS makes promotion an externally verifiable state transition.
-
-Independent review seats produce attributable evidence packets. Deterministic gates validate required approvals, edits, hard stops, provenance, reviewed documentation, proposal lifecycle state, and optional capability/readiness controls. Authorization is bound to an exact plan/artifact hash rather than a filename or narrative description.
-
-## Architecture at a glance
+## Core architecture
 
 ```text
 proposal / plan
       ↓
 independent review seats
       ↓
-provenance-bound evidence packets
+authenticated + provenance-bound evidence
       ↓
-deterministic verification gate
+deterministic gate
       ↓
-explicit authorization
+AUTHORIZED | NOT_AUTHORIZED
       ↓
-separate implementation authority
+separate human implementation authority
       ↓
-implementation slices + acceptance
+implementation + independent verification
       ↓
-institutional authority / lineage record
+acceptance / merge remain separate decisions
 ```
 
-The system preserves prior decisions rather than rewriting history. A previously valid authorization can remain historically authentic while being explicitly superseded and prohibited from governing new work.
+## Concrete engineering mechanisms
 
-## What this demonstrates
+- **Content-addressed plans and artifacts** — decisions bind to hashes, not mutable labels.
+- **Required independent seats** — missing or dissenting required review blocks progression.
+- **Authenticated review packets** — signatures/HMAC and provenance are verified before evidence is trusted.
+- **Deterministic gates** — disk state, signatures, hashes, tests, and lifecycle records decide readiness.
+- **Fail-closed behavior** — missing, malformed, stale, or contradictory evidence blocks instead of being inferred around.
+- **Merkle-DAG / dependency lineage** — downstream state can be tied to the exact upstream artifacts it depends on.
+- **Ed25519 decision ledger** — settlement records are tamper-evident and independently verifiable.
+- **Supersession** — an older authorization can remain historically authentic while being prohibited from governing new work.
+- **Separation of duties** — review, authorization, implementation authority, acceptance, and merge are not collapsed into one actor.
+- **Institutional memory** — `CURRENT-AUTHORITY.json` provides a machine-readable answer to “what governs new work now?”
 
-- **AI governance architecture** — proposal, review, authorization, implementation, and acceptance are separate responsibilities.
-- **Multi-provider orchestration** — independent model seats contribute attributable review rather than a single model grading itself.
-- **Deterministic gates** — machine-verifiable artifacts, not conversational confidence, decide whether work may advance.
-- **Cryptographic provenance** — signed review material and content hashes bind decisions to specific artifacts and producers.
-- **Merkle-DAG / lineage thinking** — governance artifacts preserve dependency relationships so downstream authority can be tied to the exact evidence and prior state from which it derives.
-- **Fail-closed behavior** — missing or invalid required evidence becomes a blocker rather than an invitation to infer intent.
-- **Supersession** — historical authorization and current governing authority are modeled as different facts.
-- **Institutional memory** — the repository maintains a machine-readable answer to what governs new work now.
-- **Human authority boundaries** — implementation authority remains distinct from model recommendation and gate verification.
-- **Extensible assurance** — capability, market-readiness, protected-path, proposal-lifecycle, and evidence controls can be evaluated without turning model output into authority.
+## Proof points in the repository
 
-## Code worth reviewing
+- `node docs/runs/fail-closed-demo/run.mjs` demonstrates signature-tamper rejection and a halted out-of-bounds action without API keys or network access.
+- The core packages run on **Node 18+ with zero runtime dependencies**.
+- `build-gate/gate.mjs` enforces required seats, signatures, provenance, reviewed evidence, and lifecycle constraints.
+- `CURRENT-AUTHORITY.json` records active authority, accepted slices, amendments, and superseded authorities.
+- `merkle-dag/` provides the content-addressed execution substrate.
+- `contracts/` and `AI-START-HERE.md` document the governed operating model and load order.
 
-| Area | File / directory | Why it matters |
-|---|---|---|
-| Deterministic gate | `build-gate/gate.mjs` | Enforces required seats, approval state, edits/stops, authenticated evidence, provenance, documentation review, and optional assurance controls. |
-| Proposal lifecycle | `build-gate/proposal-gate.mjs` | Reconstructs and validates proposal state rather than trusting caller-supplied status. |
-| Review council | `build-gate/council.mjs` | Coordinates independent review seats. |
-| Evidence | `build-gate/evidence.mjs` | Handles evidence used by the governance path. |
-| Concerns | `build-gate/concerns.mjs` | Represents and normalizes concerns instead of burying them in free-form model prose. |
-| Orchestration | `build-gate/build-orchestrator.mjs` | Connects the governed build workflow. |
-| Current authority | `CURRENT-AUTHORITY.json` | Machine-readable active plan, authorization, implementation authority, amendments, accepted slices, and superseded authorities. |
-| Governance contracts | `contracts/` | Defines proposal lifecycle and multi-model build-gate behavior. |
+## Best code-review entry points
 
-## Why the Merkle-DAG / provenance model matters
+| Area | Start here |
+| --- | --- |
+| Deterministic approval gate | `build-gate/gate.mjs` |
+| Proposal lifecycle | `build-gate/proposal-gate.mjs` |
+| Council / review routing | `build-gate/council.mjs` |
+| Evidence handling | `build-gate/evidence.mjs` |
+| Typed concerns / blockers | `build-gate/concerns.mjs` |
+| Governed build orchestration | `build-gate/build-orchestrator.mjs` |
+| Current institutional authority | `CURRENT-AUTHORITY.json` |
+| Architecture map | `repository-manifest.json` |
 
-A signature answers:
+## Boundary discipline
 
-> Who authenticated this artifact?
+TELOS is strongest when it stays focused on **earning engineering authority**. It is not trying to become a secrets manager, IAM product, or per-tool runtime sandbox.
 
-A content hash answers:
-
-> Is this still the exact artifact that was reviewed?
-
-A governance dependency graph answers:
-
-> **Which exact evidence, reviews, amendments, and prior authority did this decision depend on?**
-
-That distinction matters because engineering governance is not naturally linear. An authorization can depend on several independent reviews and evidence artifacts, later produce multiple implementation slices, and eventually be superseded without erasing the historical record.
-
-## What TELOS is — and is not
-
-TELOS is primarily an **authority-formation and engineering-governance layer**.
-
-It does not need to become every adjacent control system. Runtime credential isolation, per-tool execution policy, portable capability tokens, and infrastructure sandboxing can sit downstream of the authority TELOS establishes.
-
-A clean boundary is:
+A downstream runtime can consume the authority TELOS establishes:
 
 ```text
-evidence
-   ↓
-TELOS: has this work earned authority?
-   ↓
-scoped delegation / capability
-   ↓
-runtime guard: may this action occur now?
-   ↓
-executor
+evidence → TELOS authority → scoped delegation → runtime guard → executor
 ```
+
+That keeps governance of *why work may proceed* separate from runtime enforcement of *whether this exact action may happen now*.
+
+## What this demonstrates to an employer
+
+TELOS is evidence of work in:
+
+- AI systems and agent architecture
+- deterministic controls around probabilistic systems
+- multi-model / multi-seat orchestration
+- provenance and cryptographic verification
+- content-addressed data structures
+- fail-closed workflow design
+- policy and lifecycle modeling
+- separation of duties
+- testing and adversarial verification
+- turning governance requirements into executable software rather than documentation alone
 
 ## Relevant roles
 
-This project is representative of work in:
+AI Systems Engineer · Forward-Deployed Engineer · Agentic AI Engineer · AI Assurance / Evaluation Engineer · AI Governance Engineer · Developer Platform Engineer · AI Security / Trust Engineering
 
-- AI Systems Engineering
-- Agentic AI Engineering
-- AI Governance / Responsible AI Engineering
-- AI Assurance and Evaluation
-- Forward-Deployed Engineering
-- Developer Platform Engineering
-- AI Security Architecture
-- Technical Product Incubation
+## Portfolio connection
 
-## Design philosophy
-
-TELOS and Convergence solve different problems using the same systems principle:
-
-> **Generation may propose. Promotion requires independent evidence.**
-
-Convergence applies that principle to whether a claim becomes a finding. TELOS applies it to whether proposed work earns authority.
+**Convergence asks when evidence has earned a finding. TELOS asks when evidence has earned authority.** Both use the same underlying rule: generation may propose; promotion requires independent proof.
