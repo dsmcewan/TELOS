@@ -3,6 +3,7 @@
 // "WebGL is paint, never truth" invariant, made structural.
 import { createMachine, assign } from "xstate";
 import { STATION_COUNT, STATIONS } from "./stations";
+import { downloadEvidence } from "./export";
 
 export interface FlagshipContext {
   stationIndex: number;
@@ -108,8 +109,22 @@ export const flagshipMachine = createMachine({
         return { timeScrub: v, stationIndex: v, evidenceOpen: false, threadPulled: false };
       }),
     },
-    EXPORT: { actions: assign(({ context }) => ({ exports: context.exports + 1 })) },
-    RESET: { actions: assign(() => ({ ...initialContext })) },
+    EXPORT: {
+      actions: [
+        assign(({ context }) => ({ exports: context.exports + 1 })),
+        // A real export: the affordance downloads the verifiable surface it advertises.
+        ({ context }) => downloadEvidence(context),
+      ],
+    },
+    RESET: {
+      // RESET restores the STORY, not the viewer: reduced-motion (possibly derived
+      // from the OS prefers-reduced-motion at boot) and theme survive a reset.
+      actions: assign(({ context }) => ({
+        ...initialContext,
+        reducedMotion: context.reducedMotion,
+        theme: context.theme,
+      })),
+    },
     ENTER_GRAPH: { actions: assign({ view: "graph", evidenceOpen: false }) },
     EXIT_GRAPH: { actions: assign({ view: "story", selectedNodeId: null }) },
     SELECT_NODE: { actions: assign(({ event }) => ({ selectedNodeId: (event as { id: string }).id })) },

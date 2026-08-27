@@ -1,6 +1,11 @@
 // Deterministic functional blade. Exercises EVERY command in the closed registry (coverage == inventory)
 // through the DOM-shadowed controls, under ?e2e=1 (seeded, pinned). WebGL is never touched — the DOM is truth.
+import { readFileSync } from "node:fs";
 import { test, expect, Page } from "@playwright/test";
+
+// readFileSync (not an import): the generated JSON is data the assertions bind
+// to, and Node's ESM loader would demand an import attribute for a JSON import.
+const graph = JSON.parse(readFileSync(new URL("../../src/live-graph.json", import.meta.url), "utf8"));
 
 const open = async (page: Page) => {
   await page.goto("/?e2e=1");
@@ -63,8 +68,18 @@ test("SCRUB_TIME moves the station via the timeline", async ({ page }) => {
   expect(await progress(page)).toBe("04 / 06");
 });
 
-test("EXPORT increments the export counter", async ({ page }) => {
+test("EXPORT downloads the evidence payload and increments the counter", async ({ page }) => {
+  await page.getByTestId("cmd-NEXT_STATION").click();
+  const downloadPromise = page.waitForEvent("download");
   await page.getByTestId("cmd-EXPORT").click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("narcissus-evidence.json");
+  const payload = JSON.parse(readFileSync((await download.path()) as string, "utf8"));
+  expect(payload.station.index).toBe(1);
+  expect(payload.context.stationIndex).toBe(1);
+  expect(payload.live_graph.snapshot).toBe(graph.generated_from_snapshot);
+  expect(payload.evidence_ledger.length).toBeGreaterThan(0);
+  expect(payload.evidence_ledger[0]).toHaveProperty("blob_sha");
   await expect(page.getByTestId("cmd-EXPORT")).toContainText("Export (1)");
 });
 
@@ -75,12 +90,30 @@ test("RESET returns to the first station", async ({ page }) => {
   expect(await progress(page)).toBe("01 / 06");
 });
 
+test("RESET restores the story but preserves motion and theme preferences", async ({ page }) => {
+  await page.getByTestId("cmd-TOGGLE_MOTION").click();
+  await page.getByTestId("cmd-TOGGLE_THEME").click();
+  await page.getByTestId("cmd-NEXT_STATION").click();
+  await page.getByTestId("cmd-RESET").click();
+  expect(await progress(page)).toBe("01 / 06");
+  await expect(page.getByTestId("cmd-TOGGLE_MOTION")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByTestId("cmd-TOGGLE_THEME")).toHaveAttribute("aria-pressed", "true");
+  expect(await page.evaluate(() => document.documentElement.getAttribute("data-motion"))).toBe("reduced");
+  expect(await page.evaluate(() => document.documentElement.getAttribute("data-theme"))).toBe("light");
+});
+
 test("ENTER_GRAPH / EXIT_GRAPH switch to the live weave and back, with the compounding citation", async ({ page }) => {
   await page.getByTestId("cmd-ENTER_GRAPH").click();
   const cite = page.getByTestId("compound-citation");
   await expect(cite).toBeVisible();
   await expect(cite).toContainText("Lachesis"); // measured by Lachesis
   await expect(cite).toContainText("Atropos"); // verified by Atropos
+  // The HUD's tension-point label and blast radius are BOUND to the generated
+  // data, never literals — a regenerated graph can no longer desync the copy.
+  const top = [...graph.measured_by_lachesis.top_by_blast_radius].sort((a, b) => b.blast_radius - a.blast_radius)[0];
+  const hud = page.locator(".hud-sub");
+  await expect(hud).toContainText(top.label);
+  await expect(hud).toContainText(`(${top.blast_radius})`);
   await page.getByTestId("cmd-EXIT_GRAPH").click();
   await expect(page.getByTestId("station-title")).toBeVisible();
 });
