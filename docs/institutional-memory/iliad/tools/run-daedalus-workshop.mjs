@@ -23,7 +23,6 @@ const ROOT = path.resolve(HERE, "../../../..");
 const imp = (rel) => import(pathToFileURL(path.join(ROOT, rel)).href);
 const { runDaedalusWorkshop } = await imp("build-gate/daedalus.mjs");
 const { canonicalize, sha256hex } = await imp("merkle-dag/vendor.mjs");
-const seatModule = await imp("connectors/ai-peer-mcp/server.mjs");
 
 // ---- args ---------------------------------------------------------------------
 const args = { specs: [], maxTokens: 30000, smoke: false };
@@ -34,8 +33,16 @@ for (let i = 0; i < argv.length; i++) {
   else if (argv[i] === "--out") args.out = argv[++i];
   else if (argv[i] === "--max-tokens") args.maxTokens = Number(argv[++i]);
   else if (argv[i] === "--smoke") args.smoke = true;
+  else if (argv[i] === "--seats") args.seats = argv[++i];
   else throw new Error(`unknown arg: ${argv[i]}`);
 }
+
+// Seat transport: default = ai-peer-mcp (HTTP, API-key/bearer). --seats swaps in
+// an alternate module exporting the same askClaude/askCodex surface (e.g.
+// docs/institutional-memory/iliad/tools/cli-seats.mjs — OAuth CLI seats, per the
+// Eye's 2026-08-27 all-model-calls-over-OAuth directive). Provenance fields
+// record whichever transport actually answered.
+const seatModule = await imp(args.seats || "connectors/ai-peer-mcp/server.mjs");
 if (!args.candidate || !args.out || args.specs.length === 0) {
   throw new Error("usage: --candidate <md> --spec <path> [--spec ...] --out <dir> [--smoke]");
 }
@@ -114,7 +121,7 @@ async function liveCallSeat({ seat, role, candidateBody, openMenu }) {
     plan_revision: typeof parsed.plan_revision === "string" ? parsed.plan_revision : "",
     objections: Array.isArray(parsed.objections) ? parsed.objections : [],
     dispositions: Array.isArray(parsed.dispositions) ? parsed.dispositions : [],
-    provenance: { provider, model: r.model, response_id: r.id, source: `ai-peer-mcp/${seat === "claude" ? "claude_ask" : "codex_ask"}` }
+    provenance: { provider, model: r.model, response_id: r.id, source: `${args.seats ? "cli-seats" : "ai-peer-mcp"}/${seat === "claude" ? "claude_ask" : "codex_ask"}` }
   };
 }
 
