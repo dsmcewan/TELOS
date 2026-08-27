@@ -169,6 +169,10 @@ jobs:
         working-directory: narcissus/flagship
         run: npm test
 
+      - name: Enforce the unit-coverage floor
+        working-directory: narcissus/flagship
+        run: npm run test:unit:coverage
+
       - name: Verify evidence pins and command coverage
         working-directory: narcissus/flagship
         run: |
