@@ -1,0 +1,55 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:acf4740182284d065124def6b6bdca322df8925a09b694d66eb3ad4b1f2e7feb",
+  "output_plan_artifact_hash": "sha256:acf4740182284d065124def6b6bdca322df8925a09b694d66eb3ad4b1f2e7feb",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:63382ef619eb2da752a6835dae9b34a59a7145f53859b566a417cd021c11eb5d",
+    "provenance_key": "anthropic:1e148930-5ccc-4872-a139-763e6c168751"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:449ff22420c1fbdf81790bec360164a3a4dcf023cb1e15e4c7b914f7e8e3c94d",
+    "provenance_key": "openai:01a04502-a5e9-7c61-9e6d-a226c08fd458",
+    "bound_hash": "sha256:ac15ceb806e7903a9cd5b40a243cf1bd1a36f447e5b5537f22da26f99665f0ca"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach/E2",
+      "claim": "The proposed external trust anchor is not actually external in pull-request CI: `github.sha` identifies a Git object whose tree is controlled by the PR author. An attacker can rewrite the source, expected answer, answer, and authority files, push the resulting commit, and thereby cause CI to supply the attacker's new SHA as the anchor. The fixed-anchor regression would pass while the deployed CI mechanism remains self-authorizing.",
+      "objection_hash": "sha256:ac16d323db5c845dcbfb905d9d3e9420d72c03ac19f71b8d59f2ccedf0c1a9b9",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach/E6",
+      "claim": "Allowing a distinct negative flag or negative npm script does not establish oracle discrimination. An oracle can ignore all governed inputs, return zero normally, and return nonzero only for `--self-check-negative`; it satisfies the proposed runner without detecting any real violation. The negative case must mutate the governed input and rerun the identical production code path.",
+      "objection_hash": "sha256:0a49709a1b6757f8c552128343b3ab55df49af3ac01cba4a3ab08a558cdbbe48",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach/release-signing",
+      "claim": "`git verify-tag` against a public key read from the tagged tree is circular authentication. A consistently rewritten commit can contain an attacker's public key and a tag signed by the matching private key. The expected signer fingerprint or equivalent trust root must be supplied from a protected out-of-tree authority and checked using an isolated verifier keyring.",
+      "objection_hash": "sha256:93c004a989e7eefa4dd0b98071f001b552d9176de956959d56d280b027404912",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach/archive-identity",
+      "claim": "The archive-mode integrity oracle conflates a Git tree SHA with a content hash over a tarball manifest even though `RELEASE-IDENTITY.json` is injected after `git archive`. As written, the promised comparison and generic tampered-identity failure are not sound, and offline self-consistency cannot authenticate publisher provenance. The design must separately reconstruct Git object hashes for tracked payload, manifest generated files, and rely on an externally verified checksum/attestation for authenticity.",
+      "objection_hash": "sha256:4fe67bfe0cd3c4cdbc8a367b2a9524b4696e627cb9bdf3ac9860b0063108767d",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

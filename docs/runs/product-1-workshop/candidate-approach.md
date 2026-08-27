@@ -85,23 +85,33 @@ per-file designs are in the approved plan; acceptance criteria here.
   from somewhere the tree-writer cannot reach): the gate takes a REQUIRED
   external anchor input `--trust-anchor <git-commit-sha>` (or
   `PYLAE_TRUST_ANCHOR`), supplied by the INVOKING CONTEXT and never read
-  from the authenticated tree — in CI, the workflow passes the event's
-  trusted commit SHA (`github.sha`, fixed by the triggering push/PR head
-  before any tree content is read); at release, the signed annotated tag's
-  target commit; locally, the operator passes an explicit commit (typically
-  a verified tag). The gate resolves CURRENT-AUTHORITY and every admissible
-  source AT THAT COMMIT via git object lookup (`git cat-file` on
-  `<anchor>:<path>`; blob equality against the working file) — a working-tree
-  file that differs from the anchored blob ⇒ DENIED `anchor-mismatch`; anchor
-  absent/unresolvable ⇒ DENIED `anchor-unavailable` (fail closed, never a
-  warning). Rewriting the whole in-tree chain consistently now requires
-  forging a new commit AND changing what the external context supplies —
-  outside the attacker's write surface. **Accept**: lockstep mutation of
-  source+expected+answer with a fixed anchor ⇒ DENIED anchor-mismatch;
+  from the authenticated tree. The anchor must be a PROTECTED ref the
+  change-author cannot write: in PR CI it is the PROTECTED BASE BRANCH head
+  (`github.event.pull_request.base.sha`) — NEVER `github.sha`, which in PR
+  context is the attacker's own commit and would make the gate
+  self-authorizing; on main-push CI, the pushed commit is acceptable only
+  because the branch protection + required checks already gate what reaches
+  main, and this is stated, not assumed; at release, the signed annotated
+  tag's target commit (whose signature the release gate verifies against
+  the out-of-tree fingerprint below); locally, an operator-supplied commit
+  (typically a verified tag). The gate resolves CURRENT-AUTHORITY and every
+  admissible source AT THE ANCHOR via git object lookup (`git cat-file` on
+  `<anchor>:<path>`; blob equality against the working file) — a working
+  file differing from the anchored blob ⇒ DENIED `anchor-mismatch`. When
+  the CHANGE UNDER REVIEW itself modifies authority-chain files, the gate
+  does not self-authorize the new chain: it reports DENIED
+  `authority-modified-in-change` naming the files, routing the change to
+  the required-review path (council/human merge review on the protected
+  branch) — the gate's honest claim is that it prevents authority tampering
+  OUTSIDE the reviewed change-control path, and that scope is written into
+  the spec. Anchor absent/unresolvable ⇒ DENIED `anchor-unavailable` (fail
+  closed, never a warning). **Accept**: lockstep mutation of
+  source+expected+answer in a PR (anchor = base head) ⇒ DENIED
+  anchor-mismatch or authority-modified-in-change — never GRANTED;
   mutation of only the source ⇒ DENIED stale; unanchored source file ⇒
   DENIED source-unanchored; missing anchor ⇒ DENIED anchor-unavailable;
   escape/symlink authority path ⇒ DENIED; dogfood self-gate (anchored at
-  HEAD) stays GRANTED.
+  a clean HEAD) stays GRANTED.
 - **E3 auditor full-taxonomy + no-clean-on-zero, EXCEPTIONLESS** (`ai-native-memory/scripts/audit.mjs`).
   Root-as-memory-dir (marker predicate, root arg only); zero discovered sets ⇒
   exit 2 unless `--allow-empty`; validate all 8 record kinds via `RECORD_SET_LAYOUT`;
@@ -151,28 +161,35 @@ per-file designs are in the approved plan; acceptance criteria here.
   timeout, nonzero/timeout/unrunnable ⇒ FAIL (distinct codes: oracle-missing /
   oracle-unrunnable / oracle-failed / oracle-timeout). Because a
   constant-success program passes any run-only check, every `file` oracle
-  MUST also declare a NEGATIVE CASE — `oracle.executable.negative`: an
-  invocation (same file, a documented violating fixture/flag, e.g.
-  `--self-check-negative` handing the oracle a planted violation) that is
-  REQUIRED TO EXIT NONZERO; run-oracles executes both, and a negative case
-  that exits 0 ⇒ FAIL `oracle-nondiscriminating` (this generalizes the
-  repo's existing mutate-then-expect-failure pattern from the clotho
-  flagship-expectation tests). `npm-script` entries are EXECUTED DIRECTLY by
-  run-oracles, exactly like file entries — `npm run <script> --prefix
-  <package-dir>` under the same per-entry timeout, nonzero ⇒ FAIL — and each
-  must likewise declare a negative case (a script or flag invocation required
-  to exit nonzero) checked in the same run; mere presence of the package in
-  the CI matrix proves nothing and is NOT accepted as coverage. `evidence-dir`
+  MUST also declare a MUTATION-BASED NEGATIVE CASE —
+  `oracle.executable.negative: {mutate: {file, patch|kind}, expect:
+  "nonzero"}`. A special flag or alternate script is NOT acceptable (an
+  oracle could hardcode nonzero for the flag while never inspecting its
+  governed inputs): run-oracles copies the governed input set into a temp
+  sandbox, applies the declared mutation (a planted violation of exactly
+  the property the record claims), and re-runs the IDENTICAL production
+  invocation — same argv, same entrypoint, no special mode — against the
+  mutated inputs; that run is REQUIRED TO EXIT NONZERO, else FAIL
+  `oracle-nondiscriminating`. This is the clotho flagship-expectation
+  mutate-then-expect-failure pattern made mandatory. `npm-script` entries
+  are EXECUTED DIRECTLY by run-oracles, exactly like file entries — `npm
+  run <script> --prefix <package-dir>` under the same per-entry timeout,
+  nonzero ⇒ FAIL — with the same mutation-based negative case (sandbox-copy
+  the package's governed inputs, mutate, re-run the identical script);
+  mere presence of the package in the CI matrix proves nothing and is NOT
+  accepted as coverage. `evidence-dir`
   entries require the dir non-empty with at least one content-addressed
   record. Wired as a step
   in the institutional-memory CI job. **Accept**: a synthetic NORMATIVE
   record whose oracle file exits 1 ⇒ run-oracles FAIL; a constant-success
-  oracle (exit 0 on both positive and negative invocation) ⇒ FAIL
-  oracle-nondiscriminating; a present-but-timeout oracle ⇒ FAIL; an
-  npm-script oracle whose declared script exits 0 on its negative case ⇒ FAIL
-  oracle-nondiscriminating; backfill complete
-  (every backfilled file oracle carries a working negative case);
-  verify-contracts + run-oracles green in CI.
+  oracle (exit 0 unchanged AND exit 0 on the mutated sandbox) ⇒ FAIL
+  oracle-nondiscriminating; an oracle that ignores its governed inputs but
+  special-cases a flag ⇒ still FAILS (the negative re-runs the identical
+  argv, no flag exists to special-case); a present-but-timeout oracle ⇒
+  FAIL; an npm-script whose identical re-run exits 0 on the mutated sandbox
+  ⇒ FAIL oracle-nondiscriminating; backfill complete (every backfilled
+  oracle carries a working mutation-based negative case); verify-contracts +
+  run-oracles green in CI.
 
 ## 3. Governance ceremony (ONE combined live council — Eye ruling: Option A)
 
@@ -246,17 +263,32 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   TWO EXPLICIT INSTALL MODES (a `git archive` tarball has no `.git`, so
   checkout semantics must not be assumed there): the release build writes
   `RELEASE-IDENTITY.json` — `{tag, commit_sha, tree_sha, product_version,
-  source: "release.yml"}`, values fixed by the tag so the double-pack
-  reproducibility check still byte-matches — into the tarball root.
+  source: "release.yml", generated_files: {"RELEASE-IDENTITY.json": null,
+  …: "<sha256>"}}`, values fixed by the tag so the double-pack
+  reproducibility check still byte-matches — into the tarball root AFTER
+  `git archive` (it is NOT part of the git tree, and the design says so).
   - CHECKOUT MODE (`.git` present): doctor runs the full battery incl.
     full-git-history; `pylae version` reports live HEAD (provenance:
     "checkout"). If RELEASE-IDENTITY.json is ALSO present, doctor
     cross-checks it against HEAD (mismatch ⇒ fail identity-drift).
-  - ARCHIVE MODE (no `.git`, RELEASE-IDENTITY.json present): doctor
-    validates the identity file's schema + tree consistency (recomputes the
-    extracted tree's content hash over the tarball manifest and compares to
-    `tree_sha`) and SKIPS git-history checks, reporting them as
-    "not-applicable: archive install" — never silently passing them;
+  - ARCHIVE MODE (no `.git`, RELEASE-IDENTITY.json present): doctor performs
+    a real GIT-OBJECT reconstruction, keeping the two hash domains separate:
+    (a) TRACKED PAYLOAD — every extracted file except those named in
+    `generated_files` — is hashed as git BLOB objects
+    (`sha1/sha256("blob <len>\0"+content)` per the repo's object format) and
+    the TREE OBJECT is rebuilt bottom-up (names, modes, subtrees exactly as
+    git encodes them); the reconstructed root tree id must equal `tree_sha`,
+    else fail `tree-mismatch`. (b) GENERATED FILES (injected post-archive)
+    are verified against the plain sha256 digests recorded for them in
+    `generated_files` (the identity file itself is covered by (c), not
+    self-hashed). (c) AUTHENTICITY IS NOT CLAIMED OFFLINE: (a)+(b) prove
+    SELF-CONSISTENCY only — a forger can regenerate all of it — and doctor's
+    output says exactly that, pointing to the authenticity step: verifying
+    the whole tarball's digest against the externally published SHA256SUMS +
+    `gh attestation verify` provenance for the release (`pylae verify
+    --attestation <bundle>` performs it when reachable; the offline result
+    is labeled "self-consistent, publisher-unverified"). Git-history checks
+    are reported "not-applicable: archive install" — never silently passed;
     `pylae version` reports the EMBEDDED identity, explicitly labeled
     (provenance: "release-archive"). No mode invents provenance.
   - NEITHER (`.git` absent and no identity file) ⇒ doctor FAILS
@@ -267,7 +299,11 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   report the embedded identity) there, and run `pylae verify
   --offline-checks` (the archive-mode subset); any spawn of a file outside
   the extracted root ⇒ fail. **Accept**: clean-room job green from tarball
-  alone in archive mode; tampered RELEASE-IDENTITY.json ⇒ doctor fails
+  alone in archive mode; tampered tracked payload ⇒ doctor fails
+  tree-mismatch (reconstructed git root tree ≠ tree_sha); tampered generated
+  file ⇒ generated-digest mismatch; doctor's offline verdict is labeled
+  "self-consistent, publisher-unverified" (no authenticity claim); tampered
+  identity-file tree_sha ⇒ doctor fails
   tree-mismatch; stripped identity file ⇒ doctor fails unprovenanced-install;
   deleting a spawned helper from the tarball ⇒ clean-room job fails
   (packaging omission is detected, not shipped).
@@ -284,12 +320,24 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   freshness/heads_equal; CI job wording stops claiming "records == reality";
   release runs exact-head. run.mjs is NOT woven (safe).
 - **Signed release pipeline** `release.yml`, fail-closed end to end:
-  (1) GATE: tag object must be ANNOTATED and its SIGNATURE VERIFIED in CI —
-  the release-signing PUBLIC key is committed at
-  `docs/institutional-memory/product/KEYS/release-signing.pub` and the gate job
-  runs `git verify-tag` against exactly that key (unknown/unsigned/unverifiable
-  ⇒ abort); required-CI check-run asserted at the tag SHA; local verify battery
-  incl. `--verify-committed --exact-head`.
+  (1) GATE: tag object must be ANNOTATED and its SIGNATURE VERIFIED in CI
+  against an OUT-OF-TREE trust root (an in-tree public key is circular — a
+  rewritten commit can carry the attacker's key plus a matching tag): the
+  EXPECTED SIGNER FINGERPRINT lives in a protected GitHub Actions
+  repository/environment VARIABLE (`RELEASE_SIGNER_FINGERPRINT`, writable
+  only by repo admins through Settings — not by any PR or push), documented
+  in RELEASING.md with the rotation ceremony (rotation = an admin Settings
+  change + a signed changelog entry, never a tree edit). The gate job builds
+  an ISOLATED verifier keyring (empty GNUPGHOME) containing only key
+  material whose computed fingerprint EQUALS the protected variable — the
+  in-tree `docs/institutional-memory/product/KEYS/release-signing.pub` is
+  convenience distribution, imported ONLY if its fingerprint matches, else
+  abort `key-fingerprint-mismatch`; then runs `git verify-tag` against that
+  keyring (unknown/unsigned/unverifiable/wrong-key ⇒ abort); variable unset
+  ⇒ abort fail-closed. Required-CI check-run asserted at the tag SHA; local
+  verify battery incl. `--verify-committed --exact-head`. **Accept**: a tag
+  signed by a key whose fingerprint differs from the protected variable ⇒
+  gate aborts even when the tree's committed .pub matches the tag's signer.
   (2) BUILD: `npm pack` the cli TWICE and byte-compare the tarball digests
   (reproducibility check — a mismatch aborts and any irreducible
   nondeterminism must be recorded in RELEASING.md before release); source
