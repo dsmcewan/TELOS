@@ -142,7 +142,7 @@ The complete package classification comes from
 | Boundary | Current members | Status |
 | --- | --- | --- |
 | Enrolled TELOS spine | `atropos`, `breakout`, `build-gate`, `clotho`, `connectors/ai-peer-mcp`, `lachesis`, `merkle-dag` | Implemented and consciously enrolled |
-| Products beside the spine | `ai-forge`, `ai-native-memory`, `forge`, `narcissus/flagship`, `saas-forge` | Implemented; Iliad enrollment deferred |
+| Products beside the spine | `ai-forge`, `ai-native-memory`, `demo`, `forge`, `narcissus/flagship`, `saas-forge` | Implemented; Iliad enrollment deferred |
 | Active role/capability modules | Daedalus, TELOS, Argo, The Iliad, `loadout` | Protocol/code/run lineage; no autonomous role services |
 | Registered future roles | [Hermes, Medusa, Narcissus](docs/mythological-vocabulary.md#registered-terms) | Meanings reserved; unimplemented |
 
@@ -380,6 +380,7 @@ npm --prefix ai-native-memory run check
 npm --prefix ai-native-memory test
 npm --prefix lachesis test
 npm --prefix atropos test
+npm --prefix demo test
 ```
 
 Flagship pipeline under Node 22+:
