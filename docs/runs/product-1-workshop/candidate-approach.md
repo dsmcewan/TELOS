@@ -39,34 +39,40 @@ calls (OAuth subscription CLIs).
 Each carries a fail-closed regression test that reproduces the defect. Full
 per-file designs are in the approved plan; acceptance criteria here.
 
-- **E1 Hestia merge attestation** (`workflows/hestia.js` + a NEW deterministic
-  attestor). Two layers, with the deterministic layer authoritative:
-  (i) IN-WORKFLOW (advisory hardening): bind `pr_url` → `{owner,repo,number}`
-  (regex, unparseable ⇒ excluded+reported); capture `head_sha` (40-hex) at push;
-  merge via `gh api -X PUT .../merge -f sha={head}` (server-enforced
-  expected-head guard; 409 ⇒ `head-moved`, never retry-fresh); an independent
-  read-only `verify:merge` agent + field-by-field gate (ordered fail-closed
+- **E1 Hestia merge authorization + attestation** (`workflows/hestia.js` + a
+  NEW deterministic pre-merge controller). THE MODEL NEVER MERGES — fail-closed
+  means the protected branch is not mutated until a deterministic check passes,
+  so authorization is pre-merge and machine-executed, attestation post-merge:
+  (i) IN-WORKFLOW (evidence production only, NO merge credential): agents run
+  with a read-only token (no `repo` write); bind `pr_url` → `{owner,repo,
+  number}` (regex, unparseable ⇒ excluded+reported); capture `head_sha`
+  (40-hex) at push; an independent read-only `verify:merge` agent +
+  field-by-field gate produce the candidate evidence set (ordered fail-closed
   checks: merge-verify-missing, ship-blocked, merge-not-confirmed,
-  merged-despite-blocked, foreign-repo, head-sha-mismatch, merge-sha-mismatch).
-  (ii) DETERMINISTIC ATTESTOR (the merge truth — no model in the loop): new
-  `workflows/tools/attest-merges.mjs`, plain zero-dep node, takes the workflow's
-  structured output and re-queries `gh api` DIRECTLY over the FULL attempt
-  surface, not just `shipped[]`: every entry in `fix_gate.shipped`,
-  `fix_gate.excluded`, `residue_gate.blocked`, AND — to catch attempts the
-  workflow under-reported entirely — every branch the run's fix agents pushed
-  (enumerated from each repo via `gh api repos/{o}/{r}/pulls?state=all&head=…`
-  for the run's recorded branch names, plus PRs updated in the run's time
-  window). For each: `{pr, merged, merge_commit_sha, head_sha, verified_by:
-  "gh-api-direct"}`. ANY merged PR that the workflow did not certify as
-  confirmed (including excluded/blocked/omitted ones) ⇒ exit 2
-  `unattested-merge`; any divergence from `merge_gate` ⇒ exit 2 with the diff.
-  The workflow's return documents that `merged[]` is advisory and the attestor
-  is authoritative.
-  **Accept**: 8 adversarial in-workflow fixtures pass; attestor test suite:
-  colluding-agents fixture (ship+verify both fabricate the same merged/sha —
-  in-workflow gate passes, ATTESTOR catches it against a stub gh returning open),
-  API-truth mismatch ⇒ exit 2, clean run ⇒ attestation emitted; `merged` =
-  confirmed-only; workflows CI job runs both suites green.
+  foreign-repo, head-sha-mismatch). The workflow's output is a MERGE REQUEST
+  dossier, not a merge.
+  (ii) DETERMINISTIC PRE-MERGE CONTROLLER (the sole holder of merge
+  credentials): new `workflows/tools/merge-controller.mjs`, plain zero-dep
+  node, run AFTER the workflow. For each requested PR it INDEPENDENTLY
+  re-derives eligibility from `gh api` ground truth (PR open, base repo/branch
+  expected, head_sha equals the dossier's, required checks green at that head,
+  not blocked by residue_gate), then — only on pass — performs the SOLE merge
+  via `gh api -X PUT .../merge -f sha={head}` (server-enforced expected-head
+  guard; 409 ⇒ `head-moved`, never retry-fresh). Any ineligible request ⇒
+  exit 2 BEFORE any mutation. It then POST-ATTESTS over the FULL attempt
+  surface: every dossier entry (shipped/excluded/blocked) AND every branch
+  the run's fix agents pushed (`gh api repos/{o}/{r}/pulls?state=all&head=…`
+  for recorded branch names, plus PRs updated in the run's window); any
+  merged PR the controller did not itself merge ⇒ exit 2 `unattested-merge`
+  (detects credential leakage/out-of-band merges). Attestation
+  `{pr, merged, merge_commit_sha, head_sha, verified_by: "gh-api-direct",
+  merged_by: "merge-controller"}`.
+  **Accept**: adversarial fixtures pass; controller suite: colluding-agents
+  fixture (ship+verify fabricate the same merged/sha — controller re-derives
+  from a stub gh returning open and refuses to merge, exit 2, NO mutation);
+  ineligible-PR fixture ⇒ refused pre-merge; out-of-band-merge fixture ⇒
+  unattested-merge; clean run ⇒ merged + attestation; workflow agents' token
+  fixture proves no merge scope; workflows CI job runs both suites green.
 - **E2 ai-native-memory gate freshness + AUTHORITY-CHAINED sources** (`ai-native-memory/scripts/gate.mjs`).
   Extract `scripts/lib/freshness.mjs` (byte-stable audit findings); gate
   re-derives every query `expected` from `derived_from` at gate time (REQUIRED;
@@ -99,27 +105,50 @@ per-file designs are in the approved plan; acceptance criteria here.
   `<anchor>:<path>`; blob equality against the working file) — a working
   file differing from the anchored blob ⇒ DENIED `anchor-mismatch`. When
   the CHANGE UNDER REVIEW itself modifies authority-chain files, the gate
-  does not self-authorize the new chain: it reports DENIED
-  `authority-modified-in-change` naming the files, routing the change to
-  the required-review path (council/human merge review on the protected
-  branch) — the gate's honest claim is that it prevents authority tampering
-  OUTSIDE the reviewed change-control path, and that scope is written into
-  the spec. Anchor absent/unresolvable ⇒ DENIED `anchor-unavailable` (fail
+  does not self-authorize the new chain AND the transition has a
+  DETERMINISTIC, SIGNED path (prose review alone is not a mechanism):
+  an AUTHORITY-TRANSITION RECORD — a signed artifact in the change,
+  `{old_chain_root: <digest at the base anchor>, new_chain_root: <digest of
+  the proposed chain>, transition_id, signatures[]}` — signed by the
+  required council seats under the SAME trust machinery the build-gate
+  already enforces (`trust_mode: "signed"` HMAC packets; verification keys/
+  secrets anchored OUTSIDE the tree — env/protected variables — never in
+  the mutated chain). The gate, still anchored at the protected base,
+  verifies: old_chain_root matches what the base anchor actually yields,
+  new_chain_root matches the proposed files byte-for-byte, and every
+  required signature validates ⇒ GRANTED `authority-transition` (the
+  transition itself is the authorized object). Missing/invalid record ⇒
+  DENIED `authority-modified-in-change` naming the files. Merging a denied
+  change requires overriding a required check — visible, not silent — and
+  the spec states this residual honestly: branch protection is the
+  enforcement backstop for overrides. Anchor absent/unresolvable ⇒ DENIED `anchor-unavailable` (fail
   closed, never a warning). **Accept**: lockstep mutation of
   source+expected+answer in a PR (anchor = base head) ⇒ DENIED
-  anchor-mismatch or authority-modified-in-change — never GRANTED;
+  anchor-mismatch or authority-modified-in-change — never GRANTED; a
+  legitimate authority change carrying a valid signed transition record
+  (verified against out-of-tree keys, old root = base truth) ⇒ GRANTED
+  authority-transition; the same record with any signature invalid or
+  old_chain_root not matching base ⇒ DENIED;
   mutation of only the source ⇒ DENIED stale; unanchored source file ⇒
   DENIED source-unanchored; missing anchor ⇒ DENIED anchor-unavailable;
   escape/symlink authority path ⇒ DENIED; dogfood self-gate (anchored at
   a clean HEAD) stays GRANTED.
 - **E3 auditor full-taxonomy + no-clean-on-zero, EXCEPTIONLESS** (`ai-native-memory/scripts/audit.mjs`).
   Root-as-memory-dir (marker predicate, root arg only); zero discovered sets ⇒
-  exit 2 unless `--allow-empty`; validate all 8 record kinds via `RECORD_SET_LAYOUT`;
+  exit 2, NO ESCAPE HATCH — there is no `--allow-empty` (or any equivalent
+  flag): an audit that discovers nothing can NEVER exit 0 or print a clean
+  status, in any invocation. Exploratory listing of an empty root is served
+  by a separate `--inventory` mode that only enumerates and ALWAYS exits
+  nonzero when zero record sets are found (its output is a report, never a
+  pass verdict), keeping the authoritative path structurally incapable of
+  the blocker-5 bypass. Validate all 8 record kinds via `RECORD_SET_LAYOUT`;
   md decisions = front-matter enum only (AM-40/41/42 pass unchanged — pinned
   bytes never touched). Legacy nonconforming records (atropos/lachesis cycle-1
   decision.json) SUPERSEDED with new content-addressed records — no allowlist
   (Eye: exceptionless). **Accept**: dogfood green after in-plugin content fix;
-  enumerated newly-failing inventory in the PR body; supersessor records validate.
+  an empty root exits 2 under EVERY flag combination (asserted by iterating
+  the full flag matrix in the test); enumerated newly-failing inventory in
+  the PR body; supersessor records validate.
 - **E4 gate production profile — DEFAULT FLIP** (`build-gate/gate.mjs`). After the
   `signed` flag: `profile==="production" && !signed` ⇒ blocker; `production &&
   allow_unsigned` ⇒ blocker; `!signed && !allow_unsigned` ⇒ blocker (unsigned/
@@ -177,9 +206,15 @@ per-file designs are in the approved plan; acceptance criteria here.
   nonzero ⇒ FAIL — with the same mutation-based negative case (sandbox-copy
   the package's governed inputs, mutate, re-run the identical script);
   mere presence of the package in the CI matrix proves nothing and is NOT
-  accepted as coverage. `evidence-dir`
-  entries require the dir non-empty with at least one content-addressed
-  record. Wired as a step
+  accepted as coverage. The `evidence-dir` variant is REMOVED as an oracle
+  kind (nonempty-dir is not a discriminating check): records whose claim is
+  backed by an evidence directory instead declare a `file` oracle pointing
+  at a shared deterministic validator
+  (`docs/institutional-memory/validate-evidence-dir.mjs <dir>`) that
+  recomputes every record's content address, validates schema/kind, and
+  exits nonzero on any mismatch or an empty dir — with the SAME
+  mutation-based negative case as every other file oracle (sandbox-copy the
+  dir, corrupt one record's bytes, identical re-run must exit nonzero). Wired as a step
   in the institutional-memory CI job. **Accept**: a synthetic NORMATIVE
   record whose oracle file exits 1 ⇒ run-oracles FAIL; a constant-success
   oracle (exit 0 unchanged AND exit 0 on the mutated sandbox) ⇒ FAIL
@@ -234,14 +269,32 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   all package versions → 0.3.0 (clotho 0.0.0 too) + full metadata; plugin.json
   version alignment; narcissus-flagship name NOT renamed (verifier pin). NO root
   package.json (test-inventory forbids it — rejected-alternative recorded).
-- **Node-version reconciliation oracle** (frozen mandate: every doc claim must
-  match the required >=22.12.0): a new check in the product verify-contracts
-  section scans TRACKED docs and manifests (excluding frozen historical evidence
-  under docs/runs/) for Node-version claims (patterns: "Node >= 18", "Node 18+",
-  "node\": \">=18", "Node ≥18", "Node 20") and FAILS on any claim below
-  22.12; the enumerated current offenders (including the employment-brief doc
-  the checklist names) are corrected in the same slice. **Accept**: a planted
-  "Node 18+" doc line fails the oracle; the sweep is clean at slice end.
+- **Node-version reconciliation oracle** (frozen mandate: every tracked
+  Node-version claim reconciles to the required >=22.12.0), two layers with
+  no reliance on an enumerated spelling list:
+  (a) MANIFESTS (complete by construction): every tracked `package.json`'s
+  `engines.node` is PARSED as a semver range and the oracle requires the
+  range to admit no version below 22.12.0 (range-minimum check, not string
+  match) — `^20.0.0`, `>=18`, `20.x` all fail arithmetically; a tracked
+  manifest with NO engines field fails `engines-missing`.
+  (b) PROSE (broad-capture + reviewed inventory): tracked text files
+  (excluding frozen historical evidence under docs/runs/) are scanned with a
+  deliberately OVER-BROAD matcher — any occurrence of `[Nn]ode(\.js)?`
+  within a short window of a version-looking token (`v?\d+(\.\d+)*`,
+  `\^|~|>=|≥|\+|or later|and up`) is a HIT. Every hit must either normalize
+  to a version >= 22.12 (a small tested normalizer handles the common
+  grammars: "Node 18+", "Node.js 21+", "requires Node v20.11 or later",
+  "Node ≥18") or appear in a reviewed inventory
+  `docs/institutional-memory/product/node-version-claims.json` recording
+  {file, line, matched_text, disposition} — where disposition
+  `false-positive` is the ONLY passing value and the inventory must be
+  EXACTLY current (a hit not listed ⇒ FAIL unreconciled-claim; a listed
+  entry no longer matching ⇒ FAIL stale-inventory). Current offenders
+  (including the employment-brief doc the checklist names) are corrected in
+  the same slice. **Accept**: planted `Node 18+`, `Node.js 21+`,
+  `requires Node v20.11 or later`, and a manifest `"node": "^20.0.0"` ALL
+  fail; a sub-22.12 claim added without an inventory entry fails; a stale
+  inventory entry fails; the sweep is clean at slice end.
 - **`cli/` package** (`pylae` bin, private): init (reads env-surface.json as
   data) / doctor (node>=22.12, git full-history, bwrap, env presence, Ed25519) /
   version (product-version.json + head) / verify (spawns verify-contracts +
@@ -315,10 +368,26 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
 
 ## 5. Freshness, release, deployment, flagship
 
-- **Freshness (E-adjacent)**: run.mjs `--exact-head` (live HEAD == recorded head
-  + clean worktree + full source_ref sweep; distinct fatal codes); always-emitted
-  freshness/heads_equal; CI job wording stops claiming "records == reality";
-  release runs exact-head. run.mjs is NOT woven (safe).
+- **Freshness (E-adjacent)**: exact-head binding is INTRINSIC to
+  authoritative verification, not an opt-in flag — `--verify-committed`
+  BY DEFAULT requires live `git rev-parse HEAD` == recorded input head +
+  clean worktree + full source_ref sweep (distinct fatal codes:
+  input-head-stale / exact-head-dirty / source-ref-stale); verifying a
+  stale snapshot against a different checkout FAILS by default, closing
+  blocker 3. Historical inspection is the explicit exception:
+  `--verify-committed --historical` checks snapshot INTACTNESS only and is
+  structurally non-authoritative — its JSON carries `verify_mode:
+  "historical-nonauthoritative"` and `snapshot_intact: true/false`, and it
+  NEVER emits the authoritative `verified_current: true` claim that
+  default mode emits (consumers keying on the authoritative field cannot
+  be satisfied by a historical run). Always-emitted freshness/heads_equal;
+  CI wording matches: the PR-context job runs `--historical` and is named
+  "snapshot intact (historical — does not assert this HEAD)"; main/release
+  jobs run the authoritative default. run.mjs is NOT woven (safe).
+  **Accept**: stale-head checkout + default `--verify-committed` ⇒ fatal
+  input-head-stale; same checkout with `--historical` ⇒ exit 0 with
+  verify_mode historical-nonauthoritative and NO verified_current field;
+  release head ⇒ default mode green.
 - **Signed release pipeline** `release.yml`, fail-closed end to end:
   (1) GATE: tag object must be ANNOTATED and its SIGNATURE VERIFIED in CI
   against an OUT-OF-TREE trust root (an in-tree public key is circular — a
@@ -335,14 +404,24 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   abort `key-fingerprint-mismatch`; then runs `git verify-tag` against that
   keyring (unknown/unsigned/unverifiable/wrong-key ⇒ abort); variable unset
   ⇒ abort fail-closed. Required-CI check-run asserted at the tag SHA; local
-  verify battery incl. `--verify-committed --exact-head`. **Accept**: a tag
+  verify battery incl. authoritative `--verify-committed` (exact-head by default). **Accept**: a tag
   signed by a key whose fingerprint differs from the protected variable ⇒
   gate aborts even when the tree's committed .pub matches the tag's signer.
-  (2) BUILD: `npm pack` the cli TWICE and byte-compare the tarball digests
-  (reproducibility check — a mismatch aborts and any irreducible
-  nondeterminism must be recorded in RELEASING.md before release); source
-  tarball via `git archive` (deterministic by construction); SHA256SUMS; syft
-  SBOM; `actions/attest-build-provenance` per artifact.
+  (2) BUILD, reproducibility covering THE ARTIFACT OPERATORS INSTALL (the
+  final source tarball is `git archive` + injected generated files, so
+  "deterministic by construction" no longer holds and must be re-established
+  over the assembled result): the assembly is fully specified — `git archive`
+  the tag; inject RELEASE-IDENTITY.json + generated files; repack with
+  pinned metadata (`tar --sort=name --owner=0 --group=0 --numeric-owner
+  --mtime=@<tag-commit-timestamp>` piped through `gzip -n`) so every
+  nondeterministic tar/gzip field is fixed by the tag. The ENTIRE assembly
+  (and `npm pack` of the cli) runs TWICE from scratch and the final
+  artifact digests are byte-compared — any mismatch aborts, and any
+  irreducible nondeterminism must be recorded in RELEASING.md before
+  release. SHA256SUMS; syft SBOM; `actions/attest-build-provenance` per
+  artifact. **Accept**: double-build digests equal for BOTH the cli tgz and
+  the assembled source tarball; a fixture varying mtime/owner in the
+  repack ⇒ digest mismatch ⇒ abort.
   (3) PUBLISH against a CLOSED ALLOWLIST: the exact expected asset filename set
   is a literal in the workflow; after upload, `gh release view --json assets`
   must equal the allowlist EXACTLY (missing or EXTRA assets ⇒ fail the job and
@@ -398,8 +477,19 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   malformed-base64 ⇒ fail-closed BLOCKED + unit test (`sig.value: "!!!"` ⇒
   `malformed-signature`); OFL font licenses + THIRD-PARTY-NOTICES. CODEOWNERS
   register-deferred (single maintainer).
+  BOUNDED SUPPORTED-BROWSER CONTRACT (the engine limitation is closed by an
+  explicit boundary this round, per the Eye's recorded deferral of the
+  multi-engine matrix): PD-003 states the v1 qualified envelope — flagship
+  and demo are QUALIFIED ON CHROMIUM (desktop + the 375×667 mobile-viewport
+  gate) ONLY; Firefox/WebKit/mobile-device/screen-reader/constrained-GPU
+  qualification is explicitly UNQUALIFIED and recorded as P1 register items
+  (`production-readiness.json`, target_round: next) — the product never
+  implies broader support than it has qualified (any user-facing
+  compatibility statement cites the contract). **Accept**: PD-003 names the
+  qualified engine set; the register carries the multi-engine items with
+  owners + target round; no doc claims cross-browser support.
 
-## 6. Slice/PR decomposition (one re-weave at train end)
+## 6. Slice/PR decomposition (atomic weave rule)
 
 Bounded PR slices, each: implement → deterministic verification → implementation
 review (4a signed council review for E1–E6 + the ceremony; 4b entry-ritual +
@@ -409,15 +499,29 @@ product memory dir + ADRs → naming/versions → AM-42 deviation (subsumed by t
 Option-A council) → **ceremony slice** (AM-43 + cli + meta-ads + 8 pinned
 updates) → release pipeline/pages/plugin-pin → flagship/demo/fonts →
 **authority-chain-repair slice** (E5 successor docs + citation redirect + new
-invariant + verifier) → **train-end re-weave** (full self-weave republication at
-the final head + lachesis pins + flagship live-graph + expected-flagship regen +
-Eye re-audit + all woven-doc edits). Release from the qualified accepted commit.
+invariant + verifier) → **train-end re-weave**.
+ATOMIC WEAVE RULE (a merged head must never fail committed-weave
+verification): ANY slice that changes a WOVEN input — package manifests,
+`clotho/inventory.mjs`, woven docs, anything the snapshot pins — includes
+its own full self-weave republication (+ expected-flagship regen where its
+pins are affected) IN THE SAME PR, so every merged head passes
+`--verify-committed` (v0.2.0 precedent: the merge train required exactly
+such per-change re-weaves). Slices touching only non-woven surfaces
+(run.mjs, workflows/, .github/, flagship+demo exclude-listed trees, new
+excluded package dirs) ride without one — each slice's PR body states which
+case applies and why. The naming/versions slice and the ceremony slice are
+therefore each ATOMIC (rename/exclude + their re-weave in one PR). The
+**train-end re-weave** remains as the FINAL capture at the qualified head
+(full self-weave republication + lachesis pins + flagship live-graph +
+expected-flagship regen + Eye re-audit + any residual woven-doc edits).
+Release from the qualified accepted commit. **Accept**: every merged slice
+head passes the committed-weave posture check in CI — none merges red.
 
 ## 7. Acceptance criteria (quest-level)
 
 Comprehension-gate GRANTED artifact before implementation; every slice in the
 Argo step-ledger with merge anchors + review evidence; per-slice package suites +
-verify-contracts + self-weave posture green; `--verify-committed --exact-head`
+verify-contracts + self-weave posture green; authoritative `--verify-committed`
 green at the release head; release.yml gate job green; every current normative
 citation terminates in a NORMATIVE-CURRENT record; enrollment.json#enrolled entry
 for the product-governance subsystem; RETROSPECTIVES/product-1.json with

@@ -1,0 +1,95 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:f5f29e06d051396a35f55d627fac8e1d964a3cecd9792a6397c720a974e63b3d",
+  "output_plan_artifact_hash": "sha256:f5f29e06d051396a35f55d627fac8e1d964a3cecd9792a6397c720a974e63b3d",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:5a9a9b33249a7d002128933e33e65dcc5ac2789365410b7c1db4f1ca2c0cc0f2",
+    "provenance_key": "anthropic:0750ba2f-f363-4acb-a538-d996393d337b"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:33a16bc8242634c3acb7c38fb4086db5f3da36eebddccd0501c800589a5c5450",
+    "provenance_key": "openai:01a0450a-3987-79d3-bdf2-803a8b6acd1c",
+    "bound_hash": "sha256:f5f29e06d051396a35f55d627fac8e1d964a3cecd9792a6397c720a974e63b3d"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E1 Hestia merge attestation",
+      "claim": "The authoritative attestor runs after the merge side effect. Detecting `merged-despite-blocked` or an unattested merge and exiting 2 cannot fail closed because the protected branch has already been mutated. The expected-head parameter prevents a race but does not establish authorization. Model/fix agents must lack merge credentials, and a deterministic pre-merge controller must validate eligibility from independently derived evidence before performing the sole merge operation; post-merge attestation may then confirm it.",
+      "objection_hash": "sha256:1557bb7b539a6daead90b2a8ba4c64a42842fc1f7f82d1183ba8634132b00fbf",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:E2 authority-chain freshness",
+      "claim": "The authority-transition path is circular or unusable. Every PR that legitimately changes an authority-chain file is unconditionally DENIED, but the approach defines no signed override artifact or separate required check capable of authorizing that transition. Merging despite the denial bypasses the claimed required-check protection, after which main-push CI anchors the new authority tree to itself and grants it. Human/council review prose does not supply a deterministic transition mechanism.",
+      "objection_hash": "sha256:82ac03b8c9062bd88c02400da89c46a0a7157ea703bd25873820aefc577b57bb",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:E3 auditor",
+      "claim": "`--allow-empty` preserves the zero-record-set bypass that blocker 5 requires removing. Unless this mode is structurally unavailable to authoritative invocations and can never emit a clean/success status, an audit can still exit successfully with no evidence discovered, violating the exceptionless and fail-closed requirements.",
+      "objection_hash": "sha256:63b573019a7d14e10d541e47eac38bccc4ecc5115f76c6c31658aaff2f749c8d",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:E6 oracle runner",
+      "claim": "The `evidence-dir` oracle variant is not discriminatory: it requires only a nonempty directory containing a content-addressed record and has no identical-invocation mutation-negative case. A NORMATIVE record can therefore select this variant and satisfy the verifier without any executable mechanism that detects violation of its claim, contradicting both the stated discrimination rule and the backfill acceptance criterion.",
+      "objection_hash": "sha256:43469df96092a1c35a629aea19b3b21987c3ba4b34d9c11ea17d684ca3f2d0d7",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:Node-version reconciliation oracle",
+      "claim": "The proposed lexical pattern list does not establish the frozen mandate that every tracked Node-version claim is reconciled. Forms such as `Node.js 21+`, `requires Node v20.11 or later`, or an engines range like `^20.0.0` evade the enumerated patterns, while the sole planted `Node 18+` test proves only one spelling. The oracle needs parsed manifest ranges and a complete, tested normalization/inventory strategy for prose claims.",
+      "objection_hash": "sha256:0bca3f1ed69cf60c1e18fdd2c2483632c701dbfd1763313dadf824b6b4b6ef7b",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:freshness",
+      "claim": "Adding an optional `--exact-head` and using it only in release does not close blocker 3: `--verify-committed` alone can still validate the stale recorded input head and return green against a different checkout. Exact checked-out-head binding must be intrinsic to authoritative `--verify-committed` operation, with any historical verification mode explicitly non-authoritative and unable to produce the same success claim.",
+      "objection_hash": "sha256:fb77f755a381fc099ecc89c8650846ebe1b077a5d6460b419efbd13c9dc51690",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:release reproducibility",
+      "claim": "The primary installable source artifact is no longer the deterministic output of `git archive` after `RELEASE-IDENTITY.json` and other generated files are injected. The only specified repeat-build byte comparison covers `npm pack cli`; the final source-release tarball has no two-build identity check or fully specified deterministic repacking metadata. This leaves the reproducible-release blocker unresolved for the artifact operators actually install.",
+      "objection_hash": "sha256:e9bd28ea97169492361ca43b92a7789901c57fbb478a0b73a77dbbe28d11e1cd",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:flagship qualification",
+      "claim": "The proposed e2e additions remain Chromium-only. A 375x667 Chromium viewport addresses the desktop dimension but not the frozen finding's browser-engine limitation; no Firefox/WebKit or explicitly bounded supported-browser contract and corresponding qualification is specified.",
+      "objection_hash": "sha256:67cca458ccdd9ee5e9991b21c49ad92ce7a81730f4f0f7e1766fb7ca51ad0fe6",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:slice decomposition and weave evidence",
+      "claim": "The one-re-weave-at-train-end rule conflicts with the requirement that every earlier slice have green self-weave posture. The ceremony explicitly changes woven `inventory.mjs` and pinned derivatives, and other ordered slices alter governed inputs before the final re-weave. Those intermediate PR heads cannot both retain the old woven artifacts and pass committed-weave verification. The slices must either include atomic re-weaves when governed inputs change or remain one unlanded atomic change through the train-end publication.",
+      "objection_hash": "sha256:afeea58dbbddc52c7cf4efc9b29ceb0c51edb6a477034f33411c27c6b200fd7e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

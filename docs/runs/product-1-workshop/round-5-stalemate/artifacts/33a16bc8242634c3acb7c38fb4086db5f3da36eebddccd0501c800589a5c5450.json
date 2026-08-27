@@ -1,0 +1,57 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E1 Hestia merge attestation",
+        "claim": "The authoritative attestor runs after the merge side effect. Detecting `merged-despite-blocked` or an unattested merge and exiting 2 cannot fail closed because the protected branch has already been mutated. The expected-head parameter prevents a race but does not establish authorization. Model/fix agents must lack merge credentials, and a deterministic pre-merge controller must validate eligibility from independently derived evidence before performing the sole merge operation; post-merge attestation may then confirm it."
+      },
+      {
+        "scope": "candidate:E2 authority-chain freshness",
+        "claim": "The authority-transition path is circular or unusable. Every PR that legitimately changes an authority-chain file is unconditionally DENIED, but the approach defines no signed override artifact or separate required check capable of authorizing that transition. Merging despite the denial bypasses the claimed required-check protection, after which main-push CI anchors the new authority tree to itself and grants it. Human/council review prose does not supply a deterministic transition mechanism."
+      },
+      {
+        "scope": "candidate:E3 auditor",
+        "claim": "`--allow-empty` preserves the zero-record-set bypass that blocker 5 requires removing. Unless this mode is structurally unavailable to authoritative invocations and can never emit a clean/success status, an audit can still exit successfully with no evidence discovered, violating the exceptionless and fail-closed requirements."
+      },
+      {
+        "scope": "candidate:E6 oracle runner",
+        "claim": "The `evidence-dir` oracle variant is not discriminatory: it requires only a nonempty directory containing a content-addressed record and has no identical-invocation mutation-negative case. A NORMATIVE record can therefore select this variant and satisfy the verifier without any executable mechanism that detects violation of its claim, contradicting both the stated discrimination rule and the backfill acceptance criterion."
+      },
+      {
+        "scope": "candidate:Node-version reconciliation oracle",
+        "claim": "The proposed lexical pattern list does not establish the frozen mandate that every tracked Node-version claim is reconciled. Forms such as `Node.js 21+`, `requires Node v20.11 or later`, or an engines range like `^20.0.0` evade the enumerated patterns, while the sole planted `Node 18+` test proves only one spelling. The oracle needs parsed manifest ranges and a complete, tested normalization/inventory strategy for prose claims."
+      },
+      {
+        "scope": "candidate:freshness",
+        "claim": "Adding an optional `--exact-head` and using it only in release does not close blocker 3: `--verify-committed` alone can still validate the stale recorded input head and return green against a different checkout. Exact checked-out-head binding must be intrinsic to authoritative `--verify-committed` operation, with any historical verification mode explicitly non-authoritative and unable to produce the same success claim."
+      },
+      {
+        "scope": "candidate:release reproducibility",
+        "claim": "The primary installable source artifact is no longer the deterministic output of `git archive` after `RELEASE-IDENTITY.json` and other generated files are injected. The only specified repeat-build byte comparison covers `npm pack cli`; the final source-release tarball has no two-build identity check or fully specified deterministic repacking metadata. This leaves the reproducible-release blocker unresolved for the artifact operators actually install."
+      },
+      {
+        "scope": "candidate:flagship qualification",
+        "claim": "The proposed e2e additions remain Chromium-only. A 375x667 Chromium viewport addresses the desktop dimension but not the frozen finding's browser-engine limitation; no Firefox/WebKit or explicitly bounded supported-browser contract and corresponding qualification is specified."
+      },
+      {
+        "scope": "candidate:slice decomposition and weave evidence",
+        "claim": "The one-re-weave-at-train-end rule conflicts with the requirement that every earlier slice have green self-weave posture. The ceremony explicitly changes woven `inventory.mjs` and pinned derivatives, and other ordered slices alter governed inputs before the final re-weave. Those intermediate PR heads cannot both retain the old woven artifacts and pass committed-weave verification. The slices must either include atomic re-weaves when governed inputs change or remain one unlanded atomic change through the train-end publication."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a0450a-3987-79d3-bdf2-803a8b6acd1c",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a0450a-3987-79d3-bdf2-803a8b6acd1c",
+    "source": "cli-seats/codex_ask"
+  }
+}
