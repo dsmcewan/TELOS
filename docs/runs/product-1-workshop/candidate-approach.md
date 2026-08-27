@@ -53,13 +53,21 @@ per-file designs are in the approved plan; acceptance criteria here.
   dossier, not a merge.
   (ii) DETERMINISTIC PRE-MERGE CONTROLLER (the sole holder of merge
   credentials): new `workflows/tools/merge-controller.mjs`, plain zero-dep
-  node, run AFTER the workflow. For each requested PR it INDEPENDENTLY
-  re-derives eligibility from `gh api` ground truth (PR open, base repo/branch
-  expected, head_sha equals the dossier's, required checks green at that head,
-  not blocked by residue_gate), then — only on pass — performs the SOLE merge
-  via `gh api -X PUT .../merge -f sha={head}` (server-enforced expected-head
-  guard; 409 ⇒ `head-moved`, never retry-fresh). Any ineligible request ⇒
-  exit 2 BEFORE any mutation. It then POST-ATTESTS over the FULL attempt
+  node, run AFTER the workflow. Merges are SEQUENTIAL and eligibility is
+  re-derived IMMEDIATELY BEFORE EACH MERGE, never batched (a preflight
+  over all requests goes stale the moment the first merge moves the base):
+  for each requested PR, AT ITS OWN MUTATION POINT, the controller
+  re-queries `gh api` ground truth — PR still open, base repo/branch
+  expected, head_sha equals the dossier's, `mergeable` against the CURRENT
+  base (mergeable_state not behind/dirty when branch protection requires
+  up-to-date branches), required checks green at that head — then, only on
+  pass, performs the SOLE merge via `gh api -X PUT .../merge -f sha={head}`
+  (server-enforced expected-head guard; 409 ⇒ `head-moved`, never
+  retry-fresh). A request invalidated by a PRIOR merge in the same run ⇒
+  reported `base-moved`/`stale-checks` and SKIPPED (exit 2 at run end
+  listing it) — the controller never auto-updates a branch or re-runs
+  checks to force eligibility. Any ineligible request ⇒ refused BEFORE any
+  mutation. It then POST-ATTESTS over the FULL attempt
   surface: every dossier entry (shipped/excluded/blocked) AND every branch
   the run's fix agents pushed (`gh api repos/{o}/{r}/pulls?state=all&head=…`
   for recorded branch names, plus PRs updated in the run's window); any
@@ -70,7 +78,10 @@ per-file designs are in the approved plan; acceptance criteria here.
   **Accept**: adversarial fixtures pass; controller suite: colluding-agents
   fixture (ship+verify fabricate the same merged/sha — controller re-derives
   from a stub gh returning open and refuses to merge, exit 2, NO mutation);
-  ineligible-PR fixture ⇒ refused pre-merge; out-of-band-merge fixture ⇒
+  ineligible-PR fixture ⇒ refused pre-merge; TWO-PR regression: the first
+  merge makes the second stale/conflicting (stub gh flips its
+  mergeable_state after merge #1) ⇒ the second is refused base-moved, NOT
+  merged on its stale preflight; out-of-band-merge fixture ⇒
   unattested-merge; clean run ⇒ merged + attestation; workflow agents' token
   fixture proves no merge scope; workflows CI job runs both suites green.
 - **E2 ai-native-memory gate freshness + AUTHORITY-CHAINED sources** (`ai-native-memory/scripts/gate.mjs`).
@@ -148,6 +159,23 @@ per-file designs are in the approved plan; acceptance criteria here.
   DENIED source-unanchored; missing anchor ⇒ DENIED anchor-unavailable;
   escape/symlink authority path ⇒ DENIED; dogfood self-gate (anchored at
   a clean HEAD) stays GRANTED.
+  THE VERIFIER ITSELF EXECUTES FROM THE TRUSTED BASE (anchoring data is
+  void if the PR swaps the gate for `process.exit(0)` and CI runs the
+  proposed copy): in PR CI, the invoking workflow materializes
+  `gate.mjs` AND ITS COMPLETE MODULE CLOSURE (every relative import,
+  enumerated by the workflow from the base tree, not from a hand list)
+  from the PROTECTED BASE ANCHOR (`git cat-file` each blob at
+  `base.sha:<path>` into a temp dir) and executes THAT copy against the
+  proposed tree's data. A PR that modifies any file in the verifier
+  closure is treated exactly like an authority-chain change: the
+  base-sourced verifier still evaluates the PR, and the verifier change
+  itself requires the Eye-signed transition path to take effect
+  (a proposed verifier NEVER evaluates its own PR). **Accept (verifier
+  integrity)**: adversarial regression — a fixture PR replaces gate.mjs
+  with a constant-success stub; the base-sourced execution ignores the
+  stub, evaluates truthfully, and additionally reports
+  verifier-modified-in-change; a helper-import swap is caught the same
+  way (closure from base, not from the PR).
 - **E3 auditor full-taxonomy + no-clean-on-zero, EXCEPTIONLESS** (`ai-native-memory/scripts/audit.mjs`).
   Root-as-memory-dir (marker predicate, root arg only); zero discovered sets ⇒
   exit 2, NO ESCAPE HATCH — there is no `--allow-empty` (or any equivalent
@@ -206,16 +234,32 @@ per-file designs are in the approved plan; acceptance criteria here.
   oracle-unrunnable / oracle-failed / oracle-timeout). Because a
   constant-success program passes any run-only check, every `file` oracle
   MUST also declare a MUTATION-BASED NEGATIVE CASE —
-  `oracle.executable.negative: {mutate: {file, patch|kind}, expect:
-  "nonzero"}`. A special flag or alternate script is NOT acceptable (an
-  oracle could hardcode nonzero for the flag while never inspecting its
-  governed inputs): run-oracles copies the governed input set into a temp
-  sandbox, applies the declared mutation (a planted violation of exactly
-  the property the record claims), and re-runs the IDENTICAL production
-  invocation — same argv, same entrypoint, no special mode — against the
-  mutated inputs; that run is REQUIRED TO EXIT NONZERO, else FAIL
-  `oracle-nondiscriminating`. This is the clotho flagship-expectation
-  mutate-then-expect-failure pattern made mandatory. `npm-script` entries
+  `oracle.executable.negative: {mutate: {file, kind}, expect: "nonzero"}`.
+  A special flag or alternate script is NOT acceptable (an oracle could
+  hardcode nonzero for the flag while never inspecting its governed
+  inputs), and the mutation is NOT author-freeform (a record could
+  nominate a mutation that merely corrupts syntax, letting a parse crash
+  impersonate detection): `kind` must name an entry in a CLOSED MUTATION
+  REGISTRY inside run-oracles, each entry independently specifying (a) the
+  mutation's SEMANTICS against the claimed invariant class (e.g.
+  flip-declared-boolean, alter-content-address, drop-required-signature,
+  duplicate-enrollment-entry, remove-exception-anchor), (b) APPLICABILITY
+  preconditions (which record/target shapes it may be declared for — a
+  kind that doesn't match the record's invariant class ⇒ FAIL
+  mutation-inapplicable), and (c) POST-MUTATION VALIDATION: after
+  mutating, the runner re-parses/schema-validates the mutated artifact
+  and REQUIRES IT WELL-FORMED — a mutation that breaks parsing ⇒ FAIL
+  mutation-invalid (so a subsequent nonzero exit can only come from the
+  oracle detecting the SEMANTIC violation, never from a crash on
+  malformed input). Then run-oracles copies the governed input set into a
+  temp sandbox, applies the validated mutation, and re-runs the IDENTICAL
+  production invocation — same argv, same entrypoint, no special mode —
+  REQUIRED TO EXIT NONZERO, else FAIL `oracle-nondiscriminating`.
+  Invariants no registry kind fits declare a TRUSTED NEGATIVE FIXTURE
+  instead — a reviewed, committed violating artifact whose review rides
+  the same PR as the record — subject to the same well-formedness
+  validation. This is the clotho flagship-expectation
+  mutate-then-expect-failure pattern made mandatory and de-gameable. `npm-script` entries
   are EXECUTED DIRECTLY by run-oracles, exactly like file entries — `npm
   run <script> --prefix <package-dir>` under the same per-entry timeout,
   nonzero ⇒ FAIL — with the same mutation-based negative case (sandbox-copy
@@ -270,6 +314,20 @@ Until all four land, v15 remains the active plan and no slice of this quest
 is merge-eligible; the verify-contracts §5d check asserts the pivot's
 integrity (active_plan == authorized plan_ref; supersession row present;
 deviation record pins am42_sha256).
+BOOTSTRAP TRANSACTION (breaks the circularity of a ceremony that gates all
+merges yet itself needs a merge): the four steps above land as a
+GOVERNANCE-ONLY BOOTSTRAP SLICE — strictly docs/registry surfaces (the
+published successor plan, authorization-summary.json, AM-43 doc, deviation
+record, CURRENT-AUTHORITY registry rows, §5d check) with NO code, NO
+package dirs, NO woven-surface edits — merged FIRST, under the CURRENT
+(v15) authority, which is lawful because the sitting authorization already
+empowers the Eye + council to authorize successors (the change_rule being
+regularized is exactly this path, now followed rather than bypassed). The
+implementation content previously bundled with the ceremony (cli/ package,
+meta-ads hardening, the 8 pinned-surface updates incl. inventory.mjs +
+its re-weave) moves to an ORDINARY later slice that cites the
+by-then-active successor plan. Only after the bootstrap slice merges does
+any implementation slice become merge-eligible.
 
 AM-43 is a new decision doc with its own single fenced JSON block (roots
 unchanged; exclude += the two dirs), sha-pinned in `package-roots.json.authority.
@@ -297,9 +355,23 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   role; state model; topology; naming/versioning/publish; role glossary in
   product/GLOSSARY.md, never editing mythological-vocabulary.md's registry); a
   machine-readable `production-readiness.json` register (items with priority/
-  phase/status/owner/adr+sha/evidence/target_round; go-live P0 gate REPORTING-
-  ONLY until an enforce flag) + `render-readiness.mjs --check` + `docs/PRODUCTION-
-  READINESS.md`; `product-version.json` (lockstep 0.3.0 + schema versions);
+  phase/status/owner/adr+sha/evidence/target_round). THE GO-LIVE GATE IS
+  HARD ON THE RELEASE PATH — there is NO enforce flag and NO
+  reporting-only mode that a release can invoke (a flag that downgrades a
+  blocking verdict to a report is the bypass the frozen requirement
+  forbids): `render-readiness.mjs --gate` exits nonzero unless every
+  IN-SCOPE P0 item is `done` (evidence paths existing) or
+  `na-by-signed-adr` (ADR sha resolving) — automatic no-go, and release.yml
+  runs it in the GATE job so a failing register aborts the release.
+  Deferred Phase-1b+ items are represented STRUCTURALLY (phase > 1a, or
+  na-by-signed-adr against the scope ADR), never by softening the verdict;
+  `--check` remains for non-release contexts (registry shape + rendering)
+  and CANNOT substitute for `--gate` (release.yml names `--gate`
+  literally). **Accept**: a fixture register with one in-scope P0 item
+  `open` ⇒ `--gate` exit nonzero and the release gate job red; the same
+  item na-by-signed-adr with a valid sha ⇒ green; no argv/env combination
+  makes `--gate` report-only (asserted over the flag matrix).
+  Plus `docs/PRODUCTION-READINESS.md`; `product-version.json` (lockstep 0.3.0 + schema versions);
   repository-manifest memory_dirs registration; verify-contracts §-product checks.
 - **Naming/versioning**: rename v4-build-gate/v4-forge/v4-breakout → telos-*;
   all package versions → 0.3.0 (clotho 0.0.0 too) + full metadata; plugin.json
@@ -544,10 +616,15 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
 Bounded PR slices, each: implement → deterministic verification → implementation
 review (4a signed council review for E1–E6 + the ceremony; 4b entry-ritual +
 adversarial subagent review for mechanical slices) → Eye acceptance → step-ledger
-entry. Order: freshness → (plugin self-containment → E2 → E3) ∥ E1 → E6 → E4 →
-product memory dir + ADRs → naming/versions → AM-42 deviation (subsumed by the
-Option-A council) → **ceremony slice** (AM-43 + cli + meta-ads + 8 pinned
-updates) → release pipeline/pages/plugin-pin → flagship/demo/fonts →
+entry. Order: **governance bootstrap slice FIRST** (the §3 four-step
+transaction: successor plan + authorization + pivot + Eye confirmation +
+AM-43/deviation records — docs/registry only, merged under the sitting v15
+authority; nothing else is merge-eligible before it) → freshness → (plugin
+self-containment → E2 → E3) ∥ E1 → E6 → E4 → product memory dir + ADRs →
+naming/versions → **implementation slice for the excluded dirs** (cli/
+package + meta-ads hardening + the 8 pinned-surface updates incl.
+inventory.mjs with its same-PR re-weave, citing the by-then-active
+successor plan) → release pipeline/pages/plugin-pin → flagship/demo/fonts →
 **authority-chain-repair slice** (E5 successor docs + citation redirect + new
 invariant + verifier) → **train-end re-weave**.
 ATOMIC WEAVE RULE (a merged head must never fail committed-weave

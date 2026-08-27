@@ -1,0 +1,63 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:492b75545b74f9864186be4ddcaace3f83a7bdd668807329fc3eda80e8ea784a",
+  "output_plan_artifact_hash": "sha256:492b75545b74f9864186be4ddcaace3f83a7bdd668807329fc3eda80e8ea784a",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:96b3ad2569e4697eede951de4d38cc5d9bfb2674216b811315d1cc5c52f943f1",
+    "provenance_key": "anthropic:b7d5bf21-44f7-4471-93a8-32a87036eb34"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:2c0ef84e0081948303ea0771e1364464d606fd6c2700d12962e479bf8708b790",
+    "provenance_key": "openai:01a0451a-61ab-7a00-b158-cf2b4c24e935",
+    "bound_hash": "sha256:492b75545b74f9864186be4ddcaace3f83a7bdd668807329fc3eda80e8ea784a"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "The governance sequence is circular. Section 3 says no quest slice is merge-eligible until the successor-plan publication, authorization, authority pivot, and Eye confirmation have landed, but Section 6 places the slice containing that ceremony after multiple implementation slices and combines it with CLI, Meta Ads, AM-43, and woven-surface changes. The ceremony slice itself cannot satisfy the stated precondition before it merges. Define an explicitly authorized governance-only bootstrap transaction under the current authority, land it first, and only then make implementation slices merge-eligible.",
+      "objection_hash": "sha256:50a591c4ec5bacdcf714cbaf0f0db2165db2bd9c9dd737be4a5b7305351297a3",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "E2 does not establish integrity of the verifier executing in PR CI. The external anchor, protected chain-root variable, and Eye public key do not help if the PR can modify ai-native-memory/scripts/gate.mjs (or a helper it imports) and CI executes that proposed version. A lockstep attacker can replace the gate with constant success. The trusted base must supply or authenticate the verifier executable and its complete module closure before it evaluates proposed-tree data, with an adversarial regression that modifies the gate itself.",
+      "objection_hash": "sha256:bab4f8cf50c2835e7dfc20a51df5acbabe9c3eb0320db44577d3403e064037a7",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "E6's mutation test is still author-selectable and therefore does not prove that an oracle discriminates the claimed property. A record can nominate a mutation that causes an incidental parse or syntax failure while its oracle ignores the governed invariant, satisfying the required nonzero result. Mutation kinds need independently specified semantics, applicability preconditions, and post-mutation validation—or invariant-specific trusted negative fixtures—so the runner proves that the planted state is a valid violation of the exact claim rather than merely a state that makes the command fail.",
+      "objection_hash": "sha256:6e10aab19333d270f8552b8455de05a49c914a92260f7e73ca0b4820b77f165f",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "The Phase-0 readiness design explicitly makes the P0 go-live gate reporting-only until an enforce flag, leaving the frozen requirement for a hard go-live gate and automatic no-go conditions unenforced. The release path must fail closed on defined in-scope P0 no-go states, while separately representing deferred Phase-1b+ items and non-GA releases without allowing a flag to convert a blocking verdict into reporting.",
+      "objection_hash": "sha256:25952a090c3c9460082d10733521e502e443213c38033c12e846448c3223a1ba",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "E1's multi-PR controller does not bind eligibility to the base commit. The merge API sha parameter guards only the PR head; after the controller merges one request, the base changes and later requests may retain green checks computed against the old base. Initial all-request preflight therefore cannot guarantee eligibility at each mutation point. Restrict a controller transaction to one PR or revalidate and bind each request to the current base/merge result immediately before merging, with a two-PR regression where the first merge makes the second stale or conflicting.",
+      "objection_hash": "sha256:90f064327f69c3776b6922dde35e7b53e762571578af66d57d2badbd8baac6d3",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
