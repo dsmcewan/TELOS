@@ -123,10 +123,20 @@ per-file designs are in the approved plan; acceptance criteria here.
   controller runs under a NON-BYPASS credential (not admin, not on any
   bypass list), so a base moved after the eligibility query makes the
   server itself refuse the PUT (405/409 ⇒ reported `base-moved`); the
-  controller VERIFIES both preconditions at startup via the branch
-  protection API + `gh api user` and refuses to run (exit 2
-  `unsafe-merge-environment`) if strict up-to-dateness is off or the
-  credential can bypass. A request invalidated by a PRIOR merge in the same run ⇒
+  controller VERIFIES both preconditions at startup — and "cannot
+  bypass" is proven from PROTECTION DATA, not identity (`gh api user`
+  names the principal but says nothing about effective permission or
+  bypass membership, and classic `enforce_admins` does not cover ruleset
+  `bypass_actors`): the controller enumerates EVERY effective ruleset on
+  the target branch (repository AND inherited organization rulesets, via
+  the rules/rulesets APIs) plus classic branch protection, requires
+  strict up-to-dateness in effect, and requires the authenticated
+  principal (user or app installation) to be ABSENT from every
+  `bypass_actors` list and from any admin-exemption path; if the API
+  omits or refuses bypass-actor data (GitHub may hide it from
+  non-ruleset-writers), that is NOT treated as absence — the controller
+  refuses `bypass-visibility-unavailable`. Any failed condition ⇒ exit 2
+  `unsafe-merge-environment` before any mutation. A request invalidated by a PRIOR merge in the same run ⇒
   reported `base-moved`/`stale-checks` and SKIPPED (exit 2 at run end
   listing it) — the controller never auto-updates a branch or re-runs
   checks to force eligibility. Any ineligible request ⇒ refused BEFORE any
@@ -147,8 +157,11 @@ per-file designs are in the approved plan; acceptance criteria here.
   merged on its stale preflight; TOCTOU regression: stub server moves the
   base BETWEEN the eligibility query and the PUT and (modeling strict
   protection) rejects the PUT ⇒ controller reports base-moved, no merge
-  recorded; unsafe-environment fixtures: strict=false or a bypass-capable
-  credential ⇒ controller refuses at startup; out-of-band-merge fixture ⇒
+  recorded; unsafe-environment fixtures: strict=false, a bypass-capable
+  credential, the principal listed as a RULESET bypass_actor (repository
+  or inherited org ruleset — stub rulesets API), or bypass-actor data
+  omitted/refused by the API (⇒ bypass-visibility-unavailable, never
+  treated as absence) ⇒ controller refuses at startup; out-of-band-merge fixture ⇒
   unattested-merge; clean run ⇒ merged + attestation; workflow agents' token
   fixture proves no merge scope; workflows CI job runs both suites green.
 - **E2 ai-native-memory gate freshness + AUTHORITY-CHAINED sources** (`ai-native-memory/scripts/gate.mjs`).

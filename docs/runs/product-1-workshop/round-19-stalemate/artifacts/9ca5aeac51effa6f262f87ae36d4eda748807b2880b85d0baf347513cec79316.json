@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E1-unsafe-merge-environment",
+        "claim": "The startup oracle cannot prove that the controller credential is non-bypass. `gh api user` exposes identity, not effective repository permission or ruleset-bypass membership; classic branch protection's `enforce_admins` also does not cover repository/organization ruleset `bypass_actors`, which GitHub may omit unless the requester can write the ruleset. A token or app configured as an effective ruleset bypass actor could therefore satisfy the described `strict:true` and user checks while bypassing the server-side stale-base safeguard, invalidating the claimed TOCTOU closure. Require enumeration of every effective ruleset, including inherited rulesets; fail closed when bypass-actor data is unavailable; prove the authenticated principal is absent from every bypass path; and add a regression where the controller principal is a ruleset bypass actor. Candidate sha256:fe19953afe663f1e1eee9e27e4da867efbecae1f3914f9033ae813d6da54cde6."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a0457a-d58d-7842-b064-cd97331b8a5a",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a0457a-d58d-7842-b064-cd97331b8a5a",
+    "source": "cli-seats/codex_ask"
+  }
+}

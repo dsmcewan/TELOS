@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:fe19953afe663f1e1eee9e27e4da867efbecae1f3914f9033ae813d6da54cde6",
+  "output_plan_artifact_hash": "sha256:fe19953afe663f1e1eee9e27e4da867efbecae1f3914f9033ae813d6da54cde6",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:7d954f4f1228111347c6bbf18e5c8579270c16fa81ae0fbb95b38e683f6d1c5d",
+    "provenance_key": "anthropic:83f91127-003e-4c0c-bb75-8dab70aa3d23"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:9ca5aeac51effa6f262f87ae36d4eda748807b2880b85d0baf347513cec79316",
+    "provenance_key": "openai:01a0457a-d58d-7842-b064-cd97331b8a5a",
+    "bound_hash": "sha256:fe19953afe663f1e1eee9e27e4da867efbecae1f3914f9033ae813d6da54cde6"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E1-unsafe-merge-environment",
+      "claim": "The startup oracle cannot prove that the controller credential is non-bypass. `gh api user` exposes identity, not effective repository permission or ruleset-bypass membership; classic branch protection's `enforce_admins` also does not cover repository/organization ruleset `bypass_actors`, which GitHub may omit unless the requester can write the ruleset. A token or app configured as an effective ruleset bypass actor could therefore satisfy the described `strict:true` and user checks while bypassing the server-side stale-base safeguard, invalidating the claimed TOCTOU closure. Require enumeration of every effective ruleset, including inherited rulesets; fail closed when bypass-actor data is unavailable; prove the authenticated principal is absent from every bypass path; and add a regression where the controller principal is a ruleset bypass actor. Candidate sha256:fe19953afe663f1e1eee9e27e4da867efbecae1f3914f9033ae813d6da54cde6.",
+      "objection_hash": "sha256:13501aed037eb25e547be15d6807252a920760cabcba7682708e7e75d064ac01",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
