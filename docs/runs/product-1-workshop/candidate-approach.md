@@ -696,7 +696,15 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   "requires Node v20.11 or later", "Node ≥18") or appear in a reviewed inventory
   `docs/institutional-memory/product/node-version-claims.json` recording
   {file, line, matched_text, disposition} — dispositions form a CLOSED
-  set with machine-checked preconditions: `false-positive` (the text is
+  set with machine-checked preconditions: `third-party-dependency-
+  metadata` (the hit is STRUCTURALLY a dependency entry's compatibility
+  claim in PARSED lockfile/metadata — a `packages["node_modules/…"].
+  engines` field in package-lock.json or a path under node_modules —
+  which is a fact ABOUT a third-party package, not the product's
+  runtime floor; rewriting it would falsify upstream metadata. The
+  precondition is structural, not textual: the ROOT package's own
+  engines entry in the same lockfile does NOT qualify and must comply,
+  and prose can never use this disposition), `false-positive` (the text is
   not actually a version claim), or `historical-non-governing` (the claim
   lives in an IMMUTABLE pinned artifact — the oracle verifies the file is
   content-addressed/pinned by a snapshot or ledger, not merely located
@@ -714,8 +722,12 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   the escape-form fixtures `NODE 18+`, `NODE_VERSION=18`,
   `node-version: 18`, `nodejs 20 and up` ALL fail (casing/separator
   variants are not escapes); a sub-22.12 claim added without an
-  inventory entry fails; a stale inventory entry fails; the sweep is
-  clean at slice end.
+  inventory entry fails; a stale inventory entry fails; a dependency's
+  `engines.node: ">=18"` inside package-lock.json passes ONLY via the
+  structural third-party-dependency-metadata disposition; the ROOT
+  package's own lockfile engines below 22.12 CANNOT use it and fails; a
+  prose claim attempting that disposition fails; the sweep is clean at
+  slice end.
 - **`cli/` package** (`pylae` bin, private): init (reads env-surface.json as
   data) / doctor (node>=22.12, git full-history, bwrap, env presence, Ed25519) /
   version (product-version.json + head) / verify (spawns verify-contracts +
@@ -805,7 +817,19 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   CANONICAL WOVEN-INPUT CLOSURE DIGEST: sha256 over the sorted
   (path ‖ blob-digest) list of EVERY woven input at weave time,
   EXCLUDING all generated weave-evidence paths — stable across the
-  evidence commit by construction. `--verify-committed` BY DEFAULT
+  evidence commit by construction. HISTORY-SENSITIVE INPUTS ARE
+  DIGESTED TOO (the git weaver emits history-derived facts —
+  introduced-by/modified-in commit identities — so identical blobs over
+  a rewritten/cherry-picked history are DIFFERENT weave inputs): the
+  snapshot also records an `input_history_digest` — sha256 over the
+  canonical serialization of exactly the history-derived facts the
+  weaver consumes, per input path (path-limited history queries,
+  identical to the weaver's own) — which is likewise stable across the
+  evidence commit (an evidence-only commit touches no input path, so no
+  input's path-limited history moves). Authoritative verification
+  re-derives BOTH digests from the current checkout (tree + git
+  history) and fails `input-closure-stale` / `input-history-stale`
+  distinctly. `--verify-committed` BY DEFAULT
   requires (a) the same canonical digest RECOMPUTED over the CURRENT
   checkout's tree (same exclusions) == the snapshot's recorded
   input_closure_digest, (b) clean worktree, (c) full source_ref sweep
@@ -866,7 +890,11 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   fixture PR changing a woven input WITHOUT a re-weave ⇒
   input-closure-stale; the SAME PR carrying its re-weave ⇒ default mode
   PASSES at the PR head (the evidence commit does not move the closure
-  digest — the run-2 paradox fixture, proven satisfiable); same checkout
+  digest — the run-2 paradox fixture, proven satisfiable);
+  IDENTICAL-TREE/DIFFERENT-HISTORY regression: a rebuilt branch with
+  byte-identical woven inputs but rewritten history (cherry-picked/
+  squashed input commits) ⇒ input-history-stale — blob equality alone
+  never passes; same checkout
   with `--historical` ⇒ exit 0 with verify_mode
   historical-nonauthoritative and NO verified_current field; release
   head ⇒ default mode green with the commit identity carried by the

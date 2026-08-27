@@ -6,25 +6,25 @@
     "docs/runs/product-1-workshop/spec-review-findings.md",
     "docs/runs/product-1-workshop/spec-master-checklist-essence.md"
   ],
-  "state": "converged-for-submission",
-  "reason": "all-objections-accounted",
-  "terminal": "submit",
+  "state": "stalemate",
+  "reason": "repeated-candidate-hash",
+  "terminal": "needs-work",
   "rounds": 1,
-  "final_candidate_ref": "sha256:72b466d84f21756fcd9c0d7528354c6e0c18b0f0db4464e280225b9e58dba8d1",
+  "final_candidate_ref": "sha256:659a062bf7ba80d822f9ed39b77dd0c1c42b670bfb41bd6a17a9e7f46cbcf2cb",
   "creation_lineage": [
     {
       "seat": "claude",
       "round": 1,
       "provider": "anthropic",
       "model": "claude-fable-5",
-      "response_id": "0266bd26-f5ef-4433-ad1e-bbc5184522e2"
+      "response_id": "82b2c2d3-4a7b-4760-85c5-ac7824941e66"
     },
     {
       "seat": "codex",
       "round": 1,
       "provider": "openai",
       "model": "gpt-5.6-sol",
-      "response_id": "01a0458a-20b8-75f1-b4cd-cc64c0491dec"
+      "response_id": "01a04596-0aef-70c2-955d-b1974fedf9fa"
     }
   ]
 }

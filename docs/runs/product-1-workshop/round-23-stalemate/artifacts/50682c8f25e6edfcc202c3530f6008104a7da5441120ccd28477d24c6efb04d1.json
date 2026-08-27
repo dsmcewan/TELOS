@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:659a062bf7ba80d822f9ed39b77dd0c1c42b670bfb41bd6a17a9e7f46cbcf2cb",
+  "output_plan_artifact_hash": "sha256:659a062bf7ba80d822f9ed39b77dd0c1c42b670bfb41bd6a17a9e7f46cbcf2cb",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:7483ebffd727e7151bfcc30ce0465ebcaeb0ec3172e334146163cc427c2bdc07",
+    "provenance_key": "anthropic:82b2c2d3-4a7b-4760-85c5-ac7824941e66"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:49a7309f73ead2683ed1aeda79d565f39fffb4c60247c386b78d200fcab13661",
+    "provenance_key": "openai:01a04596-0aef-70c2-955d-b1974fedf9fa",
+    "bound_hash": "sha256:659a062bf7ba80d822f9ed39b77dd0c1c42b670bfb41bd6a17a9e7f46cbcf2cb"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:freshness-input-closure",
+      "claim": "The canonical freshness digest covers only `(path ‖ blob-digest)` pairs, but the woven artifact also depends on Git history: the git weaver emits history-derived facts such as `introduced-by` commit identities. A checkout with identical woven file blobs but rewritten/cherry-picked history therefore has the same input_closure_digest and source refs, so default `--verify-committed` can accept a snapshot whose history-derived edges differ from a fresh weave; the producer-bound check only proves where that insufficient verifier ran. Include every history-sensitive semantic input in a digest stable across the generated-evidence commit (for example, a canonical path-limited history closure), or re-derive and compare all history-derived outputs, and add an identical-tree/different-history regression. Candidate plan_ref sha256:659a062bf7ba80d822f9ed39b77dd0c1c42b670bfb41bd6a17a9e7f46cbcf2cb.",
+      "objection_hash": "sha256:c55bde4de567e7a9a4a3c17414e17fb78a0b0b5510420f3d00118766f71bda51",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach:node-version-claim-oracle",
+      "claim": "The all-tracked-text scanner and its two dispositions cannot honestly reach the promised clean sweep. Current tracked dependency metadata such as `narcissus/flagship/package-lock.json` contains many real Node compatibility claims below 22.12 (for example dependency `engines.node` values of `>=18`); these are neither false positives nor historical immutable product artifacts, and rewriting third-party engine metadata would be incorrect. Add a closed, machine-preconditioned classification for third-party compatibility metadata, or semantically exclude parsed dependency metadata while still rejecting project/operator runtime-floor claims, with fixtures proving a top-level product claim cannot use that classification. Candidate plan_ref sha256:659a062bf7ba80d822f9ed39b77dd0c1c42b670bfb41bd6a17a9e7f46cbcf2cb.",
+      "objection_hash": "sha256:a99ef41fdacf7c1b17760cbfa50afc3a0ecc844427250329e233c170737b5dca",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
