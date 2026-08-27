@@ -119,6 +119,7 @@ cd clotho                && npm test
 cd ai-native-memory      && npm run check && npm test
 cd lachesis              && npm test
 cd atropos               && npm test
+cd demo                  && npm test
 cd narcissus/flagship    && npm ci && npm test && npm run verify:evidence \
                            && npm run verify:coverage && npm run build && npm run test:e2e
 ```
