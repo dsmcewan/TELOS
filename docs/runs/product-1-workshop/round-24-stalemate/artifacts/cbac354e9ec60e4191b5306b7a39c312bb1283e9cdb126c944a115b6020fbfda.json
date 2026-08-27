@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:06e6fc7506c3c1ae72ff283c14d0431859d26da1587ece3e05afd84f6d0db118",
+  "output_plan_artifact_hash": "sha256:06e6fc7506c3c1ae72ff283c14d0431859d26da1587ece3e05afd84f6d0db118",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:f9eec195cac0e0d92a5b389e4ae7f5ebeddf94f15fa5d738b2d170e2866df11a",
+    "provenance_key": "anthropic:60da97ea-4ee8-4761-a99a-2ae6eae2e8a9"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:1e804b967c135c9ec5ef2ed44971651cdf5ae1432364a5351cfb0eb1caa8e7bb",
+    "provenance_key": "openai:01a0459c-5223-7102-8e64-c67ab9f07add",
+    "bound_hash": "sha256:06e6fc7506c3c1ae72ff283c14d0431859d26da1587ece3e05afd84f6d0db118"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:signed-release-workflow-trust",
+      "claim": "The release gate authenticates the tag, verifier closures, and workflow digest only from inside `release.yml`, but the approach never binds the release workflow definition before it begins executing with publication permissions, OIDC, variables, or secrets. GitHub loads a push-triggered workflow from the event’s associated commit/ref, including workflows not merged to the default branch ([GitHub workflow semantics](https://docs.github.com/en/actions/concepts/workflows-and-actions/workflows)); therefore, a tag pushed at an off-main commit can supply a modified `release.yml` that omits every in-workflow ancestry/signature/digest check and exercises privileged release operations before those checks could reject it. Specify a trigger whose workflow definition is platform-selected from protected trusted main (with the release tag passed only as validated data), keep privileged jobs unreachable until that trusted gate succeeds, and add an off-main-tag/malicious-release-workflow regression proving no privileged job starts and no release mutation occurs. Candidate plan_ref sha256:06e6fc7506c3c1ae72ff283c14d0431859d26da1587ece3e05afd84f6d0db118.",
+      "objection_hash": "sha256:d44e34f9796563b55f150745a922f496261332c52aa989cb2c1057c51f92361c",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

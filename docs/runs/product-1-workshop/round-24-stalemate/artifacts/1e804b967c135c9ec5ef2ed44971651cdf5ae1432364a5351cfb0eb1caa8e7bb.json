@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach:signed-release-workflow-trust",
+        "claim": "The release gate authenticates the tag, verifier closures, and workflow digest only from inside `release.yml`, but the approach never binds the release workflow definition before it begins executing with publication permissions, OIDC, variables, or secrets. GitHub loads a push-triggered workflow from the event’s associated commit/ref, including workflows not merged to the default branch ([GitHub workflow semantics](https://docs.github.com/en/actions/concepts/workflows-and-actions/workflows)); therefore, a tag pushed at an off-main commit can supply a modified `release.yml` that omits every in-workflow ancestry/signature/digest check and exercises privileged release operations before those checks could reject it. Specify a trigger whose workflow definition is platform-selected from protected trusted main (with the release tag passed only as validated data), keep privileged jobs unreachable until that trusted gate succeeds, and add an off-main-tag/malicious-release-workflow regression proving no privileged job starts and no release mutation occurs. Candidate plan_ref sha256:06e6fc7506c3c1ae72ff283c14d0431859d26da1587ece3e05afd84f6d0db118."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a0459c-5223-7102-8e64-c67ab9f07add",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a0459c-5223-7102-8e64-c67ab9f07add",
+    "source": "cli-seats/codex_ask"
+  }
+}

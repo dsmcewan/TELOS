@@ -899,7 +899,28 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   historical-nonauthoritative and NO verified_current field; release
   head ⇒ default mode green with the commit identity carried by the
   producer-bound check-run attestation.
-- **Signed release pipeline** `release.yml`, fail-closed end to end:
+- **Signed release pipeline** `release.yml`, fail-closed end to end.
+  THE WORKFLOW DEFINITION ITSELF IS PLATFORM-SELECTED FROM PROTECTED
+  MAIN (GitHub loads a push-triggered workflow from the triggering
+  event's own commit — so a tag pushed at an off-main commit would
+  execute a SUBSTITUTED release.yml with publication permissions,
+  OIDC, and secrets before any in-workflow check could refuse): there
+  is NO tag-push trigger at all; release.yml runs ONLY on
+  `workflow_dispatch`, which executes the definition from the ref the
+  dispatch targets — RELEASING.md's ceremony dispatches from `main`,
+  and the workflow's first step re-asserts `github.ref ==
+  refs/heads/main` (else abort `untrusted-workflow-ref`). The tag NAME
+  is a dispatch INPUT — pure data, validated by the gate job (tag
+  object fetched via git, signature/acceptance/ancestry checks as
+  below) before anything privileged; every privileged job declares
+  `needs: gate` and is unreachable until the gate succeeds.
+  **Accept (workflow trust)**: off-main-tag regression — a tag whose
+  target commit carries a modified release.yml is pushed ⇒ NOTHING
+  triggers (no push trigger exists); dispatching main's release.yml
+  with that tag name as input ⇒ main's own definition runs, the gate
+  evaluates the tag as data and aborts on its checks; a dispatch
+  aimed at a non-main ref ⇒ untrusted-workflow-ref before any
+  privileged job starts; no release mutation occurs in any of these.
   (1) GATE: tag object must be ANNOTATED and its SIGNATURE VERIFIED in CI
   against an OUT-OF-TREE trust root (an in-tree public key is circular — a
   rewritten commit can carry the attacker's key plus a matching tag): the
