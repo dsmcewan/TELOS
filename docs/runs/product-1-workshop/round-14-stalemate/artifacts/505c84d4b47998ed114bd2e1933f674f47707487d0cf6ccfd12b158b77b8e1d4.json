@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:762168bd943d8c7e19aab1797a49d9b2ff2ecd8f55d5f126290669f15bb7141a",
+  "output_plan_artifact_hash": "sha256:762168bd943d8c7e19aab1797a49d9b2ff2ecd8f55d5f126290669f15bb7141a",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:74beeb812dd32c526bc7367fcbb62e64e5ede09c66c440a0c09e342aac7a38af",
+    "provenance_key": "anthropic:e1697ccb-4a4c-4379-930c-95b2647fb01f"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:253d37d4f9a1d8c6009fab54dbf83dcee7d6af3687f45c51cf5d74529d823945",
+    "provenance_key": "openai:01a04561-9a16-7791-bda0-9a89564c11c8",
+    "bound_hash": "sha256:762168bd943d8c7e19aab1797a49d9b2ff2ecd8f55d5f126290669f15bb7141a"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E2-verdict-producer-integrity",
+      "claim": "The protected verdict surface names the wrong entrypoint and contradicts itself. The blocker-3 verifier is `docs/runs/clotho-self-weave/run.mjs` (`verifyCommittedEvidence` begins at line 563), while E2 repeatedly protects nonexistent `clotho/run.mjs`; Section 8 additionally states that the self-weave verifier is unpinned. Consequently `TRUSTED_VERDICT_CLOSURE_DIGEST`, the Eye-signed transition tuple, base-sourced PR execution, and altered-closure fixtures do not unambiguously cover the actual authoritative verifier, leaving the constant-success replacement path open. Bind the real `docs/runs/clotho-self-weave/run.mjs` closure everywhere, remove the unpinned non-claim, and make the bypass fixtures target that exact path. Candidate sha256:24c8514454557330fe0f63567ef5056cb06446d8eb58d1bb5e27a2ae9facaa71.",
+      "objection_hash": "sha256:87cabb5446a8c4883d3663d0bf739afb61b5f7ab9f66e59411a5cb20a937a38f",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

@@ -215,7 +215,7 @@ per-file designs are in the approved plan; acceptance criteria here.
   bytes ⇒ gate AND controller both refuse transition-payload-mismatch;
   the same record paired with altered workflow bytes ⇒ refused the same
   way; the same record paired with altered controller-closure or
-  verdict-producer-closure bytes (e.g. a swapped run.mjs) ⇒ refused the
+  verdict-producer-closure bytes (e.g. a swapped docs/runs/clotho-self-weave/run.mjs) ⇒ refused the
   same way; a record whose covered_files omits a file the PR actually
   changes in ANY protected surface (verdict producers included) ⇒
   refused; a chain merged by override without
@@ -253,10 +253,10 @@ per-file designs are in the approved plan; acceptance criteria here.
   the chain root. THE SAME DISCIPLINE COVERS EVERY MERGE/RELEASE VERDICT
   PRODUCER, not just the memory gate (an authenticated workflow invoking
   an unpinned script is authority from mutable evidence: swapping
-  `clotho/run.mjs` — deliberately unwoven — for constant-success code
+  `docs/runs/clotho-self-weave/run.mjs` — deliberately unwoven (GLOBAL_EXCLUDE) — for constant-success code
   would reopen blocker 3 behind a green authenticated check):
   `TRUSTED_VERDICT_CLOSURE_DIGEST` covers the complete transitive
-  closures of `clotho/run.mjs`, `render-readiness.mjs`,
+  closures of `docs/runs/clotho-self-weave/run.mjs` (the blocker-3 verifier — verifyCommittedEvidence), `render-readiness.mjs`,
   `run-oracles.mjs`, `verify-contracts.mjs`, and the attestation tooling
   — enumerated by a manifest the bootstrap tool generates from real
   imports, not a hand list. PR CI BASE-SOURCES these scripts exactly like
@@ -265,8 +265,9 @@ per-file designs are in the approved plan; acceptance criteria here.
   (`verdict-producer-untrusted` on mismatch); changes ride the Eye-signed
   transition mechanism under the covered_files discipline. **Accept
   (verdict producers)**: script-only bypass fixture — a PR replaces
-  run.mjs with a constant-success stub and changes a woven input without
-  re-weaving, workflow file unchanged ⇒ the base-sourced run.mjs
+  docs/runs/clotho-self-weave/run.mjs with a constant-success stub and
+  changes a woven input without re-weaving, workflow file unchanged ⇒ the
+  base-sourced docs/runs/clotho-self-weave/run.mjs
   evaluates, fails, and the required check is red; analogous
   render-readiness.mjs and run-oracles.mjs swaps refused the same way;
   a main-context swap with an unmoved digest ⇒
@@ -701,7 +702,7 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   weave rule, machine-enforced BEFORE merge, not discovered on main); if
   none changed, it runs `--historical` and is named "snapshot intact
   (historical — does not assert this HEAD)". Main-push/release jobs always
-  run the authoritative default. run.mjs is NOT woven (editing it never
+  run the authoritative default. docs/runs/clotho-self-weave/run.mjs is NOT woven (editing it never
   forces a re-weave) but it is NOT unpinned: as a merge/release verdict
   producer its closure is protected under TRUSTED_VERDICT_CLOSURE_DIGEST
   and base-sourced in PR CI per E2 — weave membership and
@@ -848,7 +849,7 @@ its own full self-weave republication (+ expected-flagship regen where its
 pins are affected) IN THE SAME PR, so every merged head passes
 `--verify-committed` (v0.2.0 precedent: the merge train required exactly
 such per-change re-weaves). Slices touching only non-woven surfaces
-(run.mjs, workflows/, .github/, flagship+demo exclude-listed trees, new
+(docs/runs/clotho-self-weave/run.mjs, workflows/, .github/, flagship+demo exclude-listed trees, new
 excluded package dirs) ride without one — each slice's PR body states which
 case applies and why. The naming/versions slice and the excluded-dirs
 implementation slice are therefore each ATOMIC (rename / exclude-list
@@ -878,6 +879,9 @@ Live workshop + council prove provenance, not correctness (lachesis-1 lesson);
 the running artifact is reviewed against real data. Phase 1b items are scheduled,
 not delivered. PYLAE Gate v1 is a local single-user tool; it is not a network
 service and asserts no identity/tenancy — enforced by the no-listener oracle and
-stated as a non-claim. The self-weave verifier is itself un-pinned (governed by
-CI/review). No production authority is granted to any model council; the Eye's
+stated as a non-claim. The self-weave verifier
+(`docs/runs/clotho-self-weave/run.mjs`) is NOT un-pinned: its closure is
+protected under TRUSTED_VERDICT_CLOSURE_DIGEST, base-sourced in PR CI, and
+changeable only through the Eye-signed transition mechanism (E2). No
+production authority is granted to any model council; the Eye's
 human authority and the deterministic gate remain the trust roots.

@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E2-verdict-producer-integrity",
+        "claim": "The protected verdict surface names the wrong entrypoint and contradicts itself. The blocker-3 verifier is `docs/runs/clotho-self-weave/run.mjs` (`verifyCommittedEvidence` begins at line 563), while E2 repeatedly protects nonexistent `clotho/run.mjs`; Section 8 additionally states that the self-weave verifier is unpinned. Consequently `TRUSTED_VERDICT_CLOSURE_DIGEST`, the Eye-signed transition tuple, base-sourced PR execution, and altered-closure fixtures do not unambiguously cover the actual authoritative verifier, leaving the constant-success replacement path open. Bind the real `docs/runs/clotho-self-weave/run.mjs` closure everywhere, remove the unpinned non-claim, and make the bypass fixtures target that exact path. Candidate sha256:24c8514454557330fe0f63567ef5056cb06446d8eb58d1bb5e27a2ae9facaa71."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a04561-9a16-7791-bda0-9a89564c11c8",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a04561-9a16-7791-bda0-9a89564c11c8",
+    "source": "cli-seats/codex_ask"
+  }
+}
