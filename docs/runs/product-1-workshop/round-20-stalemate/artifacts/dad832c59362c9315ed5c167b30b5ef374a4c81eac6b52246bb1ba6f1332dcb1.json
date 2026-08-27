@@ -1,0 +1,55 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:7d81a4a3bd5a4ec12bd49924858db54d1ccf46e9be5ca1e0b5bf4f7c5d46abf5",
+  "output_plan_artifact_hash": "sha256:7d81a4a3bd5a4ec12bd49924858db54d1ccf46e9be5ca1e0b5bf4f7c5d46abf5",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:0d14f039a5b02e26c0cdfb7b80511918bc834fb8885c653b84abb7f92743e8cd",
+    "provenance_key": "anthropic:6d465f65-c8dd-40d8-8ed7-3f7fb7b9751b"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:76cd435e2fae946a8eef3e19cce9dbe856fda9c8da7f817528bd2738b318078c",
+    "provenance_key": "openai:01a04580-4df5-7d41-adda-19c893ba3bb9",
+    "bound_hash": "sha256:7d81a4a3bd5a4ec12bd49924858db54d1ccf46e9be5ca1e0b5bf4f7c5d46abf5"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:E1-branch-publisher",
+      "claim": "The publisher accepts an agent-supplied target branch name but never requires a fresh controller-owned namespace, rejects the default/protected branch, or proves the publisher credential cannot bypass direct-push protection. An API surface without a merge operation is insufficient: publishing HEAD directly to main mutates the protected base without the merge controller. Add server-derived default/protected-ref rejection, nonexistence or exact expected-old-SHA guards, effective non-bypass verification for the publisher credential, and adversarial main/protected-branch fixtures proving no push occurs.",
+      "objection_hash": "sha256:b444109d907231d13c36eabd782edb2972b7da9881be78667f8bf837ca3ef2cf",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach:E1-execution-surface",
+      "claim": "The execution-surface refusal is not closed or testable. Only `.github/**` is concretely denied, but at fc0fa05 the trusted pull-request CI checks out proposed code and executes repository-controlled `npm test` scripts. An agent can alter package.json, a test runner, or an imported helper and obtain execution under the workflow's GITHUB_TOKEN without touching `.github/**`; opening the PR is enough to trigger it. Define and enforce the complete executable surface reachable from every automatically triggered workflow, or ensure all jobs executing proposed bytes are credentialless/secretless, and add a non-workflow-file payload regression proving the patch cannot execute with credentials.",
+      "objection_hash": "sha256:5bd3902698addaa2811a55fa5aaa1cea6d5f528c546968f379c0831945cffac4",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach:E2-verdict-producer-integrity",
+      "claim": "`TRUSTED_VERDICT_CLOSURE_DIGEST` is specified as an import-derived closure, which does not cover child-process, npm-script, or other executable edges. This is already exploitable at fc0fa05: base-sourced `verify-contracts.mjs` uses `spawnSync` to run `test-comprehension-gate.mjs`, so a PR can replace that unimported child with constant-success code while the trusted parent and its import closure remain unchanged. Enumerate and pin every executable edge or materialize every invoked child from the trusted base, fail closed on unresolved/dynamic commands, and add child-script/npm-script swap fixtures.",
+      "objection_hash": "sha256:d0d41516547f41030467f02659fe021416ce6df73a5542da6c1d91f05c980cbe",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach:signed-release-pipeline",
+      "claim": "The release gate does not deterministically bind the annotated tag's target to the exact qualified commit accepted by The Eye. A correctly signed tag on another SHA can pass the stated tag-signature, readiness, exact-SHA CI, and producer checks; those checks establish properties of that SHA but not that it is the recorded accepted release head. Require a content-addressed acceptance/step-ledger record naming the release commit, re-derive that record under the trusted authority chain, require tag target equality (and protected-main ancestry where applicable), and add a trusted-signer/nonaccepted-SHA no-go fixture.",
+      "objection_hash": "sha256:6d9b1595e119bc82327534a3915ae418f6b96b29a35e607ca1be8f042d52e601",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

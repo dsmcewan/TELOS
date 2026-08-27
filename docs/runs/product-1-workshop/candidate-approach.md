@@ -53,7 +53,18 @@ per-file designs are in the approved plan; acceptance criteria here.
   credential: it schema-validates the patch data, applies it in a clean
   sandbox checkout, pushes the branch, opens the PR, and returns
   `{pr_url, head_sha}`; its API surface contains NO merge operation and
-  the credential never enters any agent's environment. AGENT-AUTHORED
+  the credential never enters any agent's environment. THE PUBLISHER'S
+  PUSH TARGET IS CONTROLLER-OWNED, NEVER AGENT-CHOSEN (an agent-supplied
+  branch name aimed at main would mutate the protected base with no
+  merge at all): the publisher MINTS the branch name itself in a
+  reserved namespace (`hestia/fix-<run_id>-<n>`), REJECTS any push whose
+  ref resolves to the default branch or any protected/ruleset-covered
+  ref (protected-ref set fetched server-side, not assumed), pushes
+  CREATE-ONLY (the ref must not exist; force-with-lease against an
+  expected-empty old SHA — an existing ref ⇒ refuse `ref-exists`), and
+  its credential is verified NON-BYPASS at startup with the same
+  full-ruleset enumeration the merge controller performs (so even a
+  publisher bug cannot direct-push a protected ref). AGENT-AUTHORED
   EXECUTION-SURFACE CHANGES ARE REJECTED BEFORE PUBLICATION (pushing a
   branch whose patch adds or edits a push-triggered workflow would hand
   the agent's code a GitHub Actions token — and reachable secrets —
@@ -63,7 +74,20 @@ per-file designs are in the approved plan; acceptance criteria here.
   `.github/**` (workflows, composite actions, Actions config) or other
   execution-trigger surfaces — no exception path exists through Hestia;
   CI-config changes are outside its remit entirely and flow only through
-  the human/Eye path with its transition-record discipline. Agents can
+  the human/Eye path with its transition-record discipline. Rejecting
+  workflow files alone is NOT the whole surface (PR CI checks out
+  proposed code and runs its `npm test` — an agent payload in
+  package.json scripts, a test runner, or an imported helper executes
+  under that job's GITHUB_TOKEN the moment the PR opens): the rule is
+  therefore about the JOBS, not just the files — EVERY automatically
+  triggered job that executes proposed-tree bytes MUST run
+  CREDENTIALLESS: `permissions: {}` (a token with zero scopes), no
+  secrets referenced, no OIDC; only jobs executing exclusively
+  base-sourced/trusted bytes (the verdict producers, the post job) may
+  hold scoped permissions. The workflow-lint oracle enforces this
+  partition (a proposed-bytes job with any permission scope or secret
+  reference ⇒ FAIL) — so an agent payload can run its code in PR CI but
+  holds NOTHING: no writable token, no secrets, no identity. Agents can
   therefore CAUSE branch publication (mediated, validated) but cannot
   invoke or indirectly select a merge. Bind `pr_url` → `{owner,repo,
   number}` (regex, unparseable ⇒ excluded+reported); head_sha (40-hex)
@@ -81,7 +105,13 @@ per-file designs are in the approved plan; acceptance criteria here.
   push-triggered workflow (or editing any `.github/**` file) ⇒ the
   publisher refuses execution-surface-rejected and NOTHING is pushed —
   the agent-authored workflow never executes, obtains no token and no
-  secrets; publisher closure covered by TRUSTED_CONTROLLER_DIGEST.
+  secrets; PROTECTED-REF regressions: an agent patch naming main (or any
+  protected ref) as target ⇒ refused, no push occurs; a minted-namespace
+  collision (ref exists) ⇒ refused ref-exists; NON-WORKFLOW PAYLOAD
+  regression: a patch planting a payload in package.json test scripts ⇒
+  publishable, but the PR CI job that executes it is asserted
+  credentialless (permissions {}, no secrets) so the payload runs with
+  nothing; publisher closure covered by TRUSTED_CONTROLLER_DIGEST.
   (ii) DETERMINISTIC PRE-MERGE CONTROLLER (the sole holder of merge
   credentials): new `workflows/tools/merge-controller.mjs`, plain zero-dep
   node, run AFTER the workflow. THE CONTROLLER'S OWN CLOSURE IS A
@@ -302,8 +332,17 @@ per-file designs are in the approved plan; acceptance criteria here.
   `TRUSTED_VERDICT_CLOSURE_DIGEST` covers the complete transitive
   closures of `docs/runs/clotho-self-weave/run.mjs` (the blocker-3 verifier — verifyCommittedEvidence), `render-readiness.mjs`,
   `run-oracles.mjs`, `verify-contracts.mjs`, and the attestation tooling
-  — enumerated by a manifest the bootstrap tool generates from real
-  imports, not a hand list. PR CI BASE-SOURCES these scripts exactly like
+  — where "closure" means EVERY EXECUTABLE EDGE, not just the import
+  graph: static imports AND child-process invocations (spawn/spawnSync/
+  exec targets, npm-script bodies) are enumerated by the bootstrap
+  tool's static analysis into the manifest (verify-contracts.mjs
+  spawnSync-ing test-comprehension-gate.mjs is the live example — an
+  unimported child a PR could swap for constant-success while the
+  trusted parent's import closure is unchanged); every enumerated child
+  is base-sourced/digest-checked exactly like its parent, and an edge
+  the analyzer cannot resolve to a concrete tracked file (dynamic
+  command construction) ⇒ FAIL `closure-unresolvable` at manifest build
+  — fail closed, never a warning. Not a hand list. PR CI BASE-SOURCES these scripts exactly like
   the memory-gate closure (a proposed verdict producer never evaluates
   its own PR); main/release workflows digest-check before invoking
   (`verdict-producer-untrusted` on mismatch); changes ride the Eye-signed
@@ -314,7 +353,12 @@ per-file designs are in the approved plan; acceptance criteria here.
   base-sourced docs/runs/clotho-self-weave/run.mjs
   evaluates, fails, and the required check is red; analogous
   render-readiness.mjs and run-oracles.mjs swaps refused the same way;
-  a main-context swap with an unmoved digest ⇒
+  CHILD-SCRIPT swap fixture — a PR replaces an unimported spawnSync
+  child (test-comprehension-gate.mjs) with constant-success code, parent
+  untouched ⇒ the child is base-sourced/digest-checked and the swap is
+  caught; an npm-script-body swap is caught the same way; a dynamic
+  spawn the analyzer cannot resolve ⇒ closure-unresolvable at manifest
+  build; a main-context swap with an unmoved digest ⇒
   verdict-producer-untrusted. (3) RELEASE: the authoritative release verification is
   executed by the Eye LOCALLY per RELEASING.md from a tree verified
   against the protected chain root BEFORE signing the tag; CI re-runs it
@@ -805,7 +849,19 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   convenience distribution, imported ONLY if its fingerprint matches, else
   abort `key-fingerprint-mismatch`; then runs `git verify-tag` against that
   keyring (unknown/unsigned/unverifiable/wrong-key ⇒ abort); variable unset
-  ⇒ abort fail-closed. Required-CI check-run asserted at the tag SHA with
+  ⇒ abort fail-closed. THE TAG TARGET MUST BE THE EXACT ACCEPTED COMMIT,
+  not merely a well-attested one (a correctly signed tag on some other
+  SHA would otherwise pass every property check — signature, readiness,
+  CI — without being the commit the Eye accepted): the quest's
+  step-ledger carries a content-addressed RELEASE-ACCEPTANCE record
+  `{release_commit, plan_ref, accepted_by: eye_authorization
+  (Ed25519 over release_commit ‖ plan_ref), record_id}`; the gate
+  re-derives that record under the trusted authority chain (anchored,
+  digest-checked verdict producers), verifies the Eye's signature
+  against EYE_AUTHORITY_PUBKEY, and requires (a) tag target ==
+  release_commit EXACTLY and (b) release_commit is an ancestor of
+  protected main — any mismatch ⇒ abort `tag-not-accepted-commit`.
+  Required-CI check-run asserted at the tag SHA with
   the SAME producer binding (authenticated Actions app + trusted workflow
   digest + exact run id — never name-only; untrusted same-name collision
   fixture must fail the gate); local
@@ -842,7 +898,11 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   RELEASING.md ceremony (local signed annotated tag with the committed public
   key's private counterpart; immutability Setting prerequisite; correction
   process — first application: v0.2.0 4,558→4,559). **Accept**: lightweight tag
-  ⇒ gate aborts; tampered tag signature ⇒ aborts; planted extra asset ⇒
+  ⇒ gate aborts; tampered tag signature ⇒ aborts; TRUSTED-SIGNER/
+  NONACCEPTED-SHA fixture — a correctly signed tag whose target is a
+  commit with green CI but NO Eye-signed release-acceptance record ⇒
+  gate aborts tag-not-accepted-commit (signature validity is not
+  acceptance); planted extra asset ⇒
   publish check fails; every published artifact passes `gh attestation verify`.
 - **Pages provenance**, tightly bound: ci.yml uploads artifact
   `demo-${{ github.sha }}` only on main pushes after required-ci; pages.yml
