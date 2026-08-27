@@ -26,23 +26,56 @@
 // All state lives in the run's workdir as plain JSON; every helper is
 // synchronous-IO, zero-dep, and safe to re-run.
 
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { closeSync, fsyncSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { generateKeypair } from "../merkle-dag/crypto.mjs";
-import { reverifyRecord } from "../breakout/verifier.mjs";
+import { reverifyRecord, resolveUnder } from "../breakout/verifier.mjs";
 import { runBreakout } from "../breakout/breakout.mjs";
 import { renderClaimRules } from "./claims.mjs";
+import { WORKSTREAM_ID, WORKSTREAM_ID_MAX } from "./manifest.mjs";
 
+// Tolerant read-or-fallback (kept exported for compatibility) — but the run's
+// OWN recursion/key state must use loadJsonState below: with the tolerant
+// shape, a corrupt checkpoint.teams.json silently reset every converged
+// workstream (violating STYX never-re-fight) and a corrupt keys.json silently
+// regenerated signing keys, orphaning every previously signed record.
 export const loadJson = (p, fallback) => {
   try { return JSON.parse(readFileSync(p, "utf8")); } catch { return fallback; }
 };
-export const saveJson = (p, v) => writeFileSync(p, JSON.stringify(v, null, 2) + "\n");
+
+/** Strict state reader: {exists:false} on ENOENT; THROWS on corrupt/unreadable. */
+export const loadJsonState = (p) => {
+  try { return { exists: true, value: JSON.parse(readFileSync(p, "utf8")) }; }
+  catch (e) {
+    if (e?.code === "ENOENT") return { exists: false, value: null };
+    throw new Error(`state file corrupt/unreadable (refusing the silent-reset): ${p}: ${e?.message || e}`);
+  }
+};
+
+// Atomic: temp + wx + fsync + rename, cleanup on failure — a crash mid-write
+// must never leave a truncated state file for the next run to misread.
+export const saveJson = (p, v) => {
+  const tmp = `${p}.tmp-${process.pid}-${Math.random().toString(36).slice(2, 10)}`;
+  let fd = null;
+  try {
+    fd = openSync(tmp, "wx");
+    writeFileSync(fd, JSON.stringify(v, null, 2) + "\n");
+    fsyncSync(fd);
+    closeSync(fd); fd = null;
+    renameSync(tmp, p);
+  } catch (e) {
+    if (fd !== null) try { closeSync(fd); } catch {}
+    try { rmSync(tmp, { force: true }); } catch {}
+    throw e;
+  }
+};
 
 /** Persisted signing keypairs — fresh keys would re-hash the plan and defeat resume. */
 export function loadKeys(workdir, signers = ["claude", "codex"], log = () => {}) {
   const keysPath = path.join(workdir, "keys.json");
-  let keys = loadJson(keysPath, null);
-  if (!keys) {
+  const state = loadJsonState(keysPath); // corrupt keys THROW — silent regeneration would orphan every signed record
+  let keys = state.value;
+  if (!state.exists) {
     keys = Object.fromEntries(signers.map((s) => [s, generateKeypair()]));
     saveJson(keysPath, keys);
     log("generated and persisted run keypairs");
@@ -55,8 +88,9 @@ export function loadKeys(workdir, signers = ["claude", "codex"], log = () => {})
 /** Pinned research/brief: produced once, reused every invocation (stable hashes). */
 export async function pinResearch(workdir, name, produce, log = () => {}) {
   const p = path.join(workdir, `${name}.json`);
-  let value = loadJson(p, null);
-  if (!value) {
+  const state = loadJsonState(p); // corrupt pin THROWS — re-producing would silently change stable hashes
+  let value = state.value;
+  if (!state.exists) {
     value = await produce();
     saveJson(p, value);
     log(`${name}: pinned`);
@@ -66,6 +100,12 @@ export async function pinResearch(workdir, name, produce, log = () => {}) {
   return value;
 }
 
+// Workstream ids key these maps, so they must be prototype-free: with a plain
+// object, an id like "constructor" resolves inherited Object.prototype members
+// (fightCounts["constructor"]||0 string-concatenates and the closure cap never
+// fires; boutBlockers["constructor"]||[] yields a function and .includes crashes).
+const deproto = (v) => Object.assign(Object.create(null), v);
+
 /** The run's persisted recursion state: banked blockers + converged checkpoints. */
 export function openState(workdir) {
   const blockersPath = path.join(workdir, "checkpoint.blockers.json");
@@ -74,9 +114,9 @@ export function openState(workdir) {
   return {
     workdir,
     blockersPath, teamsPath, fightCountsPath,
-    boutBlockers: loadJson(blockersPath, {}),
-    done: loadJson(teamsPath, {}),
-    fightCounts: loadJson(fightCountsPath, {}),
+    boutBlockers: deproto(loadJsonState(blockersPath).value ?? {}),
+    done: deproto(loadJsonState(teamsPath).value ?? {}),
+    fightCounts: deproto(loadJsonState(fightCountsPath).value ?? {}),
     saveBlockers() { saveJson(this.blockersPath, this.boutBlockers); },
     saveDone() { saveJson(this.teamsPath, this.done); },
     saveFightCounts() { saveJson(this.fightCountsPath, this.fightCounts); }
@@ -124,7 +164,17 @@ export function styxGenerateFiles({ state, generate, binary = (rel) => /\.(png|j
       for (const rel of injected.files) {
         try {
           files[rel] = readFileSync(path.join(state.workdir, rel), binary(rel) ? undefined : "utf8");
-        } catch { complete = false; }
+        } catch (e) {
+          // ENOENT = genuinely incomplete preservation (pre-Styx bootstrap) →
+          // regenerate. Any OTHER read failure is corruption of a CONVERGED
+          // team's preserved artifact — regenerating would re-invoke the seat
+          // and violate STYX permanence, so it throws instead. (Conscious
+          // ruling: deletion still regenerates; unreadability never does.)
+          if (e?.code !== "ENOENT") {
+            throw new Error(`styx: preserved artifact unreadable for converged team ${injected.id} (${rel}): ${e?.message || e} — refusing to regenerate`);
+          }
+          complete = false;
+        }
       }
       if (complete) {
         log(`styx: ${injected.id} re-settled from its preserved artifact (no regeneration)`);
@@ -204,6 +254,21 @@ export function bankVerifyFailures(halts, state, log = () => {}) {
   return infra;
 }
 
+/**
+ * Confined fight-log path for a workstream id. NOT pure: resolveUnder does
+ * lstat/realpath I/O and fails closed (returns null) when the fights dir is
+ * missing or a symlink — callers must mkdirSync the fights dir first.
+ */
+export function fightLogPath(telosDir, wsId) {
+  if (typeof wsId !== "string" || !WORKSTREAM_ID.test(wsId) || wsId.length > WORKSTREAM_ID_MAX) {
+    throw new Error(`workstream id ${JSON.stringify(wsId)} fails the portable filename grammar ${WORKSTREAM_ID}`);
+  }
+  const fightsDir = path.join(telosDir, "fights");
+  const resolved = resolveUnder(fightsDir, `${wsId}.json`);
+  if (!resolved) throw new Error(`fight-log path for workstream ${JSON.stringify(wsId)} escapes ${fightsDir} — refusing to write`);
+  return resolved;
+}
+
 /** CLOSURE: after three bouts the contract closes — count and render the clause. */
 export function contractClosure(state, wsId) {
   state.fightCounts[wsId] = (state.fightCounts[wsId] || 0) + 1;
@@ -232,6 +297,11 @@ export async function runBouts({ workstreams, state, makeFns, defById, hashById,
     : (Number.isInteger(Number(process.env.TELOS_MAX_ROUNDS)) && process.env.TELOS_MAX_ROUNDS ? Number(process.env.TELOS_MAX_ROUNDS) : undefined);
   const records = [];
   for (const ws of workstreams) {
+    // Belt-and-braces: runBouts is reachable without validateManifest (raw defs
+    // from docs/runs runners), and ws.id keys state maps and the fight-log path.
+    if (typeof ws.id !== "string" || !WORKSTREAM_ID.test(ws.id) || ws.id.length > WORKSTREAM_ID_MAX) {
+      throw new Error(`runBouts: workstream id ${JSON.stringify(ws.id)} fails the portable filename grammar ${WORKSTREAM_ID}`);
+    }
     const checks = ws.checks;
     if (state.done[ws.id]?.converged) {
       log(`bout ${ws.id}: across the river (converged in a prior invocation — never re-fought)`);
@@ -262,9 +332,8 @@ export async function runBouts({ workstreams, state, makeFns, defById, hashById,
       finding: ws.finding, findingsKey: ws.findingsKey,
       node_hash: hashById?.get(ws.id) ?? null, frozen_def: defById.get(ws.id) ?? null
     };
-    const fightsDir = path.join(telosDir, "fights");
-    mkdirSync(fightsDir, { recursive: true });
-    saveJson(path.join(fightsDir, `${ws.id}.json`),
+    mkdirSync(path.join(telosDir, "fights"), { recursive: true });
+    saveJson(fightLogPath(telosDir, ws.id),
       { workstream: ws.id, converged: record.converged, rounds: record.rounds, referee: record.referee ?? null });
     if (record.converged) {
       state.done[ws.id] = full;
