@@ -29,9 +29,10 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { generateKeypair } from "../merkle-dag/crypto.mjs";
-import { reverifyRecord } from "../breakout/verifier.mjs";
+import { reverifyRecord, resolveUnder } from "../breakout/verifier.mjs";
 import { runBreakout } from "../breakout/breakout.mjs";
 import { renderClaimRules } from "./claims.mjs";
+import { WORKSTREAM_ID, WORKSTREAM_ID_MAX } from "./manifest.mjs";
 
 export const loadJson = (p, fallback) => {
   try { return JSON.parse(readFileSync(p, "utf8")); } catch { return fallback; }
@@ -66,6 +67,12 @@ export async function pinResearch(workdir, name, produce, log = () => {}) {
   return value;
 }
 
+// Workstream ids key these maps, so they must be prototype-free: with a plain
+// object, an id like "constructor" resolves inherited Object.prototype members
+// (fightCounts["constructor"]||0 string-concatenates and the closure cap never
+// fires; boutBlockers["constructor"]||[] yields a function and .includes crashes).
+const deproto = (v) => Object.assign(Object.create(null), v);
+
 /** The run's persisted recursion state: banked blockers + converged checkpoints. */
 export function openState(workdir) {
   const blockersPath = path.join(workdir, "checkpoint.blockers.json");
@@ -74,9 +81,9 @@ export function openState(workdir) {
   return {
     workdir,
     blockersPath, teamsPath, fightCountsPath,
-    boutBlockers: loadJson(blockersPath, {}),
-    done: loadJson(teamsPath, {}),
-    fightCounts: loadJson(fightCountsPath, {}),
+    boutBlockers: deproto(loadJson(blockersPath, {})),
+    done: deproto(loadJson(teamsPath, {})),
+    fightCounts: deproto(loadJson(fightCountsPath, {})),
     saveBlockers() { saveJson(this.blockersPath, this.boutBlockers); },
     saveDone() { saveJson(this.teamsPath, this.done); },
     saveFightCounts() { saveJson(this.fightCountsPath, this.fightCounts); }
@@ -204,6 +211,21 @@ export function bankVerifyFailures(halts, state, log = () => {}) {
   return infra;
 }
 
+/**
+ * Confined fight-log path for a workstream id. NOT pure: resolveUnder does
+ * lstat/realpath I/O and fails closed (returns null) when the fights dir is
+ * missing or a symlink — callers must mkdirSync the fights dir first.
+ */
+export function fightLogPath(telosDir, wsId) {
+  if (typeof wsId !== "string" || !WORKSTREAM_ID.test(wsId) || wsId.length > WORKSTREAM_ID_MAX) {
+    throw new Error(`workstream id ${JSON.stringify(wsId)} fails the portable filename grammar ${WORKSTREAM_ID}`);
+  }
+  const fightsDir = path.join(telosDir, "fights");
+  const resolved = resolveUnder(fightsDir, `${wsId}.json`);
+  if (!resolved) throw new Error(`fight-log path for workstream ${JSON.stringify(wsId)} escapes ${fightsDir} — refusing to write`);
+  return resolved;
+}
+
 /** CLOSURE: after three bouts the contract closes — count and render the clause. */
 export function contractClosure(state, wsId) {
   state.fightCounts[wsId] = (state.fightCounts[wsId] || 0) + 1;
@@ -232,6 +254,11 @@ export async function runBouts({ workstreams, state, makeFns, defById, hashById,
     : (Number.isInteger(Number(process.env.TELOS_MAX_ROUNDS)) && process.env.TELOS_MAX_ROUNDS ? Number(process.env.TELOS_MAX_ROUNDS) : undefined);
   const records = [];
   for (const ws of workstreams) {
+    // Belt-and-braces: runBouts is reachable without validateManifest (raw defs
+    // from docs/runs runners), and ws.id keys state maps and the fight-log path.
+    if (typeof ws.id !== "string" || !WORKSTREAM_ID.test(ws.id) || ws.id.length > WORKSTREAM_ID_MAX) {
+      throw new Error(`runBouts: workstream id ${JSON.stringify(ws.id)} fails the portable filename grammar ${WORKSTREAM_ID}`);
+    }
     const checks = ws.checks;
     if (state.done[ws.id]?.converged) {
       log(`bout ${ws.id}: across the river (converged in a prior invocation — never re-fought)`);
@@ -262,9 +289,8 @@ export async function runBouts({ workstreams, state, makeFns, defById, hashById,
       finding: ws.finding, findingsKey: ws.findingsKey,
       node_hash: hashById?.get(ws.id) ?? null, frozen_def: defById.get(ws.id) ?? null
     };
-    const fightsDir = path.join(telosDir, "fights");
-    mkdirSync(fightsDir, { recursive: true });
-    saveJson(path.join(fightsDir, `${ws.id}.json`),
+    mkdirSync(path.join(telosDir, "fights"), { recursive: true });
+    saveJson(fightLogPath(telosDir, ws.id),
       { workstream: ws.id, converged: record.converged, rounds: record.rounds, referee: record.referee ?? null });
     if (record.converged) {
       state.done[ws.id] = full;
