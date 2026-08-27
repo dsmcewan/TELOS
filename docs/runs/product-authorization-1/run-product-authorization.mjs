@@ -45,8 +45,8 @@ const { askClaude, askCodex, askGrok, askGemini } = await imp("docs/institutiona
 // ---------- bind the exact plan under authorization ----------
 const PLAN_PATH = "docs/runs/product-1-workshop/matured-approach.md";
 const PREREVIEW_PATH = "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json";
-const EXPECTED_PLAN_REF = "sha256:834016588543dcd55e37773a5c50030458bfb756cdbdfe55f0686733673ea8b9";
-const REVIEWED_HEAD = "6ba6ed9"; // matured-approach.md committed head (S1 convergence commit)
+const EXPECTED_PLAN_REF = "sha256:72b466d84f21756fcd9c0d7528354c6e0c18b0f0db4464e280225b9e58dba8d1";
+const REVIEWED_HEAD = "cfa6395"; // matured-approach.md committed head (S1 re-convergence, round 22, after run-1 council fold)
 
 const planText = readFileSync(path.join(ROOT, PLAN_PATH), "utf8");
 const planRef = "sha256:" + sha256hex(canonicalize({ kind: "candidate", plan: planText }));
@@ -69,7 +69,8 @@ const USE_CASE = "iliad-product-1";
 const TIMESTAMP = new Date().toISOString();
 const OBJECTIVE =
   `Authorize Argo implementation of the product-1 quest matured approach ` +
-  `(content address ${planRef}; Daedalus-converged after 10 adversarial rounds with 41 discharged objections; ` +
+  `(content address ${planRef}; Daedalus-converged after 22 adversarial rounds with 60 discharged objections ` +
+  `plus council run 1's ratified hard stop folded and re-matured; ` +
   `reviewed head ${REVIEWED_HEAD}) — the TELOS v0.3.0 Production Quest shipping PYLAE Gate v1 ` +
   `(the productized local single-user CLI SKU over the TELOS trust spine). ` +
   `The plan's own terms to judge it on: (1) ENFORCEMENT E1-E6 are fail-closed with adversarial regression tests: ` +

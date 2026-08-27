@@ -1,0 +1,31 @@
+{
+  "build_id": "iliad-product-1-authz-am42-regularization-am43-exclusions",
+  "use_case": "iliad-product-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json"
+  ],
+  "proposal_ref": "sha256:72b466d84f21756fcd9c0d7528354c6e0c18b0f0db4464e280225b9e58dba8d1",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-27T23:29:44.232Z",
+  "rationale": "I verified the binding on disk before judging: the council runner pins PLAN_PATH=docs/runs/product-1-workshop/matured-approach.md, EXPECTED_PLAN_REF=sha256:72b466d8..., and REVIEWED_HEAD=cfa6395, with a deterministic drift check that refuses to authorize on any mismatch, and the working tree sits at cfa6395 on quest/product-1-pre-review. Judged on its own four terms the plan is implementation-ready. (1) E1-E6 are genuinely fail-closed with adversarial regressions that reproduce each defect rather than merely asserting the fix: the merge-controller is the sole merge credential with per-merge re-derivation, server-side strict-up-to-date closure of the check-then-PUT window, producer-bound (never name-keyed) check resolution, bypass-visibility treated as refusal rather than absence, and controller self-protection via TRUSTED_CONTROLLER_DIGEST; the branch publisher mints controller-owned refs, rejects execution-surface patches, and the credentialless-proposed-bytes partition closes the non-workflow-payload hole; E2's authority chain is anchored out-of-tree at every context (PR base sha, protected variables, Eye-local release verification) and the run-1 ratified hard stop is demonstrably folded — the Eye signature now binds the full tuple (chain roots, verifier/workflow/controller/verdict-producer closure digests, canonicalized covered_files hash) with BOTH enforcers recomputing from ground truth and refusing transition-payload-mismatch, plus the record-reuse fixtures the ratification demanded; the genesis ceremony honestly resolves the bootstrap circularity with a recorded exceptional merge instead of a silent bypass; E3 is exceptionless with the flag-matrix assertion; E6's mutation-registry/baseline-sandbox design defeats constant-success, flag-special-casing, and relocation-sensitive oracles. (2) The governance bootstrap slice is correctly data-only under sitting v15 authority, executes the four-step successor transition this council run itself instantiates, never touches AM-42 bytes (registry-row linkage only), and the deferred §5d executable check is an honestly stated, evidence-covered gap that closes in the ordered verifier slice. (3) The Phase-0/1a product contract is honest: the hard --gate with bidirectionally bound typed evidence and no report-only mode, the source-release install contract with dual checkout/archive doctor semantics that claims self-consistency but never offline authenticity, clean-room install proof, draft-first publication, double-assembly reproducibility over the actual shipped artifact, and the bounded Chromium-only qualification with register-tracked multi-engine items. (4) The atomic weave rule is machine-enforced pre-merge with union input discovery over both trees, closing the added/deleted-woven-file blind spots. Deferred items are structurally represented (register rows, na-by-signed-adr), not softened verdicts; recorded Eye rulings are cited by stable identifiers and not re-litigated; honest limits (§8) accurately state the residuals, including the maintainer-override backstop and single-trust-principal reality. I found no remaining internal contradiction after checking the previously contested seams (bootstrap no-code vs same-PR re-weave — resolved by the data/code distinction; sole-merger vs genesis merge — resolved by the recorded exception; weave membership vs trust protection of the self-weave verifier — resolved as independent properties). After 22 adversarial rounds, 60 discharged objections, and the run-1 hard stop folded and re-matured, I stake the seat's signature on this: approve as-is.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "1a744efc-dfea-4552-a94b-df814d89b8cb",
+    "source": "cli-seats/claude",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-27T23:30:56.314Z",
+    "tool": "cli-seats.askClaude"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "82384f850242db783cc29550dcb4e1a331116d79f532989f62514fe367233f18",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

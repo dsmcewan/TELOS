@@ -1,0 +1,146 @@
+{
+  "build_id": "iliad-product-1-authz-am42-regularization-am43-exclusions",
+  "use_case": "iliad-product-1",
+  "objective": "Authorize Argo implementation of the product-1 quest matured approach (content address sha256:72b466d84f21756fcd9c0d7528354c6e0c18b0f0db4464e280225b9e58dba8d1; Daedalus-converged after 22 adversarial rounds with 60 discharged objections plus council run 1's ratified hard stop folded and re-matured; reviewed head cfa6395) — the TELOS v0.3.0 Production Quest shipping PYLAE Gate v1 (the productized local single-user CLI SKU over the TELOS trust spine). The plan's own terms to judge it on: (1) ENFORCEMENT E1-E6 are fail-closed with adversarial regression tests: deterministic pre-merge merge-controller (sole merge credential; models produce dossiers, never merge), memory-gate freshness with authority chained to out-of-tree protected roots (base-anchored verifier closure, Eye-signed authority transitions, Eye-local genesis provisioning), exceptionless auditor (no allow-empty), gate production-profile default flip, discriminating oracles (closed mutation registry, mutation-based negatives, direct execution), verifier hardening (dedupe, root-invariant sweep, draft-status citation gate). (2) GOVERNANCE: a docs/registry-only BOOTSTRAP slice lands first under the sitting v15 authority, executing the successor-plan transition (publish plan hash -> authorize exact hash -> pivot active_plan/active_authorization + supersede v15 -> Eye implementation-authority confirmation); AM-42 bytes never touched (registry-row linkage only); AM-43 classifies cli/ + connectors/meta-ads-mcp/ as excluded package dirs. THIS COUNCIL IS that re-authorization: its build_id names the enrollment flip. (3) PRODUCT: Phase-0 contract frozen (PD-001..PD-007 ADRs, hard go-live gate with typed item-bound evidence, no report-only release mode); Phase-1a honest install contract (source release with pylae entrypoint, dual checkout/archive doctor semantics, clean-room install proof, draft-first fail-closed release publication, full-assembly reproducibility, out-of-tree signer fingerprint); flagship = future operator console with a bounded Chromium-only qualified-browser contract this round. (4) ATOMIC WEAVE RULE: every slice touching woven inputs carries its own re-weave; PR CI mode-splits historical vs authoritative exact-head verification accordingly. Judge the plan on THESE terms — do NOT require capabilities it explicitly defers to register items (multi-engine browser qualification, self-contained npm distribution, Phase-1b durable state / Auth0 identity / key rotation), and do NOT re-litigate the recorded Eye rulings it cites (PYLAE naming, Option-A combined ceremony, both-strict enforcement, reconcile-and-supersede for draft docs, OAuth seat transport). OUT OF SCOPE (do NOT condition approval on it): identity/tenancy/clustered runtime (excluded by signed ADR PD-001); enrollment flips beyond the two AM-43 exclusions; Phase-1b+ register items. Approve ONLY if the plan is implementation-ready and consistent with its governing pre-review, the repository trust model (fail-closed, closed sets, content-addressed identity, no mutable label keying enforcement, zero-dependency core), and its own decisions and acceptance criteria, with no remaining plan contradiction.",
+  "plan_ref": "sha256:72b466d84f21756fcd9c0d7528354c6e0c18b0f0db4464e280225b9e58dba8d1",
+  "reviewed_head": "cfa6395",
+  "combined_ceremony": "AM-42 enrollment-flip regularization + AM-43 exclusions (cli/, connectors/meta-ads-mcp/) — build_id names the flip",
+  "seat_transport": "OAuth subscription CLIs per product-1-ruling-oauth-seat-transport (agy = local deterministic checkpoint)",
+  "timestamp": "2026-08-27T23:29:44.232Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "1a744efc-dfea-4552-a94b-df814d89b8cb",
+        "source": "cli-seats/claude",
+        "transport": "oauth-subscription-cli",
+        "answered_at": "2026-08-27T23:30:56.314Z",
+        "tool": "cli-seats.askClaude"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-021a1add9ccdde76ab9f4e6396e61946f95b2932",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint(local)"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "01a0458e-d82a-7ee0-9330-e1bf3c6062a0",
+        "source": "cli-seats/codex",
+        "transport": "oauth-subscription-cli",
+        "answered_at": "2026-08-27T23:35:37.445Z",
+        "tool": "cli-seats.askCodex"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5-build",
+        "response_id": "facb11eb-f7f2-44e7-88ca-0721a7be926d",
+        "source": "cli-seats/grok",
+        "transport": "oauth-subscription-cli",
+        "answered_at": "2026-08-27T23:30:49.292Z",
+        "tool": "cli-seats.askGrok"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-high",
+        "response_id": "d171b1b6-8800-4b30-af0d-01a55987bf6f",
+        "source": "cli-seats/gemini",
+        "transport": "oauth-subscription-cli",
+        "answered_at": "2026-08-27T23:30:12.635Z",
+        "tool": "cli-seats.askGemini"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Replace the self-referential freshness contract with a non-self-referential binding. Record and recompute a canonical digest of the complete woven-input closure at the qualified tree, excluding generated weave evidence, and bind the live PR/release commit externally through the authenticated check-run/controller attestation. Revise the authoritative and historical mode criteria and fixtures so a woven-input change without a re-weave fails, a same-PR re-weave passes, and a stale checkout fails without requiring committed evidence to contain the SHA of the commit that contains that evidence.",
+      "codex has hard stops: Sections 5 and 6 of sha256:72b466d84f21756fcd9c0d7528354c6e0c18b0f0db4464e280225b9e58dba8d1 are mutually unsatisfiable: the re-weave records input HEAD A, but committing that generated evidence in the required same PR creates HEAD B; authoritative verification then requires A == B. Recording B inside the evidence changes the commit SHA again, so no woven-input slice can satisfy both exact-head verification and the atomic same-PR re-weave rule."
+    ],
+    "warnings": [],
+    "provenance": [
+      {
+        "model": "claude",
+        "has_provenance": true,
+        "provider": "anthropic",
+        "response_model": "claude-fable-5",
+        "response_id": "1a744efc-dfea-4552-a94b-df814d89b8cb",
+        "source": "cli-seats/claude"
+      },
+      {
+        "model": "agy",
+        "has_provenance": true,
+        "provider": "local",
+        "response_model": "agy-checkpoint",
+        "response_id": "agy-021a1add9ccdde76ab9f4e6396e61946f95b2932",
+        "source": "ai-peer-mcp/agy_checkpoint"
+      },
+      {
+        "model": "codex",
+        "has_provenance": true,
+        "provider": "openai",
+        "response_model": "gpt-5.6-sol",
+        "response_id": "01a0458e-d82a-7ee0-9330-e1bf3c6062a0",
+        "source": "cli-seats/codex"
+      }
+    ]
+  },
+  "authorized": false,
+  "authorization": {
+    "status": "NOT_AUTHORIZED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "build_id": "iliad-product-1-authz-am42-regularization-am43-exclusions",
+  "use_case": "iliad-product-1",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json"
+  ],
+  "proposal_ref": "sha256:72b466d84f21756fcd9c0d7528354c6e0c18b0f0db4464e280225b9e58dba8d1",
+  "decision": "revise",
+  "required_edits": [
+    "Replace the self-referential freshness contract with a non-self-referential binding. Record and recompute a canonical digest of the complete woven-input closure at the qualified tree, excluding generated weave evidence, and bind the live PR/release commit externally through the authenticated check-run/controller attestation. Revise the authoritative and historical mode criteria and fixtures so a woven-input change without a re-weave fails, a same-PR re-weave passes, and a stale checkout fails without requiring committed evidence to contain the SHA of the commit that contains that evidence."
+  ],
+  "hard_stops": [
+    "Sections 5 and 6 of sha256:72b466d84f21756fcd9c0d7528354c6e0c18b0f0db4464e280225b9e58dba8d1 are mutually unsatisfiable: the re-weave records input HEAD A, but committing that generated evidence in the required same PR creates HEAD B; authoritative verification then requires A == B. Recording B inside the evidence changes the commit SHA again, so no woven-input slice can satisfy both exact-head verification and the atomic same-PR re-weave rule."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-08-27T23:29:44.232Z",
+  "rationale": "The canonical candidate hash independently recomputes to sha256:72b466d84f21756fcd9c0d7528354c6e0c18b0f0db4464e280225b9e58dba8d1, and its artifact bytes match matured-approach.md at git:cfa6395dff803ea557cd8de810add903d8b1788f. The prior council hard stop is substantively discharged: the Eye-signed transition now binds the chain root, verifier, workflow, controller, verdict-producer closure, and canonical covered-file set, with independent recomputation and record-reuse negatives. The remaining exact-head/self-weave contradiction is authorization-critical because it makes a required acceptance path impossible rather than merely underspecified; the plan therefore cannot be implemented AS-IS.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a0458e-d82a-7ee0-9330-e1bf3c6062a0",
+    "source": "cli-seats/codex",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-27T23:35:37.445Z",
+    "tool": "cli-seats.askCodex"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "af13f6020ccab03b1ce7d0d9a89d1f806466cdd0ff53f76dd39577356851b42f",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

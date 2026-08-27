@@ -1,0 +1,26 @@
+{
+  "build_id": "iliad-product-1-authz-am42-regularization-am43-exclusions",
+  "use_case": "iliad-product-1",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json"
+  ],
+  "proposal_ref": "sha256:72b466d84f21756fcd9c0d7528354c6e0c18b0f0db4464e280225b9e58dba8d1",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-27T23:29:44.232Z",
+  "rationale": "On the plan's own terms, this is implementation-ready and consistent with the trust model. E1–E6 close the release blockers with fail-closed mechanics and adversarial fixtures: sole deterministic merge credential with agent/publisher/controller separation, producer-bound check eligibility, out-of-tree anchored memory-gate authority with Eye-signed multi-surface transitions, exceptionless auditor, production-profile default flip, and discriminating mutation-registry oracles with baseline-controlled negatives. Governance correctly sequences a docs/registry-only bootstrap under sitting v15 (successor publish → exact-hash authorize → pivot/supersede → Eye confirmation) without touching AM-42 bytes, with AM-43 as exclude-only enrollment and this council as the enrollment-flip re-authorization. Product Phase-0 is frozen with a hard typed item-bound go-live gate and no report-only escape; Phase-1a states an honest source-release install with dual checkout/archive doctor semantics, clean-room proof, draft-first publish, and out-of-tree signer fingerprint; flagship stays Chromium-qualified this round. Atomic weave plus CI authoritative/historical mode-split are machine-enforced. Deferred Phase-1b+/multi-engine/self-contained-npm items and cited Eye rulings are correctly out of conditioning scope. No remaining internal contradiction blocks AS-IS authorization.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5-build",
+    "response_id": "facb11eb-f7f2-44e7-88ca-0721a7be926d",
+    "source": "cli-seats/grok",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-27T23:30:49.292Z",
+    "tool": "cli-seats.askGrok"
+  }
+}

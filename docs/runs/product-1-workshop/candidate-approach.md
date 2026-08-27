@@ -795,19 +795,38 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
 
 ## 5. Freshness, release, deployment, flagship
 
-- **Freshness (E-adjacent)**: exact-head binding is INTRINSIC to
-  authoritative verification, not an opt-in flag — `--verify-committed`
-  BY DEFAULT requires live `git rev-parse HEAD` == recorded input head +
-  clean worktree + full source_ref sweep (distinct fatal codes:
-  input-head-stale / exact-head-dirty / source-ref-stale); verifying a
-  stale snapshot against a different checkout FAILS by default, closing
-  blocker 3. Historical inspection is the explicit exception:
+- **Freshness (E-adjacent)**: freshness binding is INTRINSIC to
+  authoritative verification, not an opt-in flag, and it is
+  CONTENT-ADDRESSED, NOT COMMIT-ADDRESSED (council-ratified hard stop,
+  authorization run 2: a HEAD-equality rule is self-referentially
+  unsatisfiable for the atomic weave rule — the re-weave records input
+  HEAD A, committing that evidence creates HEAD B, and no evidence can
+  contain the SHA of the commit that contains it). The weave records a
+  CANONICAL WOVEN-INPUT CLOSURE DIGEST: sha256 over the sorted
+  (path ‖ blob-digest) list of EVERY woven input at weave time,
+  EXCLUDING all generated weave-evidence paths — stable across the
+  evidence commit by construction. `--verify-committed` BY DEFAULT
+  requires (a) the same canonical digest RECOMPUTED over the CURRENT
+  checkout's tree (same exclusions) == the snapshot's recorded
+  input_closure_digest, (b) clean worktree, (c) full source_ref sweep
+  (distinct fatal codes: input-closure-stale / worktree-dirty /
+  source-ref-stale); a woven-input change without a re-weave ⇒
+  input-closure-stale; a same-PR re-weave ⇒ digests match and PASS
+  (evidence excluded, so committing it does not move the digest); a
+  stale checkout ⇒ input-closure-stale — blocker 3 closed without the
+  self-reference. The recorded input_repo_head remains as PROVENANCE
+  metadata only, never a pass/fail criterion. The binding to the LIVE
+  commit is EXTERNAL, per the check-evidence discipline: the
+  authenticated required check-run (producer-bound, exact run id)
+  attests which PR head / tag SHA the verification executed against —
+  the commit identity lives in the attestation, not inside the
+  committed evidence. Historical inspection is the explicit exception:
   `--verify-committed --historical` checks snapshot INTACTNESS only and is
   structurally non-authoritative — its JSON carries `verify_mode:
   "historical-nonauthoritative"` and `snapshot_intact: true/false`, and it
   NEVER emits the authoritative `verified_current: true` claim that
   default mode emits (consumers keying on the authoritative field cannot
-  be satisfied by a historical run). Always-emitted freshness/heads_equal.
+  be satisfied by a historical run). Always-emitted freshness/input_closure_digest (heads recorded as provenance).
   CI IS MODE-SPLIT BY WHAT THE PR TOUCHES (a blanket historical PR check
   would let a woven-input PR merge with a stale-but-intact snapshot,
   gutting the atomic weave rule): the required institutional-memory PR job
@@ -842,10 +861,16 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   that only deletes a previously woven input without a re-weave ⇒ the
   base-tree side of the union catches it, authoritative mode selected
   and red; a docs-only PR ⇒ historical mode selected.
-  **Accept**: stale-head checkout + default `--verify-committed` ⇒ fatal
-  input-head-stale; same checkout with `--historical` ⇒ exit 0 with
-  verify_mode historical-nonauthoritative and NO verified_current field;
-  release head ⇒ default mode green.
+  **Accept**: stale checkout (a woven input differs from the snapshot's
+  closure) + default `--verify-committed` ⇒ fatal input-closure-stale; a
+  fixture PR changing a woven input WITHOUT a re-weave ⇒
+  input-closure-stale; the SAME PR carrying its re-weave ⇒ default mode
+  PASSES at the PR head (the evidence commit does not move the closure
+  digest — the run-2 paradox fixture, proven satisfiable); same checkout
+  with `--historical` ⇒ exit 0 with verify_mode
+  historical-nonauthoritative and NO verified_current field; release
+  head ⇒ default mode green with the commit identity carried by the
+  producer-bound check-run attestation.
 - **Signed release pipeline** `release.yml`, fail-closed end to end:
   (1) GATE: tag object must be ANNOTATED and its SIGNATURE VERIFIED in CI
   against an OUT-OF-TREE trust root (an in-tree public key is circular — a
@@ -885,7 +910,7 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   the SAME producer binding (authenticated Actions app + trusted workflow
   digest + exact run id — never name-only; untrusted same-name collision
   fixture must fail the gate); local
-  verify battery incl. authoritative `--verify-committed` (exact-head by default). **Accept**: a tag
+  verify battery incl. authoritative `--verify-committed` (content-addressed input-closure binding by default). **Accept**: a tag
   signed by a key whose fingerprint differs from the protected variable ⇒
   gate aborts even when the tree's committed .pub matches the tag's signer.
   (2) BUILD, reproducibility covering THE ARTIFACT OPERATORS INSTALL (the
