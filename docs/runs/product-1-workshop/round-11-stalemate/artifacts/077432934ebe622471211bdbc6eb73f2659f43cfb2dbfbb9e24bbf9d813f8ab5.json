@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E1-merge-controller-integrity",
+        "claim": "The sole credential-bearing merge controller is not protected by any stated external trust anchor. `VERIFIER_CLOSURE_DIGEST` covers the gate closure and `TRUSTED_WORKFLOW_DIGEST` covers `.github/workflows/`, while the signed transition tuple and `covered_files` omit `workflows/tools/merge-controller.mjs` and its closure. A controller-only PR can therefore pass the existing controller's eligibility checks, merge, and replace the future sole merger with code that skips every safeguard. Protect and base-source the controller's complete closure under an out-of-tree digest, require an Eye-signed transition for changes, and add a controller-only bypass fixture. Candidate sha256:7c71ee8498b005fbdf79392c8f1b2e7c3885786d56c0fb33bf5da0df7c0609ba."
+      },
+      {
+        "scope": "candidate:check-run-evidence-identity",
+        "claim": "Production authority still depends on mutable check names: readiness contracts permit `check_names[]`, E1 accepts required checks as merely green, and release asserts a required-CI check run at the tag SHA without binding its producer or workflow bytes. GitHub's Checks API permits multiple same-name runs and exposes `app_id` separately, so an untrusted producer can publish a green same-name run at the exact SHA and satisfy these mechanisms. This violates the frozen prohibition on authority from mutable names. Bind check evidence to authenticated producer plus immutable workflow/configuration identity and exact run provenance, and add a same-name/untrusted-app collision fixture that must fail. Candidate sha256:7c71ee8498b005fbdf79392c8f1b2e7c3885786d56c0fb33bf5da0df7c0609ba."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a0454d-52e8-7512-85dd-9cadc30fb658",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a0454d-52e8-7512-85dd-9cadc30fb658",
+    "source": "cli-seats/codex_ask"
+  }
+}

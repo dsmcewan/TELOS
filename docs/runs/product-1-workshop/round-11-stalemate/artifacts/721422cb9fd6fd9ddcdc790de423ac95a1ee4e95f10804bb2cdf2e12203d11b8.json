@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:7c71ee8498b005fbdf79392c8f1b2e7c3885786d56c0fb33bf5da0df7c0609ba",
+  "output_plan_artifact_hash": "sha256:7c71ee8498b005fbdf79392c8f1b2e7c3885786d56c0fb33bf5da0df7c0609ba",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:92df226aad551d0fd576f80deab99959277601a20f91d7128dc44717035f15b9",
+    "provenance_key": "anthropic:1fec5dc8-fd42-49a5-ae44-299c665a02a2"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:077432934ebe622471211bdbc6eb73f2659f43cfb2dbfbb9e24bbf9d813f8ab5",
+    "provenance_key": "openai:01a0454d-52e8-7512-85dd-9cadc30fb658",
+    "bound_hash": "sha256:7c71ee8498b005fbdf79392c8f1b2e7c3885786d56c0fb33bf5da0df7c0609ba"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E1-merge-controller-integrity",
+      "claim": "The sole credential-bearing merge controller is not protected by any stated external trust anchor. `VERIFIER_CLOSURE_DIGEST` covers the gate closure and `TRUSTED_WORKFLOW_DIGEST` covers `.github/workflows/`, while the signed transition tuple and `covered_files` omit `workflows/tools/merge-controller.mjs` and its closure. A controller-only PR can therefore pass the existing controller's eligibility checks, merge, and replace the future sole merger with code that skips every safeguard. Protect and base-source the controller's complete closure under an out-of-tree digest, require an Eye-signed transition for changes, and add a controller-only bypass fixture. Candidate sha256:7c71ee8498b005fbdf79392c8f1b2e7c3885786d56c0fb33bf5da0df7c0609ba.",
+      "objection_hash": "sha256:b22ef4616d1adde32e9a6f298614ee963495befb8971362e7533ce0890add466",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:check-run-evidence-identity",
+      "claim": "Production authority still depends on mutable check names: readiness contracts permit `check_names[]`, E1 accepts required checks as merely green, and release asserts a required-CI check run at the tag SHA without binding its producer or workflow bytes. GitHub's Checks API permits multiple same-name runs and exposes `app_id` separately, so an untrusted producer can publish a green same-name run at the exact SHA and satisfy these mechanisms. This violates the frozen prohibition on authority from mutable names. Bind check evidence to authenticated producer plus immutable workflow/configuration identity and exact run provenance, and add a same-name/untrusted-app collision fixture that must fail. Candidate sha256:7c71ee8498b005fbdf79392c8f1b2e7c3885786d56c0fb33bf5da0df7c0609ba.",
+      "objection_hash": "sha256:eb32d20675b9cf976d2774df479249920547d1ff67236b831465aba87e1c1c7b",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

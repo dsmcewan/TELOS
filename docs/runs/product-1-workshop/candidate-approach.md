@@ -53,14 +53,36 @@ per-file designs are in the approved plan; acceptance criteria here.
   dossier, not a merge.
   (ii) DETERMINISTIC PRE-MERGE CONTROLLER (the sole holder of merge
   credentials): new `workflows/tools/merge-controller.mjs`, plain zero-dep
-  node, run AFTER the workflow. Merges are SEQUENTIAL and eligibility is
+  node, run AFTER the workflow. THE CONTROLLER'S OWN CLOSURE IS A
+  PROTECTED SURFACE (otherwise a controller-only PR passes the sitting
+  controller's checks and replaces the sole merger with safeguard-free
+  code): the protected variable set includes `TRUSTED_CONTROLLER_DIGEST`
+  over `workflows/tools/merge-controller.mjs` + its complete module
+  closure; the RUNNING controller is always executed from a TRUSTED BASE
+  checkout (never the PR head), verifies its own closure digest against
+  the protected variable at startup (mismatch ⇒ exit 2
+  `controller-untrusted`), and refuses to merge any PR that modifies a
+  controller-closure file (`controller-modified`) unless the PR carries a
+  valid Eye-signed transition record whose signed payload binds the
+  proposed controller bytes (same covered_files discipline as
+  verifier/workflow changes — the transition tuple includes
+  `new_controller_closure_digest`). Merges are SEQUENTIAL and eligibility is
   re-derived IMMEDIATELY BEFORE EACH MERGE, never batched (a preflight
   over all requests goes stale the moment the first merge moves the base):
   for each requested PR, AT ITS OWN MUTATION POINT, the controller
   re-queries `gh api` ground truth — PR still open, base repo/branch
   expected, head_sha equals the dossier's, `mergeable` against the CURRENT
   base (mergeable_state not behind/dirty), required checks green at that
-  head — then, only on pass, performs the SOLE merge via `gh api -X PUT
+  head — where "green" is NEVER keyed by check NAME alone (mutable names
+  cannot carry authority — the content-address rule; GitHub permits
+  same-name runs from any app at the same SHA): the controller resolves
+  each required check run to its PRODUCER and accepts it only if (a) the
+  producing app is the authenticated GitHub Actions app, (b) the run's
+  workflow file blob at the evaluated head matches the trusted workflow
+  digest set, and (c) the exact run id + head SHA are recorded in the
+  attestation; a green same-name run from any other producer is ignored
+  (fixture: an untrusted app posts a green same-name check at the exact
+  SHA ⇒ the controller does NOT count it and refuses eligibility) — then, only on pass, performs the SOLE merge via `gh api -X PUT
   .../merge -f sha={head}` (server-enforced expected-head guard; 409 ⇒
   `head-moved`, never retry-fresh). The check-then-PUT window is closed
   SERVER-SIDE, not by client timing (a base update between the
@@ -136,14 +158,15 @@ per-file designs are in the approved plan; acceptance criteria here.
   AUTHORITY-TRANSITION RECORD — `{old_chain_root: <digest at the trusted
   prior root>, new_chain_root: <digest of the proposed chain>,
   new_verifier_closure_digest, new_trusted_workflow_digest,
+  new_controller_closure_digest,
   covered_files: [<canonical sorted list of every authority-chain,
-  verifier-closure, and workflow file the transition touches, each with
-  its proposed blob digest>], transition_id, eye_authorization,
-  council_review[]}` — where `eye_authorization` is an Ed25519 SIGNATURE
+  verifier-closure, workflow, and controller-closure file the transition
+  touches, each with its proposed blob digest>], transition_id,
+  eye_authorization, council_review[]}` — where `eye_authorization` is an Ed25519 SIGNATURE
   BY THE EYE over the CANONICALIZED TUPLE (old_chain_root ‖
   new_chain_root ‖ new_verifier_closure_digest ‖
-  new_trusted_workflow_digest ‖ sha256(canonicalize(covered_files)) ‖
-  transition_id) — the signature binds EVERY protected surface the
+  new_trusted_workflow_digest ‖ new_controller_closure_digest ‖
+  sha256(canonicalize(covered_files)) ‖ transition_id) — the signature binds EVERY protected surface the
   transition proposes, not just the chain roots, so a valid record CANNOT
   be reused with substituted verifier or workflow bytes (council-ratified
   hard stop, authorization run 1: a signature covering only the chain
@@ -474,7 +497,11 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   evidence's declared readiness_item equals the item's id. Then
   evaluation: `oracle` refs execute through run-oracles (with their
   mutation-negative discipline) and must pass; `check-run` refs are
-  queried green AT THE RELEASE SHA via the checks API; `artifact` refs
+  queried green AT THE RELEASE SHA via the checks API AND
+  producer-authenticated exactly as the merge controller requires (the
+  authenticated Actions app + trusted workflow-file digest + exact run
+  id — a green same-name run from an untrusted app never discharges an
+  item; same collision fixture); `artifact` refs
   must schema-validate and match their recorded content address
   (empty/stale/unrelated files fail typed validation). `na-by-signed-adr` requires the ADR sha to
   resolve AND an EYE AUTHORIZATION — an Ed25519 signature over
@@ -658,7 +685,10 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   convenience distribution, imported ONLY if its fingerprint matches, else
   abort `key-fingerprint-mismatch`; then runs `git verify-tag` against that
   keyring (unknown/unsigned/unverifiable/wrong-key ⇒ abort); variable unset
-  ⇒ abort fail-closed. Required-CI check-run asserted at the tag SHA; local
+  ⇒ abort fail-closed. Required-CI check-run asserted at the tag SHA with
+  the SAME producer binding (authenticated Actions app + trusted workflow
+  digest + exact run id — never name-only; untrusted same-name collision
+  fixture must fail the gate); local
   verify battery incl. authoritative `--verify-committed` (exact-head by default). **Accept**: a tag
   signed by a key whose fingerprint differs from the protected variable ⇒
   gate aborts even when the tree's committed .pub matches the tag's signer.

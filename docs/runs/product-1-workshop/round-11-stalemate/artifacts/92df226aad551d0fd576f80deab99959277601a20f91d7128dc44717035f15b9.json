@@ -7,14 +7,14 @@
     "provenance": {
       "provider": "anthropic",
       "model": "claude-fable-5",
-      "response_id": "88751e57-996f-44bb-9b95-6f5f353534fc",
+      "response_id": "1fec5dc8-fd42-49a5-ae44-299c665a02a2",
       "source": "cli-seats/claude_ask"
     }
   },
   "provenance": {
     "provider": "anthropic",
     "model": "claude-fable-5",
-    "response_id": "88751e57-996f-44bb-9b95-6f5f353534fc",
+    "response_id": "1fec5dc8-fd42-49a5-ae44-299c665a02a2",
     "source": "cli-seats/claude_ask"
   }
 }
