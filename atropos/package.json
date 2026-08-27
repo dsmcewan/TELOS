@@ -8,5 +8,8 @@
     "check": "node --check verify.mjs && node --check scripts/test-verify.mjs && node --check scripts/test-readonly.mjs",
     "test": "npm run check && node scripts/test-verify.mjs && node scripts/test-readonly.mjs"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "engines": {
+    "node": ">=22.12.0"
+  }
 }

@@ -87,11 +87,11 @@ so the packages are not fully isolated — preserve those cross-package relative
 
 ## Conventions
 
-- **Core and plugin packages:** Node ≥ 18, ESM only (`"type": "module"`, `.mjs`
+- **Core and plugin packages:** Node ≥ 22.12, ESM only (`"type": "module"`, `.mjs`
   files), zero dependencies, and no package lockfiles. Use only Node standard-library
   imports with the `node:` prefix plus the package's existing reviewed relative imports.
 - **Flagship product exception:** `narcissus/flagship/` requires Node
-  `^20.19.0 || >=22.12.0`, uses React/TypeScript/Vite, and must keep its tracked
+  `>=22.12.0`, uses React/TypeScript/Vite, and must keep its tracked
   `package-lock.json`. Install it with `npm ci`; do not hand-edit the lockfile or add
   dependencies without a reviewed product change.
 - **Style:** match the surrounding package. The zero-dependency `.mjs` packages use

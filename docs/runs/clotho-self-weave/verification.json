@@ -1,7 +1,7 @@
 {
   "kind": "clotho-self-weave-verification",
   "node_version": "v24.18.0",
-  "input_repo_head": "697336ea3350578a8970fb4b1d99d2293bda5a30",
+  "input_repo_head": "ebc2cd0bebfed838dc41ed4f26ba96823c72121d",
   "repository_ref": {
     "derived": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
     "ledger_header": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
@@ -10,11 +10,11 @@
   },
   "snapshot": {
     "path": "docs/runs/clotho-self-weave/thread-ledger.snapshot.jsonl",
-    "sha256": "48383ca29cf527684a81641292202b3fd136dad34ea7d43cebdd55630afe5827",
+    "sha256": "b9c486430a82888a8c53c128ca1f31b3951ac27e8cda636e47767536aa553fe9",
     "ledger_verification": "ok",
     "errors": []
   },
-  "trusted_record_count": 4558,
+  "trusted_record_count": 4559,
   "manifest": {
     "weavers": [
       {
@@ -134,7 +134,7 @@
     "outside_unclassified": 6,
     "clotho_scanned": 27,
     "accepted_edges": 62,
-    "unassigned_sources": 95,
+    "unassigned_sources": 96,
     "note": "Two-direction advisory review signals (D23/D27/D30/D32/D33, AM-35..39), including the D30/D32 loader-construction checks against the exact frozen mapping and the D33 shared-grammar proof — recorded as advisory trusted-code review signals, never as isolation or loader-containment proofs."
   },
   "package_tests": {

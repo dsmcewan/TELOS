@@ -1309,7 +1309,7 @@
         "path": "build-gate/scripts/test-proposal-lifecycle.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
-      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+      "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad"
     },
     {
       "subject": "edge",
@@ -1326,7 +1326,7 @@
         "path": "build-gate/scripts/test-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
-      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+      "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad"
     },
     {
       "subject": "edge",
@@ -1343,7 +1343,7 @@
         "path": "build-gate/scripts/stress-test-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
-      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+      "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad"
     },
     {
       "subject": "edge",
@@ -1360,7 +1360,7 @@
         "path": "build-gate/scripts/test-breakout-coverage.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
-      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+      "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad"
     },
     {
       "subject": "edge",
@@ -1377,7 +1377,7 @@
         "path": "build-gate/scripts/test-council-orchestrator.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
-      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+      "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad"
     },
     {
       "subject": "edge",
@@ -1394,7 +1394,7 @@
         "path": "build-gate/scripts/test-trust.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
-      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+      "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad"
     },
     {
       "subject": "edge",
@@ -1411,7 +1411,7 @@
         "path": "build-gate/scripts/test-proposal-gate.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
-      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+      "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad"
     },
     {
       "subject": "edge",
@@ -1428,7 +1428,7 @@
         "path": "build-gate/scripts/stress-tests.mjs",
         "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
       },
-      "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab"
+      "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad"
     }
   ]
 }
