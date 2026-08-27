@@ -130,7 +130,7 @@ async function runOperatorProof() {
     const cleanAudit = op.verifyLedger();
     assert.deepEqual(
       cleanAudit,
-      { total: 1, invalid: 0, ok: true },
+      { total: 1, invalid: 0, ok: true, code: null, errors: [] },
       "untouched Ed25519 ledger must verify"
     );
 
@@ -138,11 +138,9 @@ async function runOperatorProof() {
     const tampered = { ...ledgerRecord, reason: `${ledgerRecord.reason} [tampered]` };
     writeFileSync(op.ledgerPath, JSON.stringify(tampered) + "\n");
     const tamperedAudit = op.verifyLedger();
-    assert.deepEqual(
-      tamperedAudit,
-      { total: 1, invalid: 1, ok: false },
-      "one-field ledger mutation must fail verification"
-    );
+    assert.equal(tamperedAudit.ok, false, "one-field ledger mutation must fail verification");
+    assert.equal(tamperedAudit.invalid, 1, "the mutated line is the invalid one");
+    assert.equal(tamperedAudit.code, "bad-signature", "mutation surfaces as a distinct signature failure");
 
     return {
       status: "needs-human",

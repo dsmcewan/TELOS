@@ -26,7 +26,7 @@
 // All state lives in the run's workdir as plain JSON; every helper is
 // synchronous-IO, zero-dep, and safe to re-run.
 
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { closeSync, fsyncSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { generateKeypair } from "../merkle-dag/crypto.mjs";
 import { reverifyRecord, resolveUnder } from "../breakout/verifier.mjs";
@@ -34,16 +34,48 @@ import { runBreakout } from "../breakout/breakout.mjs";
 import { renderClaimRules } from "./claims.mjs";
 import { WORKSTREAM_ID, WORKSTREAM_ID_MAX } from "./manifest.mjs";
 
+// Tolerant read-or-fallback (kept exported for compatibility) — but the run's
+// OWN recursion/key state must use loadJsonState below: with the tolerant
+// shape, a corrupt checkpoint.teams.json silently reset every converged
+// workstream (violating STYX never-re-fight) and a corrupt keys.json silently
+// regenerated signing keys, orphaning every previously signed record.
 export const loadJson = (p, fallback) => {
   try { return JSON.parse(readFileSync(p, "utf8")); } catch { return fallback; }
 };
-export const saveJson = (p, v) => writeFileSync(p, JSON.stringify(v, null, 2) + "\n");
+
+/** Strict state reader: {exists:false} on ENOENT; THROWS on corrupt/unreadable. */
+export const loadJsonState = (p) => {
+  try { return { exists: true, value: JSON.parse(readFileSync(p, "utf8")) }; }
+  catch (e) {
+    if (e?.code === "ENOENT") return { exists: false, value: null };
+    throw new Error(`state file corrupt/unreadable (refusing the silent-reset): ${p}: ${e?.message || e}`);
+  }
+};
+
+// Atomic: temp + wx + fsync + rename, cleanup on failure — a crash mid-write
+// must never leave a truncated state file for the next run to misread.
+export const saveJson = (p, v) => {
+  const tmp = `${p}.tmp-${process.pid}-${Math.random().toString(36).slice(2, 10)}`;
+  let fd = null;
+  try {
+    fd = openSync(tmp, "wx");
+    writeFileSync(fd, JSON.stringify(v, null, 2) + "\n");
+    fsyncSync(fd);
+    closeSync(fd); fd = null;
+    renameSync(tmp, p);
+  } catch (e) {
+    if (fd !== null) try { closeSync(fd); } catch {}
+    try { rmSync(tmp, { force: true }); } catch {}
+    throw e;
+  }
+};
 
 /** Persisted signing keypairs — fresh keys would re-hash the plan and defeat resume. */
 export function loadKeys(workdir, signers = ["claude", "codex"], log = () => {}) {
   const keysPath = path.join(workdir, "keys.json");
-  let keys = loadJson(keysPath, null);
-  if (!keys) {
+  const state = loadJsonState(keysPath); // corrupt keys THROW — silent regeneration would orphan every signed record
+  let keys = state.value;
+  if (!state.exists) {
     keys = Object.fromEntries(signers.map((s) => [s, generateKeypair()]));
     saveJson(keysPath, keys);
     log("generated and persisted run keypairs");
@@ -56,8 +88,9 @@ export function loadKeys(workdir, signers = ["claude", "codex"], log = () => {})
 /** Pinned research/brief: produced once, reused every invocation (stable hashes). */
 export async function pinResearch(workdir, name, produce, log = () => {}) {
   const p = path.join(workdir, `${name}.json`);
-  let value = loadJson(p, null);
-  if (!value) {
+  const state = loadJsonState(p); // corrupt pin THROWS — re-producing would silently change stable hashes
+  let value = state.value;
+  if (!state.exists) {
     value = await produce();
     saveJson(p, value);
     log(`${name}: pinned`);
@@ -81,9 +114,9 @@ export function openState(workdir) {
   return {
     workdir,
     blockersPath, teamsPath, fightCountsPath,
-    boutBlockers: deproto(loadJson(blockersPath, {})),
-    done: deproto(loadJson(teamsPath, {})),
-    fightCounts: deproto(loadJson(fightCountsPath, {})),
+    boutBlockers: deproto(loadJsonState(blockersPath).value ?? {}),
+    done: deproto(loadJsonState(teamsPath).value ?? {}),
+    fightCounts: deproto(loadJsonState(fightCountsPath).value ?? {}),
     saveBlockers() { saveJson(this.blockersPath, this.boutBlockers); },
     saveDone() { saveJson(this.teamsPath, this.done); },
     saveFightCounts() { saveJson(this.fightCountsPath, this.fightCounts); }
@@ -131,7 +164,17 @@ export function styxGenerateFiles({ state, generate, binary = (rel) => /\.(png|j
       for (const rel of injected.files) {
         try {
           files[rel] = readFileSync(path.join(state.workdir, rel), binary(rel) ? undefined : "utf8");
-        } catch { complete = false; }
+        } catch (e) {
+          // ENOENT = genuinely incomplete preservation (pre-Styx bootstrap) →
+          // regenerate. Any OTHER read failure is corruption of a CONVERGED
+          // team's preserved artifact — regenerating would re-invoke the seat
+          // and violate STYX permanence, so it throws instead. (Conscious
+          // ruling: deletion still regenerates; unreadability never does.)
+          if (e?.code !== "ENOENT") {
+            throw new Error(`styx: preserved artifact unreadable for converged team ${injected.id} (${rel}): ${e?.message || e} — refusing to regenerate`);
+          }
+          complete = false;
+        }
       }
       if (complete) {
         log(`styx: ${injected.id} re-settled from its preserved artifact (no regeneration)`);
