@@ -34,13 +34,22 @@ export function scrubbedEnv(base = process.env) {
   return out;
 }
 
-// Default isolation runner: preventive filesystem + network namespace via bwrap/unshare. Copies the
-// candidate tree to a scratch workspace with .telos ABSENT, mounts host read-only-or-unreachable,
-// and denies network. Returns { available:false } when no namespace tool is usable (fail closed).
+// Default isolation runner: preventive filesystem + network namespace via bwrap ONLY. Copies the
+// candidate tree to a scratch workspace with .telos ABSENT, ro-binds the host toolchain, binds only
+// the workspace writable, and denies network. Returns { available:false } when bwrap is unusable
+// (fail closed) — the former `unshare -Urmn` fallback is deliberately gone: it isolated only the
+// network while inheriting every host mount, so a "sandboxed" test could read the whole filesystem.
+//
+// Launch failure vs test failure: exit codes CANNOT separate them (bwrap's die_with_error exits 1,
+// the commonest legitimate test-failure status). Detection is therefore: a spawn(2) error of bwrap
+// itself, bwrap's own `bwrap: execvp …` report on stderr, and a CANARY — the test's argv[0] run
+// with `--version` inside an identical sandbox before the test; any nonzero canary exit fails
+// closed as `launched:false`. (Accepted cost: a test command that does not support `--version`
+// is rejected as unverifiable rather than executed. Honest limit: exec failures of CHILD
+// processes the test spawns still surface as an ordinary test failure.)
 export function defaultIsolationRunner({ baseDir, cmd, args, timeoutMs }) {
   const bwrap = probe("bwrap", ["--version"]);
-  const unshare = !bwrap && probe("unshare", ["--version"]);
-  if (!bwrap && !unshare) return { available: false, reason: "no filesystem/network namespace tool (bwrap/unshare)" };
+  if (!bwrap) return { available: false, reason: "bwrap (bubblewrap) unavailable — refusing the unshare fallback: it isolates only the network, not the filesystem" };
 
   let scratch;
   try {
@@ -53,14 +62,27 @@ export function defaultIsolationRunner({ baseDir, cmd, args, timeoutMs }) {
   try {
     const env = scrubbedEnv();
     const spec = spawnCommand(cmd, args);
-    let full;
-    if (bwrap) {
-      full = { command: "bwrap", args: ["--unshare-all", "--die-with-parent", "--ro-bind", "/usr", "/usr", "--ro-bind", "/bin", "/bin", "--ro-bind", "/lib", "/lib", "--ro-bind-try", "/lib64", "/lib64", "--bind", scratch, "/workspace", "--chdir", "/workspace", "--", spec.command, ...spec.args] };
-    } else {
-      full = { command: "unshare", args: ["-Urmn", "--", spec.command, ...spec.args] };
+    const run = (argv) => spawnSync("bwrap",
+      ["--unshare-all", "--die-with-parent", "--ro-bind", "/usr", "/usr", "--ro-bind", "/bin", "/bin", "--ro-bind", "/lib", "/lib", "--ro-bind-try", "/lib64", "/lib64", "--bind", scratch, "/workspace", "--chdir", "/workspace", "--", ...argv],
+      { cwd: scratch, env, encoding: "utf8", timeout: timeoutMs, killSignal: "SIGTERM" });
+    const execvpFailed = (r) => /^bwrap: execvp/m.test(r.stderr || "");
+    const tail = (r) => ((r.stdout || "") + (r.stderr || "")).slice(-800);
+
+    const canary = run([spec.command, "--version"]);
+    if (canary.error || canary.status !== 0 || execvpFailed(canary)) {
+      const detail = canary.error ? canary.error.message
+        : `canary exit ${canary.status}${(canary.stderr || "").trim() ? `: ${(canary.stderr || "").trim().slice(0, 200)}` : ""}`;
+      return { available: true, launched: false, status: null, signal: null, timedOut: false,
+        error: `test interpreter not executable inside the sandbox: ${detail}`,
+        outputTail: tail(canary), network_isolation: "bwrap" };
     }
-    const res = spawnSync(full.command, full.args, { cwd: scratch, env, encoding: "utf8", timeout: timeoutMs, killSignal: "SIGTERM" });
-    return { available: true, status: res.status, timedOut: !!(res.error && /ETIMEDOUT|timed?out/i.test(res.error.message || "")), error: res.error ? res.error.message : null, outputTail: ((res.stdout || "") + (res.stderr || "")).slice(-800), network_isolation: bwrap ? "bwrap" : "netns" };
+
+    const res = run([spec.command, ...spec.args]);
+    const timedOut = !!(res.error && /ETIMEDOUT|timed?out/i.test(res.error.message || ""));
+    const launched = !(res.error && !timedOut) && !execvpFailed(res);
+    return { available: true, launched, status: res.status, signal: res.signal ?? null, timedOut,
+      error: res.error ? res.error.message : (launched ? null : "bwrap: execvp failure — test command not executable inside the sandbox"),
+      outputTail: tail(res), network_isolation: "bwrap" };
   } finally { try { rmSync(scratch, { recursive: true, force: true }); } catch {} }
 }
 
@@ -133,8 +155,12 @@ async function verifyDeclaredTestFailure(claim, ctx) {
   const runner = ctx.isolationRunner || defaultIsolationRunner;
   const r = runner({ baseDir: ctx.baseDir, cmd: node.test.cmd, args: node.test.args || [], timeoutMs: ctx.timeoutMs || 60000 });
   if (!r.available) return { rejected: `filesystem/network isolation unavailable → not executed (${r.reason})` };
-  const reproduced = r.status !== 0;   // "reproduced" the failure = the declared test failed
-  return { reproduced, facts: [{ id: node.id, ok: reproduced, detail: `exit ${r.status}${r.timedOut ? " (timeout)" : ""}` }], sandbox: { network_isolation: r.network_isolation, timed_out: !!r.timedOut } };
+  if (ctx.requireNetworkIsolation && r.network_isolation !== "bwrap") {
+    return { rejected: `network isolation required but the runner reports '${r.network_isolation}'` };
+  }
+  if (r.launched === false) return { rejected: `sandbox launch failure — no test verdict: ${r.error}` };
+  const reproduced = r.status !== 0;   // "reproduced" the failure = the declared test failed (only meaningful once launched)
+  return { reproduced, facts: [{ id: node.id, ok: reproduced, detail: `exit ${r.status}${r.signal ? ` (signal ${r.signal})` : ""}${r.timedOut ? " (timeout)" : ""}` }], sandbox: { network_isolation: r.network_isolation, timed_out: !!r.timedOut } };
 }
 
 function verifyArtifactHashMismatch(claim, ctx) {

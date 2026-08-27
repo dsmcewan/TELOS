@@ -9,6 +9,6 @@
     "test": "npm run check && node scripts/test-ratchet.mjs && node scripts/test-driver.mjs && node scripts/test-manifest.mjs && node scripts/test-claims.mjs && node scripts/test-operator.mjs && node scripts/test-boundaries.mjs"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22.12.0"
   }
 }

@@ -28,7 +28,7 @@ import path from "node:path";
 import { runWeave, exitCodeForResult, parseArgs, validateOut, validateSkip, PUBLICATION_STATES } from "../weave.mjs";
 import { verifyLedger } from "../thread-ledger.mjs";
 import { canonicalJson, deriveNodeId } from "../registry.mjs";
-import { REQUIRED_INVENTORY_IDS, WEAVERS } from "../inventory.mjs";
+import { REQUIRED_INVENTORY_IDS, WEAVERS, RUN_SOURCES } from "../inventory.mjs";
 import { splitMarkdownSections } from "../weavers/util.mjs";
 import { weave as docWeave } from "../weavers/doc.mjs";
 import { weave as ledgerWeave } from "../weavers/ledger.mjs";
@@ -579,6 +579,110 @@ function recordingOpenFile(lines, failWhen = null) {
   });
   try { assertAborted(d.res, d.dest, d.tmp, "publication-time-drift", "orchestrator hash recheck drifts"); }
   finally { cleanup(d.fx); }
+}
+
+// ---- 9b. commit-point drift gate: the beforePublication window ---------------
+// The step-11 gate runs BEFORE close/verify/beforePublication; each mutation
+// below lands INSIDE that formerly-unguarded span and must abort with the
+// frozen drift code — ledger never published, temp removed.
+{
+  // (a) impl-file byte change inside beforePublication.
+  const d = await drive({
+    options: { beforePublication: ({ repoRoot }) => {
+      writeFileSync(path.join(repoRoot, "clotho", "weavers", "test.mjs"), "export const t = 99;\n");
+    } }
+  });
+  try { assertAborted(d.res, d.dest, d.tmp, "publication-time-drift", "impl mutation in beforePublication"); }
+  finally { cleanup(d.fx); }
+}
+{
+  // (b) orchestrator byte change inside beforePublication.
+  const d = await drive({
+    options: { beforePublication: ({ repoRoot }) => {
+      writeFileSync(path.join(repoRoot, "clotho", "thread-ledger.mjs"), "export const tl = 99;\n");
+    } }
+  });
+  try { assertAborted(d.res, d.dest, d.tmp, "publication-time-drift", "orchestrator mutation in beforePublication"); }
+  finally { cleanup(d.fx); }
+}
+{
+  // (c) a NEW closure edge appearing inside beforePublication.
+  const d = await drive({
+    options: { beforePublication: ({ repoRoot }) => {
+      writeFileSync(path.join(repoRoot, "clotho", "weavers", "doc-extra.mjs"), "export const x = 1;\n");
+      appendFileSync(path.join(repoRoot, "clotho", "weavers", "doc.mjs"), 'export * from "./doc-extra.mjs";\n');
+    } }
+  });
+  try { assertAborted(d.res, d.dest, d.tmp, "publication-time-drift", "closure edge in beforePublication"); }
+  finally { cleanup(d.fx); }
+}
+{
+  // (d) temporary-ledger byte change inside beforePublication -> the tmp-digest
+  // recheck refuses to publish bytes that are not the verified bytes.
+  const d = await drive({
+    options: { beforePublication: ({ tmpAbs }) => { appendFileSync(tmpAbs, "\n"); } }
+  });
+  try { assertAborted(d.res, d.dest, d.tmp, "publication-time-drift", "tmp-ledger substitution"); }
+  finally { cleanup(d.fx); }
+}
+{
+  // (e) regression: beforeRederivation drift still aborts at the EARLY gate —
+  // beforePublication is never even reached.
+  let bpCalled = false;
+  const d = await drive({
+    options: {
+      beforeRederivation: ({ repoRoot }) => {
+        writeFileSync(path.join(repoRoot, "clotho", "weavers", "test.mjs"), "export const t = 3;\n");
+      },
+      beforePublication: () => { bpCalled = true; }
+    }
+  });
+  try {
+    assertAborted(d.res, d.dest, d.tmp, "publication-time-drift", "early gate preserved");
+    assert.equal(bpCalled, false, "step-11 abort precedes beforePublication");
+  } finally { cleanup(d.fx); }
+}
+
+// ---- 9c. missing configured roots abort with the stable missing-root code ----
+{
+  // The real-path preflight: an absent configured package root aborts BEFORE
+  // any seeding, with the typed code (walkFiles' own throw is the backstop for
+  // every other caller — covered in test-util).
+  const fx = mkFixture();
+  const res = await runWeave({
+    repoRoot: fx.root, out: OUT, git: mkGit(fx.root),
+    inventories: { ...mkInventories(), packageRoots: ["clotho", "absent-package"], docRoots: ["docs"] },
+    weaverImpls: mkImpls(), wovenAt: WOVEN_AT
+    // NO sourceLists: the real-path preflight must run.
+  });
+  try {
+    assert.equal(res.ok, false, "missing root: not ok");
+    assert.equal(res.publication, "not-published", "missing root: not published");
+    assert.ok(res.error && res.error.code === "missing-root", `stable missing-root code, got ${JSON.stringify(res.error)}`);
+  } finally { cleanup(fx); }
+}
+
+// ---- 9d. REAL-path edge-ref coverage: a run-source summary mutated inside
+// beforePublication aborts — proving source/doc/run-source blob_shas (not just
+// mechanism refs) are inside the commit-point gate. Full real-repo weave.
+{
+  const realRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..");
+  const target = path.join(realRoot, ...RUN_SOURCES[0].summary.split("/"));
+  const original = readFileSync(target);
+  let res;
+  try {
+    res = await runWeave({
+      repoRoot: realRoot,
+      out: ".telos/clotho/test-weave-9d-drift.jsonl",
+      beforePublication: () => { writeFileSync(target, Buffer.concat([original, Buffer.from(" ")])); }
+    });
+  } finally {
+    writeFileSync(target, original); // restore the repo byte-exactly
+  }
+  assert.equal(res.ok, false, "run-source mutation: not ok");
+  assert.equal(res.publication, "not-published", "run-source mutation: not published");
+  assert.ok(res.error && res.error.code === "publication-time-drift",
+    `run-source blob_sha drift caught at the commit point, got ${JSON.stringify(res.error)}`);
 }
 
 // ---- 10. D10/AM-39 attribution violations ------------------------------------

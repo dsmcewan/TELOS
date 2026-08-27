@@ -1051,7 +1051,10 @@ export function walkFiles(repoRoot, roots) {
     // (== repo root) without the escape false-positive of a below-root walker.
     const chain = componentsSymlinkFree(absRoot);
     if (!chain.ok) throw new Error(`walkFiles: symlinked component in root: ${JSON.stringify(root)}`);
-    if (chain.missing) continue;          // absent root: nothing to walk
+    // FAIL-CLOSED: a configured root absent from disk is an integrity failure,
+    // never an empty walk — silently skipping one published a "complete" weave
+    // over a reduced file set with ok:true.
+    if (chain.missing) throw new Error(`walkFiles: configured root missing: ${JSON.stringify(root)}`);
     const rootStat = lstatSync(absRoot);  // symlink leaf already rejected above
     if (rootStat.isFile()) { out.add(canonicalRel(repoRootReal, absRoot)); continue; }
     walkDir(absRoot, repoRootReal, out);

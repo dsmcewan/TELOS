@@ -1,7 +1,7 @@
 {
   "kind": "clotho-self-weave-verification",
   "node_version": "v24.18.0",
-  "input_repo_head": "0642239d67244c1907f807adf3a5df95d22ce154",
+  "input_repo_head": "ebc2cd0bebfed838dc41ed4f26ba96823c72121d",
   "repository_ref": {
     "derived": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
     "ledger_header": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
@@ -10,11 +10,11 @@
   },
   "snapshot": {
     "path": "docs/runs/clotho-self-weave/thread-ledger.snapshot.jsonl",
-    "sha256": "4934d18fcddc22b3de21b099e065f126c3dfd6e34a02f38d8aae8643cf67891f",
+    "sha256": "b9c486430a82888a8c53c128ca1f31b3951ac27e8cda636e47767536aa553fe9",
     "ledger_verification": "ok",
     "errors": []
   },
-  "trusted_record_count": 4554,
+  "trusted_record_count": 4559,
   "manifest": {
     "weavers": [
       {
@@ -31,7 +31,7 @@
         "implementation_refs": [
           "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
           "file:clotho/weavers/code.mjs@b2c39cb694a5147b1ccd255146b7d12c81d2ebdf",
-          "file:clotho/weavers/util.mjs@32d1216715e38b447aa0f351bb89bd55e8185c7a"
+          "file:clotho/weavers/util.mjs@b93f4cee4ef786a8fc3e26a90447e779149abaed"
         ]
       },
       {
@@ -40,7 +40,7 @@
         "implementation_refs": [
           "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
           "file:clotho/weavers/test.mjs@faa022a48e9dad50e22aed4edf76cdf05f7ff61f",
-          "file:clotho/weavers/util.mjs@32d1216715e38b447aa0f351bb89bd55e8185c7a"
+          "file:clotho/weavers/util.mjs@b93f4cee4ef786a8fc3e26a90447e779149abaed"
         ]
       },
       {
@@ -49,7 +49,7 @@
         "implementation_refs": [
           "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
           "file:clotho/weavers/doc.mjs@bad6f12f19084cce2b409316485e2e77b441fd21",
-          "file:clotho/weavers/util.mjs@32d1216715e38b447aa0f351bb89bd55e8185c7a"
+          "file:clotho/weavers/util.mjs@b93f4cee4ef786a8fc3e26a90447e779149abaed"
         ]
       },
       {
@@ -58,7 +58,7 @@
         "implementation_refs": [
           "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
           "file:clotho/weavers/ledger.mjs@b2ce539cb5d7a87a2a0312cad1f28f26bd3d7263",
-          "file:clotho/weavers/util.mjs@32d1216715e38b447aa0f351bb89bd55e8185c7a"
+          "file:clotho/weavers/util.mjs@b93f4cee4ef786a8fc3e26a90447e779149abaed"
         ]
       }
     ],
@@ -66,13 +66,13 @@
       "file:clotho/inventory.mjs@815021675f30338d7783c77528fceb10f3518f97",
       "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
       "file:clotho/thread-ledger.mjs@332821afc71c7776b022f7247aa33250592ef78c",
-      "file:clotho/weave.mjs@6e5870f60c389c452e15dcab96f26115ec02b954",
+      "file:clotho/weave.mjs@2b9d990cf5d70d34a84e875313f57157e2dd971a",
       "file:clotho/weavers/code.mjs@b2c39cb694a5147b1ccd255146b7d12c81d2ebdf",
       "file:clotho/weavers/doc.mjs@bad6f12f19084cce2b409316485e2e77b441fd21",
       "file:clotho/weavers/git.mjs@b0f0a2ff9b07b9bf077a8b5b11c5597dfdc8ecbf",
       "file:clotho/weavers/ledger.mjs@b2ce539cb5d7a87a2a0312cad1f28f26bd3d7263",
       "file:clotho/weavers/test.mjs@faa022a48e9dad50e22aed4edf76cdf05f7ff61f",
-      "file:clotho/weavers/util.mjs@32d1216715e38b447aa0f351bb89bd55e8185c7a"
+      "file:clotho/weavers/util.mjs@b93f4cee4ef786a8fc3e26a90447e779149abaed"
     ],
     "consistency": "consistent"
   },
@@ -134,7 +134,7 @@
     "outside_unclassified": 6,
     "clotho_scanned": 27,
     "accepted_edges": 62,
-    "unassigned_sources": 94,
+    "unassigned_sources": 96,
     "note": "Two-direction advisory review signals (D23/D27/D30/D32/D33, AM-35..39), including the D30/D32 loader-construction checks against the exact frozen mapping and the D33 shared-grammar proof — recorded as advisory trusted-code review signals, never as isolation or loader-containment proofs."
   },
   "package_tests": {

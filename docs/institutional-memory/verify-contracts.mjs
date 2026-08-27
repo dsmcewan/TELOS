@@ -450,6 +450,76 @@ try {
   }
 } catch (e) { check("telos:authorization-chain", false, e.message); }
 
+// ---- 5c. telos: package-root membership == authorizing records (AM-42) --------
+// Contract and code drifting TOGETHER used to pass every check (§2 ties contract
+// to inventory.mjs values only). This section binds membership to AUTHORITY:
+// both arrays must deep-equal the hash-pinned AM-42 ruling's fenced block, every
+// enrolled root must cite a real content-addressed authorization record whose
+// build_id NAMES that root, and the chain contract must carry the same runs.
+try {
+  const roots = readJson("clotho/memory/CONTRACTS/package-roots.json");
+  const chainC = readJson("docs/institutional-memory/telos/CONTRACTS/authorization-chain.json");
+  const auth = readJson("CURRENT-AUTHORITY.json");
+  const rawShaOf = (rel) => "sha256:" + sha256hex(readFileSync(path.join(ROOT, rel)));
+  const AM40_BASE = ["breakout", "build-gate", "clotho", "connectors/ai-peer-mcp", "merkle-dag"];
+  const eqArr2 = (a, b) => Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((x, i) => x === b[i]);
+
+  // The ruling document: hash-pinned from BOTH citations, then parsed.
+  const rulingRef = roots.authority && roots.authority.enrollment_ruling;
+  const amEntry = (auth.amendments_in_force || []).find((a) => a.id === "AM-42");
+  const rulingOk = rulingRef && typeof rulingRef.doc === "string" && typeof rulingRef.sha256 === "string";
+  check("telos:enrollment-ruling-cited", !!rulingOk && !!amEntry,
+    rulingOk ? (amEntry ? `ruling ${rulingRef.doc} cited by contract + CURRENT-AUTHORITY` : "AM-42 missing from amendments_in_force") : "contract authority.enrollment_ruling missing");
+  if (rulingOk && amEntry) {
+    const real = rawShaOf(rulingRef.doc);
+    check("telos:enrollment-ruling-hash", real === rulingRef.sha256 && real === amEntry.ruling_sha256,
+      `disk=${real.slice(0, 20)}… contract=${rulingRef.sha256.slice(0, 20)}… authority=${String(amEntry.ruling_sha256).slice(0, 20)}…`);
+    // Exactly one fenced json block; both arrays deep-equal the ruling.
+    const doc = readFileSync(path.join(ROOT, rulingRef.doc), "utf8");
+    const blocks = [...doc.matchAll(/```json\r?\n([\s\S]*?)```/g)];
+    check("telos:enrollment-ruling-one-block", blocks.length === 1, `${blocks.length} fenced json block(s)`);
+    if (blocks.length === 1) {
+      let ruled = null;
+      try { ruled = JSON.parse(blocks[0][1]); } catch { ruled = null; }
+      check("telos:package-roots==ruling", !!ruled && eqArr2(roots.package_roots, ruled.package_roots),
+        ruled ? `contract=[${roots.package_roots}] ruling=[${ruled.package_roots}]` : "ruling block unparseable");
+      check("telos:package-roots-exclude==ruling", !!ruled && eqArr2(roots.package_roots_exclude, ruled.package_roots_exclude),
+        ruled ? `contract=[${roots.package_roots_exclude}] ruling=[${ruled.package_roots_exclude}]` : "ruling block unparseable");
+    }
+  }
+
+  // Every root is base-five or consciously enrolled; every enrollment is real,
+  // root-named, content-addressed, and mirrored in the chain contract.
+  const enrollments = (roots.authority && roots.authority.enrollments) || [];
+  const enrolledRoots = new Set(enrollments.map((e) => e.root));
+  const unaccounted = (roots.package_roots || []).filter((r) => !AM40_BASE.includes(r) && !enrolledRoots.has(r));
+  check("telos:every-root-authorized", unaccounted.length === 0,
+    unaccounted.length ? `roots with neither AM-40 base membership nor an enrollment record: ${unaccounted.join(",")}` : "all roots trace to AM-40 or an enrollment");
+  const phantom = [...enrolledRoots].filter((r) => !(roots.package_roots || []).includes(r));
+  check("telos:no-phantom-enrollments", phantom.length === 0,
+    phantom.length ? `enrollments for non-roots: ${phantom.join(",")}` : "every enrollment names a live root");
+  const enrollmentRuns = chainC.enrollment_runs || [];
+  const runsById = new Map(enrollmentRuns.map((r) => [r.id, r]));
+  for (const e of enrollments) {
+    try {
+      const rec = readJson(e.record);
+      const idOk = rec.authorization && rec.authorization.id === e.authorization;
+      const nameOk = rec.build_id === `iliad-${e.root}-1-authz`;
+      const authOk = rec.authorized === true && rec.trust_mode === "signed";
+      const planOk = rec.plan_ref === e.plan_ref;
+      const shaOk = rawShaOf(e.record) === e.record_sha256;
+      check(`telos:enrollment-${e.root}`, idOk && nameOk && authOk && planOk && shaOk,
+        `id=${rec.authorization && rec.authorization.id} build_id=${rec.build_id} authorized=${rec.authorized} plan=${(rec.plan_ref || "").slice(0, 20)}… sha=${shaOk ? "match" : "MISMATCH"}`);
+      const run = runsById.get(e.authorization);
+      check(`telos:enrollment-${e.root}-in-chain`, !!run && run.enrolls === e.root && run.plan_ref === e.plan_ref && run.enrollment_flip_ruled_by === "AM-42",
+        run ? `chain run enrolls=${run.enrolls} plan=${run.plan_ref.slice(0, 20)}…` : "enrollment run missing from authorization-chain contract");
+    } catch (err) { check(`telos:enrollment-${e.root}`, false, err.message); }
+  }
+  const orphanRuns = enrollmentRuns.filter((r) => !enrollments.some((e) => e.authorization === r.id));
+  check("telos:no-orphan-enrollment-runs", orphanRuns.length === 0,
+    orphanRuns.length ? `chain enrollment runs with no contract enrollment: ${orphanRuns.map((r) => r.id).join(",")}` : "chain and contract enrollments are one-to-one");
+} catch (e) { check("telos:package-root-authority", false, e.message); }
+
 // ---- 5b. telos: authorization-protocol contract == council roster + evidence ---
 try {
   const c = readJson("docs/institutional-memory/telos/CONTRACTS/authorization-protocol.json");
