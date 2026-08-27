@@ -7,7 +7,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadWeave } from "../../../lachesis/ingest.mjs";
-import { blastRadius, dependencies, relevance, riskClass } from "../../../lachesis/measure.mjs";
+import { dependencies, relevance, riskClass } from "../../../lachesis/measure.mjs";
 import { loadAuthority, verify } from "../../../atropos/verify.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
