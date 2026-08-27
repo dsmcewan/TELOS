@@ -1,0 +1,35 @@
+{
+  "build_id": "iliad-product-1-authz-am42-regularization-am43-exclusions",
+  "use_case": "iliad-product-1",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json"
+  ],
+  "proposal_ref": "sha256:834016588543dcd55e37773a5c50030458bfb756cdbdfe55f0686733673ea8b9",
+  "decision": "revise",
+  "required_edits": [
+    "Extend E2’s Eye-signed authority-transition payload to bind the exact proposed protected surfaces, including the new authority-chain root, verifier-closure digest, trusted-workflow digest, and canonical covered-file set. Require the gate and merge controller to recompute these values from the protected base and PR head and reject any mismatch. Add adversarial fixtures proving that a valid transition record cannot be reused with altered verifier or workflow bytes."
+  ],
+  "hard_stops": [
+    "E2 currently permits verifier-closure or trusted-workflow changes when a valid Eye-signed transition record exists, but the specified Eye signature covers only old_chain_root, new_chain_root, and transition_id. It therefore does not authenticate the verifier or workflow bytes whose digest mismatch the controller is allowing."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-08-27T22:11:35.403Z",
+  "rationale": "The submitted plan recomputes to sha256:834016588543dcd55e37773a5c50030458bfb756cdbdfe55f0686733673ea8b9 at reviewed head 6ba6ed9 and is otherwise unusually complete: its enforcement paths, bootstrap ordering, atomic-weave handling, product boundary, release assembly, readiness evidence, and deferred capabilities are specified with discriminating acceptance tests. The remaining E2 gap is authorization-critical, however. A legitimate Eye-signed chain transition could be paired with substituted verifier or workflow bytes because those separate protected digests are not included in the signed message. The merge controller is expressly allowed to accept such mismatches when the transition record validates, so subsequent protected-variable failure would occur only after the protected branch had already been mutated. That contradicts the plan’s pre-merge fail-closed objective and prevents implementation AS-IS.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a04547-5dda-74b2-8b2f-69dbf5222879",
+    "source": "cli-seats/codex",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-27T22:15:22.370Z",
+    "tool": "cli-seats.askCodex"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "4139953bbd3be3765d33c8a42b6e5c50c9b7de49a53e4d6c7307b6b757ca5d35",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

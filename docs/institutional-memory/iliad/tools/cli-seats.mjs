@@ -105,6 +105,45 @@ export async function askClaude(args) {
   return { text, model, id: envelope.session_id || `claude-cli-${Date.now().toString(36)}` };
 }
 
+// grok -> the Grok CLI (grok.com OAuth login), headless single-turn JSON mode.
+// Envelope: {text, sessionId, requestId, modelUsage:{<model>:{...}}}.
+export async function askGrok(args) {
+  if (typeof args?.prompt !== "string" || !args.prompt) throw new Error("prompt required");
+  const sys = args.system ? `SYSTEM CONTEXT (governs your role):\n${args.system}\n\n` : "";
+  const prompt = sys + args.prompt + schemaInstruction(args.response_schema, args.schema_name);
+  const model = args.model && args.model !== "grok" ? args.model : (process.env.CLI_SEAT_GROK_MODEL || "grok-4.5");
+  // No hard turn cap: with the large council prompts grok may spend turns on
+  // tool-less reasoning; "--max-turns 1" starved it into "max turns reached"
+  // (authorization run 1). Tools are suppressed by instruction instead.
+  const cliArgs = ["-p", "Do not use any tools; answer only from the provided text.\n\n" + prompt, "--output-format", "json", "-m", model, "--verbatim", "--max-turns", "6", "--disable-web-search"];
+  const { stdout } = await run("grok", cliArgs);
+  let envelope;
+  try { envelope = JSON.parse(stdout); }
+  catch { throw new Error(`grok CLI returned non-JSON envelope: ${stdout.slice(0, 300)}`); }
+  const raw = typeof envelope.text === "string" ? envelope.text : JSON.stringify(envelope.text ?? "");
+  const text = args.response_schema ? extractJsonObject(raw) : raw;
+  const used = envelope.modelUsage ? Object.keys(envelope.modelUsage)[0] : model;
+  return { text, model: used, id: envelope.requestId || envelope.sessionId || `grok-cli-${Date.now().toString(36)}` };
+}
+
+// gemini -> the Antigravity CLI (`agy`, Google OAuth via OS keyring), print mode.
+// Envelope: {conversation_id, status, response, ...}; response may be fenced.
+export async function askGemini(args) {
+  if (typeof args?.prompt !== "string" || !args.prompt) throw new Error("prompt required");
+  const sys = args.system ? `SYSTEM CONTEXT (governs your role):\n${args.system}\n\n` : "";
+  const prompt = sys + args.prompt + schemaInstruction(args.response_schema, args.schema_name);
+  const model = args.model && args.model !== "gemini" ? args.model : (process.env.CLI_SEAT_GEMINI_MODEL || "gemini-3.1-pro-high");
+  const cliArgs = ["-p", prompt, "--model", model, "--output-format", "json", "--disable-slash-commands", "--print-timeout", "25m"];
+  const { stdout } = await run("agy", cliArgs);
+  let envelope;
+  try { envelope = JSON.parse(stdout); }
+  catch { throw new Error(`agy CLI returned non-JSON envelope: ${stdout.slice(0, 300)}`); }
+  if (envelope.status && envelope.status !== "SUCCESS") throw new Error(`agy CLI status ${envelope.status}`);
+  const raw = typeof envelope.response === "string" ? envelope.response : JSON.stringify(envelope.response ?? "");
+  const text = args.response_schema ? extractJsonObject(raw) : raw;
+  return { text, model, id: envelope.conversation_id || `agy-cli-${Date.now().toString(36)}` };
+}
+
 export async function askCodex(args) {
   if (typeof args?.prompt !== "string" || !args.prompt) throw new Error("prompt required");
   const sys = args.system ? `SYSTEM CONTEXT (governs your role):\n${args.system}\n\n` : "";

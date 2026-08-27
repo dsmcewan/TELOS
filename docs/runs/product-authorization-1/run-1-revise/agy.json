@@ -1,0 +1,31 @@
+{
+  "build_id": "iliad-product-1-authz-am42-regularization-am43-exclusions",
+  "use_case": "iliad-product-1",
+  "model": "agy",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json"
+  ],
+  "proposal_ref": "sha256:834016588543dcd55e37773a5c50030458bfb756cdbdfe55f0686733673ea8b9",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-27T22:11:35.403Z",
+  "provenance": {
+    "provider": "local",
+    "model": "agy-checkpoint",
+    "source": "ai-peer-mcp/agy_checkpoint",
+    "response_id": "agy-021a1add9ccdde76ab9f4e6396e61946f95b2932",
+    "answered_at": null,
+    "attestation": "local-deterministic",
+    "engine_version": "agy-checkpoint/1",
+    "tool": "agy_checkpoint(local)"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "8419493dcf97d827f19b383046b3c0028c5cd8e4e1d6d987731aede46331076b",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

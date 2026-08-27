@@ -1,0 +1,31 @@
+{
+  "build_id": "iliad-product-1-authz-am42-regularization-am43-exclusions",
+  "use_case": "iliad-product-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json"
+  ],
+  "proposal_ref": "sha256:834016588543dcd55e37773a5c50030458bfb756cdbdfe55f0686733673ea8b9",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-27T22:11:35.403Z",
+  "rationale": "Independently verified before judging: the cited content address is the workshop's canonical candidate ref — recomputing sha256(canonicalize({kind:'candidate',plan})) over the committed artifact yields exactly 834016588543…, the embedded plan is byte-identical to docs/runs/product-1-workshop/matured-approach.md (modulo trailing newline), the working tree matches reviewed head 6ba6ed9, and result.json records state converged-for-submission with the same final_candidate_ref, corroborated by the round-6..10 stalemate-discharge commit chain. On its own terms the plan is implementation-ready. E1–E6 each close their named attack surface fail-closed with adversarial regression fixtures that reproduce the defect: E1 separates dossier production from the sole deterministic merge credential and closes the check-then-PUT TOCTOU server-side (strict up-to-date protection + non-bypass credential, both verified at startup, with unattested-merge sweep); E2 anchors the authority chain out-of-tree at every context (protected base in PR CI, Eye-custody protected variables for chain root, verifier closure, and workflow digest), executes the verifier from the trusted base so a proposed verifier never evaluates its own PR, makes authority transitions grantable only by Eye Ed25519 signature (council packets are evidence, never grant), and handles genesis by explicit Eye-local provisioning rather than old-verifier self-recognition; E3 is genuinely exceptionless (no allow-empty in any flag combination, asserted over the matrix; legacy records superseded, not allowlisted); E4 flips the production default with explicit opt-in for legacy dossiers; E5 repairs the normative citation chain via reconcile-and-supersede per the recorded Eye ruling; E6's closed mutation registry with applicability preconditions and post-mutation well-formedness validation makes oracles discriminating rather than merely present, and removes the non-discriminating evidence-dir kind. The governance bootstrap is correctly sequenced: a strictly docs/registry-only slice executes the four-step successor-plan transition under the sitting v15 authority (lawful — the change_rule being regularized is exactly this path), AM-42 bytes are never touched (registry-row linkage only), AM-43 classifies the two new dirs, and this council's build_id names the enrollment flip; the acknowledged gap that the executable §5d pivot check lands with the later verifier-hardening slice is honestly bounded with recorded interim evidence, not a contradiction. The product contract is honest: the hard go-live gate has no report-only mode and binds evidence bidirectionally to items (the swap fixture closes cross-discharge); Phase-1a claims only the source release as installable, with dual-mode doctor semantics that never invent provenance (archive mode labeled self-consistent/publisher-unverified), clean-room install proof, draft-first fail-closed publication, full-assembly double-build reproducibility, and an out-of-tree signer fingerprint; the Chromium-only qualified-browser contract bounds flagship claims per the recorded deferral. The atomic weave rule is machine-enforced pre-merge via the woven-input diff mode-split, closing the stale-snapshot bypass. Deferred items (multi-engine qualification, self-contained npm distribution, Phase-1b identity/state/rotation) are register-tracked, never silently claimed, and §8's non-claims preserve the trust model's honest limits. No plan-internal contradiction found; consistent with fail-closed, closed-set, content-addressed identity, no-mutable-label-keying, and zero-dependency-core invariants. I stake this seat's signature on it as-is, so hard_stops and required_edits are empty per strict field semantics.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "a883b9c4-fc36-4eac-b194-b8ab116de73a",
+    "source": "cli-seats/claude",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-27T22:14:08.143Z",
+    "tool": "cli-seats.askClaude"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "423b93382a710be361743d39a38c0a80bd18cdf1788495a63e683a7fcf5ebf2d",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

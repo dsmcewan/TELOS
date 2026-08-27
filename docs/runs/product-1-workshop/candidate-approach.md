@@ -135,9 +135,26 @@ per-file designs are in the approved plan; acceptance criteria here.
   consensus (the human-authority invariant is non-delegable): an
   AUTHORITY-TRANSITION RECORD — `{old_chain_root: <digest at the trusted
   prior root>, new_chain_root: <digest of the proposed chain>,
-  transition_id, eye_authorization, council_review[]}` — where
-  `eye_authorization` is an Ed25519 SIGNATURE BY THE EYE over
-  (old_chain_root ‖ new_chain_root ‖ transition_id), verified against the
+  new_verifier_closure_digest, new_trusted_workflow_digest,
+  covered_files: [<canonical sorted list of every authority-chain,
+  verifier-closure, and workflow file the transition touches, each with
+  its proposed blob digest>], transition_id, eye_authorization,
+  council_review[]}` — where `eye_authorization` is an Ed25519 SIGNATURE
+  BY THE EYE over the CANONICALIZED TUPLE (old_chain_root ‖
+  new_chain_root ‖ new_verifier_closure_digest ‖
+  new_trusted_workflow_digest ‖ sha256(canonicalize(covered_files)) ‖
+  transition_id) — the signature binds EVERY protected surface the
+  transition proposes, not just the chain roots, so a valid record CANNOT
+  be reused with substituted verifier or workflow bytes (council-ratified
+  hard stop, authorization run 1: a signature covering only the chain
+  roots would let a legitimate transition smuggle unauthenticated
+  verifier/workflow changes through the merge controller). BOTH enforcers
+  RECOMPUTE from ground truth and reject mismatch: the gate (from the
+  protected base) and the merge controller (from the actual PR head)
+  each independently recompute the proposed chain root, verifier-closure
+  digest, workflow digest, and per-file blob digests and REFUSE
+  (`transition-payload-mismatch`) if any recomputed value differs from
+  the signed record. Verified against the
   Eye's public key held in a PROTECTED repo variable
   (`EYE_AUTHORITY_PUBKEY`, admin-writable only, same custody class as
   RELEASE_SIGNER_FINGERPRINT); `council_review[]` (the seats' HMAC
@@ -167,8 +184,13 @@ per-file designs are in the approved plan; acceptance criteria here.
   transition record (pubkey + prior root both from protected variables) ⇒
   GRANTED authority-transition; the same record with the Eye signature
   invalid, or council packets alone (no Eye signature) ⇒ DENIED — model
-  consensus can never grant; a chain merged by override without the
-  variable update ⇒ every later run DENIES chain-root-untrusted;
+  consensus can never grant; RECORD-REUSE fixtures (council-ratified): a
+  VALID Eye-signed transition record paired with altered verifier-closure
+  bytes ⇒ gate AND controller both refuse transition-payload-mismatch;
+  the same record paired with altered workflow bytes ⇒ refused the same
+  way; a record whose covered_files omits a file the PR actually changes
+  in a protected surface ⇒ refused; a chain merged by override without
+  the variable update ⇒ every later run DENIES chain-root-untrusted;
   mutation of only the source ⇒ DENIED stale; unanchored source file ⇒
   DENIED source-unanchored; missing anchor ⇒ DENIED anchor-unavailable;
   escape/symlink authority path ⇒ DENIED; dogfood self-gate (anchored at
@@ -213,7 +235,12 @@ per-file designs are in the approved plan; acceptance criteria here.
   computes the digest of those files AT THE PR HEAD immediately before
   each merge and REFUSES (`workflow-modified`) unless it equals the
   protected value or the PR carries a valid Eye-signed transition record
-  covering the workflow change. CODEOWNERS additionally routes
+  WHOSE SIGNED PAYLOAD BINDS THESE EXACT BYTES — the controller
+  recomputes `new_trusted_workflow_digest` and the per-file blob digests
+  in `covered_files` from the PR head and refuses
+  `transition-payload-mismatch` on any difference (a transition record
+  signed for other bytes cannot authorize this change). CODEOWNERS
+  additionally routes
   `.github/workflows/` to the Eye for the human-merge path, and the spec
   records the residual honestly: a human merge overriding both is
   maintainer-level action, backstopped by the digest check failing on
