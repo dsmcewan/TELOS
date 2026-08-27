@@ -1,0 +1,33 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach:signed-release-pipeline-release-acceptance",
+        "claim": "The RELEASE-ACCEPTANCE mechanism is self-referential or unanchored. If the content-addressed step-ledger record is committed in the tag target, its `release_commit` cannot equal that commit because adding the record changes the commit SHA. If it is committed later or stored out of tree, the approach specifies no immutable external locator/trust anchor from which the tag workflow obtains that exact record; consulting mutable main would violate the frozen content-address rule. Define a non-self-referential, externally anchored acceptance mechanism and test that the accepted SHA cannot be substituted."
+      },
+      {
+        "scope": "candidate-approach:meta-ads-governance-ci",
+        "claim": "Blocker 4 explicitly includes the absence of CI for Meta Ads MCP. The approach adds a manifest and hermetic tests but never wires those tests into a named required CI job; per-slice test execution does not protect later changes. Add permanent required-CI execution and a regression proving a failing Meta Ads test blocks the check."
+      },
+      {
+        "scope": "candidate-approach:node-version-claim-oracle",
+        "claim": "The prose oracle does not cover every Node-version claim as required: `[Nn]ode(\\.js)?` misses common forms such as `NODE 18+`, `NODE_VERSION=18`, and other casing or separator variants. Because the acceptance fixtures exercise only spellings already matched, the oracle can remain green with an unreconciled sub-22.12 claim. Broaden the capture rule and add escape-form negative fixtures."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a04586-1fc1-78d0-899d-05e9b7fb4e69",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a04586-1fc1-78d0-899d-05e9b7fb4e69",
+    "source": "cli-seats/codex_ask"
+  }
+}

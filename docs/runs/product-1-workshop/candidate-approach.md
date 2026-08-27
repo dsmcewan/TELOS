@@ -685,12 +685,15 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   (b) PROSE (broad-capture + reviewed inventory): ALL tracked text files —
   no directory exclusions; docs/runs/ contains live workshop and authority
   artifacts alongside frozen evidence, so location is never a normativity
-  ruling — are scanned with a deliberately OVER-BROAD matcher — any occurrence of `[Nn]ode(\.js)?`
-  within a short window of a version-looking token (`v?\d+(\.\d+)*`,
-  `\^|~|>=|≥|\+|or later|and up`) is a HIT. Every hit must either normalize
+  ruling — are scanned with a deliberately OVER-BROAD, CASE-INSENSITIVE
+  matcher: any occurrence of `node(\.js|js)?` in ANY casing (Node, NODE,
+  NodeJS, node.JS…), including identifier/config forms
+  (`NODE_VERSION=18`, `node-version: 18`, `nodeVersion: 18`), within a
+  short window of a version-looking token (`v?\d+(\.\d+)*`,
+  `\^|~|>=|≥|\+|=|:|or later|and up`) is a HIT. Every hit must either normalize
   to a version >= 22.12 (a small tested normalizer handles the common
-  grammars: "Node 18+", "Node.js 21+", "requires Node v20.11 or later",
-  "Node ≥18") or appear in a reviewed inventory
+  grammars: "Node 18+", "NODE 18+", "Node.js 21+", "NODE_VERSION=18",
+  "requires Node v20.11 or later", "Node ≥18") or appear in a reviewed inventory
   `docs/institutional-memory/product/node-version-claims.json` recording
   {file, line, matched_text, disposition} — dispositions form a CLOSED
   set with machine-checked preconditions: `false-positive` (the text is
@@ -707,9 +710,12 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   longer matching ⇒ FAIL stale-inventory). Current offenders
   (including the employment-brief doc the checklist names) are corrected in
   the same slice. **Accept**: planted `Node 18+`, `Node.js 21+`,
-  `requires Node v20.11 or later`, and a manifest `"node": "^20.0.0"` ALL
-  fail; a sub-22.12 claim added without an inventory entry fails; a stale
-  inventory entry fails; the sweep is clean at slice end.
+  `requires Node v20.11 or later`, a manifest `"node": "^20.0.0"`, AND
+  the escape-form fixtures `NODE 18+`, `NODE_VERSION=18`,
+  `node-version: 18`, `nodejs 20 and up` ALL fail (casing/separator
+  variants are not escapes); a sub-22.12 claim added without an
+  inventory entry fails; a stale inventory entry fails; the sweep is
+  clean at slice end.
 - **`cli/` package** (`pylae` bin, private): init (reads env-surface.json as
   data) / doctor (node>=22.12, git full-history, bwrap, env presence, Ed25519) /
   version (product-version.json + head) / verify (spawns verify-contracts +
@@ -779,7 +785,13 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   HARD_CEILING_CENTS frozen (fail-closed startup); budget args validated; closed
   grammars validated BEFORE env/token access; META_ADS_ENABLED kill-switch;
   package.json + hermetic tests + HUMAN-SETUP.md; env-surface.json
-  additional_scanned_dirs mechanism + 5 META_* names.
+  additional_scanned_dirs mechanism + 5 META_* names. PERMANENT REQUIRED
+  CI (blocker 4 names its absence; per-slice test execution protects
+  nothing after the slice): the hermetic meta-ads suite joins the ci.yml
+  package matrix as a NAMED job included in the branch-protection
+  required-check set — every later change runs it. **Accept**: a fixture
+  making one meta-ads test fail ⇒ the named required check goes red and
+  (per the controller's producer-bound eligibility) blocks merge.
 
 ## 5. Freshness, release, deployment, flagship
 
@@ -852,15 +864,23 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   ⇒ abort fail-closed. THE TAG TARGET MUST BE THE EXACT ACCEPTED COMMIT,
   not merely a well-attested one (a correctly signed tag on some other
   SHA would otherwise pass every property check — signature, readiness,
-  CI — without being the commit the Eye accepted): the quest's
-  step-ledger carries a content-addressed RELEASE-ACCEPTANCE record
-  `{release_commit, plan_ref, accepted_by: eye_authorization
-  (Ed25519 over release_commit ‖ plan_ref), record_id}`; the gate
-  re-derives that record under the trusted authority chain (anchored,
-  digest-checked verdict producers), verifies the Eye's signature
-  against EYE_AUTHORITY_PUBKEY, and requires (a) tag target ==
-  release_commit EXACTLY and (b) release_commit is an ancestor of
-  protected main — any mismatch ⇒ abort `tag-not-accepted-commit`.
+  CI — without being the commit the Eye accepted). The acceptance is
+  NON-SELF-REFERENTIAL and externally anchored: it is carried IN THE
+  ANNOTATED TAG MESSAGE, not in the tree (an in-tree record cannot name
+  the very commit its own addition creates, and fetching it from
+  mutable main would key authority on a mutable ref): the tag message
+  embeds a RELEASE-ACCEPTANCE block `{release_commit, plan_ref,
+  eye_acceptance: Ed25519 over (release_commit ‖ plan_ref)}`; the tag
+  signature (already verified against the protected fingerprint) binds
+  the message to the tag object, and the gate ADDITIONALLY verifies
+  `eye_acceptance` against the protected EYE_AUTHORITY_PUBKEY and
+  requires (a) the block's release_commit == the tag's actual target
+  EXACTLY, (b) plan_ref == the pivoted active_plan under the trusted
+  authority chain, and (c) the target is an ancestor of protected main —
+  any mismatch ⇒ abort `tag-not-accepted-commit`. SUBSTITUTION test:
+  re-tagging a different SHA with the same message ⇒ the embedded
+  release_commit no longer equals the target ⇒ abort; forging a new
+  block without the Eye's key ⇒ eye_acceptance invalid ⇒ abort.
   Required-CI check-run asserted at the tag SHA with
   the SAME producer binding (authenticated Actions app + trusted workflow
   digest + exact run id — never name-only; untrusted same-name collision

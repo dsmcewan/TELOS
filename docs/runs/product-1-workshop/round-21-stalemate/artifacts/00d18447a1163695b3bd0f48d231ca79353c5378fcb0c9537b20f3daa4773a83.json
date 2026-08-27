@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:72398bc241b53168f4b2bfdf1a05349f6032555d3f433b53682208b998bf9a41",
+  "output_plan_artifact_hash": "sha256:72398bc241b53168f4b2bfdf1a05349f6032555d3f433b53682208b998bf9a41",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:004d6aa1cb42ccc879e09699d2d228fcd19b5ade23f55c1f63865e5c2cd14f20",
+    "provenance_key": "anthropic:95facbcc-f297-4589-b418-f04dbfbb21ac"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:81950d1f2981b586ff4647d95be1e118f6be7f57b62bae365e7aa38ff0274000",
+    "provenance_key": "openai:01a04586-1fc1-78d0-899d-05e9b7fb4e69",
+    "bound_hash": "sha256:72398bc241b53168f4b2bfdf1a05349f6032555d3f433b53682208b998bf9a41"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:signed-release-pipeline-release-acceptance",
+      "claim": "The RELEASE-ACCEPTANCE mechanism is self-referential or unanchored. If the content-addressed step-ledger record is committed in the tag target, its `release_commit` cannot equal that commit because adding the record changes the commit SHA. If it is committed later or stored out of tree, the approach specifies no immutable external locator/trust anchor from which the tag workflow obtains that exact record; consulting mutable main would violate the frozen content-address rule. Define a non-self-referential, externally anchored acceptance mechanism and test that the accepted SHA cannot be substituted.",
+      "objection_hash": "sha256:d6d74578867d86e8aaf32fb6adc01f1e3fbe1e9b22582077fd39f186b2eb0178",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach:meta-ads-governance-ci",
+      "claim": "Blocker 4 explicitly includes the absence of CI for Meta Ads MCP. The approach adds a manifest and hermetic tests but never wires those tests into a named required CI job; per-slice test execution does not protect later changes. Add permanent required-CI execution and a regression proving a failing Meta Ads test blocks the check.",
+      "objection_hash": "sha256:e1f7b78e398d49b5d3226956bf1f903b0dce86a40810e37f7aafddc2388b1097",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach:node-version-claim-oracle",
+      "claim": "The prose oracle does not cover every Node-version claim as required: `[Nn]ode(\\.js)?` misses common forms such as `NODE 18+`, `NODE_VERSION=18`, and other casing or separator variants. Because the acceptance fixtures exercise only spellings already matched, the oracle can remain green with an unreconciled sub-22.12 claim. Broaden the capture rule and add escape-form negative fixtures.",
+      "objection_hash": "sha256:7208f0d0cba589d6d187d903153f0d19b48bd3bb4ab53153451dd06da62a9eda",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
