@@ -5,13 +5,13 @@
 // contract closure arming, verify-failure banking, evidence digest derivation.
 
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, symlinkSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import {
   openState, foldDefs, styxGenerateFiles, bankVerifyFailures,
   contractClosure, runBouts, approvalEvidenceDigest, loadKeys, saveJson,
-  withTransientRetry
+  withTransientRetry, fightLogPath
 } from "../ratchet.mjs";
 
 const tmp = () => mkdtempSync(path.join(os.tmpdir(), "forge-test-"));
@@ -181,6 +181,47 @@ const tmp = () => mkdtempSync(path.join(os.tmpdir(), "forge-test-"));
   const dead = withTransientRetry(async () => { k++; throw new Error("ETIMEDOUT"); }, { retries: 2, backoffMs: 0 });
   await assert.rejects(() => dead("t", {}), /ETIMEDOUT/);
   assert.equal(k, 3, "initial try + 2 retries");
+}
+
+// 10. Fight-log confinement: workstream ids are data that key filesystem paths,
+//     so the grammar + physical containment must fail closed.
+{
+  const w = tmp();
+  const telosDir = path.join(w, ".telos");
+  for (const bad of ["../escape", "a/b", ".hidden", "a:b"]) {
+    assert.throws(() => fightLogPath(telosDir, bad), /portable filename grammar/, `id ${JSON.stringify(bad)} rejected`);
+  }
+  // Missing fights dir fails closed (resolveUnder refuses a missing base).
+  assert.throws(() => fightLogPath(telosDir, "ok-id"), /refusing to write/);
+  // A valid id under an existing fights dir resolves inside it.
+  mkdirSync(path.join(telosDir, "fights"), { recursive: true });
+  const p = fightLogPath(telosDir, "ok-id");
+  assert.ok(p.startsWith(path.resolve(telosDir, "fights") + path.sep), "confined under fights/");
+  // A symlinked fights dir fails closed.
+  const w2 = tmp();
+  mkdirSync(path.join(w2, ".telos"), { recursive: true });
+  mkdirSync(path.join(w2, "elsewhere"), { recursive: true });
+  symlinkSync(path.join(w2, "elsewhere"), path.join(w2, ".telos", "fights"));
+  assert.throws(() => fightLogPath(path.join(w2, ".telos"), "ok-id"), /refusing to write/);
+}
+
+// 11. Prototype-name ids cannot corrupt id-keyed state: the maps are
+//     null-prototype, so "constructor" behaves like any other id.
+{
+  const state = openState(tmp());
+  assert.deepEqual(state.boutBlockers["constructor"] || [], [], "no inherited member resolved");
+  assert.equal(state.done["toString"]?.converged, undefined, "no inherited member resolved");
+  contractClosure(state, "constructor");
+  contractClosure(state, "constructor");
+  contractClosure(state, "constructor");
+  const clause = contractClosure(state, "constructor");
+  assert.equal(state.fightCounts["constructor"], 4, "numeric count, never string concat");
+  assert.ok(clause.includes("CONTRACT CLOSED"), "closure cap fires for id 'constructor'");
+  // Round-trips through JSON persistence stay prototype-free.
+  state.saveFightCounts();
+  const reloaded = openState(state.workdir);
+  assert.equal(reloaded.fightCounts["constructor"], 4, "persisted count survives reload");
+  assert.deepEqual(reloaded.boutBlockers["hasOwnProperty"] || [], [], "reloaded maps are null-prototype");
 }
 
 console.log("test-ratchet: all assertions passed");

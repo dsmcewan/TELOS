@@ -24,6 +24,12 @@ const CLAIM_FIELDS = new Set(["statement", "grade"]);
 const CHECK_FIELDS = new Set(["type", "path", "needle", "grade"]);
 const CHECK_TYPES = new Set(["file_exists", "file_contains"]);
 const GRADES = new Set(["executable", "inspectable", "cited", "hypothesis"]);
+// Workstream ids key fight-log paths (.telos/fights/<id>.json) and recursion-state
+// maps, so they are confined to a portable filename grammar: leading alphanumeric,
+// then alphanumerics/underscore/dot/hyphen. No path separators, no leading dot,
+// no ":" (Windows-illegal, NTFS alternate data streams).
+export const WORKSTREAM_ID = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/;
+export const WORKSTREAM_ID_MAX = 100;
 
 function fail(errors) {
   const e = new Error(`manifest invalid:\n${errors.map((x) => `  - ${x}`).join("\n")}`);
@@ -50,6 +56,9 @@ export function validateManifest(m) {
     for (const k of Object.keys(ws)) if (!WORKSTREAM_FIELDS.has(k)) errors.push(`${tag}: unknown field "${k}"`);
     for (const k of ["id", "signer", "lens", "requirements"]) {
       if (typeof ws[k] !== "string" || !ws[k].trim()) errors.push(`${tag}: "${k}" must be a non-empty string`);
+    }
+    if (typeof ws.id === "string" && ws.id.trim() && (!WORKSTREAM_ID.test(ws.id) || ws.id.length > WORKSTREAM_ID_MAX)) {
+      errors.push(`${tag}: "id" must match ${WORKSTREAM_ID} and be at most ${WORKSTREAM_ID_MAX} chars (portable filename grammar)`);
     }
     if (ids.has(ws.id)) errors.push(`duplicate workstream id "${ws.id}"`);
     ids.add(ws.id);
