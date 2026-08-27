@@ -18,6 +18,7 @@
 // No partial advisory artifact ever exists.
 
 import { linkSync as fsLinkSync, unlinkSync as fsUnlinkSync, lstatSync, statSync, mkdirSync, realpathSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
 
@@ -67,6 +68,7 @@ export const DRIVER_ERROR_CODES = Object.freeze([
   "invalid-arguments",
   "invalid-weaver-result",
   "ledger-open-failure",
+  "missing-root",
   "publication-failure",
   "publication-time-drift",
   "source-count-mismatch",
@@ -334,15 +336,15 @@ function excluded(rel) {
 
 const CMD_MJS_TOKEN = /(?<![^\s"'=([:])([^\s"'()]+\.mjs)\b/g;
 
-function defaultSourceLists(repoRoot, git) {
-  const seeds = seedSourceDescriptors(repoRoot, PACKAGE_ROOTS, git);
+function defaultSourceLists(repoRoot, git, { packageRoots = PACKAGE_ROOTS, docRoots = DOC_ROOTS } = {}) {
+  const seeds = seedSourceDescriptors(repoRoot, packageRoots, git);
   const files = seeds.files.filter((f) => !excluded(f.path));
   const symbols = seeds.symbols.filter((s) => !excluded(s.path));
   const blobOf = new Map(files.map((f) => [f.path, f.blob_sha]));
 
   const manifests = files.filter((f) => f.path.split("/").pop() === "package.json");
   const testPaths = new Set();
-  for (const root of PACKAGE_ROOTS) {
+  for (const root of packageRoots) {
     const prefix = `${root}/scripts/test-`;
     for (const f of files) if (f.path.startsWith(prefix) && f.path.endsWith(".mjs") && !f.path.slice(prefix.length).includes("/")) testPaths.add(f.path);
   }
@@ -367,7 +369,7 @@ function defaultSourceLists(repoRoot, git) {
   }
   const testFiles = [...testPaths].sort().map((p) => ({ path: p, blob_sha: blobOf.get(p) }));
 
-  const docFiles = walkFiles(repoRoot, DOC_ROOTS)
+  const docFiles = walkFiles(repoRoot, docRoots)
     .filter((p) => p.endsWith(".md"))
     .filter((p) => !DOC_WEAVER_EXCLUDE.some((x) => p === x || p.startsWith(x + "/")))
     .filter((p) => !excluded(p))
@@ -419,7 +421,11 @@ export async function runWeave(options = {}) {
     orchestratorFiles: options.inventories?.orchestratorFiles ?? ORCHESTRATOR_FILES,
     orchestratorEntries: options.inventories?.orchestratorEntries ?? ORCHESTRATOR_ENTRY_MODULES,
     permittedExternal: options.inventories?.permittedExternal ?? PERMITTED_EXTERNAL_CLOSURE_FILES,
-    inventoryPath: options.inventories?.inventoryPath ?? "clotho/inventory.mjs"
+    inventoryPath: options.inventories?.inventoryPath ?? "clotho/inventory.mjs",
+    // Configured walk roots — threaded so the existence preflight and the
+    // source-list walk always check/use the SAME roots (fixtures included).
+    packageRoots: options.inventories?.packageRoots ?? PACKAGE_ROOTS,
+    docRoots: options.inventories?.docRoots ?? DOC_ROOTS
   };
   const weaverIds = inv.weavers.map((w) => w.id);
   const weaverImpls = { ...REAL_WEAVER_IMPLS, ...(options.weaverImpls || {}) };
@@ -484,17 +490,51 @@ export async function runWeave(options = {}) {
     const orchestratorRefs = inv.orchestratorFiles.map((f) => fileRef(f, shaOf(f)));
     const inventoriesConsumed = [{ id: inv.inventoryPath, source_ref: fileRef(inv.inventoryPath, shaOf(inv.inventoryPath)) }];
 
+    // ---- 5b. configured-root existence preflight (fail-closed) --------------
+    // Every configured walk root must EXIST on disk before anything is seeded:
+    // an absent root previously fell through walkFiles' silent skip and
+    // published a "complete" weave over a reduced file set. lstat (not stat) so
+    // a dangling symlinked root reads as present here and then fails walkFiles'
+    // per-component symlink rejection with its own error, not this code.
+    if (!options.sourceLists) {
+      for (const root of [...inv.packageRoots, ...inv.docRoots]) {
+        let present = true;
+        try { lstatSync(absOf(repoRoot, root)); } catch { present = false; }
+        if (!present) throw new DriverError("missing-root", `configured root absent from disk: ${root}`);
+      }
+    }
+
     // ---- 6. seeds + driver-owned source lists -------------------------------
     let seeds, lists;
     if (options.sourceLists) {
       seeds = { files: options.files ?? [], symbols: options.symbols ?? [], warnings: [] };
       lists = options.sourceLists;
     } else {
-      const built = defaultSourceLists(repoRoot, git);
+      const built = defaultSourceLists(repoRoot, git, { packageRoots: inv.packageRoots, docRoots: inv.docRoots });
       seeds = built.seeds;
       lists = built.lists;
     }
     for (const w of seeds.warnings) result.warnings.push({ weaver: "driver", path: w.path, message: w.message });
+
+    // Every file whose blob sha THIS DRIVER derived from disk and baked into a
+    // published record — mechanism refs (refsByFile, accumulated via shaOf)
+    // plus, on the real path, the source/doc/contract/ledger-source/run-source
+    // edge refs. This is the commit-point drift gate's coverage set: an entry
+    // missing here would be forgeable in the beforePublication window. Injected
+    // options.sourceLists (the test seam) carry shas the driver never derived,
+    // so only mechanism refs are re-derivable there; fixtures exercising the
+    // full gate inject inventories.packageRoots/docRoots instead and let the
+    // driver walk for real.
+    const recordedShaByFile = refsByFile; // shaOf keeps feeding this map
+    if (!options.sourceLists) {
+      const recordShas = (entries, key) => {
+        for (const e of entries || []) {
+          if (e && typeof e[key] === "string" && typeof e.blob_sha === "string") recordedShaByFile.set(e[key], e.blob_sha);
+        }
+      };
+      recordShas(seeds.files, "path");
+      for (const [listId, list] of Object.entries(lists)) recordShas(list, listId === "run-sources" ? "summary" : "path");
+    }
 
     // ---- 7. open the exclusive sibling temporary ledger ---------------------
     mkdirSync(path.dirname(destAbs), { recursive: true });
@@ -609,11 +649,32 @@ export async function runWeave(options = {}) {
     const verdict = await verifyLedger(tmpAbs);
     if (!verdict.ok) throw new DriverError("verification-failure", `temporary ledger failed verification: ${verdict.errors.join("; ")}`);
     result.ledger_bytes = statSync(tmpAbs).size;
+    // Digest of the exact bytes that just verified — rechecked at the commit
+    // point so the close-to-link span cannot substitute the temporary ledger.
+    const tmpDigestAtVerify = createHash("sha256").update(readFileSync(tmpAbs)).digest("hex");
 
     // ---- 13. atomic no-replace publication (D20/D28) ------------------------
     if (typeof options.beforePublication === "function") options.beforePublication({ repoRoot, tmpAbs, destAbs });
     if (!physicalContainment(repoRoot, outRel) || !physicalContainment(repoRoot, tmpRel)) {
       throw new DriverError("containment-violation", `destination chain for ${outRel} mutated before publication`);
+    }
+    // ---- 13b. commit-point full-coverage drift gate -------------------------
+    // The step-11 gate runs BEFORE close/verify/beforePublication, leaving that
+    // whole span mutable. Re-derive here, immediately before linkSync: closure
+    // equality, EVERY blob sha the published ledger asserts (mechanism refs AND
+    // source/doc/contract/ledger-source/run-source edge refs via
+    // recordedShaByFile), repository_ref (inside recheckHashes), and the
+    // temporary ledger's own bytes. This EXCEEDS D34's enumerated scope (which
+    // covers implementation/orchestrator/repository refs) while preserving its
+    // observable guarantee: no publication on drift, temp removed. The step-11
+    // gate stays as the cheap early abort.
+    checkClosureEquality(repoRoot, inv, "publication-time-drift");
+    recheckHashes(git, recordedShaByFile, repositoryRef, "publication-time-drift");
+    {
+      const tmpDigestNow = createHash("sha256").update(readFileSync(tmpAbs)).digest("hex");
+      if (tmpDigestNow !== tmpDigestAtVerify) {
+        throw new DriverError("publication-time-drift", "temporary ledger bytes changed after verification — refusing to publish unverified bytes");
+      }
     }
     try {
       linkSyncOp(tmpAbs, destAbs); // exclusive: EEXIST if the destination exists
