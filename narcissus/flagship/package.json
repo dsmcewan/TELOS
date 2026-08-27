@@ -27,14 +27,14 @@
   "dependencies": {
     "@react-three/fiber": "^8.17.10",
     "@xstate/react": "^5.0.0",
-    "react": "^18.3.1",
+    "react": "^19.2.8",
     "react-dom": "^18.3.1",
     "three": "^0.169.0",
     "xstate": "^5.19.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.2",
-    "@types/react": "^18.3.12",
+    "@types/react": "^19.2.18",
     "@types/react-dom": "^18.3.1",
     "@types/three": "^0.169.0",
     "@vitejs/plugin-react": "^6.0.3",
