@@ -23,7 +23,12 @@ OF SCOPE by signed ADR (PD-001), with the checklist's carve-out made testable
 production operator console (labeled demonstration/evidence-viewer this round).
 Phase 1b (durable crash-consistent state, authenticated-principal authority
 binding, key rotation, sandbox platform doc) is register-tracked with target
-rounds, not dropped.
+rounds, not dropped. **Forward identity decision (Eye, 2026-08-27)**: when
+authentication enters scope (Phase 1b operator-console / service modes — NOT the
+v1 local CLI), the identity provider is **Auth0 (OIDC)**. Recorded now in the
+product-boundary ADR and the readiness register's Phase-1b identity item so the
+decision is durable; no v1 code depends on it (the CLI stays a local
+single-user tool with no network listener, per the no-listener oracle).
 
 ## 2. Enforcement-changing specifications (require signed required-seat review)
 
