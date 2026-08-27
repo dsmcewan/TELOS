@@ -214,7 +214,11 @@ export async function runForgeLive({
   projectRoot, telos, dossierMeta,
   embed, vectorStore, callTool,
   pattern, ctx,
-  serverPath, maxCycles = 3, signed = false
+  serverPath, maxCycles = 3, signed = false,
+  // Keyless/demo mode is EXPLICIT: a live run never silently degrades to
+  // synthetic self-approvals — council failure halts unless the caller
+  // opted into the demo path.
+  allowSyntheticApprovals = false
 }) {
   const resolvedPattern = pattern || ragPattern;
   const resolvedCtx = ctx || ragContext({ telos });
@@ -251,11 +255,16 @@ export async function runForgeLive({
       // councilApprovals returns a function that destructures { dossierMeta }
       // (identical in shape to saas-forge's). It MUST be called with the wrapped
       // object — a bare dossierMeta makes the destructure yield undefined and
-      // throws on dossierMeta.build_id, silently degrading every live run to the
-      // synthetic self-approvals below.
+      // throws on dossierMeta.build_id, which previously degraded every live
+      // run to synthetic self-approvals via the bare catch below.
       approvals = await makeApprovalsAsync({ dossierMeta });
-    } catch {
-      // Council call failed (e.g. keys unavailable); fall back to synthetic.
+    } catch (e) {
+      if (!allowSyntheticApprovals) {
+        // A LIVE run must halt on council failure — credentials, transport,
+        // schema, and programming errors all surface; self-approval is never
+        // an implicit fallback.
+        throw new Error(`live council approvals failed (pass allowSyntheticApprovals:true only for an explicit keyless demo): ${e?.message || e}`);
+      }
       approvals = syntheticApprovals(dossierMeta);
     }
     const makeApprovals = (_meta) => approvals; // arg intentionally ignored — approvals were pre-resolved above with this run's dossierMeta

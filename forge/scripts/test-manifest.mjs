@@ -87,4 +87,21 @@ const GOOD = {
   assert.equal(d.idea_id, "demo", "idea_id defaults to build_id");
 }
 
+// 5. Workstream ids are confined to the portable filename grammar — they key
+//    fight-log paths under .telos/fights/ and the recursion-state maps.
+{
+  for (const bad of ["../evil", "a/b", "a\\b", ".hidden", "a:b", "x".repeat(101)]) {
+    const m = structuredClone(GOOD);
+    m.workstreams[0].id = bad;
+    m.workstreams[1].dependencies = [];
+    assert.throws(() => validateManifest(m), /portable filename grammar/, `id ${JSON.stringify(bad)} rejected`);
+  }
+  for (const good of ["ok-id_1.2", "product-architecture", "A9"]) {
+    const m = structuredClone(GOOD);
+    m.workstreams[0].id = good;
+    m.workstreams[1].dependencies = [good];
+    assert.equal(validateManifest(m), m, `id ${JSON.stringify(good)} accepted`);
+  }
+}
+
 console.log("test-manifest: all assertions passed");

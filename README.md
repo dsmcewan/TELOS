@@ -17,7 +17,7 @@ not a remote model. A gate result can certify `merge_status: "ready"`.
 Implementation authority, acceptance, and merge remain separate human decisions
 held by **The Eye**.
 
-Core packages: **Node ≥18 · zero runtime dependencies · MIT**
+Core packages: **Node ≥22.12 · zero runtime dependencies · MIT**
 
 **Live demo:** [dsmcewan.github.io/TELOS](https://dsmcewan.github.io/TELOS/) verifies the committed Ed25519 evidence in your browser, including the signed needs-human record that halted an over-cap ads-budget action.
 
@@ -350,10 +350,10 @@ and the gate independently re-verifies every team's record on disk.
 
 ## Verification
 
-The core, forge, plugin, and enrolled spine packages are Node ≥18 ESM with zero
-runtime dependencies. CI runs them under Node 18 and 20. The
+The core, forge, plugin, and enrolled spine packages are Node ≥22.12 ESM with zero
+runtime dependencies. CI runs them under Node 22 and 24. The
 `narcissus/flagship` product is the explicit exception: it requires Node
-`^20.19.0 || >=22.12.0`, uses a tracked npm lockfile, and has its own install,
+`>=22.12.0`, uses a tracked npm lockfile, and has its own install,
 audit, unit, evidence, graph, build, and browser pipeline.
 
 Fast public proof:
@@ -383,7 +383,7 @@ npm --prefix atropos test
 npm --prefix demo test
 ```
 
-Flagship pipeline under Node 20:
+Flagship pipeline under Node 22+:
 
 ```bash
 npm --prefix narcissus/flagship ci

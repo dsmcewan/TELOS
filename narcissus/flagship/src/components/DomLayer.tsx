@@ -82,7 +82,7 @@ export function DomLayer() {
               <h2 className="hud-title">The live weave</h2>
               <p className="hud-sub">
                 <b>{CLOTHO.total_nodes}</b> nodes · <b>{CLOTHO.total_edges}</b> edges — measured by <b>Lachesis</b>,
-                verified by <b>Atropos</b>. Sized by blast radius; the tension point is <b>canonicalize</b> (184).
+                verified by <b>Atropos</b>. Sized by blast radius; the tension point is <b>{NODES_BY_BLAST[0].label}</b> ({NODES_BY_BLAST[0].blast_radius}).
               </p>
               <div className="chips">
                 <span className="chip"><b>CLOTHO</b> {CLOTHO.total_nodes}·{CLOTHO.total_edges}·{CLOTHO.depends_on_edges}</span>

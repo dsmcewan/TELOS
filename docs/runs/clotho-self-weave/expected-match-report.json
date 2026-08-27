@@ -416,7 +416,7 @@
           "path": "merkle-dag/scripts/test-obligation.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
         },
-        "source_ref": "file:merkle-dag/package.json@6bf995a946b8950f1d43fa086b9a129a5f7d729d"
+        "source_ref": "file:merkle-dag/package.json@75d0d33640419d0efa94d8e4fc25322ea0244dec"
       },
       "matched_fact": {
         "subject": "edge",
@@ -433,7 +433,7 @@
           "path": "merkle-dag/scripts/test-obligation.mjs",
           "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288"
         },
-        "source_ref": "file:merkle-dag/package.json@6bf995a946b8950f1d43fa086b9a129a5f7d729d"
+        "source_ref": "file:merkle-dag/package.json@75d0d33640419d0efa94d8e4fc25322ea0244dec"
       }
     },
     {

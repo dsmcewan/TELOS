@@ -1,13 +1,13 @@
 {
   "clotho_self_weave_summary": {
-    "input_repo_head": "0642239d67244c1907f807adf3a5df95d22ce154",
+    "input_repo_head": "ebc2cd0bebfed838dc41ed4f26ba96823c72121d",
     "repository_ref": "git-root:8edaa2ed3cf9b97f241d8208a2bdae6188702288",
-    "woven_at": "2026-07-30T06:55:02.562Z",
-    "public_key": "MCowBQYDK2VwAyEAPjbFdi9m1t/ko6BlevFJ+PxWx+Tr9PkFhsh9AlrkGu0=",
-    "snapshot_sha256": "4934d18fcddc22b3de21b099e065f126c3dfd6e34a02f38d8aae8643cf67891f",
-    "weave_wall_ms": 26359,
-    "edge_count": 4554,
-    "ledger_bytes": 5218084,
+    "woven_at": "2026-08-27T18:38:08.425Z",
+    "public_key": "MCowBQYDK2VwAyEAVG6ZxjmKSd3iMBUGFXkyDnbxERt650pDXwnbjbBLft8=",
+    "snapshot_sha256": "b9c486430a82888a8c53c128ca1f31b3951ac27e8cda636e47767536aa553fe9",
+    "weave_wall_ms": 18713,
+    "edge_count": 4559,
+    "ledger_bytes": 5223648,
     "publication_state": "published",
     "provenance_statement": "These references exactly cover the supported, statically declared dependency model at publication time"
   },
@@ -20,7 +20,7 @@
       ],
       "inspected_source_counts": [
         {
-          "count": 254,
+          "count": 255,
           "inventory_id": "package-files"
         },
         {
@@ -36,7 +36,7 @@
       "implementation_refs": [
         "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
         "file:clotho/weavers/code.mjs@b2c39cb694a5147b1ccd255146b7d12c81d2ebdf",
-        "file:clotho/weavers/util.mjs@32d1216715e38b447aa0f351bb89bd55e8185c7a"
+        "file:clotho/weavers/util.mjs@b93f4cee4ef786a8fc3e26a90447e779149abaed"
       ],
       "inspected_source_counts": [
         {
@@ -52,7 +52,7 @@
       "implementation_refs": [
         "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
         "file:clotho/weavers/test.mjs@faa022a48e9dad50e22aed4edf76cdf05f7ff61f",
-        "file:clotho/weavers/util.mjs@32d1216715e38b447aa0f351bb89bd55e8185c7a"
+        "file:clotho/weavers/util.mjs@b93f4cee4ef786a8fc3e26a90447e779149abaed"
       ],
       "inspected_source_counts": [
         {
@@ -72,7 +72,7 @@
       "implementation_refs": [
         "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
         "file:clotho/weavers/doc.mjs@bad6f12f19084cce2b409316485e2e77b441fd21",
-        "file:clotho/weavers/util.mjs@32d1216715e38b447aa0f351bb89bd55e8185c7a"
+        "file:clotho/weavers/util.mjs@b93f4cee4ef786a8fc3e26a90447e779149abaed"
       ],
       "inspected_source_counts": [
         {
@@ -88,7 +88,7 @@
       "implementation_refs": [
         "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
         "file:clotho/weavers/ledger.mjs@b2ce539cb5d7a87a2a0312cad1f28f26bd3d7263",
-        "file:clotho/weavers/util.mjs@32d1216715e38b447aa0f351bb89bd55e8185c7a"
+        "file:clotho/weavers/util.mjs@b93f4cee4ef786a8fc3e26a90447e779149abaed"
       ],
       "inspected_source_counts": [
         {
@@ -112,13 +112,13 @@
     "file:clotho/inventory.mjs@815021675f30338d7783c77528fceb10f3518f97",
     "file:clotho/registry.mjs@8ef3c6771836691cddb9f34c24f0d9b1be2e3896",
     "file:clotho/thread-ledger.mjs@332821afc71c7776b022f7247aa33250592ef78c",
-    "file:clotho/weave.mjs@6e5870f60c389c452e15dcab96f26115ec02b954",
+    "file:clotho/weave.mjs@2b9d990cf5d70d34a84e875313f57157e2dd971a",
     "file:clotho/weavers/code.mjs@b2c39cb694a5147b1ccd255146b7d12c81d2ebdf",
     "file:clotho/weavers/doc.mjs@bad6f12f19084cce2b409316485e2e77b441fd21",
     "file:clotho/weavers/git.mjs@b0f0a2ff9b07b9bf077a8b5b11c5597dfdc8ecbf",
     "file:clotho/weavers/ledger.mjs@b2ce539cb5d7a87a2a0312cad1f28f26bd3d7263",
     "file:clotho/weavers/test.mjs@faa022a48e9dad50e22aed4edf76cdf05f7ff61f",
-    "file:clotho/weavers/util.mjs@32d1216715e38b447aa0f351bb89bd55e8185c7a"
+    "file:clotho/weavers/util.mjs@b93f4cee4ef786a8fc3e26a90447e779149abaed"
   ],
   "inventories_consumed": [
     {
@@ -149,9 +149,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "d24d04ffaf5cf8218cd22c1c648a626340baa06d3df8e770ea984e1ccfbc548f",
-      "record_hash": "143499023c1c9777eed5cdf59e9b53780a064d4a67bbda76de517c65fa3991d5",
-      "signature": "pPtE2j7xq7zYzweng13/emjQN63KpyQE3o1GsKR2uOygHYvQZ0MWafqLeMtVBb5VFJHcxXlYqSFIm+G3TofGDg==",
+      "prev_hash": "c6d90e07c9dbb2716510b42e72e96b8f63337971c8261d2a9fd1e333d8d4ef5a",
+      "record_hash": "427a819896e01f13a31ea5f6add1c00f1b21e96ca1a80bd3539b6086263d0153",
+      "signature": "deT8Rb3WfvncrQ8IbFJx25Fjd93zPon2luedDWn1HuVB9Fn9UdlmhYEev+F3wVLgv2J2aI9f7EmYXxyzJ2BiDQ==",
       "source_ref": "ledger:docs/ledgers/clotho-obligation-ledger.jsonl#8f1dac766bae488b733f1881f9a54699f0c7dea760ae08d1fda36446326a503e",
       "to_locator": {
         "kind": "obligation",
@@ -162,7 +162,7 @@
         }
       },
       "to_node": "bb8204a2bca09fefc3f41e82e3c7d1b06cc743b3be0dd10af30ba949e72af775",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-ledger-weaver",
@@ -177,9 +177,9 @@
         }
       },
       "from_node": "bb8204a2bca09fefc3f41e82e3c7d1b06cc743b3be0dd10af30ba949e72af775",
-      "prev_hash": "b177b9b5ec102349d1e7f6f0a03a3ecac9314d9283c7a80e6c6b0cc8e06df546",
-      "record_hash": "d6ed6d9486bffc9e0fba4e6eb77ec5bc4d08dc3cf3e6f2cf44f7b12a76cf0cd5",
-      "signature": "kr2rJrD0T8yIXe3oSbVp0wOTCiusUZwzAVYqfa0ZhBVyR5JWXZoD9yAJz9JgJtxVP6GUxzfUIv7+AxiecJEPAA==",
+      "prev_hash": "df202e1131b7433ddc2a0d741a13f8680318207c930797a4f15eb6a49b97aa75",
+      "record_hash": "75fbd231eb36634d48bfcaac8ef605499ca48ab8590a06398a31fcca9f715a66",
+      "signature": "F0zzpXlJ0Fh3ZLHv9m5yyyckda11bz98QKlVcRrRUt0nIAdnCvXze6548FUVwhO6VWdG0US0PqAtaIeKrw+mDA==",
       "source_ref": "ledger:docs/ledgers/clotho-obligation-ledger.jsonl#8f1dac766bae488b733f1881f9a54699f0c7dea760ae08d1fda36446326a503e",
       "to_locator": {
         "kind": "contract-clause",
@@ -194,7 +194,7 @@
         }
       },
       "to_node": "3bc5a88fe72b5c6d358fa15359a57d02c799378e5748fc16869d8b8dff3744bf",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-doc-weaver",
@@ -210,9 +210,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "4a7f55e89bd199722bc02e3dcf33893a5ede32849770709b0fca34fe0f7684b9",
-      "record_hash": "b03f02599891d9e34d9176d583fe077582241fea2be607f1293d2b993f519953",
-      "signature": "m0aHA3VbkhmqTsQbi0sS4O60mMkkifbi0PROn62J6jcxVuz7zFGpLM2CxfuTSif34ZJdm1cVNxJ8NrIXMlPYAg==",
+      "prev_hash": "235d766603df6b982000253af473f9d82a3821275680dab43a2d0a46c8849c96",
+      "record_hash": "1b1fda94649119fd2ace4bab9d8844c3bccd5f684dc8d131d1e63647c2a0f56a",
+      "signature": "Vvz9B2fGC/WGdQbH+pqnpsCY2XqxNOhyjU5u7J+gEDox8LFj/gA+RtgDF+CoK7h05nSLCkbewSSlyFm7TVMoBg==",
       "source_ref": "file:docs/clotho-phase-1-design.md@1be19fbb52a4b877a0fffbdb5577e6710d544cf8",
       "to_locator": {
         "kind": "doc-section",
@@ -227,7 +227,7 @@
         }
       },
       "to_node": "22f9f6e41e1f561605922b440537b6c184675bc652dc96eb1d3c105bcd852b69",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-doc-weaver",
@@ -243,9 +243,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "82ffd2c827efb1cf33cd066a1fde6cc1c2305c0ff217d27b6f08aa12c0beba1c",
-      "record_hash": "5581923474b470235149f434465924b266a7234411c8543ccd5adfad32d16979",
-      "signature": "2rfEmCB/kCz4yMycJC9x85BdDfXLfKNGYvA+n0vQXkXi8beA6wIQrxffWbxN4vMqfc4nZWu2QZOeBl4aGkICBw==",
+      "prev_hash": "254bd07bb2b6b14f39e638f5a84e5ea855c1e03b075d559486194efba18c0635",
+      "record_hash": "8ddcd934442b9c18befa7046706c8c9f3bb89d96659a9a15d4ee9b2c8cd4e9ce",
+      "signature": "wacveZw6YckMgwnvjta46CqhuI65YF3Ut52TMWZ6/BFsEhNmcBhsLx9e16sZo0fwx/2BOyidO4D1S6nzykoJAw==",
       "source_ref": "file:docs/clotho-phase-1-design.md@1be19fbb52a4b877a0fffbdb5577e6710d544cf8",
       "to_locator": {
         "kind": "doc-section",
@@ -260,7 +260,7 @@
         }
       },
       "to_node": "23c7dacdf85ccd7a04a7b49e284c25767d4e2926253d6c5d5a90d0769debce61",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-doc-weaver",
@@ -276,9 +276,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "bad4ed02f62fadd6e4d8cfc2058422d2adaa53d2af8787807859c025a611575e",
-      "record_hash": "2fefa55e19bd7db9a1ad95b571fd50171ebd9521bddd266fd49a5afd01fb9d61",
-      "signature": "lR9h+qJQJqtfF3IIn8bWJ+V4ElhYzbU2xjNmU2nM3qDjB+LIjv9TtSQhis65DvJqhtFr0OpRALPL0kHhdCECAQ==",
+      "prev_hash": "5c5b9debbc5c08064f4b0c709dc620e803bb3ae83c83ea3d879091a0310ba703",
+      "record_hash": "9fb2270579c4b654f587e91ac5430c4e39e3bbf3b891abfcc147ceb4c831a98f",
+      "signature": "KDzf/WaE8N6Df1PqtoR9aA4K+NKNYGkAW1x+ROxS5g6gZNZ05Q+zNzej+tPt/nDIpmqf09WKZVrCbzLMmccRDw==",
       "source_ref": "file:docs/clotho-phase-1-plan.md@dde487caa460bfb24b4bd2052cfdc629f038910a",
       "to_locator": {
         "kind": "doc-section",
@@ -293,7 +293,7 @@
         }
       },
       "to_node": "39891ae5f62dee4a2d150c7bf71af5d08131b7fe5d9e7e1a03848c76f656508a",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-doc-weaver",
@@ -309,9 +309,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "fd2be19d8ed86b86b5defb3539e04235e6efd992e06a7c7d0bd9d51c006c7fcd",
-      "record_hash": "fbce4766bbf1e2bf95d3394e904c93de4bc9cd2d862802aa3c52e94b39cae636",
-      "signature": "A2U0BKCzywkrae3Nhr4IelHFBAIcM+XgsO7OFHXDXhN7qxImRjKljG0suDN6vJX8ukJBve6cN2HrRiJzqGuaDg==",
+      "prev_hash": "4730fbb361b6201e5cdc103ba1be62780675f0494cc7047e71bdb97005934daa",
+      "record_hash": "4ebec7675873d61280021834a834a64b80f1f4788a18c4c701ecdde7cfa7a5b9",
+      "signature": "1Ee72q2NCrYCdRArim6fJJFJFgVJyJBDHIfjAa0Sc/qwTfidZbir5sbX6jBgoIdkvDLK1MFhQTNqA1GUMBT/BA==",
       "source_ref": "file:docs/proposal-lifecycle-implementation.md@ee5eaeee637d53f326f456b8fa3e923f3344c700",
       "to_locator": {
         "kind": "doc-section",
@@ -327,7 +327,7 @@
         }
       },
       "to_node": "3e012e0e1ece7b9cc9c22b3f5da478169a0529746e97f9c21f615cb24ff2ae28",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-doc-weaver",
@@ -343,9 +343,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "edc704517649177d745d7e7373015f48ac3f9c945bd77242554ef1e4195cb485",
-      "record_hash": "adebe5ff1f1dddc952d5fb5e06e0dc0ac8907136d97c7ec3dd3d7379d5013363",
-      "signature": "fgOvQzyDUHWGvOdmUL4d0w581eU9oUurLIlp/BGBkX4I+Gza3ypfyP/yzReK7aOc/IW++05ktUzBCl9YiX/6BA==",
+      "prev_hash": "1ead2ac6bd78a7bcd6e36898fa1199382f231ac1fd662c0e5e81c9d50a6cd754",
+      "record_hash": "d1437fa2635f988ca4bf4882fabc11dae95bea12669f8fe4332199eafc6cfb87",
+      "signature": "Yqjz5nlnU7KFnJtODTJ4gV/OTaZxYyT3dhO7fJOKx9sc4pV0tYZvFn7H+APcG9PphK1vfiTKMBVz8CdWt2pLAA==",
       "source_ref": "file:docs/ROADMAP.md@7592a0c2014be8575dbbd5d9598993aae35eaec9",
       "to_locator": {
         "kind": "doc-section",
@@ -360,7 +360,7 @@
         }
       },
       "to_node": "5a27c7c2a2c1cf3fce35e59ee853a32b97965eccd3a71fbbc2fbd785471a2835",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-doc-weaver",
@@ -376,9 +376,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "0e8a3fb0776ef3425962d999bb49706ff895af5d81fd53490cc037640577cfb8",
-      "record_hash": "62d219f56fb60fb6f1177e3798fb47adea64d9f505f1909d3ead180fd64eed25",
-      "signature": "NJLYIBO+QjBs2N980OXkoogNbDkW7B5of2XKnuO8+UTrXS11F4t33AoT3UTd8t+RsrdFtNjnTdmGPEbCfnEsBg==",
+      "prev_hash": "6cfe6c4054383e86e486f9ebbc15282089215817869147ff8a539b5aa29a5554",
+      "record_hash": "2f02d33328e7c5d938c04ae39cdb89cd6b83a92227c328104d6287d5677a21d7",
+      "signature": "4oz0iJyKCNwvo24m35XH2Ud826Vr/uWACfol0szJeNLw6tuGBm0tg0ZQ68y2+N9cjZgeQrlp8ShD4JYDyAUoDg==",
       "source_ref": "file:docs/proposal-lifecycle-implementation.md@ee5eaeee637d53f326f456b8fa3e923f3344c700",
       "to_locator": {
         "kind": "doc-section",
@@ -393,7 +393,7 @@
         }
       },
       "to_node": "610ab3f733a4325c0a4f314dfb24008eb37d0d597e6fd4219bc6b5eda6525e37",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-doc-weaver",
@@ -409,9 +409,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "24826ca19c790c993e3aaa4d52f06f50c18683b6b344b64191d3791151cd1ba5",
-      "record_hash": "2f7363ac4954d918cfd6331c6b96e5a7827713ed7250793372987ef8253c7626",
-      "signature": "225tYXLLOPay3NdqxIAhQhgbNz7CTyfepML9SOO92S7AtuYkNSbwCv3eYykSrKkZaJnaUTHsYP0Vb+4Gi+MnBw==",
+      "prev_hash": "7a7790a3a4665368eb8b09cc5aa509b802e25523a1c243f3a59488ac505db9b8",
+      "record_hash": "70ea4dadfd53052dd25666e9415df2a560790d76e52f31bdce9b3ca97c43b78e",
+      "signature": "FZT1LzlL8F53Rqpy4FDdG/gbqu62fS91ippN7oLNI1lT0Louog79rKhUBeaDEsZ3VVpTe0QRErU7dAHbQYuMBg==",
       "source_ref": "file:docs/STATUS.md@20e5ec2a60c8ac38576fcd9762fb2ac7911356f4",
       "to_locator": {
         "kind": "doc-section",
@@ -427,7 +427,7 @@
         }
       },
       "to_node": "70334daf6d632a22afc6fb3bcaa1b31479acf3a3077715c5330483d01dd182a1",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-doc-weaver",
@@ -443,9 +443,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "7be74198d5dd431bf37b8fa4561bc79ad1fddfd5e07096d2288c1a0e5aea52e4",
-      "record_hash": "3ce5a733bf78680e8593b20e63a6dd2b229ff730e4aa3d3caf136fe89bac7dd9",
-      "signature": "hUnvdu3FOmggXt16KFpzaA+TTwxxoxU3WsJOKMyraavwx92o8fSErbjtTqbQBhmAVAmhOlbIKrAiTukPuboNBw==",
+      "prev_hash": "1aff319a4fbcba711fb116cfbc169b4b51bab9b8fc95e1476f71fa80a885475c",
+      "record_hash": "8f3698e1534fd46cb5cbfa7eeb8e730df89b7a30fdca3c82f178ae9f351ddc35",
+      "signature": "fn4OngjSNeqhszE1uU5JZ6+9iuIw9acwESeGmljFBfkQK4RWO7kqrbgo8LwSSe+oz7Q2sjuMviUDEMfL0uWDDQ==",
       "source_ref": "file:docs/history/STATUS-2026-06-28.md@1003a617cd25485ec6b16cf3803a8c1b3c554c19",
       "to_locator": {
         "kind": "doc-section",
@@ -460,7 +460,7 @@
         }
       },
       "to_node": "8806a69e35570bc9d4c817ee23f144b4860b23c150ac7c9e44d3602bc2fb26a2",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-doc-weaver",
@@ -476,9 +476,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "b4eceda1048d00a21f2c8ed28882ec9f4084f0e040e1e60c5c01acc3fbfb9b8f",
-      "record_hash": "d3c826002a2c8b1b27629707993abe4b0acbd385cac1798c2fbc2e71dc920676",
-      "signature": "4IU4mClRYsvSTA9rDS5kLzEi7KgT/BEOTldp825UGFVIV+A2KdNcN1d4FK/4xanCNw6lyB7165dKb2R/yO2DDg==",
+      "prev_hash": "dbf82bd125dfbe04815db6745abce955700a839a03ad5cccc2ca18fcd0ab1116",
+      "record_hash": "319212d2f9ecadcb26b7b36fa1efd1376e12667dde05699e5a05ac6f94fe0774",
+      "signature": "QuD30aC9ITGFeVVZjc4TF6b083tKegWcljXathtJc7VxuG1gLnuIKDxlPH5NtOe6OqXXGSdP7AHSzDAEmheeDg==",
       "source_ref": "file:docs/clotho-phase-1-design.md@1be19fbb52a4b877a0fffbdb5577e6710d544cf8",
       "to_locator": {
         "kind": "doc-section",
@@ -493,7 +493,7 @@
         }
       },
       "to_node": "a62e8a280173f0ae1673e4ecb3159b90bfc693d18ef69a25257b2060ff42296a",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-doc-weaver",
@@ -509,9 +509,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "12400522afdff6f00832a96d7f9b226c3896bb67de97341ba4aff37ff27ede9d",
-      "record_hash": "a8d37133ce363f29bde920dccf19ce7469a783a6fd22192f3227e050c0a42e39",
-      "signature": "4bzvrIw8hikKMmV8xibFhny92dco4uNPue9c9mHisdhyXWboi2hv0wHTwHIIilFDCMY5+qgRm/MKZDW1boGICA==",
+      "prev_hash": "4db2bb96cd0b9afcd5badebfed2a43c9d3ff0f552c89f850d116f37eeed5fcbf",
+      "record_hash": "c3d4144b908b1b203d415ddd91f485ae0843b2f44f2f3bfe22a2b6d98f6206d5",
+      "signature": "OFfpR6yasac6Y4lnj/XoRz8K1KhmGPvJuhBBarennNQii6tB19svwsBO30sha7ZoyxH3I8PzRf3MP8g4ngFgCg==",
       "source_ref": "file:docs/clotho-phase-1-plan.md@dde487caa460bfb24b4bd2052cfdc629f038910a",
       "to_locator": {
         "kind": "doc-section",
@@ -525,7 +525,7 @@
         }
       },
       "to_node": "d43095b40cd6c44dda88e5df4a42327c25af676dc4600cf551ea3ac08d8bf8c1",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-doc-weaver",
@@ -541,9 +541,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "80573043cd79d8352e36f9ae0350d43b5183ec172921b8b11891a15371c4b79a",
-      "record_hash": "be50e5bb1324716bafcada0a1d01625af944571b1b81ff5a736633b0cab44d5e",
-      "signature": "ioiduqMKIhInLM9KryAjj6fI+r5psDOXHZ96wvtXrbh/CvwzZY3kvGikBo2fq+M3vqljYeBNDg0kPnCcOlckCg==",
+      "prev_hash": "019df5dc087003f70cd01a8cdcbeddc823f66b75adabae59289de3bbd60754b4",
+      "record_hash": "12936e6bff6f54a39db2c33f949d578582c575307dca577eb1289fa4b42e5932",
+      "signature": "nzCZFdDQw/YVOs9JizxHfbhWsZTlGyn7eL5fGbhXINrOH9S4A5Ckkq4XlCtH9uLksDYMut4ssebg5Apqd4f3Dw==",
       "source_ref": "file:docs/clotho-phase-1-plan.md@dde487caa460bfb24b4bd2052cfdc629f038910a",
       "to_locator": {
         "kind": "doc-section",
@@ -559,7 +559,7 @@
         }
       },
       "to_node": "deb692c7258ed82a8d101ba6a0a536509471e18589e83c10d9b02836281184f3",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-doc-weaver",
@@ -575,9 +575,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "0b6c5b338cbe1ad00bd75071965e5245f7cab2c551b99ec519a9c92e2e27bd57",
-      "record_hash": "30ca066252d16865737afc67159a3cfcae237364aa12df16ae306fe700708135",
-      "signature": "G0dnWJ+Y5Kopji/WxMW6txyqtPNB2DEbxsUBz1H+3WRSaHqV9P5lU/JP2b1OuOBIKEIDkXtd8zHJjZjQ41YTBw==",
+      "prev_hash": "952443c34622d85d9d8594f86e318a39d9681b63bc2aaeb7b6e04597113e0a9d",
+      "record_hash": "08fec5b46a28be2dd9809597862932acc76c90f4e89fa375ee3e9732dd15942d",
+      "signature": "un4pNGsm+ULNf8hJ6tIyc6p45FEPMO7GlToUNclrhTUjFT3Y5czdlTo41xoe8MmCSETuF8raWPUsDL324EkaBQ==",
       "source_ref": "file:docs/clotho-phase-1-plan.md@dde487caa460bfb24b4bd2052cfdc629f038910a",
       "to_locator": {
         "kind": "doc-section",
@@ -593,7 +593,7 @@
         }
       },
       "to_node": "e36f5d5febb0b5ebe5dcd96b4522f8ee53da9caf2b2cef2292bfa45d45886f03",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-ledger-weaver",
@@ -609,9 +609,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "878ac393c970d3ee3ac8fc35bfe5a9215b549925b68134617c9819620764af39",
-      "record_hash": "7de44edaef5cef9a14bdfe547217342d92c677a580b9694dca77a4ac39ccf6e6",
-      "signature": "ZFZ3FTwf+Yjbvt6vxxwGi8+ALgq6YWxEOL5YatHCD6E1gLMo4QRzvqbH+QLLZw6plKMo6tnQq69y/2ucdxBZAQ==",
+      "prev_hash": "9d5e8b1b0191bdc1eeb2000810ccda945ba1247a8968d4a757f90b99ec4957c5",
+      "record_hash": "e3b044681656294f368ade944c3143a4e571d0d36b52fedde99e3408821fabe2",
+      "signature": "QBPMvzFqeI55p6LdRi2fK1o4OXoqkVx/arurVt1NvK0ZygUcToW9tBrJ1BDNliTnJMzLHSBBvsdecEWD3ZsPDw==",
       "source_ref": "file:docs/runs/clotho-flagship-evidence/summary.json@ece42e4ca7d432f0bdd095bc038d52f7e442b02b",
       "to_locator": {
         "kind": "run-evidence",
@@ -622,7 +622,7 @@
         }
       },
       "to_node": "2ec0e7a419f7e4d7dd621fcfe54bcdc499544039d4cf87a2922d187ba59b6e64",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-git-weaver",
@@ -638,9 +638,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "b027243b24a748458696b856d5f99c566e3dd3786b996e829449f5a6e3ebd508",
-      "record_hash": "b3879b08c054000d9b539dc6a1b23daa4557572249309fdef496f37080127e42",
-      "signature": "7ZHNKTirWSqs3ZrzT37kIqyWIjcKonYCHpHNfSHxtFYiIwpHK+xf8LQnU4bBuZS0Wq/+1ZhyudP/GPdoCcOFBw==",
+      "prev_hash": "60435cb03f40cd9657cc92c68613f7cf2bbb07579d19657a2f44452a533d7208",
+      "record_hash": "171412e1f98dbb8acbaeeb82ec8059373b838f8e4a1c8293be85ec4f56f2fbe5",
+      "signature": "yvh5YePGrYxI745ypL4pXsUeb/vaR94gPnY2uuF70J7U3pCQjfB8dXv5/xQPCzzZM+bQ6vw+MOj4+SkifWvbCg==",
       "source_ref": "git:0901c660d67178637953563ce14b6cc43757f37b",
       "to_locator": {
         "kind": "commit",
@@ -649,7 +649,7 @@
         }
       },
       "to_node": "69226f5770d66e7303b8038fb348dd23bc611808156e5d412f153b692e8f1e7b",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     },
     {
       "asserted_by": "clotho-ledger-weaver",
@@ -665,9 +665,9 @@
         }
       },
       "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-      "prev_hash": "c9e70f6674802315ae8b1c676b47a7d7518d0815d1fb934cd78de119b76693a3",
-      "record_hash": "716f661a8b8ac97235d5e56bd09bcc129326f625a91ec9ef1385d53be5a34af5",
-      "signature": "CWnXrsmLHFvB7dg7IcKOp0TeLH107Z6hisJJnlphHOHE4G7DPu3+NrcfrK8Z1CVYoqTjipOgD83oQ/cJIVbDBA==",
+      "prev_hash": "2e255547119c857bff72be65333128cba4d91f12cae6e8d53fc6b37b1a315d4e",
+      "record_hash": "e2af06a0c5f8c4163d04fd53030767e0e3d2322c90f05434181b5b8660a50094",
+      "signature": "5WHZNBMhmcfD88mQM28dQ7dz/lu8dVhef9cCxYzKC3mpa8ZMdgCX5q2aM4W1oElGdsWY3Lw0v+9KU7EMAAwtAA==",
       "source_ref": "ledger:docs/ledgers/clotho-obligation-ledger.jsonl#8c52703e040fd32202f9b0c2a1f96a56678c3d19e185becda8572d45ad628ee8",
       "to_locator": {
         "kind": "concern",
@@ -678,7 +678,7 @@
         }
       },
       "to_node": "55c951f37be5a8aa4b3c976df924e715ea44caea3812cccf94273bb7766d0eb9",
-      "woven_at": "2026-07-30T06:55:02.562Z"
+      "woven_at": "2026-08-27T18:38:08.425Z"
     }
   ],
   "blast_radius": {
@@ -1003,9 +1003,9 @@
           }
         },
         "from_node": "07c27cf733da2269d04c48f2c922c2be53d50aed43a6bc4c1cc5bc7b8f3f8ae3",
-        "prev_hash": "c279446e92cd2bf2a4cfca937d62f62697f1eadf78262780b560c8a71eda6208",
-        "record_hash": "69c69c7ad32d0bd69b6b4e1e30c18b74610899e56c51d9cd53c774deefc1260d",
-        "signature": "U9EjlCUF58mjT+ubM9JSHi8VcbaNSeotqPkxtAu27OuMAsdmh31oWDqOtgP++RaIXLrD3OhLM+fTD6JSR6fDDw==",
+        "prev_hash": "3c5762782b556decc560fffade6bed83b8552e8fa2f49e796030655ed14ee26a",
+        "record_hash": "8325de291f12eddf10fad41518225791bab538dcedd8d75d6466f7d76fb6eaf9",
+        "signature": "Cc3AYVOf7o1hAwI2Q0xLqnNs5Z32fjkAIMBWqLt0turuGs7kv564cv0C/4MqPxd/9ysjk11HB6qCu/XELzYEBg==",
         "source_ref": "file:build-gate/scripts/test-gate.mjs@2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
         "to_locator": {
           "kind": "test",
@@ -1016,7 +1016,7 @@
           }
         },
         "to_node": "6acbf7491f35689bda72b46049456b797ce60cc482a4844390b84d4b13384b19",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1031,10 +1031,10 @@
           }
         },
         "from_node": "29c1331561d8da9907fe2ffe18c4a17ee9c3a1798a7cec756ffa13ef45e826f6",
-        "prev_hash": "162a34aba0413f78c705a3504a2bf860c8985b5bb8f285a907c43d81a725b3dd",
-        "record_hash": "37887c74a9f5ed3ba365c4af8efe89ec7103e9ef97d201cb667bcdc34df3f85c",
-        "signature": "kM85jpdVU5zRdw19jtRPuiDrFtnZCkuqDHB3qvlju/N4DR0qLEUmcxDsNjyektrOX/qTv4SK9kYKSe+AGuNEDQ==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "82552a9ea04a924e86341b6b2c80da0c54420e98abdd09774aef72e8111a6e39",
+        "record_hash": "9803ddce7f2590a7850e086742e4ccb8556c5cd73dece943780e4d7344573885",
+        "signature": "D8PsIkNrTNtypAxmEw+O3kjAAIs15HAwMzba5OKzKyH2HTRl0YbV5HrtCKpEX0fiNdytKYPQNQ/EcjjS8OlICA==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -1044,7 +1044,7 @@
           }
         },
         "to_node": "6a3c249db591ba67e260f8e450b703f5fa5d16b7e6d6508aff02b3c5e800f5a2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1059,10 +1059,10 @@
           }
         },
         "from_node": "2e3a1fc3d3d44017280f30eedd96f71147adb79abe570d1a6faefccd11a56a34",
-        "prev_hash": "02430396c4b8c88c34023d1c18ef1e9dc461e04afbf2bec318106e4d59f92c83",
-        "record_hash": "e8108fe4562aa7d2313c69bd3bdebb35cbac31d0832ddbd727d38b5a6bccbaef",
-        "signature": "2uaHWPNUJCWqEzUYPa8nsOR0s9VkoUbf7Vjxiq23TisgCMd8Hv/5kR5w2t5QcNSiszMeZufr4SWYUmgBaX8cAQ==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "12933ac2fd760ff17f54d233346b22e57504e981ffb4060f9fd5fcf2596e55a6",
+        "record_hash": "51fc76f3f7a314b100bacdc32e05337221ac1981dd50cc3d7c124ccfd643b026",
+        "signature": "arqCGQTjhFgHiM6o+79IvWS+2CsHzbxmCt/j1Y2TenWGuy+CxNdwv0ChdkyD4IfZSFJNvRJiHQqcdduci7v4DA==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -1072,7 +1072,7 @@
           }
         },
         "to_node": "d9cd410a53781a0346c1db672ad767de95a687d9e25654b3d21e9c4fc2a32fce",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1087,10 +1087,10 @@
           }
         },
         "from_node": "3d88e89012c8c67781c6238ef64737a9a98b4355f9ef4ee15bf70a02e226bbfa",
-        "prev_hash": "5e589b85fbf69e36d310d4db87e3956fc12a73900e5500d597b7d99b23da91ee",
-        "record_hash": "f1937020339f6b397ce7ba19bf93238dc14d1e9755187d24c31bfb565d1de1af",
-        "signature": "tHrFd8TE5RBnLVx8eG/PX19lXw7UFTqSn2DaoAESMbB34dEJr69oujX1eIpJir6WzCnCdsGpJogG6J1hfaipAQ==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "b197584ade9d5f09dd9be156b558fb56793240399c94df2b3fa644e011d01692",
+        "record_hash": "8d1279605767a1fdf4657b61f1b6206ca79b26c0aedea5e970067dc322605fdd",
+        "signature": "M8nwOXF7pZVnufScE+2aDWAWGHCGCE0F1ORVz3KtWQD2JiGxdeKe3k+XmvLbLDk6jTiQ9wzlmdmk+OLg5FhJAA==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -1100,7 +1100,7 @@
           }
         },
         "to_node": "6acbf7491f35689bda72b46049456b797ce60cc482a4844390b84d4b13384b19",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1116,9 +1116,9 @@
           }
         },
         "from_node": "40dc3db7522cfc3bc0776be0b3dfd16a884a9c31f32437516c2a616f02fcdfce",
-        "prev_hash": "254938d6b6ce62ac13b1e3be1320dd545cdd19567888d295db8a4469d8ec7714",
-        "record_hash": "7f4bbe15177e7817c7ad72c6df2ad9bc2d9a969a15dbb9711f7888e6f2bf4655",
-        "signature": "xLuhzxsn3wL21O0u2qkGZFg17gBK8cRYZM1HliTyoQ/KQ6C0Ic6S4G3tHAMN0TQaCZD93dTOqJDjFxRugab3Aw==",
+        "prev_hash": "c752afc5fb36e6343d8aa983f4dabe9833efe3202181e934318d2eb0f26029ad",
+        "record_hash": "0631d9807d3a886472161d8bfb4daab42099fae697c295868451521eb5c3ad2f",
+        "signature": "aSiRCzNFHPjYDScs7ZlfvU7IDooYhlfhzhEcHiYLdtxgmk6WDuuhQYRzpqptgXJ0RFv0qp+JbJOtT5NQCEOVAQ==",
         "source_ref": "file:build-gate/scripts/test-situation.mjs@e780ffb7b115b8929733aa4ff463ce2bc4b20309",
         "to_locator": {
           "kind": "test",
@@ -1129,7 +1129,7 @@
           }
         },
         "to_node": "62a881b855794b99b3283cca9731c08b6c82d18c9049e0a882de1c2159bc8aa2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1145,9 +1145,9 @@
           }
         },
         "from_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "prev_hash": "e249b7f23f6a7ce5c8b0d4f88c3f5a46d0cd44cf2efa1721880c10ff6e6a7900",
-        "record_hash": "a07ec47ef8e350a1c3ccc7d43734909105e9732faeb0788a03dbb64a1cb1aaf9",
-        "signature": "aeo8V1FBdKrLH1ALg/NoocooCY72aK5IfxG2PYxACXB5tftsfBk+tnrdZnp2YBxJr82mZ92nMnKUvd4R1mPaDg==",
+        "prev_hash": "b8b2de32811dd7dc21a8ad581dcd182485a6719fadd482d454e1c251ad356d03",
+        "record_hash": "b7920c6bb0db188bed0be3de4ed829b0fd7be81049e85a1c0d3dd9dfa49e18e7",
+        "signature": "16OohmlGL2PxgdpVhub+o03IUrL++oFUrfaH6Rw2GbQwtgHWEdAxf6+BcXpB6uK4ndXT+7KyLuMuQ0hYC19IDw==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "test",
@@ -1158,7 +1158,7 @@
           }
         },
         "to_node": "0aa0968380e1e6cb65c79187cf77cab288fb1c0b7309e5953c1357b6aeac0d8a",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1174,9 +1174,9 @@
           }
         },
         "from_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "prev_hash": "002276b5f7f72a769b0483af449389d715a86a935b87b67ac4ee5f5d1157ef87",
-        "record_hash": "90588808362737d8fa527c541d82c8b029be34c391cb8a41b9fee9d7226fd344",
-        "signature": "A0l4ev6qDlNSO5HDoZfivHYYvP4RtfwsoE2DcVKBD5h3WKrH/FkD2hfizlLmkZO42XMIiQGgj8o7D4vvsqxRAQ==",
+        "prev_hash": "c28e4ae85a949eea508941d6a896952dd8a94b6934c51b3a51aa7ccde6a78a5e",
+        "record_hash": "0414c964682a63bd65ef4e994f7d2ba3f40b0ee17f3781f21558470f99a0c217",
+        "signature": "BXHkPVyNNrZL96mw+0UdPZJJc06kUyNlDm92ecxk5iXOYrs3ihC1BkKPMRwB6o/nc/rIgHZvBXykhFvin56bDQ==",
         "source_ref": "file:build-gate/gate.mjs@c5332063f3646161341213ff5adce99aca5f725a",
         "to_locator": {
           "kind": "test",
@@ -1187,7 +1187,7 @@
           }
         },
         "to_node": "1d334e829cddeb112555760ce29da2b3985314f2a0ee5543ac89c7d0c7585dab",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1203,9 +1203,9 @@
           }
         },
         "from_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "prev_hash": "4b2e6fb87febf8cdf0ffec380f03efee70a9f25f3b3652e892cffcfe0b2c6340",
-        "record_hash": "bdae03b8766b2986ae192d9446deb0390bcabe154ef557cecaac0e1d6dd5bb3e",
-        "signature": "S0mkT3eutm2LIZNAVS4DcZGoZslqsRjojvIyIC1/zxv9tKyAhz0LlfMP8GlslRalHEQQkAEofmae7bycp8RRAA==",
+        "prev_hash": "90912150365c8a0540e915dde25e2648003ccc25632f6b2fb3c3db89726c4e78",
+        "record_hash": "f25b4caa5094a8e475f88207d60c9021e3ed93b4f54ce8bef9914498a65be30a",
+        "signature": "Q6qUAwygzb+AV/2fbMtH382ifw7N00yptx+m5ptlkyWZ+1CZkgfw8zHe6tUUDUbNDQe1JPeabliYdSNYA+RuBQ==",
         "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@f5b56d0fe40682f83a8c4b1edfa7734ccc0ab470",
         "to_locator": {
           "kind": "test",
@@ -1216,7 +1216,7 @@
           }
         },
         "to_node": "5898f435a1026d19e15776d13dbdc7aaac7057d572330032e9c366d8509a57d6",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1232,9 +1232,9 @@
           }
         },
         "from_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "prev_hash": "564806a5899be6ed7f961160678601304ed6130b50423e4f2456d7c44c2b6b33",
-        "record_hash": "c8f59ea9214d1e1354397939672ae95cc3759cd985c02e29a4c3c9e30b582e81",
-        "signature": "/i+Q3n0lK6r5hHeELv6ZtzhEsBMuB1sPQqJEfBkV1qPfqbcLBhFhFSq4MlICT3pWRsVqtscdvDwDmWK75uXSDQ==",
+        "prev_hash": "88b6766f1f458b346dfffcf94923acf26c874a4637a73b94ec987d172cfa3b08",
+        "record_hash": "7c7d95aec85c37bb7c23a12117b2da0c3b04f30d7e3469ea993613078084bde8",
+        "signature": "9katXLwpr13vktEiBSoVux4aAC7mvLjKckLTpeakzjCP6Jz0kHuPeQy4pz/43h/mSRj2rIy/LmOWqaql8PL3Bg==",
         "source_ref": "file:build-gate/scripts/test-proposal-lifecycle.mjs@152c789e7182b6e2e87c39d8f4e52a7bfa88dd23",
         "to_locator": {
           "kind": "test",
@@ -1245,7 +1245,7 @@
           }
         },
         "to_node": "ea4a7bb097fc23d4a0683f2f998311149b3b5d71717a929560ba4699b6ff222a",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1261,9 +1261,9 @@
           }
         },
         "from_node": "53cda6161403fe3007a7fab3d3e70b45a3d02051a0dbad67c47b870516976482",
-        "prev_hash": "70ea08acb03dddbcf065a095f650ad2fc36491388402fc074698a934a290d56d",
-        "record_hash": "4df3ffb48149ba0ee027332bea9dc693ddc8f66f7991d59f7476fdc5db601f7f",
-        "signature": "VtYTbOXzESjHWizBTacEaGnqyWtEQkhn3pSFgdOAWm+FtbjLLs7r8+IiMC7qojEVDHgIgNX1mO7bwr7ku8fPCQ==",
+        "prev_hash": "8837193f0f9eb2e9d0a3dccc5d25701a669d1a806589868a7bc9d70197c1958f",
+        "record_hash": "745d6754b937fd4e08beed44bcd6c29f9c924565b8579017590d6062e7b10636",
+        "signature": "/YflAHUAvR8PnlTv9OiDDsqP8Ed8Ua/704EIJ0MPXUtF62vSyfjZyOkpwNZn6J0yvtOYu1D9tJx/1iffLN1zAg==",
         "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@f5b56d0fe40682f83a8c4b1edfa7734ccc0ab470",
         "to_locator": {
           "kind": "test",
@@ -1274,7 +1274,7 @@
           }
         },
         "to_node": "5898f435a1026d19e15776d13dbdc7aaac7057d572330032e9c366d8509a57d6",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1290,9 +1290,9 @@
           }
         },
         "from_node": "54b79446491d63865139942de844b7acc6439f9d0f7cd434d713a1f8ee491527",
-        "prev_hash": "17a92490a569d46e0c095ded0f62fdbbb4d0ed92c7af62a7bcc4ab0a2699f194",
-        "record_hash": "de6922c7aa6a2f241cd4a05c5b94aec42515b8cd7830ab37c5a7834c94ff0d85",
-        "signature": "p0QWC02j0vjTQP+wM0NNllyPila6bjrBxqEw5+fICzzacAMYaMoW9U5q9za22+Cz3u8T2jxTfDXzoxcF4o7xCw==",
+        "prev_hash": "2b4ca7f44936f48bb8cad4e410732c9c85f5f5470a7a4e6f913705961fdf2fff",
+        "record_hash": "c5aae03ead82f2e9ce689e5068ee2e6ada716722021d380c8f02913f7c6f062a",
+        "signature": "+LZwYBVHAyjq7fu+W2Qbr4uEUt6Bwje9vZ7GBTC/BEKpvZVroYWL/eQUbJkN9uFfHIfdP/vdWU0PnRCQqsRWBQ==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "test",
@@ -1303,7 +1303,7 @@
           }
         },
         "to_node": "0aa0968380e1e6cb65c79187cf77cab288fb1c0b7309e5953c1357b6aeac0d8a",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1319,9 +1319,9 @@
           }
         },
         "from_node": "54b79446491d63865139942de844b7acc6439f9d0f7cd434d713a1f8ee491527",
-        "prev_hash": "36b9fd86c888fa0a32e97294f0e73bd55c3eaba95e411c9ac26e1bab117bd83f",
-        "record_hash": "3eada5d7ca2d14c719fa8b3678161dd04187fb6456eff86829643320362a79fd",
-        "signature": "eTRzzRF2cCOucSr8WaNgg4qMrpus24yfy580DLSqewBIcnrX98tGfC8WkyEoFpd1ZmKeznrFVzBGhG0zcpR+Dg==",
+        "prev_hash": "e973496382d03ad6fe7536c52cf21a74eb74b0e4fab760c295ea7f0355954071",
+        "record_hash": "4855de7caafea8de398326baa1090bcbdea046b33b11b850b01c6f1716672b48",
+        "signature": "552jpYmnJfg/eBcFfI1dcqeHJYISj+zqsALcxecQOXJOjaJCGp0vbd5yplqozzv1RCmUrIzA+DAkAW1kqoNSBg==",
         "source_ref": "file:build-gate/scripts/test-runtime-adaptation.mjs@d2582b7364879dd2821629257cc258b11b619037",
         "to_locator": {
           "kind": "test",
@@ -1332,7 +1332,7 @@
           }
         },
         "to_node": "9aadbaaf7e2005c09aae65bc316063635eac590a5907f6d1c30fe334ba382560",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1348,9 +1348,9 @@
           }
         },
         "from_node": "54b79446491d63865139942de844b7acc6439f9d0f7cd434d713a1f8ee491527",
-        "prev_hash": "6ac8cbe586165c38acd5e36207a60e67163bc7d53cdacb15dcec212e7522224c",
-        "record_hash": "91325bb51fa0b11462111b1a769b79635502b7d773c5fd77a659fad3ddb5c8c3",
-        "signature": "HCuYba3StSLjFT1vRhZgZku9jj9sshSzZ7OCxvtYO5h9+nkpWgozp1b+wAFji9XkQwgLEJSOwHJ9J0muAJudAQ==",
+        "prev_hash": "c566a66409f777336d91b3445013344f3efc5fb964f5f7b88da96c6d1a8acb46",
+        "record_hash": "d2e6bc3abcefc8795dcced1b0bff9a4c9bfac85c108973c51f185bc1f52babe6",
+        "signature": "z4MAjxtyeVvlJflEHxBt5PF3ZYffDIapaXQLn0vQmxhHep3WfTdzQf/vxftNFDDExmJ/0fIxdb4D1UbsMlgNCw==",
         "source_ref": "file:build-gate/scripts/test-build-orchestrator.mjs@36456dae0dac97011dbb4394d259fd473c0de703",
         "to_locator": {
           "kind": "test",
@@ -1361,7 +1361,7 @@
           }
         },
         "to_node": "e36b2301240c4bc061b4a3e81ccf7aa511e70b31f263a84af24bcf7196005ed2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1377,9 +1377,9 @@
           }
         },
         "from_node": "59fc8e5726317bd100ea74e6427217a520351eb4a66df7cbb0a5e2118d57d90a",
-        "prev_hash": "8ff7e59e0e8dd41623691b975e4389b2c9c56d6d2f971253eaac395ea6d81e15",
-        "record_hash": "ecd57d7ca1c96a8a0fff37b93eb27e93ddb94d7ce4e9a8b550a4e6570e58d974",
-        "signature": "JzZuk6AdG4KUBY3QwL1McUdyJ/XDL2ld0e87txfo4zTGDFrw1/KvykLrMLd/t3hFGgddoJQcUYykof7MRKRPAA==",
+        "prev_hash": "21446acc0498a65a250ed6a36eff43a48927f424810c2fc0e81a13267b241e72",
+        "record_hash": "1590164c84e42234ab2c045d32d8d90803e5fbcb536bc744e92946c67e6bcc96",
+        "signature": "TT6FuXrQOGZISZmGtXs/FsiZZWqtrM61yEakSWZ5qCWfv+3sqBWMDY/MQl0OBSPa61sZaOkcBUARQpnhTLGUDQ==",
         "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@f5b56d0fe40682f83a8c4b1edfa7734ccc0ab470",
         "to_locator": {
           "kind": "test",
@@ -1390,7 +1390,7 @@
           }
         },
         "to_node": "5898f435a1026d19e15776d13dbdc7aaac7057d572330032e9c366d8509a57d6",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1406,9 +1406,9 @@
           }
         },
         "from_node": "71c740d1a25aaadddbefdf5d41ea85ada70352ca662fd959ce748852ca3057f3",
-        "prev_hash": "988ed53a902cc8c31945345eb1b34996d2008e8a74fcdbb641e9124f2645ce06",
-        "record_hash": "abf71c22be34f678f1ef0f3472df85fd5727ba7fe72d98a6070bc56a4870947b",
-        "signature": "W9CKrQKwizD5Ow+3MmZxIR992Fj2iFYgiaF/lIAd2SleozoD+BIdWcs7YCSFiENT0Jz1cMZ5QzwigQN8W4J/Bg==",
+        "prev_hash": "35a5aa190bfd2e8a9a7b3ea25b0a0b57c97db6850c175692db26ffd18b87eeb9",
+        "record_hash": "b48b7bde406a1932775593e91dffa41b37e328c7a92a7e6f90ca371771969f44",
+        "signature": "u8cckmxY/BQoBIjEYB+Lgtwvc6r29cWI2hJ0+4bEdnYCyKwMN1wVXHj7L/iKziU9Nfe/BIKU3dQNiMOgebAeCA==",
         "source_ref": "file:build-gate/build-orchestrator.mjs@5d965e1df3a9a2ef3080f96286f7f9c00c43b9b8",
         "to_locator": {
           "kind": "test",
@@ -1419,7 +1419,7 @@
           }
         },
         "to_node": "0d5e15eaca1a0af1126317f9d9468ef56deb51b1100cce344c82bc3327a1e9dc",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1435,9 +1435,9 @@
           }
         },
         "from_node": "71c740d1a25aaadddbefdf5d41ea85ada70352ca662fd959ce748852ca3057f3",
-        "prev_hash": "04680ef4dbd65a1ffa284ec1dbe29dc91206865b093112ed59e0f3c92d230ea8",
-        "record_hash": "e999de83de3b256c330808479488e2251828f22c84fd095f121fe6c71a63635f",
-        "signature": "oV58zfFMBGp+3vExY1Pfku6PzsOfrXCHpEpc9fRsk61v5+Pxa9PLCmYhfKxS5W+Rh+dSp8hff0A+GDlU+PSRDg==",
+        "prev_hash": "5d63b21c42ce1da3e6f69beb7ab55ec2c0c7ac27c20aad83b9fdef738b838326",
+        "record_hash": "43dcce260ede179732beb978f8d627b79edae7d8fa5753330c7a88aceb9cde61",
+        "signature": "6rqMgNx50pADRX/FSu5J+7Wlb2w4sAukdnFtuyUDopLxTFZ/kDJfUSceXJh8IKRr/5/Ej6AGuD9c6kjVImznAg==",
         "source_ref": "file:build-gate/scripts/test-situation.mjs@e780ffb7b115b8929733aa4ff463ce2bc4b20309",
         "to_locator": {
           "kind": "test",
@@ -1448,7 +1448,7 @@
           }
         },
         "to_node": "62a881b855794b99b3283cca9731c08b6c82d18c9049e0a882de1c2159bc8aa2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1464,9 +1464,9 @@
           }
         },
         "from_node": "8753d9dd21ca2ad3a146d25f8df33263d1d7165b595c9f373acab6147665a6d8",
-        "prev_hash": "a5d1bd073fb93c418275a603c7cd85664c16224f85fca2a83ffe55b57f9e70fb",
-        "record_hash": "48bdfc88277639968bc1e85e814930c52bcc034a20e1b31ca4ef92e1cac0cc9d",
-        "signature": "V93U8ELjqHg6FiZ6FlZwMzXtk/D+oko9DVEIoAorUyXANQQt4v+cTiFuKcyte95cq+Rv6qyZGAoM2mMhFakbDA==",
+        "prev_hash": "051d7f3d4e23b2f66eb398114efc20c3d74b7e130e9d857b1d30098516eb7057",
+        "record_hash": "27fc30377569ac0ff195260ead31218b930a586fb0f594a8ef63d88759a5762e",
+        "signature": "1tNww1oBGhhHm3Fqkm1bknmaThflp/SCy8HPzGc00ZxoRiAZ+8w/sDSsyMGIkchj/lYAbs4WtsaiY9PymClWAQ==",
         "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@f5b56d0fe40682f83a8c4b1edfa7734ccc0ab470",
         "to_locator": {
           "kind": "test",
@@ -1477,7 +1477,7 @@
           }
         },
         "to_node": "5898f435a1026d19e15776d13dbdc7aaac7057d572330032e9c366d8509a57d6",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1493,9 +1493,9 @@
           }
         },
         "from_node": "91073183584d5d522dcb4e910e4a81ce09fba5122bc9c80d59ee25e89d840894",
-        "prev_hash": "369d9b9a9c7b25ee6a7f09d276edab0a48611ddb83a7ad1570cd732caae47ae3",
-        "record_hash": "528967a7e6444371865e600674b3c058636046505dabe95d97d6968f674f909a",
-        "signature": "HOJXNWSOQmfbMMKbHJh6DY8bFIoRrcbP0qW09RAeR77C3oiRloPacXdnsm/dvrVcVXP/H5RxZ+7POAArmE3RCg==",
+        "prev_hash": "d2689c55c400efd772bd192b40eeaffa2ed9ac1d1915e9f2c4f1e37dc3e991a4",
+        "record_hash": "7c159892952d32acc2777de37982ce0e2e763dca15c08925a9dafc3e39ca8b56",
+        "signature": "3VGbQCNNIoN8I7NmU/lEO9pQgmtHgVZgsvqhfvT0und3CaMB741BSnH+5Dsv7vF5Dv7f8TzbUnyZtvEzaYfKDA==",
         "source_ref": "file:build-gate/build-orchestrator.mjs@5d965e1df3a9a2ef3080f96286f7f9c00c43b9b8",
         "to_locator": {
           "kind": "test",
@@ -1506,7 +1506,7 @@
           }
         },
         "to_node": "0d5e15eaca1a0af1126317f9d9468ef56deb51b1100cce344c82bc3327a1e9dc",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1522,9 +1522,9 @@
           }
         },
         "from_node": "999e8257724254b403d1b241ec3112d8e0cba0cb57b1898a0cd95d5022e52cad",
-        "prev_hash": "f2e08b0aa679385a61808872776d9517d238cede4d59635ef83f6f909ad58ee4",
-        "record_hash": "5cf3ed5d585d74acc0953986cb580184b45952883fae2ba0c8a623bd40181175",
-        "signature": "inIvTskHEQAS8lTDT3NulUDOITrWmb0KjgHGj1vAwVu6bLwWqOC+FmS3uyNyAbWZjodF/zyXIQbshOYpYcukCg==",
+        "prev_hash": "c4e6a4a81cb7d271ad55564a3ef28b2e0ef6a0aad9f5d26abc469bdfb5ba5226",
+        "record_hash": "8c07c112c70a029f01ee5b67165362285c24a44677cf031b0d393329cc1fa914",
+        "signature": "Y1Xfm8tio5Nt4YkjUFUZNef8PqZ3RQQskXcwVBZOkbCOfu3Ez3/SJ5K1/i8UbLJByRdD/azstrXgTR3vqRpbDg==",
         "source_ref": "file:build-gate/scripts/test-proposal-orchestrator.mjs@ad75a34cc930a85e9e756026a7d3b0d7e2a00a76",
         "to_locator": {
           "kind": "test",
@@ -1535,7 +1535,7 @@
           }
         },
         "to_node": "632387c3f8c066dc786c6fafed74a77c3e18ac996e2b7671a28cbdac1ac28e90",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1551,9 +1551,9 @@
           }
         },
         "from_node": "999e8257724254b403d1b241ec3112d8e0cba0cb57b1898a0cd95d5022e52cad",
-        "prev_hash": "a1507892a0c50ebdc335140fc47468ffda8dcf94621053596c498980e1e405ca",
-        "record_hash": "7205e2b69a6ea6c3fcc7be6a64898ccf744332c3f815b6ade8c988abaacce87d",
-        "signature": "peRHoxhSgyltuCa12ORcL1VsEIi9Obgik9gMQjfAdu4ni030PvQ8tq/Cc9jc3cix7hHEHP5w3f30hqmqexNaDQ==",
+        "prev_hash": "87785168dcc94b0635271645de351d45634040701a95ae089e594004047e82f4",
+        "record_hash": "909eb9dc20b8af65b39e4ff3b402e940410cc4c51442607727ccbbc3c0c1be1e",
+        "signature": "TZ0alKH8jzODAHVLENFhuk2ZI+4nDscoG440ji5W7MJlf1ZcYHMsv9WTTcv8tVlp4v/SPpZeAsuvxUKh3xi5BA==",
         "source_ref": "file:build-gate/scripts/test-runtime-adaptation.mjs@d2582b7364879dd2821629257cc258b11b619037",
         "to_locator": {
           "kind": "test",
@@ -1564,7 +1564,7 @@
           }
         },
         "to_node": "9aadbaaf7e2005c09aae65bc316063635eac590a5907f6d1c30fe334ba382560",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1580,9 +1580,9 @@
           }
         },
         "from_node": "999e8257724254b403d1b241ec3112d8e0cba0cb57b1898a0cd95d5022e52cad",
-        "prev_hash": "5453e4ba3fcd7b34f3f4cc5ead3b395efc77518a38cf58c10b68270fa5ccf700",
-        "record_hash": "ca1a45e5ae213e775f31b5aea940b3ca49dd5febe961b94eba25b371e3e3859b",
-        "signature": "1KuaYjvju8O9ualZXReqwWeu9VPyLhukd4woP1cCMbOZ4ULpESeBGYD18BBZ0jELuKCE76KutKljeyuVEZNPAw==",
+        "prev_hash": "be599c99b63ce310e558f169b646c148e30e87a72f8b1f017e1a6fcf19266d9c",
+        "record_hash": "94f4dfe60ab41e334b2cb97f959d926ec3d7a89f932587829e4c83f1ef697bf0",
+        "signature": "4JukwMmX2dj4uHagaj24Pb1udpEVVo86PjzxzK+h3hzysP9NXG8R+nbjcTRjL2fj21SuXaxOXci9zz+5+5PgAA==",
         "source_ref": "file:build-gate/scripts/test-build-orchestrator.mjs@36456dae0dac97011dbb4394d259fd473c0de703",
         "to_locator": {
           "kind": "test",
@@ -1593,7 +1593,7 @@
           }
         },
         "to_node": "e36b2301240c4bc061b4a3e81ccf7aa511e70b31f263a84af24bcf7196005ed2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1608,10 +1608,10 @@
           }
         },
         "from_node": "9db202459691ef377dc971758355aeef079d74c344aa6104288da41c24c35ec6",
-        "prev_hash": "8e6d8a6f7790aee99a086f5f7660af9c39ce636b0552c48ec047a8e1223261b1",
-        "record_hash": "1f0cdde8c8b212bfbcdf3d35b2f776a562daa51e704df2cca6cc4d93824c725c",
-        "signature": "yPK+JiBndTmVhBEcvQnk2s35pvWEt2Li2QMtu5JnyrRemIOIHKbil4qEm7UsUJK+9ZKJt2xYebvxkR8P+zcyDQ==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "9e3c95746336be5a0ef082453181ceac03c18b21d2450a23a0eff67070008a56",
+        "record_hash": "e9f0644adf39585ad9b4d02cf345a9abc043189190d36511d6cdacac6977dd53",
+        "signature": "o8OfTwnf6iDuvpSB9O0YSfTomKMfPz6TK+2VccMaHLw6jNQ/yayzdeb1G+MzLhFdjqhRzYUdA2xqVAnd8T8HBw==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -1621,7 +1621,7 @@
           }
         },
         "to_node": "ea4a7bb097fc23d4a0683f2f998311149b3b5d71717a929560ba4699b6ff222a",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1637,9 +1637,9 @@
           }
         },
         "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-        "prev_hash": "442ed43f78a1a5e860065a296df16da70a6996c1c5b90b0242cae21bcea53a72",
-        "record_hash": "1ab0f25aed4602d2849c004c1e0c5cd7b75be6bc1d6eb4c2bf443ccbf2e2ee9f",
-        "signature": "spJ0lz5xTy2J4cwlEGFUibut0QUpR3XadC7aOen5x8+f4piABqf7/Dz7pns6TVr40NzaFlDRgAQ+Iuu4pDNABA==",
+        "prev_hash": "b65e683c9c6e761142eb8b4f67a3027a8a680b2b9193233a2af85ee7bfc6034e",
+        "record_hash": "564a5f2d8df12462f84a145481828ade097cc2e32463edd2e4d8dd64fa154c0a",
+        "signature": "x7HyLEhln5AmPb5Qetx0qUK+I90l7d+xkmpAv2t4Wkk7FJTEi1KLsFUXWuAHp9RMqt/a6e9OhHdO5HNaAb7BCw==",
         "source_ref": "file:merkle-dag/scripts/test-obligation.mjs@93e7786476ba3a74d8abc03c85073e89f97100a7",
         "to_locator": {
           "kind": "test",
@@ -1650,7 +1650,7 @@
           }
         },
         "to_node": "c818b1725218f1ea1da13a24f12d9133dcacea6039cd68be47768da1ed1d0e5d",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1666,9 +1666,9 @@
           }
         },
         "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-        "prev_hash": "5753190f2d1b2ba0fac6a6aa1b997aef2987dadef8111a00f2e1f1284350ee8c",
-        "record_hash": "605b8d9890ed9fa434d54781c4a15839e9893595a83a8af9828f9ab005446219",
-        "signature": "KzI1VsqxO+ql9mWFeaH/Hpq0PNIVFxUVJ3/3sy0mBmCO86UfTRpz/GnuzNHQByzvw/+XbOlQkdn8f2cIizOkAg==",
+        "prev_hash": "1128bbac37d692ec04db7be1a34bc2b0ccb4d6dd82d57b38c6ad71a2568f4479",
+        "record_hash": "5a6aacfc6dfd9282768938661172a727fc889baaf83cf85fa60e437b9d3be091",
+        "signature": "9KnHq67GrXMA38pSkKlq89+JjaUbWG2V7VkPhpHsXM/yUrcHsDo3ZY1ZwnX1RrPJSkoYfHObMamMdRiAS2/0Bg==",
         "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0",
         "to_locator": {
           "kind": "test",
@@ -1679,7 +1679,7 @@
           }
         },
         "to_node": "e148d34d848668f4e19e947947a405d3f6483e4a938fdddc906510ac9b49385f",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1694,10 +1694,10 @@
           }
         },
         "from_node": "acfa4cd3320d7eef8b93b7ec2ad640e07dcaf541bdecffbdfb1a516aba03a9be",
-        "prev_hash": "96a50c6bfddb7a6c3a67bffca9b46d4d830076bd6e7db5dbb5a7afcfc25591c1",
-        "record_hash": "ed93d9b3daeb7c15364abe04319a6a94bae740fd2435e7f45d226a04d862b8aa",
-        "signature": "9K9vJo3nLzDuRk+SlJEeZvo6e4BgAspBh0PgdEM7hRZrLNp9zQlQ/7dypTFlh7qV/n9wKUtTJziJxVc43aACCA==",
-        "source_ref": "file:merkle-dag/package.json@6bf995a946b8950f1d43fa086b9a129a5f7d729d",
+        "prev_hash": "41320afa0482de27058fadbbb70a73436ef4e1a5ce6b6899353c7dc92f3527d2",
+        "record_hash": "d9b3225be9478730046ccc58cd5aae03e697baf2c34dbd57c197ef1b328c877d",
+        "signature": "UKC2K27JwunmCiEOjlt4UTxWYgZ3QQoryvNVFmF/fljE0lAPAOY99XRlENuXruF3r0+NOJNrfdKjWN+Lx3rcCA==",
+        "source_ref": "file:merkle-dag/package.json@75d0d33640419d0efa94d8e4fc25322ea0244dec",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -1707,7 +1707,7 @@
           }
         },
         "to_node": "c818b1725218f1ea1da13a24f12d9133dcacea6039cd68be47768da1ed1d0e5d",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1722,10 +1722,10 @@
           }
         },
         "from_node": "af825919afacfb9557495fc03b6287830a20b418f5d7bd85f16ea9a33eaa4fc6",
-        "prev_hash": "3b3385af3f8718b525482fd8cdd13e802ed4b216130b656cdf47c3fe94f6ba29",
-        "record_hash": "b6021ea38a5db7d5bab0f87d99cec98ab2b96bbd56aa488eabe73c182132ec3c",
-        "signature": "JDCbAAzDQNtZkUFIx8BvV/06Wizk9QcsLxA+ku73zr8jMPmV9tykUno3Xsa50DFjy6jOCmf5iauD7+i4oNwNCA==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "a1d7139366fed14922f836fabaffad9e9c02822eec44c687b27471f33cb79bfa",
+        "record_hash": "e1a8959598cd9db1e0f6f41d3c3ce66679ed5d442ff6f3b2a2634059bf6c5ad9",
+        "signature": "bPqvigbTnfyfIG/AeStTuopPRYXyTS0+qjbXwopAxtFLIFxhKD5+mek5p9JyPVg3NUAJOFGE5EuG10vktvOiDQ==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -1735,7 +1735,7 @@
           }
         },
         "to_node": "6fc1e796e31e726476d508324cd938385a0f08343aa09c096a2430f5717ed375",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1751,9 +1751,9 @@
           }
         },
         "from_node": "b7c5f1e5c82a12f6ca92a4c6d3c1a726990d84e9997adca2f871fb8dae2b002b",
-        "prev_hash": "e439880d93864df9b3d73fcfe540ecb9c556d1902d3727e3513c1e3427b98679",
-        "record_hash": "c59bc26e5eff30883ed1cb28bce30e2dc6064bdb53c3fdc6b0310fdd5aba06e1",
-        "signature": "Squ0kltWpgXFvJITG+zoHGSowG5Rf4ugE8UYNiJoNkKg85ucjoLgs8gEq0D+Y4GL21PZLfHxWu8BKZajADGsAA==",
+        "prev_hash": "ea4a7454b8e0ccc87da3e01135be0fc383018c9cfc982d2b55c0254abeef05f0",
+        "record_hash": "1be9e45f420313aadeb9291d91be8b31b9dd3587914742abe394bb5fcb895411",
+        "signature": "Kn6yv9t3cM+HwKcAou20flaxwb3A5LkuvYMHIiNoyyK4F2doUdRJhEt5TS7iDTe2gIIGcn0951N0xWJ1hUJwCw==",
         "source_ref": "file:build-gate/build-orchestrator.mjs@5d965e1df3a9a2ef3080f96286f7f9c00c43b9b8",
         "to_locator": {
           "kind": "test",
@@ -1764,7 +1764,7 @@
           }
         },
         "to_node": "0d5e15eaca1a0af1126317f9d9468ef56deb51b1100cce344c82bc3327a1e9dc",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1780,9 +1780,9 @@
           }
         },
         "from_node": "b7c5f1e5c82a12f6ca92a4c6d3c1a726990d84e9997adca2f871fb8dae2b002b",
-        "prev_hash": "ed7a0b682bacc95600794d75afd93187ad4468e85a91547deddb4ad56b8cc1c9",
-        "record_hash": "f728631d831cf8d16116ce28ccf3cf21249083a618258ed4cb96b180a2f98162",
-        "signature": "zpv5RW4sbST8oyOUnUdd6xLWyArkrvWol4Xoqb1RSl7Y1foyM7U9UZ3Bbh9UOhe4rFiTK4YZO91Lq7GgS7oYCA==",
+        "prev_hash": "001e4e14e105408d9365d8cf3639c4935c9bc4fc7d65121653d5d5ee680ed402",
+        "record_hash": "f359fa2aa4e8f3715d32549689538fcb178b7c751c20e6c0cd9c9a167048a7a8",
+        "signature": "PfVPpYFL5qI4akozYhxeuvcp2FWxTwjVsBjQXQf5SW4COwrC4wUu8X7L5ek+OQFx5++KI+B7XYETGGQx88e5Bg==",
         "source_ref": "file:build-gate/scripts/test-situation.mjs@e780ffb7b115b8929733aa4ff463ce2bc4b20309",
         "to_locator": {
           "kind": "test",
@@ -1793,7 +1793,7 @@
           }
         },
         "to_node": "62a881b855794b99b3283cca9731c08b6c82d18c9049e0a882de1c2159bc8aa2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1808,10 +1808,10 @@
           }
         },
         "from_node": "bafd21dd4682615ddb664b122eaf936990783d1e958832952266d198346b793d",
-        "prev_hash": "6fda9850a5c3ea6e789dc2e9ed898d5b0f6c2f94c9a83270cbc03852504e2b61",
-        "record_hash": "bbc5bb4a41180742d28808b6886e20d8ac1f641ac63b42e91b408679cd49375e",
-        "signature": "LLjxG7B97BHH43CobEfXhg9Zcc87mNZhCXL1tWTxdE6RVFaMMyIstwzK+12f8foczSUwPl/aZgYZqa3cpS4zCA==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "a576a9aa9a97f167699ad2c159c9db36bca6ed0d4df1934e85463340c760d2e9",
+        "record_hash": "76609975d4484f2240e5a7d3597ca6198672574339a5426fe68e194e94133f16",
+        "signature": "IukOPrkmTZoFcps7dZSozpGI82AWHSHKuU1Pjn6lI++vtyM/+r08eYZw/jVdsbrgC2hODpm3aJHdss532ePRBg==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -1821,7 +1821,7 @@
           }
         },
         "to_node": "11a31e09beba3eff01917554d637514365264d796db2758e7831e091bb4f3ef9",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1837,9 +1837,9 @@
           }
         },
         "from_node": "bb544dfdae5937b445e73ebae93f53d197af4553f4bba2953f8e0a72f71423d3",
-        "prev_hash": "fffe0635849a2707e8c25197b2b6642574c579db6e276e9f074429fb585a005c",
-        "record_hash": "ac56cbfd91361b0fb93f94432fd9de1fb25879b6b4014cef895400da2383e06e",
-        "signature": "g7QEf5viARtPDyItu4so6wURil53xwHT+QowGl/quFecXSfKd31ygXK8tPjAZhADG+NlRhYRCf7QxQEYrIZuCw==",
+        "prev_hash": "8dbae2287dac128b7e9d8e3a0979074923dd81c789b263fbafd80b0d1c6cd81e",
+        "record_hash": "2cbb36f112db34c2e7389f2cb97b70bd2660a076dc3d706f2dd3889408d6790b",
+        "signature": "gy8Swn0vFHh9VHrYb2licQHraq81BBjvAj5Lgqy/iPOWDlx/Eq7AXh6IJ3be+z0pl658ENosqW12caePK1sjCA==",
         "source_ref": "file:build-gate/situation.mjs@f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
         "to_locator": {
           "kind": "test",
@@ -1850,7 +1850,7 @@
           }
         },
         "to_node": "059a850acfd7da66047fe6f8d8a05e4e46a1127275e259c73f665620d848a4a1",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1865,10 +1865,10 @@
           }
         },
         "from_node": "c4f46b2ff24eca54d82539a46b973e05d0b31d28fe0c049498332351a74bf8a9",
-        "prev_hash": "52acdf4f5a03d7d92838ea734131a837edb5572b44a79a741076b4cfb9b5388b",
-        "record_hash": "2b69d6804b542f72b7fd830b9e03ed58804e4084d38960e9f8e1c25288dba511",
-        "signature": "5+KIzqm+UOOBU+59blYDo2AIdSV8pLtjxLY789O0C32TxUHdKlohOjgi1tOSx1YB5/2Eaa42AgtRIgwdzFwoAQ==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "9d99dc83ed50d1930df219bf5ada1a2fb5caaed7cf3719c8086ea9775a34e7a2",
+        "record_hash": "4542807ae2a26be01731fe203cde0981869114704873f392e75551fa45db55c8",
+        "signature": "ahXYqbPolKR2JMWrRBSfj5AmGu5mRNwuueagxvSXE1KLZqgw/h29GQE1z/MUaEFGTKmcFDobyLgMDmhstwslAg==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -1878,7 +1878,7 @@
           }
         },
         "to_node": "5898f435a1026d19e15776d13dbdc7aaac7057d572330032e9c366d8509a57d6",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1894,9 +1894,9 @@
           }
         },
         "from_node": "ce521c1e9bb0f434c97cfb2e7381e5276e1120cf4741225447264827608e7600",
-        "prev_hash": "accabf9c5cb8dfc048d38986613c34a8f7d1cdb2e0275b9fedad0cb4f43bd408",
-        "record_hash": "616b1ff810d19d785a8c318330ed7b7074c212a214179ae376db48e04b5c67e2",
-        "signature": "nlpjB2RfUAx/JkrJDsNwTiuHo51iJSLz2PqcFVD6KpotDp6hu7sFCS6QMXwdOhaioeESg6c+WCgjeILfzC04Cw==",
+        "prev_hash": "4b54d1b4679839ec4a033816f16f8639ebfb45bd69dc5924032e402de9f76c2b",
+        "record_hash": "c5cf544378fb45684915a36053f106b6d26da6a2ef1153227bf5f4a8dce47b2d",
+        "signature": "Ogp2G+cVJNyl9KZhY2d6KlMII79BvUaT8QPR8IO1gu12wwHQIfzDShVci5xwYprfoY2InTfBqErRMV/1GFPpBw==",
         "source_ref": "file:build-gate/scripts/test-situation.mjs@e780ffb7b115b8929733aa4ff463ce2bc4b20309",
         "to_locator": {
           "kind": "test",
@@ -1907,7 +1907,7 @@
           }
         },
         "to_node": "62a881b855794b99b3283cca9731c08b6c82d18c9049e0a882de1c2159bc8aa2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1923,9 +1923,9 @@
           }
         },
         "from_node": "d49eb523f4e0687b87d4d7ebe4c488124089667bf208fe463b7cb7c61bf5935f",
-        "prev_hash": "6d8bc3769d8e0897db43f0b6af7b93afc7a0dd6e4ea7b66fc3039227af9eaad5",
-        "record_hash": "004c066354e4671b5b44a0627efb730330db3308ff1c07c704a08e60320ba8f7",
-        "signature": "fEmL+dLzyk9Otn1x891bPCFo/OTH74dvTfK2eJ9QyiYM7gPzTXS6djQ8VFHTk/y/u9AZAhh4tUZ+n9CwXj1tBQ==",
+        "prev_hash": "4a358a03854c9b4f008f21631118c102845060df04325edf5cc6ba45ef72b547",
+        "record_hash": "ff243337d288a304ebd331f53219a8be9184934c021b214f89d6d56336b844e8",
+        "signature": "2IDPh/izEEd5kCjvw950hzKmz4NWUoCAlcJe3XTiSoksEhnP0Galc6rx2OLX9okejkgpl4KvTeA8KpfR25JCBA==",
         "source_ref": "file:build-gate/scripts/test-proposal-orchestrator.mjs@ad75a34cc930a85e9e756026a7d3b0d7e2a00a76",
         "to_locator": {
           "kind": "test",
@@ -1936,7 +1936,7 @@
           }
         },
         "to_node": "632387c3f8c066dc786c6fafed74a77c3e18ac996e2b7671a28cbdac1ac28e90",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1952,9 +1952,9 @@
           }
         },
         "from_node": "d49eb523f4e0687b87d4d7ebe4c488124089667bf208fe463b7cb7c61bf5935f",
-        "prev_hash": "8636656214a68ba572e321127d13e7f4cf56b5f818d72c4c87ee3b2d74ad81f5",
-        "record_hash": "1d57299850e7a01e28e2981debade3b11bba81019d10784f3f2fffbe3de0d562",
-        "signature": "BIxSHOrpnEydfSj8E5N2AkKDpU+qf7gwHF3t8kN+uKhP+ApeLTYFdGRXv70jdeOGazTD+UcBsexQ5IUgS53oBw==",
+        "prev_hash": "81d93a4b7563acaa9d9d3d45829b74fddc8dc1bd571d30354060ce2b8c236671",
+        "record_hash": "a9a7d4647b50a498996dd0d525eae2e6a14197408a7faadef503eef29ec9847b",
+        "signature": "YLY6jvEhKHDa3IwMGpzi+XdgzPJCORYA8z6OAMwnsuT+sGfe/9j8ybz7+vUEs8QQGDq7m/gp51BaoruuX08cBw==",
         "source_ref": "file:build-gate/scripts/test-runtime-adaptation.mjs@d2582b7364879dd2821629257cc258b11b619037",
         "to_locator": {
           "kind": "test",
@@ -1965,7 +1965,7 @@
           }
         },
         "to_node": "9aadbaaf7e2005c09aae65bc316063635eac590a5907f6d1c30fe334ba382560",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -1981,9 +1981,9 @@
           }
         },
         "from_node": "d49eb523f4e0687b87d4d7ebe4c488124089667bf208fe463b7cb7c61bf5935f",
-        "prev_hash": "10718f2b9411a58ddc69d137e4dfed1ae8135430da3082a534ff9a413f78b741",
-        "record_hash": "843cbdaa151e0d1ac25d8af74318b9fe566bf3a38851f2e0866c3eae226a9d6e",
-        "signature": "ue1NeYcl5y6QIPddtxJzuRgIM6QdjUQM/kiWLd1Zya6YhXfloEN78XoDCZgG88Hg1u35dAKw4XagSRjju3CaCw==",
+        "prev_hash": "c934a82ce78070f4051c178b8aae5f574daea75caf3ae319c5c5c0e3ebcbafe2",
+        "record_hash": "e7de7fa567184834743651d79f4ed9b7c7b4f31d6bab5230f71da0f57e193a55",
+        "signature": "w+3A8wHO3qhpMjciqNWz4hEzAo275b5iNUdKoPajyGI4Z23217Yj+6WnUi4rAkhC2iC9J3o6LDBlYPPC/ZjyCQ==",
         "source_ref": "file:build-gate/scripts/test-build-orchestrator.mjs@36456dae0dac97011dbb4394d259fd473c0de703",
         "to_locator": {
           "kind": "test",
@@ -1994,7 +1994,7 @@
           }
         },
         "to_node": "e36b2301240c4bc061b4a3e81ccf7aa511e70b31f263a84af24bcf7196005ed2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -2010,9 +2010,9 @@
           }
         },
         "from_node": "d8fd24316511d56bd1ac212fc8d142424f38f24945912c2e842f83e065994e85",
-        "prev_hash": "a42c755f8c3cfc758b85e781f65f19c0b49beb59a4024a30348fb16c6613a761",
-        "record_hash": "d617a1f4f988756a05ebb00bdb27188b99a847062e4ca478b518c62a21eb940e",
-        "signature": "eWJ2VUxl2omFSVMBY6w80QZE0WeC/cMoKULZanRreMkrPOUwAYL/XOsepa583lKUXZbyNELAoz701crzphB4AA==",
+        "prev_hash": "575624eaeb4f7173d1df120b708b42f7f4e00f2af5d87c8d29cddc6ae98e111e",
+        "record_hash": "6e10ae3e0acad956e788be8f7e4c0ad14e2a6adbc0cf4fd1dc58cc0c85a88228",
+        "signature": "1oNQg31qLqZMyRldKkdwqTQlE45DJ5I9qHA30lZHa5zMZ1Z7BDSOcVzYc0KoLnXqXeMAZhlliBkQ1mtTxUvjDw==",
         "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@f5b56d0fe40682f83a8c4b1edfa7734ccc0ab470",
         "to_locator": {
           "kind": "test",
@@ -2023,7 +2023,7 @@
           }
         },
         "to_node": "5898f435a1026d19e15776d13dbdc7aaac7057d572330032e9c366d8509a57d6",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -2039,9 +2039,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "ff6e7935993c33c82538ea04b99f773dfd658368590b36319686173f0a70cdcc",
-        "record_hash": "2ce64f9f0dc701409fd199e033f0ec222ef94cc4eda6b3fa5aa5cda4128ac1bd",
-        "signature": "7SUKFgTbMSYh6OQ+Zcx0bzlGiTstDKKxGOb1OtpZMeVt682aXhqax9yOWMA4/Uyr0upU/jNv+uJJUxqKPbJqAg==",
+        "prev_hash": "112fd21da377f20557c56646d432483c5636e319ebc43802f64dccb649331de0",
+        "record_hash": "7e9831fb75394beb2e7b233793cad53fc61988e5fda6e4377aed08b69aee5803",
+        "signature": "+mKjmBDF0vsToycRx+WFp82LJMDwq1ZFWlsBigRBlyOiJc89TPEWcnsoe5AjHLF/n4n9vf3OdcND2K9GmTkPBw==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "test",
@@ -2052,7 +2052,7 @@
           }
         },
         "to_node": "0aa0968380e1e6cb65c79187cf77cab288fb1c0b7309e5953c1357b6aeac0d8a",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -2068,9 +2068,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "8193f6e3cab310047caa4a500d420959842855a15105c4cb55ec63edad2f0afa",
-        "record_hash": "61bca87af2c6adf4d84709b5ed7711da023f0cf2e22625b6ee96bec47557e4a4",
-        "signature": "iC3ZY4Z3cmGs4wpCyTvBk0dPID/ARxmRNHVEfYqvbiN+ZNXwlpqln61vcrofkA8gDXvhjwbGLryEF5EMRUxxCg==",
+        "prev_hash": "b338dd032bf989a87bfaf439150a612818a0cee7a83c6c495aac15921417bd0a",
+        "record_hash": "0504794f41d34171dbe901fb7de1543b6a1b558b8db0c51851b3675cf4862636",
+        "signature": "lxNc8WcYNU6N482qZV+UnXjoXEvzPjfeuSYyIJM2WtZH6Bn4sMDzPysq4zrkZ4pUUFx0lFQO8eM8rjF1FNxcDA==",
         "source_ref": "file:build-gate/build-orchestrator.mjs@5d965e1df3a9a2ef3080f96286f7f9c00c43b9b8",
         "to_locator": {
           "kind": "test",
@@ -2081,7 +2081,7 @@
           }
         },
         "to_node": "0d5e15eaca1a0af1126317f9d9468ef56deb51b1100cce344c82bc3327a1e9dc",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -2097,9 +2097,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "d25450121813f4e1e9fdf52a1b15a0b8e98604c2c2577dda8204f405a85667c5",
-        "record_hash": "f5b77a96cffe47b81f5f357b540afed4b5973ae7d157368bfc8d886b66685625",
-        "signature": "1kaFEMkcxeo2i3GMWLbMZNqntGvhPKoopD9ZtosLRKwCiOuD6LHkOmRQxLU7362QEf06zj1coviPutGJSq/aAQ==",
+        "prev_hash": "5cb9b61043dbe3b7dd6a4da702f2726916872f0595ca05365c4b7c3d9a4e5e3a",
+        "record_hash": "781d5de32eaff7000e7cb7381fea2f174645c8875425cb53988c76f2bc621407",
+        "signature": "hCNuR29BSH22lezFaPNI+ZoOXKwXuNyFvKmm5OCFMzG+03rQD7cO7rPHKuoe5t3hd2Z/crVq0YESh3e1idfuAA==",
         "source_ref": "file:build-gate/scripts/stress-tests.mjs@fc5afbfaa321920bd4a60cc9139aa521ec7e2e1d",
         "to_locator": {
           "kind": "test",
@@ -2110,7 +2110,7 @@
           }
         },
         "to_node": "11a31e09beba3eff01917554d637514365264d796db2758e7831e091bb4f3ef9",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -2126,9 +2126,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "a0582a2c7feca95a16de20fdb988e4253054646beed9a1eea1a35f3f952935c3",
-        "record_hash": "7c2ad2bfb45cb8b17aa5e91d8e8c30131283cc0a08531e1d10a861c0cbe08116",
-        "signature": "IbkkuS2htDlz7Y7JxmExaG9hHuSKwVVXbi3AxXccUE0pxTBQ006woumE81o6kDzR5w/IbbLwdrsWOwpSq7QQDA==",
+        "prev_hash": "aa0172029d05c5d9576916733c9cee4ff20b7b78afd1931abef9747d4dcd2b6a",
+        "record_hash": "780bba7de17fd0012533082a913c2cf1d5a84eadab87ec942cf6bda2f455dbf5",
+        "signature": "waHpMKK36ZIxwKDM1hUB08xP1IPm8L1U/lqUk7076h/fYJWPrb1i5FMVPVOi5XUjhxC8L//UgIpfi99CkvBhDw==",
         "source_ref": "file:build-gate/scripts/test-breakout-coverage.mjs@5b98a858ffded818340755dd2932078b15235226",
         "to_locator": {
           "kind": "test",
@@ -2139,7 +2139,7 @@
           }
         },
         "to_node": "4bbb0b0901f240ebff560944eafac754aa5cdda9beb7f201bbbeee4e3a7bc6ef",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -2155,9 +2155,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "8b6c011cfdf88b2b4f84319d4d7056b59225a7d4624dac0a9272a4c8012adc4f",
-        "record_hash": "be1c0aece61d6a293eb0094c2accfbda4a6bbcef29fd0445320a16fce4d3fbfd",
-        "signature": "nbYHNqexi/ipp6KYVLrWbbKfOh0JuuDv0rag1eWnHZFRl1AJUZ2QbSEF5SE8CtfehecmXQztx1wmdts6aZ3JDg==",
+        "prev_hash": "3ee09168d12e61930d2656393002376af416f27591ca6be073ef784c271be214",
+        "record_hash": "711371596fbc9a7385eb5912dbd0841a99a9409d292a423a2dbd1d13375036bb",
+        "signature": "COmQ4snIMzhAN3YSJrlKkQVG/72fwrwt6rCeLA2/NTrf51xK4KboISMSEY2yGyQwi0qbM9felVDc1QxCje4QCw==",
         "source_ref": "file:build-gate/scripts/test-trust.mjs@a60e08063006f2b7bb2b9cebf0e370485e5ccd55",
         "to_locator": {
           "kind": "test",
@@ -2168,7 +2168,7 @@
           }
         },
         "to_node": "6a3c249db591ba67e260f8e450b703f5fa5d16b7e6d6508aff02b3c5e800f5a2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -2184,9 +2184,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "b319bcd82c944b62cd8a7acdf3861108bf43bd5f7b11f41df8d762e9ed168e25",
-        "record_hash": "46a62070624768df327cfe18a337470bd1e260a3d7e05dc9b19b2f8c1b3c95fc",
-        "signature": "hS8qpfjX/bVSGQTZD8muQrcFUlGWiH4EXM/faGzWvx9v5RSJVaLkS+YBqjAfdiOOFqonGazYWwTz2x68M833CA==",
+        "prev_hash": "e5d631fd36bef8d548b60e2980ef426223529d967ff2e49f75de2d6e2813b86d",
+        "record_hash": "77c3024dcf2f87f6428a08185aeb0ba2534224e54baf4b3b7c139850c79f0eb2",
+        "signature": "uXDBXhZDOQdz1B5rXGkTha/QJp74DvJtLvOYvKx8oKmMMiggIOg7CfUyFZtP/nrU4QHfZTx4R50+7J0Viuj2Cg==",
         "source_ref": "file:build-gate/scripts/test-gate.mjs@2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
         "to_locator": {
           "kind": "test",
@@ -2197,7 +2197,7 @@
           }
         },
         "to_node": "6acbf7491f35689bda72b46049456b797ce60cc482a4844390b84d4b13384b19",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -2213,9 +2213,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "f039551b9cc1925f5a1bbf2a29bd19d3ee81cfa46563f4a1f7c5c13c0c1b50e4",
-        "record_hash": "ff4d96233c605eee6fb7e3335fc54b388e4c215cc4810a26bf6177e99163d253",
-        "signature": "xsbHeWxr2fA2CAzbQ9+mgdoCetf3gA51CrhYpBFBAc7ilCK5oZbt0YKzBQAzyhoZ+TpJkJ/pVohA7kqnPpFbAg==",
+        "prev_hash": "a205f7c486a1a9b09968d77d9505d1f9379c10bc454228d1a7a048a16c2a5a21",
+        "record_hash": "6fb3a32c186aa14418ae00cf067d9be8639a01221b6cf643bd97cae5da6b89e8",
+        "signature": "9PwqrZ+o84pR+3PKnJQdLTAYtK9ak2lE8Bh9E8C+/xCWbivbFHatejdm5dL+TfiVz5Bcdn8uSqccX2pHEulXAA==",
         "source_ref": "file:build-gate/scripts/test-council-orchestrator.mjs@95ed4375f76b16492ac14823f83dd9547bdf71f6",
         "to_locator": {
           "kind": "test",
@@ -2226,7 +2226,7 @@
           }
         },
         "to_node": "6fc1e796e31e726476d508324cd938385a0f08343aa09c096a2430f5717ed375",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -2242,9 +2242,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "d379e8195a7df5827aaabb65a04a33fefa2babdf648ea4beb7b413016cbc51fe",
-        "record_hash": "83be41475204bbb2a24e44e6a8fd6cceac0eed10715e3222b03530c4b2dd5b0c",
-        "signature": "OMZ0su5DqGYF8qHaWaQ9XrjjErGW2QMvL3magPw8gBWhHx7cU7E0/erRWRQuMVAS29uZE9dpy03FsXcDq5xYCA==",
+        "prev_hash": "adf87fc39da755e6b8e0e2692bfd330762efbfef04d044d1d92acef42bc534eb",
+        "record_hash": "db543c05617b65c5b609217944ac6db94f93468f525edd770e9ad9396f5afe2f",
+        "signature": "iAZ0AG6gKlsh9l2qYhkr7jGA4GgOukwbgYleEM2Wdw5BgCfyFeeww+VAeZeA6aQSNMM3NoBW7iGsAmAAuVo8AQ==",
         "source_ref": "file:build-gate/scripts/stress-test-gate.mjs@4d6d54ee2449f9e249a3d877504189a68f3947af",
         "to_locator": {
           "kind": "test",
@@ -2255,7 +2255,7 @@
           }
         },
         "to_node": "d9cd410a53781a0346c1db672ad767de95a687d9e25654b3d21e9c4fc2a32fce",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -2270,10 +2270,10 @@
           }
         },
         "from_node": "ff7ec1b0807d67d92f798737509a7c02da940924c73c786c6349fd09b15fa7e6",
-        "prev_hash": "da17ec4f54549ae01c195d7c351805d163f27296d8787702bc05c6d07c778501",
-        "record_hash": "4250dcb5208d3da370fbd1d71929ba778b45fde094bb24c4b2ae1c2e82224024",
-        "signature": "8bOAV9MNE4+wwW53X6GfRK+vvBH+Uutjs2hCCg28gi/4V+9rXV8DBv+Wj/lxJkIWY8Yo+tJ3rOiI/GvCV56jCQ==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "86d5213d00d1b2b3cbe9fb28ca36e1d0d0d5ca57934f60718320e1493511a1d8",
+        "record_hash": "62f890c460c20c737ce12f41ea74a8d45b3fc30d165622302c7f415bdd5db96b",
+        "signature": "kG0nmtZJa9zKqip2F/JcUJUV+8zzDuIuqzFnL2eLQR8vLACwhMMsBc87uu1JRJGqPNGWZEQDw54OyEkFwtLvCw==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -2283,7 +2283,7 @@
           }
         },
         "to_node": "4bbb0b0901f240ebff560944eafac754aa5cdda9beb7f201bbbeee4e3a7bc6ef",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       }
     ],
     "edges": [
@@ -2301,9 +2301,9 @@
           }
         },
         "from_node": "07c27cf733da2269d04c48f2c922c2be53d50aed43a6bc4c1cc5bc7b8f3f8ae3",
-        "prev_hash": "9df8bc422eb358cb7b7c6d476bf0369250e3b42f9e86985720ce56d74a9b1c06",
-        "record_hash": "8c4adac5d06a2802fa56bbd3c460e3236d0225cb55f1e72506ed0d14dc14df81",
-        "signature": "zvqkd2gh5BkA7z3cy3zTlT1VcOqht+O5htdE+YEL+9+NbSlal45LyxYquJ9lJnWzKzo2/RxWA92J3tLA45OtAw==",
+        "prev_hash": "aa06b5d71fd6f09f684e909e4274aeb23c6387afa73a34f043c2cef5fd0a406f",
+        "record_hash": "f1a61cb2e4a3204bcd638ab40e183a9897d3d982f926117a593f51d4a0bcdd41",
+        "signature": "CvU7UXdV/831Za0FiSikN2Zh7+dgY7pGnxmnSEyFYxSKmZPf5m5G0Lw6Ge6YRVzj0jnKGLmwgco0PllNY/BXDg==",
         "source_ref": "file:build-gate/gate.mjs@c5332063f3646161341213ff5adce99aca5f725a",
         "to_locator": {
           "kind": "code-symbol",
@@ -2315,7 +2315,7 @@
           }
         },
         "to_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2330,9 +2330,9 @@
           }
         },
         "from_node": "29c1331561d8da9907fe2ffe18c4a17ee9c3a1798a7cec756ffa13ef45e826f6",
-        "prev_hash": "adb42b20fd5d58f09aebdb5f98de62909ac280c0ea0ea84022ffc5cd8ecfb87a",
-        "record_hash": "06d29fcab7b6ff465cb8e294da7df177d613e372792d28860794851f1364d1bd",
-        "signature": "hFHN11zigMXDVdY54AJD20gIdaKceN7lWtgmf1LzRGv7as8rMXZTSIGFk6+HgtrZRLj5B1fr/NyZ2tFLLPblCA==",
+        "prev_hash": "3fe58e0df14232983875a20c2ed4757b1a64646bf2a3be5ec66ec3a79621f532",
+        "record_hash": "347201857480253c2a22b323b2acae07d342432f796638b6b64daed222989a0b",
+        "signature": "+e6pQmoiz9D/W/FMdcXVfnlFSBK6f6MoxjQXr2M12e+zG3qqaMsyqyoi1zcMxXGCIDPzpSIDA0kvEqHv5IMKAQ==",
         "source_ref": "file:build-gate/scripts/test-trust.mjs@a60e08063006f2b7bb2b9cebf0e370485e5ccd55",
         "to_locator": {
           "kind": "code-symbol",
@@ -2344,7 +2344,7 @@
           }
         },
         "to_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2359,9 +2359,9 @@
           }
         },
         "from_node": "2e3a1fc3d3d44017280f30eedd96f71147adb79abe570d1a6faefccd11a56a34",
-        "prev_hash": "86e70bb3ff020301f2f881daf5fab9c805faa1c4bf321a389ad61188b9b36dca",
-        "record_hash": "215321335e31de20d74634ed5cd1a7989b835af051f332526ac06e2ca66af6ad",
-        "signature": "HhJuxQndJF9ZA0cTiVE5F/uknBXeKwjzA3j6zePf4GBXQol5jdiLWUC5nJml0Hqc+vnKjeepvvyg7kdLDmm0Dw==",
+        "prev_hash": "94d5b45d902b172af3b0dd3834d05bd7bd26e6047de2a66634c3be7178c56f23",
+        "record_hash": "74e7cd700aed0f95672162eb001353837c885052aeb9105853ad2437dcc18a76",
+        "signature": "u1gq0pg7FfacOMmOY2QkNA1zXlIIBiOS4SyRKhbqpl/YXsNGT5TYIZDdfm/FJ0i013un4OX7LlgyozLdNwW3DA==",
         "source_ref": "file:build-gate/scripts/stress-test-gate.mjs@4d6d54ee2449f9e249a3d877504189a68f3947af",
         "to_locator": {
           "kind": "code-symbol",
@@ -2373,7 +2373,7 @@
           }
         },
         "to_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2389,9 +2389,9 @@
           }
         },
         "from_node": "37a9ac71e9a9afb208701a59be95aba68301ec423f8d938b8b33a9c27c817f7d",
-        "prev_hash": "e17c5e2c75734307f57f244ca6f984412131f980010ed217208ca88e29b9548b",
-        "record_hash": "1482837d64a445409a3c1b24fc9b7c949c495839ccb086a90ab67cde51c0b2f9",
-        "signature": "rbgYfFq5UWZKZUgFH4RhG7YIaAHmjH+3ZA9suUCgWo4gOBcgtKGuxeiKk9J0Ktyvd8PIl583nZ2sQoI0/+V4Cw==",
+        "prev_hash": "6b2889adb726e24139e2ee407c93e4cd2a84316c897aa74128c8c22460ef13ed",
+        "record_hash": "9d6df804f939750042549fac0babf28e4ac32bf304cbdb9e99b821a27c07d844",
+        "signature": "uqyvOh0omQCGBSqqr/e47AkOg7xnoD5cJW3rQUyox2zvQHKXudPkAEahQ02GTY+/CDa+sTRzd4Ngfd5K+2RmDQ==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "code-symbol",
@@ -2403,7 +2403,7 @@
           }
         },
         "to_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2419,9 +2419,9 @@
           }
         },
         "from_node": "37a9ac71e9a9afb208701a59be95aba68301ec423f8d938b8b33a9c27c817f7d",
-        "prev_hash": "e09a46cd09bda39a5847f07e96d3bb9cdf7cde729898be139e4a0aa667e41f65",
-        "record_hash": "6b015cf2e1b1e36484097cf044b310e425bbe3b59627f0ec838e87d8aa10bafe",
-        "signature": "Mbm71oOpDWFtQP9mRomM83PzkidMDb2m51wWqXDR74GBdKbbgufPR07EARTAxBpi17ghnGNf3nFjM8tBUR1XCg==",
+        "prev_hash": "07bf983437efb787088d2cacfed31edad8d4c1ce52011940b688894b2ba80428",
+        "record_hash": "66f05a12742481f82d306707f0a7cf30f4e809a9f496656b94b44513ff16a1bd",
+        "signature": "xWd/z913Erv5B76Z9IgBZtRojXPM1G/ZzffVhwly1aepPK83Rl4SR62sOlbqTGI/21Aam9Xn78MIMrlPWgDoDQ==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "code-symbol",
@@ -2433,7 +2433,7 @@
           }
         },
         "to_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2448,9 +2448,9 @@
           }
         },
         "from_node": "3d88e89012c8c67781c6238ef64737a9a98b4355f9ef4ee15bf70a02e226bbfa",
-        "prev_hash": "5631942272eac0c38356add9fc9031bdadb7320a9cada42789c96b3da9e78474",
-        "record_hash": "4bb6cdbece0a85953ee4147ec96e372dd940dd776290f78a94486f7c295f3958",
-        "signature": "jenOBlAfbpeMRfTUlGoh31yiNa+ZKF1QI81uErla/Iu440SdyPusOXis5FwUSTqMLI77fG6VGomq4zPr4mueDw==",
+        "prev_hash": "5eafba42e557ed05e33dc4184a793696d6cefcbb150e6d1d62a294d2e343e1b6",
+        "record_hash": "e072efed8fcbc68e0ca46977beb47c5bf159204b26bd8a44505c983845a92cf4",
+        "signature": "vTTGFOiqFjFfOorNTnsrAHkHhSA1iT2m29HlrZ0tG6kCLWF8kGeMGFLlOlZEiRVlWTOxVv6R7p8dmswtvWt1Bg==",
         "source_ref": "file:build-gate/scripts/test-gate.mjs@2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
         "to_locator": {
           "kind": "code-symbol",
@@ -2462,7 +2462,7 @@
           }
         },
         "to_node": "07c27cf733da2269d04c48f2c922c2be53d50aed43a6bc4c1cc5bc7b8f3f8ae3",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2477,9 +2477,9 @@
           }
         },
         "from_node": "3d88e89012c8c67781c6238ef64737a9a98b4355f9ef4ee15bf70a02e226bbfa",
-        "prev_hash": "7dade727ab3035850214f218816fd93717871129d0eafc90906c360ac61f8f61",
-        "record_hash": "4283025915774e057dabc3ee2b31eab9ec781b386b0218f5b1e9b4431a3df758",
-        "signature": "2NDraAt+KtARfjfl7OvmxZTGHmUUgPq+Oj8fKV4vgHUsVR2H/c45g+JcbPqESDNgn5nDAKEygsYyyNfq9yLICQ==",
+        "prev_hash": "751f73fb1b7768774a1c4a98678bb84fe88ffdc965dab72de47291698ac81b91",
+        "record_hash": "3cd3411b306a958a90cb785984003769f1da8e0d504e07a9474032618cf3fdc9",
+        "signature": "mFDM1iXnuHN551cK7kIspi9m8lNqwcyrRak8gJz6Zv9OaQ6NOznkPTLnNPP9UMb7jZLtBEKJ8/8gf9CN+Y5KCg==",
         "source_ref": "file:build-gate/scripts/test-gate.mjs@2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
         "to_locator": {
           "kind": "code-symbol",
@@ -2491,7 +2491,7 @@
           }
         },
         "to_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2507,9 +2507,9 @@
           }
         },
         "from_node": "40dc3db7522cfc3bc0776be0b3dfd16a884a9c31f32437516c2a616f02fcdfce",
-        "prev_hash": "eaf96fc4adda26fe1b2d232c2cc17c924fb5a35ff32a74e2c0fe14944f6c704d",
-        "record_hash": "33bf3337a8065892c59365fb3031caed4a2d289cd1b143409c73056cab09532d",
-        "signature": "2gBcfx4VDSozgKvNb4+RhBDdbOStLCe3462A/UJUVEJ7kNmPna1NeTCe3c+Nc8de0yUMB2Th23GLkxVCzMNcDQ==",
+        "prev_hash": "13a3efce60705ae96bc0bba9351452e41156916f274b21ef3216b47155e656d4",
+        "record_hash": "51074807cc2a944c2378eff6adaa4d3c9339f2d3c906dde48acffec18dc82a92",
+        "signature": "0m4y5ci1ZmJoedywFnK/CUaPA5Fkn9qm8sRVxnWYEQACI7jkX8vonfyZaxsEpoCx4rPQsiQ9XHpMbDjgiJS6CA==",
         "source_ref": "file:build-gate/situation.mjs@f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
         "to_locator": {
           "kind": "code-symbol",
@@ -2521,7 +2521,7 @@
           }
         },
         "to_node": "bb544dfdae5937b445e73ebae93f53d197af4553f4bba2953f8e0a72f71423d3",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2537,9 +2537,9 @@
           }
         },
         "from_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "prev_hash": "3efa22abc0ba36be0e6e1e33780bfa1d540b86be61528de62e2bd9aced8762f8",
-        "record_hash": "17b7d3af5a422a0abd12f21a46bd93a34387051c5eb63774057184c75fd2e7e1",
-        "signature": "WRyQzGac3YdQAZzHcH1FSL0NooDMiw7bcTTjZGHvzxblj/M6xDMDztyGp6W2lOcE78y9dw8iweF+1BsOaXHoDQ==",
+        "prev_hash": "a19c93383a43f9c763efb6005c2a6785ffd176edba6ad4f1d57e5d18341812a5",
+        "record_hash": "2873aa1677e4ca3ac84985d2384b38513090e7765ff82d2b8c78b51c71f285a0",
+        "signature": "tp7EgNdz0z/xA/vD2tc9mtJ4E+jJ4Ox4RLN6jqVzFUy8TD6kaToNWykSZ+56GXFGyVAbhRGknZaV3KtdvHv6AA==",
         "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0",
         "to_locator": {
           "kind": "code-symbol",
@@ -2551,7 +2551,7 @@
           }
         },
         "to_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2567,9 +2567,9 @@
           }
         },
         "from_node": "53cda6161403fe3007a7fab3d3e70b45a3d02051a0dbad67c47b870516976482",
-        "prev_hash": "e0a290abe7dae8184a43dd1dd632244bfc279bb5f84f275edf2754fb03db3445",
-        "record_hash": "7ce504c17281cbd6f2b8cc9cabcbbd13d77465b14ab9ea237a130a9f23974d79",
-        "signature": "1OziYh8zizUdrURKsGjZ/vo6btSpTU2M6fRt45QdIiDoI3jdg9pAGtW/S4yOvW/Ruzz6NMk81OT9sMi999r/BQ==",
+        "prev_hash": "8e3e756346bf20a9b4f26db673ae0e30c695e144790cd29db36acd4559a19ced",
+        "record_hash": "f2f35611b6bd97e16f0a5a5770a12c72501a105e845f28bf2fa4fd8684274adc",
+        "signature": "zb0yVtARy8nva7mUrgAsmauihjKQrgV+TAJazTHoB4fbpNDgqrlM6ivSJ7gqZdGZanXP2RAJLveczYYZTohXDg==",
         "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0",
         "to_locator": {
           "kind": "code-symbol",
@@ -2581,7 +2581,7 @@
           }
         },
         "to_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2597,9 +2597,9 @@
           }
         },
         "from_node": "54b79446491d63865139942de844b7acc6439f9d0f7cd434d713a1f8ee491527",
-        "prev_hash": "4b4efbd6aec844fce7beb091dff7b4b63616dece853404180ca5e09c327ff349",
-        "record_hash": "28aabb6eda32bb8ae5f3aea96e1de00adf4492a0aff7c63d49dbe1284747c712",
-        "signature": "/Oh7dAndsSvwzAT6/uxuUMaI+vED0+IgpSJaGSDSncqumUttT9NyOeaGaAoR1ElzK/oH0niz/+W1HzGMeAIkAQ==",
+        "prev_hash": "61aa5cb9730dcad9ae624c712e1f51177befd410f5d82523aecb916bd5ddd196",
+        "record_hash": "468d15de23ff65845387c04289dd07e5dc72ea16475c2dcf8ba13467d79c4c4d",
+        "signature": "5647toIZ7tLbFcM2hVcQ8+/kVTc4LVMDgczJormodrsAF0y2/CDN+XntiFY4yFFITTxW1ILeJJq/5QENSxmOAQ==",
         "source_ref": "file:build-gate/build-orchestrator.mjs@5d965e1df3a9a2ef3080f96286f7f9c00c43b9b8",
         "to_locator": {
           "kind": "code-symbol",
@@ -2611,7 +2611,7 @@
           }
         },
         "to_node": "91073183584d5d522dcb4e910e4a81ce09fba5122bc9c80d59ee25e89d840894",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2627,9 +2627,9 @@
           }
         },
         "from_node": "54b79446491d63865139942de844b7acc6439f9d0f7cd434d713a1f8ee491527",
-        "prev_hash": "f6d9cb7e2993245af960f635a142630b88497aa9fbaa430faa5d6077c8f4741a",
-        "record_hash": "0e03a49e3629b9d5fbc34c88a278ee09c4780085dc5bb00805a84d465a5fb22c",
-        "signature": "Rv1RYJfpAdrFXNylbb9UFm/jti1hwe+9ceKP984h9/N1vZPPWWjqRdFl4FCRQ//OECUvqGdMHZxcWduSqx6OBw==",
+        "prev_hash": "19ebde526a7a71b587d561789d5b962b5bd626b399f8e15f8ac41ce28c0f2d98",
+        "record_hash": "207a0d3e16b940890c520c60723d8c3661b859b1ad92b588c48cffaa2bdc7b89",
+        "signature": "yiaOe9K9KRuhXafwzUFQ4giusMiWt8vv1PbwI08eabeQjuZUpJIfo/zeyyTTY0OTb6UVixqvajOCO1RyEsUlBw==",
         "source_ref": "file:build-gate/build-orchestrator.mjs@5d965e1df3a9a2ef3080f96286f7f9c00c43b9b8",
         "to_locator": {
           "kind": "code-symbol",
@@ -2641,7 +2641,7 @@
           }
         },
         "to_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2657,9 +2657,9 @@
           }
         },
         "from_node": "59fc8e5726317bd100ea74e6427217a520351eb4a66df7cbb0a5e2118d57d90a",
-        "prev_hash": "b1cb33eaefd21689abb7dc6ed1749bab21bcade98d343d566bc2d952afb1f4a3",
-        "record_hash": "8f7954c9d629504b550ecc037e6d2eaf27617b6ccbc78e5df16d374fbd9f9acf",
-        "signature": "fmhIE3RyrYo1Oup+6lF7E494OhXlQPDkgA249GM7W6ELNf5VTNaWfXdgjP39MgsTdQ35Owz9vpOehDMBNMPCAA==",
+        "prev_hash": "a38469bdb95267571e269e5e56158c909bdaa192fc60bb0733c67b13983b36b4",
+        "record_hash": "e350d24edaeedcdf2b4559f0d974771b04d7c194c87c431569af7345952cdc51",
+        "signature": "lsZ9MDVd9+rEUwIBCkWE5tlAcSey/mlA8i4oihs4mfDPEaYoSV5gUyUQwCec/8/XAIU5VemOZ9mgiq7a8IPRDA==",
         "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0",
         "to_locator": {
           "kind": "code-symbol",
@@ -2671,7 +2671,7 @@
           }
         },
         "to_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2687,9 +2687,9 @@
           }
         },
         "from_node": "71c740d1a25aaadddbefdf5d41ea85ada70352ca662fd959ce748852ca3057f3",
-        "prev_hash": "04553d395a3aa9f5614da1eba61c7f52a3ea11ae7dcac7ba68227c710853620c",
-        "record_hash": "767c6b1267f97602a603634e11f54610fefdd1f49d5a65ec26eccab6465fa055",
-        "signature": "fvD8JyHMaVhQFJnEJiWRF8rlCMiVRP+m7ow5FMFxf+sf3UIm+bwAFKe81LI4sg3tP1hHbV3MURm2eAAD4+MLCg==",
+        "prev_hash": "7f6a04601146bac6266ccffc3638626e4ce2d83c498789b50b8c9d6257c4a43d",
+        "record_hash": "c7889b22aa6b65e7063d5df4dd25974464ddeb760330d23a5f2bbee6180e2f81",
+        "signature": "BbHUtfj1QOurEE7bj/X0Xt47zz+NxCCMaIPJZu7kFBNmb4QC76foFKvMPGtogDfuFnWLDEDmX89BgCOBdqilBg==",
         "source_ref": "file:build-gate/situation.mjs@f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
         "to_locator": {
           "kind": "code-symbol",
@@ -2701,7 +2701,7 @@
           }
         },
         "to_node": "bb544dfdae5937b445e73ebae93f53d197af4553f4bba2953f8e0a72f71423d3",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2717,9 +2717,9 @@
           }
         },
         "from_node": "7269009c8cc0638e38734adce68bf4625e88289aeefeca0f62a9a6cbf1092572",
-        "prev_hash": "a8f78be62ada81c393c2703b9efb897879a9ab44b8f27d7f53ef9094370f5d4b",
-        "record_hash": "bad0329c35f3539cbc387772aebbc760760294c54127c808a21cce7d8849744e",
-        "signature": "OWvybmSDte92pTJ3ZWonxiATmTlCidq5t4ibvnixJ0k9KJ2D3kbORsdzdK++RPMvmxvznK7bN59dFln3dWm3DA==",
+        "prev_hash": "bf21c2ec16c0456311732a2d86aa82b6134d05b4634cfd6c4bfa425c261548d0",
+        "record_hash": "95104aa4820a79a2506dadffdad7d8da24e3e65441d0599d6b0dce21648bf8de",
+        "signature": "vWmWmWCjcOewip1txL+f1UowggtcRH4SAIDTYwtUL/+gLKFG9tHuPcEjCZiL8ewbMURXDX20f5nxOB15uGBVDQ==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "code-symbol",
@@ -2731,7 +2731,7 @@
           }
         },
         "to_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2747,9 +2747,9 @@
           }
         },
         "from_node": "7269009c8cc0638e38734adce68bf4625e88289aeefeca0f62a9a6cbf1092572",
-        "prev_hash": "cc6a81be1f6e73c1f5cad05cb92e8c9ac1b3170dc3c898c379149ff564622b03",
-        "record_hash": "a8691519ecb0c6423420dfcf0c81935991c8110379651072a25d53b2b0b00d2d",
-        "signature": "QaZv3Gj2ifB8wHdv2Rn7aJbCZBKrkmr/1smFJn4fLX83BNUzNgKn7PaMKObYUQ60uHmomGyDisIKjglPxqmPAQ==",
+        "prev_hash": "41de9b7eabf68b416afe6c3732a3c12f043dd2ed00937213433c0d27dc9ea1f5",
+        "record_hash": "2ac532ee7b99bd928ff7a52ee549eb21df19dea2dd0549db90de11b81907e48c",
+        "signature": "NEdGM501LHSotyINeMI/aRruTdJAS581BFtIIkKOidQTBew8ncGbNe4TeIqtEBpG/VmFrbkkuXQH0sefS1S3Ag==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "code-symbol",
@@ -2761,7 +2761,7 @@
           }
         },
         "to_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2777,9 +2777,9 @@
           }
         },
         "from_node": "86b32e7246abaa793a056d19abe0e0724c68b1d74dc57037536df2a02e9e42dc",
-        "prev_hash": "ade33ad3022fc223ec79053801d797c44d57cfff2ff54c0ca23fa4798663ed6c",
-        "record_hash": "0d63986f1e40608396236811a49af0a0358df046ec8fef6cea5fb352f400787b",
-        "signature": "hWr+hhkoa1YKxsTBWN9XZ3J5tQqCmJ1nsY11upZg5RObujzwg9jzMo6AXSwp/JUZQ2jpQKV0GkpjE8dS3eFcDQ==",
+        "prev_hash": "5e01d88f2a53ece383051192a2163929ef47b0bd2dcb35d06a0fdf9cbd27cdef",
+        "record_hash": "53be95bc3ffc920f44ebd923afe04160e9c9f91eeff75fde6d708af43615713a",
+        "signature": "OnEiwh156Mn7xznEpqSlpKQnZvCuC21RWhjjDoLsiy3ZonXZRt1yt1BnXiwa5t+pv8v5Bq7RiZY9QgMnK3IdCQ==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "code-symbol",
@@ -2791,7 +2791,7 @@
           }
         },
         "to_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2807,9 +2807,9 @@
           }
         },
         "from_node": "86b32e7246abaa793a056d19abe0e0724c68b1d74dc57037536df2a02e9e42dc",
-        "prev_hash": "74e4dc87596c788fcafd4491e17fdd74ca2ce7973684d7851ba33095cc041b8e",
-        "record_hash": "53ca2e3f83f7f905d416d7c8f921609846c287f84cfe8add8d545be2c40bff96",
-        "signature": "u6xJzQQd1lmyNuL4y+OfD4oEO166JPdW29TG3AONP8YxcFdQNQz2yl6aCUJwPRR1EKqvAsAqda2VVDwNn8asCw==",
+        "prev_hash": "3a89818288b18cd81a3538bf6dca7634886eb86c1c1c8788dba3deb18687c908",
+        "record_hash": "a14c1b87d5cbffeb25eb28e122a4758becd8e3d5a68a3b15b571927a83b16fc7",
+        "signature": "IhYTiQY/8TxkKQuPeA0sYf1BnCiQHbPEyxawpPniA1pDgFKOQPcUbZb2IFQaHouechLOPHUT8ixTK5DpOUqPCA==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "code-symbol",
@@ -2821,7 +2821,7 @@
           }
         },
         "to_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2837,9 +2837,9 @@
           }
         },
         "from_node": "8753d9dd21ca2ad3a146d25f8df33263d1d7165b595c9f373acab6147665a6d8",
-        "prev_hash": "15e30dcfa000183fbb53304881e00ba25c595cc9999434ed87c0e89f2f6063b0",
-        "record_hash": "63121fe8db47871c029594cc12744ef3e13083ab103d3a0741a3fa89d2f15224",
-        "signature": "IH5+FqEZ338SlQmlAaaQ0/+lnWlV6Zo9bFXCNBfYCj6E9Er+F/o9tU6rSkNYXjJnmNa/SOJKROYOXcZJqECaCw==",
+        "prev_hash": "139a9703a5912502b82d74c43679d3d2e1d76c4a2804e6bc9c18177a3577de41",
+        "record_hash": "e96e0813f7fb9bcd738c3f243e64686f62b637da390a810e40f874ee1608c52f",
+        "signature": "FLXF00j7dDgZGUamS1/13J3+rqNZz8erEoeeC/fMeo8yeBx+gj2o/tWEryOQWReg7bkJeOfOAqWaCG+vu5M/DQ==",
         "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0",
         "to_locator": {
           "kind": "code-symbol",
@@ -2851,7 +2851,7 @@
           }
         },
         "to_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2867,9 +2867,9 @@
           }
         },
         "from_node": "91073183584d5d522dcb4e910e4a81ce09fba5122bc9c80d59ee25e89d840894",
-        "prev_hash": "6e402199686cbb06588a4f9df761c5d5fa05853afd337681fb20346cae424eb8",
-        "record_hash": "cbb5f3b511096f365e29c1744a99c197ac78744c53838728aec4ce601f6d2ff4",
-        "signature": "0qo7wUbGtQ1L1xvFgg0E9Xyv3zL34m8Hl6ZNVyLt/1ywhnY8EdtlWSK5VzhZGzH0rTZHrcZD81G0X7iNYkpjBw==",
+        "prev_hash": "20895022efe86d66313f79039d03619e8a95e78340181983e45e4030cf751f14",
+        "record_hash": "b7fdec158cd8c53eef02f2d261d2a5f34877f60e85a1f349aa7c2677bd036142",
+        "signature": "jz9XVUF+wMT4h19JjtPxKiE6VeLLwyckq/W5yh3hYOkv1es0zAOJzWf5PnmEqzU1f6lZBG+9vX8WDuSxwoPuCQ==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "code-symbol",
@@ -2881,7 +2881,7 @@
           }
         },
         "to_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2897,9 +2897,9 @@
           }
         },
         "from_node": "91073183584d5d522dcb4e910e4a81ce09fba5122bc9c80d59ee25e89d840894",
-        "prev_hash": "ac4065f12b9f0327793202fea8a21d2647f6510a11e7586342d74f1403211653",
-        "record_hash": "e75f0e86b383863de9b25ee33f95d6eb0c77e47dd553b638ffc8808d9f7f1735",
-        "signature": "OPS8XZuR3MIWkRff6M+VgH8WknYuVom/NTN59neNBbRShCxBXJzAOVvSSwMXlt2Fi93cxtYwjNT1WUwKdvKrBw==",
+        "prev_hash": "079c4abf9423b9c6313c12793615ef80d709c85a73d6394fe642be07e888e5d5",
+        "record_hash": "2926a7de8186a73bf602a013ad6cf5d280969d3ae383187f813ef8aec7bd5b05",
+        "signature": "LsZyfSuEkPMDF/fWCAgmvcODcLdCemr9t/E0dpDKkoz3n0ySsBDPmxg4n+axoFjjQCe0CsTUQWY7FF5JYaa2CQ==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "code-symbol",
@@ -2911,7 +2911,7 @@
           }
         },
         "to_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2927,9 +2927,9 @@
           }
         },
         "from_node": "999e8257724254b403d1b241ec3112d8e0cba0cb57b1898a0cd95d5022e52cad",
-        "prev_hash": "11419bf778d6882422916c841d9d136417fe3e872018abb13b3bc9d407d119cc",
-        "record_hash": "f7fa28d619e5699afed99b4a7001acaf38d292a20b5e39cd809a8b6d9a76a890",
-        "signature": "4vfBBsItjTPZRBYVKHPd15qyUFHRBxy9+Prpx3hWOxCHlIh0NOdA1lxhlOxoKiQxiJ2mlCf5nT4nh/NGh+l3AQ==",
+        "prev_hash": "e3c64f4d4405a994d2865d7b5653399c10d7ea97faa9d3a55fcbfba2dcbce8eb",
+        "record_hash": "83015e171268f38fc78d503d9ef1c2b97a303084dd213c5637a2311c6fee4426",
+        "signature": "armzE+gzJj10j47iftNbfLPfLxyWwLnNltvuVtKwRdOvyRnQT5tfs+qXOz4EegrT49cRy58G9MaazmINe+GIAA==",
         "source_ref": "file:build-gate/build-orchestrator.mjs@5d965e1df3a9a2ef3080f96286f7f9c00c43b9b8",
         "to_locator": {
           "kind": "code-symbol",
@@ -2941,7 +2941,7 @@
           }
         },
         "to_node": "91073183584d5d522dcb4e910e4a81ce09fba5122bc9c80d59ee25e89d840894",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2957,9 +2957,9 @@
           }
         },
         "from_node": "999e8257724254b403d1b241ec3112d8e0cba0cb57b1898a0cd95d5022e52cad",
-        "prev_hash": "e7c9d02d2c78609283ece02def27518a73cdacbf2762dc61893b4d62ca3efe32",
-        "record_hash": "01a1030851f6d7a6c3a5c594cf5ef2cc73f598b53d401b7c2ae355c975708186",
-        "signature": "YGzGNoJgi8HA+tHKxmG5DhuPTYYpReemwiIhosadU0rnfjMhvjugojqXgONKYu4Xxb9QgktXB42+QIMMUUZKCg==",
+        "prev_hash": "dec179de904da2806c684a784edaf9a852293da190893b8733fee072915b7f07",
+        "record_hash": "06071fbca94ca487f88936e946a9458af81900a04cbbf35bec0379c6cb117a80",
+        "signature": "wFfGJoHLPo7Uwk3jnIyrlREJCwruwCiYyXR3Q1XXCMh7FZQvvwqSaqiCnODKvFo2p7F36F2K6DKGloLYIV7LDQ==",
         "source_ref": "file:build-gate/build-orchestrator.mjs@5d965e1df3a9a2ef3080f96286f7f9c00c43b9b8",
         "to_locator": {
           "kind": "code-symbol",
@@ -2971,7 +2971,7 @@
           }
         },
         "to_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -2986,9 +2986,9 @@
           }
         },
         "from_node": "9db202459691ef377dc971758355aeef079d74c344aa6104288da41c24c35ec6",
-        "prev_hash": "6000f98dcae970c8fd3ab5bb8a6da35479e628541d3be888d5094f51faae1722",
-        "record_hash": "e29b33b37b01444e7ab69238dcdb0ebbbd8f09ef369305f0cf9f3cf19deb5cd3",
-        "signature": "CTyCuJIsSrP6lBziwyMZwpR0lQyTZhZTImQDh5Fbk/GLXVG96q7cut6x53B/kCGi0BgjNpJxLtNlrUkHcFPmBQ==",
+        "prev_hash": "d27ea61d80c3e38feb9cc98bc158809a4137767edcaec1785dca3f490bb3d0a1",
+        "record_hash": "149b092bf336d09e3a3b6269ae046dcad053fcdb9642b9884ad27587205c0d55",
+        "signature": "7Dk1saKRycCxNSwjB9y7Qdc267kbDuUhX9F67BRwy4rt3wdUBXVwi8HJVfIRPfMWnKO7dJtL6v0JKLkXnWwNCQ==",
         "source_ref": "file:build-gate/scripts/test-proposal-lifecycle.mjs@152c789e7182b6e2e87c39d8f4e52a7bfa88dd23",
         "to_locator": {
           "kind": "code-symbol",
@@ -3000,7 +3000,7 @@
           }
         },
         "to_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3015,9 +3015,9 @@
           }
         },
         "from_node": "acfa4cd3320d7eef8b93b7ec2ad640e07dcaf541bdecffbdfb1a516aba03a9be",
-        "prev_hash": "bb1d962ce3ba576e8becfac571c3b571cee95f120e20afcecaab27a3210cb51e",
-        "record_hash": "576543ec0d8f66845c019475ee16de9d32cd32d929aacc22afb8a05dd4967dce",
-        "signature": "gQVZPhTaUGTMv05QYAHtse9WaR3FPmvsfDBtGlPpbaz4Qn4z7CEMtelDMRyLtIHXw/hacE2+f0D2/Yqm+f1nCA==",
+        "prev_hash": "a4e3c4d282b0cd62be3dc3fa0a16963540721a23c7bbaa842891f96d04256457",
+        "record_hash": "e96819950093c6e996d8eb8f53c5ae7d13b110d8d0d4903982b06e02a1676370",
+        "signature": "V7uRZqqVvixgrqRZ7YS8fMdIBk06TQ/XDI9pfhPua1dKW2UHCHGAR0GXIJhPj5fnOh6XgOZYvHiM29nyuRpGAA==",
         "source_ref": "file:merkle-dag/scripts/test-obligation.mjs@93e7786476ba3a74d8abc03c85073e89f97100a7",
         "to_locator": {
           "kind": "code-symbol",
@@ -3029,7 +3029,7 @@
           }
         },
         "to_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3044,9 +3044,9 @@
           }
         },
         "from_node": "af825919afacfb9557495fc03b6287830a20b418f5d7bd85f16ea9a33eaa4fc6",
-        "prev_hash": "1c30fa6cfc190cca380ee30c2663535d7a6f7856312224949acaf90251ea2ea1",
-        "record_hash": "19acd2e398bf5e63df725842d81ab52a1aa1cf19c3be9d292fd7b2f83c751dec",
-        "signature": "3Qbc1rq5YYe5KcOs66lVCmHRb5YYlBB3s3Xuiwxn4DON2/xuBtG26/vhBf2jUDpcrhKArb2eomOpNocxmh/oCQ==",
+        "prev_hash": "4d31053b0a42ba4a69dd919ecc3dfdeec4ac6fb691e462b1f134076e856e798f",
+        "record_hash": "6d57dd61a746fc419a7e67cab1387f877f314bc2d330770c4e61addc46234e3b",
+        "signature": "vdfbNONEcgkFXvl8zdm8kG69mweTmD9PVKLfm3AWwd1jU0REBsXB/FIePI/d1ZiZQiuagclM5Hlid6iVJmpqAA==",
         "source_ref": "file:build-gate/scripts/test-council-orchestrator.mjs@95ed4375f76b16492ac14823f83dd9547bdf71f6",
         "to_locator": {
           "kind": "code-symbol",
@@ -3058,7 +3058,7 @@
           }
         },
         "to_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3074,9 +3074,9 @@
           }
         },
         "from_node": "b7c5f1e5c82a12f6ca92a4c6d3c1a726990d84e9997adca2f871fb8dae2b002b",
-        "prev_hash": "75af0fa61cde4557d696153d25b22a142cf040f8c5f73a113c7a408076e47cbd",
-        "record_hash": "58b4c3fa15e3f661a9863a98eb48a91d19f0a3ffbdf6082428764d0986f41497",
-        "signature": "0Mhfwg4xZlRH9w1vHJv1E3CbqWVNEwH0RHO8Y6wwIgibr1/g8rLhF3DNXdjlbmynpb2uTqkCcjR8qyvfUHVZAQ==",
+        "prev_hash": "e53e6d2dbaa99ba7d59284b033eb60c0b6307839f6e2ccaad3bd919198ee4f84",
+        "record_hash": "41c148640104f59081be5666aec247b3fdb639149937b153643bd36033526dce",
+        "signature": "nZkMU/m08ahnHLnZb1qeEPlTyhoFDLtfVEO16PkQ085gdohxJ9tNiW7Mi7T5eLIfFghwnYZZeZrdmrehuR3/DA==",
         "source_ref": "file:build-gate/situation.mjs@f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
         "to_locator": {
           "kind": "code-symbol",
@@ -3088,7 +3088,7 @@
           }
         },
         "to_node": "bb544dfdae5937b445e73ebae93f53d197af4553f4bba2953f8e0a72f71423d3",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3103,9 +3103,9 @@
           }
         },
         "from_node": "bafd21dd4682615ddb664b122eaf936990783d1e958832952266d198346b793d",
-        "prev_hash": "db2601405a4e10052c52888d9c9c111405a3d7be54737f766f6cce7b9d83f92b",
-        "record_hash": "a4a3a5c36aaccce4621a297d3e47b9557c212ff6c30adf0520e441fedea4ce51",
-        "signature": "iO3Tn24gJpQWTBqM4L3qb0Xfh+XCj7wKRsVBxvmCGEC3FO2s2UWwAbfLDsf6PVmjUFOjMrslFqsG7V6PwmizAA==",
+        "prev_hash": "960d6e9660b99fd677a990621972050d59a5c517b656cb87884b0f24272eecd6",
+        "record_hash": "599ac60829f775f7ae158f5998f648a61fd657777d77bda58eda8874ed0f1ec6",
+        "signature": "7EiKc6jH+tJ2F6H9RRVBU6YebmF+vsdMqh1pcmm5vAhW7J+rWfqg3iE9W+xEANSY56PIxco1u96ZxBZ+jrLDDw==",
         "source_ref": "file:build-gate/scripts/stress-tests.mjs@fc5afbfaa321920bd4a60cc9139aa521ec7e2e1d",
         "to_locator": {
           "kind": "code-symbol",
@@ -3117,7 +3117,7 @@
           }
         },
         "to_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3133,9 +3133,9 @@
           }
         },
         "from_node": "bb544dfdae5937b445e73ebae93f53d197af4553f4bba2953f8e0a72f71423d3",
-        "prev_hash": "bce2b7b6e4eccfc6aa882dc47befe4bca2e8913313af9c10a693ce9d9d9894a5",
-        "record_hash": "eae3721d9a9cc788f9d3d0ea983d3592ee28aae9d1e81d065a28532d86ebfc18",
-        "signature": "IfSTDAYfWocnYAd0NdQl1N0or/TwBVr9YGcDifS0UtA0Wk6ErK03OyQtyvwv8B6F83WDI1Mg/ilFox7EEPFxAw==",
+        "prev_hash": "ef600ed641d0dc9dfe25ce61ff44b8cc3cf0897a584130f2ecc885d882914bea",
+        "record_hash": "daa047aabbd0040a9aa153c445b109caae68de17bd35ed3a1a4ba15367365ddc",
+        "signature": "cZsZmyBiXKWLRLWzriKpFCda4hF1UaYZfY3c9sbIy4Fax1sf4LrxDsEk2cug4qqb2r+bKGo933KTUBZNw6siAA==",
         "source_ref": "file:build-gate/gate.mjs@c5332063f3646161341213ff5adce99aca5f725a",
         "to_locator": {
           "kind": "code-symbol",
@@ -3147,7 +3147,7 @@
           }
         },
         "to_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3162,9 +3162,9 @@
           }
         },
         "from_node": "c4f46b2ff24eca54d82539a46b973e05d0b31d28fe0c049498332351a74bf8a9",
-        "prev_hash": "3963385744713a499148aa4388005cab2fa9f1f4204cae464cdb90c2e66a2e60",
-        "record_hash": "a7b51349751119f2f7a724650dbcbedaf4c4f5f71b3f8218e6f77705baaf2fd4",
-        "signature": "f2IdnYVhNqN9N0gy/v+ApEpDYjZyJUsA1+wkEZtMmGI+6HkHt0t0pv/YRA9spD67bpjmsGGg1bjFlqj2+HFoDA==",
+        "prev_hash": "9c7f5002a310d69a95a9446e65616c17425487cfebe1485416f6fcb0a2f0b2a4",
+        "record_hash": "2d58b9805c44907fc4ad82685fe48f961b96e6df1b2600b1bd7e87df697f93d9",
+        "signature": "HU46DEnvU+bktXJLbpLwjDvwnKaucKhcX0Fvb2e0q1I1q4Z+IerXK41954gYOdB1JYqqqvGB8o6kHQAY1Q/hCw==",
         "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@f5b56d0fe40682f83a8c4b1edfa7734ccc0ab470",
         "to_locator": {
           "kind": "code-symbol",
@@ -3176,7 +3176,7 @@
           }
         },
         "to_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3191,9 +3191,9 @@
           }
         },
         "from_node": "c4f46b2ff24eca54d82539a46b973e05d0b31d28fe0c049498332351a74bf8a9",
-        "prev_hash": "9f4fce8466d9240b7eddce9ef5e912ca3e56831bd7e1457d88795d9c8c3e3a81",
-        "record_hash": "db7c7814d0d54869048499e069abf742493e4d25af69854ecb66cdaa7a0142fb",
-        "signature": "P3w5c+n/YUgc76GhhZZitK6ElLCz/aYXRL/LDJAx/QdzQrZDeop6Mzl/pZUfRPG87B1LqlwL9ipTpi7e6QCdBQ==",
+        "prev_hash": "b6a749aebec25b7e5b90032a7772548763adf19e1f8eb6993f5d60591ac3dc24",
+        "record_hash": "3d80a37caa144f4ba6ef8e98babd917796ed6c3213638971cffcca8e6665637c",
+        "signature": "tZvkVmnTeuyB0v9uzeyjSYjsbxhkGjwyQifZcpaQ5u7S11IIBXZPPYbx9Mu1IXbkNrbRHQ4zp5SBRDbfqMpBAg==",
         "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@f5b56d0fe40682f83a8c4b1edfa7734ccc0ab470",
         "to_locator": {
           "kind": "code-symbol",
@@ -3205,7 +3205,7 @@
           }
         },
         "to_node": "53cda6161403fe3007a7fab3d3e70b45a3d02051a0dbad67c47b870516976482",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3220,9 +3220,9 @@
           }
         },
         "from_node": "c4f46b2ff24eca54d82539a46b973e05d0b31d28fe0c049498332351a74bf8a9",
-        "prev_hash": "0025b00ac573e1bb616d78cfb197da4246be9dd14dc6cb96138983cc25ba078a",
-        "record_hash": "b2f4840aad935ef48bd1cca419519eea6b4f78fa1aa6273b3d01a28415f3f789",
-        "signature": "D/nWV/3nU3QLCbaKNqr9MxGwqjZfvMMNKewqFkOH3BvbYGzP2Df0uWI9J5lj6Hwhjs8e6FzbIXPOBA35EjipDA==",
+        "prev_hash": "3be14a494c8f94c92d66ef0e890973c82829fab41ccf236bbdeead4771308d47",
+        "record_hash": "208df8af04b7606230fe02e4775a7105ee85e9494ac8f3a7afa4f404cd5328f9",
+        "signature": "LTBbwBWIkNZI00kUAOk4Mn/vCVoPopJ7WE7jbYBRtTptE0Exx0awdyG5B18pL85OEVNpBgYzQuC4MGvCvrUyBg==",
         "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@f5b56d0fe40682f83a8c4b1edfa7734ccc0ab470",
         "to_locator": {
           "kind": "code-symbol",
@@ -3234,7 +3234,7 @@
           }
         },
         "to_node": "59fc8e5726317bd100ea74e6427217a520351eb4a66df7cbb0a5e2118d57d90a",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3249,9 +3249,9 @@
           }
         },
         "from_node": "c4f46b2ff24eca54d82539a46b973e05d0b31d28fe0c049498332351a74bf8a9",
-        "prev_hash": "a8640388f2e9009c6d68032e6fea5e304549ec3cae82213b37cb558ff742d6a2",
-        "record_hash": "2dcc78dee0e6b7204469cf8081f5a3e429e09d12329594655860124e811c4261",
-        "signature": "vIBwY6I2OrcKwuneCowmIQAQEu7KjsPpBVsmuuWBIjDqmRaH2HHnPyv3WvqNp97rP0E1rlpzrqRU0OZsZv8IDQ==",
+        "prev_hash": "880bd0aed4bc50d3b26ac7d46231e90b9651946d710defe91e38f160684e91e8",
+        "record_hash": "7f536682c06d75eb97eedba050405764524a47f3b2cc1ccf5ed65e648d96d9e0",
+        "signature": "79y7bjvN7IaEc+mjY+rftm8kosITYbxwL50X58cp9bS5sgmTCJ9JYqIGLfkhqgRAuufC3p2JQ54Ec6FvpAXPAQ==",
         "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@f5b56d0fe40682f83a8c4b1edfa7734ccc0ab470",
         "to_locator": {
           "kind": "code-symbol",
@@ -3263,7 +3263,7 @@
           }
         },
         "to_node": "8753d9dd21ca2ad3a146d25f8df33263d1d7165b595c9f373acab6147665a6d8",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3278,9 +3278,9 @@
           }
         },
         "from_node": "c4f46b2ff24eca54d82539a46b973e05d0b31d28fe0c049498332351a74bf8a9",
-        "prev_hash": "7612ed35652c2e823079852c4081dccfea23b57fef6095afa7bb3b6ef0305303",
-        "record_hash": "5e42a912eaf9ab4bcdf74bcd7f875e3584686c524ac2e88aaf977121e3e0e3d8",
-        "signature": "p9E8eekPYoNokniCaYrXDF5w70GXMYfkXQfRbhSqlbRfUhL4doho21OZfF6z7SbY92NYfLf1Q4r7ecpG/ietBw==",
+        "prev_hash": "e65cbbd7ef161ea54ea7fd72cb4804eb05f6e7b623dd6193b0d2ed36588bf981",
+        "record_hash": "a4fb6feeef9f8035fc14b695263213e64b4fc2b44bcc08a4a190829126db0f39",
+        "signature": "y3AmOoMYjGizZPmrRx4paNjXI2rfMa89K31W9B07cFMEgqbDFzEHEig0RFkXeO99myvoyITwg9Ur20QaxCvnBA==",
         "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@f5b56d0fe40682f83a8c4b1edfa7734ccc0ab470",
         "to_locator": {
           "kind": "code-symbol",
@@ -3292,7 +3292,7 @@
           }
         },
         "to_node": "d8fd24316511d56bd1ac212fc8d142424f38f24945912c2e842f83e065994e85",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3308,9 +3308,9 @@
           }
         },
         "from_node": "c7aa38386707b622de858a9488df89fd8297428645456082c3b2fe1ca8a47673",
-        "prev_hash": "20c9c877779b0c5e911ecdfb8fba4f49aa56d94e384dbac117d5b32382d71b78",
-        "record_hash": "7c11554e06ed301a6b995bea4c69071d435286ce1dc477bffa66816c02d1c407",
-        "signature": "mpIwx6Ji6lTaoVdM8Yd0BITx4lHKWZhB/9HXTSEpswh+4u+a+Ecd6BcLxkss1LT3cpAUyYiIgpZJ/E+zIv4rCg==",
+        "prev_hash": "53ed89e0dda2227288a811f3cd74805727af7251943e216cc9619a8dea1a6551",
+        "record_hash": "072eb483b8a0f95eff1a28ae0e29c0cd5d74c69843c29a9043048c5f31ab2fa0",
+        "signature": "6yhBs+ixnTlvTpvOqF/jPWN//TG2e4MhcAN8MEqZAQhS8kKeF1R/ItZgdLBtKDJMYpu1nCeFPZqKw8Poibs9Dg==",
         "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0",
         "to_locator": {
           "kind": "code-symbol",
@@ -3322,7 +3322,7 @@
           }
         },
         "to_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3338,9 +3338,9 @@
           }
         },
         "from_node": "ce521c1e9bb0f434c97cfb2e7381e5276e1120cf4741225447264827608e7600",
-        "prev_hash": "47a1c34f1ba095d1c4c332d0f97a134d18f07aab6eab6abe46d38afa68dad65e",
-        "record_hash": "e1774718744f83d3436fb40bd33ae49a2f783e8d140216541197871ba882a0f4",
-        "signature": "PqBpxJ/UkwJm1pMI74FWjglM6IBSNZFdEFVtyXIAmbyaKSmGpzIEFRfQredZ9q+Mi1BJ9qBvNGQWcWbGx4f2Dw==",
+        "prev_hash": "8d2f1246fee3385c3e4508db0d8971a35269507738b05a2cf58b7e7fc0d97cbe",
+        "record_hash": "ceddd656c8777d1926dedc3d32cffe67b95c9bb997c0c16d11494bf5d536f304",
+        "signature": "1/RstszTgueE3hMYWKQDfd1UV2U3o2M50TxB/6kcN+0S6IRUwkektL8ZZ8/tRyJEUYQlFQjgwTPWC7LKCH6TBw==",
         "source_ref": "file:build-gate/situation.mjs@f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
         "to_locator": {
           "kind": "code-symbol",
@@ -3352,7 +3352,7 @@
           }
         },
         "to_node": "bb544dfdae5937b445e73ebae93f53d197af4553f4bba2953f8e0a72f71423d3",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3368,9 +3368,9 @@
           }
         },
         "from_node": "d49eb523f4e0687b87d4d7ebe4c488124089667bf208fe463b7cb7c61bf5935f",
-        "prev_hash": "56e36237251bd4763d3fe6b5eb22be83ad531ccb2cfb65afe6f779c06ab8abbf",
-        "record_hash": "256d8dcd3001b93c7fa41b71b2123e9dc9d4c77a58b94d727be6862d147051d7",
-        "signature": "QRSbyj9lODau2UhRLMFvc/jCTY92q4dFg+ldNDjBbajcHo2RFVg9WxkV88JI5Tg12ivhObrWeLWDPu7jp9DmDA==",
+        "prev_hash": "b079e89ece5c6403bc8255884e657b7937912c1c5d4c08829f84a74b14184774",
+        "record_hash": "a6e68bd73e67129baf2798c80932c4335dd067f9bf44962395bdda3a64b9a89e",
+        "signature": "AGwOg5gL1HsTshLSYmdLp2+I5XvcrJWduP3bmMvgb348EPeu4ELzvkcbq+hYsXaQ5b/LQb6w1pR4LwhkbtMZAw==",
         "source_ref": "file:build-gate/build-orchestrator.mjs@5d965e1df3a9a2ef3080f96286f7f9c00c43b9b8",
         "to_locator": {
           "kind": "code-symbol",
@@ -3382,7 +3382,7 @@
           }
         },
         "to_node": "91073183584d5d522dcb4e910e4a81ce09fba5122bc9c80d59ee25e89d840894",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3398,9 +3398,9 @@
           }
         },
         "from_node": "d49eb523f4e0687b87d4d7ebe4c488124089667bf208fe463b7cb7c61bf5935f",
-        "prev_hash": "7731ef6d0151a8b62371f2d66cf5b73070b1e1e724de5b041da2ffb44b78d349",
-        "record_hash": "9fe3d74bfd16de1f0867a194dab62ab52c6ec3e6abf67a42103d1089b1f5f1f0",
-        "signature": "4UnqhGo2NvYZ0M7cq7u4X108qb/oaI8AzSf1wTQp1TtgmJBNm9PKtV6Xd9WMbgde4bL1N4pVPpti1GRVz0C/CQ==",
+        "prev_hash": "c92d66a222054ad5b0b207de99de3f39e048b129b8f8beffc561fe5bdc9f1bd8",
+        "record_hash": "d959c85ed9b68defee086597db2c663dfafc2ff43d01ed94818e63c6805c953c",
+        "signature": "VcZj+5K/Bn+H3Mrcw1f0gU2/jZyQQaV8kwjWOnb/4gI4fD5ssszE2AEQLBRFB3/CBmPouS8DoW39yhQzhmCcCg==",
         "source_ref": "file:build-gate/build-orchestrator.mjs@5d965e1df3a9a2ef3080f96286f7f9c00c43b9b8",
         "to_locator": {
           "kind": "code-symbol",
@@ -3412,7 +3412,7 @@
           }
         },
         "to_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3428,9 +3428,9 @@
           }
         },
         "from_node": "d8fd24316511d56bd1ac212fc8d142424f38f24945912c2e842f83e065994e85",
-        "prev_hash": "45478258c99a49dd930f9534c9d6454ff40ea4a2689cb2846e57f9a3f26e9f43",
-        "record_hash": "d9287858b523b27f5b03f2bdaa75cad41dd4c11324bdfb2e97832b54ac58ff6f",
-        "signature": "zPjmy+l1Ztj3LbU15C+9i+TrPRj0sMdzg+dMhwAzTYLcRSDXKfLUo61RbaiV4owoa64b3EBAYcsowgxSg9UZCQ==",
+        "prev_hash": "97431caa51c7cb4e3bca689c2fbd3de1b1b292183628304053ad15b652ff941b",
+        "record_hash": "c74541d39dea85634875b9b6ff66a272dc60c656d65ef179f8c0bde9ff94cb4b",
+        "signature": "zXdG9qeZGhva4s1dlNG84uHw55sYVYUIGw/UvBIAkbGh6xu9DJ3VvCewqrzkEvh+/0UwLJQWXSxOorwJ9tmGCA==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "code-symbol",
@@ -3442,7 +3442,7 @@
           }
         },
         "to_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3458,9 +3458,9 @@
           }
         },
         "from_node": "d8fd24316511d56bd1ac212fc8d142424f38f24945912c2e842f83e065994e85",
-        "prev_hash": "8f0088bcfba049dcd6b35a084c5be354a69176ac19a68459869a569e1d087a2a",
-        "record_hash": "4377540aae49ebe0745d81d82af32b23ea6bdc511d1773b8ffca2c2349558a7f",
-        "signature": "oxrokh/I3LHejUnlkXZtZGRolw1QotVkCoNhmwgD1JfreoDhaV85HR20pw+/4uk+pNqjerSt9CraoOVPIw7pBg==",
+        "prev_hash": "c92a7008ff5396f5367f177917cc13d8ed6fc49f0d0a24bf9ee330f645355f07",
+        "record_hash": "8fdbef69be6e731d5b42663ada778c4b9d3565972ba5c9bdd86d3fc07fd487bd",
+        "signature": "IA2sTHWJypY8EETvJROwuSHdUy9FycWlJaSYisGVqNI7aVqqDYy5XJ5OMyaPdeo2WalkH9M6mUy1kBkNthdvDg==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "code-symbol",
@@ -3472,7 +3472,7 @@
           }
         },
         "to_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3488,9 +3488,9 @@
           }
         },
         "from_node": "d9fac7acc101ab9d95249a8485be7f7b1e3077c7c365ecafb1ba067f45ca210e",
-        "prev_hash": "e4405e81fd99c64c226626d102f7dc2275f7d28fd300e8f7fa05462e84b01460",
-        "record_hash": "d12fd205d8f9c9cfd1f4df36d62387f3e51f002a01be7dcf7ebe348307f1a5ae",
-        "signature": "3SyuRELIqTVX6MYfoTIt85OCJTbL/EquT9fxKjP3M358I+mBs7e/EV4udtcAuXYxFuoNUyMlc9wZpJ57nEfhDQ==",
+        "prev_hash": "5015d72a1bbf065f7331f6e4a524aeb5b6877278635e67207daf9d3c4755d8ad",
+        "record_hash": "f37b02862ca703a3f80735383170817a8fab6f7a3c68fa8cb50a4e58de7a0950",
+        "signature": "XdN062crgjo4Us/hR4OfKB2xEwmgYm/oWtEYMjTBmfLwYyf+G2N14vK99G4joDeczjlDavncwhlMImJaDlNEBA==",
         "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0",
         "to_locator": {
           "kind": "code-symbol",
@@ -3502,7 +3502,7 @@
           }
         },
         "to_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3518,9 +3518,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "3dbf126cc1da9d388ad65f001bd2c08e6c25c5404a02d9940ab652f64a71f7e8",
-        "record_hash": "be63e519209fc883587e52da368f352f7dbf0850180800eb709b7cd6fc9b2107",
-        "signature": "nKws2BBzOr5BPpoK9QYr73lQrRlNYwhiZhQ3jUuFhwzSnbGqad55IpXSWtq5XAYTFR7urnJncJEawCt/kviCDw==",
+        "prev_hash": "b5723f0b0c6eb1aa967df7452737bf6d1db21387052a6fffc86db5e82a0929b7",
+        "record_hash": "da904896123bee317bd72f9ec5405e90c26919bf0a733eed8ebb15f3d392e278",
+        "signature": "T4o6Cv68g6USPSdoPnpWgZr4PjdiUDT+Zlo5y65/PrpbZlT1nFAY9sHmq0/ihUqc0uQqSaump8j0Il3EduR3Aw==",
         "source_ref": "file:build-gate/gate.mjs@c5332063f3646161341213ff5adce99aca5f725a",
         "to_locator": {
           "kind": "code-symbol",
@@ -3532,7 +3532,7 @@
           }
         },
         "to_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-code-weaver",
@@ -3547,9 +3547,9 @@
           }
         },
         "from_node": "ff7ec1b0807d67d92f798737509a7c02da940924c73c786c6349fd09b15fa7e6",
-        "prev_hash": "037efa970b9ed882f3bf82017934daf1ba7eeddf5fb826d51d395d67bb7ccc4e",
-        "record_hash": "8c65045f38e4edec5377f04d15a69db4c50b7a363c41447fa9116374ea50bc8c",
-        "signature": "yPcvG/T+v+vURrzWuPAdJ5EMizDwRB+K23kwdacDV13U+RJhPdipIBpGjeq6KQmZ1IlWusnhZUoXLrfOWJyGCw==",
+        "prev_hash": "546d517e94f816c8e096c04e8303d533fee440ae2f61c29e54bcf6df5087c93d",
+        "record_hash": "67c3446ec92c1d4ed04b2eb1b57c9c23229a9842cbee91d79618ac90b195fa14",
+        "signature": "ggHfmeHrNM6qRbxVff7L+dRarZPcUJ91HeHnYpV9Eu/JlCqgmYiVh7ON4NyK1chfpaHhH7L2WiMmfhWB/mSeBA==",
         "source_ref": "file:build-gate/scripts/test-breakout-coverage.mjs@5b98a858ffded818340755dd2932078b15235226",
         "to_locator": {
           "kind": "code-symbol",
@@ -3561,7 +3561,7 @@
           }
         },
         "to_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -3577,9 +3577,9 @@
           }
         },
         "from_node": "07c27cf733da2269d04c48f2c922c2be53d50aed43a6bc4c1cc5bc7b8f3f8ae3",
-        "prev_hash": "c279446e92cd2bf2a4cfca937d62f62697f1eadf78262780b560c8a71eda6208",
-        "record_hash": "69c69c7ad32d0bd69b6b4e1e30c18b74610899e56c51d9cd53c774deefc1260d",
-        "signature": "U9EjlCUF58mjT+ubM9JSHi8VcbaNSeotqPkxtAu27OuMAsdmh31oWDqOtgP++RaIXLrD3OhLM+fTD6JSR6fDDw==",
+        "prev_hash": "3c5762782b556decc560fffade6bed83b8552e8fa2f49e796030655ed14ee26a",
+        "record_hash": "8325de291f12eddf10fad41518225791bab538dcedd8d75d6466f7d76fb6eaf9",
+        "signature": "Cc3AYVOf7o1hAwI2Q0xLqnNs5Z32fjkAIMBWqLt0turuGs7kv564cv0C/4MqPxd/9ysjk11HB6qCu/XELzYEBg==",
         "source_ref": "file:build-gate/scripts/test-gate.mjs@2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
         "to_locator": {
           "kind": "test",
@@ -3590,7 +3590,7 @@
           }
         },
         "to_node": "6acbf7491f35689bda72b46049456b797ce60cc482a4844390b84d4b13384b19",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -3605,10 +3605,10 @@
           }
         },
         "from_node": "29c1331561d8da9907fe2ffe18c4a17ee9c3a1798a7cec756ffa13ef45e826f6",
-        "prev_hash": "162a34aba0413f78c705a3504a2bf860c8985b5bb8f285a907c43d81a725b3dd",
-        "record_hash": "37887c74a9f5ed3ba365c4af8efe89ec7103e9ef97d201cb667bcdc34df3f85c",
-        "signature": "kM85jpdVU5zRdw19jtRPuiDrFtnZCkuqDHB3qvlju/N4DR0qLEUmcxDsNjyektrOX/qTv4SK9kYKSe+AGuNEDQ==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "82552a9ea04a924e86341b6b2c80da0c54420e98abdd09774aef72e8111a6e39",
+        "record_hash": "9803ddce7f2590a7850e086742e4ccb8556c5cd73dece943780e4d7344573885",
+        "signature": "D8PsIkNrTNtypAxmEw+O3kjAAIs15HAwMzba5OKzKyH2HTRl0YbV5HrtCKpEX0fiNdytKYPQNQ/EcjjS8OlICA==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -3618,7 +3618,7 @@
           }
         },
         "to_node": "6a3c249db591ba67e260f8e450b703f5fa5d16b7e6d6508aff02b3c5e800f5a2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -3633,10 +3633,10 @@
           }
         },
         "from_node": "2e3a1fc3d3d44017280f30eedd96f71147adb79abe570d1a6faefccd11a56a34",
-        "prev_hash": "02430396c4b8c88c34023d1c18ef1e9dc461e04afbf2bec318106e4d59f92c83",
-        "record_hash": "e8108fe4562aa7d2313c69bd3bdebb35cbac31d0832ddbd727d38b5a6bccbaef",
-        "signature": "2uaHWPNUJCWqEzUYPa8nsOR0s9VkoUbf7Vjxiq23TisgCMd8Hv/5kR5w2t5QcNSiszMeZufr4SWYUmgBaX8cAQ==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "12933ac2fd760ff17f54d233346b22e57504e981ffb4060f9fd5fcf2596e55a6",
+        "record_hash": "51fc76f3f7a314b100bacdc32e05337221ac1981dd50cc3d7c124ccfd643b026",
+        "signature": "arqCGQTjhFgHiM6o+79IvWS+2CsHzbxmCt/j1Y2TenWGuy+CxNdwv0ChdkyD4IfZSFJNvRJiHQqcdduci7v4DA==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -3646,7 +3646,7 @@
           }
         },
         "to_node": "d9cd410a53781a0346c1db672ad767de95a687d9e25654b3d21e9c4fc2a32fce",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -3661,10 +3661,10 @@
           }
         },
         "from_node": "3d88e89012c8c67781c6238ef64737a9a98b4355f9ef4ee15bf70a02e226bbfa",
-        "prev_hash": "5e589b85fbf69e36d310d4db87e3956fc12a73900e5500d597b7d99b23da91ee",
-        "record_hash": "f1937020339f6b397ce7ba19bf93238dc14d1e9755187d24c31bfb565d1de1af",
-        "signature": "tHrFd8TE5RBnLVx8eG/PX19lXw7UFTqSn2DaoAESMbB34dEJr69oujX1eIpJir6WzCnCdsGpJogG6J1hfaipAQ==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "b197584ade9d5f09dd9be156b558fb56793240399c94df2b3fa644e011d01692",
+        "record_hash": "8d1279605767a1fdf4657b61f1b6206ca79b26c0aedea5e970067dc322605fdd",
+        "signature": "M8nwOXF7pZVnufScE+2aDWAWGHCGCE0F1ORVz3KtWQD2JiGxdeKe3k+XmvLbLDk6jTiQ9wzlmdmk+OLg5FhJAA==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -3674,7 +3674,7 @@
           }
         },
         "to_node": "6acbf7491f35689bda72b46049456b797ce60cc482a4844390b84d4b13384b19",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -3690,9 +3690,9 @@
           }
         },
         "from_node": "40dc3db7522cfc3bc0776be0b3dfd16a884a9c31f32437516c2a616f02fcdfce",
-        "prev_hash": "254938d6b6ce62ac13b1e3be1320dd545cdd19567888d295db8a4469d8ec7714",
-        "record_hash": "7f4bbe15177e7817c7ad72c6df2ad9bc2d9a969a15dbb9711f7888e6f2bf4655",
-        "signature": "xLuhzxsn3wL21O0u2qkGZFg17gBK8cRYZM1HliTyoQ/KQ6C0Ic6S4G3tHAMN0TQaCZD93dTOqJDjFxRugab3Aw==",
+        "prev_hash": "c752afc5fb36e6343d8aa983f4dabe9833efe3202181e934318d2eb0f26029ad",
+        "record_hash": "0631d9807d3a886472161d8bfb4daab42099fae697c295868451521eb5c3ad2f",
+        "signature": "aSiRCzNFHPjYDScs7ZlfvU7IDooYhlfhzhEcHiYLdtxgmk6WDuuhQYRzpqptgXJ0RFv0qp+JbJOtT5NQCEOVAQ==",
         "source_ref": "file:build-gate/scripts/test-situation.mjs@e780ffb7b115b8929733aa4ff463ce2bc4b20309",
         "to_locator": {
           "kind": "test",
@@ -3703,7 +3703,7 @@
           }
         },
         "to_node": "62a881b855794b99b3283cca9731c08b6c82d18c9049e0a882de1c2159bc8aa2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -3719,9 +3719,9 @@
           }
         },
         "from_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "prev_hash": "e249b7f23f6a7ce5c8b0d4f88c3f5a46d0cd44cf2efa1721880c10ff6e6a7900",
-        "record_hash": "a07ec47ef8e350a1c3ccc7d43734909105e9732faeb0788a03dbb64a1cb1aaf9",
-        "signature": "aeo8V1FBdKrLH1ALg/NoocooCY72aK5IfxG2PYxACXB5tftsfBk+tnrdZnp2YBxJr82mZ92nMnKUvd4R1mPaDg==",
+        "prev_hash": "b8b2de32811dd7dc21a8ad581dcd182485a6719fadd482d454e1c251ad356d03",
+        "record_hash": "b7920c6bb0db188bed0be3de4ed829b0fd7be81049e85a1c0d3dd9dfa49e18e7",
+        "signature": "16OohmlGL2PxgdpVhub+o03IUrL++oFUrfaH6Rw2GbQwtgHWEdAxf6+BcXpB6uK4ndXT+7KyLuMuQ0hYC19IDw==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "test",
@@ -3732,7 +3732,7 @@
           }
         },
         "to_node": "0aa0968380e1e6cb65c79187cf77cab288fb1c0b7309e5953c1357b6aeac0d8a",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -3748,9 +3748,9 @@
           }
         },
         "from_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "prev_hash": "002276b5f7f72a769b0483af449389d715a86a935b87b67ac4ee5f5d1157ef87",
-        "record_hash": "90588808362737d8fa527c541d82c8b029be34c391cb8a41b9fee9d7226fd344",
-        "signature": "A0l4ev6qDlNSO5HDoZfivHYYvP4RtfwsoE2DcVKBD5h3WKrH/FkD2hfizlLmkZO42XMIiQGgj8o7D4vvsqxRAQ==",
+        "prev_hash": "c28e4ae85a949eea508941d6a896952dd8a94b6934c51b3a51aa7ccde6a78a5e",
+        "record_hash": "0414c964682a63bd65ef4e994f7d2ba3f40b0ee17f3781f21558470f99a0c217",
+        "signature": "BXHkPVyNNrZL96mw+0UdPZJJc06kUyNlDm92ecxk5iXOYrs3ihC1BkKPMRwB6o/nc/rIgHZvBXykhFvin56bDQ==",
         "source_ref": "file:build-gate/gate.mjs@c5332063f3646161341213ff5adce99aca5f725a",
         "to_locator": {
           "kind": "test",
@@ -3761,7 +3761,7 @@
           }
         },
         "to_node": "1d334e829cddeb112555760ce29da2b3985314f2a0ee5543ac89c7d0c7585dab",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -3777,9 +3777,9 @@
           }
         },
         "from_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "prev_hash": "4b2e6fb87febf8cdf0ffec380f03efee70a9f25f3b3652e892cffcfe0b2c6340",
-        "record_hash": "bdae03b8766b2986ae192d9446deb0390bcabe154ef557cecaac0e1d6dd5bb3e",
-        "signature": "S0mkT3eutm2LIZNAVS4DcZGoZslqsRjojvIyIC1/zxv9tKyAhz0LlfMP8GlslRalHEQQkAEofmae7bycp8RRAA==",
+        "prev_hash": "90912150365c8a0540e915dde25e2648003ccc25632f6b2fb3c3db89726c4e78",
+        "record_hash": "f25b4caa5094a8e475f88207d60c9021e3ed93b4f54ce8bef9914498a65be30a",
+        "signature": "Q6qUAwygzb+AV/2fbMtH382ifw7N00yptx+m5ptlkyWZ+1CZkgfw8zHe6tUUDUbNDQe1JPeabliYdSNYA+RuBQ==",
         "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@f5b56d0fe40682f83a8c4b1edfa7734ccc0ab470",
         "to_locator": {
           "kind": "test",
@@ -3790,7 +3790,7 @@
           }
         },
         "to_node": "5898f435a1026d19e15776d13dbdc7aaac7057d572330032e9c366d8509a57d6",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -3806,9 +3806,9 @@
           }
         },
         "from_node": "4a39847b3f117d7d2692ea049e577b1520fb9bca5f6f53a56621d7cfe3c4cced",
-        "prev_hash": "564806a5899be6ed7f961160678601304ed6130b50423e4f2456d7c44c2b6b33",
-        "record_hash": "c8f59ea9214d1e1354397939672ae95cc3759cd985c02e29a4c3c9e30b582e81",
-        "signature": "/i+Q3n0lK6r5hHeELv6ZtzhEsBMuB1sPQqJEfBkV1qPfqbcLBhFhFSq4MlICT3pWRsVqtscdvDwDmWK75uXSDQ==",
+        "prev_hash": "88b6766f1f458b346dfffcf94923acf26c874a4637a73b94ec987d172cfa3b08",
+        "record_hash": "7c7d95aec85c37bb7c23a12117b2da0c3b04f30d7e3469ea993613078084bde8",
+        "signature": "9katXLwpr13vktEiBSoVux4aAC7mvLjKckLTpeakzjCP6Jz0kHuPeQy4pz/43h/mSRj2rIy/LmOWqaql8PL3Bg==",
         "source_ref": "file:build-gate/scripts/test-proposal-lifecycle.mjs@152c789e7182b6e2e87c39d8f4e52a7bfa88dd23",
         "to_locator": {
           "kind": "test",
@@ -3819,7 +3819,7 @@
           }
         },
         "to_node": "ea4a7bb097fc23d4a0683f2f998311149b3b5d71717a929560ba4699b6ff222a",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -3835,9 +3835,9 @@
           }
         },
         "from_node": "53cda6161403fe3007a7fab3d3e70b45a3d02051a0dbad67c47b870516976482",
-        "prev_hash": "70ea08acb03dddbcf065a095f650ad2fc36491388402fc074698a934a290d56d",
-        "record_hash": "4df3ffb48149ba0ee027332bea9dc693ddc8f66f7991d59f7476fdc5db601f7f",
-        "signature": "VtYTbOXzESjHWizBTacEaGnqyWtEQkhn3pSFgdOAWm+FtbjLLs7r8+IiMC7qojEVDHgIgNX1mO7bwr7ku8fPCQ==",
+        "prev_hash": "8837193f0f9eb2e9d0a3dccc5d25701a669d1a806589868a7bc9d70197c1958f",
+        "record_hash": "745d6754b937fd4e08beed44bcd6c29f9c924565b8579017590d6062e7b10636",
+        "signature": "/YflAHUAvR8PnlTv9OiDDsqP8Ed8Ua/704EIJ0MPXUtF62vSyfjZyOkpwNZn6J0yvtOYu1D9tJx/1iffLN1zAg==",
         "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@f5b56d0fe40682f83a8c4b1edfa7734ccc0ab470",
         "to_locator": {
           "kind": "test",
@@ -3848,7 +3848,7 @@
           }
         },
         "to_node": "5898f435a1026d19e15776d13dbdc7aaac7057d572330032e9c366d8509a57d6",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -3864,9 +3864,9 @@
           }
         },
         "from_node": "54b79446491d63865139942de844b7acc6439f9d0f7cd434d713a1f8ee491527",
-        "prev_hash": "17a92490a569d46e0c095ded0f62fdbbb4d0ed92c7af62a7bcc4ab0a2699f194",
-        "record_hash": "de6922c7aa6a2f241cd4a05c5b94aec42515b8cd7830ab37c5a7834c94ff0d85",
-        "signature": "p0QWC02j0vjTQP+wM0NNllyPila6bjrBxqEw5+fICzzacAMYaMoW9U5q9za22+Cz3u8T2jxTfDXzoxcF4o7xCw==",
+        "prev_hash": "2b4ca7f44936f48bb8cad4e410732c9c85f5f5470a7a4e6f913705961fdf2fff",
+        "record_hash": "c5aae03ead82f2e9ce689e5068ee2e6ada716722021d380c8f02913f7c6f062a",
+        "signature": "+LZwYBVHAyjq7fu+W2Qbr4uEUt6Bwje9vZ7GBTC/BEKpvZVroYWL/eQUbJkN9uFfHIfdP/vdWU0PnRCQqsRWBQ==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "test",
@@ -3877,7 +3877,7 @@
           }
         },
         "to_node": "0aa0968380e1e6cb65c79187cf77cab288fb1c0b7309e5953c1357b6aeac0d8a",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -3893,9 +3893,9 @@
           }
         },
         "from_node": "54b79446491d63865139942de844b7acc6439f9d0f7cd434d713a1f8ee491527",
-        "prev_hash": "36b9fd86c888fa0a32e97294f0e73bd55c3eaba95e411c9ac26e1bab117bd83f",
-        "record_hash": "3eada5d7ca2d14c719fa8b3678161dd04187fb6456eff86829643320362a79fd",
-        "signature": "eTRzzRF2cCOucSr8WaNgg4qMrpus24yfy580DLSqewBIcnrX98tGfC8WkyEoFpd1ZmKeznrFVzBGhG0zcpR+Dg==",
+        "prev_hash": "e973496382d03ad6fe7536c52cf21a74eb74b0e4fab760c295ea7f0355954071",
+        "record_hash": "4855de7caafea8de398326baa1090bcbdea046b33b11b850b01c6f1716672b48",
+        "signature": "552jpYmnJfg/eBcFfI1dcqeHJYISj+zqsALcxecQOXJOjaJCGp0vbd5yplqozzv1RCmUrIzA+DAkAW1kqoNSBg==",
         "source_ref": "file:build-gate/scripts/test-runtime-adaptation.mjs@d2582b7364879dd2821629257cc258b11b619037",
         "to_locator": {
           "kind": "test",
@@ -3906,7 +3906,7 @@
           }
         },
         "to_node": "9aadbaaf7e2005c09aae65bc316063635eac590a5907f6d1c30fe334ba382560",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -3922,9 +3922,9 @@
           }
         },
         "from_node": "54b79446491d63865139942de844b7acc6439f9d0f7cd434d713a1f8ee491527",
-        "prev_hash": "6ac8cbe586165c38acd5e36207a60e67163bc7d53cdacb15dcec212e7522224c",
-        "record_hash": "91325bb51fa0b11462111b1a769b79635502b7d773c5fd77a659fad3ddb5c8c3",
-        "signature": "HCuYba3StSLjFT1vRhZgZku9jj9sshSzZ7OCxvtYO5h9+nkpWgozp1b+wAFji9XkQwgLEJSOwHJ9J0muAJudAQ==",
+        "prev_hash": "c566a66409f777336d91b3445013344f3efc5fb964f5f7b88da96c6d1a8acb46",
+        "record_hash": "d2e6bc3abcefc8795dcced1b0bff9a4c9bfac85c108973c51f185bc1f52babe6",
+        "signature": "z4MAjxtyeVvlJflEHxBt5PF3ZYffDIapaXQLn0vQmxhHep3WfTdzQf/vxftNFDDExmJ/0fIxdb4D1UbsMlgNCw==",
         "source_ref": "file:build-gate/scripts/test-build-orchestrator.mjs@36456dae0dac97011dbb4394d259fd473c0de703",
         "to_locator": {
           "kind": "test",
@@ -3935,7 +3935,7 @@
           }
         },
         "to_node": "e36b2301240c4bc061b4a3e81ccf7aa511e70b31f263a84af24bcf7196005ed2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -3951,9 +3951,9 @@
           }
         },
         "from_node": "59fc8e5726317bd100ea74e6427217a520351eb4a66df7cbb0a5e2118d57d90a",
-        "prev_hash": "8ff7e59e0e8dd41623691b975e4389b2c9c56d6d2f971253eaac395ea6d81e15",
-        "record_hash": "ecd57d7ca1c96a8a0fff37b93eb27e93ddb94d7ce4e9a8b550a4e6570e58d974",
-        "signature": "JzZuk6AdG4KUBY3QwL1McUdyJ/XDL2ld0e87txfo4zTGDFrw1/KvykLrMLd/t3hFGgddoJQcUYykof7MRKRPAA==",
+        "prev_hash": "21446acc0498a65a250ed6a36eff43a48927f424810c2fc0e81a13267b241e72",
+        "record_hash": "1590164c84e42234ab2c045d32d8d90803e5fbcb536bc744e92946c67e6bcc96",
+        "signature": "TT6FuXrQOGZISZmGtXs/FsiZZWqtrM61yEakSWZ5qCWfv+3sqBWMDY/MQl0OBSPa61sZaOkcBUARQpnhTLGUDQ==",
         "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@f5b56d0fe40682f83a8c4b1edfa7734ccc0ab470",
         "to_locator": {
           "kind": "test",
@@ -3964,7 +3964,7 @@
           }
         },
         "to_node": "5898f435a1026d19e15776d13dbdc7aaac7057d572330032e9c366d8509a57d6",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -3980,9 +3980,9 @@
           }
         },
         "from_node": "71c740d1a25aaadddbefdf5d41ea85ada70352ca662fd959ce748852ca3057f3",
-        "prev_hash": "988ed53a902cc8c31945345eb1b34996d2008e8a74fcdbb641e9124f2645ce06",
-        "record_hash": "abf71c22be34f678f1ef0f3472df85fd5727ba7fe72d98a6070bc56a4870947b",
-        "signature": "W9CKrQKwizD5Ow+3MmZxIR992Fj2iFYgiaF/lIAd2SleozoD+BIdWcs7YCSFiENT0Jz1cMZ5QzwigQN8W4J/Bg==",
+        "prev_hash": "35a5aa190bfd2e8a9a7b3ea25b0a0b57c97db6850c175692db26ffd18b87eeb9",
+        "record_hash": "b48b7bde406a1932775593e91dffa41b37e328c7a92a7e6f90ca371771969f44",
+        "signature": "u8cckmxY/BQoBIjEYB+Lgtwvc6r29cWI2hJ0+4bEdnYCyKwMN1wVXHj7L/iKziU9Nfe/BIKU3dQNiMOgebAeCA==",
         "source_ref": "file:build-gate/build-orchestrator.mjs@5d965e1df3a9a2ef3080f96286f7f9c00c43b9b8",
         "to_locator": {
           "kind": "test",
@@ -3993,7 +3993,7 @@
           }
         },
         "to_node": "0d5e15eaca1a0af1126317f9d9468ef56deb51b1100cce344c82bc3327a1e9dc",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4009,9 +4009,9 @@
           }
         },
         "from_node": "71c740d1a25aaadddbefdf5d41ea85ada70352ca662fd959ce748852ca3057f3",
-        "prev_hash": "04680ef4dbd65a1ffa284ec1dbe29dc91206865b093112ed59e0f3c92d230ea8",
-        "record_hash": "e999de83de3b256c330808479488e2251828f22c84fd095f121fe6c71a63635f",
-        "signature": "oV58zfFMBGp+3vExY1Pfku6PzsOfrXCHpEpc9fRsk61v5+Pxa9PLCmYhfKxS5W+Rh+dSp8hff0A+GDlU+PSRDg==",
+        "prev_hash": "5d63b21c42ce1da3e6f69beb7ab55ec2c0c7ac27c20aad83b9fdef738b838326",
+        "record_hash": "43dcce260ede179732beb978f8d627b79edae7d8fa5753330c7a88aceb9cde61",
+        "signature": "6rqMgNx50pADRX/FSu5J+7Wlb2w4sAukdnFtuyUDopLxTFZ/kDJfUSceXJh8IKRr/5/Ej6AGuD9c6kjVImznAg==",
         "source_ref": "file:build-gate/scripts/test-situation.mjs@e780ffb7b115b8929733aa4ff463ce2bc4b20309",
         "to_locator": {
           "kind": "test",
@@ -4022,7 +4022,7 @@
           }
         },
         "to_node": "62a881b855794b99b3283cca9731c08b6c82d18c9049e0a882de1c2159bc8aa2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4038,9 +4038,9 @@
           }
         },
         "from_node": "8753d9dd21ca2ad3a146d25f8df33263d1d7165b595c9f373acab6147665a6d8",
-        "prev_hash": "a5d1bd073fb93c418275a603c7cd85664c16224f85fca2a83ffe55b57f9e70fb",
-        "record_hash": "48bdfc88277639968bc1e85e814930c52bcc034a20e1b31ca4ef92e1cac0cc9d",
-        "signature": "V93U8ELjqHg6FiZ6FlZwMzXtk/D+oko9DVEIoAorUyXANQQt4v+cTiFuKcyte95cq+Rv6qyZGAoM2mMhFakbDA==",
+        "prev_hash": "051d7f3d4e23b2f66eb398114efc20c3d74b7e130e9d857b1d30098516eb7057",
+        "record_hash": "27fc30377569ac0ff195260ead31218b930a586fb0f594a8ef63d88759a5762e",
+        "signature": "1tNww1oBGhhHm3Fqkm1bknmaThflp/SCy8HPzGc00ZxoRiAZ+8w/sDSsyMGIkchj/lYAbs4WtsaiY9PymClWAQ==",
         "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@f5b56d0fe40682f83a8c4b1edfa7734ccc0ab470",
         "to_locator": {
           "kind": "test",
@@ -4051,7 +4051,7 @@
           }
         },
         "to_node": "5898f435a1026d19e15776d13dbdc7aaac7057d572330032e9c366d8509a57d6",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4067,9 +4067,9 @@
           }
         },
         "from_node": "91073183584d5d522dcb4e910e4a81ce09fba5122bc9c80d59ee25e89d840894",
-        "prev_hash": "369d9b9a9c7b25ee6a7f09d276edab0a48611ddb83a7ad1570cd732caae47ae3",
-        "record_hash": "528967a7e6444371865e600674b3c058636046505dabe95d97d6968f674f909a",
-        "signature": "HOJXNWSOQmfbMMKbHJh6DY8bFIoRrcbP0qW09RAeR77C3oiRloPacXdnsm/dvrVcVXP/H5RxZ+7POAArmE3RCg==",
+        "prev_hash": "d2689c55c400efd772bd192b40eeaffa2ed9ac1d1915e9f2c4f1e37dc3e991a4",
+        "record_hash": "7c159892952d32acc2777de37982ce0e2e763dca15c08925a9dafc3e39ca8b56",
+        "signature": "3VGbQCNNIoN8I7NmU/lEO9pQgmtHgVZgsvqhfvT0und3CaMB741BSnH+5Dsv7vF5Dv7f8TzbUnyZtvEzaYfKDA==",
         "source_ref": "file:build-gate/build-orchestrator.mjs@5d965e1df3a9a2ef3080f96286f7f9c00c43b9b8",
         "to_locator": {
           "kind": "test",
@@ -4080,7 +4080,7 @@
           }
         },
         "to_node": "0d5e15eaca1a0af1126317f9d9468ef56deb51b1100cce344c82bc3327a1e9dc",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4096,9 +4096,9 @@
           }
         },
         "from_node": "999e8257724254b403d1b241ec3112d8e0cba0cb57b1898a0cd95d5022e52cad",
-        "prev_hash": "f2e08b0aa679385a61808872776d9517d238cede4d59635ef83f6f909ad58ee4",
-        "record_hash": "5cf3ed5d585d74acc0953986cb580184b45952883fae2ba0c8a623bd40181175",
-        "signature": "inIvTskHEQAS8lTDT3NulUDOITrWmb0KjgHGj1vAwVu6bLwWqOC+FmS3uyNyAbWZjodF/zyXIQbshOYpYcukCg==",
+        "prev_hash": "c4e6a4a81cb7d271ad55564a3ef28b2e0ef6a0aad9f5d26abc469bdfb5ba5226",
+        "record_hash": "8c07c112c70a029f01ee5b67165362285c24a44677cf031b0d393329cc1fa914",
+        "signature": "Y1Xfm8tio5Nt4YkjUFUZNef8PqZ3RQQskXcwVBZOkbCOfu3Ez3/SJ5K1/i8UbLJByRdD/azstrXgTR3vqRpbDg==",
         "source_ref": "file:build-gate/scripts/test-proposal-orchestrator.mjs@ad75a34cc930a85e9e756026a7d3b0d7e2a00a76",
         "to_locator": {
           "kind": "test",
@@ -4109,7 +4109,7 @@
           }
         },
         "to_node": "632387c3f8c066dc786c6fafed74a77c3e18ac996e2b7671a28cbdac1ac28e90",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4125,9 +4125,9 @@
           }
         },
         "from_node": "999e8257724254b403d1b241ec3112d8e0cba0cb57b1898a0cd95d5022e52cad",
-        "prev_hash": "a1507892a0c50ebdc335140fc47468ffda8dcf94621053596c498980e1e405ca",
-        "record_hash": "7205e2b69a6ea6c3fcc7be6a64898ccf744332c3f815b6ade8c988abaacce87d",
-        "signature": "peRHoxhSgyltuCa12ORcL1VsEIi9Obgik9gMQjfAdu4ni030PvQ8tq/Cc9jc3cix7hHEHP5w3f30hqmqexNaDQ==",
+        "prev_hash": "87785168dcc94b0635271645de351d45634040701a95ae089e594004047e82f4",
+        "record_hash": "909eb9dc20b8af65b39e4ff3b402e940410cc4c51442607727ccbbc3c0c1be1e",
+        "signature": "TZ0alKH8jzODAHVLENFhuk2ZI+4nDscoG440ji5W7MJlf1ZcYHMsv9WTTcv8tVlp4v/SPpZeAsuvxUKh3xi5BA==",
         "source_ref": "file:build-gate/scripts/test-runtime-adaptation.mjs@d2582b7364879dd2821629257cc258b11b619037",
         "to_locator": {
           "kind": "test",
@@ -4138,7 +4138,7 @@
           }
         },
         "to_node": "9aadbaaf7e2005c09aae65bc316063635eac590a5907f6d1c30fe334ba382560",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4154,9 +4154,9 @@
           }
         },
         "from_node": "999e8257724254b403d1b241ec3112d8e0cba0cb57b1898a0cd95d5022e52cad",
-        "prev_hash": "5453e4ba3fcd7b34f3f4cc5ead3b395efc77518a38cf58c10b68270fa5ccf700",
-        "record_hash": "ca1a45e5ae213e775f31b5aea940b3ca49dd5febe961b94eba25b371e3e3859b",
-        "signature": "1KuaYjvju8O9ualZXReqwWeu9VPyLhukd4woP1cCMbOZ4ULpESeBGYD18BBZ0jELuKCE76KutKljeyuVEZNPAw==",
+        "prev_hash": "be599c99b63ce310e558f169b646c148e30e87a72f8b1f017e1a6fcf19266d9c",
+        "record_hash": "94f4dfe60ab41e334b2cb97f959d926ec3d7a89f932587829e4c83f1ef697bf0",
+        "signature": "4JukwMmX2dj4uHagaj24Pb1udpEVVo86PjzxzK+h3hzysP9NXG8R+nbjcTRjL2fj21SuXaxOXci9zz+5+5PgAA==",
         "source_ref": "file:build-gate/scripts/test-build-orchestrator.mjs@36456dae0dac97011dbb4394d259fd473c0de703",
         "to_locator": {
           "kind": "test",
@@ -4167,7 +4167,7 @@
           }
         },
         "to_node": "e36b2301240c4bc061b4a3e81ccf7aa511e70b31f263a84af24bcf7196005ed2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4182,10 +4182,10 @@
           }
         },
         "from_node": "9db202459691ef377dc971758355aeef079d74c344aa6104288da41c24c35ec6",
-        "prev_hash": "8e6d8a6f7790aee99a086f5f7660af9c39ce636b0552c48ec047a8e1223261b1",
-        "record_hash": "1f0cdde8c8b212bfbcdf3d35b2f776a562daa51e704df2cca6cc4d93824c725c",
-        "signature": "yPK+JiBndTmVhBEcvQnk2s35pvWEt2Li2QMtu5JnyrRemIOIHKbil4qEm7UsUJK+9ZKJt2xYebvxkR8P+zcyDQ==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "9e3c95746336be5a0ef082453181ceac03c18b21d2450a23a0eff67070008a56",
+        "record_hash": "e9f0644adf39585ad9b4d02cf345a9abc043189190d36511d6cdacac6977dd53",
+        "signature": "o8OfTwnf6iDuvpSB9O0YSfTomKMfPz6TK+2VccMaHLw6jNQ/yayzdeb1G+MzLhFdjqhRzYUdA2xqVAnd8T8HBw==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -4195,7 +4195,7 @@
           }
         },
         "to_node": "ea4a7bb097fc23d4a0683f2f998311149b3b5d71717a929560ba4699b6ff222a",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4211,9 +4211,9 @@
           }
         },
         "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-        "prev_hash": "442ed43f78a1a5e860065a296df16da70a6996c1c5b90b0242cae21bcea53a72",
-        "record_hash": "1ab0f25aed4602d2849c004c1e0c5cd7b75be6bc1d6eb4c2bf443ccbf2e2ee9f",
-        "signature": "spJ0lz5xTy2J4cwlEGFUibut0QUpR3XadC7aOen5x8+f4piABqf7/Dz7pns6TVr40NzaFlDRgAQ+Iuu4pDNABA==",
+        "prev_hash": "b65e683c9c6e761142eb8b4f67a3027a8a680b2b9193233a2af85ee7bfc6034e",
+        "record_hash": "564a5f2d8df12462f84a145481828ade097cc2e32463edd2e4d8dd64fa154c0a",
+        "signature": "x7HyLEhln5AmPb5Qetx0qUK+I90l7d+xkmpAv2t4Wkk7FJTEi1KLsFUXWuAHp9RMqt/a6e9OhHdO5HNaAb7BCw==",
         "source_ref": "file:merkle-dag/scripts/test-obligation.mjs@93e7786476ba3a74d8abc03c85073e89f97100a7",
         "to_locator": {
           "kind": "test",
@@ -4224,7 +4224,7 @@
           }
         },
         "to_node": "c818b1725218f1ea1da13a24f12d9133dcacea6039cd68be47768da1ed1d0e5d",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4240,9 +4240,9 @@
           }
         },
         "from_node": "a57f0454e3ba5c780d0d46d781ed6edaad461a4b6cf3d43230d791b794fb90dd",
-        "prev_hash": "5753190f2d1b2ba0fac6a6aa1b997aef2987dadef8111a00f2e1f1284350ee8c",
-        "record_hash": "605b8d9890ed9fa434d54781c4a15839e9893595a83a8af9828f9ab005446219",
-        "signature": "KzI1VsqxO+ql9mWFeaH/Hpq0PNIVFxUVJ3/3sy0mBmCO86UfTRpz/GnuzNHQByzvw/+XbOlQkdn8f2cIizOkAg==",
+        "prev_hash": "1128bbac37d692ec04db7be1a34bc2b0ccb4d6dd82d57b38c6ad71a2568f4479",
+        "record_hash": "5a6aacfc6dfd9282768938661172a727fc889baaf83cf85fa60e437b9d3be091",
+        "signature": "9KnHq67GrXMA38pSkKlq89+JjaUbWG2V7VkPhpHsXM/yUrcHsDo3ZY1ZwnX1RrPJSkoYfHObMamMdRiAS2/0Bg==",
         "source_ref": "file:build-gate/proposal-gate.mjs@5b22afae5d045a897323f97ea61aa5057df2aab0",
         "to_locator": {
           "kind": "test",
@@ -4253,7 +4253,7 @@
           }
         },
         "to_node": "e148d34d848668f4e19e947947a405d3f6483e4a938fdddc906510ac9b49385f",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4268,10 +4268,10 @@
           }
         },
         "from_node": "acfa4cd3320d7eef8b93b7ec2ad640e07dcaf541bdecffbdfb1a516aba03a9be",
-        "prev_hash": "96a50c6bfddb7a6c3a67bffca9b46d4d830076bd6e7db5dbb5a7afcfc25591c1",
-        "record_hash": "ed93d9b3daeb7c15364abe04319a6a94bae740fd2435e7f45d226a04d862b8aa",
-        "signature": "9K9vJo3nLzDuRk+SlJEeZvo6e4BgAspBh0PgdEM7hRZrLNp9zQlQ/7dypTFlh7qV/n9wKUtTJziJxVc43aACCA==",
-        "source_ref": "file:merkle-dag/package.json@6bf995a946b8950f1d43fa086b9a129a5f7d729d",
+        "prev_hash": "41320afa0482de27058fadbbb70a73436ef4e1a5ce6b6899353c7dc92f3527d2",
+        "record_hash": "d9b3225be9478730046ccc58cd5aae03e697baf2c34dbd57c197ef1b328c877d",
+        "signature": "UKC2K27JwunmCiEOjlt4UTxWYgZ3QQoryvNVFmF/fljE0lAPAOY99XRlENuXruF3r0+NOJNrfdKjWN+Lx3rcCA==",
+        "source_ref": "file:merkle-dag/package.json@75d0d33640419d0efa94d8e4fc25322ea0244dec",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -4281,7 +4281,7 @@
           }
         },
         "to_node": "c818b1725218f1ea1da13a24f12d9133dcacea6039cd68be47768da1ed1d0e5d",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4296,10 +4296,10 @@
           }
         },
         "from_node": "af825919afacfb9557495fc03b6287830a20b418f5d7bd85f16ea9a33eaa4fc6",
-        "prev_hash": "3b3385af3f8718b525482fd8cdd13e802ed4b216130b656cdf47c3fe94f6ba29",
-        "record_hash": "b6021ea38a5db7d5bab0f87d99cec98ab2b96bbd56aa488eabe73c182132ec3c",
-        "signature": "JDCbAAzDQNtZkUFIx8BvV/06Wizk9QcsLxA+ku73zr8jMPmV9tykUno3Xsa50DFjy6jOCmf5iauD7+i4oNwNCA==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "a1d7139366fed14922f836fabaffad9e9c02822eec44c687b27471f33cb79bfa",
+        "record_hash": "e1a8959598cd9db1e0f6f41d3c3ce66679ed5d442ff6f3b2a2634059bf6c5ad9",
+        "signature": "bPqvigbTnfyfIG/AeStTuopPRYXyTS0+qjbXwopAxtFLIFxhKD5+mek5p9JyPVg3NUAJOFGE5EuG10vktvOiDQ==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -4309,7 +4309,7 @@
           }
         },
         "to_node": "6fc1e796e31e726476d508324cd938385a0f08343aa09c096a2430f5717ed375",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4325,9 +4325,9 @@
           }
         },
         "from_node": "b7c5f1e5c82a12f6ca92a4c6d3c1a726990d84e9997adca2f871fb8dae2b002b",
-        "prev_hash": "e439880d93864df9b3d73fcfe540ecb9c556d1902d3727e3513c1e3427b98679",
-        "record_hash": "c59bc26e5eff30883ed1cb28bce30e2dc6064bdb53c3fdc6b0310fdd5aba06e1",
-        "signature": "Squ0kltWpgXFvJITG+zoHGSowG5Rf4ugE8UYNiJoNkKg85ucjoLgs8gEq0D+Y4GL21PZLfHxWu8BKZajADGsAA==",
+        "prev_hash": "ea4a7454b8e0ccc87da3e01135be0fc383018c9cfc982d2b55c0254abeef05f0",
+        "record_hash": "1be9e45f420313aadeb9291d91be8b31b9dd3587914742abe394bb5fcb895411",
+        "signature": "Kn6yv9t3cM+HwKcAou20flaxwb3A5LkuvYMHIiNoyyK4F2doUdRJhEt5TS7iDTe2gIIGcn0951N0xWJ1hUJwCw==",
         "source_ref": "file:build-gate/build-orchestrator.mjs@5d965e1df3a9a2ef3080f96286f7f9c00c43b9b8",
         "to_locator": {
           "kind": "test",
@@ -4338,7 +4338,7 @@
           }
         },
         "to_node": "0d5e15eaca1a0af1126317f9d9468ef56deb51b1100cce344c82bc3327a1e9dc",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4354,9 +4354,9 @@
           }
         },
         "from_node": "b7c5f1e5c82a12f6ca92a4c6d3c1a726990d84e9997adca2f871fb8dae2b002b",
-        "prev_hash": "ed7a0b682bacc95600794d75afd93187ad4468e85a91547deddb4ad56b8cc1c9",
-        "record_hash": "f728631d831cf8d16116ce28ccf3cf21249083a618258ed4cb96b180a2f98162",
-        "signature": "zpv5RW4sbST8oyOUnUdd6xLWyArkrvWol4Xoqb1RSl7Y1foyM7U9UZ3Bbh9UOhe4rFiTK4YZO91Lq7GgS7oYCA==",
+        "prev_hash": "001e4e14e105408d9365d8cf3639c4935c9bc4fc7d65121653d5d5ee680ed402",
+        "record_hash": "f359fa2aa4e8f3715d32549689538fcb178b7c751c20e6c0cd9c9a167048a7a8",
+        "signature": "PfVPpYFL5qI4akozYhxeuvcp2FWxTwjVsBjQXQf5SW4COwrC4wUu8X7L5ek+OQFx5++KI+B7XYETGGQx88e5Bg==",
         "source_ref": "file:build-gate/scripts/test-situation.mjs@e780ffb7b115b8929733aa4ff463ce2bc4b20309",
         "to_locator": {
           "kind": "test",
@@ -4367,7 +4367,7 @@
           }
         },
         "to_node": "62a881b855794b99b3283cca9731c08b6c82d18c9049e0a882de1c2159bc8aa2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4382,10 +4382,10 @@
           }
         },
         "from_node": "bafd21dd4682615ddb664b122eaf936990783d1e958832952266d198346b793d",
-        "prev_hash": "6fda9850a5c3ea6e789dc2e9ed898d5b0f6c2f94c9a83270cbc03852504e2b61",
-        "record_hash": "bbc5bb4a41180742d28808b6886e20d8ac1f641ac63b42e91b408679cd49375e",
-        "signature": "LLjxG7B97BHH43CobEfXhg9Zcc87mNZhCXL1tWTxdE6RVFaMMyIstwzK+12f8foczSUwPl/aZgYZqa3cpS4zCA==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "a576a9aa9a97f167699ad2c159c9db36bca6ed0d4df1934e85463340c760d2e9",
+        "record_hash": "76609975d4484f2240e5a7d3597ca6198672574339a5426fe68e194e94133f16",
+        "signature": "IukOPrkmTZoFcps7dZSozpGI82AWHSHKuU1Pjn6lI++vtyM/+r08eYZw/jVdsbrgC2hODpm3aJHdss532ePRBg==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -4395,7 +4395,7 @@
           }
         },
         "to_node": "11a31e09beba3eff01917554d637514365264d796db2758e7831e091bb4f3ef9",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4411,9 +4411,9 @@
           }
         },
         "from_node": "bb544dfdae5937b445e73ebae93f53d197af4553f4bba2953f8e0a72f71423d3",
-        "prev_hash": "fffe0635849a2707e8c25197b2b6642574c579db6e276e9f074429fb585a005c",
-        "record_hash": "ac56cbfd91361b0fb93f94432fd9de1fb25879b6b4014cef895400da2383e06e",
-        "signature": "g7QEf5viARtPDyItu4so6wURil53xwHT+QowGl/quFecXSfKd31ygXK8tPjAZhADG+NlRhYRCf7QxQEYrIZuCw==",
+        "prev_hash": "8dbae2287dac128b7e9d8e3a0979074923dd81c789b263fbafd80b0d1c6cd81e",
+        "record_hash": "2cbb36f112db34c2e7389f2cb97b70bd2660a076dc3d706f2dd3889408d6790b",
+        "signature": "gy8Swn0vFHh9VHrYb2licQHraq81BBjvAj5Lgqy/iPOWDlx/Eq7AXh6IJ3be+z0pl658ENosqW12caePK1sjCA==",
         "source_ref": "file:build-gate/situation.mjs@f05d04556173520b6e1ba1dffe15c89b1a4d35cb",
         "to_locator": {
           "kind": "test",
@@ -4424,7 +4424,7 @@
           }
         },
         "to_node": "059a850acfd7da66047fe6f8d8a05e4e46a1127275e259c73f665620d848a4a1",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4439,10 +4439,10 @@
           }
         },
         "from_node": "c4f46b2ff24eca54d82539a46b973e05d0b31d28fe0c049498332351a74bf8a9",
-        "prev_hash": "52acdf4f5a03d7d92838ea734131a837edb5572b44a79a741076b4cfb9b5388b",
-        "record_hash": "2b69d6804b542f72b7fd830b9e03ed58804e4084d38960e9f8e1c25288dba511",
-        "signature": "5+KIzqm+UOOBU+59blYDo2AIdSV8pLtjxLY789O0C32TxUHdKlohOjgi1tOSx1YB5/2Eaa42AgtRIgwdzFwoAQ==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "9d99dc83ed50d1930df219bf5ada1a2fb5caaed7cf3719c8086ea9775a34e7a2",
+        "record_hash": "4542807ae2a26be01731fe203cde0981869114704873f392e75551fa45db55c8",
+        "signature": "ahXYqbPolKR2JMWrRBSfj5AmGu5mRNwuueagxvSXE1KLZqgw/h29GQE1z/MUaEFGTKmcFDobyLgMDmhstwslAg==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -4452,7 +4452,7 @@
           }
         },
         "to_node": "5898f435a1026d19e15776d13dbdc7aaac7057d572330032e9c366d8509a57d6",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4468,9 +4468,9 @@
           }
         },
         "from_node": "ce521c1e9bb0f434c97cfb2e7381e5276e1120cf4741225447264827608e7600",
-        "prev_hash": "accabf9c5cb8dfc048d38986613c34a8f7d1cdb2e0275b9fedad0cb4f43bd408",
-        "record_hash": "616b1ff810d19d785a8c318330ed7b7074c212a214179ae376db48e04b5c67e2",
-        "signature": "nlpjB2RfUAx/JkrJDsNwTiuHo51iJSLz2PqcFVD6KpotDp6hu7sFCS6QMXwdOhaioeESg6c+WCgjeILfzC04Cw==",
+        "prev_hash": "4b54d1b4679839ec4a033816f16f8639ebfb45bd69dc5924032e402de9f76c2b",
+        "record_hash": "c5cf544378fb45684915a36053f106b6d26da6a2ef1153227bf5f4a8dce47b2d",
+        "signature": "Ogp2G+cVJNyl9KZhY2d6KlMII79BvUaT8QPR8IO1gu12wwHQIfzDShVci5xwYprfoY2InTfBqErRMV/1GFPpBw==",
         "source_ref": "file:build-gate/scripts/test-situation.mjs@e780ffb7b115b8929733aa4ff463ce2bc4b20309",
         "to_locator": {
           "kind": "test",
@@ -4481,7 +4481,7 @@
           }
         },
         "to_node": "62a881b855794b99b3283cca9731c08b6c82d18c9049e0a882de1c2159bc8aa2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4497,9 +4497,9 @@
           }
         },
         "from_node": "d49eb523f4e0687b87d4d7ebe4c488124089667bf208fe463b7cb7c61bf5935f",
-        "prev_hash": "6d8bc3769d8e0897db43f0b6af7b93afc7a0dd6e4ea7b66fc3039227af9eaad5",
-        "record_hash": "004c066354e4671b5b44a0627efb730330db3308ff1c07c704a08e60320ba8f7",
-        "signature": "fEmL+dLzyk9Otn1x891bPCFo/OTH74dvTfK2eJ9QyiYM7gPzTXS6djQ8VFHTk/y/u9AZAhh4tUZ+n9CwXj1tBQ==",
+        "prev_hash": "4a358a03854c9b4f008f21631118c102845060df04325edf5cc6ba45ef72b547",
+        "record_hash": "ff243337d288a304ebd331f53219a8be9184934c021b214f89d6d56336b844e8",
+        "signature": "2IDPh/izEEd5kCjvw950hzKmz4NWUoCAlcJe3XTiSoksEhnP0Galc6rx2OLX9okejkgpl4KvTeA8KpfR25JCBA==",
         "source_ref": "file:build-gate/scripts/test-proposal-orchestrator.mjs@ad75a34cc930a85e9e756026a7d3b0d7e2a00a76",
         "to_locator": {
           "kind": "test",
@@ -4510,7 +4510,7 @@
           }
         },
         "to_node": "632387c3f8c066dc786c6fafed74a77c3e18ac996e2b7671a28cbdac1ac28e90",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4526,9 +4526,9 @@
           }
         },
         "from_node": "d49eb523f4e0687b87d4d7ebe4c488124089667bf208fe463b7cb7c61bf5935f",
-        "prev_hash": "8636656214a68ba572e321127d13e7f4cf56b5f818d72c4c87ee3b2d74ad81f5",
-        "record_hash": "1d57299850e7a01e28e2981debade3b11bba81019d10784f3f2fffbe3de0d562",
-        "signature": "BIxSHOrpnEydfSj8E5N2AkKDpU+qf7gwHF3t8kN+uKhP+ApeLTYFdGRXv70jdeOGazTD+UcBsexQ5IUgS53oBw==",
+        "prev_hash": "81d93a4b7563acaa9d9d3d45829b74fddc8dc1bd571d30354060ce2b8c236671",
+        "record_hash": "a9a7d4647b50a498996dd0d525eae2e6a14197408a7faadef503eef29ec9847b",
+        "signature": "YLY6jvEhKHDa3IwMGpzi+XdgzPJCORYA8z6OAMwnsuT+sGfe/9j8ybz7+vUEs8QQGDq7m/gp51BaoruuX08cBw==",
         "source_ref": "file:build-gate/scripts/test-runtime-adaptation.mjs@d2582b7364879dd2821629257cc258b11b619037",
         "to_locator": {
           "kind": "test",
@@ -4539,7 +4539,7 @@
           }
         },
         "to_node": "9aadbaaf7e2005c09aae65bc316063635eac590a5907f6d1c30fe334ba382560",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4555,9 +4555,9 @@
           }
         },
         "from_node": "d49eb523f4e0687b87d4d7ebe4c488124089667bf208fe463b7cb7c61bf5935f",
-        "prev_hash": "10718f2b9411a58ddc69d137e4dfed1ae8135430da3082a534ff9a413f78b741",
-        "record_hash": "843cbdaa151e0d1ac25d8af74318b9fe566bf3a38851f2e0866c3eae226a9d6e",
-        "signature": "ue1NeYcl5y6QIPddtxJzuRgIM6QdjUQM/kiWLd1Zya6YhXfloEN78XoDCZgG88Hg1u35dAKw4XagSRjju3CaCw==",
+        "prev_hash": "c934a82ce78070f4051c178b8aae5f574daea75caf3ae319c5c5c0e3ebcbafe2",
+        "record_hash": "e7de7fa567184834743651d79f4ed9b7c7b4f31d6bab5230f71da0f57e193a55",
+        "signature": "w+3A8wHO3qhpMjciqNWz4hEzAo275b5iNUdKoPajyGI4Z23217Yj+6WnUi4rAkhC2iC9J3o6LDBlYPPC/ZjyCQ==",
         "source_ref": "file:build-gate/scripts/test-build-orchestrator.mjs@36456dae0dac97011dbb4394d259fd473c0de703",
         "to_locator": {
           "kind": "test",
@@ -4568,7 +4568,7 @@
           }
         },
         "to_node": "e36b2301240c4bc061b4a3e81ccf7aa511e70b31f263a84af24bcf7196005ed2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4584,9 +4584,9 @@
           }
         },
         "from_node": "d8fd24316511d56bd1ac212fc8d142424f38f24945912c2e842f83e065994e85",
-        "prev_hash": "a42c755f8c3cfc758b85e781f65f19c0b49beb59a4024a30348fb16c6613a761",
-        "record_hash": "d617a1f4f988756a05ebb00bdb27188b99a847062e4ca478b518c62a21eb940e",
-        "signature": "eWJ2VUxl2omFSVMBY6w80QZE0WeC/cMoKULZanRreMkrPOUwAYL/XOsepa583lKUXZbyNELAoz701crzphB4AA==",
+        "prev_hash": "575624eaeb4f7173d1df120b708b42f7f4e00f2af5d87c8d29cddc6ae98e111e",
+        "record_hash": "6e10ae3e0acad956e788be8f7e4c0ad14e2a6adbc0cf4fd1dc58cc0c85a88228",
+        "signature": "1oNQg31qLqZMyRldKkdwqTQlE45DJ5I9qHA30lZHa5zMZ1Z7BDSOcVzYc0KoLnXqXeMAZhlliBkQ1mtTxUvjDw==",
         "source_ref": "file:build-gate/scripts/test-proposal-gate.mjs@f5b56d0fe40682f83a8c4b1edfa7734ccc0ab470",
         "to_locator": {
           "kind": "test",
@@ -4597,7 +4597,7 @@
           }
         },
         "to_node": "5898f435a1026d19e15776d13dbdc7aaac7057d572330032e9c366d8509a57d6",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4613,9 +4613,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "ff6e7935993c33c82538ea04b99f773dfd658368590b36319686173f0a70cdcc",
-        "record_hash": "2ce64f9f0dc701409fd199e033f0ec222ef94cc4eda6b3fa5aa5cda4128ac1bd",
-        "signature": "7SUKFgTbMSYh6OQ+Zcx0bzlGiTstDKKxGOb1OtpZMeVt682aXhqax9yOWMA4/Uyr0upU/jNv+uJJUxqKPbJqAg==",
+        "prev_hash": "112fd21da377f20557c56646d432483c5636e319ebc43802f64dccb649331de0",
+        "record_hash": "7e9831fb75394beb2e7b233793cad53fc61988e5fda6e4377aed08b69aee5803",
+        "signature": "+mKjmBDF0vsToycRx+WFp82LJMDwq1ZFWlsBigRBlyOiJc89TPEWcnsoe5AjHLF/n4n9vf3OdcND2K9GmTkPBw==",
         "source_ref": "file:build-gate/proposal-orchestrator.mjs@907bbc6085e469de37fedee72927c3a644bcf5c3",
         "to_locator": {
           "kind": "test",
@@ -4626,7 +4626,7 @@
           }
         },
         "to_node": "0aa0968380e1e6cb65c79187cf77cab288fb1c0b7309e5953c1357b6aeac0d8a",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4642,9 +4642,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "8193f6e3cab310047caa4a500d420959842855a15105c4cb55ec63edad2f0afa",
-        "record_hash": "61bca87af2c6adf4d84709b5ed7711da023f0cf2e22625b6ee96bec47557e4a4",
-        "signature": "iC3ZY4Z3cmGs4wpCyTvBk0dPID/ARxmRNHVEfYqvbiN+ZNXwlpqln61vcrofkA8gDXvhjwbGLryEF5EMRUxxCg==",
+        "prev_hash": "b338dd032bf989a87bfaf439150a612818a0cee7a83c6c495aac15921417bd0a",
+        "record_hash": "0504794f41d34171dbe901fb7de1543b6a1b558b8db0c51851b3675cf4862636",
+        "signature": "lxNc8WcYNU6N482qZV+UnXjoXEvzPjfeuSYyIJM2WtZH6Bn4sMDzPysq4zrkZ4pUUFx0lFQO8eM8rjF1FNxcDA==",
         "source_ref": "file:build-gate/build-orchestrator.mjs@5d965e1df3a9a2ef3080f96286f7f9c00c43b9b8",
         "to_locator": {
           "kind": "test",
@@ -4655,7 +4655,7 @@
           }
         },
         "to_node": "0d5e15eaca1a0af1126317f9d9468ef56deb51b1100cce344c82bc3327a1e9dc",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4671,9 +4671,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "d25450121813f4e1e9fdf52a1b15a0b8e98604c2c2577dda8204f405a85667c5",
-        "record_hash": "f5b77a96cffe47b81f5f357b540afed4b5973ae7d157368bfc8d886b66685625",
-        "signature": "1kaFEMkcxeo2i3GMWLbMZNqntGvhPKoopD9ZtosLRKwCiOuD6LHkOmRQxLU7362QEf06zj1coviPutGJSq/aAQ==",
+        "prev_hash": "5cb9b61043dbe3b7dd6a4da702f2726916872f0595ca05365c4b7c3d9a4e5e3a",
+        "record_hash": "781d5de32eaff7000e7cb7381fea2f174645c8875425cb53988c76f2bc621407",
+        "signature": "hCNuR29BSH22lezFaPNI+ZoOXKwXuNyFvKmm5OCFMzG+03rQD7cO7rPHKuoe5t3hd2Z/crVq0YESh3e1idfuAA==",
         "source_ref": "file:build-gate/scripts/stress-tests.mjs@fc5afbfaa321920bd4a60cc9139aa521ec7e2e1d",
         "to_locator": {
           "kind": "test",
@@ -4684,7 +4684,7 @@
           }
         },
         "to_node": "11a31e09beba3eff01917554d637514365264d796db2758e7831e091bb4f3ef9",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4700,9 +4700,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "a0582a2c7feca95a16de20fdb988e4253054646beed9a1eea1a35f3f952935c3",
-        "record_hash": "7c2ad2bfb45cb8b17aa5e91d8e8c30131283cc0a08531e1d10a861c0cbe08116",
-        "signature": "IbkkuS2htDlz7Y7JxmExaG9hHuSKwVVXbi3AxXccUE0pxTBQ006woumE81o6kDzR5w/IbbLwdrsWOwpSq7QQDA==",
+        "prev_hash": "aa0172029d05c5d9576916733c9cee4ff20b7b78afd1931abef9747d4dcd2b6a",
+        "record_hash": "780bba7de17fd0012533082a913c2cf1d5a84eadab87ec942cf6bda2f455dbf5",
+        "signature": "waHpMKK36ZIxwKDM1hUB08xP1IPm8L1U/lqUk7076h/fYJWPrb1i5FMVPVOi5XUjhxC8L//UgIpfi99CkvBhDw==",
         "source_ref": "file:build-gate/scripts/test-breakout-coverage.mjs@5b98a858ffded818340755dd2932078b15235226",
         "to_locator": {
           "kind": "test",
@@ -4713,7 +4713,7 @@
           }
         },
         "to_node": "4bbb0b0901f240ebff560944eafac754aa5cdda9beb7f201bbbeee4e3a7bc6ef",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4729,9 +4729,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "8b6c011cfdf88b2b4f84319d4d7056b59225a7d4624dac0a9272a4c8012adc4f",
-        "record_hash": "be1c0aece61d6a293eb0094c2accfbda4a6bbcef29fd0445320a16fce4d3fbfd",
-        "signature": "nbYHNqexi/ipp6KYVLrWbbKfOh0JuuDv0rag1eWnHZFRl1AJUZ2QbSEF5SE8CtfehecmXQztx1wmdts6aZ3JDg==",
+        "prev_hash": "3ee09168d12e61930d2656393002376af416f27591ca6be073ef784c271be214",
+        "record_hash": "711371596fbc9a7385eb5912dbd0841a99a9409d292a423a2dbd1d13375036bb",
+        "signature": "COmQ4snIMzhAN3YSJrlKkQVG/72fwrwt6rCeLA2/NTrf51xK4KboISMSEY2yGyQwi0qbM9felVDc1QxCje4QCw==",
         "source_ref": "file:build-gate/scripts/test-trust.mjs@a60e08063006f2b7bb2b9cebf0e370485e5ccd55",
         "to_locator": {
           "kind": "test",
@@ -4742,7 +4742,7 @@
           }
         },
         "to_node": "6a3c249db591ba67e260f8e450b703f5fa5d16b7e6d6508aff02b3c5e800f5a2",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4758,9 +4758,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "b319bcd82c944b62cd8a7acdf3861108bf43bd5f7b11f41df8d762e9ed168e25",
-        "record_hash": "46a62070624768df327cfe18a337470bd1e260a3d7e05dc9b19b2f8c1b3c95fc",
-        "signature": "hS8qpfjX/bVSGQTZD8muQrcFUlGWiH4EXM/faGzWvx9v5RSJVaLkS+YBqjAfdiOOFqonGazYWwTz2x68M833CA==",
+        "prev_hash": "e5d631fd36bef8d548b60e2980ef426223529d967ff2e49f75de2d6e2813b86d",
+        "record_hash": "77c3024dcf2f87f6428a08185aeb0ba2534224e54baf4b3b7c139850c79f0eb2",
+        "signature": "uXDBXhZDOQdz1B5rXGkTha/QJp74DvJtLvOYvKx8oKmMMiggIOg7CfUyFZtP/nrU4QHfZTx4R50+7J0Viuj2Cg==",
         "source_ref": "file:build-gate/scripts/test-gate.mjs@2bd02ef849e8f7ae218b50f3350e7366ed8973ac",
         "to_locator": {
           "kind": "test",
@@ -4771,7 +4771,7 @@
           }
         },
         "to_node": "6acbf7491f35689bda72b46049456b797ce60cc482a4844390b84d4b13384b19",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4787,9 +4787,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "f039551b9cc1925f5a1bbf2a29bd19d3ee81cfa46563f4a1f7c5c13c0c1b50e4",
-        "record_hash": "ff4d96233c605eee6fb7e3335fc54b388e4c215cc4810a26bf6177e99163d253",
-        "signature": "xsbHeWxr2fA2CAzbQ9+mgdoCetf3gA51CrhYpBFBAc7ilCK5oZbt0YKzBQAzyhoZ+TpJkJ/pVohA7kqnPpFbAg==",
+        "prev_hash": "a205f7c486a1a9b09968d77d9505d1f9379c10bc454228d1a7a048a16c2a5a21",
+        "record_hash": "6fb3a32c186aa14418ae00cf067d9be8639a01221b6cf643bd97cae5da6b89e8",
+        "signature": "9PwqrZ+o84pR+3PKnJQdLTAYtK9ak2lE8Bh9E8C+/xCWbivbFHatejdm5dL+TfiVz5Bcdn8uSqccX2pHEulXAA==",
         "source_ref": "file:build-gate/scripts/test-council-orchestrator.mjs@95ed4375f76b16492ac14823f83dd9547bdf71f6",
         "to_locator": {
           "kind": "test",
@@ -4800,7 +4800,7 @@
           }
         },
         "to_node": "6fc1e796e31e726476d508324cd938385a0f08343aa09c096a2430f5717ed375",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4816,9 +4816,9 @@
           }
         },
         "from_node": "f51098b268f45e77f65d8faed051e6b183623db5e5b02c9cf3a4f913a39d0fb8",
-        "prev_hash": "d379e8195a7df5827aaabb65a04a33fefa2babdf648ea4beb7b413016cbc51fe",
-        "record_hash": "83be41475204bbb2a24e44e6a8fd6cceac0eed10715e3222b03530c4b2dd5b0c",
-        "signature": "OMZ0su5DqGYF8qHaWaQ9XrjjErGW2QMvL3magPw8gBWhHx7cU7E0/erRWRQuMVAS29uZE9dpy03FsXcDq5xYCA==",
+        "prev_hash": "adf87fc39da755e6b8e0e2692bfd330762efbfef04d044d1d92acef42bc534eb",
+        "record_hash": "db543c05617b65c5b609217944ac6db94f93468f525edd770e9ad9396f5afe2f",
+        "signature": "iAZ0AG6gKlsh9l2qYhkr7jGA4GgOukwbgYleEM2Wdw5BgCfyFeeww+VAeZeA6aQSNMM3NoBW7iGsAmAAuVo8AQ==",
         "source_ref": "file:build-gate/scripts/stress-test-gate.mjs@4d6d54ee2449f9e249a3d877504189a68f3947af",
         "to_locator": {
           "kind": "test",
@@ -4829,7 +4829,7 @@
           }
         },
         "to_node": "d9cd410a53781a0346c1db672ad767de95a687d9e25654b3d21e9c4fc2a32fce",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       },
       {
         "asserted_by": "clotho-test-weaver",
@@ -4844,10 +4844,10 @@
           }
         },
         "from_node": "ff7ec1b0807d67d92f798737509a7c02da940924c73c786c6349fd09b15fa7e6",
-        "prev_hash": "da17ec4f54549ae01c195d7c351805d163f27296d8787702bc05c6d07c778501",
-        "record_hash": "4250dcb5208d3da370fbd1d71929ba778b45fde094bb24c4b2ae1c2e82224024",
-        "signature": "8bOAV9MNE4+wwW53X6GfRK+vvBH+Uutjs2hCCg28gi/4V+9rXV8DBv+Wj/lxJkIWY8Yo+tJ3rOiI/GvCV56jCQ==",
-        "source_ref": "file:build-gate/package.json@2dce9bd7ff2f2cacb00ac7485bc10a27a84161ab",
+        "prev_hash": "86d5213d00d1b2b3cbe9fb28ca36e1d0d0d5ca57934f60718320e1493511a1d8",
+        "record_hash": "62f890c460c20c737ce12f41ea74a8d45b3fc30d165622302c7f415bdd5db96b",
+        "signature": "kG0nmtZJa9zKqip2F/JcUJUV+8zzDuIuqzFnL2eLQR8vLACwhMMsBc87uu1JRJGqPNGWZEQDw54OyEkFwtLvCw==",
+        "source_ref": "file:build-gate/package.json@c18757301510c3af2a3ba6f12977622c4d6139ad",
         "to_locator": {
           "kind": "test",
           "locator": {
@@ -4857,7 +4857,7 @@
           }
         },
         "to_node": "4bbb0b0901f240ebff560944eafac754aa5cdda9beb7f201bbbeee4e3a7bc6ef",
-        "woven_at": "2026-07-30T06:55:02.562Z"
+        "woven_at": "2026-08-27T18:38:08.425Z"
       }
     ]
   },
