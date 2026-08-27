@@ -5,13 +5,13 @@
 // contract closure arming, verify-failure banking, evidence digest derivation.
 
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, symlinkSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import {
   openState, foldDefs, styxGenerateFiles, bankVerifyFailures,
   contractClosure, runBouts, approvalEvidenceDigest, loadKeys, saveJson,
-  withTransientRetry
+  withTransientRetry, fightLogPath
 } from "../ratchet.mjs";
 
 const tmp = () => mkdtempSync(path.join(os.tmpdir(), "forge-test-"));
@@ -181,6 +181,90 @@ const tmp = () => mkdtempSync(path.join(os.tmpdir(), "forge-test-"));
   const dead = withTransientRetry(async () => { k++; throw new Error("ETIMEDOUT"); }, { retries: 2, backoffMs: 0 });
   await assert.rejects(() => dead("t", {}), /ETIMEDOUT/);
   assert.equal(k, 3, "initial try + 2 retries");
+}
+
+// 10. Fight-log confinement: workstream ids are data that key filesystem paths,
+//     so the grammar + physical containment must fail closed.
+{
+  const w = tmp();
+  const telosDir = path.join(w, ".telos");
+  for (const bad of ["../escape", "a/b", ".hidden", "a:b"]) {
+    assert.throws(() => fightLogPath(telosDir, bad), /portable filename grammar/, `id ${JSON.stringify(bad)} rejected`);
+  }
+  // Missing fights dir fails closed (resolveUnder refuses a missing base).
+  assert.throws(() => fightLogPath(telosDir, "ok-id"), /refusing to write/);
+  // A valid id under an existing fights dir resolves inside it.
+  mkdirSync(path.join(telosDir, "fights"), { recursive: true });
+  const p = fightLogPath(telosDir, "ok-id");
+  assert.ok(p.startsWith(path.resolve(telosDir, "fights") + path.sep), "confined under fights/");
+  // A symlinked fights dir fails closed.
+  const w2 = tmp();
+  mkdirSync(path.join(w2, ".telos"), { recursive: true });
+  mkdirSync(path.join(w2, "elsewhere"), { recursive: true });
+  symlinkSync(path.join(w2, "elsewhere"), path.join(w2, ".telos", "fights"));
+  assert.throws(() => fightLogPath(path.join(w2, ".telos"), "ok-id"), /refusing to write/);
+}
+
+// 11. Prototype-name ids cannot corrupt id-keyed state: the maps are
+//     null-prototype, so "constructor" behaves like any other id.
+{
+  const state = openState(tmp());
+  assert.deepEqual(state.boutBlockers["constructor"] || [], [], "no inherited member resolved");
+  assert.equal(state.done["toString"]?.converged, undefined, "no inherited member resolved");
+  contractClosure(state, "constructor");
+  contractClosure(state, "constructor");
+  contractClosure(state, "constructor");
+  const clause = contractClosure(state, "constructor");
+  assert.equal(state.fightCounts["constructor"], 4, "numeric count, never string concat");
+  assert.ok(clause.includes("CONTRACT CLOSED"), "closure cap fires for id 'constructor'");
+  // Round-trips through JSON persistence stay prototype-free.
+  state.saveFightCounts();
+  const reloaded = openState(state.workdir);
+  assert.equal(reloaded.fightCounts["constructor"], 4, "persisted count survives reload");
+  assert.deepEqual(reloaded.boutBlockers["hasOwnProperty"] || [], [], "reloaded maps are null-prototype");
+}
+
+// 12. Fail-closed state IO: corrupt state THROWS (never a silent reset of STYX
+//     convergence or signing keys); saveJson is atomic (no tmp residue).
+{
+  const { writeFileSync: wf, readdirSync } = await import("node:fs");
+  const { loadJsonState } = await import("../ratchet.mjs");
+  // (a) missing vs corrupt are DISTINCT: missing is normal, corrupt throws.
+  const w = tmp();
+  assert.deepEqual(loadJsonState(path.join(w, "nope.json")), { exists: false, value: null });
+  wf(path.join(w, "checkpoint.teams.json"), "{torn");
+  assert.throws(() => openState(w), /corrupt\/unreadable/, "corrupt STYX state never resets to fresh");
+  // (b) corrupt keys.json throws instead of regenerating (orphaned signatures).
+  const w2 = tmp();
+  wf(path.join(w2, "keys.json"), "NOT JSON");
+  assert.throws(() => loadKeys(w2), /corrupt\/unreadable/);
+  // (c) saveJson round-trips atomically and leaves no temp file behind.
+  const w3 = tmp();
+  saveJson(path.join(w3, "state.json"), { a: 1 });
+  assert.deepEqual(loadJsonState(path.join(w3, "state.json")).value, { a: 1 });
+  assert.deepEqual(readdirSync(w3).filter((f) => f.includes(".tmp-")), [], "no tmp residue");
+}
+
+// 13. STYX preservation: an UNREADABLE preserved artifact of a converged team
+//     throws (regenerating would re-invoke the seat); a MISSING one still
+//     falls through to generate (pre-Styx bootstrap).
+{
+  const { chmodSync } = await import("node:fs");
+  const w = tmp();
+  const state = openState(w);
+  state.done.team = { converged: true };
+  // Missing artifact -> generate fallback.
+  let generated = 0;
+  const gen = styxGenerateFiles({ state, generate: async () => { generated++; return {}; } });
+  await gen({ id: "team", files: ["missing.md"] });
+  assert.equal(generated, 1, "missing preserved artifact regenerates (bootstrap)");
+  // Unreadable artifact -> throws (only meaningful where chmod 000 blocks the owner).
+  if (process.getuid && process.getuid() !== 0) {
+    writeFileSync(path.join(w, "locked.md"), "preserved");
+    chmodSync(path.join(w, "locked.md"), 0o000);
+    await assert.rejects(() => gen({ id: "team", files: ["locked.md"] }), /refusing to regenerate/);
+    chmodSync(path.join(w, "locked.md"), 0o644);
+  }
 }
 
 console.log("test-ratchet: all assertions passed");
