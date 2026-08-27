@@ -1,0 +1,55 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:b94b8743f068fdd7088efed5ea5d8f1ca59830c879609e24fff38a8d64bb04f8",
+  "output_plan_artifact_hash": "sha256:b94b8743f068fdd7088efed5ea5d8f1ca59830c879609e24fff38a8d64bb04f8",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:03ddd70b71ef300692459484c2ae9932359ec4c6832a458105ddff988425096f",
+    "provenance_key": "anthropic:68453cb6-5e6c-414b-82e2-ac8377e99097"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:28c154d24b430f22e8246c37d5833aee7416a2cba7950d6f25d7f62b2178edc0",
+    "provenance_key": "openai:01a044fd-52b3-7260-9e80-19dc0828a3fe",
+    "bound_hash": "sha256:5b1cd9d3beef372a916ec17449f27e1d4bebb7e08f5dc0b71b815944d07bdb8d"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "The source-release installation contract is internally inconsistent: `pylae doctor` requires full Git history and `pylae version` reports HEAD, but the clean-room artifact is produced by `git archive` and therefore contains neither `.git` nor HEAD. The specified clean-room job cannot pass without weakening doctor or inventing provenance. The artifact needs immutable embedded commit/authority metadata and distinct checkout versus archive validation semantics.",
+      "objection_hash": "sha256:36003de0ab0376ee0d7259ac8a42f28656013160e4280500a6b07af7b3ed3873",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "The review-plugin blocker is only partially addressed. Pinning an owner-controlled fork removes marketplace mutability but the approach does not remove or isolate the PR-write, OIDC, and OAuth credentials that made downloaded review code dangerous. The untrusted review job must be read-only and credential-free, with mutations performed by a separate deterministic minimal-permission job.",
+      "objection_hash": "sha256:a1c3e8aeb7f8a233e6b44eebdc2cf39806f860238787007310479caa3fcf4583",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "E6 does not prove that `npm-script` oracles run or discriminate. Checking that the package appears in the CI matrix does not establish that the declared script is invoked, and the assertion that matrix suites contain failing fixtures is not machine-linked to each oracle. A constant-success or never-called declared npm script can therefore pass. The runner must execute each exact script and its declared negative case directly.",
+      "objection_hash": "sha256:23290ed374b90dba42e1353d64db95db6eb72864834e3657ffc77a5284c5f6d9",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "E2's claimed lockstep-mutation resistance lacks an external trust anchor. A `CURRENT-AUTHORITY` file and the maps or hashes it governs can all be rewritten consistently if the expected root digest is obtained from that same mutable tree. The gate must require a digest anchored outside the authenticated tree, such as the trusted exact Git commit in CI or signed release provenance, and deny when that anchor is unavailable.",
+      "objection_hash": "sha256:30bd6d71c4c9d2d7e1902555c95007a4146d3769cbdbe17c1adc6cb3b083e0a6",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

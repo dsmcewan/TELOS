@@ -79,13 +79,29 @@ per-file designs are in the approved plan; acceptance criteria here.
   AND (b) reachable from the plugin's hash-pinned trust root — the
   CURRENT-AUTHORITY active doc (sha-pinned) or a record enumerated by
   `verify-map.json` / the contracts set the authority doc governs. A source
-  outside the pinned reachability set ⇒ DENIED `source-unanchored`. A
-  full-lockstep mutation then necessarily breaks either the source record's
-  content address or a pinned hash upstream — there is no consistent rewrite
-  that survives. **Accept**: lockstep mutation of source+expected+answer ⇒
-  DENIED (address/anchor break named in the reason); mutation of only the
-  source ⇒ DENIED stale; unanchored source file ⇒ DENIED source-unanchored;
-  escape/symlink authority path ⇒ DENIED; dogfood self-gate stays GRANTED.
+  outside the pinned reachability set ⇒ DENIED `source-unanchored`.
+  THE ROOT ITSELF IS ANCHORED OUTSIDE THE TREE (an in-tree chain can be
+  rewritten consistently end to end, so the chain's head digest must come
+  from somewhere the tree-writer cannot reach): the gate takes a REQUIRED
+  external anchor input `--trust-anchor <git-commit-sha>` (or
+  `PYLAE_TRUST_ANCHOR`), supplied by the INVOKING CONTEXT and never read
+  from the authenticated tree — in CI, the workflow passes the event's
+  trusted commit SHA (`github.sha`, fixed by the triggering push/PR head
+  before any tree content is read); at release, the signed annotated tag's
+  target commit; locally, the operator passes an explicit commit (typically
+  a verified tag). The gate resolves CURRENT-AUTHORITY and every admissible
+  source AT THAT COMMIT via git object lookup (`git cat-file` on
+  `<anchor>:<path>`; blob equality against the working file) — a working-tree
+  file that differs from the anchored blob ⇒ DENIED `anchor-mismatch`; anchor
+  absent/unresolvable ⇒ DENIED `anchor-unavailable` (fail closed, never a
+  warning). Rewriting the whole in-tree chain consistently now requires
+  forging a new commit AND changing what the external context supplies —
+  outside the attacker's write surface. **Accept**: lockstep mutation of
+  source+expected+answer with a fixed anchor ⇒ DENIED anchor-mismatch;
+  mutation of only the source ⇒ DENIED stale; unanchored source file ⇒
+  DENIED source-unanchored; missing anchor ⇒ DENIED anchor-unavailable;
+  escape/symlink authority path ⇒ DENIED; dogfood self-gate (anchored at
+  HEAD) stays GRANTED.
 - **E3 auditor full-taxonomy + no-clean-on-zero, EXCEPTIONLESS** (`ai-native-memory/scripts/audit.mjs`).
   Root-as-memory-dir (marker predicate, root arg only); zero discovered sets ⇒
   exit 2 unless `--allow-empty`; validate all 8 record kinds via `RECORD_SET_LAYOUT`;
@@ -141,16 +157,20 @@ per-file designs are in the approved plan; acceptance criteria here.
   REQUIRED TO EXIT NONZERO; run-oracles executes both, and a negative case
   that exits 0 ⇒ FAIL `oracle-nondiscriminating` (this generalizes the
   repo's existing mutate-then-expect-failure pattern from the clotho
-  flagship-expectation tests). `npm-script` entries are machine-checked to be
-  covered by the CI package matrix (parsed from ci.yml — execution delegated
-  to the matrix, delegation itself verified; the matrix suites already embed
-  their own failing-fixture assertions); `evidence-dir` entries require the
-  dir non-empty with at least one content-addressed record. Wired as a step
+  flagship-expectation tests). `npm-script` entries are EXECUTED DIRECTLY by
+  run-oracles, exactly like file entries — `npm run <script> --prefix
+  <package-dir>` under the same per-entry timeout, nonzero ⇒ FAIL — and each
+  must likewise declare a negative case (a script or flag invocation required
+  to exit nonzero) checked in the same run; mere presence of the package in
+  the CI matrix proves nothing and is NOT accepted as coverage. `evidence-dir`
+  entries require the dir non-empty with at least one content-addressed
+  record. Wired as a step
   in the institutional-memory CI job. **Accept**: a synthetic NORMATIVE
   record whose oracle file exits 1 ⇒ run-oracles FAIL; a constant-success
   oracle (exit 0 on both positive and negative invocation) ⇒ FAIL
   oracle-nondiscriminating; a present-but-timeout oracle ⇒ FAIL; an
-  npm-script oracle absent from the ci.yml matrix ⇒ FAIL; backfill complete
+  npm-script oracle whose declared script exits 0 on its negative case ⇒ FAIL
+  oracle-nondiscriminating; backfill complete
   (every backfilled file oracle carries a working negative case);
   verify-contracts + run-oracles green in CI.
 
@@ -222,14 +242,35 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   extracted tree is self-sufficient. The `npm pack cli` tgz is published as a
   COMPONENT artifact, its README stating it requires the source tree
   (self-contained npm distribution = a tracked register item for a later
-  phase, not silently claimed now). Proven, not asserted: release.yml gains a
-  CLEAN-ROOM INSTALL job — extract the built source tarball into an empty temp
-  dir OUTSIDE any git checkout, run `pylae doctor` and `pylae version` there,
-  and run `pylae verify --offline-checks` (the subset not needing full git
-  history); any spawn of a file outside the extracted root ⇒ fail.
-  **Accept**: clean-room job green from tarball alone; deleting a spawned
-  helper from the tarball ⇒ clean-room job fails (packaging omission is
-  detected, not shipped).
+  phase, not silently claimed now).
+  TWO EXPLICIT INSTALL MODES (a `git archive` tarball has no `.git`, so
+  checkout semantics must not be assumed there): the release build writes
+  `RELEASE-IDENTITY.json` — `{tag, commit_sha, tree_sha, product_version,
+  source: "release.yml"}`, values fixed by the tag so the double-pack
+  reproducibility check still byte-matches — into the tarball root.
+  - CHECKOUT MODE (`.git` present): doctor runs the full battery incl.
+    full-git-history; `pylae version` reports live HEAD (provenance:
+    "checkout"). If RELEASE-IDENTITY.json is ALSO present, doctor
+    cross-checks it against HEAD (mismatch ⇒ fail identity-drift).
+  - ARCHIVE MODE (no `.git`, RELEASE-IDENTITY.json present): doctor
+    validates the identity file's schema + tree consistency (recomputes the
+    extracted tree's content hash over the tarball manifest and compares to
+    `tree_sha`) and SKIPS git-history checks, reporting them as
+    "not-applicable: archive install" — never silently passing them;
+    `pylae version` reports the EMBEDDED identity, explicitly labeled
+    (provenance: "release-archive"). No mode invents provenance.
+  - NEITHER (`.git` absent and no identity file) ⇒ doctor FAILS
+    `unprovenanced-install`.
+  Proven, not asserted: release.yml gains a CLEAN-ROOM INSTALL job — extract
+  the built source tarball into an empty temp dir OUTSIDE any git checkout,
+  run `pylae doctor` (must pass in ARCHIVE mode) and `pylae version` (must
+  report the embedded identity) there, and run `pylae verify
+  --offline-checks` (the archive-mode subset); any spawn of a file outside
+  the extracted root ⇒ fail. **Accept**: clean-room job green from tarball
+  alone in archive mode; tampered RELEASE-IDENTITY.json ⇒ doctor fails
+  tree-mismatch; stripped identity file ⇒ doctor fails unprovenanced-install;
+  deleting a spawned helper from the tarball ⇒ clean-room job fails
+  (packaging omission is detected, not shipped).
 - **Meta-ads governance**: parseCap `^[0-9]{1,6}$` + isSafeInteger + >0 +
   HARD_CEILING_CENTS frozen (fail-closed startup); budget args validated; closed
   grammars validated BEFORE env/token access; META_ADS_ENABLED kill-switch;
@@ -275,8 +316,25 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   flagship deployment is a register item). **Accept**: a PR-triggered or
   non-main workflow_run never deploys (guard test via workflow lint/fixture);
   the deployed artifact's embedded SHA equals the triggering run's head.
-- **Review-plugin pin**: point plugin_marketplaces at an owner-controlled pinned
-  fork of anthropics/claude-code (test `#<sha>` first).
+- **Review-plugin: pin AND de-privilege** (pinning alone leaves downloaded
+  review code holding repo-mutating credentials): (1) plugin_marketplaces
+  points at an owner-controlled pinned fork of anthropics/claude-code (test
+  `#<sha>` first). (2) The workflow is SPLIT into two jobs. The REVIEW job —
+  the only place plugin code executes — runs with `permissions: {contents:
+  read}` ONLY: no `pull-requests: write`, no `id-token: write`, so the
+  GITHUB_TOKEN in its env cannot mutate the repo and no OIDC token is
+  mintable. Its sole privileged input is CLAUDE_CODE_OAUTH_TOKEN, which is a
+  model-subscription credential, not a repo credential — its blast radius
+  (model spend / subscription abuse on exfiltration) is documented in the
+  workflow header as the residual accepted risk. The review job writes its
+  verdict/comment body to a workflow ARTIFACT and never posts. (3) A separate
+  POST job with `permissions: {pull-requests: write}` and NO plugin code —
+  a few lines of deterministic `gh api` — downloads the artifact,
+  size/shape-validates it, and posts the comment. Untrusted code and
+  mutation authority never share a job. **Accept**: review job's permissions
+  block is read-only in the workflow file; a grep-style CI assertion (or the
+  workflow-lint oracle) fails if the review job ever gains write perms or
+  `id-token`; post job contains no marketplace/plugin steps.
 - **Flagship resilience** (exclude-listed — no weave impact), one regression
   test PER enforcement change (frozen requirement): ErrorBoundary around the
   paint Suspense w/ honest DOM-still-works fallback — REGRESSION e2e
