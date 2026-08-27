@@ -131,7 +131,7 @@ function fixture() {
 // Case 10: declared-test-failure — a test INTRODUCED by the current candidate is obligation-only.
 {
   const { ws, telosDir } = fixture();
-  const stubRunner = () => ({ available: true, status: 1, network_isolation: "netns" });
+  const stubRunner = () => ({ available: true, launched: true, status: 1, signal: null, timedOut: false, network_isolation: "bwrap" });
   const r = await verifyEvidence(
     { kind: "declared-test-failure", concern_ref: "sha256:c", params: { node_id: "A" } },
     { baseDir: ws, telosDir, isolationRunner: stubRunner } // no authorized/baseline refs -> introduced
@@ -146,7 +146,7 @@ function fixture() {
 {
   const { ws, telosDir } = fixture();
   const testRef = require_hash(telosDir);
-  const stubRunner = () => ({ available: true, status: 1, network_isolation: "netns" });
+  const stubRunner = () => ({ available: true, launched: true, status: 1, signal: null, timedOut: false, network_isolation: "bwrap" });
   let captured = null;
   const r = await verifyEvidence(
     { kind: "declared-test-failure", concern_ref: "sha256:c", plan_hash: "sha256:p", params: { node_id: "A" } },
@@ -157,6 +157,88 @@ function fixture() {
   assert.equal(captured.event_kind, "evidence-verification", "callback received event body");
   assert.equal(captured.evidence_kind, "declared-test-failure");
   console.log("Case 11 OK: previously-authorized test runs + event callback");
+}
+
+// Case 12: sandbox LAUNCH failure is never "reproduced" — the stub models bwrap's REAL
+// signature (die_with_error exits 1 with `bwrap: execvp` on stderr; there is no 126/127).
+{
+  const { ws, telosDir } = fixture();
+  const launchFailRunner = () => ({ available: true, launched: false, status: null, signal: null, timedOut: false,
+    error: "test interpreter not executable inside the sandbox: canary exit 1: bwrap: execvp /home/u/.nvm/node: No such file or directory",
+    network_isolation: "bwrap" });
+  const r = await verifyEvidence(
+    { kind: "declared-test-failure", concern_ref: "sha256:c", params: { node_id: "A" } },
+    { baseDir: ws, telosDir, isolationRunner: launchFailRunner, authorizedTestRefs: new Set([require_hash(telosDir)]) }
+  );
+  assert.equal(r.accepted, false, "launch failure rejected, never reproduced");
+  assert.match(r.rejected, /sandbox launch failure — no test verdict/);
+  console.log("Case 12 OK: sandbox launch failure -> rejected, not reproduced");
+}
+
+// Case 13: NO exit-code heuristic — a launched test exiting 127 (canary passed, no execvp
+// signature) is a legitimate failing test, not a launch failure.
+{
+  const { ws, telosDir } = fixture();
+  const exit127Runner = () => ({ available: true, launched: true, status: 127, signal: null, timedOut: false, network_isolation: "bwrap" });
+  const r = await verifyEvidence(
+    { kind: "declared-test-failure", concern_ref: "sha256:c", params: { node_id: "A" } },
+    { baseDir: ws, telosDir, isolationRunner: exit127Runner, authorizedTestRefs: new Set([require_hash(telosDir)]) }
+  );
+  assert.equal(r.accepted, true, "exit 127 with passing canary is a test verdict");
+  assert.equal(r.reproduced, true, "exit 127 -> failure reproduced");
+  console.log("Case 13 OK: exit 127 with passing canary is a legitimate test failure");
+}
+
+// Case 14: requireNetworkIsolation gates injected runners that report weaker isolation.
+{
+  const { ws, telosDir } = fixture();
+  const refs = new Set([require_hash(telosDir)]);
+  const netnsRunner = () => ({ available: true, launched: true, status: 1, signal: null, timedOut: false, network_isolation: "netns" });
+  const rejected = await verifyEvidence(
+    { kind: "declared-test-failure", concern_ref: "sha256:c", params: { node_id: "A" } },
+    { baseDir: ws, telosDir, isolationRunner: netnsRunner, authorizedTestRefs: refs, requireNetworkIsolation: true }
+  );
+  assert.equal(rejected.accepted, false, "netns rejected under requireNetworkIsolation");
+  assert.match(rejected.rejected, /network isolation required/);
+  const bwrapRunner = () => ({ available: true, launched: true, status: 1, signal: null, timedOut: false, network_isolation: "bwrap" });
+  const accepted = await verifyEvidence(
+    { kind: "declared-test-failure", concern_ref: "sha256:c", params: { node_id: "A" } },
+    { baseDir: ws, telosDir, isolationRunner: bwrapRunner, authorizedTestRefs: refs, requireNetworkIsolation: true }
+  );
+  assert.equal(accepted.accepted, true, "bwrap accepted under requireNetworkIsolation");
+  console.log("Case 14 OK: requireNetworkIsolation reject/accept pair");
+}
+
+// Case 15: a timed-out launched test is a failing test (hung = failed), with the timeout recorded.
+{
+  const { ws, telosDir } = fixture();
+  const timeoutRunner = () => ({ available: true, launched: true, status: null, signal: "SIGTERM", timedOut: true, network_isolation: "bwrap" });
+  const r = await verifyEvidence(
+    { kind: "declared-test-failure", concern_ref: "sha256:c", params: { node_id: "A" } },
+    { baseDir: ws, telosDir, isolationRunner: timeoutRunner, authorizedTestRefs: new Set([require_hash(telosDir)]) }
+  );
+  assert.equal(r.accepted, true);
+  assert.equal(r.reproduced, true, "timeout -> reproduced");
+  assert.equal(r.sandbox.timed_out, true, "timeout recorded in sandbox facts");
+  console.log("Case 15 OK: timeout -> reproduced with timed_out recorded");
+}
+
+// Case 16 (env opt-in): the REAL bwrap runner blocks host filesystem reads and detects
+// launch failure via the canary. Skipped unless TELOS_SANDBOX_ITEST=1 and bwrap exists.
+if (process.env.TELOS_SANDBOX_ITEST === "1") {
+  const { defaultIsolationRunner } = await import("../evidence.mjs");
+  const probe = defaultIsolationRunner({ baseDir: process.cwd(), cmd: "node", args: ["-e", "process.exit(0)"], timeoutMs: 30000 });
+  if (probe.available) {
+    assert.equal(probe.launched, true, "real runner launches node");
+    assert.equal(probe.status, 0);
+    const missing = defaultIsolationRunner({ baseDir: process.cwd(), cmd: "/nonexistent/interpreter", args: [], timeoutMs: 30000 });
+    assert.equal(missing.launched, false, "real runner detects in-sandbox exec failure via canary");
+    console.log("Case 16 OK: real bwrap runner integration");
+  } else {
+    console.log(`Case 16 SKIPPED: ${probe.reason}`);
+  }
+} else {
+  console.log("Case 16 SKIPPED: set TELOS_SANDBOX_ITEST=1 to exercise the real bwrap runner");
 }
 
 // helper: the test-ref of node A (H(node.test)) so tests can mark it authorized/baseline.
