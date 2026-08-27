@@ -224,4 +224,47 @@ const tmp = () => mkdtempSync(path.join(os.tmpdir(), "forge-test-"));
   assert.deepEqual(reloaded.boutBlockers["hasOwnProperty"] || [], [], "reloaded maps are null-prototype");
 }
 
+// 12. Fail-closed state IO: corrupt state THROWS (never a silent reset of STYX
+//     convergence or signing keys); saveJson is atomic (no tmp residue).
+{
+  const { writeFileSync: wf, readdirSync } = await import("node:fs");
+  const { loadJsonState } = await import("../ratchet.mjs");
+  // (a) missing vs corrupt are DISTINCT: missing is normal, corrupt throws.
+  const w = tmp();
+  assert.deepEqual(loadJsonState(path.join(w, "nope.json")), { exists: false, value: null });
+  wf(path.join(w, "checkpoint.teams.json"), "{torn");
+  assert.throws(() => openState(w), /corrupt\/unreadable/, "corrupt STYX state never resets to fresh");
+  // (b) corrupt keys.json throws instead of regenerating (orphaned signatures).
+  const w2 = tmp();
+  wf(path.join(w2, "keys.json"), "NOT JSON");
+  assert.throws(() => loadKeys(w2), /corrupt\/unreadable/);
+  // (c) saveJson round-trips atomically and leaves no temp file behind.
+  const w3 = tmp();
+  saveJson(path.join(w3, "state.json"), { a: 1 });
+  assert.deepEqual(loadJsonState(path.join(w3, "state.json")).value, { a: 1 });
+  assert.deepEqual(readdirSync(w3).filter((f) => f.includes(".tmp-")), [], "no tmp residue");
+}
+
+// 13. STYX preservation: an UNREADABLE preserved artifact of a converged team
+//     throws (regenerating would re-invoke the seat); a MISSING one still
+//     falls through to generate (pre-Styx bootstrap).
+{
+  const { chmodSync } = await import("node:fs");
+  const w = tmp();
+  const state = openState(w);
+  state.done.team = { converged: true };
+  // Missing artifact -> generate fallback.
+  let generated = 0;
+  const gen = styxGenerateFiles({ state, generate: async () => { generated++; return {}; } });
+  await gen({ id: "team", files: ["missing.md"] });
+  assert.equal(generated, 1, "missing preserved artifact regenerates (bootstrap)");
+  // Unreadable artifact -> throws (only meaningful where chmod 000 blocks the owner).
+  if (process.getuid && process.getuid() !== 0) {
+    writeFileSync(path.join(w, "locked.md"), "preserved");
+    chmodSync(path.join(w, "locked.md"), 0o000);
+    await assert.rejects(() => gen({ id: "team", files: ["locked.md"] }), /refusing to regenerate/);
+    chmodSync(path.join(w, "locked.md"), 0o644);
+  }
+}
+
 console.log("test-ratchet: all assertions passed");
