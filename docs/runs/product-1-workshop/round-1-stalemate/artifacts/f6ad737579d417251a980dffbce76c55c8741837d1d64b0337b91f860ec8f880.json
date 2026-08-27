@@ -1,0 +1,79 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:aff7ef6bc6a4adcf71f5689d3db8dc64d58446f5e739b7f79e9bbcd23cb791c7",
+  "output_plan_artifact_hash": "sha256:aff7ef6bc6a4adcf71f5689d3db8dc64d58446f5e739b7f79e9bbcd23cb791c7",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:0ff82c9d542fa69d0f1983dbf5581bdaa46d73ee3381ac1b7b06ab3ee17323cc",
+    "provenance_key": "anthropic:412c7b03-d755-4b94-a48d-aaaac8ce49e6"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:44939d6ce67474a2780e3b614dd366857c1a2c1fca4784ebfdaa71f4945882b6",
+    "provenance_key": "openai:01a044eb-3b5d-7cf3-8d84-de57e028b57d",
+    "bound_hash": "sha256:fbfc8cd22c6a7f2041825615e6051f2599bdf098ae3e951bbd180191c1840b1f"
+  },
+  "objections": [
+    {
+      "scope": "E1-hestia",
+      "claim": "The proposed independent verify:merge agent still leaves merge truth as model-authored free text. Comparing fields from another agent does not cryptographically or deterministically bind GitHub state, so mutually consistent fabricated agent reports can still populate merged without a confirmed merge.",
+      "objection_hash": "sha256:c5f3005037f0487ceefbbb9c171b57cb8d23cd1831edeabe23f984e264e707cc",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "E6-oracles",
+      "claim": "Requiring oracle.executable plus file-existence checks does not close governance correction d. The approach never executes the declared oracle or tests existing-but-nonzero, timeout, or otherwise unrunnable executables, so the oracle remains nondiscriminating.",
+      "objection_hash": "sha256:e8baeaf12ed7c1e95e746095cedfe3b43ce75b5ff10cc54a5f6033ab59ff21ef",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "governance-boundary",
+      "claim": "The asserted Auth0 Eye decision is absent from the recorded S0 rulings and introduces a Phase-1b provider choice without a stable governing identifier. The workshop candidate cannot create or attribute that human decision.",
+      "objection_hash": "sha256:fedc7f5d21af1f60f1ac12b2e265aa807d7e077f2ef1cc10f1101756558001d0",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "node-version-mandate",
+      "claim": "The approach checks Node >=22.12 only in doctor and package metadata but specifies no repository-wide reconciliation or rejecting oracle for current documentation claims permitting older Node releases, leaving an explicit frozen mandate unresolved.",
+      "objection_hash": "sha256:4359e877c77693b990665826399984b13c780817cd084cb1ed7ac47d87acdd20",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "release-contract",
+      "claim": "The release design names build steps but provides no closed machine publish allowlist, byte-reproducibility comparison, trusted tag-signature verification, exact post-upload asset-set check, or verification that each published payload has a valid attestation. A green workflow could therefore still publish an extra, nondeterministic, or unsigned installable artifact.",
+      "objection_hash": "sha256:6563de409629b16b52c2a3ee2a1ec087bd1d97a03f62a99ac67d2cb01bd7ac44",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "pages-provenance",
+      "claim": "workflow_run success plus download-artifact is underbound: it does not restrict the triggering run to a main push, bind the download to that run ID and head SHA, or state that the deployed artifact is narcissus/flagship rather than legacy demo. Successful PR CI or a stale artifact could satisfy the described mechanism.",
+      "objection_hash": "sha256:e77a6f354a66cf5f11874faa15f26ab7bff3cdd03590219340f5bcc8dd7b8bfe",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "flagship-regressions",
+      "claim": "The flagship section proposes CSS and ErrorBoundary changes but no 375x667 overflow assertion or injected lazy-WebGL failure test. The axe gate does not exercise either blocker, violating the frozen requirement for a regression test per enforcement change.",
+      "objection_hash": "sha256:b7c0f04aa93901cb649492602026fc0e7c3c3805feadfb13a451ae6ff8523f9b",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

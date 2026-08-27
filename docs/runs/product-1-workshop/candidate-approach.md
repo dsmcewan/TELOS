@@ -23,29 +23,44 @@ OF SCOPE by signed ADR (PD-001), with the checklist's carve-out made testable
 production operator console (labeled demonstration/evidence-viewer this round).
 Phase 1b (durable crash-consistent state, authenticated-principal authority
 binding, key rotation, sandbox platform doc) is register-tracked with target
-rounds, not dropped. **Forward identity decision (Eye, 2026-08-27)**: when
-authentication enters scope (Phase 1b operator-console / service modes — NOT the
-v1 local CLI), the identity provider is **Auth0 (OIDC)**. Recorded now in the
-product-boundary ADR and the readiness register's Phase-1b identity item so the
-decision is durable; no v1 code depends on it (the CLI stays a local
-single-user tool with no network listener, per the no-listener oracle).
+rounds, not dropped. **Forward identity decision**: when authentication enters
+scope (Phase 1b operator-console / service modes — NOT the v1 local CLI), the
+identity provider is **Auth0 over OIDC**, per the RECORDED Eye ruling
+`product-1-ruling-identity-provider` (2026-08-27) in the pre-review's
+`eye_rulings_at_s0_gate.addenda` — the stable governing identifier this
+approach cites. Recorded in PD-001/PD-005 and the readiness register's Phase-1b
+identity item; no v1 code depends on it (the CLI stays a local single-user tool
+with no network listener, per the no-listener oracle). Seat-transport ruling
+`product-1-ruling-oauth-seat-transport` likewise governs this quest's own model
+calls (OAuth subscription CLIs).
 
 ## 2. Enforcement-changing specifications (require signed required-seat review)
 
 Each carries a fail-closed regression test that reproduces the defect. Full
 per-file designs are in the approved plan; acceptance criteria here.
 
-- **E1 Hestia merge attestation** (`workflows/hestia.js`). Bind `pr_url` →
-  `{owner,repo,number}` (regex, unparseable ⇒ excluded+reported); capture
-  `head_sha` (40-hex) at push; merge via `gh api -X PUT .../merge -f sha={head}`
-  (expected-head guard; 409 ⇒ `head-moved`, never retry-fresh); an independent
-  read-only `verify:merge` agent re-derives `gh api pulls/{n}` and the gate
-  compares field-by-field (ordered fail-closed checks: merge-verify-missing,
-  ship-blocked, merge-not-confirmed, merged-despite-blocked, foreign-repo,
-  head-sha-mismatch, merge-sha-mismatch). **Accept**: 8 adversarial fixtures pass
-  (claims-merged/API-open; sha mismatch; foreign repo; lookalike URLs; garbled
-  verify; missing head_sha; head-drift; merged-despite-blocked); `merged` =
-  confirmed-only; workflows CI job green.
+- **E1 Hestia merge attestation** (`workflows/hestia.js` + a NEW deterministic
+  attestor). Two layers, with the deterministic layer authoritative:
+  (i) IN-WORKFLOW (advisory hardening): bind `pr_url` → `{owner,repo,number}`
+  (regex, unparseable ⇒ excluded+reported); capture `head_sha` (40-hex) at push;
+  merge via `gh api -X PUT .../merge -f sha={head}` (server-enforced
+  expected-head guard; 409 ⇒ `head-moved`, never retry-fresh); an independent
+  read-only `verify:merge` agent + field-by-field gate (ordered fail-closed
+  checks: merge-verify-missing, ship-blocked, merge-not-confirmed,
+  merged-despite-blocked, foreign-repo, head-sha-mismatch, merge-sha-mismatch).
+  (ii) DETERMINISTIC ATTESTOR (the merge truth — no model in the loop): new
+  `workflows/tools/attest-merges.mjs`, plain zero-dep node, takes the workflow's
+  structured output, re-queries `gh api repos/{o}/{r}/pulls/{n}` DIRECTLY for
+  every shipped PR, and emits the authoritative attestation
+  `{pr, merged, merge_commit_sha, head_sha, verified_by: "gh-api-direct"}`;
+  any divergence from the workflow's `merge_gate` (including mutually consistent
+  fabricated agent reports) ⇒ exit 2 with the diff. The workflow's return
+  documents that `merged[]` is advisory and the attestor is authoritative.
+  **Accept**: 8 adversarial in-workflow fixtures pass; attestor test suite:
+  colluding-agents fixture (ship+verify both fabricate the same merged/sha —
+  in-workflow gate passes, ATTESTOR catches it against a stub gh returning open),
+  API-truth mismatch ⇒ exit 2, clean run ⇒ attestation emitted; `merged` =
+  confirmed-only; workflows CI job runs both suites green.
 - **E2 ai-native-memory gate freshness + confinement** (`ai-native-memory/scripts/gate.mjs`).
   Extract `scripts/lib/freshness.mjs` (byte-stable audit findings); gate
   re-derives every query `expected` from `derived_from` at gate time (REQUIRED;
@@ -89,15 +104,25 @@ per-file designs are in the approved plan; acceptance criteria here.
   capability-packet / comprehension-query / gate-required_docs citations of the
   three docs terminate in the new successors or a typed-provenance ref; verify-
   contracts green with the new citation-status checks.
-- **E6 §5c dedupe + §3c root-invariant sweep + zero-dep oracle + oracle.executable**
-  (`docs/institutional-memory/verify-contracts.mjs`). Uniqueness on enrollments
-  roots/authorizations and enrollment_run ids (bijective cardinality replacing
-  `some()`); explicit root INVARIANTS.json sweep; zero-dep invariant reworded
-  with machine `exceptions[]` (flagship) + executable oracle over all tracked
-  package.jsons; structured `oracle.executable` required on every NORMATIVE
-  record + existence checks + one-PR backfill (run report-only first to
-  enumerate). **Accept**: synthetic dupe/deps self-checks fire; backfill complete;
-  count grows, all green.
+- **E6 §5c dedupe + §3c root-invariant sweep + zero-dep oracle + oracle.executable
+  WITH EXECUTION** (`docs/institutional-memory/verify-contracts.mjs` + a NEW
+  oracle runner). Uniqueness on enrollments roots/authorizations and
+  enrollment_run ids (bijective cardinality replacing `some()`); explicit root
+  INVARIANTS.json sweep; zero-dep invariant reworded with machine `exceptions[]`
+  (flagship) + executable oracle over all tracked package.jsons; structured
+  `oracle.executable` required on every NORMATIVE record + one-PR backfill.
+  Oracles must DISCRIMINATE, not merely exist: new
+  `docs/institutional-memory/run-oracles.mjs` executes every declared
+  `oracle.executable` — `file` entries run under `node` with a per-entry
+  timeout, nonzero/timeout/unrunnable ⇒ FAIL (distinct codes: oracle-missing /
+  oracle-unrunnable / oracle-failed / oracle-timeout); `npm-script` entries are
+  machine-checked to be covered by the CI package matrix (parsed from ci.yml —
+  execution delegated to the matrix, delegation itself verified); `evidence-dir`
+  entries require the dir non-empty with at least one content-addressed record.
+  Wired as a step in the institutional-memory CI job. **Accept**: a synthetic
+  NORMATIVE record whose oracle file exits 1 ⇒ run-oracles FAIL; a
+  present-but-timeout oracle ⇒ FAIL; an npm-script oracle absent from the ci.yml
+  matrix ⇒ FAIL; backfill complete; verify-contracts + run-oracles green in CI.
 
 ## 3. Governance ceremony (ONE combined live council — Eye ruling: Option A)
 
@@ -137,6 +162,14 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   all package versions → 0.3.0 (clotho 0.0.0 too) + full metadata; plugin.json
   version alignment; narcissus-flagship name NOT renamed (verifier pin). NO root
   package.json (test-inventory forbids it — rejected-alternative recorded).
+- **Node-version reconciliation oracle** (frozen mandate: every doc claim must
+  match the required >=22.12.0): a new check in the product verify-contracts
+  section scans TRACKED docs and manifests (excluding frozen historical evidence
+  under docs/runs/) for Node-version claims (patterns: "Node >= 18", "Node 18+",
+  "node\": \">=18", "Node ≥18", "Node 20") and FAILS on any claim below
+  22.12; the enumerated current offenders (including the employment-brief doc
+  the checklist names) are corrected in the same slice. **Accept**: a planted
+  "Node 18+" doc line fails the oracle; the sweep is clean at slice end.
 - **`cli/` package** (`pylae` bin, private): init (reads env-surface.json as
   data) / doctor (node>=22.12, git full-history, bwrap, env presence, Ed25519) /
   version (product-version.json + head) / verify (spawns verify-contracts +
@@ -155,23 +188,56 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   + clean worktree + full source_ref sweep; distinct fatal codes); always-emitted
   freshness/heads_equal; CI job wording stops claiming "records == reality";
   release runs exact-head. run.mjs is NOT woven (safe).
-- **Signed release pipeline** `release.yml`: gate (annotated-tag check +
-  required-CI check-run at tag SHA + local verify battery) → build (pack cli +
-  source tarball + SHA256SUMS + syft SBOM + attest-build-provenance + a release
-  attestation asset {tag, release_head, snapshot_sha256, input_repo_head,
-  freshness}) → publish (gh release create --verify-tag with assets); RELEASING.md
-  ceremony (local signed annotated tag; immutability Setting; correction process
-  — first application: v0.2.0 4,558→4,559).
-- **Pages provenance**: CI uploads an exact-SHA demo artifact; pages.yml →
-  workflow_run(CI success) + download-artifact.
+- **Signed release pipeline** `release.yml`, fail-closed end to end:
+  (1) GATE: tag object must be ANNOTATED and its SIGNATURE VERIFIED in CI —
+  the release-signing PUBLIC key is committed at
+  `docs/institutional-memory/product/KEYS/release-signing.pub` and the gate job
+  runs `git verify-tag` against exactly that key (unknown/unsigned/unverifiable
+  ⇒ abort); required-CI check-run asserted at the tag SHA; local verify battery
+  incl. `--verify-committed --exact-head`.
+  (2) BUILD: `npm pack` the cli TWICE and byte-compare the tarball digests
+  (reproducibility check — a mismatch aborts and any irreducible
+  nondeterminism must be recorded in RELEASING.md before release); source
+  tarball via `git archive` (deterministic by construction); SHA256SUMS; syft
+  SBOM; `actions/attest-build-provenance` per artifact.
+  (3) PUBLISH against a CLOSED ALLOWLIST: the exact expected asset filename set
+  is a literal in the workflow; after upload, `gh release view --json assets`
+  must equal the allowlist EXACTLY (missing or EXTRA assets ⇒ fail the job and
+  flag the release); then `gh attestation verify` runs against every published
+  artifact (an unattested payload ⇒ fail).
+  RELEASING.md ceremony (local signed annotated tag with the committed public
+  key's private counterpart; immutability Setting prerequisite; correction
+  process — first application: v0.2.0 4,558→4,559). **Accept**: lightweight tag
+  ⇒ gate aborts; tampered tag signature ⇒ aborts; planted extra asset ⇒
+  publish check fails; every published artifact passes `gh attestation verify`.
+- **Pages provenance**, tightly bound: ci.yml uploads artifact
+  `demo-${{ github.sha }}` only on main pushes after required-ci; pages.yml
+  converts to `workflow_run` and the deploy job REQUIRES ALL OF:
+  `workflow_run.conclusion == 'success'`, `workflow_run.event == 'push'`,
+  `workflow_run.head_branch == 'main'`; downloads by that exact
+  `workflow_run.id` and asserts the artifact name embeds
+  `workflow_run.head_sha` before deploying. The deployed payload REMAINS
+  `demo/` (explicit: the flagship is NOT deployed this round per PD-003;
+  flagship deployment is a register item). **Accept**: a PR-triggered or
+  non-main workflow_run never deploys (guard test via workflow lint/fixture);
+  the deployed artifact's embedded SHA equals the triggering run's head.
 - **Review-plugin pin**: point plugin_marketplaces at an owner-controlled pinned
   fork of anthropics/claude-code (test `#<sha>` first).
-- **Flagship resilience** (exclude-listed — no weave impact): ErrorBoundary
-  around the paint Suspense w/ honest DOM-still-works fallback; responsive CSS
-  (flex-wrap + max-480px, stage scroll container); tabs done right (aria-selected/
-  controls/tabpanel/roving tabindex + arrow keys); @axe-core/playwright a11y gate;
-  demo malformed-base64 ⇒ fail-closed BLOCKED; OFL font licenses + THIRD-PARTY-
-  NOTICES. CODEOWNERS register-deferred (single maintainer).
+- **Flagship resilience** (exclude-listed — no weave impact), one regression
+  test PER enforcement change (frozen requirement): ErrorBoundary around the
+  paint Suspense w/ honest DOM-still-works fallback — REGRESSION e2e
+  `resilience.spec.ts`: `page.route` ABORTS the lazy Loom/LiveGraph chunk
+  request, asserts the `paint-fallback` notice is visible AND the DOM story
+  remains operable (`cmd-NEXT_STATION` advances); responsive CSS (flex-wrap +
+  max-480px, stage scroll container) — REGRESSION e2e at 375×667 viewport:
+  `document.documentElement.scrollWidth <= clientWidth` (no horizontal
+  overflow), every topbar control visible+clickable, station text reachable by
+  scrolling the stage region; tabs done right (aria-selected/controls/tabpanel/
+  roving tabindex + arrow keys) — e2e arrow-key navigation; @axe-core/playwright
+  a11y gate (wcag2a+21aa, both views/themes, zero violations); demo
+  malformed-base64 ⇒ fail-closed BLOCKED + unit test (`sig.value: "!!!"` ⇒
+  `malformed-signature`); OFL font licenses + THIRD-PARTY-NOTICES. CODEOWNERS
+  register-deferred (single maintainer).
 
 ## 6. Slice/PR decomposition (one re-weave at train end)
 

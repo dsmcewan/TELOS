@@ -67,6 +67,20 @@
     "am42_regularization": "Option A — a full live TELOS re-authorization council whose build_id names the enrollment-flip, combined with the AM-43 cli+meta-ads-mcp exclusion ruling in ONE run.",
     "strictness": "Both strict: gate production-profile DEFAULT FLIP (unsigned blocks unless allow_unsigned:true, release-noted); auditor EXCEPTIONLESS (supersede the atropos/lachesis cycle-1 legacy decision records with new content-addressed records, no allowlist).",
     "draft_docs": "RECONCILE AND SUPERSEDE — not a frontmatter change. Author (a) a NEW content-addressed NORMATIVE-CURRENT successor to 'Multi-Model Agentic Build Gate' reconciled against current build-gate implementation, current paths, signed-by-default, provider provenance, the Iliad lifecycle, and the PYLAE Gate v1 boundary (preserve the draft as historical provenance); (b) a scoped active/current successor to 'Claude-Led Multi-Model Prototype Workflow' (prototype planning / capability acquisition / dynamic council / market-readiness; code-enforced vs advisory separated; grants no implementation/production authority); (c) mark 'Claude-Grok-Agy Hierarchical Agentic Workflow' historical/superseded (V4 vault-mapping, not executed by Hestia), preserve unchanged, and REDIRECT every normative citation off it. NEW normative invariant: every current normative citation must terminate in a reviewed content-addressed NORMATIVE-CURRENT record; historical docs are citable only as explicitly-typed non-governing provenance. Auditor/verifier must FAIL when a current normative record cites a draft/historical artifact as governing authority. Route the whole authority-chain repair through the Iliad lifecycle.",
-    "note": "These resolve open_questions_for_the_eye above and materially expand the quest scope with a PYLAE Gate product naming/registration workstream and an authority-chain-repair workstream (3 successor docs + citation redirect + new invariant + strengthened auditor). The matured candidate-approach.md (S1) must decompose them as slices."
+    "note": "These resolve open_questions_for_the_eye above and materially expand the quest scope with a PYLAE Gate product naming/registration workstream and an authority-chain-repair workstream (3 successor docs + citation redirect + new invariant + strengthened auditor). The matured candidate-approach.md (S1) must decompose them as slices.",
+    "addenda": [
+      {
+        "id": "product-1-ruling-identity-provider",
+        "ruled": "2026-08-27",
+        "ruling": "The Phase-1b product identity provider is Auth0 over OIDC (OAuth2). Applies to the future operator-console/service modes only; the v1 PYLAE Gate local CLI has no authentication surface (no-network-listener oracle). Recorded in PD-001/PD-005 and the readiness register's Phase-1b identity item.",
+        "provenance": "The Eye, in-session directives ('should be auth0', clarified Auth0/OIDC), after the S0 rulings artifact was first committed — recorded here as a dated addendum so downstream artifacts cite a stable governing identifier."
+      },
+      {
+        "id": "product-1-ruling-oauth-seat-transport",
+        "ruled": "2026-08-27",
+        "ruling": "ALL model seat calls in this quest run over OAuth subscription CLIs (cli-seats.mjs transport; codex seat pinned to the recorded reviewer model), never metered API keys. Provenance = CLI session/thread ids, recorded as honestly weaker than provider API receipts.",
+        "provenance": "The Eye, in-session directive ('all model calls should be OAuth')."
+      }
+    ]
   }
 }
