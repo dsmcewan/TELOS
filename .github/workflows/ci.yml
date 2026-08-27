@@ -92,6 +92,29 @@ jobs:
       - name: Reject paths that cannot be checked out on Windows
         run: node .github/scripts/check-portable-paths.mjs
 
+  # workflows/ is deliberately package-less (a package.json there would enroll
+  # it in the tracked-package completeness enumeration), so its tests run as a
+  # dedicated step rather than through the package matrix.
+  workflow-scripts:
+    runs-on: ubuntu-latest
+    name: workflow scripts (hestia ship gate)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Test the workflow scripts
+        # hestia.js itself is a workflow-DSL function BODY (top-level return),
+        # so it cannot pass a module-context `node --check`; the test wraps it
+        # in an AsyncFunction, which both parses and executes it.
+        run: |
+          node --check workflows/tests/test-hestia.mjs
+          node workflows/tests/test-hestia.mjs
+
   # The institutional-memory layer's own oracle: every NORMATIVE machine record
   # (contracts, invariants, authority chains, env surface) must equal what the
   # code and workflow artifacts actually are — re-derived from disk on every run.
@@ -177,6 +200,7 @@ jobs:
       - test
       - fail-closed-proof
       - repository-portability
+      - workflow-scripts
       - institutional-memory
       - narcissus-flagship
     runs-on: ubuntu-latest
@@ -187,11 +211,13 @@ jobs:
           TEST_RESULT: ${{ needs.test.result }}
           PROOF_RESULT: ${{ needs.fail-closed-proof.result }}
           PORTABILITY_RESULT: ${{ needs.repository-portability.result }}
+          WORKFLOWS_RESULT: ${{ needs.workflow-scripts.result }}
           MEMORY_RESULT: ${{ needs.institutional-memory.result }}
           NARCISSUS_RESULT: ${{ needs.narcissus-flagship.result }}
         run: |
           test "$TEST_RESULT" = "success"
           test "$PROOF_RESULT" = "success"
           test "$PORTABILITY_RESULT" = "success"
+          test "$WORKFLOWS_RESULT" = "success"
           test "$MEMORY_RESULT" = "success"
           test "$NARCISSUS_RESULT" = "success"
