@@ -158,14 +158,16 @@ per-file designs are in the approved plan; acceptance criteria here.
   AUTHORITY-TRANSITION RECORD — `{old_chain_root: <digest at the trusted
   prior root>, new_chain_root: <digest of the proposed chain>,
   new_verifier_closure_digest, new_trusted_workflow_digest,
-  new_controller_closure_digest,
+  new_controller_closure_digest, new_trusted_verdict_closure_digest,
   covered_files: [<canonical sorted list of every authority-chain,
-  verifier-closure, workflow, and controller-closure file the transition
-  touches, each with its proposed blob digest>], transition_id,
+  verifier-closure, workflow, controller-closure, and
+  verdict-producer-closure file the transition touches, each with its
+  proposed blob digest>], transition_id,
   eye_authorization, council_review[]}` — where `eye_authorization` is an Ed25519 SIGNATURE
   BY THE EYE over the CANONICALIZED TUPLE (old_chain_root ‖
   new_chain_root ‖ new_verifier_closure_digest ‖
   new_trusted_workflow_digest ‖ new_controller_closure_digest ‖
+  new_trusted_verdict_closure_digest ‖
   sha256(canonicalize(covered_files)) ‖ transition_id) — the signature binds EVERY protected surface the
   transition proposes, not just the chain roots, so a valid record CANNOT
   be reused with substituted verifier or workflow bytes (council-ratified
@@ -175,7 +177,8 @@ per-file designs are in the approved plan; acceptance criteria here.
   RECOMPUTE from ground truth and reject mismatch: the gate (from the
   protected base) and the merge controller (from the actual PR head)
   each independently recompute the proposed chain root, verifier-closure
-  digest, workflow digest, and per-file blob digests and REFUSE
+  digest, workflow digest, controller-closure digest, verdict-producer
+  closure digest, and per-file blob digests and REFUSE
   (`transition-payload-mismatch`) if any recomputed value differs from
   the signed record. Verified against the
   Eye's public key held in a PROTECTED repo variable
@@ -211,8 +214,11 @@ per-file designs are in the approved plan; acceptance criteria here.
   VALID Eye-signed transition record paired with altered verifier-closure
   bytes ⇒ gate AND controller both refuse transition-payload-mismatch;
   the same record paired with altered workflow bytes ⇒ refused the same
-  way; a record whose covered_files omits a file the PR actually changes
-  in a protected surface ⇒ refused; a chain merged by override without
+  way; the same record paired with altered controller-closure or
+  verdict-producer-closure bytes (e.g. a swapped run.mjs) ⇒ refused the
+  same way; a record whose covered_files omits a file the PR actually
+  changes in ANY protected surface (verdict producers included) ⇒
+  refused; a chain merged by override without
   the variable update ⇒ every later run DENIES chain-root-untrusted;
   mutation of only the source ⇒ DENIED stale; unanchored source file ⇒
   DENIED source-unanchored; missing anchor ⇒ DENIED anchor-unavailable;
@@ -695,7 +701,11 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   weave rule, machine-enforced BEFORE merge, not discovered on main); if
   none changed, it runs `--historical` and is named "snapshot intact
   (historical — does not assert this HEAD)". Main-push/release jobs always
-  run the authoritative default. run.mjs is NOT woven (safe).
+  run the authoritative default. run.mjs is NOT woven (editing it never
+  forces a re-weave) but it is NOT unpinned: as a merge/release verdict
+  producer its closure is protected under TRUSTED_VERDICT_CLOSURE_DIGEST
+  and base-sourced in PR CI per E2 — weave membership and
+  trust protection are independent properties.
   **Accept (CI split)**: a fixture PR changing a package manifest WITHOUT
   a re-weave ⇒ the required PR job selects authoritative mode and goes
   red; the same PR with its re-weave ⇒ green; a docs-only PR ⇒ historical

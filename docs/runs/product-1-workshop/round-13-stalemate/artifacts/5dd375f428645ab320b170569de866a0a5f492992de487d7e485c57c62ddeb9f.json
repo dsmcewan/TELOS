@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:01346c6baa7a87e4822072532cfa9c556934f90d86b04e714795a683e9f8a95f",
+  "output_plan_artifact_hash": "sha256:01346c6baa7a87e4822072532cfa9c556934f90d86b04e714795a683e9f8a95f",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:75c9e1fcbc9fa0758f8686e75994b5bf72e6d8c64745eecd8c146eca897c76d2",
+    "provenance_key": "anthropic:a885df02-a8c1-4e07-b845-84e502d0b29e"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:be98f62dcd60593f4542700dedc799d8e92ef14ee60612216a64286c068fef8e",
+    "provenance_key": "openai:01a0455c-7e0a-7f11-bf34-e94fd8da656a",
+    "bound_hash": "sha256:01346c6baa7a87e4822072532cfa9c556934f90d86b04e714795a683e9f8a95f"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E2-verdict-producer-transition-integrity",
+      "claim": "`TRUSTED_VERDICT_CLOSURE_DIGEST` is not cryptographically integrated into the authority-transition mechanism that supposedly protects it. The transition-record schema, Eye-signed tuple, covered-files taxonomy, and ground-truth recomputation list include the authority chain, verifier, workflow, and controller, but omit `new_trusted_verdict_closure_digest` and the verdict-producer closure containing `clotho/run.mjs`, `render-readiness.mjs`, `run-oracles.mjs`, and related tooling. Section 8 then explicitly says the self-weave verifier is unpinned, contradicting E2's claimed protection. Consequently the exact bytes and aggregate digest of a verdict-producer transition are not unambiguously bound to the Eye's authorization, leaving blocker 3's constant-success-verifier path unresolved. Add the verdict-closure digest and complete closure files to the signed transition payload, require both enforcers to recompute them, add altered-verdict-closure and omitted-file reuse fixtures, and remove the contradictory unpinned non-claim. Candidate sha256:941c56fe1ef2952fbaf93d03236b98e6f529d047a5ba43b20c9d7e8293f6e877.",
+      "objection_hash": "sha256:8c0e0e98a40e3a1ef2d427a85da1d601d6c9a1c09fc010cbab17f7567c543bbe",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
