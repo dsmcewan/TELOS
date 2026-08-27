@@ -53,7 +53,17 @@ per-file designs are in the approved plan; acceptance criteria here.
   credential: it schema-validates the patch data, applies it in a clean
   sandbox checkout, pushes the branch, opens the PR, and returns
   `{pr_url, head_sha}`; its API surface contains NO merge operation and
-  the credential never enters any agent's environment. Agents can
+  the credential never enters any agent's environment. AGENT-AUTHORED
+  EXECUTION-SURFACE CHANGES ARE REJECTED BEFORE PUBLICATION (pushing a
+  branch whose patch adds or edits a push-triggered workflow would hand
+  the agent's code a GitHub Actions token — and reachable secrets —
+  the moment the branch lands, BEFORE any controller evaluation;
+  post-hoc detection cannot restore fail-closed): the publisher
+  HARD-REFUSES (`execution-surface-rejected`) any patch touching
+  `.github/**` (workflows, composite actions, Actions config) or other
+  execution-trigger surfaces — no exception path exists through Hestia;
+  CI-config changes are outside its remit entirely and flow only through
+  the human/Eye path with its transition-record discipline. Agents can
   therefore CAUSE branch publication (mediated, validated) but cannot
   invoke or indirectly select a merge. Bind `pr_url` → `{owner,repo,
   number}` (regex, unparseable ⇒ excluded+reported); head_sha (40-hex)
@@ -65,11 +75,13 @@ per-file designs are in the approved plan; acceptance criteria here.
   not a merge. **Accept (credential separation)**: publisher fixture —
   agent-produced patch data results in a pushed branch + open PR; the
   agent environment fixture asserts NO credential variable is present;
-  a patch attempting to smuggle a merge (e.g. workflow edits invoking
-  the merge API, or gh merge commands in committed hooks) is inert data
-  — the publisher only pushes and opens PRs, and merge remains
-  exclusively the controller's; publisher closure covered by
-  TRUSTED_CONTROLLER_DIGEST.
+  a patch attempting to smuggle a merge is inert data — the publisher
+  only pushes and opens PRs, and merge remains exclusively the
+  controller's; MALICIOUS-WORKFLOW regression: a patch adding a
+  push-triggered workflow (or editing any `.github/**` file) ⇒ the
+  publisher refuses execution-surface-rejected and NOTHING is pushed —
+  the agent-authored workflow never executes, obtains no token and no
+  secrets; publisher closure covered by TRUSTED_CONTROLLER_DIGEST.
   (ii) DETERMINISTIC PRE-MERGE CONTROLLER (the sole holder of merge
   credentials): new `workflows/tools/merge-controller.mjs`, plain zero-dep
   node, run AFTER the workflow. THE CONTROLLER'S OWN CLOSURE IS A

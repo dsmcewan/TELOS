@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:b3dc9150a8d9c9a01fd7901457dc9a9f597eb2558c8610329a62baabfd455b66",
+  "output_plan_artifact_hash": "sha256:b3dc9150a8d9c9a01fd7901457dc9a9f597eb2558c8610329a62baabfd455b66",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:8b8c45de00d8612464baf0691f0b4f4b5a19402d555f7a0629eac0759db25cbf",
+    "provenance_key": "anthropic:af3563db-39fa-4b6c-b751-7442ffb9cf41"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:d27f9c973965e3d5c4d8dcf3db1a0de5550b8393a2f3cb0cf3ef6cfecec4cc7a",
+    "provenance_key": "openai:01a04571-63f6-7cc1-9572-a259fd3a9d8d",
+    "bound_hash": "sha256:b3dc9150a8d9c9a01fd7901457dc9a9f597eb2558c8610329a62baabfd455b66"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:E1",
+      "claim": "The branch publisher does not make agent-authored workflow changes inert. Publishing an agent-controlled branch can immediately trigger a newly added or modified `.github/workflows/*` workflow from that branch, giving the agent-controlled code a GitHub Actions token and potentially repository secrets before the merge controller evaluates the PR. That code can mutate repository state or attempt an out-of-band merge; post-attempt detection cannot restore fail-closed behavior. Protecting only verifier-invoking workflow digests and asserting that the agent process itself lacks credentials does not close this path. The approach must quarantine or reject agent-authored workflow changes before publication, or publish them through an execution-disabled/unprivileged fork boundary, and must prove with a regression that a malicious push/PR workflow cannot obtain mutation authority or secrets.",
+      "objection_hash": "sha256:7d1739c2bae609a2d35051b838938f58bca107b0ccd9e811c7566f9f54fa0e4a",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

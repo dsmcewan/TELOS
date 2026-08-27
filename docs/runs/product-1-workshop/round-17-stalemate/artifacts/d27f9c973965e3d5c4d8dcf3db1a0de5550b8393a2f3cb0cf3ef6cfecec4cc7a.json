@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach:E1",
+        "claim": "The branch publisher does not make agent-authored workflow changes inert. Publishing an agent-controlled branch can immediately trigger a newly added or modified `.github/workflows/*` workflow from that branch, giving the agent-controlled code a GitHub Actions token and potentially repository secrets before the merge controller evaluates the PR. That code can mutate repository state or attempt an out-of-band merge; post-attempt detection cannot restore fail-closed behavior. Protecting only verifier-invoking workflow digests and asserting that the agent process itself lacks credentials does not close this path. The approach must quarantine or reject agent-authored workflow changes before publication, or publish them through an execution-disabled/unprivileged fork boundary, and must prove with a regression that a malicious push/PR workflow cannot obtain mutation authority or secrets."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a04571-63f6-7cc1-9572-a259fd3a9d8d",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a04571-63f6-7cc1-9572-a259fd3a9d8d",
+    "source": "cli-seats/codex_ask"
+  }
+}
