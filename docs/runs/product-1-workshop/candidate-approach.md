@@ -743,15 +743,16 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   would let a woven-input PR merge with a stale-but-intact snapshot,
   gutting the atomic weave rule): the required institutional-memory PR job
   first diffs the PR against its base for WOVEN-INPUT paths, classified
-  by PROPOSED-TREE INPUT DISCOVERY: each changed/added file is tested
-  against the weaver's own input RULES evaluated over the PR head
+  by UNION INPUT DISCOVERY over BOTH trees: each changed, added, or
+  DELETED file is tested against the weaver's own input RULES
   (package-roots membership, memory-dir patterns, manifest globs — the
-  same predicates weave.mjs uses to enumerate inputs), NOT merely by
-  membership in the prior snapshot's recorded closure — a closure list
-  cannot contain a NEWLY ADDED woven file (e.g. a fresh
-  clotho/memory/DECISIONS record), so closure-only selection would pick
-  historical mode and merge a stale snapshot; if ANY
-  woven input changed OR WAS ADDED, the job runs the AUTHORITATIVE default
+  same predicates weave.mjs uses to enumerate inputs) evaluated over the
+  PR head AND over the base tree, and the union decides — proposed-tree
+  discovery alone cannot see a DELETED woven file (it no longer exists
+  there), just as the prior snapshot's closure cannot contain a NEWLY
+  ADDED one; either blind spot would select historical mode and merge a
+  stale snapshot; if ANY woven input changed, WAS ADDED, or WAS DELETED,
+  the job runs the AUTHORITATIVE default
   `--verify-committed` at the ACTUAL PR HEAD as a REQUIRED pre-merge
   check — which fails unless the PR carries its own re-weave (the atomic
   weave rule, machine-enforced BEFORE merge, not discovered on main); if
@@ -768,8 +769,10 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   regression: a PR that only ADDS a new file under a woven memory dir
   (absent from the prior snapshot closure) without a re-weave ⇒
   authoritative mode selected and red — closure-only selection would
-  have wrongly picked historical; a docs-only PR ⇒ historical
-  mode selected.
+  have wrongly picked historical; DELETED-WOVEN-FILE regression: a PR
+  that only deletes a previously woven input without a re-weave ⇒ the
+  base-tree side of the union catches it, authoritative mode selected
+  and red; a docs-only PR ⇒ historical mode selected.
   **Accept**: stale-head checkout + default `--verify-committed` ⇒ fatal
   input-head-stale; same checkout with `--historical` ⇒ exit 0 with
   verify_mode historical-nonauthoritative and NO verified_current field;

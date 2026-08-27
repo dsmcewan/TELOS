@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:freshness-ci-selector",
+        "claim": "The woven-input mode selector is not deletion-complete: it evaluates changed/added paths using input discovery over the proposed tree, where a deleted woven file no longer exists. A PR that only deletes a previously woven input can therefore select `--historical`, allowing the stale snapshot to pass without a same-PR re-weave. The selector must use the union of base-tree and proposed-tree input discovery and include a deleted-woven-file regression. Candidate sha256:5a2f5762521638c10ab9698a884cf50d52fa9858add94781bc605075eba42ffb."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a04574-38d1-7902-be02-a2223f516d21",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a04574-38d1-7902-be02-a2223f516d21",
+    "source": "cli-seats/codex_ask"
+  }
+}

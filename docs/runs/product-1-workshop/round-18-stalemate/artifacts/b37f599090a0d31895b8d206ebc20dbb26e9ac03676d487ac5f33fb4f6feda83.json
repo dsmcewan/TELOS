@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:5a2f5762521638c10ab9698a884cf50d52fa9858add94781bc605075eba42ffb",
+  "output_plan_artifact_hash": "sha256:5a2f5762521638c10ab9698a884cf50d52fa9858add94781bc605075eba42ffb",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:cf3523075183495c84b6950b9a03fc89e0cb5bddbf2c952fc093ded6ab60340e",
+    "provenance_key": "anthropic:7f8f0410-b903-46dc-be5d-b2277b9523f3"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:bbd5a42f2eebc389337458f875dd42250ecd2fef5f5958d7c6daaa24d17dd3fd",
+    "provenance_key": "openai:01a04574-38d1-7902-be02-a2223f516d21",
+    "bound_hash": "sha256:5a2f5762521638c10ab9698a884cf50d52fa9858add94781bc605075eba42ffb"
+  },
+  "objections": [
+    {
+      "scope": "candidate:freshness-ci-selector",
+      "claim": "The woven-input mode selector is not deletion-complete: it evaluates changed/added paths using input discovery over the proposed tree, where a deleted woven file no longer exists. A PR that only deletes a previously woven input can therefore select `--historical`, allowing the stale snapshot to pass without a same-PR re-weave. The selector must use the union of base-tree and proposed-tree input discovery and include a deleted-woven-file regression. Candidate sha256:5a2f5762521638c10ab9698a884cf50d52fa9858add94781bc605075eba42ffb.",
+      "objection_hash": "sha256:081814e7a42d5eb9011abaf4b414af82e76e058d0c5a58cd7fa521be7a8f18ba",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
