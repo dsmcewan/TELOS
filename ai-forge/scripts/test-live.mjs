@@ -185,6 +185,46 @@ delete process.env.TELOS_SECRET_AGY;
 delete process.env.TELOS_SECRET_CODEX;
 delete process.env.TELOS_SECRET_GROK;
 
+// --- council failure NEVER silently self-approves a live run ---------------
+// A structural failure inside the pre-resolved council approvals (the exact
+// class the old bare catch{} swallowed — the arg-shape bug, credentials,
+// schema errors) must REJECT the run unless the caller explicitly opted into
+// the keyless demo via allowSyntheticApprovals. Vehicle: a dossierMeta whose
+// build_id getter throws — councilApprovals reads it first, so the approvals
+// promise rejects exactly where the old code silently substituted synthetics.
+{
+  const throwingMeta = (throws) => {
+    let calls = 0;
+    return {
+      get build_id() {
+        calls++;
+        if (throws === "always" || calls === 1) throw new Error("council approvals structural failure (stub)");
+        return dossierMeta.build_id;
+      },
+      use_case: dossierMeta.use_case, objective: dossierMeta.objective
+    };
+  };
+  const haltRoot = mkdtempSync(path.join(os.tmpdir(), "ai-forge-halt-"));
+  await assert.rejects(
+    () => runForgeLive({
+      projectRoot: haltRoot, telos: ctx.telos, dossierMeta: throwingMeta("always"),
+      embed: stubEmbed, vectorStore: stubVectorStore, callTool
+    }),
+    /live council approvals failed/,
+    "live run halts on council failure instead of self-approving"
+  );
+  // Demo opt-in: council read throws (first access), syntheticApprovals then
+  // succeeds — the run proceeds ONLY because the caller explicitly asked.
+  const demoRoot = mkdtempSync(path.join(os.tmpdir(), "ai-forge-demo-"));
+  const demoResult = await runForgeLive({
+    projectRoot: demoRoot, telos: ctx.telos, dossierMeta: throwingMeta("once"),
+    embed: stubEmbed, vectorStore: stubVectorStore, callTool,
+    allowSyntheticApprovals: true
+  });
+  assert.ok(demoResult && Array.isArray(demoResult.cycles),
+    "explicit demo mode proceeds on synthetic approvals");
+}
+
 console.log(
   `test-live.mjs OK: live path executed — ` +
   `cycles=${result.cycles.length}, converged=${result.converged}, ` +

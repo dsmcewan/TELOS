@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: ['18', '20']
+        node-version: ['22', '24']
         package:
           - build-gate
           - breakout
@@ -38,14 +38,14 @@ jobs:
     name: ${{ matrix.package }} (node ${{ matrix.node-version }})
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           # clotho's deriveRepositoryRef (Task 2) rejects a shallow clone, so its
           # job needs full history; every other package keeps the default depth.
           fetch-depth: ${{ matrix.package == 'clotho' && '0' || '1' }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -63,14 +63,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: ['18', '20']
+        node-version: ['22', '24']
     name: fail-closed proof (node ${{ matrix.node-version }})
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -82,15 +82,38 @@ jobs:
     name: repository paths are portable
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Reject paths that cannot be checked out on Windows
         run: node .github/scripts/check-portable-paths.mjs
+
+  # workflows/ is deliberately package-less (a package.json there would enroll
+  # it in the tracked-package completeness enumeration), so its tests run as a
+  # dedicated step rather than through the package matrix.
+  workflow-scripts:
+    runs-on: ubuntu-latest
+    name: workflow scripts (hestia ship gate)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+
+      - name: Test the workflow scripts
+        # hestia.js itself is a workflow-DSL function BODY (top-level return),
+        # so it cannot pass a module-context `node --check`; the test wraps it
+        # in an AsyncFunction, which both parses and executes it.
+        run: |
+          node --check workflows/tests/test-hestia.mjs
+          node workflows/tests/test-hestia.mjs
 
   # The institutional-memory layer's own oracle: every NORMATIVE machine record
   # (contracts, invariants, authority chains, env surface) must equal what the
@@ -100,16 +123,16 @@ jobs:
     name: institutional-memory (records == reality)
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           # Committed self-weave verification re-derives the repository root and
           # intentionally rejects shallow history.
           fetch-depth: 0
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Verify contracts against code, workflows, and disk
         run: node docs/institutional-memory/verify-contracts.mjs
@@ -122,15 +145,15 @@ jobs:
     name: narcissus flagship
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           # The live graph and evidence ledger are derived from tracked history.
           fetch-depth: 0
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
           cache-dependency-path: narcissus/flagship/package-lock.json
 
@@ -181,6 +204,7 @@ jobs:
       - test
       - fail-closed-proof
       - repository-portability
+      - workflow-scripts
       - institutional-memory
       - narcissus-flagship
     runs-on: ubuntu-latest
@@ -191,11 +215,13 @@ jobs:
           TEST_RESULT: ${{ needs.test.result }}
           PROOF_RESULT: ${{ needs.fail-closed-proof.result }}
           PORTABILITY_RESULT: ${{ needs.repository-portability.result }}
+          WORKFLOWS_RESULT: ${{ needs.workflow-scripts.result }}
           MEMORY_RESULT: ${{ needs.institutional-memory.result }}
           NARCISSUS_RESULT: ${{ needs.narcissus-flagship.result }}
         run: |
           test "$TEST_RESULT" = "success"
           test "$PROOF_RESULT" = "success"
           test "$PORTABILITY_RESULT" = "success"
+          test "$WORKFLOWS_RESULT" = "success"
           test "$MEMORY_RESULT" = "success"
           test "$NARCISSUS_RESULT" = "success"

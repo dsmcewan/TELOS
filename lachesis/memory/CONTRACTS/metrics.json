@@ -30,12 +30,12 @@
   "golden_evidence": {
     "snapshot": {
       "path": "docs/runs/clotho-self-weave/thread-ledger.snapshot.jsonl",
-      "raw_byte_sha256": "sha256:4934d18fcddc22b3de21b099e065f126c3dfd6e34a02f38d8aae8643cf67891f"
+      "raw_byte_sha256": "sha256:b9c486430a82888a8c53c128ca1f31b3951ac27e8cda636e47767536aa553fe9"
     },
     "tallies": {
-      "edges": 4554,
-      "nodes": 1097,
-      "depends_on_edges": 1741,
+      "edges": 4559,
+      "nodes": 1099,
+      "depends_on_edges": 1742,
       "max_depends_on_in_degree": 138
     },
     "subjects": {

@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Narcissus flagship — the TELOS development-story front-end ('Loom on Trial'). WebGL is paint; XState is truth.",
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": ">=22.12.0"
   },
   "scripts": {
     "dev": "vite",

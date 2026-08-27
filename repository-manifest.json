@@ -130,7 +130,7 @@
       "memory_dir": "clotho/memory/",
       "claims": [
         {
-          "statement": "PACKAGE_ROOTS is exactly the seven consciously enrolled TELOS-spine packages with an explicit tested exclusion of the five deferred products (AM-40 plus Iliad enrollment)",
+          "statement": "PACKAGE_ROOTS is exactly the seven consciously enrolled TELOS-spine packages with an explicit tested exclusion of the six deferred products (AM-40 plus Iliad enrollment)",
           "grade": "executable",
           "evidence": [
             "clotho/scripts/test-inventory.mjs",
