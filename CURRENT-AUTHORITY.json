@@ -81,7 +81,8 @@
       "subject": "PACKAGE_ROOTS = TELOS spine (5), explicit exclusion of 3 products",
       "integrated_in": "v13",
       "authorized_by": "authz-006",
-      "doc": "docs/clotho-phase-1-plan-amendments-12.md"
+      "doc": "docs/clotho-phase-1-plan-amendments-12.md",
+      "amended_by": "AM-42"
     },
     {
       "id": "AM-41",
@@ -89,6 +90,14 @@
       "integrated_in": "v14 (+ shebang carve-out v15)",
       "authorized_by": "authz-008",
       "doc": "docs/clotho-phase-1-plan-amendments-13.md"
+    },
+    {
+      "id": "AM-42",
+      "subject": "PACKAGE_ROOTS = TELOS spine (7): Eye ratification of the held Lachesis + Atropos enrollment-flip; exclusions (6); both arrays machine-bound to the ruling",
+      "integrated_in": "post-v15 (Iliad enrollment ratification)",
+      "authorized_by": "authz-lachesis-1 + authz-atropos-1 (implementation) + the Eye's enrollment ruling AM-42",
+      "doc": "clotho/memory/DECISIONS/AM-42.md",
+      "ruling_sha256": "sha256:748511d4fdfb2c6c48a6e3be65ca79a3255e87d990c13f78e6df5c8cab34b24c"
     }
   ],
   "superseded": [

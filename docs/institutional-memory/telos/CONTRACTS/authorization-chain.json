@@ -7,7 +7,7 @@
     "pointer": "CURRENT-AUTHORITY.json",
     "vocabulary": "docs/mythological-vocabulary.md#TELOS"
   },
-  "note": "One entry per authorization run on disk. Refusals are PRESERVED, never erased — five of eight runs refused authorization, which is the fail-closed posture demonstrated, not a failure history to clean up. Entries with a plan_path are re-hashed from disk by the verifier; authz-001..003 reviewed candidate bytes that are not preserved as matured-plan files on main, so their plan_ref is record-internal only (checked against the record, not the disk) — recorded honestly rather than reconstructed.",
+  "note": "One entry per SPINE authorization run on disk (authz-001..008); module enrollment runs live in enrollment_runs below. Refusals are PRESERVED, never erased — five of eight spine runs refused authorization, which is the fail-closed posture demonstrated, not a failure history to clean up. Entries with a plan_path are re-hashed from disk by the verifier; authz-001..003 reviewed candidate bytes that are not preserved as matured-plan files on main, so their plan_ref is record-internal only (checked against the record, not the disk) — recorded honestly rather than reconstructed.",
   "chain": [
     {
       "id": "authz-001",
@@ -98,6 +98,28 @@
       "supersedes": "authz-007",
       "trust_mode": "signed",
       "active": true
+    }
+  ],
+  "enrollment_runs": [
+    {
+      "id": "authz-atropos-1",
+      "record": "docs/runs/atropos-authorization-1/authorization-summary.json",
+      "status": "AUTHORIZED",
+      "authorized": true,
+      "plan_ref": "sha256:041b5aaf96639cada7a5c3948586afba2340ef0d8896b851bd324edf980ef5be",
+      "trust_mode": "signed",
+      "enrolls": "atropos",
+      "enrollment_flip_ruled_by": "AM-42"
+    },
+    {
+      "id": "authz-lachesis-1",
+      "record": "docs/runs/lachesis-authorization-1/authorization-summary.json",
+      "status": "AUTHORIZED",
+      "authorized": true,
+      "plan_ref": "sha256:2ff644720bb80fac2f0ec31f92ecaed9bac1986a47ccc94460f987decbc7097b",
+      "trust_mode": "signed",
+      "enrolls": "lachesis",
+      "enrollment_flip_ruled_by": "AM-42"
     }
   ],
   "why": "A future model must be able to walk authorization history without inferring outcomes from filenames or assuming success. The chain shows the gate refusing five times — including refusing a Daedalus-converged plan on one required seat's dissent (authz-007) — and shows every run under trust_mode signed. That record IS the trust model, demonstrated.",

@@ -3,7 +3,33 @@
   "component": "clotho",
   "id": "package-roots",
   "title": "Clotho Phase 1 PACKAGE_ROOTS closed inventory",
-  "authority": { "decision": "AM-40", "authorization": "authz-006", "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3", "ruling": "The Eye" },
+  "authority": {
+    "decision": "AM-40 (spine five) + AM-42 (Eye ratification of the Lachesis and Atropos enrollment-flip)",
+    "authorization": "authz-006",
+    "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+    "ruling": "The Eye",
+    "enrollments": [
+      {
+        "root": "atropos",
+        "authorization": "authz-atropos-1",
+        "record": "docs/runs/atropos-authorization-1/authorization-summary.json",
+        "record_sha256": "sha256:002c920b163be6661432e285320c626c970bbb14f6236e6773b69a9ee2973999",
+        "plan_ref": "sha256:041b5aaf96639cada7a5c3948586afba2340ef0d8896b851bd324edf980ef5be"
+      },
+      {
+        "root": "lachesis",
+        "authorization": "authz-lachesis-1",
+        "record": "docs/runs/lachesis-authorization-1/authorization-summary.json",
+        "record_sha256": "sha256:682b6906d0ce31e1e6bf4505c32b9cc2feead812bd811f426880b3172a24e385",
+        "plan_ref": "sha256:2ff644720bb80fac2f0ec31f92ecaed9bac1986a47ccc94460f987decbc7097b"
+      }
+    ],
+    "enrollment_ruling": {
+      "id": "AM-42",
+      "doc": "clotho/memory/DECISIONS/AM-42.md",
+      "sha256": "sha256:748511d4fdfb2c6c48a6e3be65ca79a3255e87d990c13f78e6df5c8cab34b24c"
+    }
+  },
   "package_roots": ["atropos", "breakout", "build-gate", "clotho", "connectors/ai-peer-mcp", "lachesis", "merkle-dag"],
   "package_roots_exclude": ["ai-forge", "ai-native-memory", "demo", "forge", "narcissus/flagship", "saas-forge"],
   "why": "Filesystem proximity does not establish architectural membership. Clotho Phase 1 weaves TELOS itself, not every product physically present in the monorepo. The sibling products are governed beside the spine and are deferred for conscious enrollment later at the Iliad (the system-of-systems umbrella), not absorbed into the Phase 1 self-weave.",
