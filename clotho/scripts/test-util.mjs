@@ -97,6 +97,10 @@ import {
     // root escape rejected
     assert.throws(() => walkFiles(repo, ["../outside"]), /escapes repository/);
 
+    // a configured root ABSENT from disk is an integrity failure, never an
+    // empty walk (fail-closed for every caller)
+    assert.throws(() => walkFiles(repo, ["absent-root"]), /configured root missing/);
+
     // Directory symlink via junction — normative, must run (fail if unavailable).
     symlinkSync(path.join(repo, "pkg"), path.join(repo, "linkpkg"), "junction");
     // a symlinked root is rejected outright (as a symlinked component)
