@@ -134,6 +134,6 @@
     "status": "AUTHORIZED",
     "id": "authz-atropos-1",
     "plan_ref": "sha256:041b5aaf96639cada7a5c3948586afba2340ef0d8896b851bd324edf980ef5be",
-    "note": "Argo implementation of the Lachesis cycle-1 matured plan is authorized by the signed council under the TELOS gate. Enrollment-flip HELD for a separate Eye ruling."
+    "note": "Argo implementation of the Atropos cycle-1 matured plan is authorized by the signed council under the TELOS gate. Enrollment-flip HELD for a separate Eye ruling."
   }
 }
