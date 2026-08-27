@@ -1,0 +1,33 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E2 authority-transition mechanism",
+        "claim": "The gate grants `authority-transition` solely from required model-seat HMAC signatures. That makes model consensus the authorization object without cryptographically binding The Eye’s acceptance, contradicting the non-delegable human-authority invariant and the candidate’s own non-claim. Main-push and release verification then anchor at the already-modified commit, so a direct push or required-check override can make the new chain self-validating. Transition verification must bind an out-of-tree Eye authorization and prior trusted chain root, including at release; council signatures may remain review evidence only. Candidate sha256:4826be5435cc1dcc46da99a35af2e6110184da0a2ddeab6e65cde1b008dd01a1."
+      },
+      {
+        "scope": "candidate:freshness and atomic weave rule",
+        "claim": "PR CI is explicitly limited to `--historical`, which cannot emit `verified_current`. A PR can therefore change woven inputs while retaining the old intact snapshot, pass the historical check, and merge; authoritative main-push verification discovers the stale snapshot only after mutation. This does not enforce the stated same-PR atomic re-weave rule. Every PR touching woven inputs must check out the actual PR head and run authoritative default `--verify-committed` as a required pre-merge check. Candidate sha256:4826be5435cc1dcc46da99a35af2e6110184da0a2ddeab6e65cde1b008dd01a1."
+      },
+      {
+        "scope": "candidate:AM-42 governance regularization",
+        "claim": "The ceremony specifies a live authorization and amendment-registry updates but never specifies the required successor-plan transition: publish the matured approach under a content hash, authorize that exact hash, pivot `CURRENT-AUTHORITY.active_plan` and `active_authorization`, supersede v15, and obtain The Eye’s implementation-authority confirmation. Without that sequence, the active five-root v15 plan remains normative while AM-42/AM-43 change its governed roots, leaving governance correction (a) unresolved. Candidate sha256:4826be5435cc1dcc46da99a35af2e6110184da0a2ddeab6e65cde1b008dd01a1."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a04513-a339-7223-a575-1097e44efdcc",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a04513-a339-7223-a575-1097e44efdcc",
+    "source": "cli-seats/codex_ask"
+  }
+}

@@ -106,29 +106,44 @@ per-file designs are in the approved plan; acceptance criteria here.
   file differing from the anchored blob ⇒ DENIED `anchor-mismatch`. When
   the CHANGE UNDER REVIEW itself modifies authority-chain files, the gate
   does not self-authorize the new chain AND the transition has a
-  DETERMINISTIC, SIGNED path (prose review alone is not a mechanism):
-  an AUTHORITY-TRANSITION RECORD — a signed artifact in the change,
-  `{old_chain_root: <digest at the base anchor>, new_chain_root: <digest of
-  the proposed chain>, transition_id, signatures[]}` — signed by the
-  required council seats under the SAME trust machinery the build-gate
-  already enforces (`trust_mode: "signed"` HMAC packets; verification keys/
-  secrets anchored OUTSIDE the tree — env/protected variables — never in
-  the mutated chain). The gate, still anchored at the protected base,
-  verifies: old_chain_root matches what the base anchor actually yields,
-  new_chain_root matches the proposed files byte-for-byte, and every
-  required signature validates ⇒ GRANTED `authority-transition` (the
-  transition itself is the authorized object). Missing/invalid record ⇒
-  DENIED `authority-modified-in-change` naming the files. Merging a denied
-  change requires overriding a required check — visible, not silent — and
-  the spec states this residual honestly: branch protection is the
-  enforcement backstop for overrides. Anchor absent/unresolvable ⇒ DENIED `anchor-unavailable` (fail
-  closed, never a warning). **Accept**: lockstep mutation of
-  source+expected+answer in a PR (anchor = base head) ⇒ DENIED
-  anchor-mismatch or authority-modified-in-change — never GRANTED; a
-  legitimate authority change carrying a valid signed transition record
-  (verified against out-of-tree keys, old root = base truth) ⇒ GRANTED
-  authority-transition; the same record with any signature invalid or
-  old_chain_root not matching base ⇒ DENIED;
+  DETERMINISTIC path whose AUTHORIZATION OBJECT IS THE EYE, not model
+  consensus (the human-authority invariant is non-delegable): an
+  AUTHORITY-TRANSITION RECORD — `{old_chain_root: <digest at the trusted
+  prior root>, new_chain_root: <digest of the proposed chain>,
+  transition_id, eye_authorization, council_review[]}` — where
+  `eye_authorization` is an Ed25519 SIGNATURE BY THE EYE over
+  (old_chain_root ‖ new_chain_root ‖ transition_id), verified against the
+  Eye's public key held in a PROTECTED repo variable
+  (`EYE_AUTHORITY_PUBKEY`, admin-writable only, same custody class as
+  RELEASE_SIGNER_FINGERPRINT); `council_review[]` (the seats' HMAC
+  packets) is REVIEW EVIDENCE the gate records but which can never grant.
+  THE TRUSTED ROOT IS ITSELF OUT-OF-TREE at every context, including
+  main-push and release: a protected variable
+  (`CURRENT_AUTHORITY_CHAIN_ROOT`) holds the digest of the currently
+  authorized chain; the transition ceremony is (1) the Eye signs the
+  record, (2) the change merges carrying it, (3) the Eye updates the
+  protected variable to new_chain_root — so a direct push or
+  required-check override yields a tree whose chain root DIFFERS from the
+  protected variable and every subsequent gate run (main-push, release,
+  local) DENIES `chain-root-untrusted`; the modified commit can never
+  self-validate because the variable only moves by admin (Eye) action.
+  The gate, still anchored at the protected base,
+  verifies: old_chain_root equals the protected variable's current value
+  AND matches what the base anchor actually yields, new_chain_root matches
+  the proposed files byte-for-byte, and the EYE'S SIGNATURE validates
+  against the protected pubkey ⇒ GRANTED `authority-transition` (the
+  Eye's signed authorization is the authorized object). Missing/invalid
+  record or invalid Eye signature ⇒ DENIED `authority-modified-in-change`
+  naming the files. Anchor absent/unresolvable ⇒ DENIED
+  `anchor-unavailable` (fail closed, never a warning). **Accept**:
+  lockstep mutation of source+expected+answer in a PR (anchor = base head)
+  ⇒ DENIED anchor-mismatch or authority-modified-in-change — never
+  GRANTED; a legitimate authority change carrying a valid Eye-signed
+  transition record (pubkey + prior root both from protected variables) ⇒
+  GRANTED authority-transition; the same record with the Eye signature
+  invalid, or council packets alone (no Eye signature) ⇒ DENIED — model
+  consensus can never grant; a chain merged by override without the
+  variable update ⇒ every later run DENIES chain-root-untrusted;
   mutation of only the source ⇒ DENIED stale; unanchored source file ⇒
   DENIED source-unanchored; missing anchor ⇒ DENIED anchor-unavailable;
   escape/symlink authority path ⇒ DENIED; dogfood self-gate (anchored at
@@ -234,6 +249,27 @@ grok/gemini advisory) authorizes BOTH:
 - the enrollment-flip regularization discharging AM-42's process debt, AND
 - AM-43: classify the two new package dirs (`cli/`, `connectors/meta-ads-mcp/`)
   into `PACKAGE_ROOTS_EXCLUDE`.
+
+THE SUCCESSOR-PLAN TRANSITION IS THE MECHANISM (registry edits alone would
+leave the active v15 plan normative while AM-42/AM-43 change its governed
+roots — the exact bypass being regularized), executed in this order:
+1. PUBLISH: the matured workshop approach (this document at convergence) is
+   published as a content-addressed successor plan; its sha256 is the
+   `plan_ref` (`sha256hex(canonicalize({kind:"candidate", plan}))`).
+2. AUTHORIZE THAT EXACT HASH: the council run's PLAN_PATH/EXPECTED_PLAN_REF
+   pin it (any drift ⇒ exit 1); `authorization-summary.json` names the
+   plan_ref AND a build_id naming the enrollment flip.
+3. PIVOT: `CURRENT-AUTHORITY.active_plan` → the successor plan_ref;
+   `active_authorization` → the new authorization record; the v15 plan
+   entry gains `superseded_by: <successor plan_ref>` (registry rows only —
+   v15's bytes untouched).
+4. EYE CONFIRMATION: implementation authority over the successor plan is
+   granted by the Eye and recorded (pre-review authority_basis update +
+   the quest step-ledger header) BEFORE any slice merges.
+Until all four land, v15 remains the active plan and no slice of this quest
+is merge-eligible; the verify-contracts §5d check asserts the pivot's
+integrity (active_plan == authorized plan_ref; supersession row present;
+deviation record pins am42_sha256).
 
 AM-43 is a new decision doc with its own single fenced JSON block (roots
 unchanged; exclude += the two dirs), sha-pinned in `package-roots.json.authority.
@@ -380,10 +416,24 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   "historical-nonauthoritative"` and `snapshot_intact: true/false`, and it
   NEVER emits the authoritative `verified_current: true` claim that
   default mode emits (consumers keying on the authoritative field cannot
-  be satisfied by a historical run). Always-emitted freshness/heads_equal;
-  CI wording matches: the PR-context job runs `--historical` and is named
-  "snapshot intact (historical — does not assert this HEAD)"; main/release
-  jobs run the authoritative default. run.mjs is NOT woven (safe).
+  be satisfied by a historical run). Always-emitted freshness/heads_equal.
+  CI IS MODE-SPLIT BY WHAT THE PR TOUCHES (a blanket historical PR check
+  would let a woven-input PR merge with a stale-but-intact snapshot,
+  gutting the atomic weave rule): the required institutional-memory PR job
+  first diffs the PR against its base for WOVEN-INPUT paths (derived from
+  the snapshot's own recorded closure — package manifests,
+  clotho/inventory.mjs, woven docs — not a hand-maintained list); if ANY
+  woven input changed, the job runs the AUTHORITATIVE default
+  `--verify-committed` at the ACTUAL PR HEAD as a REQUIRED pre-merge
+  check — which fails unless the PR carries its own re-weave (the atomic
+  weave rule, machine-enforced BEFORE merge, not discovered on main); if
+  none changed, it runs `--historical` and is named "snapshot intact
+  (historical — does not assert this HEAD)". Main-push/release jobs always
+  run the authoritative default. run.mjs is NOT woven (safe).
+  **Accept (CI split)**: a fixture PR changing a package manifest WITHOUT
+  a re-weave ⇒ the required PR job selects authoritative mode and goes
+  red; the same PR with its re-weave ⇒ green; a docs-only PR ⇒ historical
+  mode selected.
   **Accept**: stale-head checkout + default `--verify-committed` ⇒ fatal
   input-head-stale; same checkout with `--historical` ⇒ exit 0 with
   verify_mode historical-nonauthoritative and NO verified_current field;

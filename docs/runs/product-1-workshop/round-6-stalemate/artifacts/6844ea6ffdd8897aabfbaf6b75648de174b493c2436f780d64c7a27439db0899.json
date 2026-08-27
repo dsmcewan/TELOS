@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:744b5ad1cc1f6867a624e5e515158b407cd84e3432181e5d495fd7f3b65f0658",
+  "output_plan_artifact_hash": "sha256:744b5ad1cc1f6867a624e5e515158b407cd84e3432181e5d495fd7f3b65f0658",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:26469666eac9aaf20d98ee9cb685356b7b28a4c6e67f4b4600e677120552599c",
+    "provenance_key": "anthropic:eed3a7fa-e701-4cda-975a-7307b44c0de8"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:c0841d33f720a42e9a74df58855be96970edfc9a1169c4d1655585959805c019",
+    "provenance_key": "openai:01a04513-a339-7223-a575-1097e44efdcc",
+    "bound_hash": "sha256:744b5ad1cc1f6867a624e5e515158b407cd84e3432181e5d495fd7f3b65f0658"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E2 authority-transition mechanism",
+      "claim": "The gate grants `authority-transition` solely from required model-seat HMAC signatures. That makes model consensus the authorization object without cryptographically binding The Eye’s acceptance, contradicting the non-delegable human-authority invariant and the candidate’s own non-claim. Main-push and release verification then anchor at the already-modified commit, so a direct push or required-check override can make the new chain self-validating. Transition verification must bind an out-of-tree Eye authorization and prior trusted chain root, including at release; council signatures may remain review evidence only. Candidate sha256:4826be5435cc1dcc46da99a35af2e6110184da0a2ddeab6e65cde1b008dd01a1.",
+      "objection_hash": "sha256:e9824a4a69f3af794d88f4895157cd918ab08e9fe383c3b5bf90bd172b1b72b6",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:freshness and atomic weave rule",
+      "claim": "PR CI is explicitly limited to `--historical`, which cannot emit `verified_current`. A PR can therefore change woven inputs while retaining the old intact snapshot, pass the historical check, and merge; authoritative main-push verification discovers the stale snapshot only after mutation. This does not enforce the stated same-PR atomic re-weave rule. Every PR touching woven inputs must check out the actual PR head and run authoritative default `--verify-committed` as a required pre-merge check. Candidate sha256:4826be5435cc1dcc46da99a35af2e6110184da0a2ddeab6e65cde1b008dd01a1.",
+      "objection_hash": "sha256:385fe35740d286dae13290fb14b031f77e65228f5ddfe69004c6894ca1218573",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:AM-42 governance regularization",
+      "claim": "The ceremony specifies a live authorization and amendment-registry updates but never specifies the required successor-plan transition: publish the matured approach under a content hash, authorize that exact hash, pivot `CURRENT-AUTHORITY.active_plan` and `active_authorization`, supersede v15, and obtain The Eye’s implementation-authority confirmation. Without that sequence, the active five-root v15 plan remains normative while AM-42/AM-43 change its governed roots, leaving governance correction (a) unresolved. Candidate sha256:4826be5435cc1dcc46da99a35af2e6110184da0a2ddeab6e65cde1b008dd01a1.",
+      "objection_hash": "sha256:6d63b99d3c5a1a1751cece015f1dddb04e0f58be92a00854ac2d944aac6b15a9",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
