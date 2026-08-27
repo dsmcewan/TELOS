@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:5a2919e11107ab6adef00e97999f7863f1fbab5cef93418813a707407612c9b2",
+  "output_plan_artifact_hash": "sha256:5a2919e11107ab6adef00e97999f7863f1fbab5cef93418813a707407612c9b2",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:1f3ec2feb7bff759fe6d9eebf3621c1ebe4322a8d3072865488a84e003d16436",
+    "provenance_key": "anthropic:cab81f82-cdd2-44ff-9736-7c267929f003"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:b41012b5108bdcbc3bdf787e670c4aa938e93804c0fa12fd0875a15c380ace8c",
+    "provenance_key": "openai:01a045a2-4b23-7282-a24d-52ade15b1fec",
+    "bound_hash": "sha256:5a2919e11107ab6adef00e97999f7863f1fbab5cef93418813a707407612c9b2"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:E1-eye-acceptance-binding",
+      "claim": "E1's sole credential-bearing merge controller never requires authenticated Eye acceptance for an ordinary implementation PR. Its pre-merge eligibility derives GitHub state, producer-bound checks, and protected-surface transition records, but only protected-surface transitions receive an Eye signature; Section 6's prose ordering (`review → Eye acceptance → step-ledger`) is not consumed or enforced by the controller. Consequently a model-produced ordinary PR with green checks can be merged without the Eye accepting that exact change, delegating consequential action to automation despite the non-delegable human-authority invariant. Require an Eye-signed pre-merge authorization whose canonical payload binds owner/repository, PR number, exact head SHA, current base SHA/ref, and active plan_ref; verify it immediately before the PUT, and add missing-acceptance, other-head/base/repository, and replay regressions proving no merge mutation occurs. Candidate plan_ref sha256:5a2919e11107ab6adef00e97999f7863f1fbab5cef93418813a707407612c9b2.",
+      "objection_hash": "sha256:614a0020413c570168ea11fecb4bd0e11414d561bdcc021f4f87bd74d328147e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

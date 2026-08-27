@@ -143,7 +143,21 @@ per-file designs are in the approved plan; acceptance criteria here.
   digest set, and (c) the exact run id + head SHA are recorded in the
   attestation; a green same-name run from any other producer is ignored
   (fixture: an untrusted app posts a green same-name check at the exact
-  SHA ⇒ the controller does NOT count it and refuses eligibility) — then, only on pass, performs the SOLE merge via `gh api -X PUT
+  SHA ⇒ the controller does NOT count it and refuses eligibility) — AND
+  requires AUTHENTICATED EYE ACCEPTANCE FOR EVERY MERGE, ordinary PRs
+  included (green checks + protected-surface rules alone would let
+  automation merge a model-produced change no human accepted —
+  violating the non-delegable human-authority invariant; the §6
+  `review → Eye acceptance → merge` ordering is enforced by the
+  controller, not left as prose): a PR is merge-eligible only with an
+  EYE-SIGNED PRE-MERGE ACCEPTANCE whose canonical payload binds
+  (owner/repo ‖ pr_number ‖ exact head SHA ‖ current base SHA and ref ‖
+  active plan_ref), verified against EYE_AUTHORITY_PUBKEY IMMEDIATELY
+  BEFORE the PUT — a head or base moved after signing invalidates the
+  acceptance (refuse `acceptance-stale`), a different repo/PR cannot
+  reuse it, and replay is inert (the bound head SHA can only be merged
+  once). Missing/invalid acceptance ⇒ refuse `acceptance-missing`, no
+  mutation — then, only on pass, performs the SOLE merge via `gh api -X PUT
   .../merge -f sha={head}` (server-enforced expected-head guard; 409 ⇒
   `head-moved`, never retry-fresh). The check-then-PUT window is closed
   SERVER-SIDE, not by client timing (a base update between the
@@ -181,7 +195,11 @@ per-file designs are in the approved plan; acceptance criteria here.
   **Accept**: adversarial fixtures pass; controller suite: colluding-agents
   fixture (ship+verify fabricate the same merged/sha — controller re-derives
   from a stub gh returning open and refuses to merge, exit 2, NO mutation);
-  ineligible-PR fixture ⇒ refused pre-merge; TWO-PR regression: the first
+  ineligible-PR fixture ⇒ refused pre-merge; EYE-ACCEPTANCE regressions:
+  green-checked PR with NO acceptance ⇒ acceptance-missing, no
+  mutation; acceptance bound to another head/base/repository ⇒ refused;
+  replayed acceptance after a new push (head moved) ⇒ acceptance-stale;
+  TWO-PR regression: the first
   merge makes the second stale/conflicting (stub gh flips its
   mergeable_state after merge #1) ⇒ the second is refused base-moved, NOT
   merged on its stale preflight; TOCTOU regression: stub server moves the
