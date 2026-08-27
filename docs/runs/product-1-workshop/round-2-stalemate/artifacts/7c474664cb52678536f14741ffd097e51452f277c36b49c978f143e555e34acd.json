@@ -1,0 +1,63 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:9eb3a4c73495b6f739687da7e471a3cd85c514a1b023654b6b450a85837c9ac3",
+  "output_plan_artifact_hash": "sha256:9eb3a4c73495b6f739687da7e471a3cd85c514a1b023654b6b450a85837c9ac3",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:3038cb368c678ee45ca03edcac27a60709547e4fe32dbcc30db90a5702303436",
+    "provenance_key": "anthropic:9c06230e-c570-49ff-8f1a-1b60839a50e1"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:53ce5a601f8f38a3af5cc802bba88a98b535ab2d0cefbf150544b0f570ec87cc",
+    "provenance_key": "openai:01a044f5-6c4d-70a0-821b-ac84f6444da6",
+    "bound_hash": "sha256:1601923bc7bea36cf743e603f5dea61a58236b9b5839f54aeda72189ca8a0314"
+  },
+  "objections": [
+    {
+      "scope": "approach:E1-merge-attestation",
+      "claim": "The proposed deterministic attestor queries only “every shipped PR.” A blocked or attempted PR can therefore be omitted from `shipped[]` after being merged, leaving detection to the non-authoritative model gate. The authoritative ledger must be cardinality-complete over every input and attempted PR and directly attest blocked as well as shipped candidates.",
+      "objection_hash": "sha256:1a2cf384fa6c1f36d1fc39d13b2b196bdcae74d0238cd12656262b534be3d28c",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "approach:E2-freshness",
+      "claim": "Re-deriving `expected` from `derived_from` does not satisfy the stated lockstep-mutation regression: an attacker can mutate the source, expected value, and answer consistently and still pass. The authorized record must independently pin the query file and canonical derivation-source digest set, which the gate must recompute before answer evaluation.",
+      "objection_hash": "sha256:d6dc4a5845697ea19b6777341a41e330f835e212b10810b0536197f2996c8057",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "approach:E6-oracles",
+      "claim": "Executing each declared oracle proves only that it is runnable. A constant-success program still passes the proposed mechanism, so the claim that the oracles discriminate is unsupported. Each oracle needs an independently stored negative control that the same executable must reject with an expected reason, including equivalent CI execution for delegated npm-script oracles.",
+      "objection_hash": "sha256:d55681c01ae95d6fa42e4d274d17804db45503ac1e73172e4d6d0419f279ad56",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "approach:governance-immutability",
+      "claim": "“AM-42 bytes never touched (gains `amended_by`)” is internally impossible and would invalidate its content-addressed identity. AM-42 must remain byte-identical; regularization and amendment linkage must live in a new decision/authorization record and current-authority metadata.",
+      "objection_hash": "sha256:c5b8ec1895993f2c4f21acbac1be5713b74e7d710e4caf5c310209a07a7db11e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "approach:phase-1a-distribution",
+      "claim": "Packing only `cli/` does not produce the promised installable product because its commands read and spawn files outside that package, while a source archive is not an installation contract. No clean-room test proves the signed artifact works without the checkout. The release needs a closed, self-contained staged package and an install-and-run test with the source tree unavailable.",
+      "objection_hash": "sha256:984cd49badabcc27420f7786d817362d65a32a8067e36b9a62ff11771a0e1f46",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

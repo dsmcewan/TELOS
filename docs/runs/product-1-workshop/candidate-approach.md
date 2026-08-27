@@ -50,24 +50,42 @@ per-file designs are in the approved plan; acceptance criteria here.
   merged-despite-blocked, foreign-repo, head-sha-mismatch, merge-sha-mismatch).
   (ii) DETERMINISTIC ATTESTOR (the merge truth — no model in the loop): new
   `workflows/tools/attest-merges.mjs`, plain zero-dep node, takes the workflow's
-  structured output, re-queries `gh api repos/{o}/{r}/pulls/{n}` DIRECTLY for
-  every shipped PR, and emits the authoritative attestation
-  `{pr, merged, merge_commit_sha, head_sha, verified_by: "gh-api-direct"}`;
-  any divergence from the workflow's `merge_gate` (including mutually consistent
-  fabricated agent reports) ⇒ exit 2 with the diff. The workflow's return
-  documents that `merged[]` is advisory and the attestor is authoritative.
+  structured output and re-queries `gh api` DIRECTLY over the FULL attempt
+  surface, not just `shipped[]`: every entry in `fix_gate.shipped`,
+  `fix_gate.excluded`, `residue_gate.blocked`, AND — to catch attempts the
+  workflow under-reported entirely — every branch the run's fix agents pushed
+  (enumerated from each repo via `gh api repos/{o}/{r}/pulls?state=all&head=…`
+  for the run's recorded branch names, plus PRs updated in the run's time
+  window). For each: `{pr, merged, merge_commit_sha, head_sha, verified_by:
+  "gh-api-direct"}`. ANY merged PR that the workflow did not certify as
+  confirmed (including excluded/blocked/omitted ones) ⇒ exit 2
+  `unattested-merge`; any divergence from `merge_gate` ⇒ exit 2 with the diff.
+  The workflow's return documents that `merged[]` is advisory and the attestor
+  is authoritative.
   **Accept**: 8 adversarial in-workflow fixtures pass; attestor test suite:
   colluding-agents fixture (ship+verify both fabricate the same merged/sha —
   in-workflow gate passes, ATTESTOR catches it against a stub gh returning open),
   API-truth mismatch ⇒ exit 2, clean run ⇒ attestation emitted; `merged` =
   confirmed-only; workflows CI job runs both suites green.
-- **E2 ai-native-memory gate freshness + confinement** (`ai-native-memory/scripts/gate.mjs`).
+- **E2 ai-native-memory gate freshness + AUTHORITY-CHAINED sources** (`ai-native-memory/scripts/gate.mjs`).
   Extract `scripts/lib/freshness.mjs` (byte-stable audit findings); gate
   re-derives every query `expected` from `derived_from` at gate time (REQUIRED;
   DENIED on missing/dangling/stale with distinct reason codes); authority read
-  confined to the plugin boundary (couples to E4). **Accept**: source-mutated-while-
-  queries-and-answers-in-lockstep ⇒ DENIED; escape/symlink authority path ⇒
-  DENIED; dogfood self-gate stays GRANTED.
+  confined to the plugin boundary (couples to E4). Re-derivation alone cannot
+  defeat a FULL-LOCKSTEP mutation (source+expected+answer edited consistently),
+  so sources are CHAINED TO PINNED AUTHORITY: a `derived_from.file` is
+  admissible only if it is (a) a content-addressed record whose recomputed
+  address equals its `id` (the record-discipline rule the auditor enforces),
+  AND (b) reachable from the plugin's hash-pinned trust root — the
+  CURRENT-AUTHORITY active doc (sha-pinned) or a record enumerated by
+  `verify-map.json` / the contracts set the authority doc governs. A source
+  outside the pinned reachability set ⇒ DENIED `source-unanchored`. A
+  full-lockstep mutation then necessarily breaks either the source record's
+  content address or a pinned hash upstream — there is no consistent rewrite
+  that survives. **Accept**: lockstep mutation of source+expected+answer ⇒
+  DENIED (address/anchor break named in the reason); mutation of only the
+  source ⇒ DENIED stale; unanchored source file ⇒ DENIED source-unanchored;
+  escape/symlink authority path ⇒ DENIED; dogfood self-gate stays GRANTED.
 - **E3 auditor full-taxonomy + no-clean-on-zero, EXCEPTIONLESS** (`ai-native-memory/scripts/audit.mjs`).
   Root-as-memory-dir (marker predicate, root arg only); zero discovered sets ⇒
   exit 2 unless `--allow-empty`; validate all 8 record kinds via `RECORD_SET_LAYOUT`;
@@ -111,18 +129,30 @@ per-file designs are in the approved plan; acceptance criteria here.
   INVARIANTS.json sweep; zero-dep invariant reworded with machine `exceptions[]`
   (flagship) + executable oracle over all tracked package.jsons; structured
   `oracle.executable` required on every NORMATIVE record + one-PR backfill.
-  Oracles must DISCRIMINATE, not merely exist: new
+  Oracles must DISCRIMINATE, not merely exist or merely run: new
   `docs/institutional-memory/run-oracles.mjs` executes every declared
   `oracle.executable` — `file` entries run under `node` with a per-entry
   timeout, nonzero/timeout/unrunnable ⇒ FAIL (distinct codes: oracle-missing /
-  oracle-unrunnable / oracle-failed / oracle-timeout); `npm-script` entries are
-  machine-checked to be covered by the CI package matrix (parsed from ci.yml —
-  execution delegated to the matrix, delegation itself verified); `evidence-dir`
-  entries require the dir non-empty with at least one content-addressed record.
-  Wired as a step in the institutional-memory CI job. **Accept**: a synthetic
-  NORMATIVE record whose oracle file exits 1 ⇒ run-oracles FAIL; a
-  present-but-timeout oracle ⇒ FAIL; an npm-script oracle absent from the ci.yml
-  matrix ⇒ FAIL; backfill complete; verify-contracts + run-oracles green in CI.
+  oracle-unrunnable / oracle-failed / oracle-timeout). Because a
+  constant-success program passes any run-only check, every `file` oracle
+  MUST also declare a NEGATIVE CASE — `oracle.executable.negative`: an
+  invocation (same file, a documented violating fixture/flag, e.g.
+  `--self-check-negative` handing the oracle a planted violation) that is
+  REQUIRED TO EXIT NONZERO; run-oracles executes both, and a negative case
+  that exits 0 ⇒ FAIL `oracle-nondiscriminating` (this generalizes the
+  repo's existing mutate-then-expect-failure pattern from the clotho
+  flagship-expectation tests). `npm-script` entries are machine-checked to be
+  covered by the CI package matrix (parsed from ci.yml — execution delegated
+  to the matrix, delegation itself verified; the matrix suites already embed
+  their own failing-fixture assertions); `evidence-dir` entries require the
+  dir non-empty with at least one content-addressed record. Wired as a step
+  in the institutional-memory CI job. **Accept**: a synthetic NORMATIVE
+  record whose oracle file exits 1 ⇒ run-oracles FAIL; a constant-success
+  oracle (exit 0 on both positive and negative invocation) ⇒ FAIL
+  oracle-nondiscriminating; a present-but-timeout oracle ⇒ FAIL; an
+  npm-script oracle absent from the ci.yml matrix ⇒ FAIL; backfill complete
+  (every backfilled file oracle carries a working negative case);
+  verify-contracts + run-oracles green in CI.
 
 ## 3. Governance ceremony (ONE combined live council — Eye ruling: Option A)
 
@@ -135,8 +165,13 @@ grok/gemini advisory) authorizes BOTH:
 
 AM-43 is a new decision doc with its own single fenced JSON block (roots
 unchanged; exclude += the two dirs), sha-pinned in `package-roots.json.authority.
-enrollment_ruling` and `CURRENT-AUTHORITY.amendments_in_force`; AM-42 bytes never
-touched (gains `amended_by`). The 8 coordinated pinned-surface updates
+enrollment_ruling` and `CURRENT-AUTHORITY.amendments_in_force`. AM-42's FILE is
+NEVER touched — its bytes stay identical and its content address stays valid.
+All amendment/regularization linkage lives ONLY in mutable registry surfaces and
+new records: the `CURRENT-AUTHORITY.amendments_in_force` ENTRY for AM-42 (a
+registry row, not the doc) gains `amended_by: "AM-43"` + `ratification:
+"retroactive"`, AM-43's own body cites AM-42 by sha, and the deviation record
+pins `am42_sha256`. Nothing writes into any content-addressed artifact. The 8 coordinated pinned-surface updates
 (inventory.mjs [woven ⇒ re-weave], test-inventory frozen array, comprehension-
 queries expected, iliad deferred list, repository-manifest products + count
 strings, §5c ruling-id generalization) land together. Two-step write-then-hash-
@@ -176,6 +211,25 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   self-weave --verify-committed + fail-closed demo, fail-closed aggregate);
   static no-network-listener oracle; child-process tests; classified EXCLUDE via
   the §3 ceremony.
+- **HONEST v1 INSTALLATION CONTRACT** (the cli spawns verifiers that live in the
+  repo tree, so a bare `cli/` tarball is NOT an installable product and is not
+  claimed to be): the v1 installable artifact is the SOURCE RELEASE — the
+  `git archive` tarball of the qualified release commit — with `pylae` as its
+  entrypoint. PD-006 (naming/versioning/publish) records this explicitly:
+  install = extract the source tarball (or clone at the tag) + Node >=22.12;
+  `pylae doctor` verifies the environment; every `pylae` command resolves its
+  spawned tooling RELATIVE TO ITS OWN INSTALL ROOT (never cwd), so the
+  extracted tree is self-sufficient. The `npm pack cli` tgz is published as a
+  COMPONENT artifact, its README stating it requires the source tree
+  (self-contained npm distribution = a tracked register item for a later
+  phase, not silently claimed now). Proven, not asserted: release.yml gains a
+  CLEAN-ROOM INSTALL job — extract the built source tarball into an empty temp
+  dir OUTSIDE any git checkout, run `pylae doctor` and `pylae version` there,
+  and run `pylae verify --offline-checks` (the subset not needing full git
+  history); any spawn of a file outside the extracted root ⇒ fail.
+  **Accept**: clean-room job green from tarball alone; deleting a spawned
+  helper from the tarball ⇒ clean-room job fails (packaging omission is
+  detected, not shipped).
 - **Meta-ads governance**: parseCap `^[0-9]{1,6}$` + isSafeInteger + >0 +
   HARD_CEILING_CENTS frozen (fail-closed startup); budget args validated; closed
   grammars validated BEFORE env/token access; META_ADS_ENABLED kill-switch;
