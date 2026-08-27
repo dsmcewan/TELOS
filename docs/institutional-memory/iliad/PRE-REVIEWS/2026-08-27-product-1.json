@@ -1,0 +1,63 @@
+{
+  "kind": "evidence",
+  "component": "iliad",
+  "id": "pre-review-2026-08-27-product-1",
+  "note": "Pre-review for the product-1 quest: the TELOS v0.3.0 production-contract + hardening program, entering the Iliad lifecycle by Eye directive (2026-08-27). This is NOT a future-module enrollment (Lachesis/Atropos/Narcissus shape); the enrolled subsystem is the PRODUCT-GOVERNANCE contract (the Phase-0 ADR set + committed readiness register) plus the hardening of existing subsystems that a v0.2.0 productization review returned as a no-go. Intent is recorded here; actuality is proven downstream by per-seat provenance in the run records and by verify-contracts.",
+  "normativity": "ADVISORY",
+  "status": "NORMATIVE-CURRENT",
+  "run": "docs/runs/product-1 (pre-review + entry ritual); workshop docs/runs/product-1-workshop; authorization docs/runs/product-authorization-1; Argo docs/runs/product-1-argo; all branched from main @ fc0fa05",
+  "next_phase_workshop": "docs/runs/product-1-workshop/ — the Daedalus workshop matures the APPROACH (candidate-approach.md) via iliad/tools/run-daedalus-workshop.mjs with the master production-readiness checklist and the v0.2.0 review findings as FROZEN --spec inputs. Then TELOS authorization (a real signed council), then Argo implementation as bounded PR slices.",
+  "authority_basis": "The Eye directive 2026-08-27 ('run the v0.3.0 production-contract + hardening program as a canonical Iliad quest, end-to-end') + the Eye's four bounded product rulings this session (scope = blockers + governance + Phase 0 + start Phase 1a; flagship = future production operator console; primary user = individual developer, v1 = local single-user CLI with identity/tenancy/clustering out of scope by signed ADR; full delivery process). The user-supplied Production-Readiness Master Checklist is the governing standard. Basis for each hardening item: the v0.2.0 full-repository review (10 release blockers + 7 governance corrections), every finding independently re-verified against fc0fa05 by three exploration passes.",
+  "honest_scope": {
+    "deliverable": "(1) Phase-0 product contract frozen as a NEW role-scoped memory dir docs/institutional-memory/product/ (ADRs PD-001..PD-007 + a committed, machine-readable production-readiness register with a dormant go-live gate); (2) all 10 review blockers and 7 governance corrections closed with fail-closed regression tests; (3) Phase 1a distribution start (canonical naming, lockstep 0.3.0 versioning, a telos CLI with init/doctor/version/verify, a signed release pipeline with SBOM + provenance + checksums, Pages deploy-from-required-CI-artifact, review-plugin pinning); (4) v0.3.0 released from the exact qualified, accepted commit.",
+    "registered_meaning_is_the_boundary": "This quest hardens and productizes; it does not extend any component's registered responsibility. Clotho still weaves, TELOS still authorizes, the gate still certifies from disk. New surfaces (the product/ memory dir, the telos CLI) are product shells over the existing trust spine, not new authority.",
+    "normativity_split": "The ADRs and the production-readiness register are NORMATIVE-CURRENT with executable oracles (a new verify-contracts section validates register shape, na-by-adr sha binding, evidence-path existence; the go-live P0 gate is REPORTING-ONLY until an explicit enforce flag is flipped at a future GA decision). The hardening fixes are enforcement changes to existing NORMATIVE surfaces and receive bounded required-seat review in the authorization council.",
+    "out_of_scope_by_signed_adr": "Identity, multi-tenancy, and clustered-runtime are OUT OF SCOPE for v1 by PD-001 — v1 is a local single-user CLI. The checklist's own carve-out is honored and made testable: 'an unprotected local tool cannot quietly become an exposed service' is enforced by a static no-network-listener oracle over the cli/ package. Phase 1b (durable crash-consistent state, authenticated authority binding to real principals, key rotation ceremonies, sandbox platform doc) is scheduled in the register with target rounds, NOT dropped.",
+    "enrollment_flip_flagged_for_the_eye": "Two new tracked package dirs (cli/ and connectors/meta-ads-mcp/) must be classified into PACKAGE_ROOTS_EXCLUDE, which touches the AM-40 change_rule surface (package-roots.json + inventory.mjs + the iliad deferred list + a hash-pinned ruling). This is routed through ONE ruling — a new AM-43 decision doc with its own single fenced JSON block — that ALSO regularizes AM-42's retroactive ratification (a recorded deviation, or, if the authorization council runs anyway, a combined re-authorization). The exact record set and whether AM-42 is discharged by deviation-record (Option B) or live re-authorization (Option A) is a routed decision for the Eye at the authorization gate, not resolved unilaterally.",
+    "non_goals": "No SaaS/tenancy delta; no durable-state or key-custody implementation (Phase 1b); no multi-browser/screen-reader matrix beyond the axe gate (register-tracked next round); no flagship production deployment (it stays demo/evidence-viewer this round, labeled future operator console); no renaming of registered mythological single-word packages (clotho/lachesis/atropos keep bare names — P1)."
+  },
+  "open_questions_for_the_eye": [
+    "AM-42 regularization: Option A (a fresh live TELOS re-authorization council run whose build_id names the enrollment-flip) vs Option B (an Eye-signed process-deviation record binding AM-42 by sha, disposition recorded). Recommendation: B now, folded into A for one price IF the AM-43 exclusion goes through a council anyway.",
+    "The three DRAFT-status contract docs cited as normative (Multi-Model Agentic Build Gate, Claude-Led Multi-Model Prototype Workflow, Claude-Grok Hierarchical Agentic Workflow): promote the first two to active (they are code-enforced reality); rule the Claude-Grok doc active vs historical+recorded-exception.",
+    "ED-A3 (auditor grandfathering): strict auditor + supersede the two nonconforming legacy decision records (atropos/lachesis cycle-1) with new content-addressed records, vs an auditor-side allowlist. Recommendation: exceptionless auditor + supersession.",
+    "Gate production-profile DEFAULT FLIP: unsigned/legacy dossiers block unless they set allow_unsigned:true (breaks un-updated callers loudly, release-noted) vs only profile:'production' blocking. Recommendation: the flip.",
+    "First-SKU package naming fallback if the npm name/scope is unavailable at Phase-1b publish time (packages stay private this round, so non-blocking now)."
+  ],
+  "model_review": {
+    "note": "seats env-resolved over build-gate/seats.json role bindings; no seat change proposed. Argo implementation-review seats and the TELOS authorization council seats are resolved at those gates with per-seat provenance. NOTE: the live workshop (S1) and authorization council (S2) require ANTHROPIC/OPENAI (+ XAI/GEMINI advisory) API keys, which are ABSENT in the current WSL environment — surfaced to the Eye as an environment prerequisite before S1.",
+    "baseline": "docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-17.json (latest; auto-probed against connectors/ai-peer-mcp/server.mjs#mapModelName by verify-contracts)",
+    "seats": {
+      "claude": "claude-fable-5",
+      "codex": "gpt-5.6-sol",
+      "grok": "grok-4.5",
+      "gemini": "gemini-3.1-pro-preview",
+      "agy": "local deterministic (no model id)"
+    },
+    "newly_available_models_considered": ["none since the 2026-07-17 review; a fresh MODEL-REVIEWS entry should be written if the workshop/council runs after model bindings change"],
+    "seat_changes_proposed": []
+  },
+  "capability_review": {
+    "task_loadout_read": "n/a (this cycle produces the plan the workshop matures; no frozen task slice yet)",
+    "prior_retrospectives_read": [
+      "docs/institutional-memory/iliad/RETROSPECTIVES/lachesis-1.json",
+      "docs/institutional-memory/iliad/RETROSPECTIVES/atropos-1.json"
+    ],
+    "optimizations_adopted": [
+      "Review the RUNNING ARTIFACT against real data, not the plan-as-fiction (lachesis-1 central lesson): the enforcement slices ship 4a-signed council review over the actual PR head + adversarial subagent review of the code, and every hardening claim carries a fail-closed regression test that reproduces the defect.",
+      "The deterministic gate audits the AUDITOR (atropos-1): a required doc no packet reviewed blocks authorization — so the authorization dossier's required_docs list the matured plan + this pre-review, and the plan itself carries the enforcement specs so the council reviews them, not a summary.",
+      "Deferred ratification is honest only when the truth lives inside the content-addressed artifact (atropos-1): AM-43 / the AM-42 deviation record state the deviation explicitly in the hashed bytes, never an honest-sequence note beside the hash.",
+      "NEVER abbreviate an authority/content-address anchor — full 40-hex/64-hex only (caught 2x by codex in prior quests): the two-step write-then-hash-then-pin dance for AM-43 and the deviation record is called out in the slice checklist.",
+      "Distinguish reviewer drift from rigor (atropos-1): the bounded-review round cap escalates a non-converging point to the Gemini referee rather than oscillating.",
+      "Single re-weave discipline: every woven-byte change (manifests, inventory.mjs, contract docs) funnels into ONE train-end self-weave publication + expected-flagship regen + Eye re-audit, not per-PR churn."
+    ],
+    "optimizations_deferred_with_reason": [
+      "The enrollment-flip/AM-43 exact record set + AM-42 Option A-vs-B, deferred to the authorization gate (Eye decision).",
+      "Multi-browser/screen-reader/constrained-GPU e2e matrix, deferred to the next round with register target-round entries (this round ships the axe a11y gate only)."
+    ],
+    "missing_external_capabilities": [
+      "Live model API keys (ANTHROPIC/OPENAI/XAI/GEMINI) are not present in the current WSL environment; the Daedalus workshop and TELOS council cannot run until they are provided (HKCU via loadWin32Env under Windows node, or exported in WSL). This is the single hard prerequisite before S1."
+    ],
+    "capability_packets_required": false
+  },
+  "entry_ritual": "docs/runs/product-1/reader-validation-artifact.json (iliad + telos module queries — COMPREHENSION_PASSED / GRANTED) — produced at S4 before implementation, placeholder until then"
+}
