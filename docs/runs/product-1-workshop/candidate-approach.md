@@ -428,10 +428,19 @@ per-file designs are in the approved plan; acceptance criteria here.
   and REQUIRES IT WELL-FORMED — a mutation that breaks parsing ⇒ FAIL
   mutation-invalid (so a subsequent nonzero exit can only come from the
   oracle detecting the SEMANTIC violation, never from a crash on
-  malformed input). Then run-oracles copies the governed input set into a
-  temp sandbox, applies the validated mutation, and re-runs the IDENTICAL
-  production invocation — same argv, same entrypoint, no special mode —
-  REQUIRED TO EXIT NONZERO, else FAIL `oracle-nondiscriminating`.
+  malformed input). EXECUTION IS BASELINE-CONTROLLED IN ONE ENVIRONMENT
+  (an oracle could otherwise ignore its governed inputs and key on the
+  relocation itself — exit 0 in the repository, nonzero whenever cwd or
+  repo metadata reveals a temp copy — passing an identical-argv test
+  without detecting anything): run-oracles copies the governed input set
+  into a temp sandbox, FIRST runs the identical production invocation
+  against the UNMUTATED sandbox copy and REQUIRES EXIT 0 (nonzero
+  baseline ⇒ FAIL `oracle-environment-sensitive`), THEN applies the
+  validated mutation to that SAME controlled environment and re-runs the
+  IDENTICAL invocation — same argv, same entrypoint, same sandbox, no
+  special mode — REQUIRED TO EXIT NONZERO, else FAIL
+  `oracle-nondiscriminating`. The only variable between the two runs is
+  the mutation itself.
   Invariants no registry kind fits declare a TRUSTED NEGATIVE FIXTURE
   instead — a reviewed, committed violating artifact whose review rides
   the same PR as the record — subject to the same well-formedness
@@ -456,7 +465,10 @@ per-file designs are in the approved plan; acceptance criteria here.
   oracle (exit 0 unchanged AND exit 0 on the mutated sandbox) ⇒ FAIL
   oracle-nondiscriminating; an oracle that ignores its governed inputs but
   special-cases a flag ⇒ still FAILS (the negative re-runs the identical
-  argv, no flag exists to special-case); a present-but-timeout oracle ⇒
+  argv, no flag exists to special-case); a RELOCATION-SENSITIVE,
+  input-ignoring oracle (exit 0 in-repo, nonzero in any temp copy via
+  cwd/.git detection) ⇒ FAILS oracle-environment-sensitive at the
+  unmutated-sandbox baseline; a present-but-timeout oracle ⇒
   FAIL; an npm-script whose identical re-run exits 0 on the mutated sandbox
   ⇒ FAIL oracle-nondiscriminating; backfill complete (every backfilled
   oracle carries a working mutation-based negative case); verify-contracts +

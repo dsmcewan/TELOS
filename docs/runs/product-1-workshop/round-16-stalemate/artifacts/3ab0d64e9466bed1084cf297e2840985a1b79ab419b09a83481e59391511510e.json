@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:427f60901fefc6bf2a63b3793c518b0661e17f131cae0052a741044768dffa4f",
+  "output_plan_artifact_hash": "sha256:427f60901fefc6bf2a63b3793c518b0661e17f131cae0052a741044768dffa4f",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:8c76815c04a44c333bea03de8e627435fdb041d6a78baff1e9fd24437abb7d2b",
+    "provenance_key": "anthropic:286bf028-e0e6-4dd2-b1b0-73448e1da6a9"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:552a7ccd369f130bc9cb64d6148b77e7508f5ad8aff68d657048efb482084b2e",
+    "provenance_key": "openai:01a0456c-f3a2-73a3-b700-5dbe3554f2e8",
+    "bound_hash": "sha256:427f60901fefc6bf2a63b3793c518b0661e17f131cae0052a741044768dffa4f"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E6-oracle-sandbox-baseline",
+      "claim": "E6's mutation-negative runner still admits a nondiscriminating oracle because the positive invocation runs in the repository while the negative invocation runs only after relocation into a temporary sandbox. An oracle can ignore every governed input, exit 0 in the repository, and exit nonzero whenever cwd or repository metadata indicates the temporary copy; it then satisfies the identical-argv requirement without detecting the semantic mutation. Post-mutation schema validation does not eliminate this environmental confound. Require the identical invocation to pass first in an unmutated sandbox copy, then apply the registry mutation to that same controlled environment and require nonzero; add a relocation-sensitive, input-ignoring oracle fixture that must be rejected. Candidate sha256:427f60901fefc6bf2a63b3793c518b0661e17f131cae0052a741044768dffa4f.",
+      "objection_hash": "sha256:abd0d59cf0bb1d96431ca0cc1d4caf8a478876edb1e75e9f2b8888b7b3ee8e70",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
