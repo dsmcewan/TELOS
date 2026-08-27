@@ -43,14 +43,33 @@ per-file designs are in the approved plan; acceptance criteria here.
   NEW deterministic pre-merge controller). THE MODEL NEVER MERGES — fail-closed
   means the protected branch is not mutated until a deterministic check passes,
   so authorization is pre-merge and machine-executed, attestation post-merge:
-  (i) IN-WORKFLOW (evidence production only, NO merge credential): agents run
-  with a read-only token (no `repo` write); bind `pr_url` → `{owner,repo,
-  number}` (regex, unparseable ⇒ excluded+reported); capture `head_sha`
-  (40-hex) at push; an independent read-only `verify:merge` agent +
-  field-by-field gate produce the candidate evidence set (ordered fail-closed
-  checks: merge-verify-missing, ship-blocked, merge-not-confirmed,
-  foreign-repo, head-sha-mismatch). The workflow's output is a MERGE REQUEST
-  dossier, not a merge.
+  (i) IN-WORKFLOW (evidence production only — agents hold NO repository
+  credential at all; a push-capable token would also reach the merge
+  endpoint, so fix agents cannot be given write): fix agents produce
+  VALIDATED PATCH/COMMIT DATA (diff + commit message + target branch
+  name), not pushes. A deterministic BRANCH PUBLISHER —
+  `workflows/tools/branch-publisher.mjs`, controller-class code inside
+  the protected controller closure — is the sole holder of the write
+  credential: it schema-validates the patch data, applies it in a clean
+  sandbox checkout, pushes the branch, opens the PR, and returns
+  `{pr_url, head_sha}`; its API surface contains NO merge operation and
+  the credential never enters any agent's environment. Agents can
+  therefore CAUSE branch publication (mediated, validated) but cannot
+  invoke or indirectly select a merge. Bind `pr_url` → `{owner,repo,
+  number}` (regex, unparseable ⇒ excluded+reported); head_sha (40-hex)
+  is captured by the PUBLISHER at push, not model-reported; an
+  independent read-only `verify:merge` agent + field-by-field gate
+  produce the candidate evidence set (ordered fail-closed checks:
+  merge-verify-missing, ship-blocked, merge-not-confirmed, foreign-repo,
+  head-sha-mismatch). The workflow's output is a MERGE REQUEST dossier,
+  not a merge. **Accept (credential separation)**: publisher fixture —
+  agent-produced patch data results in a pushed branch + open PR; the
+  agent environment fixture asserts NO credential variable is present;
+  a patch attempting to smuggle a merge (e.g. workflow edits invoking
+  the merge API, or gh merge commands in committed hooks) is inert data
+  — the publisher only pushes and opens PRs, and merge remains
+  exclusively the controller's; publisher closure covered by
+  TRUSTED_CONTROLLER_DIGEST.
   (ii) DETERMINISTIC PRE-MERGE CONTROLLER (the sole holder of merge
   credentials): new `workflows/tools/merge-controller.mjs`, plain zero-dep
   node, run AFTER the workflow. THE CONTROLLER'S OWN CLOSURE IS A
@@ -476,8 +495,14 @@ BOOTSTRAP TRANSACTION (breaks the circularity of a ceremony that gates all
 merges yet itself needs a merge): the four steps above land as a
 GOVERNANCE-ONLY BOOTSTRAP SLICE — strictly DATA: docs/registry surfaces
 only (the published successor plan, authorization-summary.json, AM-43
-doc, deviation record, CURRENT-AUTHORITY registry rows) with NO code, NO
-package dirs, NO woven-surface edits. The EXECUTABLE §5d pivot check is
+doc, deviation record, CURRENT-AUTHORITY registry rows) with NO code and
+NO package dirs. The AM-43 decision record lands in
+`clotho/memory/DECISIONS/` — a WOVEN git-weaver input (AM-42 beside it is
+in the committed snapshot's closure) — so the bootstrap slice CARRIES ITS
+OWN SAME-PR SELF-WEAVE REPUBLICATION per the atomic weave rule (a
+re-weave is regenerated snapshot DATA, not code, so the data-only
+property holds; "no code" refers to executable logic — the §5d check —
+which still ships later in the verifier slice). The EXECUTABLE §5d pivot check is
 NOT in the bootstrap (it is code): it ships in the later
 verifier-hardening slice (E6/§3c work, already ordered after the
 bootstrap) and validates the then-existing pivot state; until it lands,
@@ -693,10 +718,16 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   CI IS MODE-SPLIT BY WHAT THE PR TOUCHES (a blanket historical PR check
   would let a woven-input PR merge with a stale-but-intact snapshot,
   gutting the atomic weave rule): the required institutional-memory PR job
-  first diffs the PR against its base for WOVEN-INPUT paths (derived from
-  the snapshot's own recorded closure — package manifests,
-  clotho/inventory.mjs, woven docs — not a hand-maintained list); if ANY
-  woven input changed, the job runs the AUTHORITATIVE default
+  first diffs the PR against its base for WOVEN-INPUT paths, classified
+  by PROPOSED-TREE INPUT DISCOVERY: each changed/added file is tested
+  against the weaver's own input RULES evaluated over the PR head
+  (package-roots membership, memory-dir patterns, manifest globs — the
+  same predicates weave.mjs uses to enumerate inputs), NOT merely by
+  membership in the prior snapshot's recorded closure — a closure list
+  cannot contain a NEWLY ADDED woven file (e.g. a fresh
+  clotho/memory/DECISIONS record), so closure-only selection would pick
+  historical mode and merge a stale snapshot; if ANY
+  woven input changed OR WAS ADDED, the job runs the AUTHORITATIVE default
   `--verify-committed` at the ACTUAL PR HEAD as a REQUIRED pre-merge
   check — which fails unless the PR carries its own re-weave (the atomic
   weave rule, machine-enforced BEFORE merge, not discovered on main); if
@@ -709,7 +740,11 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   trust protection are independent properties.
   **Accept (CI split)**: a fixture PR changing a package manifest WITHOUT
   a re-weave ⇒ the required PR job selects authoritative mode and goes
-  red; the same PR with its re-weave ⇒ green; a docs-only PR ⇒ historical
+  red; the same PR with its re-weave ⇒ green; ADDED-WOVEN-FILE
+  regression: a PR that only ADDS a new file under a woven memory dir
+  (absent from the prior snapshot closure) without a re-weave ⇒
+  authoritative mode selected and red — closure-only selection would
+  have wrongly picked historical; a docs-only PR ⇒ historical
   mode selected.
   **Accept**: stale-head checkout + default `--verify-committed` ⇒ fatal
   input-head-stale; same checkout with `--historical` ⇒ exit 0 with
@@ -851,10 +886,10 @@ pins are affected) IN THE SAME PR, so every merged head passes
 such per-change re-weaves). Slices touching only non-woven surfaces
 (docs/runs/clotho-self-weave/run.mjs, workflows/, .github/, flagship+demo exclude-listed trees, new
 excluded package dirs) ride without one — each slice's PR body states which
-case applies and why. The naming/versions slice and the excluded-dirs
-implementation slice are therefore each ATOMIC (rename / exclude-list
-edit + their re-weave in one PR); the governance bootstrap slice touches
-NO woven surface by construction and needs none. The
+case applies and why. The naming/versions slice, the excluded-dirs
+implementation slice, and the GOVERNANCE BOOTSTRAP slice (its AM-43
+record is a woven memory input) are therefore each ATOMIC — the
+touched-woven-input edit plus its re-weave in one PR. The
 **train-end re-weave** remains as the FINAL capture at the qualified head
 (full self-weave republication + lachesis pins + flagship live-graph +
 expected-flagship regen + Eye re-audit + any residual woven-doc edits).

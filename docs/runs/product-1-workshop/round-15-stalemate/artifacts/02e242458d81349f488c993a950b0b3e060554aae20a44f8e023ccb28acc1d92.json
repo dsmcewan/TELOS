@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:governance-bootstrap-atomic-weave",
+        "claim": "The governance bootstrap is incorrectly classified as touching no woven surface. It necessarily adds the AM-43 component decision; at release commit fc0fa05, `clotho` is in `PACKAGE_ROOTS` and `clotho/memory/DECISIONS/AM-42.md` is demonstrably a git-weaver input in the committed self-weave snapshot, so the adjacent AM-43 record is a prospective woven input. The bootstrap nevertheless forbids a same-PR re-weave. Worse, the freshness selector derives woven paths from the prior snapshot's recorded closure, which cannot contain a newly added AM-43 path: it can select historical mode and merge a stale snapshot, while a selector that correctly recognizes the new input would select authoritative mode and fail because the bootstrap carries no re-weave. Require proposed-tree input discovery with an added-woven-file regression and include the bootstrap's same-PR re-weave, or restructure the transaction without introducing a woven record. Candidate sha256:c1b5dcd9d81b40329179d06b5f25fe489131fc6b0cc2e7ebe2b8723b4390e0af."
+      },
+      {
+        "scope": "candidate:E1-fix-credential-separation",
+        "claim": "E1's credential model cannot execute the Hestia workflow it specifies. It gives every in-workflow agent a read-only token with no repository write permission, but the Fix agent must create and push a branch and open a PR; the post-attestation design likewise depends on branches those agents pushed. At fc0fa05 that mutation is delegated directly to the agent in `workflows/hestia.js`, and the candidate introduces no trusted non-model branch publisher. A read-only credential cannot push, while exposing the repository write permission needed to push also lets the model invoke the merge endpoint for an otherwise eligible PR, violating the deterministic controller's sole-merger boundary. Specify a deterministic publisher that receives validated patch/commit data while withholding its credential and endpoint authority from agents, with tests proving agents can cause branch publication but cannot invoke or indirectly select a merge. Candidate sha256:c1b5dcd9d81b40329179d06b5f25fe489131fc6b0cc2e7ebe2b8723b4390e0af."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a04566-2fd7-75a0-b10a-9579f168de49",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a04566-2fd7-75a0-b10a-9579f168de49",
+    "source": "cli-seats/codex_ask"
+  }
+}
