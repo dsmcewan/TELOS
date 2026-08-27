@@ -244,7 +244,27 @@ per-file designs are in the approved plan; acceptance criteria here.
   main-push/release workflows recompute the checked-out verifier
   closure's digest and refuse to invoke it on mismatch
   (`verifier-untrusted`) — moved only by the same Eye ceremony that moves
-  the chain root. (3) RELEASE: the authoritative release verification is
+  the chain root. THE SAME DISCIPLINE COVERS EVERY MERGE/RELEASE VERDICT
+  PRODUCER, not just the memory gate (an authenticated workflow invoking
+  an unpinned script is authority from mutable evidence: swapping
+  `clotho/run.mjs` — deliberately unwoven — for constant-success code
+  would reopen blocker 3 behind a green authenticated check):
+  `TRUSTED_VERDICT_CLOSURE_DIGEST` covers the complete transitive
+  closures of `clotho/run.mjs`, `render-readiness.mjs`,
+  `run-oracles.mjs`, `verify-contracts.mjs`, and the attestation tooling
+  — enumerated by a manifest the bootstrap tool generates from real
+  imports, not a hand list. PR CI BASE-SOURCES these scripts exactly like
+  the memory-gate closure (a proposed verdict producer never evaluates
+  its own PR); main/release workflows digest-check before invoking
+  (`verdict-producer-untrusted` on mismatch); changes ride the Eye-signed
+  transition mechanism under the covered_files discipline. **Accept
+  (verdict producers)**: script-only bypass fixture — a PR replaces
+  run.mjs with a constant-success stub and changes a woven input without
+  re-weaving, workflow file unchanged ⇒ the base-sourced run.mjs
+  evaluates, fails, and the required check is red; analogous
+  render-readiness.mjs and run-oracles.mjs swaps refused the same way;
+  a main-context swap with an unmoved digest ⇒
+  verdict-producer-untrusted. (3) RELEASE: the authoritative release verification is
   executed by the Eye LOCALLY per RELEASING.md from a tree verified
   against the protected chain root BEFORE signing the tag; CI re-runs it
   as defense-in-depth, not as the sole authority.
@@ -268,18 +288,32 @@ per-file designs are in the approved plan; acceptance criteria here.
   records the residual honestly: a human merge overriding both is
   maintainer-level action, backstopped by the digest check failing on
   every subsequent run.
-  (5) GENESIS IS AN EXPLICIT EYE-LOCAL PROVISIONING CEREMONY (the
-  fc0fa05-era base verifier cannot recognize successor rules, so the
-  first hardened deployment must not depend on it): an out-of-tree
-  bootstrap tool — run locally by the Eye, documented in RELEASING.md's
-  governance appendix, never woven — takes the REVIEWED E2 PR head,
-  validates the new verifier closure, workflow files, chain roots, and
-  the Eye's own signature end-to-end, prints the digests, and the Eye
-  sets ALL protected variables (CURRENT_AUTHORITY_CHAIN_ROOT,
-  EYE_AUTHORITY_PUBKEY, VERIFIER_CLOSURE_DIGEST,
-  TRUSTED_WORKFLOW_DIGEST) BEFORE the E2 slice merges — at merge time the
-  protected state already recognizes the successor; no old-verifier
-  self-recognition is assumed. **Accept (verifier
+  (5) GENESIS IS AN EXPLICIT EYE-LOCAL PROVISIONING CEREMONY covering
+  EVERY protected surface, the controller included (the fc0fa05-era base
+  has neither a hardened verifier NOR any merge controller, so no
+  first deployment may depend on either recognizing its successor —
+  and the first controller cannot base-source itself to merge its own
+  introducing PR): an out-of-tree bootstrap tool — run locally by the
+  Eye, documented in RELEASING.md's governance appendix, never woven —
+  takes the REVIEWED head of each protected-surface-introducing slice
+  (E2's verifier, E1's controller), validates the complete closures,
+  workflow files, chain roots, and the Eye's own signature end-to-end,
+  prints the digests, and the Eye sets ALL protected variables
+  (CURRENT_AUTHORITY_CHAIN_ROOT, EYE_AUTHORITY_PUBKEY,
+  VERIFIER_CLOSURE_DIGEST, TRUSTED_WORKFLOW_DIGEST,
+  TRUSTED_CONTROLLER_DIGEST, TRUSTED_VERDICT_CLOSURE_DIGEST) BEFORE the
+  corresponding slice merges. THE CONTROLLER'S INTRODUCING PR lands by a
+  RECORDED EXCEPTIONAL BOOTSTRAP MERGE: the Eye merges it by hand after
+  running the bootstrap tool's validation, and the exception is recorded
+  (step-ledger entry + a bootstrap-merge record naming the PR, head,
+  validated digests, and the Eye's signature) — a one-time, documented
+  deviation from the sole-merger rule, never a silent bypass; from the
+  next merge on, the provisioned controller is the sole merger.
+  **Accept (genesis)**: an unprovisioned controller (TRUSTED_CONTROLLER_
+  DIGEST unset) refuses to operate (controller-untrusted); a substituted
+  initial controller whose closure digest differs from the provisioned
+  value refuses at startup; the bootstrap-merge record validates against
+  the merged head. **Accept (verifier
   integrity)**: adversarial regression — a fixture PR replaces gate.mjs
   with a constant-success stub; the base-sourced execution ignores the
   stub, evaluates truthfully, and additionally reports

@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:production-verifier-closure-integrity",
+        "claim": "The trusted-workflow mechanism authenticates the Actions producer and workflow-file bytes, but not the repository scripts that workflow executes. E2 protects only `ai-native-memory/scripts/gate.mjs` and its imports; the freshness design explicitly leaves `clotho/run.mjs` unpinned, while `pylae verify` and the release gate treat its `verified_current` result as authoritative. A PR can replace `run.mjs` with constant-success code and change a woven input without re-weaving; the unchanged trusted workflow then produces an authenticated green check that the merge controller accepts, and release verification invokes the same compromised verifier. `render-readiness.mjs` and `run-oracles.mjs` have the analogous hole. This reopens blocker 3 and violates the frozen prohibition on production authority from mutable evidence. Protect or base-source the complete transitive closures of every merge/release verdict producer, bind changes through the Eye-signed transition mechanism, and add script-only/unchanged-workflow bypass fixtures. Candidate sha256:487a8562f5694fae0cc0d0f99eecb77e78d557fd86e38cf3b853ffb5e1fae177."
+      },
+      {
+        "scope": "candidate:E1-controller-genesis",
+        "claim": "The first merge controller has no sound genesis path. It cannot execute from a trusted base to merge its own introducing PR because no controller exists in that base, while E2's explicit genesis ceremony validates only the reviewed E2 head and its supposedly complete protected-variable list omits `TRUSTED_CONTROLLER_DIGEST`. The approach therefore neither provisions an externally validated initial controller digest nor specifies how the E1 slice lands without bypassing the stated sole-merger and transition rules. Add an Eye-local first-controller ceremony—separate or combined with E2—that validates the exact initial controller closure, provisions `TRUSTED_CONTROLLER_DIGEST` before first use, records the exceptional bootstrap merge, and has a regression proving an unprovisioned or substituted initial controller cannot operate. Candidate sha256:487a8562f5694fae0cc0d0f99eecb77e78d557fd86e38cf3b853ffb5e1fae177."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a04554-e280-70a0-a1f2-18b1069033d8",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a04554-e280-70a0-a1f2-18b1069033d8",
+    "source": "cli-seats/codex_ask"
+  }
+}
