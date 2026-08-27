@@ -1,0 +1,55 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:f80fc0e4dee488bfee019bf960043a8be3a98e526c6aa9787a88861eca9b3f8f",
+  "output_plan_artifact_hash": "sha256:f80fc0e4dee488bfee019bf960043a8be3a98e526c6aa9787a88861eca9b3f8f",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:5c4f9c883726e391ad4664761278f4fe170a549e6c7e3b3f666d7de0d023f170",
+    "provenance_key": "anthropic:b9549f90-be0e-4ade-85c9-04c4c7e04269"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:1b2ea61401edc6a24ba2c7e72c8cdf55f819aace91df16afe69044974440346b",
+    "provenance_key": "openai:01a0452e-02e8-7c12-b035-5eeb16f9d353",
+    "bound_hash": "sha256:f80fc0e4dee488bfee019bf960043a8be3a98e526c6aa9787a88861eca9b3f8f"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E2-trusted-invocation",
+      "claim": "The protected verifier closure still excludes its invoking GitHub workflow. A PR can modify the required-check workflow to skip base-tree materialization and the VERIFIER_CLOSURE_DIGEST check, then emit the expected successful check; requiring PRs and forbidding direct pushes does not prevent this PR-mediated bypass, and the merge controller only observes the resulting green status. The invocation path must be independently protected—such as an out-of-tree required workflow—and tested with a workflow-only bypass fixture. Candidate sha256:f1a1e91ba6a6b4fa043dc68669a029dbad49caaac169c9c2ec9c76e88a3a6779.",
+      "objection_hash": "sha256:c226b96cdb7eccce023356456c1eb57a43bdef301a2450d6fae27bc3dcb47346",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:E2-bootstrap",
+      "claim": "The initial hardened-verifier deployment is circular. At fc0fa05, the trusted base copy cannot recognize verifier-closure changes, protected-root variables, or Eye-signed authority transitions, so it cannot enforce the rule required to admit its own successor. Tests that assume the hardened verifier is already the base do not establish a safe genesis transition. The approach needs an explicit out-of-tree bootstrap verifier and provisioning ceremony that validates the first closure, roots, workflow, and Eye signature before the E2 merge.",
+      "objection_hash": "sha256:ab493ae4207d82ba1e3c49e7049dd63c88e14466d51a7c910c49c1a2e6d516f9",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:production-readiness-gate",
+      "claim": "Typed evidence is still not bound semantically to the readiness item it purports to discharge. Any passing run-oracles entry or green check run at the release SHA can be referenced by an unrelated P0 item; executing it and checking its SHA proves only that check's own claim, contrary to the frozen rule that green CI alone is not proof of operability. Each item needs a closed evidence contract binding item_id and required claim to permitted oracle/check/artifact semantics, plus a negative fixture proving that swapping valid evidence between unrelated items fails.",
+      "objection_hash": "sha256:57821e8914fee5df00dd1cd6472177efc1b09f852813c50e37f2d32d79af33d0",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:Node-version-reconciliation",
+      "claim": "Blanket exclusion of docs/runs/ violates the frozen mandate to reconcile every tracked Node-version documentation claim and relies on directory location as a normativity decision. That tree contains active workshop and authority artifacts as well as historical evidence. The oracle must scan all tracked text and require an authenticated historical/non-governing disposition for immutable legacy claims, or route an actual incompatibility with frozen artifacts as plan-escalation; a false-positive-only inventory and directory exclusion do not discharge the mandate.",
+      "objection_hash": "sha256:819d9698104794b99c5d3f612715edd528bcbc00e76fc1ff93d0b61191cd36e6",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

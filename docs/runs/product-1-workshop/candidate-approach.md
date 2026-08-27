@@ -202,14 +202,46 @@ per-file designs are in the approved plan; acceptance criteria here.
   the chain root. (3) RELEASE: the authoritative release verification is
   executed by the Eye LOCALLY per RELEASING.md from a tree verified
   against the protected chain root BEFORE signing the tag; CI re-runs it
-  as defense-in-depth, not as the sole authority. **Accept (verifier
+  as defense-in-depth, not as the sole authority.
+  (4) THE INVOKING WORKFLOW IS PROTECTED THE SAME WAY (a PR that edits
+  the workflow to skip materialization and emit green defeats layers 1–3,
+  and GitHub runs PR-modified workflows; org-level required workflows are
+  unavailable to a personal repo, so enforcement sits in the merge path
+  we control): the protected variable set gains `TRUSTED_WORKFLOW_DIGEST`
+  covering the verifier-invoking workflow file(s) under
+  `.github/workflows/`; the E1 MERGE CONTROLLER — the sole merger —
+  computes the digest of those files AT THE PR HEAD immediately before
+  each merge and REFUSES (`workflow-modified`) unless it equals the
+  protected value or the PR carries a valid Eye-signed transition record
+  covering the workflow change. CODEOWNERS additionally routes
+  `.github/workflows/` to the Eye for the human-merge path, and the spec
+  records the residual honestly: a human merge overriding both is
+  maintainer-level action, backstopped by the digest check failing on
+  every subsequent run.
+  (5) GENESIS IS AN EXPLICIT EYE-LOCAL PROVISIONING CEREMONY (the
+  fc0fa05-era base verifier cannot recognize successor rules, so the
+  first hardened deployment must not depend on it): an out-of-tree
+  bootstrap tool — run locally by the Eye, documented in RELEASING.md's
+  governance appendix, never woven — takes the REVIEWED E2 PR head,
+  validates the new verifier closure, workflow files, chain roots, and
+  the Eye's own signature end-to-end, prints the digests, and the Eye
+  sets ALL protected variables (CURRENT_AUTHORITY_CHAIN_ROOT,
+  EYE_AUTHORITY_PUBKEY, VERIFIER_CLOSURE_DIGEST,
+  TRUSTED_WORKFLOW_DIGEST) BEFORE the E2 slice merges — at merge time the
+  protected state already recognizes the successor; no old-verifier
+  self-recognition is assumed. **Accept (verifier
   integrity)**: adversarial regression — a fixture PR replaces gate.mjs
   with a constant-success stub; the base-sourced execution ignores the
   stub, evaluates truthfully, and additionally reports
   verifier-modified-in-change; a helper-import swap is caught the same
   way (closure from base, not from the PR); a main-context fixture with a
   swapped verifier and an unmoved VERIFIER_CLOSURE_DIGEST ⇒ the workflow
-  refuses to invoke it (verifier-untrusted); ruleset-off fixture ⇒
+  refuses to invoke it (verifier-untrusted); WORKFLOW-ONLY BYPASS fixture
+  — a PR that edits ONLY the invoking workflow to skip the digest check
+  and emit success ⇒ the merge controller refuses it (workflow-modified,
+  digest ≠ TRUSTED_WORKFLOW_DIGEST, no transition record); genesis
+  fixture — the bootstrap tool validates a staged E2 head and its printed
+  digests match what the provisioned variables must hold; ruleset-off fixture ⇒
   unsafe-branch-config.
 - **E3 auditor full-taxonomy + no-clean-on-zero, EXCEPTIONLESS** (`ai-native-memory/scripts/audit.mjs`).
   Root-as-memory-dir (marker predicate, root arg only); zero discovered sets ⇒
@@ -403,12 +435,21 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   forbids): `render-readiness.mjs --gate` exits nonzero unless every
   IN-SCOPE P0 item DISCHARGES with TYPED, VALIDATED evidence —
   path-exists is not a verdict. `done` requires an evidence object
-  `{kind: oracle|check-run|artifact, ref}` the gate EVALUATES: `oracle`
-  refs execute through run-oracles (with their mutation-negative
-  discipline) and must pass; `check-run` refs are queried green AT THE
-  RELEASE SHA via the checks API; `artifact` refs must schema-validate
-  and match their recorded content address (empty/stale/unrelated files
-  fail typed validation). `na-by-signed-adr` requires the ADR sha to
+  `{kind: oracle|check-run|artifact, ref}` the gate EVALUATES — and the
+  evidence is SEMANTICALLY BOUND to its item, not merely valid (any green
+  check could otherwise discharge an unrelated item; green CI alone is
+  not proof of operability): each P0 item carries a reviewed
+  `evidence_contract` — `{claim: <the operational property>, permitted:
+  {oracle_ids[] | check_names[] | artifact_schemas[]}}` — and the binding
+  is BIDIRECTIONAL: the referenced oracle/check/artifact record itself
+  names the `readiness_item` it discharges; the gate fails
+  `evidence-unbound` unless ref ∈ the item's permitted set AND the
+  evidence's declared readiness_item equals the item's id. Then
+  evaluation: `oracle` refs execute through run-oracles (with their
+  mutation-negative discipline) and must pass; `check-run` refs are
+  queried green AT THE RELEASE SHA via the checks API; `artifact` refs
+  must schema-validate and match their recorded content address
+  (empty/stale/unrelated files fail typed validation). `na-by-signed-adr` requires the ADR sha to
   resolve AND an EYE AUTHORIZATION — an Ed25519 signature over
   (item_id ‖ adr_sha) verified against the protected
   `EYE_AUTHORITY_PUBKEY`; a content-addressed but unsigned ADR cannot
@@ -421,7 +462,8 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   literally). **Accept**: a fixture register with one in-scope P0 item
   `open` ⇒ `--gate` exit nonzero and the release gate job red; `done`
   with an empty/mismatched-digest artifact ⇒ nonzero; `done` with a
-  failing oracle ⇒ nonzero; na-by-signed-adr with a valid sha but NO Eye
+  failing oracle ⇒ nonzero; SWAP fixture: two items exchange each other's
+  individually-valid evidence refs ⇒ both fail evidence-unbound; na-by-signed-adr with a valid sha but NO Eye
   signature ⇒ nonzero; the same item with sha + valid Eye signature ⇒
   green; no argv/env combination makes `--gate` report-only (asserted
   over the flag matrix).
@@ -439,19 +481,29 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   range to admit no version below 22.12.0 (range-minimum check, not string
   match) — `^20.0.0`, `>=18`, `20.x` all fail arithmetically; a tracked
   manifest with NO engines field fails `engines-missing`.
-  (b) PROSE (broad-capture + reviewed inventory): tracked text files
-  (excluding frozen historical evidence under docs/runs/) are scanned with a
-  deliberately OVER-BROAD matcher — any occurrence of `[Nn]ode(\.js)?`
+  (b) PROSE (broad-capture + reviewed inventory): ALL tracked text files —
+  no directory exclusions; docs/runs/ contains live workshop and authority
+  artifacts alongside frozen evidence, so location is never a normativity
+  ruling — are scanned with a deliberately OVER-BROAD matcher — any occurrence of `[Nn]ode(\.js)?`
   within a short window of a version-looking token (`v?\d+(\.\d+)*`,
   `\^|~|>=|≥|\+|or later|and up`) is a HIT. Every hit must either normalize
   to a version >= 22.12 (a small tested normalizer handles the common
   grammars: "Node 18+", "Node.js 21+", "requires Node v20.11 or later",
   "Node ≥18") or appear in a reviewed inventory
   `docs/institutional-memory/product/node-version-claims.json` recording
-  {file, line, matched_text, disposition} — where disposition
-  `false-positive` is the ONLY passing value and the inventory must be
-  EXACTLY current (a hit not listed ⇒ FAIL unreconciled-claim; a listed
-  entry no longer matching ⇒ FAIL stale-inventory). Current offenders
+  {file, line, matched_text, disposition} — dispositions form a CLOSED
+  set with machine-checked preconditions: `false-positive` (the text is
+  not actually a version claim), or `historical-non-governing` (the claim
+  lives in an IMMUTABLE pinned artifact — the oracle verifies the file is
+  content-addressed/pinned by a snapshot or ledger, not merely located
+  somewhere, since directory location is never a normativity ruling; an
+  entry claiming it for an unpinned file ⇒ FAIL). A sub-22.12 claim in a
+  CURRENT/governing doc has NO passing disposition — it must be corrected,
+  and a genuine incompatibility inside a frozen artifact (one that would
+  require mutating pinned bytes to fix) is routed as PLAN-ESCALATION to
+  the Eye, never silently inventoried. The inventory must be EXACTLY
+  current (a hit not listed ⇒ FAIL unreconciled-claim; a listed entry no
+  longer matching ⇒ FAIL stale-inventory). Current offenders
   (including the employment-brief doc the checklist names) are corrected in
   the same slice. **Accept**: planted `Node 18+`, `Node.js 21+`,
   `requires Node v20.11 or later`, and a manifest `"node": "^20.0.0"` ALL

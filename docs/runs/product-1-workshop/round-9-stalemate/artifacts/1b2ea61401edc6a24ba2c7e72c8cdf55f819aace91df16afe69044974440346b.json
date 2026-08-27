@@ -1,0 +1,37 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E2-trusted-invocation",
+        "claim": "The protected verifier closure still excludes its invoking GitHub workflow. A PR can modify the required-check workflow to skip base-tree materialization and the VERIFIER_CLOSURE_DIGEST check, then emit the expected successful check; requiring PRs and forbidding direct pushes does not prevent this PR-mediated bypass, and the merge controller only observes the resulting green status. The invocation path must be independently protected—such as an out-of-tree required workflow—and tested with a workflow-only bypass fixture. Candidate sha256:f1a1e91ba6a6b4fa043dc68669a029dbad49caaac169c9c2ec9c76e88a3a6779."
+      },
+      {
+        "scope": "candidate:E2-bootstrap",
+        "claim": "The initial hardened-verifier deployment is circular. At fc0fa05, the trusted base copy cannot recognize verifier-closure changes, protected-root variables, or Eye-signed authority transitions, so it cannot enforce the rule required to admit its own successor. Tests that assume the hardened verifier is already the base do not establish a safe genesis transition. The approach needs an explicit out-of-tree bootstrap verifier and provisioning ceremony that validates the first closure, roots, workflow, and Eye signature before the E2 merge."
+      },
+      {
+        "scope": "candidate:production-readiness-gate",
+        "claim": "Typed evidence is still not bound semantically to the readiness item it purports to discharge. Any passing run-oracles entry or green check run at the release SHA can be referenced by an unrelated P0 item; executing it and checking its SHA proves only that check's own claim, contrary to the frozen rule that green CI alone is not proof of operability. Each item needs a closed evidence contract binding item_id and required claim to permitted oracle/check/artifact semantics, plus a negative fixture proving that swapping valid evidence between unrelated items fails."
+      },
+      {
+        "scope": "candidate:Node-version-reconciliation",
+        "claim": "Blanket exclusion of docs/runs/ violates the frozen mandate to reconcile every tracked Node-version documentation claim and relies on directory location as a normativity decision. That tree contains active workshop and authority artifacts as well as historical evidence. The oracle must scan all tracked text and require an authenticated historical/non-governing disposition for immutable legacy claims, or route an actual incompatibility with frozen artifacts as plan-escalation; a false-positive-only inventory and directory exclusion do not discharge the mandate."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a0452e-02e8-7c12-b035-5eeb16f9d353",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a0452e-02e8-7c12-b035-5eeb16f9d353",
+    "source": "cli-seats/codex_ask"
+  }
+}
