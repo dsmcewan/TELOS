@@ -9,6 +9,6 @@
     "test": "npm run check && node scripts/test-gate.mjs && node scripts/test-sign.mjs && node scripts/test-trust.mjs && node scripts/test-council-orchestrator.mjs && node scripts/test-breakout-coverage.mjs && node scripts/test-teams.mjs && node scripts/test-decompose.mjs && node scripts/test-build-orchestrator.mjs && node scripts/test-team-prompts.mjs && node scripts/test-situation.mjs && node scripts/test-runtime-adaptation.mjs && node scripts/test-schemas.mjs && node scripts/test-seat-registry.mjs && node scripts/test-risk-policy.mjs && node scripts/test-evidence.mjs && node scripts/test-concerns.mjs && node scripts/test-proposal-gate.mjs && node scripts/test-check-registry.mjs && node scripts/test-proposal-orchestrator.mjs && node scripts/test-daedalus.mjs && node scripts/test-proposal-lifecycle.mjs && node scripts/test-standing.mjs && node scripts/stress-test-gate.mjs && node scripts/stress-tests.mjs && npm --prefix ../breakout test"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22.12.0"
   }
 }

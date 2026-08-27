@@ -9,6 +9,6 @@
     "test": "npm run check && node test/verify.test.mjs"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22.12.0"
   }
 }

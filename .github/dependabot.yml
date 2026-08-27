@@ -1,0 +1,15 @@
+# Keeps the SHA-pinned GitHub Actions fresh (Dependabot reads the `# vX.Y.Z`
+# comments beside each pin). npm is scoped to narcissus/flagship ONLY — every
+# other package is zero-dependency by reviewed invariant, and a repo-wide npm
+# ecosystem would fight it.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: npm
+    directory: /narcissus/flagship
+    schedule:
+      interval: weekly
+    versioning-strategy: increase-if-necessary
