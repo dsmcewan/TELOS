@@ -11,7 +11,9 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { runBreakout } from "../breakout/breakout.mjs";
+import { resolveUnder } from "../breakout/verifier.mjs";
 import { factBreakout } from "../forge/breakouts.mjs";
+import { WORKSTREAM_ID, WORKSTREAM_ID_MAX } from "../forge/manifest.mjs";
 import { WORKSTREAMS } from "./workstreams.mjs";
 
 export { factBreakout };
@@ -38,12 +40,19 @@ export async function runTeamBreakouts({ baseDir, architecture, maxRounds = 3, m
     records.push({ ...record, checks, lens: ws.lens, signer: ws.signer, isUi: !!ws.isUi, finding: ws.finding, findingsKey: ws.findingsKey });
 
     // Persist the fight log as run evidence: every round's blockers and
-    // resolutions plus any referee ruling, under .telos/fights/.
+    // resolutions plus any referee ruling, under .telos/fights/. The id is
+    // grammar-checked OUTSIDE the best-effort catch — an escaping path must
+    // fail loudly, never be swallowed as a skipped evidence write.
+    if (typeof ws.id !== "string" || !WORKSTREAM_ID.test(ws.id) || ws.id.length > WORKSTREAM_ID_MAX) {
+      throw new Error(`fight-log workstream id ${JSON.stringify(ws.id)} fails the portable filename grammar ${WORKSTREAM_ID}`);
+    }
+    const fightsDir = path.join(baseDir, ".telos", "fights");
+    mkdirSync(fightsDir, { recursive: true });
+    const fightPath = resolveUnder(fightsDir, `${ws.id}.json`);
+    if (!fightPath) throw new Error(`fight-log path for workstream ${JSON.stringify(ws.id)} escapes ${fightsDir} — refusing to write`);
     try {
-      const fightsDir = path.join(baseDir, ".telos", "fights");
-      mkdirSync(fightsDir, { recursive: true });
       writeFileSync(
-        path.join(fightsDir, `${ws.id}.json`),
+        fightPath,
         JSON.stringify({ workstream: ws.id, converged: record.converged, rounds: record.rounds, referee: record.referee ?? null }, null, 2) + "\n"
       );
     } catch { /* evidence write is best-effort; the verdict itself is unaffected */ }
