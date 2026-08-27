@@ -1,0 +1,63 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:49886e706d732e3d25abf999700b1a56cbeed57c35e19e236c88c8d2cefc3d9b",
+  "output_plan_artifact_hash": "sha256:49886e706d732e3d25abf999700b1a56cbeed57c35e19e236c88c8d2cefc3d9b",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:7591611131282f94d9e79f5fcb806310156b04108858c97c1c6da9edf5444bb1",
+    "provenance_key": "anthropic:6dc6caee-e153-4900-9c68-0cb71cc9115e"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:30b04b40501eb729e7a5fb2252db0ab9e9406b817175ee076c7ebc217968ff07",
+    "provenance_key": "openai:01a0451f-2f5e-7420-b973-a7b2392a48a2",
+    "bound_hash": "sha256:49886e706d732e3d25abf999700b1a56cbeed57c35e19e236c88c8d2cefc3d9b"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E1-atomic-merge-authorization",
+      "claim": "The controller still has a base-branch TOCTOU gap: it queries the current base and then calls the merge API with a guard only on the PR head SHA. An external base update between those operations can make the checked mergeability and required-check results stale while the PUT still merges. The plan neither mandates strict up-to-date branch protection with a non-bypass-capable controller credential nor provides a regression covering this race, so eligibility is not re-derived at the actual mutation point.",
+      "objection_hash": "sha256:b3968886b2d5635ad0b1e934916fb9f1ea8ddaef8c74c71a317ae1ccd9091356",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:E2-verifier-integrity",
+      "claim": "Trusted-base execution protects only pull-request CI. Main-push and release verification execute the verifier and invoking workflow from the checked-out tree, so the direct-push/required-check-override attacker explicitly considered by the approach can replace gate.mjs or its launcher with constant success while remaining unable to update CURRENT_AUTHORITY_CHAIN_ROOT. The claimed later denial is therefore bypassable; every authoritative context needs an independently trusted verifier closure and invocation path.",
+      "objection_hash": "sha256:0b9a196583dd5da2e86c284edae451729967a82ed28057e6194eda217dbc5866",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:production-readiness-gate",
+      "claim": "The hard go-live oracle is nondiscriminating: status done requires only that evidence paths exist, and na-by-signed-adr requires only that an ADR SHA resolves. Empty, stale, failing, or unrelated evidence can therefore satisfy done, while a content-addressed but unsigned or unauthorized ADR can satisfy the purported signed-ADR exception. The release gate must validate typed evidence outcomes and bind N/A decisions to an authenticated Eye authorization/signature.",
+      "objection_hash": "sha256:4b096f23fd3a9e8d8a6501ab458150354d638ac3f655b7ebe1f2c69fd2733ef4",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:release-publication",
+      "claim": "The closed-allowlist and attestation checks occur after assets are uploaded to the release. Unless upload is explicitly confined to a non-public draft and publication is a final operation permitted only after the exact-set and per-asset attestation checks pass, an extra or unattested asset can become publicly downloadable before the job fails. Flagging the release after exposure is not fail-closed publication.",
+      "objection_hash": "sha256:29e689d20a29d9c06c707bbd188ade5ee8570638c921e751616cb0433606d64a",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:governance-bootstrap-boundary",
+      "claim": "The bootstrap transaction is internally inconsistent: it is declared strictly docs/registry-only with NO code and NO woven edits, yet it includes a new verify-contracts §5d executable check; Section 6 also says the ceremony slice atomically carries rename/exclude plus a re-weave while separately moving those changes to a later implementation slice. The approach therefore has no unambiguous bootstrap artifact that both stays within its claimed current-authority exception and supplies the asserted deterministic pivot check.",
+      "objection_hash": "sha256:51b03e53a88d51104fee566e6e335d1caa6a236f303e5a6a6e667686c37796e3",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

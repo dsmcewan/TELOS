@@ -1,0 +1,41 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E1-atomic-merge-authorization",
+        "claim": "The controller still has a base-branch TOCTOU gap: it queries the current base and then calls the merge API with a guard only on the PR head SHA. An external base update between those operations can make the checked mergeability and required-check results stale while the PUT still merges. The plan neither mandates strict up-to-date branch protection with a non-bypass-capable controller credential nor provides a regression covering this race, so eligibility is not re-derived at the actual mutation point."
+      },
+      {
+        "scope": "candidate:E2-verifier-integrity",
+        "claim": "Trusted-base execution protects only pull-request CI. Main-push and release verification execute the verifier and invoking workflow from the checked-out tree, so the direct-push/required-check-override attacker explicitly considered by the approach can replace gate.mjs or its launcher with constant success while remaining unable to update CURRENT_AUTHORITY_CHAIN_ROOT. The claimed later denial is therefore bypassable; every authoritative context needs an independently trusted verifier closure and invocation path."
+      },
+      {
+        "scope": "candidate:production-readiness-gate",
+        "claim": "The hard go-live oracle is nondiscriminating: status done requires only that evidence paths exist, and na-by-signed-adr requires only that an ADR SHA resolves. Empty, stale, failing, or unrelated evidence can therefore satisfy done, while a content-addressed but unsigned or unauthorized ADR can satisfy the purported signed-ADR exception. The release gate must validate typed evidence outcomes and bind N/A decisions to an authenticated Eye authorization/signature."
+      },
+      {
+        "scope": "candidate:release-publication",
+        "claim": "The closed-allowlist and attestation checks occur after assets are uploaded to the release. Unless upload is explicitly confined to a non-public draft and publication is a final operation permitted only after the exact-set and per-asset attestation checks pass, an extra or unattested asset can become publicly downloadable before the job fails. Flagging the release after exposure is not fail-closed publication."
+      },
+      {
+        "scope": "candidate:governance-bootstrap-boundary",
+        "claim": "The bootstrap transaction is internally inconsistent: it is declared strictly docs/registry-only with NO code and NO woven edits, yet it includes a new verify-contracts §5d executable check; Section 6 also says the ceremony slice atomically carries rename/exclude plus a re-weave while separately moving those changes to a later implementation slice. The approach therefore has no unambiguous bootstrap artifact that both stays within its claimed current-authority exception and supplies the asserted deterministic pivot check."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a0451f-2f5e-7420-b973-a7b2392a48a2",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a0451f-2f5e-7420-b973-a7b2392a48a2",
+    "source": "cli-seats/codex_ask"
+  }
+}

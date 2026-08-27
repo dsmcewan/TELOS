@@ -59,11 +59,21 @@ per-file designs are in the approved plan; acceptance criteria here.
   for each requested PR, AT ITS OWN MUTATION POINT, the controller
   re-queries `gh api` ground truth — PR still open, base repo/branch
   expected, head_sha equals the dossier's, `mergeable` against the CURRENT
-  base (mergeable_state not behind/dirty when branch protection requires
-  up-to-date branches), required checks green at that head — then, only on
-  pass, performs the SOLE merge via `gh api -X PUT .../merge -f sha={head}`
-  (server-enforced expected-head guard; 409 ⇒ `head-moved`, never
-  retry-fresh). A request invalidated by a PRIOR merge in the same run ⇒
+  base (mergeable_state not behind/dirty), required checks green at that
+  head — then, only on pass, performs the SOLE merge via `gh api -X PUT
+  .../merge -f sha={head}` (server-enforced expected-head guard; 409 ⇒
+  `head-moved`, never retry-fresh). The check-then-PUT window is closed
+  SERVER-SIDE, not by client timing (a base update between the
+  controller's query and its PUT would otherwise merge on stale checks):
+  the target branch protection MUST set `required_status_checks.strict:
+  true` (branch must be up to date with base at merge time) and the
+  controller runs under a NON-BYPASS credential (not admin, not on any
+  bypass list), so a base moved after the eligibility query makes the
+  server itself refuse the PUT (405/409 ⇒ reported `base-moved`); the
+  controller VERIFIES both preconditions at startup via the branch
+  protection API + `gh api user` and refuses to run (exit 2
+  `unsafe-merge-environment`) if strict up-to-dateness is off or the
+  credential can bypass. A request invalidated by a PRIOR merge in the same run ⇒
   reported `base-moved`/`stale-checks` and SKIPPED (exit 2 at run end
   listing it) — the controller never auto-updates a branch or re-runs
   checks to force eligibility. Any ineligible request ⇒ refused BEFORE any
@@ -81,7 +91,11 @@ per-file designs are in the approved plan; acceptance criteria here.
   ineligible-PR fixture ⇒ refused pre-merge; TWO-PR regression: the first
   merge makes the second stale/conflicting (stub gh flips its
   mergeable_state after merge #1) ⇒ the second is refused base-moved, NOT
-  merged on its stale preflight; out-of-band-merge fixture ⇒
+  merged on its stale preflight; TOCTOU regression: stub server moves the
+  base BETWEEN the eligibility query and the PUT and (modeling strict
+  protection) rejects the PUT ⇒ controller reports base-moved, no merge
+  recorded; unsafe-environment fixtures: strict=false or a bypass-capable
+  credential ⇒ controller refuses at startup; out-of-band-merge fixture ⇒
   unattested-merge; clean run ⇒ merged + attestation; workflow agents' token
   fixture proves no merge scope; workflows CI job runs both suites green.
 - **E2 ai-native-memory gate freshness + AUTHORITY-CHAINED sources** (`ai-native-memory/scripts/gate.mjs`).
@@ -170,12 +184,33 @@ per-file designs are in the approved plan; acceptance criteria here.
   closure is treated exactly like an authority-chain change: the
   base-sourced verifier still evaluates the PR, and the verifier change
   itself requires the Eye-signed transition path to take effect
-  (a proposed verifier NEVER evaluates its own PR). **Accept (verifier
+  (a proposed verifier NEVER evaluates its own PR).
+  MAIN-PUSH AND RELEASE CONTEXTS ARE COVERED TOO (trusted-base execution
+  only defends PRs; a direct push or check-override could swap the
+  verifier on main), by three layers, each stated with its honest scope:
+  (1) STRUCTURAL: the repo ruleset REQUIRES pull requests on main (no
+  direct pushes, enforced including admins) — an ops step the quest
+  performs and the controller-style startup checks assert (the main-push
+  workflow queries the ruleset API and FAILS `unsafe-branch-config` if
+  direct pushes are possible), so every verifier change must transit the
+  PR path where base-sourced execution + the Eye-signed transition rule
+  already hold. (2) DIGEST: the protected variable set gains
+  `VERIFIER_CLOSURE_DIGEST` (same Eye-only custody as the chain root);
+  main-push/release workflows recompute the checked-out verifier
+  closure's digest and refuse to invoke it on mismatch
+  (`verifier-untrusted`) — moved only by the same Eye ceremony that moves
+  the chain root. (3) RELEASE: the authoritative release verification is
+  executed by the Eye LOCALLY per RELEASING.md from a tree verified
+  against the protected chain root BEFORE signing the tag; CI re-runs it
+  as defense-in-depth, not as the sole authority. **Accept (verifier
   integrity)**: adversarial regression — a fixture PR replaces gate.mjs
   with a constant-success stub; the base-sourced execution ignores the
   stub, evaluates truthfully, and additionally reports
   verifier-modified-in-change; a helper-import swap is caught the same
-  way (closure from base, not from the PR).
+  way (closure from base, not from the PR); a main-context fixture with a
+  swapped verifier and an unmoved VERIFIER_CLOSURE_DIGEST ⇒ the workflow
+  refuses to invoke it (verifier-untrusted); ruleset-off fixture ⇒
+  unsafe-branch-config.
 - **E3 auditor full-taxonomy + no-clean-on-zero, EXCEPTIONLESS** (`ai-native-memory/scripts/audit.mjs`).
   Root-as-memory-dir (marker predicate, root arg only); zero discovered sets ⇒
   exit 2, NO ESCAPE HATCH — there is no `--allow-empty` (or any equivalent
@@ -316,10 +351,16 @@ integrity (active_plan == authorized plan_ref; supersession row present;
 deviation record pins am42_sha256).
 BOOTSTRAP TRANSACTION (breaks the circularity of a ceremony that gates all
 merges yet itself needs a merge): the four steps above land as a
-GOVERNANCE-ONLY BOOTSTRAP SLICE — strictly docs/registry surfaces (the
-published successor plan, authorization-summary.json, AM-43 doc, deviation
-record, CURRENT-AUTHORITY registry rows, §5d check) with NO code, NO
-package dirs, NO woven-surface edits — merged FIRST, under the CURRENT
+GOVERNANCE-ONLY BOOTSTRAP SLICE — strictly DATA: docs/registry surfaces
+only (the published successor plan, authorization-summary.json, AM-43
+doc, deviation record, CURRENT-AUTHORITY registry rows) with NO code, NO
+package dirs, NO woven-surface edits. The EXECUTABLE §5d pivot check is
+NOT in the bootstrap (it is code): it ships in the later
+verifier-hardening slice (E6/§3c work, already ordered after the
+bootstrap) and validates the then-existing pivot state; until it lands,
+the pivot's integrity evidence is the council run's authorization-summary
++ the step-ledger entry — recorded, then machine-checked as soon as the
+verifier slice merges. The bootstrap slice is merged FIRST, under the CURRENT
 (v15) authority, which is lawful because the sitting authorization already
 empowers the Eye + council to authorize successors (the change_rule being
 regularized is exactly this path, now followed rather than bypassed). The
@@ -360,17 +401,30 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   reporting-only mode that a release can invoke (a flag that downgrades a
   blocking verdict to a report is the bypass the frozen requirement
   forbids): `render-readiness.mjs --gate` exits nonzero unless every
-  IN-SCOPE P0 item is `done` (evidence paths existing) or
-  `na-by-signed-adr` (ADR sha resolving) — automatic no-go, and release.yml
-  runs it in the GATE job so a failing register aborts the release.
+  IN-SCOPE P0 item DISCHARGES with TYPED, VALIDATED evidence —
+  path-exists is not a verdict. `done` requires an evidence object
+  `{kind: oracle|check-run|artifact, ref}` the gate EVALUATES: `oracle`
+  refs execute through run-oracles (with their mutation-negative
+  discipline) and must pass; `check-run` refs are queried green AT THE
+  RELEASE SHA via the checks API; `artifact` refs must schema-validate
+  and match their recorded content address (empty/stale/unrelated files
+  fail typed validation). `na-by-signed-adr` requires the ADR sha to
+  resolve AND an EYE AUTHORIZATION — an Ed25519 signature over
+  (item_id ‖ adr_sha) verified against the protected
+  `EYE_AUTHORITY_PUBKEY`; a content-addressed but unsigned ADR cannot
+  excuse an item. Anything else ⇒ automatic no-go; release.yml runs
+  `--gate` in the GATE job so a failing register aborts the release.
   Deferred Phase-1b+ items are represented STRUCTURALLY (phase > 1a, or
   na-by-signed-adr against the scope ADR), never by softening the verdict;
   `--check` remains for non-release contexts (registry shape + rendering)
   and CANNOT substitute for `--gate` (release.yml names `--gate`
   literally). **Accept**: a fixture register with one in-scope P0 item
-  `open` ⇒ `--gate` exit nonzero and the release gate job red; the same
-  item na-by-signed-adr with a valid sha ⇒ green; no argv/env combination
-  makes `--gate` report-only (asserted over the flag matrix).
+  `open` ⇒ `--gate` exit nonzero and the release gate job red; `done`
+  with an empty/mismatched-digest artifact ⇒ nonzero; `done` with a
+  failing oracle ⇒ nonzero; na-by-signed-adr with a valid sha but NO Eye
+  signature ⇒ nonzero; the same item with sha + valid Eye signature ⇒
+  green; no argv/env combination makes `--gate` report-only (asserted
+  over the flag matrix).
   Plus `docs/PRODUCTION-READINESS.md`; `product-version.json` (lockstep 0.3.0 + schema versions);
   repository-manifest memory_dirs registration; verify-contracts §-product checks.
 - **Naming/versioning**: rename v4-build-gate/v4-forge/v4-breakout → telos-*;
@@ -544,11 +598,18 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   artifact. **Accept**: double-build digests equal for BOTH the cli tgz and
   the assembled source tarball; a fixture varying mtime/owner in the
   repack ⇒ digest mismatch ⇒ abort.
-  (3) PUBLISH against a CLOSED ALLOWLIST: the exact expected asset filename set
-  is a literal in the workflow; after upload, `gh release view --json assets`
-  must equal the allowlist EXACTLY (missing or EXTRA assets ⇒ fail the job and
-  flag the release); then `gh attestation verify` runs against every published
-  artifact (an unattested payload ⇒ fail).
+  (3) PUBLISH fail-closed, DRAFT-FIRST (checking after public upload is
+  not fail-closed — an extra or unattested asset must never be
+  downloadable): the release is created as a DRAFT (`gh release create
+  --draft`), assets upload to the draft only; against the DRAFT, the
+  CLOSED ALLOWLIST check runs (`gh release view --json assets` must equal
+  the literal expected filename set EXACTLY — missing or EXTRA assets ⇒
+  fail) and `gh attestation verify` runs per asset (unattested ⇒ fail);
+  ONLY after both pass is the single final operation performed — flipping
+  the draft to published; any failure deletes the draft, so nothing
+  unverified is ever public. **Accept**: planted extra asset ⇒ draft
+  deleted, release never published; all-green ⇒ publish flip is the last
+  logged step.
   RELEASING.md ceremony (local signed annotated tag with the committed public
   key's private counterpart; immutability Setting prerequisite; correction
   process — first application: v0.2.0 4,558→4,559). **Accept**: lightweight tag
@@ -636,8 +697,10 @@ pins are affected) IN THE SAME PR, so every merged head passes
 such per-change re-weaves). Slices touching only non-woven surfaces
 (run.mjs, workflows/, .github/, flagship+demo exclude-listed trees, new
 excluded package dirs) ride without one — each slice's PR body states which
-case applies and why. The naming/versions slice and the ceremony slice are
-therefore each ATOMIC (rename/exclude + their re-weave in one PR). The
+case applies and why. The naming/versions slice and the excluded-dirs
+implementation slice are therefore each ATOMIC (rename / exclude-list
+edit + their re-weave in one PR); the governance bootstrap slice touches
+NO woven surface by construction and needs none. The
 **train-end re-weave** remains as the FINAL capture at the qualified head
 (full self-weave republication + lachesis pins + flagship live-graph +
 expected-flagship regen + Eye re-audit + any residual woven-doc edits).
