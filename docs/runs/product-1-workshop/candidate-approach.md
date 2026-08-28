@@ -1151,7 +1151,13 @@ A5. PRE-ACTIVATION SLICE WHITELIST: Phase A publishes a CLOSED,
     later merge is controller-enforced at the mutation boundary),
     freshness (the discriminating current-head verifier), plugin
     self-containment, E2, E3, E6, E4, product memory dir + ADRs,
-    naming/versions}. NO UNLISTED SLICE IS
+    naming/versions, AND — as the whitelist's TERMINAL TRANSITION
+    ENTRY — the Phase-B atomic-activation slice itself (uniquely
+    content-addressed; it must merge WHILE Phase B is not yet complete,
+    so omitting it would deadlock activation: the controller would
+    refuse the very PR that completes the transition). Regression: the
+    Phase-B PR (terminal entry) is ACCEPTED by the controller while
+    every other unlisted PR remains refused slice-not-whitelisted}. NO UNLISTED SLICE IS
     MERGE-ELIGIBLE before Phase B, and NO release, settlement, or
     production-readiness claim is permitted before activation. The
     deferred quest authorization grants NO release authority, NO
