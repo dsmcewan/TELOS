@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "plan",
+        "claim": "The whole-tree seccomp mechanism is internally unsatisfiable: it denies AF_INET/AF_INET6 socket() creation while asserting outbound connect() still works. TCP/TLS clients such as gh and networked git must first create an AF_INET/AF_INET6 socket, so required API and attestation operations will fail before connect(). Denying bind/listen/accept can enforce the listener prohibition, but denying client socket creation contradicts the required executable closure and leaves doctor/verify --full inoperable."
+      },
+      {
+        "scope": "plan",
+        "claim": "The substituted off-main workflow defense does not prevent release mutation. The candidate explicitly permits an off-main workflow_dispatch definition to run and acknowledges that a workflow can elevate GITHUB_TOKEN from the read-only repository default by requesting contents:write. Environment branch policies gate environment secrets, not GITHUB_TOKEN permissions; main/tag rulesets prevent ref mutation but do not prevent contents:write from editing or deleting existing drafts/releases. This also contradicts the plan's own statement that contents:write can delete an immutable release. Therefore the SUBSTITUTED-DEFINITION regression can mutate trusted release state despite all stated controls, and the claim that substituted workflow bytes can reach nothing privileged is false."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcy75q4",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcy75q4",
+    "source": "cli-seats/codex_ask"
+  }
+}

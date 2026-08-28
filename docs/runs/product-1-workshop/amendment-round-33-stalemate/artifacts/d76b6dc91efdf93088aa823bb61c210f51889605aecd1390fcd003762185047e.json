@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:5466644f4b8d903fffaed92498fdef4e96d70a2586c93a8f7b15b837c2a7e1cf",
+  "output_plan_artifact_hash": "sha256:5466644f4b8d903fffaed92498fdef4e96d70a2586c93a8f7b15b837c2a7e1cf",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:6eb2d416add4059234e3adb441c94013bd09965982717be4ca5d0dc190dc6353",
+    "provenance_key": "anthropic:98601888-84fb-4d54-8870-d368f5c947c3"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:f45f4fcee5ec6c70821f4a07fe1dd4d12f17ef4f21ac8288c26c76ddec4cf6e3",
+    "provenance_key": "openai:codex-cli-mtcy75q4",
+    "bound_hash": "sha256:5466644f4b8d903fffaed92498fdef4e96d70a2586c93a8f7b15b837c2a7e1cf"
+  },
+  "objections": [
+    {
+      "scope": "plan",
+      "claim": "The whole-tree seccomp mechanism is internally unsatisfiable: it denies AF_INET/AF_INET6 socket() creation while asserting outbound connect() still works. TCP/TLS clients such as gh and networked git must first create an AF_INET/AF_INET6 socket, so required API and attestation operations will fail before connect(). Denying bind/listen/accept can enforce the listener prohibition, but denying client socket creation contradicts the required executable closure and leaves doctor/verify --full inoperable.",
+      "objection_hash": "sha256:f995b4d9ee637b4a371b2b412b53db19023ec79385445b13af22d7bee806eb63",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "plan",
+      "claim": "The substituted off-main workflow defense does not prevent release mutation. The candidate explicitly permits an off-main workflow_dispatch definition to run and acknowledges that a workflow can elevate GITHUB_TOKEN from the read-only repository default by requesting contents:write. Environment branch policies gate environment secrets, not GITHUB_TOKEN permissions; main/tag rulesets prevent ref mutation but do not prevent contents:write from editing or deleting existing drafts/releases. This also contradicts the plan's own statement that contents:write can delete an immutable release. Therefore the SUBSTITUTED-DEFINITION regression can mutate trusted release state despite all stated controls, and the claim that substituted workflow bytes can reach nothing privileged is false.",
+      "objection_hash": "sha256:44f4a8da4c3b840e1f61d8b0b6386725ed2188a91eee33c60fe11c8ac0441724",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
