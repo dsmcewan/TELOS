@@ -262,10 +262,16 @@ per-file designs are in the approved plan; acceptance criteria here.
   cannot carry authority — the content-address rule; GitHub permits
   same-name runs from any app at the same SHA): the controller resolves
   each required check run to its PRODUCER and accepts it only if (a) the
-  producing app is the authenticated GitHub Actions app, (b) the run's
-  workflow file blob at the evaluated commit satisfies the
-  TRANSITION-AWARE producer rule — EITHER it matches the currently
-  trusted workflow digest set, OR the PR carries a valid Eye-signed
+  producing app is the authenticated GitHub Actions app, (b) the run satisfies the
+  PER-CONTEXT PRODUCER MAPPING — a protected, transition-bound
+  ONE-TO-ONE map from each required check CONTEXT to its expected
+  workflow path at refs/heads/main, JOB identity, and workflow digest
+  (set-membership alone would let a DIFFERENT trusted workflow emit a
+  green same-name job and be wrongly selected): the run's workflow
+  path+job must equal the mapped entry for that context, missing/
+  duplicate/mismatched producers ⇒ refused, and the run's workflow file
+  blob at the evaluated commit satisfies the TRANSITION-AWARE rule —
+  EITHER it matches the mapped digest, OR the PR carries a valid Eye-signed
   transition record covering the workflow change AND the blob matches
   EXACTLY the record's bound new workflow digest, recomputed by
   base-sourced (transition-verifier) code, never by the proposed bytes
@@ -974,16 +980,23 @@ per-file designs are in the approved plan; acceptance criteria here.
   PURE-EVALUATOR ADAPTER (no oracle kind runs directly under `node` or
   `npm run`; a direct host-execution path would bypass the ABI and
   reintroduce clock/entropy access, the contradiction the ABI
-  commitment closes): EVERY declaration — whether authored as a `file`
-  module or referenced via an `npm-script` name — resolves to a PURE
-  ENTRYPOINT `(input_snapshot) -> {pass|fail, reason}` LOADED INTO THE
-  EVALUATOR (frozen realm / WASM component per the Argo-spike form),
-  never spawned as an arbitrary process. Any declaration that is not
-  evaluator-loadable — a package.json shell-command chain, a wrapper
-  that returns an exit code without invoking the pure entrypoint, a
-  module reaching ambient Node globals (process/fs/net/Date/crypto)
-  outside the sanctioned pure library — ⇒ FAIL
+  commitment closes): EVERY declaration — whether referenced from a
+  record's `file` field or an `npm-script` name — resolves to a
+  DECLARATIVE ORACLE DOCUMENT: pure DATA (predicates in the constrained
+  declarative oracle language over the input snapshot) INTERPRETED
+  SOLELY BY THE TRUSTED EVALUATOR (frozen realm / WASM component per
+  the Argo-spike form) — NOT an author-supplied imperative verdict
+  function, which could encode a lookup table however pure its ABI; the
+  evaluator computes `{pass|fail, reason}` FROM the declared predicates,
+  so the verdict logic is inspectable data, never authored code. Any
+  declaration that is not a valid declarative document — a package.json
+  shell chain, an imperative module/entrypoint, a wrapper returning an
+  exit code, anything reaching ambient Node globals — ⇒ FAIL
   `oracle-abi-nonconformant` at qualification and CANNOT SHIP.
+  ORDERING: the trusted evaluator + language pass their OWN
+  adversarial-conformance qualification (the hard SPIKE-E6 merge gate)
+  BEFORE any oracle backfill or enrollment — no declarative document is
+  interpreted by an unqualified evaluator.
   Per-entry timeout applies inside the evaluator;
   nonzero/timeout/unrunnable ⇒ FAIL (distinct codes: oracle-missing /
   oracle-unrunnable / oracle-failed / oracle-timeout). Because a
@@ -1064,10 +1077,14 @@ per-file designs are in the approved plan; acceptance criteria here.
   can SIGSYS a semantically-pure oracle whose V8/libc incidentally touch
   clock/entropy, and cannot intercept vDSO — so "isolate an arbitrary
   black box" is the wrong frame): an oracle is NOT an arbitrary program
-  but a PURE FUNCTION `(input_snapshot) -> {pass|fail, reason}` executed
-  by the runner's evaluator, which structurally provides NO ambient
-  authority — no clock, no entropy, no network, no filesystem, no env —
-  only the passed-in snapshot. A pure function over a fixed input is
+  and NOT even an author-supplied pure function — it is a DECLARATIVE
+  DOCUMENT (data: predicates in the constrained oracle language) that
+  the runner's TRUSTED EVALUATOR interprets over the input snapshot to
+  produce `{pass|fail, reason}`; the evaluator structurally provides NO
+  ambient authority — no clock, no entropy, no network, no filesystem,
+  no env — only the passed-in snapshot, and no imperative author code
+  runs at all (a lookup table is inexpressible: the language has
+  predicates over the snapshot, not enumerable verdict maps). A pure function over a fixed input is
   DETERMINISTIC BY CONSTRUCTION, so the "different gate-time verdict"
   failure mode cannot arise: there is no channel through which a
   gate-time run could differ from a qualification run on identical
