@@ -127,8 +127,8 @@ the SEALED-SNAPSHOT set actually required (memfd_create, write, lseek,
 fcntl(F_ADD_SEALS), mmap for the exec image); the SECCOMP-INSTALL set
 (prctl(PR_SET_NO_NEW_PRIVS), seccomp()/prctl(PR_SET_SECCOMP)); fexecve/
 exec-family; and process control — CATEGORICALLY rejecting
-bind/listen/accept/accept4, AF_INET/AF_INET6/AF_PACKET socket creation,
-and any inspector activation (a launcher source with such a syscall ⇒
+bind/listen/accept/accept4 and AF_PACKET/SOCK_RAW socket creation, and
+any inspector activation (a launcher source with such a syscall ⇒
 oracle FAILS `launcher-listener-capable`); (2) the release build COMPILES it with a
 pinned toolchain into a FULLY-STATIC, LOADER-INDEPENDENT executable —
 NO dynamic interpreter (no `PT_INTERP`), NO shared-library closure
@@ -162,9 +162,16 @@ IDENTITY/REPRODUCIBILITY defense-in-depth, NOT as the primary
 no-listener proof. The PRIMARY, WHOLE-TREE no-listener enforcement is a
 KERNEL-INHERITED SECCOMP-BPF FILTER: before it execs Node, the native
 launcher calls `prctl(PR_SET_NO_NEW_PRIVS,1)` then installs a seccomp
-filter that DENIES `bind`, `listen`, `accept`, `accept4`, and
-AF_INET/AF_INET6/AF_PACKET/raw `socket()` creation (returning EPERM or
-SIGKILL). Because a seccomp filter under NO_NEW_PRIVS is INHERITED
+filter that DENIES `bind`, `listen`, `accept`, `accept4` — the
+listener syscalls — plus `AF_PACKET`/`SOCK_RAW` socket() creation
+(inspectable via socket()'s scalar domain/type args; returning EPERM or
+SIGKILL). CLIENT `socket()` for AF_INET/AF_INET6 STREAM/DGRAM IS
+ALLOWED — a TCP/TLS client (gh api, networked git) must create an
+AF_INET/AF_INET6 socket before `connect()`, and a socket that is never
+`bind`/`listen`ed cannot become a receiving endpoint — so denying the
+four listener syscalls (not socket creation) is BOTH sufficient for the
+no-listener property AND compatible with the required doctor/verify
+--full outbound closure. Because a seccomp filter under NO_NEW_PRIVS is INHERITED
 across `execve` and by every `fork`/descendant and CANNOT be relaxed or
 dropped, this binds the ENTIRE process tree — the launcher, Node, and
 every spawned external tool (git/gh/bwrap) AND their descendants,
@@ -2278,11 +2285,30 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   target commit carries a modified release.yml is pushed ⇒ NOTHING
   triggers (no push trigger exists); SUBSTITUTED-DEFINITION regression —
   a dispatch of a modified definition from a non-main ref that
-  self-grants `contents: write` + `id-token: write` ⇒ the
-  telos-authority-release environment refuses the ref (no release
-  secrets; the readable public roots grant no capability), the all-tags ruleset refuses tag creation, and any
-  artifact it attests fails pinned-identity verification — no trusted
-  release mutation is possible; RELEASE-ID BINDING regression (drafts do NOT reserve a tag name —
+  self-grants `contents: write` + `id-token: write`. The asserted
+  invariant is NOT "the environment refuses it" (environment protection
+  gates environment SECRETS and secret-bearing jobs, NOT a self-granted
+  GITHUB_TOKEN's `contents:write`, which reaches the Releases API and
+  CAN edit/delete an existing release OBJECT — this is exactly the
+  platform limitation already routed at DEFAULT-SUSPENDED above). The
+  correct, non-contradictory invariant is TWO-PART: (i) NO UNTRUSTED
+  PRINCIPAL CAN RUN THIS DISPATCH AT ALL — `workflow_dispatch` requires
+  WRITE access, every write principal is in the drift-swept custody
+  manifest, a fork-PR contributor gets a platform-forced READ-ONLY
+  token, and outside a ceremony window Actions is suspended — so a
+  write-token run is only ever a custody-listed principal (a compromise
+  there is the DEFAULT-SUSPENDED/escrow-bounded availability case, not a
+  new surface); and (ii) EVEN GIVEN release-OBJECT mutation, NO TRUSTED
+  RELEASE CAN BE FORGED: the all-tags ruleset refuses tag-ref
+  creation/mutation (Eye-only), the trusted assets are content-addressed
+  in SHA256SUMS + Sigstore-attested + bound by the Ed25519
+  RELEASE-ACCEPTANCE record, so any substituted or edited asset fails
+  pinned-identity + attestation + acceptance verification at the
+  consumer's `verify --full`, and the release BODY is a
+  NON-AUTHORITATIVE POINTER no verifier trusts. So object mutation is at
+  most bounded availability vandalism (escrow-recoverable), never a
+  trust forgery — consistent with, not contradicting, the
+  DEFAULT-SUSPENDED posture; RELEASE-ID BINDING regression (drafts do NOT reserve a tag name —
   GitHub permits multiple same-tag drafts, so tag-addressed operations
   are ambiguous): the ceremony captures the NUMERIC RELEASE ID returned
   at draft creation, binds it to the accepted target + signed body, and
