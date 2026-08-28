@@ -51,9 +51,17 @@ same grammar, and (b) a CAPABILITY-SCOPED EXTERNAL-TOOL EXCEPTION set
 for the system binaries the CLI's contracts REQUIRE — the external `node` runtime (the launcher must spawn it), `git`
 (cat-file/history/bundle ops), `bwrap` (mandatory oracle confinement),
 `gh` (attestation verification) — which cannot themselves satisfy a
-source grammar, so each is bound instead by: IDENTITY (invoked by
-absolute resolved path with version pinned or binary digest recorded —
-a $PATH wrapper substitution ⇒ refuse `tool-identity-mismatch`), a
+source grammar, so each is bound instead by: CRYPTOGRAPHIC IDENTITY WITH MUTATION-POINT
+BINDING (a recorded CONTENT DIGEST — path+version is NOT sufficient, a
+same-path replacement can report the pinned version; version is only a
+compatibility constraint; and the digest is verified WITHOUT A
+PATH-REPLACEMENT RACE: the runner OPENS the binary, hashes THAT open
+file descriptor, and execs the SAME fd (fexecve / /proc/self/fd),
+never re-resolving the path between hash and exec — so a swap after
+verification cannot execute; digest mismatch ⇒ refuse
+`tool-identity-mismatch` BEFORE execution; regression: a same-path
+binary reporting the pinned version but whose bytes differ ⇒ refused
+before execution, no listener opens), a
 CLOSED SUBCOMMAND/ARGUMENT GRAMMAR excluding every listener-capable or
 arbitrary-execution mode. The git grammar is DERIVED FROM THE ACTUAL
 CLOSURE, not hand-guessed (the required verification path executes the
@@ -65,8 +73,21 @@ rev-list (incl. --max-parents=0 HEAD), bundle create/verify/unbundle,
 verify-* — PLUS the archive-mode object-store forms `git init --bare
 <private-tmp-dir>` and `git -C <private-tmp-dir> fetch <bundle>`
 (confined to the ceremony's private temp store, never a shared repo) —
-each bound to the same `-c`-injection/alias-disabled `GIT_CONFIG_*`
-isolation; no daemon/serve/upload-pack/receive-pack. A
+each run with ALL EXECUTION-BEARING CONFIG SUPPRESSED — global/system
+via `GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null` AND
+REPOSITORY-LOCAL (which checkout-mode operates on and which survives
+clearing the environment): trusted `-c` overrides force
+`core.fsmonitor=false core.hooksPath=/dev/null core.pager=cat
+protocol.*.allow=never` and every program-valued config off, hooks
+neutralized — no daemon/serve/upload-pack/receive-pack. CATEGORICAL
+DESCENDANT CONFINEMENT: every git invocation runs inside the bwrap
+sandbox with `--unshare-net` and a read-only fs, so even a
+config/hook-launched helper that slipped through has NO network
+namespace to open a reachable listener and no writable surface — the
+git front-end AND all its descendants are network-incapable by
+construction; MALICIOUS-fsmonitor regression: a repo-local
+core.fsmonitor helper ⇒ forced off by the trusted -c override, and
+even if invoked cannot open a listener under --unshare-net. A
 CLOSURE-DERIVED COMPLETENESS REGRESSION enumerates every git argv the
 doctor/verify closure actually constructs and asserts each matches a
 grammar entry (a required invocation outside the grammar ⇒ the
