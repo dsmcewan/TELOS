@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:68f3db1139e6c6daf14a1c2f392fbd94486ae635a317f3e6c3262baeb49947de",
+  "output_plan_artifact_hash": "sha256:68f3db1139e6c6daf14a1c2f392fbd94486ae635a317f3e6c3262baeb49947de",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:4b1b8a33e78833cb5af26fac285f18187a1ee818567148801332586b1cd523b5",
+    "provenance_key": "anthropic:db678a7a-b181-4f20-9a67-e2ba1926dda7"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:8396006d5b973eb1aa9c8bb4a844cbb4b06ffed0b4ff9689b8ce59465065c52e",
+    "provenance_key": "openai:codex-cli-mtd1d4nd",
+    "bound_hash": "sha256:68f3db1139e6c6daf14a1c2f392fbd94486ae635a317f3e6c3262baeb49947de"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:tool-root-fs-verity-operability",
+      "claim": "The mutation-point-bound dynamic-tool root is not constructible on the store the approach specifies. Section 1 requires every staged loader, library, helper, and trust-store input to have fs-verity enabled, while naming a private tmpfs/overlay store. Current Linux documentation lists ext4, f2fs, and btrfs as the supported filesystems, not tmpfs; enabling verity on an unsupported backing inode fails with ENOTTY/EOPNOTSUPP ([Linux fs-verity documentation](https://www.kernel.org/doc/html/latest/filesystems/fsverity.html)). Because the approach makes missing verity fatal, the specified staging mode makes doctor/verify --full and the clean-room qualification refuse rather than operate. Freeze and qualify a verity-enabled backing filesystem, or use an equivalent immutable snapshot mechanism for every path-resolved closure member, with a clean-room regression proving the exact platform topology works. Bound to candidate raw sha256:3c9171bf582de222f4efa59e3481061c2d994f3cd64f30e8bdf3be4eb1209235.",
+      "objection_hash": "sha256:c3f9bd552acb47ba5e3db6216965641385fd194796c8f3ef93238d4e05726de1",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach:E6-random-exit-regression",
+      "claim": "E6's required RANDOM-EXIT regression contradicts its settled enforcement mechanism. The approach correctly states that seccomp cannot synthesize entropy bytes and that an oracle using crypto.randomBytes cannot be expressed in the declarative ABI and must fail oracle-abi-nonconformant at qualification; its acceptance criteria later claim the same oracle runs under \"seccomp-fixed entropy,\" becomes constant, and fails oracle-nondiscriminating. No fixed-entropy mechanism exists in the plan, and the single-evaluator contract forbids executing that imperative oracle at all. Make the regression require oracle-abi-nonconformant before execution and remove the nonexistent seccomp-fixed-entropy path; otherwise the stated acceptance oracle is unsatisfiable. Bound to candidate raw sha256:3c9171bf582de222f4efa59e3481061c2d994f3cd64f30e8bdf3be4eb1209235.",
+      "objection_hash": "sha256:bb4bf77e43bda80b52ec1e79b07c91a5cf571f86bf2f5df3620655e6d1cecdc5",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
