@@ -2061,16 +2061,28 @@ mechanism for an already-soundly-designed, fail-closed-in-interim requirement is
 not spelled out in the plan" does NOT block maturation convergence and does NOT
 spawn further Daedalus rounds — it is recorded here, dispositioned, and its
 concrete mechanism is a merge-gate on its own slice with the fail-closed interim
-behavior stated. IMPORTANT — THIS REGISTER IS CONDITIONAL, NOT SELF-AUTHORIZING:
-it does NOT claim prior Eye ratification, and the plan derives no authority from
-its own text or any commit message. The directive above is a recorded input, not
-a signed authorization; the referee record is ADVISORY; formal ratification of
-these deferrals and of the open_questions_for_the_eye is RESERVED to the S2 TELOS
-Council review and the S3 Eye implementation-authority grant. On disk today the
-open questions remain OPEN, prior authorization summaries are NOT_AUTHORIZED, and
-CURRENT-AUTHORITY is unchanged — §6b records PROPOSED dispositions carried forward
-for ratification, nothing more. Each spike names its settled-in-plan design, its
-bounded open implementation choice, and its interim fail-closed posture.
+behavior stated. AUTHORITY STATE (accurate to the governing on-disk record
+at this amendment): the SIX Eye authority questions are RESOLVED AND
+RATIFIED — verbatim record:
+`docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-six-rulings-final.md`
+(AM-42 Option A; reconcile-and-supersede; gate default flip with
+allow_unsigned prohibited from production authority; exceptionless
+auditor; package-name fallback non-blocking; the bounded E6 spike
+RATIFIED with its hard pre-implementation merge gate) — these are FIXED
+Eye inputs this amendment does NOT reopen and no council may
+re-adjudicate. S2 authorization runs 3-5 over the pre-amendment plan are
+AUTHORIZED on disk (run 5 durable, byte-aligned); the PRIOR S3
+implementation grant is SUSPENDED per the Eye's DISCOVERY-001 ruling
+(`EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md`).
+WHAT REMAINS PENDING for THIS AMENDED plan: a fresh exact-hash TELOS
+authorization of the amended plan_ref and a NEW S3
+implementation-authority grant — the register does not claim either;
+the plan derives no authority from its own text or any commit message,
+and CURRENT-AUTHORITY remains v15/authz-008 until Phase B. Each spike
+below names its settled-in-plan design, its bounded open implementation
+choice, and its interim fail-closed posture — the E6 spike's DEFERRAL is
+already Eye-ratified (ruling 6); its concrete grammar remains the
+merge-gated Argo deliverable.
 
 - **SPIKE-E6-EVALUATOR-FORM** — SETTLED IN-PLAN: oracles are pure functions over
   a fixed input snapshot executed by an evaluator with no ambient
