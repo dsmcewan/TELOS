@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:bb7aa162a8eac4386e4a6e6071b7c80012a22b533ff38cebcba7507581243439",
+  "output_plan_artifact_hash": "sha256:bb7aa162a8eac4386e4a6e6071b7c80012a22b533ff38cebcba7507581243439",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:c5be5a76772fe6c1e90c239034f410701899c9a335e9c949d009b6266a85953d",
+    "provenance_key": "anthropic:16ca0a71-4e38-4f5d-af27-4a938c3affee"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:8f774a4f97ab4d8e9c1dcbb844925fa5662bddecda97897c74450ced265b8fab",
+    "provenance_key": "openai:codex-cli-mtc9pxs0",
+    "bound_hash": "sha256:bb7aa162a8eac4386e4a6e6071b7c80012a22b533ff38cebcba7507581243439"
+  },
+  "objections": [
+    {
+      "scope": "approach:E1",
+      "claim": "The evaluated-commit rule remains unsound because it accepts a required check from EITHER the PR head or the synthetic test-merge commit. GitHub instead applies precedence: when the test-merge commit has a status, that commit must pass; only when it has no status may the head commit satisfy the requirement ([GitHub required-check documentation](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks)). Under the proposed OR rule, a trusted green push-context run at the head can satisfy the controller while an untrusted app supplies the same-name green status on the synthetic merge commit that GitHub selects, permitting the server to merge without a trusted run testing the merge result. The controller must mirror GitHub's precedence per required context, authenticate the selected commit's producer, and include a regression combining a trusted green head run with an untrusted same-name synthetic-merge status. Candidate sha256:5cbf229a0f49cd2152be6ecd374d2166b747b528b7d441d21a9c7f9ce2d25a0a.",
+      "objection_hash": "sha256:59b3935916e023e35c350a44e7fbfa8bb31bb0f13d90a32f253c3b104c7ecd51",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

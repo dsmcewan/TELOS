@@ -138,11 +138,17 @@ per-file designs are in the approved plan; acceptance criteria here.
   (GitHub `pull_request` runs evaluate the SYNTHETIC TEST-MERGE commit
   of refs/pull/N/merge, not the branch head; binding evidence to the
   head SHA alone would either find no runs or trust a run that never
-  tested the merge result): a check run is accepted for the PR iff its
-  evaluated commit is EITHER the dossier's head SHA (push-context runs)
-  OR a synthetic merge commit whose PARENTS ARE EXACTLY {current base
-  SHA, dossier head SHA} (verified via the commit object — a merge
-  commit built against an older base ⇒ `stale-merge-evidence`, refused);
+  tested the merge result): the controller MIRRORS GITHUB'S PRECEDENCE
+  PER REQUIRED CONTEXT — for each required check it first resolves the
+  CURRENT synthetic merge commit (parents exactly {current base SHA,
+  dossier head SHA}, verified via the commit object; an older-base merge
+  commit ⇒ `stale-merge-evidence`); if ANY status/run exists on that
+  merge commit for the context, THAT run is the one evaluated — it must
+  be green AND producer-authenticated, and a head-SHA run can NEVER
+  substitute for it (an OR rule would let a trusted green head run mask
+  an untrusted same-name status on the merge commit GitHub actually
+  selects); only when the merge commit carries NO status for the
+  context may a producer-authenticated green head-SHA run satisfy it;
   and "green" is NEVER keyed by check NAME alone (mutable names
   cannot carry authority — the content-address rule; GitHub permits
   same-name runs from any app at the same SHA): the controller resolves
@@ -216,7 +222,11 @@ per-file designs are in the approved plan; acceptance criteria here.
   regressions: a valid PR whose checks ran on the synthetic merge commit
   (parents = {base, head}) ⇒ ACCEPTED (not wrongly refused for missing
   head-SHA runs); a check run on a merge commit built against an older
-  base ⇒ stale-merge-evidence, refused; EYE-ACCEPTANCE regressions:
+  base ⇒ stale-merge-evidence, refused; PRECEDENCE regression — a
+  trusted green head-SHA run PLUS an untrusted same-name status on the
+  synthetic merge commit ⇒ the merge-commit status takes precedence,
+  fails producer authentication, and the PR is REFUSED (the head run
+  cannot mask it); EYE-ACCEPTANCE regressions:
   green-checked PR with NO acceptance ⇒ acceptance-missing, no
   mutation; acceptance bound to another head/base/repository ⇒ refused;
   replayed acceptance after a new push (head moved) ⇒ acceptance-stale;

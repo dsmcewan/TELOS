@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "approach:E1",
+        "claim": "The evaluated-commit rule remains unsound because it accepts a required check from EITHER the PR head or the synthetic test-merge commit. GitHub instead applies precedence: when the test-merge commit has a status, that commit must pass; only when it has no status may the head commit satisfy the requirement ([GitHub required-check documentation](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks)). Under the proposed OR rule, a trusted green push-context run at the head can satisfy the controller while an untrusted app supplies the same-name green status on the synthetic merge commit that GitHub selects, permitting the server to merge without a trusted run testing the merge result. The controller must mirror GitHub's precedence per required context, authenticate the selected commit's producer, and include a regression combining a trusted green head run with an untrusted same-name synthetic-merge status. Candidate sha256:5cbf229a0f49cd2152be6ecd374d2166b747b528b7d441d21a9c7f9ce2d25a0a."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtc9pxs0",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtc9pxs0",
+    "source": "cli-seats/codex_ask"
+  }
+}
