@@ -1,0 +1,14 @@
+{
+  "record": "product-1 AMENDMENT-2 — implementation_start_head derivation + clean-delta preflight (Eye S3 grant condition)",
+  "date": "2026-08-28",
+  "grant": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-s3-grant-amendment-2.json",
+  "authorized_plan_ref": "sha256:463bde1c276ddb65b8e0cb0c89ed65a36707a968d75dc744395377f451bd3ba7",
+  "reviewed_head": "cf108ddfd2a07ac06c9c5b32b8c0c16a1cc6dd75",
+  "implementation_start_head": "794d4e49288a38236225291451f45a5a6fc61b73",
+  "delta_reviewed_head_to_start_head": {
+    "verified": "CLEAN — every changed path is a post-review AUTHORIZATION/GOVERNANCE/EVIDENCE artifact (docs/runs/product-authorization-2/ + EYE-DIRECTIVES/); NO plan/implementation/dependency/configuration/execution-surface change (plan .md, cli/, connectors/, build-gate/, merkle-dag/, clotho/, CURRENT-AUTHORITY.json, package.json, .github/ all unchanged).",
+    "changed_paths": ["docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-s3-grant-amendment-2.json", "docs/runs/product-authorization-2/agy.json", "docs/runs/product-authorization-2/authorization-summary.json", "docs/runs/product-authorization-2/claude.json", "docs/runs/product-authorization-2/codex.json", "docs/runs/product-authorization-2/gemini.json", "docs/runs/product-authorization-2/grok.json", "docs/runs/product-authorization-2/run-1-authorized/agy.json", "docs/runs/product-authorization-2/run-1-authorized/authorization-summary.json", "docs/runs/product-authorization-2/run-1-authorized/claude.json", "docs/runs/product-authorization-2/run-1-authorized/codex.json", "docs/runs/product-authorization-2/run-1-authorized/gemini.json", "docs/runs/product-authorization-2/run-1-authorized/grok.json", "docs/runs/product-authorization-2/run-product-authorization.mjs"]
+  },
+  "grant_invalidation_rule": "Any implementation-bearing or otherwise unauthorized delta invalidates the grant and returns to governance.",
+  "next": "E1 genesis merge (authorized, condition-bound) with immediate-pre-merge diff verification recorded as merge evidence; then resume only the next S3-authorized bounded slice, stopping at its Eye acceptance point."
+}
