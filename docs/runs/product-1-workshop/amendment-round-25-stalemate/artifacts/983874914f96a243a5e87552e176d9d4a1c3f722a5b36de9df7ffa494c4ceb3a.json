@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:fcc543c5b2f32f39710f1e7506f522bcf4c2dea59235fbcb1d4056db3f8e0dab",
+  "output_plan_artifact_hash": "sha256:fcc543c5b2f32f39710f1e7506f522bcf4c2dea59235fbcb1d4056db3f8e0dab",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:c54b580faf837e6bf5e13befccf737431b2956522d7e236e3ddeed0474066208",
+    "provenance_key": "anthropic:a9bd5ca0-0892-4132-b37f-234802c46174"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:4b0169abc24646bee6aa5de100a06388a3cf1cec6c71ecedebb59093e12e09bf",
+    "provenance_key": "openai:codex-cli-mtcw0rxp",
+    "bound_hash": "sha256:fcc543c5b2f32f39710f1e7506f522bcf4c2dea59235fbcb1d4056db3f8e0dab"
+  },
+  "objections": [
+    {
+      "scope": "approach-installation-contract",
+      "claim": "The pre-execution authenticity mechanism is circular and therefore unsatisfiable as written. Section 4 requires the source tarball and history bundle to be verified before extraction or execution using PYLAE's in-process node:crypto hashing plus `gh attestation verify`, but the only PYLAE executable is inside the still-unverified source release; the component tgz is explicitly not standalone. No independently authenticated bootstrap verifier exists to compute and validate the digests, parse the attestation identity, or create the receipt before archive-controlled code runs. This leaves the signed-installable-artifact requirement dependent on executing the artifact it is meant to authenticate. Add an out-of-artifact verifier rooted in operator-trusted bytes/tools, and require a regression proving that digest, attestation identity, and trust-root checks complete before any archive byte is extracted or executed.",
+      "objection_hash": "sha256:6ae2ca0d8e3d72159ab906aceeb502de49e254dd21dbc3f8a377c99d390a6e1d",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

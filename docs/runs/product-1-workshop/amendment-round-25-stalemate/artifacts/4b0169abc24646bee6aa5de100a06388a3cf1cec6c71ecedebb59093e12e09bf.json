@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "approach-installation-contract",
+        "claim": "The pre-execution authenticity mechanism is circular and therefore unsatisfiable as written. Section 4 requires the source tarball and history bundle to be verified before extraction or execution using PYLAE's in-process node:crypto hashing plus `gh attestation verify`, but the only PYLAE executable is inside the still-unverified source release; the component tgz is explicitly not standalone. No independently authenticated bootstrap verifier exists to compute and validate the digests, parse the attestation identity, or create the receipt before archive-controlled code runs. This leaves the signed-installable-artifact requirement dependent on executing the artifact it is meant to authenticate. Add an out-of-artifact verifier rooted in operator-trusted bytes/tools, and require a regression proving that digest, attestation identity, and trust-root checks complete before any archive byte is extracted or executed."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcw0rxp",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcw0rxp",
+    "source": "cli-seats/codex_ask"
+  }
+}
