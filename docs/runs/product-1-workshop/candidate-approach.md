@@ -240,11 +240,21 @@ per-file designs are in the approved plan; acceptance criteria here.
   discipline (registry row change, old path retained as provenance);
   (iii) the original under docs/superpowers/specs/ stays untouched
   (blob-pinned by the snapshot). **Accept (self-containment)**:
-  CLEAN-ROOM test — the plugin subtree is copied alone into a temp dir
-  WITH NO REPOSITORY PARENT and gate + audit + verify all run green
-  from inside it (any read escaping the subtree fails loudly by
-  nonexistence); sha-equality assertion on the copied spec; the
-  repointed active.path resolves in-plugin via the confined resolver.
+  CLEAN-ROOM test, TWO TIERS (self-containment and external anchoring
+  are separate properties and must not contradict — a subtree with no
+  object database cannot satisfy the git-anchor requirement, and
+  minting an anchor from the copied subtree would let the tree writer
+  choose the trust root):
+  TIER 1 (subtree-only, no repository parent, no anchor supplied):
+  audit + all self-contained checks run GREEN from inside the copy (any
+  read escaping the subtree fails loudly by nonexistence), and the
+  authority gate DENIES `anchor-unavailable` — the DENIAL IS THE PASS
+  CRITERION for that check (fail-closed proven, no fabricated root);
+  TIER 2 (subtree + independently authenticated object store — the
+  release's attested history bundle, digest-verified before use): the
+  gate resolves its anchor against the bundle store and runs GREEN.
+  Sha-equality assertion on the copied spec; the repointed active.path
+  resolves in-plugin via the confined resolver.
   Re-derivation alone cannot
   defeat a FULL-LOCKSTEP mutation (source+expected+answer edited consistently),
   so sources are CHAINED TO PINNED AUTHORITY: a `derived_from.file` is
@@ -265,10 +275,14 @@ per-file designs are in the approved plan; acceptance criteria here.
   context is the attacker's own commit and would make the gate
   self-authorizing; on main-push CI, the pushed commit is acceptable only
   because the branch protection + required checks already gate what reaches
-  main, and this is stated, not assumed; at release, the signed annotated
-  tag's target commit (whose signature the release gate verifies against
-  the out-of-tree fingerprint below); locally, an operator-supplied commit
-  (typically a verified tag). The gate resolves CURRENT-AUTHORITY and every
+  main, and this is stated, not assumed; at release, the DRAFT'S
+  EYE-ACCEPTED TARGET — the release-acceptance block's release_commit,
+  its Ed25519 signature verified against EYE_AUTHORITY_PUBKEY (this IS
+  the release anchor; the superseded signed-annotated-tag mechanism is
+  not part of E2 — consistent with §5's tag-born-at-publish design);
+  locally, an operator-supplied commit (typically a published release's
+  verified acceptance target, resolved against the local clone or the
+  release's authenticated history bundle). The gate resolves CURRENT-AUTHORITY and every
   admissible source AT THE ANCHOR via git object lookup (`git cat-file` on
   `<anchor>:<path>`; blob equality against the working file) — a working
   file differing from the anchored blob ⇒ DENIED `anchor-mismatch`. When

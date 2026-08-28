@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:fc1f60e65bd70c9a2dfe65ca2db1b792aca11f18096f47824af16e9bc195b2ec",
+  "output_plan_artifact_hash": "sha256:fc1f60e65bd70c9a2dfe65ca2db1b792aca11f18096f47824af16e9bc195b2ec",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:43dc0d60b91d67072fdd22da6a804506deda8dcbd6a82280872994142ef6f47e",
+    "provenance_key": "anthropic:e5c1a1f4-2c44-47a0-bcb1-63aef5796b39"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:f2cd1b21b5c81d28dd70cf335fd684192d042473b7b4ab182c640d28d4192321",
+    "provenance_key": "openai:01a045e3-043f-7843-921e-b3058cc4676b",
+    "bound_hash": "sha256:fc1f60e65bd70c9a2dfe65ca2db1b792aca11f18096f47824af16e9bc195b2ec"
+  },
+  "objections": [
+    {
+      "scope": "approach:E2-self-containment",
+      "claim": "The clean-room acceptance requires a plugin-subtree-only copy, with no repository parent or escaping reads, to run gate + audit + verify green. The same section requires a protected external git commit anchor and resolves every authoritative blob through `git cat-file`; without an external object database it must return `anchor-unavailable`. Creating an anchor from the copied subtree would let the tree writer choose the trust root and defeat the stated out-of-tree security property. The approach must supply an independently authenticated object store/trust bundle to this test or require the authority gate to deny while testing self-containment separately.",
+      "objection_hash": "sha256:6385fbbd6b10086f43ce37b9de77febb2924798d34db9bfe1a4deee8545fde87",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "approach:E2-release-anchor",
+      "claim": "The release trust-anchor mechanism is internally contradictory. E2 defines the release anchor as a signed annotated tag target whose signature is checked against an out-of-tree fingerprint, while the release design explicitly requires the tag not to exist during gate/build, supersedes annotated signed tags with an Ed25519 release-acceptance block, and removes RELEASE_SIGNER_FINGERPRINT. Consequently authoritative release verification has no anchor satisfying E2 as written. The approach must consistently define the accepted draft target plus Eye signature as the external anchor, including its git-object resolution mechanism, or retain the signed-tag design.",
+      "objection_hash": "sha256:7c6c9ede0620437f0651c6f132fe66995110f12a39047bcb30d1bf9dd4686b50",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
