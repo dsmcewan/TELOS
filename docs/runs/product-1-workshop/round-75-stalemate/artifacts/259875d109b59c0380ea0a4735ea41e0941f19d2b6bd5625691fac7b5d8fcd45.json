@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach:E6-oracle-determinization",
+        "claim": "E6's purity mechanism is not operable for the required Node oracles. The seccomp filter is applied before executing `node` and returns SIGSYS for clock and entropy syscall families that the Node runtime, V8, dynamic loader, and standard library may use independently of oracle code; a semantically pure oracle can therefore die as `oracle-impure`. Conversely, seccomp cannot intercept vDSO clock reads or other observable nondeterministic state, and the unspecified “loader invoked” measure does not remove those channels. The mechanism must either kill conforming Node oracles or leave the nondeterminism it claims to eliminate, so the exhaustive battery is not a deterministic discriminator and governance correction d remains unresolved at candidate artifact sha256:923ba39653ff9b4d95c451a7c89337a4a3e4801348babf41ae008534b0413731."
+      },
+      {
+        "scope": "candidate-approach:readiness-register-completeness",
+        "claim": "The release gate validates only readiness items present in `production-readiness.json`; it defines no closed checklist-item registry or exact-bijection oracle against the governing 26-section Master Checklist. Deleting or never adding an in-scope P0 row therefore removes it from the quantification over “every IN-SCOPE P0 item,” allowing `render-readiness.mjs --gate` to pass while a mandatory P0 obligation is absent. The open-item fixture does not test omission. Require deterministic completeness against the frozen checklist, including rejection of missing, duplicate, or fabricated item IDs; otherwise the committed-checklist and hard no-go mandates remain unresolved at candidate artifact sha256:923ba39653ff9b4d95c451a7c89337a4a3e4801348babf41ae008534b0413731."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcin4cx",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcin4cx",
+    "source": "cli-seats/codex_ask"
+  }
+}

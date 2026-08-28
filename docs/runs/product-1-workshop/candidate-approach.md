@@ -845,14 +845,31 @@ per-file designs are in the approved plan; acceptance criteria here.
   network/IPC syscalls (already namespace-denied). An oracle that
   TOUCHES any nondeterministic channel DIES (SIGSYS) and FAILS
   qualification `oracle-impure`; a discriminating oracle needs none, so
-  under this filter every qualified oracle is a DETERMINISTIC FUNCTION
-  of its inputs and the exhaustive battery is a genuine deterministic
-  discriminator. Residual vDSO-clock leakage (if any survives the
-  fallback measure) is caught by a REPEAT-IDENTICAL-INPUTS check — the
-  same input executed twice must agree, else FAIL
-  `oracle-nondeterministic`. (A RANDOM-EXIT oracle dies on getrandom;
-  a CLOCK-PHASE oracle dies on the clock syscall or disagrees on the
-  repeat check.) ROLES ARE SPLIT: this
+  under this filter a qualified oracle confined to the restricted
+  pure-evaluator ABI is a DETERMINISTIC FUNCTION of its inputs and the
+  exhaustive battery is its discriminator.
+  HONEST LIMIT — E6 PERFECT ORACLE DETERMINISM (Gemini referee ruling,
+  2026-08-28, `referee-adjudications/2026-08-28-e6-oracle-determinism.json`,
+  after this thread recurred ~15 rounds without terminating; ruled an
+  ARGO IMPLEMENTATION-SPIKE, not an authorization blocker, per this
+  repo's proposal-lifecycle honest-limits precedent): perfectly
+  isolating an ARBITRARY black-box Node oracle from every
+  runtime/vDSO/libc nondeterminism channel via pre-execution seccomp is
+  OUT OF SCOPE for this authorization plan — seccomp can SIGSYS a
+  semantically-pure oracle whose V8/loader/libc incidentally touch
+  clock/entropy, and cannot intercept vDSO reads. RESOLUTION PATH (Argo
+  spike): evaluate a restricted PURE-EVALUATOR ORACLE ABI (e.g. a WASM
+  or pure-function evaluator with no ambient authority), a
+  deterministic-replay harness, or coarse runtime checks, and pick the
+  sound one at implementation. DETECTION FALLBACK (in the plan NOW): the
+  SAME-INPUT-MULTIPLE-EVAL agreement check — the oracle is run
+  repeatedly on identical inputs under the randomized concealing
+  schedule and ANY output variance ⇒ instant FAIL
+  `oracle-nondeterministic` + flag for manual governance review — so a
+  nondeterministic oracle is caught and fail-closed even before strict
+  isolation lands. (A RANDOM-EXIT oracle either dies on getrandom under
+  the restricted ABI or varies across evals; a CLOCK-PHASE oracle
+  likewise.) ROLES ARE SPLIT: this
   exhaustive determinized battery is the ENROLLMENT-TIME QUALIFICATION
   gate — required CI on every PR that adds or changes an oracle or its
   closure, its evidence recorded — while GATE-TIME AUTHORITY is the
@@ -1105,12 +1122,25 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   `EYE_AUTHORITY_PUBKEY`; a content-addressed but unsigned ADR cannot
   excuse an item. Anything else ⇒ automatic no-go; release.yml runs
   `--gate` in the GATE job so a failing register aborts the release.
+  THE REGISTER IS COMPLETE AGAINST THE FROZEN CHECKLIST (validating
+  only present rows lets an omitted P0 obligation pass by never being
+  quantified over): a committed `checklist-manifest.json` enumerates
+  the governing 26-section Master Checklist's closed set of item IDs
+  (Eye-signed, the frozen standard), and `--gate` asserts an EXACT
+  BIJECTION between it and production-readiness.json — every checklist
+  ID present exactly once (missing ID ⇒ FAIL checklist-item-absent;
+  duplicate ⇒ FAIL; fabricated ID not in the manifest ⇒ FAIL), THEN
+  the typed-evidence discharge runs over every in-scope P0 row.
   Deferred Phase-1b+ items are represented STRUCTURALLY (phase > 1a, or
-  na-by-signed-adr against the scope ADR), never by softening the verdict;
+  na-by-signed-adr against the scope ADR), never by softening the
+  verdict;
   `--check` remains for non-release contexts (registry shape + rendering)
   and CANNOT substitute for `--gate` (release.yml names `--gate`
   literally). **Accept**: a fixture register with one in-scope P0 item
-  `open` ⇒ `--gate` exit nonzero and the release gate job red; `done`
+  `open` ⇒ `--gate` exit nonzero and the release gate job red;
+  OMISSION fixture — a register with an in-scope P0 checklist ID
+  DELETED ⇒ the bijection check fails checklist-item-absent (not
+  silently passed); a duplicate or fabricated ID ⇒ fails; `done`
   with an empty/mismatched-digest artifact ⇒ nonzero; `done` with a
   failing oracle ⇒ nonzero; SWAP fixture: two items exchange each other's
   individually-valid evidence refs ⇒ both fail evidence-unbound; na-by-signed-adr with a valid sha but NO Eye
