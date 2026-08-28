@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:67b9db16df9c5f9d05eb90c253a48e9f16efa386e31459e62090aeba9c6e6718",
+  "output_plan_artifact_hash": "sha256:67b9db16df9c5f9d05eb90c253a48e9f16efa386e31459e62090aeba9c6e6718",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:65195c3627b833f1f99b4b5d2df3498be7ab0b747e52d6afa855805adc717e82",
+    "provenance_key": "anthropic:e07926b2-7f2b-4f81-9df1-5db5efc68364"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:7fc5e1b51a87eff1ea61aa516eab074b784b2ef98d8ef62aa22d0ce4899eeead",
+    "provenance_key": "openai:codex-cli-mtcq8gp7",
+    "bound_hash": "sha256:16c0d6a125455a8b8f7a39b61ecd31ef6a96ec0cde26795c99dd08d12b4150ba"
+  },
+  "objections": [
+    {
+      "scope": "approach",
+      "claim": "The steady-state ruleset contradicts the claimed sole-merger boundary: §5(b2) and §5(e) retain the Eye in the protected-main actor-restriction bypass set, so the Eye can merge a PR without the controller's producer-authenticated checks, signed pre-merge acceptance validation, configuration attestation, or post-merge attestation. This is not merely the recorded compromised-Eye residual because no credential compromise or ruleset change is required; the configured ordinary path itself bypasses the deterministic controller. §6 also incorrectly calls E1 the only pre-controller merge even though Phase A is explicitly merged first. The approach must enumerate both bootstrap merges and remove the Eye's steady-state main-update bypass after E1.",
+      "objection_hash": "sha256:841c7fc83dd5960814d2cd9d15c99dd72859dd06ba8f92807dafa711f85a0bfe",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

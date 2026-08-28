@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "Revise E1, §5(b2), §5(e), and §6 so the persistent actor-restriction ruleset permits only the merge-controller App to update protected main. The Eye remains the administrative trust root and custody-manifest member but is not a normal main-update bypass actor. Explicitly record both pre-controller merges—Phase A and the E1 genesis merge—as exceptional Eye-local bootstrap merges, each bound to its exact PR/head, bootstrap validation evidence, Eye signature, and ledger entry. Immediately after E1 lands, the bootstrap ceremony removes the Eye from the actor-restriction bypass set and verifies the resulting configuration before controller activation. Thereafter, a direct merge attempted with the Eye's ordinary repository identity must be server-refused while the ruleset remains unchanged; changing the ruleset is an explicit trust-root administration event covered by the existing compromised-Eye/non-atomic-platform boundary, configuration attestations, and drift detection. Add regressions proving: (1) Phase A and E1 are the only two enumerated pre-controller merges; (2) the steady-state actor-restriction bypass set is exactly {merge-controller}; (3) the Eye, publisher, GitHub Actions, and every unlisted writer receive server refusal on a direct protected-main update; and (4) the controller remains operable while the safety ruleset has no bypass actors.",
+    "objections": [
+      {
+        "scope": "approach",
+        "claim": "The steady-state ruleset contradicts the claimed sole-merger boundary: §5(b2) and §5(e) retain the Eye in the protected-main actor-restriction bypass set, so the Eye can merge a PR without the controller's producer-authenticated checks, signed pre-merge acceptance validation, configuration attestation, or post-merge attestation. This is not merely the recorded compromised-Eye residual because no credential compromise or ruleset change is required; the configured ordinary path itself bypasses the deterministic controller. §6 also incorrectly calls E1 the only pre-controller merge even though Phase A is explicitly merged first. The approach must enumerate both bootstrap merges and remove the Eye's steady-state main-update bypass after E1."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcq8gp7",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcq8gp7",
+    "source": "cli-seats/codex_ask"
+  }
+}
