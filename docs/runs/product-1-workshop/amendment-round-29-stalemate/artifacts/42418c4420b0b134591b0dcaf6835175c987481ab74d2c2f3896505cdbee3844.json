@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:12e866ee1ca42e747ee64a66ac5ff625cb7015aa8cac7a6b8bcdb07f08b560b9",
+  "output_plan_artifact_hash": "sha256:12e866ee1ca42e747ee64a66ac5ff625cb7015aa8cac7a6b8bcdb07f08b560b9",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:5c32d06d14de1b03f4ffe87ec501ed441f3e7c35dc585d27df81b84e2c338a03",
+    "provenance_key": "anthropic:09a2977b-4468-407d-91bf-6abdcd222bec"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:e1900e3caf73602cb932db0a0afce82a166dd8e27cc74bcca9b91d4bd19a7ca5",
+    "provenance_key": "openai:codex-cli-mtcx9caf",
+    "bound_hash": "sha256:12e866ee1ca42e747ee64a66ac5ff625cb7015aa8cac7a6b8bcdb07f08b560b9"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "The Node support contract is internally inconsistent. The installation contract and manifest oracle admit Node >=22.12.0, but the no-listener guarantee requires disabling SIGUSR1 inspector activation; Node’s concrete `--disable-sigusr1` control was added only in v22.14.0. The approach explicitly makes doctor refuse `inspector-uncontainable` where no equivalent exists, so conforming 22.12.x/22.13.x installations can never become usable despite satisfying the documented requirement. Raise the product/engines/install minimum to >=22.14.0, or specify and regression-test a real equivalent containment mechanism for 22.12.x–22.13.x.",
+      "objection_hash": "sha256:5962f845808a381ef0f049b76736e5891f217ccb9f8bc00793cb13533a58a0e4",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

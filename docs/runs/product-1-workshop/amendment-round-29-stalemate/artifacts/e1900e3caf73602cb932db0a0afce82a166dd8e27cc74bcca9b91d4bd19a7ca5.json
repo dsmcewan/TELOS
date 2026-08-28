@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach",
+        "claim": "The Node support contract is internally inconsistent. The installation contract and manifest oracle admit Node >=22.12.0, but the no-listener guarantee requires disabling SIGUSR1 inspector activation; Node’s concrete `--disable-sigusr1` control was added only in v22.14.0. The approach explicitly makes doctor refuse `inspector-uncontainable` where no equivalent exists, so conforming 22.12.x/22.13.x installations can never become usable despite satisfying the documented requirement. Raise the product/engines/install minimum to >=22.14.0, or specify and regression-test a real equivalent containment mechanism for 22.12.x–22.13.x."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcx9caf",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcx9caf",
+    "source": "cli-seats/codex_ask"
+  }
+}
