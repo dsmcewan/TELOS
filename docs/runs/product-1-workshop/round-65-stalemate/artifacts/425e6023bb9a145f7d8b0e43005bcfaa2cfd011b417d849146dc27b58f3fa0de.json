@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:release-ID-binding",
+        "claim": "At candidate sha256:d88ff717bb077d7fdc549a75f0d89cfd9deb811411a7b41820719ffa9ce18e92, the publish ceremony contradicts its numeric-release-ID invariant. It requires every view/upload/verify/flip/delete operation to target the bound release ID because multiple drafts may share a tag, but its closed-allowlist check uses `gh release view --json assets`. That command accepts only an optional tag; without one it inspects the latest release and cannot select a numeric release ID. The ceremony can therefore validate another release and then publish the unvalidated bound draft. Replace this with the ID-addressed REST endpoint and add a regression where a competing draft/latest release proves the assets inspected belong to the exact bound ID."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcg31a5",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcg31a5",
+    "source": "cli-seats/codex_ask"
+  }
+}

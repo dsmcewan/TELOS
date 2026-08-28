@@ -1629,9 +1629,16 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   create (no tag ref yet); the trusted workflow verifies the build and uploads
   NOTHING to the release — it emits artifacts + attestations as
   workflow outputs; the Eye's LOCAL ceremony uploads assets to the
-  DRAFT BY ITS BOUND RELEASE ID, then runs the CLOSED ALLOWLIST check (`gh release view --json
-  assets` must equal the literal expected filename set EXACTLY —
-  missing or EXTRA assets ⇒ fail) and `gh attestation verify` per asset
+  DRAFT BY ITS BOUND RELEASE ID, then runs the CLOSED ALLOWLIST check
+  via the ID-ADDRESSED REST ENDPOINT — `gh api
+  repos/{o}/{r}/releases/{release_id}` (NOT `gh release view`, whose
+  tag-or-latest addressing cannot select a numeric ID and could
+  inspect a DIFFERENT release while the unvalidated bound draft
+  publishes) — whose asset list must equal the literal expected
+  filename set EXACTLY (missing or EXTRA assets ⇒ fail; COMPETING-
+  RELEASE regression: with a competing same-tag draft and a different
+  'latest' release present, the inspected assets provably belong to
+  the exact bound ID) and `gh attestation verify` per asset
   (unattested ⇒ fail, identity pinned to release.yml@refs/heads/main);
   ONLY after both pass does the Eye perform the single final operation —
   flipping the draft to published; any failure deletes the draft, so

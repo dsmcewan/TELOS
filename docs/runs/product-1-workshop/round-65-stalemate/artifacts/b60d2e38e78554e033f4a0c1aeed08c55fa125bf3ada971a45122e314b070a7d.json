@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:7eb819ea1b7ed6c28e993bbb6b3502219f695c8345a6b57afcf2b0c1500e8c22",
+  "output_plan_artifact_hash": "sha256:7eb819ea1b7ed6c28e993bbb6b3502219f695c8345a6b57afcf2b0c1500e8c22",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:84c2e6496a2d638153602118e9df90a088f2b236a5f4893509587650e644c282",
+    "provenance_key": "anthropic:0ffaa8ee-4483-4126-b524-72995a4ce8c7"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:425e6023bb9a145f7d8b0e43005bcfaa2cfd011b417d849146dc27b58f3fa0de",
+    "provenance_key": "openai:codex-cli-mtcg31a5",
+    "bound_hash": "sha256:7eb819ea1b7ed6c28e993bbb6b3502219f695c8345a6b57afcf2b0c1500e8c22"
+  },
+  "objections": [
+    {
+      "scope": "candidate:release-ID-binding",
+      "claim": "At candidate sha256:d88ff717bb077d7fdc549a75f0d89cfd9deb811411a7b41820719ffa9ce18e92, the publish ceremony contradicts its numeric-release-ID invariant. It requires every view/upload/verify/flip/delete operation to target the bound release ID because multiple drafts may share a tag, but its closed-allowlist check uses `gh release view --json assets`. That command accepts only an optional tag; without one it inspects the latest release and cannot select a numeric release ID. The ceremony can therefore validate another release and then publish the unvalidated bound draft. Replace this with the ID-addressed REST endpoint and add a regression where a competing draft/latest release proves the assets inspected belong to the exact bound ID.",
+      "objection_hash": "sha256:271bb3e48c375ebbfbb3686489c6d7f4dd3e3a5e6f65dff00a078f662d49e6e4",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
