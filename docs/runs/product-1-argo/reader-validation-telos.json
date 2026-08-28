@@ -1,0 +1,121 @@
+{
+  "gate": "comprehension-gate",
+  "component": "telos",
+  "reader": "claude-fable-5 (product-1 Argo implementer; session 5cab40b9/eaf1b3d3)",
+  "query_artifact": {
+    "path": "docs/institutional-memory/telos/comprehension-queries.json",
+    "sha256": "sha256:0d5c70b7a7f473e869122cc7081c6cf6344a9636c5dd920772288669fa31f41b"
+  },
+  "active_authority": {
+    "plan": "docs/runs/clotho-daedalus-delta14/matured-plan-v15.md",
+    "plan_ref": "sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3",
+    "authorization": "authz-008"
+  },
+  "plan_hash_verified": true,
+  "authority_resolved": "authz-008",
+  "superseded_artifacts_excluded": true,
+  "comprehension_checks": {
+    "passed": 19,
+    "failed": 0,
+    "checks": [
+      {
+        "id": "resolved_active_plan",
+        "ok": true,
+        "detail": "reader.resolved_plan_ref=sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3 expected active sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3"
+      },
+      {
+        "id": "resolved_active_authorization",
+        "ok": true,
+        "detail": "reader.resolved_authorization=authz-008 expected authz-008"
+      },
+      {
+        "id": "queries_declare_active_plan",
+        "ok": true,
+        "detail": "queries.governing_authority.plan_ref=sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3 expected active sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3"
+      },
+      {
+        "id": "excluded_superseded",
+        "ok": true,
+        "detail": "reader exclusions exactly match superseded authorizations"
+      },
+      {
+        "id": "answer:required-seats",
+        "ok": true,
+        "detail": "set match [evidence citation only; expected value comes from the reviewed query artifact: {\"code\":\"build-gate/gate.mjs#REQUIRED_MODELS + build-gate/council.mjs#planSeats\",\"contract\":\"docs/institutional-memory/telos/CONTRACTS/authorization-protocol.json\"}]"
+      },
+      {
+        "id": "answer:advisory-missing-key-blocks",
+        "ok": true,
+        "detail": "match [evidence citation only; expected value comes from the reviewed query artifact: {\"code\":\"build-gate/council.mjs#planSeats (grok/gemini advisory)\",\"invariant\":\"telos-advisory-never-blocks\"}]"
+      },
+      {
+        "id": "answer:model-consensus-authorizes",
+        "ok": true,
+        "detail": "match [evidence citation only; expected value comes from the reviewed query artifact: {\"doc\":\"docs/convergence-is-not-authorization.md\",\"system_invariant\":\"eye-authority-non-delegable\"}]"
+      },
+      {
+        "id": "answer:refused-authorizations",
+        "ok": true,
+        "detail": "set match [evidence citation only; expected value comes from the reviewed query artifact: {\"contract\":\"docs/institutional-memory/telos/CONTRACTS/authorization-chain.json\"}]"
+      },
+      {
+        "id": "answer:authz-007-block-cause",
+        "ok": true,
+        "detail": "match [evidence citation only; expected value comes from the reviewed query artifact: {\"record\":\"docs/runs/clotho-authorization-7/authorization-summary.json (gate.blockers)\",\"decision\":\"DECISIONS/convergence-is-not-authorization.md\"}]"
+      },
+      {
+        "id": "answer:signed-mode-enforces",
+        "ok": true,
+        "detail": "set match [evidence citation only; expected value comes from the reviewed query artifact: {\"oracle\":\"build-gate/scripts/test-trust.mjs\",\"contract\":\"docs/institutional-memory/telos/CONTRACTS/authorization-protocol.json\"}]"
+      },
+      {
+        "id": "answer:active-authorization",
+        "ok": true,
+        "detail": "match; authority anchor resolved CURRENT-AUTHORITY.json#active_authorization -> \"authz-008\""
+      },
+      {
+        "id": "answer:authorization-executes-code",
+        "ok": true,
+        "detail": "match [evidence citation only; expected value comes from the reviewed query artifact: {\"non_claim\":\"telos-authorization-does-not-execute\",\"system\":\"docs/institutional-memory/NON-CLAIMS.md\"}]"
+      },
+      {
+        "id": "answer:gate-ground-truth",
+        "ok": true,
+        "detail": "match [evidence citation only; expected value comes from the reviewed query artifact: {\"code\":\"build-gate/gate.mjs\",\"doc\":\"README.md#trust-model\"}]"
+      },
+      {
+        "id": "answer:authz-007-superseded-by",
+        "ok": true,
+        "detail": "match; authority anchor resolved CURRENT-AUTHORITY.json#active_authorization.supersedes -> \"authz-008\""
+      },
+      {
+        "id": "invariant_read:telos-fail-closed-authorization",
+        "ok": true,
+        "detail": "reader acknowledged invariant telos-fail-closed-authorization"
+      },
+      {
+        "id": "invariant_read:telos-dissent-blocks",
+        "ok": true,
+        "detail": "reader acknowledged invariant telos-dissent-blocks"
+      },
+      {
+        "id": "invariant_read:telos-advisory-never-blocks",
+        "ok": true,
+        "detail": "reader acknowledged invariant telos-advisory-never-blocks"
+      },
+      {
+        "id": "non_claim_read:telos-model-approval-is-not-human-authority",
+        "ok": true,
+        "detail": "reader acknowledged non-claim telos-model-approval-is-not-human-authority"
+      },
+      {
+        "id": "non_claim_read:telos-pass-is-not-correctness",
+        "ok": true,
+        "detail": "reader acknowledged non-claim telos-pass-is-not-correctness"
+      }
+    ]
+  },
+  "unresolved_contradictions": [],
+  "result": "COMPREHENSION_PASSED",
+  "implementation_authority": "GRANTED"
+}

@@ -1,0 +1,14 @@
+{
+  "quest": "product-1",
+  "governing_plan_ref": "sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6",
+  "reviewed_plan_commit": "97becd37ba2e99055f13c97ad6780eb06c8d0e34",
+  "durable_s2_authorization": "authz-product-1 @ b0cafa9073f6a7401ec6b9ec88df3616b8bc0f84",
+  "s3_grant": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-s3-grant.ebac891863e64660.json (sha256:ebac891863e646602947c5b96df86ac67e048d19eff9fb84b3d73d40e8c7c32a)",
+  "entry_ritual": [
+    "docs/runs/product-1-argo/reader-validation-iliad.json",
+    "docs/runs/product-1-argo/reader-validation-telos.json",
+    "docs/runs/product-1-argo/reader-validation-argo.json"
+  ],
+  "conditions": "10 Eye conditions bind every slice; per-slice Eye acceptance required before merge; failed/blocked/superseded slices remain durable lineage.",
+  "slices": []
+}

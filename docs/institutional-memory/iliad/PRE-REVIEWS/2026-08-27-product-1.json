@@ -69,7 +69,18 @@
     ],
     "capability_packets_required": false
   },
-  "entry_ritual": "docs/runs/product-1/reader-validation-artifact.json (iliad + telos module queries \u2014 COMPREHENSION_PASSED / GRANTED) \u2014 produced at S4 before implementation, placeholder until then",
+  "entry_ritual": {
+    "status": "COMPREHENSION_PASSED (all three gates, deterministic exit 0)",
+    "performed": "2026-08-28",
+    "reader": "claude-fable-5 (product-1 Argo implementer)",
+    "artifacts": [
+      "docs/runs/product-1-argo/reader-validation-iliad.json",
+      "docs/runs/product-1-argo/reader-validation-telos.json",
+      "docs/runs/product-1-argo/reader-validation-argo.json"
+    ],
+    "checks": "iliad 19/19, telos 19/19, argo 18/18 \u2014 plan-hash verified, authority resolved authz-008, superseded excluded",
+    "note": "Gate GRANTED artifacts are the entry precondition, not implementation authority; authority is the Eye's S3 grant (EYE-DIRECTIVES/2026-08-28-product-1-s3-grant.ebac891863e64660.json)."
+  },
   "eye_rulings_at_s0_gate": {
     "ruled": "2026-08-27",
     "product_name": "PYLAE Gate (v1 = 'PYLAE Gate v1'); TELOS is the system, PYLAE Gate is the productized local-CLI SKU. PYLAE is a new mythological-namespace term requiring registration in docs/mythological-vocabulary.md (or an explicit product-brand carve-out) via the lifecycle.",
