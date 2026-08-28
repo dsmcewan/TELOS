@@ -1317,8 +1317,9 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   ceremony fail the moment E1 becomes operable): an Eye-signed CUSTODY
   MANIFEST enumerates exactly (a) the Eye (owner/admin), (b) the
   merge-controller principal, and (c) the branch-publisher principal —
-  each machine principal a fine-grained credential with an EXACT
-  LEAST-PRIVILEGE scope set recorded per principal — the publisher:
+  each machine principal a GITHUB APP INSTALLATION (chosen over PATs
+  so the release ceremony can platform-suspend them — see (iv)) with an
+  EXACT LEAST-PRIVILEGE permission set recorded per principal — the publisher:
   contents:write + pull_requests:write (opening a PR requires PR write;
   contents alone cannot), the controller: contents:write +
   pull_requests:write (the merge endpoint) + checks:read — and nothing
@@ -1334,16 +1335,23 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   re-check "immediately before" the flip is two API calls with a
   mutable gap, so the gap itself is removed: the ceremony (1) DISABLES
   GitHub Actions repo-wide (admin API, `enabled: false`) and confirms
-  no workflow run is in flight, and verifies the controller/publisher
-  machine credentials are in the Eye's offline custody (not loaded in
-  any process — they only ever run during merge operations, never
-  during release); (2) runs the final asset-set + digest + body
+  no workflow run is in flight, and SUSPENDS the controller/publisher
+  machine principals — which are GITHUB APP INSTALLATIONS precisely so
+  suspension is a PLATFORM control (a PAT cannot be suspended via API;
+  "offline custody" is not machine-verifiable): the ceremony suspends
+  each installation (PUT .../suspended), VERIFIES `suspended_at` is
+  set, and PROVES denial by attempting a release-read/mutation with
+  each suspended credential and requiring the platform's 403 BEFORE
+  the final check; (2) runs the final asset-set + digest + body
   verification against the bound release ID; (3) flips `draft: false`
-  — during (1)-(3) NO Actions token exists and no non-Eye
-  release-capable credential is live, so nothing can mutate the draft
-  between verification and flip; (4) POST-PUBLISH re-verification
-  asserts allowlist+digests+attestations against the now-immutable
-  release; (5) re-enables Actions. FROZEN-INTERVAL regression: a
+  — during (1)-(3) NO Actions token exists and every non-Eye
+  release-capable credential is PLATFORM-SUSPENDED with denial proven,
+  so nothing can mutate the draft between verification and flip;
+  (4) POST-PUBLISH re-verification asserts
+  allowlist+digests+attestations against the now-immutable release;
+  (5) only after (4) passes are the installations UNSUSPENDED and
+  Actions re-enabled (rotation instead of unsuspension if any anomaly
+  was observed). FROZEN-INTERVAL regression: a
   mutation attempted on the bound release ID after the last pre-flip
   check (stub: workflow dispatch and API mutation during the interval)
   ⇒ platform-refused (Actions disabled, no live credential) and any

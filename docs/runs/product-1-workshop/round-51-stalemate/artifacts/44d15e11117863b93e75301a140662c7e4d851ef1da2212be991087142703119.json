@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "approach",
+        "claim": "Candidate §5(e)(iv)'s claimed exclusive publish interval is not exclusive. The custody manifest deliberately retains controller and publisher principals with `contents:write`, which authorizes GitHub release and release-asset mutation. Disabling GitHub Actions stops workflow execution but does not revoke fine-grained PAT/GitHub App credentials or prove that no external process holds one; “offline custody/not loaded” is not a machine-verifiable platform control. Either principal can therefore mutate the bound draft after the final asset/body check and before `draft:false`, defeating the allowlist, attestation check, and frozen-interval oracle. The ceremony must revoke or suspend every non-Eye Contents-write credential during the interval (or otherwise make it platform-verifiably release-incapable), prove release mutation with each credential is denied before the final check, and restore or rotate credentials only after post-publication verification. Until then release blocker 6's fail-closed signed-release contract remains unresolved at release anchor `fc0fa05`."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcd7o2d",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcd7o2d",
+    "source": "cli-seats/codex_ask"
+  }
+}

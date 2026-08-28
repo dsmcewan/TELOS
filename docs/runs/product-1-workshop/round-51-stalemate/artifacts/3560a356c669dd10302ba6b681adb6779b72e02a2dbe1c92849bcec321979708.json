@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:a94fd7ac70b1eee681d3fd636bf007e87570494323f1319acd459391afff2a78",
+  "output_plan_artifact_hash": "sha256:a94fd7ac70b1eee681d3fd636bf007e87570494323f1319acd459391afff2a78",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:37e6d7f47332b0239fc11de876cc72487d322afb38c0831e06bf79f574ac1052",
+    "provenance_key": "anthropic:0b41943b-18ae-4c88-84fc-7802f2a39b26"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:44d15e11117863b93e75301a140662c7e4d851ef1da2212be991087142703119",
+    "provenance_key": "openai:codex-cli-mtcd7o2d",
+    "bound_hash": "sha256:a94fd7ac70b1eee681d3fd636bf007e87570494323f1319acd459391afff2a78"
+  },
+  "objections": [
+    {
+      "scope": "approach",
+      "claim": "Candidate §5(e)(iv)'s claimed exclusive publish interval is not exclusive. The custody manifest deliberately retains controller and publisher principals with `contents:write`, which authorizes GitHub release and release-asset mutation. Disabling GitHub Actions stops workflow execution but does not revoke fine-grained PAT/GitHub App credentials or prove that no external process holds one; “offline custody/not loaded” is not a machine-verifiable platform control. Either principal can therefore mutate the bound draft after the final asset/body check and before `draft:false`, defeating the allowlist, attestation check, and frozen-interval oracle. The ceremony must revoke or suspend every non-Eye Contents-write credential during the interval (or otherwise make it platform-verifiably release-incapable), prove release mutation with each credential is denied before the final check, and restore or rotate credentials only after post-publication verification. Until then release blocker 6's fail-closed signed-release contract remains unresolved at release anchor `fc0fa05`.",
+      "objection_hash": "sha256:a5518d04706be6b5aa98fe0ae3498251ad64a2046c42c1b3143b2eaaee754582",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
