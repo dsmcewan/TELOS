@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:4dfdc10913d45835c91fce4db8a3123092b081de10cc69fd2bb8f62e9af575e5",
+  "output_plan_artifact_hash": "sha256:4dfdc10913d45835c91fce4db8a3123092b081de10cc69fd2bb8f62e9af575e5",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:b542d850d151417463dbf1b91381dc23517f00a6c7db7862a643287b9b0102d8",
+    "provenance_key": "anthropic:3c66f9d8-82bd-4180-a3b6-43085fb41b94"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:d3d1c3bb57e83e27ace706ec70348f8ed8d860ef2deb51bb0c340ecbd10c1c96",
+    "provenance_key": "openai:codex-cli-mtctu7vm",
+    "bound_hash": "sha256:4dfdc10913d45835c91fce4db8a3123092b081de10cc69fd2bb8f62e9af575e5"
+  },
+  "objections": [
+    {
+      "scope": "candidate §1 — no-listener oracle external-tool identity",
+      "claim": "The external-tool rule permits identity by an absolute path plus a pinned version instead of requiring a content digest. An attacker-controlled replacement can occupy the expected path, report the expected version, and then execute arbitrary code or open a listener; the stated PATH-wrapper regression does not discriminate that case. This violates the plan's content-addressed identity and makes the no-listener result unsound. Every admitted external executable must be bound to an independently recorded digest or equivalent cryptographic package identity; version may only be a compatibility constraint.",
+      "objection_hash": "sha256:465346e01647deb7c4be97f4facca594b526b41a0ddf7323ef4ab43378f4668f",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate §1 — complete executable closure for git",
+      "claim": "The claimed complete spawn closure stops at the top-level git invocation. Admitted operations such as status, verify-*, bundle, and fetch can execute git-* implementation helpers or configuration-selected programs; repository-local core.fsmonitor is a concrete path by which git status can run an arbitrary helper despite a cleared environment. Pinning only the git front-end and constraining its argv therefore does not constrain every executable that actually runs. The design must suppress or validate local/system configuration and recursively bind or sandbox all git descendants; otherwise an allowed git invocation can reach an unallowlisted listener-capable helper.",
+      "objection_hash": "sha256:c4c23c0e848e078908fadf024133b7b5d71302d90a9c20548eaf337c317cb7d0",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate §§1 and 4 — external-tool allowlist completeness",
+      "claim": "The closed exception set says the CLI contract requires exactly git, bwrap, and gh, but the doctor and mandatory pre-execution installation contract also require sha256sum. If the CLI invokes sha256sum, it is outside the asserted executable grammar and identity registry; if it merely reports it usable without exercising and authenticating it, doctor does not substantiate the mandatory workflow. The plan must either add sha256sum with a closed argv grammar and cryptographic identity binding or replace that requirement with trusted in-process hashing and update the installation contract.",
+      "objection_hash": "sha256:77018dec727f13668e4167c17dbf758fcb67cf4adf25ab086885e711f3783079",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

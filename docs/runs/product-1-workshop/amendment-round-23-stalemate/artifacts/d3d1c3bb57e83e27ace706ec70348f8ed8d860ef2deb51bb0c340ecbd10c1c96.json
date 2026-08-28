@@ -1,0 +1,33 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate §1 — no-listener oracle external-tool identity",
+        "claim": "The external-tool rule permits identity by an absolute path plus a pinned version instead of requiring a content digest. An attacker-controlled replacement can occupy the expected path, report the expected version, and then execute arbitrary code or open a listener; the stated PATH-wrapper regression does not discriminate that case. This violates the plan's content-addressed identity and makes the no-listener result unsound. Every admitted external executable must be bound to an independently recorded digest or equivalent cryptographic package identity; version may only be a compatibility constraint."
+      },
+      {
+        "scope": "candidate §1 — complete executable closure for git",
+        "claim": "The claimed complete spawn closure stops at the top-level git invocation. Admitted operations such as status, verify-*, bundle, and fetch can execute git-* implementation helpers or configuration-selected programs; repository-local core.fsmonitor is a concrete path by which git status can run an arbitrary helper despite a cleared environment. Pinning only the git front-end and constraining its argv therefore does not constrain every executable that actually runs. The design must suppress or validate local/system configuration and recursively bind or sandbox all git descendants; otherwise an allowed git invocation can reach an unallowlisted listener-capable helper."
+      },
+      {
+        "scope": "candidate §§1 and 4 — external-tool allowlist completeness",
+        "claim": "The closed exception set says the CLI contract requires exactly git, bwrap, and gh, but the doctor and mandatory pre-execution installation contract also require sha256sum. If the CLI invokes sha256sum, it is outside the asserted executable grammar and identity registry; if it merely reports it usable without exercising and authenticating it, doctor does not substantiate the mandatory workflow. The plan must either add sha256sum with a closed argv grammar and cryptographic identity binding or replace that requirement with trusted in-process hashing and update the installation contract."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtctu7vm",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtctu7vm",
+    "source": "cli-seats/codex_ask"
+  }
+}
