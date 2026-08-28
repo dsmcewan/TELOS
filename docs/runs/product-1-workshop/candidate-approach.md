@@ -833,7 +833,23 @@ per-file designs are in the approved plan; acceptance criteria here.
   unavailable ⇒ FAIL `oracle-unrunnable` — confinement is never
   best-effort. The remaining nondeterministic channels (the clock and
   KERNEL ENTROPY — getrandom cannot be portably denied inside the
-  sandbox) are controlled by EXHAUSTIVE CLOSED-DOMAIN EVALUATION under
+  sandbox) are ELIMINATED BY SECCOMP DETERMINIZATION, making the
+  battery a genuinely deterministic discriminator (finite black-box
+  testing of a program that can still observe entropy or the clock can
+  never be deterministic — a coin-flip oracle passes any finite battery
+  with nonzero probability; the channels themselves must go): the
+  battery sandbox adds a bwrap seccomp filter under which
+  getrandom/getentropy return runner-fixed bytes,
+  clock_gettime/gettimeofday/time return a fixed epoch, and
+  /dev/{u,}random are bound to fixed-content files — every oracle
+  thereby executes as a DETERMINISTIC FUNCTION of its inputs (a
+  RANDOM-EXIT oracle collapses to a constant and deterministically
+  fails the baselines or the negatives). ROLES ARE SPLIT: this
+  exhaustive determinized battery is the ENROLLMENT-TIME QUALIFICATION
+  gate — required CI on every PR that adds or changes an oracle or its
+  closure, its evidence recorded — while GATE-TIME AUTHORITY is the
+  qualified oracle's deterministic verdict on the REAL governed
+  content; the battery is EXHAUSTIVE CLOSED-DOMAIN EVALUATION under
   a CONCEALED, CONTENT-DERIVED ORDER — the AUTHORITATIVE verdict is
   DETERMINISTIC, never sampled (a randomized subset would make the
   required gate probabilistic — an input-ignoring oracle could
@@ -930,8 +946,9 @@ per-file designs are in the approved plan; acceptance criteria here.
   cannot reproduce the content-derived concealed case assignment and
   it fails some element of the exhaustive battery deterministically ⇒
   oracle-nondiscriminating; a RANDOM-EXIT oracle (crypto.randomBytes
-  coin flip) ⇒ fails some element of the exhaustive battery ⇒
-  oracle-nondiscriminating; a SINGLETON-DOMAIN
+  coin flip) ⇒ under seccomp-fixed entropy it collapses to a constant
+  exit and DETERMINISTICALLY fails the baselines (constant nonzero) or
+  every negative (constant zero) ⇒ oracle-nondiscriminating; a SINGLETON-DOMAIN
   declaration ⇒ FAIL mutation-domain-too-small before any execution; a
   FIXTURE-DIGEST-SPECIAL-CASING oracle (nonzero only on one memorized
   family member) ⇒ fails on the other drawn members ⇒

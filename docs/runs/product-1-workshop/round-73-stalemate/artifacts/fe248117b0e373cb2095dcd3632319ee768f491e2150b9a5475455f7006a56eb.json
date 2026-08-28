@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach",
+        "claim": "E6 still does not provide a deterministic discriminator. Exhaustively enumerating the finite mutation and conforming-input domains makes input coverage deterministic, but the candidate explicitly leaves kernel entropy and clock access available to the oracle. A RANDOM-EXIT oracle therefore has a nonzero probability of producing the required exit for every finite invocation; exhaustive inputs do not exhaust its entropy outcomes, so the assertion that it “fails some element ... deterministically” is false. Likewise, concealing a content-derived execution order does not convert nondeterministic oracle behavior into a deterministic verdict. This leaves an oracle that does not inspect the governed invariant capable of authorizing by chance, violating the frozen fail-closed requirement and deterministic-gate boundary. The authoritative mechanism must either eliminate/control every nondeterministic observation available to the oracle or use a deterministic validator whose correctness does not depend on finite black-box testing of arbitrary executable behavior; randomized or exhaustive mutation batteries may remain supplemental evidence."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtci26wp",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtci26wp",
+    "source": "cli-seats/codex_ask"
+  }
+}

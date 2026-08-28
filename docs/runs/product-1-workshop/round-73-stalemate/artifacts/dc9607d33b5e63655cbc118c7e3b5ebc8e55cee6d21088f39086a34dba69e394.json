@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:328f2e593a24a7fa979c42e1a5a79d6394bbe68cb52307b9245ac10e7b4d2b08",
+  "output_plan_artifact_hash": "sha256:328f2e593a24a7fa979c42e1a5a79d6394bbe68cb52307b9245ac10e7b4d2b08",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:2713357e17f3a92dcf92eb474b42fdd6f2ade9e2483d097164548e1f73f56001",
+    "provenance_key": "anthropic:4aa0a8a0-8d6c-4c75-a378-786fbad8424a"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:fe248117b0e373cb2095dcd3632319ee768f491e2150b9a5475455f7006a56eb",
+    "provenance_key": "openai:codex-cli-mtci26wp",
+    "bound_hash": "sha256:328f2e593a24a7fa979c42e1a5a79d6394bbe68cb52307b9245ac10e7b4d2b08"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "E6 still does not provide a deterministic discriminator. Exhaustively enumerating the finite mutation and conforming-input domains makes input coverage deterministic, but the candidate explicitly leaves kernel entropy and clock access available to the oracle. A RANDOM-EXIT oracle therefore has a nonzero probability of producing the required exit for every finite invocation; exhaustive inputs do not exhaust its entropy outcomes, so the assertion that it “fails some element ... deterministically” is false. Likewise, concealing a content-derived execution order does not convert nondeterministic oracle behavior into a deterministic verdict. This leaves an oracle that does not inspect the governed invariant capable of authorizing by chance, violating the frozen fail-closed requirement and deterministic-gate boundary. The authoritative mechanism must either eliminate/control every nondeterministic observation available to the oracle or use a deterministic validator whose correctness does not depend on finite black-box testing of arbitrary executable behavior; randomized or exhaustive mutation batteries may remain supplemental evidence.",
+      "objection_hash": "sha256:9e42bbb09510cf083f6a1e23a3e7f55eb0a52c8b4612c7e49eba474c253bb83c",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
