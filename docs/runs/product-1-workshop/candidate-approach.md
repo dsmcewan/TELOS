@@ -50,9 +50,23 @@ source grammar, so each is bound instead by: IDENTITY (invoked by
 absolute resolved path with version pinned or binary digest recorded —
 a $PATH wrapper substitution ⇒ refuse `tool-identity-mismatch`), a
 CLOSED SUBCOMMAND/ARGUMENT GRAMMAR excluding every listener-capable or
-arbitrary-execution mode (git: only cat-file/rev-parse/log/ls-tree/
-bundle/verify-* forms with `-c` config injection and alias expansion
-disabled via `GIT_CONFIG_*` isolation — no daemon/serve; bwrap: only
+arbitrary-execution mode. The git grammar is DERIVED FROM THE ACTUAL
+CLOSURE, not hand-guessed (the required verification path executes the
+existing self-weave verifier, whose closure at fc0fa05 invokes more
+than the obvious read forms): the enumerated argv shapes are exactly
+those reachable from doctor/verify — cat-file, rev-parse, log,
+ls-tree, ls-files -z, status --porcelain, hash-object --no-filters,
+rev-list (incl. --max-parents=0 HEAD), bundle create/verify/unbundle,
+verify-* — PLUS the archive-mode object-store forms `git init --bare
+<private-tmp-dir>` and `git -C <private-tmp-dir> fetch <bundle>`
+(confined to the ceremony's private temp store, never a shared repo) —
+each bound to the same `-c`-injection/alias-disabled `GIT_CONFIG_*`
+isolation; no daemon/serve/upload-pack/receive-pack. A
+CLOSURE-DERIVED COMPLETENESS REGRESSION enumerates every git argv the
+doctor/verify closure actually constructs and asserts each matches a
+grammar entry (a required invocation outside the grammar ⇒ the
+regression fails at qualification, BEFORE an operator ever hits a
+fail-closed refusal in the field); bwrap: only
 the oracle-confinement argv shape — no --share-net; gh: only
 `attestation verify`/read-only api GETs — no extensions, no
 alias/exec), and an ISOLATED ENVIRONMENT (cleared env except an
