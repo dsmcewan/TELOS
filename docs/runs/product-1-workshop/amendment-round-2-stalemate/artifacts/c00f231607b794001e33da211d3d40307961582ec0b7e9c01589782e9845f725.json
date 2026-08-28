@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach:two-phase-transition-evidence",
+        "claim": "The two-phase transition relies on `docs/runs/product-1-argo/discovery-001-bootstrap-pivot-coupling.json` as the evidence that the original pivot was internally unsatisfiable, but that artifact is absent from git at HEAD `4ec0fa50985827dc4db8204772e0f98cfbf77475`, and Phase A neither lands it nor requires its content address to be verified. The candidate therefore asks authorization to rely on unavailable evidence while claiming the stopped lineage is preserved. Phase A must commit the immutable DISCOVERY-001 evidence, bind it by digest/commit, and verify that it supports the cited coupling before any successor authorization; otherwise the transition's load-bearing premise remains an assertion at candidate artifact `sha256:a0623b03b8c41f8c8025cc6e5ec4cb4bd57c01686b635ef31f196d73dbdf92cf`."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcp03bw",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcp03bw",
+    "source": "cli-seats/codex_ask"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:a0623b03b8c41f8c8025cc6e5ec4cb4bd57c01686b635ef31f196d73dbdf92cf",
+  "output_plan_artifact_hash": "sha256:a0623b03b8c41f8c8025cc6e5ec4cb4bd57c01686b635ef31f196d73dbdf92cf",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:98698062c457df7b95e0fcec1d5023a02e56e7edeb1432457afb2741a77e7042",
+    "provenance_key": "anthropic:03e04a3e-ac86-4590-8ac1-784cbdec80fa"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:c00f231607b794001e33da211d3d40307961582ec0b7e9c01589782e9845f725",
+    "provenance_key": "openai:codex-cli-mtcp03bw",
+    "bound_hash": "sha256:a0623b03b8c41f8c8025cc6e5ec4cb4bd57c01686b635ef31f196d73dbdf92cf"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:two-phase-transition-evidence",
+      "claim": "The two-phase transition relies on `docs/runs/product-1-argo/discovery-001-bootstrap-pivot-coupling.json` as the evidence that the original pivot was internally unsatisfiable, but that artifact is absent from git at HEAD `4ec0fa50985827dc4db8204772e0f98cfbf77475`, and Phase A neither lands it nor requires its content address to be verified. The candidate therefore asks authorization to rely on unavailable evidence while claiming the stopped lineage is preserved. Phase A must commit the immutable DISCOVERY-001 evidence, bind it by digest/commit, and verify that it supports the cited coupling before any successor authorization; otherwise the transition's load-bearing premise remains an assertion at candidate artifact `sha256:a0623b03b8c41f8c8025cc6e5ec4cb4bd57c01686b635ef31f196d73dbdf92cf`.",
+      "objection_hash": "sha256:5501925e8ac9ef29fcb4d1b771a0a420f9a83b24e273ea93986b6bb1f89d635e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
