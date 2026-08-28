@@ -19,7 +19,12 @@ qualified, accepted commit.
 Boundary (Eye rulings, S0 gate): primary user = individual developer; v1 =
 local single-user CLI; identity, multi-tenancy, and clustered runtime are OUT
 OF SCOPE by signed ADR (PD-001), with the checklist's carve-out made testable
-(a static no-network-listener oracle over `cli/`). The flagship is the future
+(a static no-network-listener oracle over the CLI's COMPLETE EXECUTABLE
+CLOSURE — the transitive spawn+import closure reachable from every `pylae`
+subcommand, not just files under `cli/`, since `pylae` spawns verifiers
+outside that dir and a `cli/`-only oracle would miss a listener a spawned
+helper opens; same closure enumeration the verdict-producer digest uses).
+The flagship is the future
 production operator console (labeled demonstration/evidence-viewer this round).
 Phase 1b (durable crash-consistent state, authenticated-principal authority
 binding, key rotation, sandbox platform doc) is register-tracked with target
@@ -118,12 +123,20 @@ per-file designs are in the approved plan; acceptance criteria here.
   therefore CAUSE branch publication (mediated, validated) but cannot
   invoke or indirectly select a merge. Bind `pr_url` → `{owner,repo,
   number}` (regex, unparseable ⇒ excluded+reported); head_sha (40-hex)
-  is captured by the PUBLISHER at push, not model-reported; an
-  independent read-only `verify:merge` agent + field-by-field gate
-  produce the candidate evidence set (ordered fail-closed checks:
-  merge-verify-missing, ship-blocked, merge-not-confirmed, foreign-repo,
-  head-sha-mismatch). The workflow's output is a MERGE REQUEST dossier,
-  not a merge. **Accept (credential separation)**: publisher fixture —
+  is captured by the PUBLISHER at push, not model-reported; a
+  field-by-field gate produces the candidate evidence set. PRE-MERGE
+  ELIGIBILITY NEVER INCLUDES MERGE CONFIRMATION (an honest open PR is
+  necessarily unmerged before the controller acts, so a
+  `merge-not-confirmed` eligibility check would block every legitimate
+  dossier, while accepting an ASSERTED confirmation would reopen
+  blocker 1): the pre-merge ordered fail-closed checks are exactly
+  {pr-open, pr-url-parseable, head-sha-present,
+  base-repo/branch-expected, foreign-repo, head-sha-mismatch} — MERGE
+  STATE IS NOT AMONG THEM, and there is no pre-merge `verify:merge`
+  agent. Merge confirmation lives ENTIRELY in the controller's
+  POST-MERGE attestation, which re-derives merged/merge_commit_sha/
+  head_sha from gh-api ground truth AFTER the controller's own PUT. The
+  workflow's output is a MERGE REQUEST dossier, not a merge. **Accept (credential separation)**: publisher fixture —
   agent-produced patch data results in a pushed branch + open PR; the
   agent environment fixture asserts NO credential variable is present
   AND the job-separation fixtures prove substrate isolation: a
@@ -1217,7 +1230,8 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   data) / doctor (node>=22.12, git full-history, bwrap, env presence, Ed25519) /
   version (product-version.json + head) / verify (spawns verify-contracts +
   self-weave --verify-committed + fail-closed demo, fail-closed aggregate);
-  static no-network-listener oracle; child-process tests; classified EXCLUDE via
+  static no-network-listener oracle over the CLI's complete executable
+  closure (spawn+import transitive, not cli/-only); child-process tests; classified EXCLUDE via
   the §3 ceremony.
 - **HONEST v1 INSTALLATION CONTRACT** (the cli spawns verifiers that live in the
   repo tree, so a bare `cli/` tarball is NOT an installable product and is not

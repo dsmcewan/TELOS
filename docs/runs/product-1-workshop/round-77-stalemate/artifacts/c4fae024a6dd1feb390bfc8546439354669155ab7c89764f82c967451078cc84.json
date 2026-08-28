@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:06b76cc9bcf5a1b53edb076dce5111f48f332533e06fe6da96fea0b7729578c9",
+  "output_plan_artifact_hash": "sha256:06b76cc9bcf5a1b53edb076dce5111f48f332533e06fe6da96fea0b7729578c9",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:d7f16102a237754053a63e58c12e85027be5862c6b17429c7d08a0772fec8f84",
+    "provenance_key": "anthropic:5cc0942e-6db0-43f4-9c30-04a9dbb13935"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:f6c3ae01ca34c308dd9c42e0a6b9045bfebb8cea5a2bfebd92d6a9cbd2e5b700",
+    "provenance_key": "openai:codex-cli-mtcj882m",
+    "bound_hash": "sha256:06b76cc9bcf5a1b53edb076dce5111f48f332533e06fe6da96fea0b7729578c9"
+  },
+  "objections": [
+    {
+      "scope": "plan",
+      "claim": "E6 leaves its load-bearing discrimination mechanism unresolved and internally contradictory. It mandates arbitrary Node oracles under pre-execution seccomp that denies clock/entropy, then admits V8/loader/vDSO behavior makes that mechanism unsound and defers the actual ABI/replay design to a later Argo spike. The stated repeated-evaluation fallback cannot prove determinism: a random, clock-based, or stateful oracle can produce identical outputs for every finite repetition. Consequently the RANDOM-EXIT/CLOCK-PHASE acceptance claims and deterministic fail-closed gate do not follow, leaving governance correction d unresolved.",
+      "objection_hash": "sha256:1a83f2da01a1577ecf19aeab479d13d89e240832882af43c3082d0590ce4df6b",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "plan",
+      "claim": "E1's Hestia flow has incompatible pre-merge semantics. The workflow must emit a merge-request dossier for an open PR that the deterministic controller alone may merge, yet its field gate includes `merge-not-confirmed` and uses a read-only `verify:merge` agent. If that agent checks GitHub ground truth, every honest pre-merge PR is necessarily unmerged and blocked; if it accepts an asserted confirmation, blocker 1 remains. Merge confirmation must be removed from candidate eligibility and performed only by the controller's post-merge attestation.",
+      "objection_hash": "sha256:ad804f7229c7c4d78eec14cebe95c094d68cebf77d6acc693fb64bcf392fc49d",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "plan",
+      "claim": "The local-single-user carve-out is not actually tested by the specified static no-network-listener oracle over `cli/`. `pylae verify` executes tooling outside that directory, so a spawned verifier can open a listener while the oracle remains green. The oracle must cover the CLI's complete executable closure, or the product boundary must explicitly exclude and prevent execution of unexamined helpers; otherwise PD-001's testable no-listener claim is non-discriminating.",
+      "objection_hash": "sha256:e44a9d7751b9be4ff7ff50b4644ae2d6f603bb8fd636bf1663e58d9da13b667b",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

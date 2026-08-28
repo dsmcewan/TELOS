@@ -1,0 +1,33 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "plan",
+        "claim": "E6 leaves its load-bearing discrimination mechanism unresolved and internally contradictory. It mandates arbitrary Node oracles under pre-execution seccomp that denies clock/entropy, then admits V8/loader/vDSO behavior makes that mechanism unsound and defers the actual ABI/replay design to a later Argo spike. The stated repeated-evaluation fallback cannot prove determinism: a random, clock-based, or stateful oracle can produce identical outputs for every finite repetition. Consequently the RANDOM-EXIT/CLOCK-PHASE acceptance claims and deterministic fail-closed gate do not follow, leaving governance correction d unresolved."
+      },
+      {
+        "scope": "plan",
+        "claim": "E1's Hestia flow has incompatible pre-merge semantics. The workflow must emit a merge-request dossier for an open PR that the deterministic controller alone may merge, yet its field gate includes `merge-not-confirmed` and uses a read-only `verify:merge` agent. If that agent checks GitHub ground truth, every honest pre-merge PR is necessarily unmerged and blocked; if it accepts an asserted confirmation, blocker 1 remains. Merge confirmation must be removed from candidate eligibility and performed only by the controller's post-merge attestation."
+      },
+      {
+        "scope": "plan",
+        "claim": "The local-single-user carve-out is not actually tested by the specified static no-network-listener oracle over `cli/`. `pylae verify` executes tooling outside that directory, so a spawned verifier can open a listener while the oracle remains green. The oracle must cover the CLI's complete executable closure, or the product boundary must explicitly exclude and prevent execution of unexamined helpers; otherwise PD-001's testable no-listener claim is non-discriminating."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcj882m",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcj882m",
+    "source": "cli-seats/codex_ask"
+  }
+}
