@@ -365,7 +365,9 @@ per-file designs are in the approved plan; acceptance criteria here.
   Environment configuration for both is manageable ONLY by repository
   ADMINS. Custody is then made
   DETERMINISTICALLY VERIFIABLE: (a) on this personal repository the
-  admin set is exactly the Eye (the owner), and a CUSTODY-DRIFT oracle
+  ADMIN set is exactly the Eye (the owner) while the full writer set is
+  the Eye-signed custody MANIFEST (Eye + the capability-bounded
+  controller and publisher principals — see §5(e)), and a CUSTODY-DRIFT oracle
   in the authority workflows queries the collaborator/permission list
   and FAILS `custody-drift` if ANY repository-writing credential of ANY
   CLASS exists beyond the recorded custody set — the enumeration covers
@@ -682,10 +684,13 @@ per-file designs are in the approved plan; acceptance criteria here.
   that survives between sequential runs): each execution receives
   FRESH, PRIVATE writable surfaces — per-run TMPDIR/HOME/
   XDG_CACHE_HOME pointed at scratch dirs created before and destroyed
-  after that single execution — and, where available, runs under the
-  repo's existing bwrap sandbox discipline (the evidence.mjs
-  closed-whitelist verifier pattern) so no writable path whatsoever is
-  shared between the two executions. Same argv, same entrypoint, same
+  after that single execution — and MANDATORY bwrap confinement (the
+  repo's existing evidence.mjs closed-whitelist verifier discipline;
+  bwrap is already a doctor prerequisite): each execution gets an
+  isolated mount namespace with private /tmp, /var/tmp, /dev/shm and a
+  read-only view outside its sandbox, so NO absolute shared writable
+  path exists between the two executions; bwrap unavailable ⇒ FAIL
+  `oracle-unrunnable` — confinement is never best-effort. Same argv, same entrypoint, same
   absolute path, same environment VARIABLES (equal names and shapes,
   pointing at per-run instances), no special mode; the only state
   observable in both executions is the governed input — the mutation is
@@ -1179,10 +1184,24 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   flip at the accepted target and immediately frozen by the ruleset
   (no update/delete) + release immutability; (iii) the WRITER SET IS
   CLOSED BY THE CUSTODY INVARIANT: the custody-drift oracle fails on
-  ANY collaborator (write OR admin) beyond the recorded custody set —
-  the Eye alone — and the local ceremony REFUSES TO RUN
-  (`custody-drift`) while any non-custodial writer exists, so the
-  rogue-write-collaborator premise is excluded, not raced; (iv) the
+  ANY writer of any class beyond the recorded CUSTODY MANIFEST, and the
+  local ceremony REFUSES TO RUN (`custody-drift`) while any
+  non-custodial writer exists, so the rogue-write-collaborator premise
+  is excluded, not raced. THE CUSTODY SET IS A MANIFEST, NOT "THE EYE
+  ALONE" (E1's controller and publisher are required to be non-Eye,
+  non-admin writing principals — a bare Eye-only set would make every
+  ceremony fail the moment E1 becomes operable): an Eye-signed CUSTODY
+  MANIFEST enumerates exactly (a) the Eye (owner/admin), (b) the
+  merge-controller principal, and (c) the branch-publisher principal —
+  each machine principal a fine-grained credential scoped to
+  contents:write ONLY (no administration, no environments, excluded
+  from every ruleset bypass list, no v* tag capability), its scope
+  RECORDED in the manifest and VERIFIED live by the custody oracle (a
+  listed principal whose live scopes exceed the recorded bounds ⇒
+  custody-drift exactly like an unlisted writer); the manifest changes
+  only via Eye-signed transition. Custody regressions: manifest-listed
+  controller/publisher ⇒ NO drift (E1 operable); unlisted writer ⇒
+  drift; listed principal with escalated live scopes ⇒ drift; (iv) the
   publish flip re-verifies the asset set + digests IMMEDIATELY before
   publishing, and POST-PUBLISH re-verification asserts
   allowlist+digests+attestations against the now-immutable release.

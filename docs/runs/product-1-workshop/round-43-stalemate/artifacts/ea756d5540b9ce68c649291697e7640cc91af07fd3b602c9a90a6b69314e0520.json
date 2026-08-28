@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:a362a8eeea18d2a0af48d4dc463ef6a115e4237f0d02ab7d3a867d1d8d92da35",
+  "output_plan_artifact_hash": "sha256:a362a8eeea18d2a0af48d4dc463ef6a115e4237f0d02ab7d3a867d1d8d92da35",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:c97a4be647c6567275ac306d4ea69c3ad5d06791c78619ec5f5c0c7793ebf003",
+    "provenance_key": "anthropic:ce2254dd-1f56-4b7a-87fb-79d5a0a0161d"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:6a569cac4d9bdeefea0317886e645a537e3c56f0be4e363a84e146ec0ad280c8",
+    "provenance_key": "openai:codex-cli-mtcb7mcq",
+    "bound_hash": "sha256:a362a8eeea18d2a0af48d4dc463ef6a115e4237f0d02ab7d3a867d1d8d92da35"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E6/oracle-discrimination",
+      "claim": "External-state isolation remains optional and therefore does not establish discrimination. Fresh TMPDIR/HOME/XDG_CACHE_HOME values do not prevent an oracle from using absolute shared paths such as /tmp, /var/tmp, /dev/shm, or a writable workspace sibling; the only stated confinement is bwrap “where available.” Without bwrap, an input-ignoring oracle can create a marker during baseline and observe it during the negative run, yielding the required 0/nonzero pair without inspecting the mutation. This defeats the promised external-marker regression and leaves frozen governance correction d unresolved. Confinement must be mandatory with fail-closed oracle-unrunnable behavior when unavailable, or an equivalent mechanism must prove no mutable state is shared. Candidate artifact: sha256:a362a8eeea18d2a0af48d4dc463ef6a115e4237f0d02ab7d3a867d1d8d92da35.",
+      "objection_hash": "sha256:bcd65b073f3fea22d3e43fae15cf2c5277e697b877de4de7fc4dc3cb40394a2a",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:E1-E2-release-custody",
+      "claim": "The credential requirements are mutually unsatisfiable. E1 requires the merge controller to use a repository-writing principal that is explicitly non-admin and non-bypass, and the branch publisher also holds a non-bypass write credential. E2 and the release design simultaneously require custody-drift to reject every repository-writing credential beyond the recorded writer set, stated as “the Eye alone.” A non-Eye controller/publisher principal therefore makes every authority/release ceremony fail custody-drift; using the Eye’s credential instead violates E1’s non-admin condition and gives the publisher/controller the Eye-only tag/release capability. The approach needs an explicit capability-bounded writer lifecycle or revocation/ceremony mechanism that makes E1 operable while preserving the closed release-writer invariant, with regressions covering both states. Candidate artifact: sha256:a362a8eeea18d2a0af48d4dc463ef6a115e4237f0d02ab7d3a867d1d8d92da35.",
+      "objection_hash": "sha256:02bed7c8d1db30988a3af765b81c33101345c6af096360a16ede52fcf298d964",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
