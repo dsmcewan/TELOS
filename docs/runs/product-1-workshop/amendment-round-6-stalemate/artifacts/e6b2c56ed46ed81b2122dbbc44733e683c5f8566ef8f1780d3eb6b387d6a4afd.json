@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:a685f603b907b7dca29d8a13847bef6f27dd4b40816347d796e366c1141870ba",
+  "output_plan_artifact_hash": "sha256:a685f603b907b7dca29d8a13847bef6f27dd4b40816347d796e366c1141870ba",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:126763ce462b20e59e9f4e57a315b06071c8f3270aeef56d90af5934a7b9a485",
+    "provenance_key": "anthropic:db3dd8cd-b846-43e5-867d-2bb5c97c55fb"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:7ce96e68074d97ab58a32d486040dce8229deb1bf7c3b48e30a89e1ca688df91",
+    "provenance_key": "openai:codex-cli-mtcpurs6",
+    "bound_hash": "sha256:a685f603b907b7dca29d8a13847bef6f27dd4b40816347d796e366c1141870ba"
+  },
+  "objections": [
+    {
+      "scope": "approach",
+      "claim": "E2's Eye-signed authority-transition tuple is replayable as a protected-surface rollback. It binds the old/new chain roots and the proposed verifier/workflow/controller/verdict digests, but not the currently trusted predecessor digests, a monotonic transition predecessor, or a durably consumed transition_id. If a later code-only transition changes a protected closure without changing the authority-chain root, an earlier valid transition record can be resubmitted with its exact formerly authorized bytes; recomputation and signature verification succeed and old_chain_root still matches, allowing restoration of obsolete workflow, controller, verifier, or verdict-producer code. Add predecessor digests to the signed tuple and require an externally anchored, monotonic transition/consumption check, with a temporal replay regression.",
+      "objection_hash": "sha256:daa5783e27e27eddf9f489b75d0fe9d5c9365f9268e4023b643215b085b0b08e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "approach",
+      "claim": "The Phase-A pre-activation whitelist is not enforced fail-closed at the mutation boundary. Freshness and potentially plugin/E2/E3 slices merge before E1's controller exists, while the phase-aware executable check arrives only in E6 and retroactively validates state. The plan therefore relies on Eye/manual compliance during part of the pre-activation window despite declaring unlisted slices non-merge-eligible; an unlisted change can merge before any machine check prevents it. Phase A needs an immediately operative trusted pre-merge mechanism—such as the Eye-local bootstrap controller—binding each accepted PR head/diff to an authorized whitelist entry, or E1 must land immediately after Phase A before every other implementation slice.",
+      "objection_hash": "sha256:8a490be027287a6f77221718e5754ff03f582e4f7b35fe459bf82fe648d4539a",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

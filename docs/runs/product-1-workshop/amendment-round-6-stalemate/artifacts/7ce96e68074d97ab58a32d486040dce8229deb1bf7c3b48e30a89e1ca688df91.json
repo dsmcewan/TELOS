@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "approach",
+        "claim": "E2's Eye-signed authority-transition tuple is replayable as a protected-surface rollback. It binds the old/new chain roots and the proposed verifier/workflow/controller/verdict digests, but not the currently trusted predecessor digests, a monotonic transition predecessor, or a durably consumed transition_id. If a later code-only transition changes a protected closure without changing the authority-chain root, an earlier valid transition record can be resubmitted with its exact formerly authorized bytes; recomputation and signature verification succeed and old_chain_root still matches, allowing restoration of obsolete workflow, controller, verifier, or verdict-producer code. Add predecessor digests to the signed tuple and require an externally anchored, monotonic transition/consumption check, with a temporal replay regression."
+      },
+      {
+        "scope": "approach",
+        "claim": "The Phase-A pre-activation whitelist is not enforced fail-closed at the mutation boundary. Freshness and potentially plugin/E2/E3 slices merge before E1's controller exists, while the phase-aware executable check arrives only in E6 and retroactively validates state. The plan therefore relies on Eye/manual compliance during part of the pre-activation window despite declaring unlisted slices non-merge-eligible; an unlisted change can merge before any machine check prevents it. Phase A needs an immediately operative trusted pre-merge mechanism—such as the Eye-local bootstrap controller—binding each accepted PR head/diff to an authorized whitelist entry, or E1 must land immediately after Phase A before every other implementation slice."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcpurs6",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcpurs6",
+    "source": "cli-seats/codex_ask"
+  }
+}
