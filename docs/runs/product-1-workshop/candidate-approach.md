@@ -228,13 +228,24 @@ per-file designs are in the approved plan; acceptance criteria here.
   organization rulesets) plus classic branch protection, resolves all
   bypass actors to effective membership, performs the custody-manifest
   enumeration, and emits an Ed25519-SIGNED CONFIGURATION ATTESTATION
-  {safety/actor-restriction ruleset states, bypass resolutions, custody
-  enumeration, ruleset ids + updated_at timestamps as the CONFIG
-  EPOCH}. The controller VERIFIES the attestation against
-  EYE_AUTHORITY_PUBKEY and checks FRESHNESS: it re-reads what its own
-  scopes CAN see (the public active-rules endpoint for the branch and
-  ruleset ids/updated_at metadata) and refuses
-  `config-attestation-stale` on any drift from the attested epoch;
+  that is ONE-TIME AND RUN-BOUND (ruleset updated_at alone is a false
+  epoch — App-permission escalations, collaborator/deploy-key
+  additions, team/role changes, and environment-policy edits all drift
+  WITHOUT touching any ruleset timestamp): the attestation binds
+  {safety/actor-restriction ruleset states, bypass resolutions, full
+  custody enumeration (collaborators, App installations + permission
+  sets, deploy keys), environment protection state, THE DOSSIER DIGEST
+  OF THIS SPECIFIC MERGE RUN, issued_at, and a single-use nonce}, with
+  a SHORT TTL; the attestor executes at ceremony start immediately
+  before the controller, so every conclusion is at most minutes old
+  and each attestation authorizes exactly one run (reuse ⇒
+  `config-attestation-consumed`). The controller VERIFIES it against
+  EYE_AUTHORITY_PUBKEY, requires dossier-digest match + TTL + unused
+  nonce, and additionally re-reads what its own scopes CAN see — the
+  public active-rules endpoint, ruleset ids/updated_at, and the
+  telos-authority-roots VALUES (comparing read values to attested
+  values catches root replacement) — refusing
+  `config-attestation-stale` on any drift, expiry, or mismatch;
   missing/invalid attestation ⇒ refuse `config-attestation-missing`.
   The attestation requires strict up-to-dateness in effect, and
   requires the authenticated
@@ -307,7 +318,13 @@ per-file designs are in the approved plan; acceptance criteria here.
   receives real 403/404 responses for branch protection and bypass
   data (as GitHub returns to non-admin callers, stubbed) and still
   OPERATES from a valid fresh attestation, refusing only on
-  config-attestation-missing/-stale; out-of-band-merge fixture ⇒
+  config-attestation-missing/-stale; PER-SURFACE DRIFT regressions —
+  each of {App-permission escalation, collaborator addition, deploy-key
+  addition, team/role membership change, environment-policy removal}
+  mutated AFTER attestation issuance with ruleset metadata unchanged ⇒
+  the consumed/expired attestation cannot cover a second run and a
+  fresh attestor run reports the drift ⇒ config-attestation-stale /
+  custody-drift, merge refused; out-of-band-merge fixture ⇒
   unattested-merge; clean run ⇒ merged + attestation; workflow agents' token
   fixture proves no merge scope; workflows CI job runs both suites green.
 - **E2 ai-native-memory gate freshness + AUTHORITY-CHAINED sources** (`ai-native-memory/scripts/gate.mjs`).

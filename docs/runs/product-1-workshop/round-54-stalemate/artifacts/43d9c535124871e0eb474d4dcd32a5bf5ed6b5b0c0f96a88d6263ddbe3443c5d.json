@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:d9e02c9d8691b46f77e91b68fc884ebdd74c63db355746e2c3f60197b52869e1",
+  "output_plan_artifact_hash": "sha256:d9e02c9d8691b46f77e91b68fc884ebdd74c63db355746e2c3f60197b52869e1",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:aefc6a38cd58cc58feeb198c736552ff41f87c105c113ac916f5568ba3612900",
+    "provenance_key": "anthropic:3557947b-ef7d-4cb5-8acf-0dc06ecad163"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:1e5768b3d8952e5ee55e32369640910dc494bcab76a84c4399985fd3ae654199",
+    "provenance_key": "openai:codex-cli-mtcdx6va",
+    "bound_hash": "sha256:d9e02c9d8691b46f77e91b68fc884ebdd74c63db355746e2c3f60197b52869e1"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E1-configuration-attestation-freshness",
+      "claim": "The signed configuration attestation can become stale while its stated freshness check still passes. It records custody enumeration, effective bypass membership, App permissions, deploy keys, and environment protection, but the controller later rechecks only active-rules data and ruleset ids/updated_at. A listed App’s permission escalation, collaborator/App/deploy-key addition, team/role membership change, or removal/change of the telos-authority environment policy does not necessarily update any ruleset timestamp. The controller can therefore accept obsolete non-bypass and closed-custody conclusions; environment drift can also expose or replace EYE_AUTHORITY_PUBKEY and the protected closure roots before validation. Freshness must bind and revalidate every mutable resource on which the attestation’s conclusions depend, or use a one-time attestation under a platform-enforced no-drift interval, failing closed when any live epoch is unavailable. Add regressions that mutate each custody, membership, App-permission, and environment-policy surface while ruleset metadata remains unchanged and require config-attestation-stale.",
+      "objection_hash": "sha256:1c5065557aa59b61f79d53433107cf0e5b5f39a953aabe6e2d5fddc110dc1c71",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

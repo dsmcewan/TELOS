@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E1-configuration-attestation-freshness",
+        "claim": "The signed configuration attestation can become stale while its stated freshness check still passes. It records custody enumeration, effective bypass membership, App permissions, deploy keys, and environment protection, but the controller later rechecks only active-rules data and ruleset ids/updated_at. A listed App’s permission escalation, collaborator/App/deploy-key addition, team/role membership change, or removal/change of the telos-authority environment policy does not necessarily update any ruleset timestamp. The controller can therefore accept obsolete non-bypass and closed-custody conclusions; environment drift can also expose or replace EYE_AUTHORITY_PUBKEY and the protected closure roots before validation. Freshness must bind and revalidate every mutable resource on which the attestation’s conclusions depend, or use a one-time attestation under a platform-enforced no-drift interval, failing closed when any live epoch is unavailable. Add regressions that mutate each custody, membership, App-permission, and environment-policy surface while ruleset metadata remains unchanged and require config-attestation-stale."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcdx6va",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcdx6va",
+    "source": "cli-seats/codex_ask"
+  }
+}
