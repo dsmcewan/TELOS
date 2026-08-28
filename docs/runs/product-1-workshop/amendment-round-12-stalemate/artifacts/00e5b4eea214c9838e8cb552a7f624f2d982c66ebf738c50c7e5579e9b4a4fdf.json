@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:398477af67935383883a2225818f887f4a96422cb32bce7585b4bba776415b49",
+  "output_plan_artifact_hash": "sha256:398477af67935383883a2225818f887f4a96422cb32bce7585b4bba776415b49",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:ff656d382d93b3642250d7dfc4eaed552aca6914f374fdcdc6915231248f8afb",
+    "provenance_key": "anthropic:c1df16d8-50fa-4f06-b985-5f77b091811b"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:b209136f15f97df0dd2f88e9ddfb534bed45807a9e375697acf4cb9b33832a1c",
+    "provenance_key": "openai:codex-cli-mtcrltew",
+    "bound_hash": "sha256:398477af67935383883a2225818f887f4a96422cb32bce7585b4bba776415b49"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "The no-listener oracle is internally unsatisfiable as specified. Section 1 requires every spawned executable to be a repo-tracked script recursively governed by the closed grammar, but the required CLI paths explicitly depend on spawning external executables including git (`git cat-file`, history/bundle operations) and bwrap (mandatory oracle confinement), with `gh` also used for attestation verification. Under the stated grammar those commands must be rejected, so `pylae doctor` and `pylae verify --full` cannot satisfy their acceptance criteria. Merely allowing these binaries would create an unanalyzed escape from the claimed complete executable closure. The approach must define a capability-scoped external-tool exception mechanism—identity/version or digest pinning plus closed subcommand/argument/environment grammars that exclude listener-capable modes—and add regressions proving the required git/bwrap/gh invocations pass while server-mode, config/alias injection, wrapper substitution, and arbitrary-command invocations fail closed.",
+      "objection_hash": "sha256:796c0798ae9b3f91db282b21d148e3dd52cdaa386c722a9e62c0e581074a9342",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
