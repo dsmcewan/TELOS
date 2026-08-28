@@ -1674,14 +1674,28 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   the pylae entrypoint for constant-success code and recomputes the
   archive-controlled tree_sha would have the archive lie about itself
   while the authentic bundle sits beside it): the INSTALL CONTRACT
-  makes external pre-execution verification MANDATORY, using only the
-  `pylae`'s TRUSTED IN-PROCESS HASHING (node:crypto createHash — not an
-  external sha256sum binary) plus `gh attestation verify` against the
-  trust-root manifest's pinned attestation identity on the tarball
-  and bundle digests BEFORE extraction or execution — documented as a
-  non-optional step, with `pylae doctor` printing a warning banner
-  whenever it cannot find the operator's recorded pre-verification
-  receipt. AND the tree binding is TO THE BUNDLE HEAD, not to
+  makes external pre-execution verification MANDATORY and OUT-OF-ARTIFACT
+  (using pylae's own hashing here would be CIRCULAR — pylae is inside
+  the very artifact being authenticated; the component tgz is not
+  standalone either): the operator, following RELEASING.md, verifies
+  the tarball and bundle BEFORE extraction or execution using ONLY
+  OPERATOR-TRUSTED BYTES/TOOLS that do NOT come from the artifact — the
+  operator's platform `sha256sum`/`shasum` (or a tiny standalone,
+  independently-signed `pylae-verify-bootstrap` shipped and pinned OUT
+  OF BAND, whose own digest is on the trust page) to compute the
+  digests, and the operator's `gh attestation verify` to check the
+  attestation against the out-of-band trust-root manifest's pinned
+  identity. Only AFTER this out-of-artifact check produces a recorded
+  receipt may the archive's own pylae run; from that point pylae's
+  in-process node:crypto hashing is used for pylae's OWN subsequent
+  operations (post-trust), NOT for this bootstrap. `pylae doctor`
+  REFUSES (not merely warns) `unverified-install` when it cannot find
+  the operator's recorded out-of-artifact pre-verification receipt.
+  BOOTSTRAP regression: digest + attestation-identity + trust-root
+  checks are proven to COMPLETE (receipt written) BEFORE any archive
+  byte is extracted or any archive code executes; a tampered tarball is
+  caught by the operator-tool digest step with no archive code having
+  run. AND the tree binding is TO THE BUNDLE HEAD, not to
   self-description: full verification compares the reconstructed
   payload tree against the AUTHENTICATED BUNDLE COMMIT'S OWN TREE
   OBJECT (git cat-file from the verified bundle store) — the
