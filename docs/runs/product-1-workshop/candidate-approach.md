@@ -830,8 +830,23 @@ by-then-active successor plan. Only after the bootstrap slice merges does
 any implementation slice become merge-eligible.
 
 AM-43 is a new decision doc with its own single fenced JSON block (roots
-unchanged; exclude += the two dirs), sha-pinned in `package-roots.json.authority.
-enrollment_ruling` and `CURRENT-AUTHORITY.amendments_in_force`. AM-42's FILE is
+unchanged; exclude += the two dirs). Its lifecycle is TWO-PHASE —
+AUTHORIZED AT BOOTSTRAP, ACTIVATED ATOMICALLY WITH THE DIRECTORIES IT
+GOVERNS (pinning AM-43 into package-roots.json at the bootstrap head,
+while cli/ and connectors/meta-ads-mcp/ do not yet exist and
+inventory.mjs/test-inventory are deferred, would break the repository's
+own exact-bijection inventory gates at that head): the BOOTSTRAP lands
+the AM-43 doc + the council authorization + a
+`CURRENT-AUTHORITY.amendments_in_force` entry marked `activation:
+"deferred-to-implementation-slice"` — `package-roots.json` REMAINS on
+its AM-42 pin, byte-unchanged, so every pre-existing verify-contracts
+and test-inventory gate passes at the bootstrap head unchanged
+(acceptance check: the bootstrap head itself runs those gates GREEN);
+the later EXCLUDED-DIRS IMPLEMENTATION SLICE then atomically flips
+`package-roots.json.authority.enrollment_ruling` → AM-43's sha, adds
+both directories, and updates inventory.mjs + test-inventory + the
+other coordinated surfaces + the same-PR re-weave in ONE PR, flipping
+the registry entry to `activation: "active"`. AM-42's FILE is
 NEVER touched — its bytes stay identical and its content address stays valid.
 All amendment/regularization linkage lives ONLY in mutable registry surfaces and
 new records: the `CURRENT-AUTHORITY.amendments_in_force` ENTRY for AM-42 (a

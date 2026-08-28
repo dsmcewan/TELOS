@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:fbc982a757c2b3a3229539415961b9f61e9e21922974d2b87fd94dc58ff2ae60",
+  "output_plan_artifact_hash": "sha256:fbc982a757c2b3a3229539415961b9f61e9e21922974d2b87fd94dc58ff2ae60",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:77401d22f0892a6bb0c921e38b8b363952b7b4474391e7f4a833294d0baa07ea",
+    "provenance_key": "anthropic:88027245-b5ee-4596-aacf-2acb381d1ff1"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:1d2be22c1789f630a92891b3a7a81f7b9a2ba781237f24a741e373ea32a2b8b4",
+    "provenance_key": "openai:codex-cli-mtcc9djl",
+    "bound_hash": "sha256:fbc982a757c2b3a3229539415961b9f61e9e21922974d2b87fd94dc58ff2ae60"
+  },
+  "objections": [
+    {
+      "scope": "candidate:§3 governance-bootstrap/package-root atomicity",
+      "claim": "The governance bootstrap cannot satisfy the repository's existing deterministic gates. It must land AM-43 and sha-pin it in package-roots.json while withholding cli/, connectors/meta-ads-mcp/, inventory.mjs, test-inventory, and the other coordinated root surfaces until a later implementation slice. At that bootstrap head, either package-roots.json includes the two nonexistent/deferred roots, causing its required equality with inventory.mjs and test-inventory's exact discovered-package bijection to fail, or it remains on AM-42, contradicting the promised AM-43 pin and activation. A same-PR re-weave cannot repair those contract/inventory/package-set inconsistencies. Keep AM-43 authorized but inactive during bootstrap and activate/pin it atomically with both package directories and every coordinated root surface, or move that entire transition into the bootstrap; add an acceptance check that the bootstrap head itself passes the pre-existing verify-contracts and test-inventory gates.",
+      "objection_hash": "sha256:2f54078344c26196fd127570fc8d3e477dc3a9034e39ef8b731fecc2d8c96706",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

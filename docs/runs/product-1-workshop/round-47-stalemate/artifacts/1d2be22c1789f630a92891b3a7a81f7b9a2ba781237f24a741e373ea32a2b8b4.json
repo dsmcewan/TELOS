@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:§3 governance-bootstrap/package-root atomicity",
+        "claim": "The governance bootstrap cannot satisfy the repository's existing deterministic gates. It must land AM-43 and sha-pin it in package-roots.json while withholding cli/, connectors/meta-ads-mcp/, inventory.mjs, test-inventory, and the other coordinated root surfaces until a later implementation slice. At that bootstrap head, either package-roots.json includes the two nonexistent/deferred roots, causing its required equality with inventory.mjs and test-inventory's exact discovered-package bijection to fail, or it remains on AM-42, contradicting the promised AM-43 pin and activation. A same-PR re-weave cannot repair those contract/inventory/package-set inconsistencies. Keep AM-43 authorized but inactive during bootstrap and activate/pin it atomically with both package directories and every coordinated root surface, or move that entire transition into the bootstrap; add an acceptance check that the bootstrap head itself passes the pre-existing verify-contracts and test-inventory gates."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcc9djl",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcc9djl",
+    "source": "cli-seats/codex_ask"
+  }
+}
