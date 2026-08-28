@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach",
+        "claim": "Candidate artifact sha256:74c461918cbbd2db42255556ff2aa2a1a9139886138047ad9174c6991ae30d98 introduces a native launcher but leaves it outside the enforcement that is supposed to prove the v1 no-listener boundary. The complete-closure oracle is specified as a JavaScript import/spawn and capability grammar, while the scoped opaque-binary exception set contains only node, git, bwrap, and gh. Merely digest-pinning the launcher proves which binary ran, not that its native code cannot open a listener before Node starts; no reproducibly bound source/build closure, native-capability review, or adversarial fixture rejects a digest-authorized launcher that opens a socket. The release build also never explicitly produces, packages, or double-builds this sole supported entrypoint. Consequently the no-listener oracle would not discriminate this failure and the source-release clean-room contract has no specified executable launcher."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcwzolo",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcwzolo",
+    "source": "cli-seats/codex_ask"
+  }
+}

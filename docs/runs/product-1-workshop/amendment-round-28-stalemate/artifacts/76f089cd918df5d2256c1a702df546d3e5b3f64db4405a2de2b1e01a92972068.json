@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:74c461918cbbd2db42255556ff2aa2a1a9139886138047ad9174c6991ae30d98",
+  "output_plan_artifact_hash": "sha256:74c461918cbbd2db42255556ff2aa2a1a9139886138047ad9174c6991ae30d98",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:39b37ebfa8a2a5c73014f4d2a69180f1f1f3cadb3e3f2cdcb1886fc15f1e01da",
+    "provenance_key": "anthropic:0d879577-2f55-4d9d-b677-6acc191fe4c2"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:90c2353fed564e107673e13bf81bc0a87955440c617283f5534044126ed7749d",
+    "provenance_key": "openai:codex-cli-mtcwzolo",
+    "bound_hash": "sha256:74c461918cbbd2db42255556ff2aa2a1a9139886138047ad9174c6991ae30d98"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "Candidate artifact sha256:74c461918cbbd2db42255556ff2aa2a1a9139886138047ad9174c6991ae30d98 introduces a native launcher but leaves it outside the enforcement that is supposed to prove the v1 no-listener boundary. The complete-closure oracle is specified as a JavaScript import/spawn and capability grammar, while the scoped opaque-binary exception set contains only node, git, bwrap, and gh. Merely digest-pinning the launcher proves which binary ran, not that its native code cannot open a listener before Node starts; no reproducibly bound source/build closure, native-capability review, or adversarial fixture rejects a digest-authorized launcher that opens a socket. The release build also never explicitly produces, packages, or double-builds this sole supported entrypoint. Consequently the no-listener oracle would not discriminate this failure and the source-release clean-room contract has no specified executable launcher.",
+      "objection_hash": "sha256:77a2b30a21825f5b32137b1cefedc76192046542ba10c6102097f08238170122",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
