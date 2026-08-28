@@ -1295,9 +1295,15 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   the certificate identity pinned to `release.yml@refs/heads/main`; an
   artifact attested by a substituted off-main definition carries an
   off-main identity and FAILS verification everywhere it is checked.
-  (d) DRIFT IS SWEPT: a release-integrity oracle on main enumerates all
-  releases and fails on any release not bound to an Eye-accepted tag +
-  main-identity attestation.
+  (d) DRIFT IS SWEPT AND THE TAG-RELEASE BINDING IS EXACT: a
+  release-integrity oracle on main enumerates all releases AND all
+  tags and fails unless they are in exact bijection — every existing
+  tag bound to an accepted immutable release carrying a valid
+  acceptance ASSET (publishing against an already-existing tag needs
+  no ref creation, so the ruleset alone cannot stop it; the invariant
+  that no unbound tag ever exists — tags are born at publish with
+  their slot occupied — removes that surface, and this oracle proves
+  it continuously).
   (e) RELEASE MUTATION IS EYE-LOCAL, THE TAG IS BORN AT PUBLISH, AND
   THE WRITER SET IS CLOSED — no workflow publishes, and no v* tag ever
   exists unpublished (the previous atomic-create design was
@@ -1398,9 +1404,14 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   keyring drop out of the design, their custody class inherited by
   EYE_AUTHORITY_PUBKEY): THE RELEASE TARGET MUST BE THE EXACT ACCEPTED
   COMMIT, and the acceptance is NON-SELF-REFERENTIAL and externally
-  anchored — the RELEASE BODY embeds a RELEASE-ACCEPTANCE block
-  `{release_commit, plan_ref, eye_acceptance: Ed25519 over
-  (release_commit ‖ plan_ref)}`, verified against the protected
+  anchored — the RELEASE-ACCEPTANCE record `{release_commit, plan_ref,
+  eye_acceptance: Ed25519 over (release_commit ‖ plan_ref)}` is an
+  IMMUTABLE ALLOWLISTED ASSET (`RELEASE-ACCEPTANCE.json`, digested in
+  SHA256SUMS and attested like every artifact; release immutability
+  freezes ASSETS, while the release BODY remains PATCHable even on
+  published immutable releases — so the body is only a
+  NON-AUTHORITATIVE POINTER to the asset and no verifier ever reads
+  authority from it), verified against the protected
   EYE_AUTHORITY_PUBKEY (telos-authority-roots custody; not in the
   tree — an in-tree record cannot name the very commit its own addition
   creates, and mutable main cannot key authority). The gate requires
@@ -1490,7 +1501,13 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   release with no valid Eye acceptance block ⇒ gate aborts;
   NONACCEPTED-SHA fixture — a draft targeting a commit with green CI
   but NO Eye-signed release-acceptance ⇒ gate aborts
-  tag-not-accepted-commit (CI validity is not acceptance); planted
+  tag-not-accepted-commit (CI validity is not acceptance);
+  POST-PUBLISH BODY-MUTATION fixture — an unsuspended machine App
+  PATCHes the published release body ⇒ the acceptance ASSET is
+  untouched (immutable), verification unaffected, sweep flags the body
+  drift; EXISTING-TAG fixture — a machine credential attempts release
+  create against an existing bound tag ⇒ refused (slot occupied), and
+  the bijection oracle catches any unbound-tag state; planted
   extra asset ⇒ publish check fails; every published artifact passes
   `gh attestation verify` (identity pinned).
 - **Pages provenance**, tightly bound: ci.yml uploads artifact

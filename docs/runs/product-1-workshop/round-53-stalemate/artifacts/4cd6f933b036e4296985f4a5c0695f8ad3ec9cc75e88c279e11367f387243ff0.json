@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:0af7ddaf7a69f15befa24777c137d4bcf198522132a7356e053a33f2c970c75a",
+  "output_plan_artifact_hash": "sha256:0af7ddaf7a69f15befa24777c137d4bcf198522132a7356e053a33f2c970c75a",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:78758b1b1fa251f9e11a10903e092e9392f0338d38be9bd83fa214b22bed34f3",
+    "provenance_key": "anthropic:3b5f4c15-7baf-4966-93bc-acf5bdec2818"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:211a9e494abd9980b631ffb8eafa4e515b097a12e98d3c730d4ab01b6ce04b04",
+    "provenance_key": "openai:codex-cli-mtcdmzui",
+    "bound_hash": "sha256:0af7ddaf7a69f15befa24777c137d4bcf198522132a7356e053a33f2c970c75a"
+  },
+  "objections": [
+    {
+      "scope": "candidate:§5 release-object authorization",
+      "claim": "The all-tags ruleset does not close the Releases API surface granted by `contents:write`. GitHub immutable releases still permit editing the published release title and notes/body, yet the candidate stores the sole Eye-signed RELEASE-ACCEPTANCE block in that mutable body and unsuspends the controller/publisher Apps after post-publish verification. Either App can then PATCH the body without changing the protected tag or immutable assets; the integrity sweep detects the loss only after the public authority record has changed. Separately, a public release can be created against an already-existing tag without creating or updating that ref, so the all-tags ruleset cannot prevent publication unless every existing tag is proven already bound to an accepted immutable release. Move the canonical acceptance into an immutable signed/attested allowlisted asset, treat the body only as a non-authoritative pointer, enforce an exact existing-tag/release invariant, and add post-publish body-mutation and existing-tag publication regressions. Until then blocker 6's fail-closed release contract remains unresolved at `fc0fa05`.",
+      "objection_hash": "sha256:a57d39f5c338abc5e1c7addf7efaa499e9f946f20c01c0c30d604adfdb076e1a",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
