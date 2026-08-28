@@ -125,7 +125,9 @@ closure and subject to a NATIVE LISTENER-CAPABILITY REVIEW — a closed
 syscall grammar admitting exactly: env-clear; open/fstat/read/close and
 the SEALED-SNAPSHOT set actually required (memfd_create, write, lseek,
 fcntl(F_ADD_SEALS), mmap for the exec image); the SECCOMP-INSTALL set
-(prctl(PR_SET_NO_NEW_PRIVS), seccomp()/prctl(PR_SET_SECCOMP)); fexecve/
+(prctl(PR_SET_NO_NEW_PRIVS), seccomp()/prctl(PR_SET_SECCOMP));
+`close_range` (bulk inherited-fd closure — NO directory enumeration, so
+no `getdents64` is needed and the grammar stays closed); fexecve/
 exec-family; and process control — CATEGORICALLY rejecting
 bind/listen/accept/accept4, AF_PACKET/SOCK_RAW socket creation, the
 `io_uring` family (io_uring_setup/enter/register), and any inspector
@@ -199,23 +201,42 @@ and are NOT discriminable from `io_uring_enter`'s scalar args — so a
 descendant could otherwise open a listener without ever invoking a
 denied syscall. Denying ring creation/entry/registration outright (no
 inspectable-arg dependence) closes this, and the launcher CLOSES ALL
-INHERITED DESCRIPTORS outside an enumerated safe set (it scans
-`/proc/self/fd` and closes every fd it did not itself open, not merely
-io_uring rings) — because an INHERITED ALREADY-BOUND/LISTENING SOCKET
-(e.g. a bound UDP socket that can `recvfrom` without ever calling
-bind/listen/accept, or a pre-existing io_uring ring) would otherwise
-receive inside the confined tree despite the syscall filter. INHERITED-
-SOCKET regression: the launcher is started with an inherited bound UDP
-socket and a pre-existing io_uring ring fd ⇒ both are closed before
-exec, neither can receive. (Node/libuv gracefully FALL BACK to the
+INHERITED DESCRIPTORS above stdio in ONE syscall — `close_range(3,
+~0U, 0)` (no `/proc/self/fd` walk, hence no `getdents64` outside the
+grammar), then opens only the fds it needs — not merely io_uring rings —
+because an INHERITED ALREADY-BOUND/LISTENING SOCKET (e.g. a bound UDP
+socket that can `recvfrom` without ever calling bind/listen/accept, or a
+pre-existing io_uring ring) would otherwise receive inside the confined
+tree despite the syscall filter. INHERITED-SOCKET regression: the
+launcher is started with an inherited bound UDP socket and a pre-existing
+io_uring ring fd ⇒ `close_range` drops both before exec, neither can
+receive. (Node/libuv gracefully FALL BACK to the
 epoll/threadpool path when `io_uring_setup` returns EPERM, so
 doctor/verify --full remain operative.) CLIENT `socket()` for
-AF_INET/AF_INET6 STREAM/DGRAM IS ALLOWED — a TCP/TLS client (gh api, networked git) must create an
-AF_INET/AF_INET6 socket before `connect()`, and a socket that is never
-`bind`/`listen`ed cannot become a receiving endpoint — so denying the
-four listener syscalls (not socket creation) is BOTH sufficient for the
-no-listener property AND compatible with the required doctor/verify
---full outbound closure. Because a seccomp filter under NO_NEW_PRIVS is INHERITED
+AF_INET/AF_INET6 `SOCK_STREAM` IS ALLOWED (a TCP/TLS client — gh api,
+networked git — must create a stream socket before `connect()`), but
+INET `SOCK_DGRAM` CREATION IS DENIED: an unconnected UDP socket becomes
+IMPLICITLY BOUND on first `sendto` and can then `recvfrom` WITHOUT any
+denied syscall, so it would be a receiving endpoint — denying inet DGRAM
+creation (inspectable via socket()'s scalar type arg) closes that path.
+DNS is served WITHOUT inet UDP — via DNS-over-TCP or a small pinned set
+of pre-resolved required endpoints (pylae talks to a FIXED set of GitHub
+attestation/API hosts) — so the outbound closure needs no UDP. And
+because a descendant could otherwise acquire an ALREADY-BOUND socket
+AFTER startup through a Unix-domain `SCM_RIGHTS` fd pass (which
+inherited-fd closure at launch does not prevent), the network-using
+ceremony runs under bwrap with `--unshare-ipc` AND a read-only root
+carrying NO host unix-socket paths — and abstract unix sockets are
+network-namespace-scoped, so there is NO external unix peer from which a
+confined process could receive a passed fd. Thus a client socket cannot
+become a receiving endpoint (no listen/accept, no UDP implicit-bind, no
+SCM_RIGHTS import), while the required doctor/verify --full outbound
+(TCP/TLS) closure still works. UDP-IMPLICIT-BIND regression: a
+descendant creates an inet DGRAM socket and `sendto`s ⇒ socket creation
+already denied, nothing receives. SCM_RIGHTS regression: a process
+outside the sandbox tries to pass a bound socket fd to a confined
+descendant over a unix socket ⇒ no reachable unix peer (host paths
+absent, abstract namespace isolated), the pass fails. Because a seccomp filter under NO_NEW_PRIVS is INHERITED
 across `execve` and by every `fork`/descendant and CANNOT be relaxed or
 dropped, this binds the ENTIRE process tree — the launcher, Node, and
 every spawned external tool (git/gh/bwrap) AND their descendants,
@@ -238,10 +259,29 @@ opens; (b) PRIVATE-NAMESPACE LISTENER — a git descendant tries to
 inherited filter (the regression observes INSIDE the namespace, not only
 the host); (c) SUBSTITUTED-LOADER/DT_NEEDED — a node/git run against a
 substituted PT_INTERP or DT_NEEDED library whose constructor tries to
-listen ⇒ denied by the inherited filter (so the no-listener property
-does NOT depend on authenticating every loader/library byte; the digest
-still authenticates the main-ELF IDENTITY, and identity substitution is
-separately caught as `tool-identity-mismatch`); (d) IO_URING LISTENER —
+listen ⇒ denied by the inherited filter (so the NO-LISTENER property
+does NOT depend on authenticating every loader/library byte). BUT the
+tools' AUTHORITATIVE VERDICTS (git object retrieval, Node verifier
+success/failure, `gh attestation verify`) DO depend on their whole
+executed closure: a substituted `ld.so`/DT_NEEDED library could fabricate
+git objects, force a false verify success, or falsify an attestation
+while the main-ELF digest still matches and seccomp is satisfied. So for
+these VERDICT-PRODUCING tools the ENTIRE DYNAMIC CLOSURE IS AUTHENTICATED
+AS A PINNED READ-ONLY CONTENT-ADDRESSED ROOT: the ceremony runs
+node/git/gh/bwrap inside a bwrap mount over a root whose complete
+recursively-resolved closure — the ELF interpreter (`ld.so`), every
+transitive DT_NEEDED library, and the tool binary — is ENUMERATED and
+DIGEST-PINNED in the trust manifest and re-verified before use, with the
+loader constrained to that measured root (RPATH/RUNPATH pinned, `LD_*`
+cleared, no `/etc/ld.so.*` from a host); any closure member whose digest
+does not match ⇒ fail-closed `tool-closure-unauthenticated` BEFORE the
+tool runs. SUBSTITUTED-LIBRARY regression: a swapped libc/DT_NEEDED (or
+`ld.so`) under a matching main-ELF digest ⇒ detected `tool-closure-
+unauthenticated`, the tool never executes and no verdict is produced from
+it. (The main-ELF sealed-snapshot digest still binds IDENTITY and catches
+main-binary substitution as `tool-identity-mismatch`; the closure
+authentication extends that to the loaded libraries the verdict depends
+on.) (d) IO_URING LISTENER —
 a descendant submits `IORING_OP_BIND`+`IORING_OP_LISTEN` (or
 `IORING_OP_SOCKET`) via a ring ⇒ ring setup/enter is denied by the
 inherited filter (EPERM), no listener opens, proven INSIDE the
