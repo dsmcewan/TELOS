@@ -1,0 +1,28 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:6ffb206daf0599e7daad05647e8b45b44166fefa5aab43bfb7238d07ad297283",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:24:29.183Z",
+  "rationale": "AMENDMENT-1 is implementation-ready as written. The two-phase pivot (Phase A activation-deferred registry enrollment under sitting v15; Phase B atomic activation after the discriminating freshness verifier lands) correctly discharges DISCOVERY-001 without touching AM-42 bytes or woven inputs at bootstrap, and the phase-aware controller acceptance + closed pre-activation whitelist close the mutation boundary during the window. E1–E6 remain fail-closed with adversarial regressions, content-addressed enforcement identities, and no mutable-label keying; Phase-0/1a product terms match the frozen contract and honest install/runtime floors; deferred Phase-1b+/multi-engine/self-contained-npm items stay register-tracked and are correctly out of authorization scope. I RATIFY both carried-forward spikes: SPIKE-E6-EVALUATOR-FORM (declarative pure-evaluator ABI settled; concrete grammar/form is a hard pre-enrollment merge gate; interim enrollment blocked oracle-evaluator-pending) and SPIKE-PD001-NOLISTENER-COMPLETENESS (kernel-inherited arch-gated seccomp + hermetic launcher/builder + sealed-memfd/fs-verity closures settled; residual corner audit deferred with fail-closed eBPF/strace interim). Bounded honestly-recorded spikes with fail-closed interims are not contradictions. No remaining plan contradiction or unsound design blocks AS-IS authorization of plan_ref sha256:6ffb206daf0599e7daad05647e8b45b44166fefa5aab43bfb7238d07ad297283.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5-build",
+    "response_id": "e087902d-5cdf-44f5-b656-d07b73f86690",
+    "source": "cli-seats/grok",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T15:24:59.970Z",
+    "tool": "cli-seats.askGrok"
+  }
+}

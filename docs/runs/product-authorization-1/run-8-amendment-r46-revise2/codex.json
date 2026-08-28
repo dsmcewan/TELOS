@@ -1,0 +1,37 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:6ffb206daf0599e7daad05647e8b45b44166fefa5aab43bfb7238d07ad297283",
+  "decision": "revise",
+  "required_edits": [
+    "Amend the closure-authentication design so every fs-verity-measured closure member and verdict-affecting runtime input is bound by inode—not subsequently resolved through a mutable staging pathname. For example, retain an fd for the measured inode and individually attach that exact inode into the private mount namespace using a file bind mount or open_tree/move_mount equivalent, then freeze the root’s complete directory membership. Add rename/unlink-and-replace-after-verification regressions for ld.so, a DT_NEEDED library, git/credential helpers, and CA inputs; the replacement inode must never be executed or read. Clarify the distinct ordinary-content and fs-verity digest pins, then re-freeze and re-authorize the resulting plan hash."
+  ],
+  "hard_stops": [
+    "The asserted mutation-point binding for the authenticated dynamic/exec closure is incomplete: fs-verity protects an inode’s contents but explicitly still permits rename, deletion, and linking. A concurrent same-user writer can rename or unlink a verified verity file in the plain staging directory and replace its pathname with an unauthenticated inode before ld.so, a helper, or the trust-store consumer opens it. The existing overwrite regressions do not exercise this pathname-rebinding attack, so the plan does not presently prove that the bytes read or executed are the bytes authenticated."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:24:29.183Z",
+  "rationale": "I recomputed the candidate identity as sha256:6ffb206daf0599e7daad05647e8b45b44166fefa5aab43bfb7238d07ad297283 and confirmed the plan bytes are unchanged from reviewed head 3b5b437f265f85ef26b0bd0d2e9c39d3a9b19160. The prior x32 defect is correctly repaired by rejecting __X32_SYSCALL_BIT before native syscall-number matching. I explicitly ratify SPIKE-E6-EVALUATOR-FORM and product-1-oq-e6-determinism-deferral: enrollment remains blocked until the constrained declarative grammar and trusted evaluator pass their hard merge gate. I also ratify SPIKE-PD001-NOLISTENER-COMPLETENESS and product-1-oq-pd001-nolistener-completeness as scoped after the x32 correction; exhaustive residual syscall auditing may remain an implementation spike with fail-closed detection. Neither deferral covers this separate tool-closure authentication flaw. The Linux kernel documentation states that verity files remain renameable, deletable, and linkable, confirming that fs-verity alone does not bind a verified inode to the pathname later consumed by the loader: [Linux fs-verity documentation](https://www.kernel.org/doc/html/latest/filesystems/fsverity.html). Because authoritative git, Node, and gh verdicts depend on that closure, pathname substitution can fabricate a trusted verdict despite matching pre-execution measurements. Authorization must therefore remain blocked until the exact measured inodes—not mutable names—are mounted into the execution root.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtd3zvm9",
+    "source": "cli-seats/codex",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T15:31:10.929Z",
+    "tool": "cli-seats.askCodex"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "632973ef3b1cc04524143ae6ced13109e983f5ec8dbd67892c4ee704350107cd",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

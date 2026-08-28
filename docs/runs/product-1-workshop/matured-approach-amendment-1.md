@@ -399,11 +399,41 @@ fallback and never a privileged operation attempted without explicit
 operator opt-in. Any closure member whose verity digest ≠
 its pin, or that lacks verity ⇒ fail-closed `tool-closure-unauthenticated`
 BEFORE the tool runs, and any at-read modification is kernel-detected.
-OVERWRITE-AFTER-VERIFICATION regression: after verification, a concurrent
-writer overwrites (a) a DT_NEEDED library, (b) the `ld.so` loader, (c) a
-`git-remote-https`/credential helper, and (d) a CA/trust-store input ⇒
-each is either impossible (verity-immutable) or kernel-detected on read,
-the tool never executes changed bytes, no fabricated verdict is produced. THE CLOSURE IS THE EXEC-CLOSURE, NOT ONLY THE LOAD-CLOSURE:
+TWO DISTINCT PINS ARE RECORDED PER MEMBER: (1) the ordinary-content
+SHA-256 digest (member IDENTITY, matched at measurement) and (2) the
+`fs-verity` Merkle digest (the kernel re-checks it on EVERY read).
+BUT `fs-verity` BINDS CONTENT TO AN INODE, NOT A PATHNAME TO AN INODE:
+it makes the file's BYTES immutable, yet STILL PERMITS `rename`,
+`unlink`, and `link` — so on a plain writable staging directory a
+concurrent same-user writer could UNLINK/RENAME a verified verity file
+and re-point its PATHNAME to a DIFFERENT, unauthenticated inode before
+`ld.so`/a helper/the trust-store opens it BY PATH (fs-verity on the
+now-detached original inode is irrelevant — nothing reads it). So the
+builder BINDS PATHNAME→EXACT-VERIFIED-INODE and FREEZES DIRECTORY
+MEMBERSHIP: each closure member is measured on an OPEN FD (verity digest
+verified on that fd), and that EXACT inode is attached into the
+ceremony's PRIVATE MOUNT NAMESPACE at its canonical path by a
+by-fd/by-inode bind (`open_tree(fd,…)` + `move_mount`, or a file bind
+mount of the measured fd) — NOT resolved afterward through a mutable
+directory entry; the assembled root is then mounted `MS_RDONLY` (and
+`MS_NOSYMFOLLOW`) in that unshared mount namespace, so its directory
+membership is FROZEN — no `rename`/`unlink`/`link`/create can re-point
+any path to a substitute inode. `ld.so` and every helper/trust-store
+consumer therefore resolve each canonical path to the SAME verified
+inode whose verity digest the kernel re-checks on read; the bytes read
+or executed ARE the bytes authenticated. Any closure member that cannot
+be inode-bound read-only ⇒ `tool-closure-unbindable`, fail-closed.
+MUTATION-POINT regressions (BOTH content- AND pathname-rebinding),
+run for `ld.so`, a `DT_NEEDED` library, a `git-remote-https`/credential
+helper, and a CA/trust-store input: (a) OVERWRITE — a concurrent writer
+overwrites the verified bytes ⇒ verity kernel-detects on read (or the
+enabled-verity file is unwritable), the tool never reads changed bytes;
+(b) RENAME/UNLINK-AND-REPLACE — a concurrent same-user writer tries to
+`rename`/`unlink` the verified file in the staging dir and drop an
+unauthenticated inode at its path ⇒ the operation FAILS on the
+`MS_RDONLY` inode-frozen root, the canonical path still resolves to the
+verified inode, and the replacement inode is NEVER opened, read, or
+executed — proving pathname→inode binding, not merely content immutability. THE CLOSURE IS THE EXEC-CLOSURE, NOT ONLY THE LOAD-CLOSURE:
 beyond the main ELF + `PT_INTERP` + transitive `DT_NEEDED`, it RECURSIVELY
 INCLUDES EVERY EXEC EDGE reachable from the enumerated tool grammar —
 notably git's separately-executed `git-*` subprograms and PROTOCOL/REMOTE

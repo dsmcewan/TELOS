@@ -2,7 +2,7 @@
   "run": "product-1-workshop quest/product-1-amendment-1 (DISCOVERY-001 bounded Daedalus amendment, two-phase pivot; OAuth CLI seats)",
   "state": "converged-for-submission",
   "convergence_authority": "Eye ruling 2026-08-28 (DISCOVERY-001-ruling.md): 'Daedalus must review the amendment... then freeze a new complete plan and plan_ref' + standing directive: declare converged once no NEW plan-authorization blocker remains; spike-class objections are non-blocking and carried forward.",
-  "final_round": "46 (+ council-run-7 revise fold)",
+  "final_round": "46 (+ council runs 7,8 revise folds)",
   "final_round_disposition": "The sole round-46 objection is the E6 semantic-discrimination SPIKE (SPIKE-E6-EVALUATOR-FORM, section 6b) \u2014 already Gemini-referee-ruled argo-implementation-spike during the original main-plan maturation (referee-adjudications/2026-08-28-e6-oracle-determinism.json); the section 6b register text explicitly carries any future objection reducible to 'SPIKE-E6-* mechanism not fully specified in-plan' without reopening a new round. No new plan-authorization blocker.",
   "total_amendment_rounds": 46,
   "referee_escalations": [
@@ -16,7 +16,7 @@
   ],
   "seat_provenance_note": "claude reviewer seat pinned to claude-sonnet-4-6 (CLI_SEAT_CLAUDE_MODEL) from round 45 onward after the session-default (Fable 5) model hit its usage limit (429) \u2014 Eye-approved mid-review switch, still OAuth subscription, never a metered key.",
   "matured_plan": "docs/runs/product-1-workshop/matured-approach-amendment-1.md (byte-identical to candidate-approach.md at this commit)",
-  "plan_ref": "sha256:6ffb206daf0599e7daad05647e8b45b44166fefa5aab43bfb7238d07ad297283",
+  "plan_ref": "sha256:6f93bacdccf214b23147c7ad1b6c81560fcc55fe269e430fe4604c1f97221599",
   "cited_governance_evidence_verified_in_head": [
     "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
     "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-six-rulings-final.md",
@@ -49,7 +49,15 @@
       "hard_stop": "x32 ABI reports AUDIT_ARCH_X86_64 (not a foreign audit arch) and is distinguished by __X32_SYSCALL_BIT in seccomp_data.nr; the arch gate alone did not kill x32-encoded bind/listen.",
       "resolution": "Folded a mandatory second guard: on an AUDIT_ARCH_X86_64 frame, seccomp_data.nr & __X32_SYSCALL_BIT => SIGKILL (kills every x32-encoded syscall, x32 being outside the frozen envelope); corrected the false 'x32 killed by arch gate' claim; added an executable x32-numbered bind/listen regression. Re-froze plan_ref 6ffb206d and re-authorized.",
       "prior_plan_ref": "sha256:d1dd898d1c9c043157211cca396be1377ce9c215371210d2786041197efb56f4"
+    },
+    {
+      "run": "run-8-amendment-r46-revise2",
+      "seat": "codex (gpt-5.6-sol, required signer)",
+      "decision": "revise",
+      "hard_stop": "fs-verity binds content-to-inode but still permits rename/unlink/link; a same-user writer could re-point a verified file's PATHNAME to an unauthenticated inode before ld.so/helper/trust-store opens it by path. Content immutability != pathname->inode binding.",
+      "resolution": "Fold: measure each member on an open fd, attach that EXACT inode into a private mount namespace by fd/inode (open_tree+move_mount / file bind mount), mount the root MS_RDONLY+MS_NOSYMFOLLOW so directory membership is frozen (no rename/unlink/link re-point). Recorded the two distinct pins (content SHA-256 identity + fs-verity Merkle). Added rename/unlink-and-replace regressions for ld.so, DT_NEEDED lib, git/credential helper, CA input.",
+      "prior_plan_ref": "sha256:6ffb206daf0599e7daad05647e8b45b44166fefa5aab43bfb7238d07ad297283"
     }
   ],
-  "prior_plan_ref_superseded": "sha256:d1dd898d1c9c043157211cca396be1377ce9c215371210d2786041197efb56f4 (council-run-7 revise: x32 __X32_SYSCALL_BIT guard)"
+  "prior_plan_ref_superseded": "sha256:6ffb206daf0599e7daad05647e8b45b44166fefa5aab43bfb7238d07ad297283 (council-run-8 revise: pathname->inode binding + directory-membership freeze)"
 }

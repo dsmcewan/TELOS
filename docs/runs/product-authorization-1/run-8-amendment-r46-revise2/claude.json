@@ -1,0 +1,33 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:6ffb206daf0599e7daad05647e8b45b44166fefa5aab43bfb7238d07ad297283",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:24:29.183Z",
+  "rationale": "The amendment correctly resolves DISCOVERY-001's bootstrap-pivot coupling by separating governance bootstrap (Phase A: data-only, mergeable under v15 authority without triggering the woven-artifact comprehension gates whose governing_authority must equal the active plan) from atomic activation (Phase B: after the discriminating freshness verifier lands, enabling a fail-closed pivot that satisfies those gates). The two-phase structure is the minimum-complexity design that avoids the internal unsatisfiability a single-shot pivot would create — a pivot before the discriminating verifier exists fails the pre-existing comprehension gates, but woven edits at bootstrap are forbidden until the verifier is in place; Phase A defers both, Phase B performs them together. The x32 __X32_SYSCALL_BIT guard is properly folded: x32 reports AUDIT_ARCH_X86_64 identically to native 64-bit and therefore cannot be stopped by the arch gate alone; the mandatory secondary check (seccomp_data.nr & __X32_SYSCALL_BIT → SIGKILL on any AUDIT_ARCH_X86_64 frame) correctly closes that path before any native-nr match, and the COMPAT-ABI regression suite covers both the i386-socketcall and x32-numbered-bind paths explicitly. Both carried-forward Argo spikes are ratified as authorization-time decisions. SPIKE-E6-EVALUATOR-FORM: the settled design is the constrained declarative oracle language — lookup-table and imperative oracles are structurally inexpressible in it (the invariant is stated as inspectable predicates the evaluator interprets; no imperative escape hatch exists to hardcode enumerated verdicts); the bounded open choice is only the evaluator's concrete implementation form (WASM component-model vs frozen-realm Node worker with ambient globals removed), with enrollment of new or changed normative oracles blocked at the authority gate (oracle-evaluator-pending) until the evaluator's own hard merge gate passes — the interim adversarial source review and deterministic battery are correctly characterized as compensating controls, not semantic soundness proofs. SPIKE-PD001-NOLISTENER-COMPLETENESS: the settled design is the conceptually sound, kernel-inherited, un-droppable seccomp-BPF architecture — arch-gated (foreign-arch SIGKILL), x32-guarded, io_uring-family-denied, close_range plus stdio-type-check inherited-fd closure, static hermetic launcher with filter-first custom _start, static hermetic sandbox-builder, offline (--unshare-net sealed) versus online (real-interface-under-seccomp) net-profile split, sealed-memfd immutable identity, and authenticated full tool closures; the deferred item is only exhaustive enumeration of every residual Linux syscall/loader/namespace corner, a bounded platform-engineering completeness problem with fail-closed interim CI eBPF+strace detection that correctly fails closed (the filter already EPERM/SIGKILLs denied syscalls; detection catches attempts and any not-yet-enumerated corner for governance review). Neither spike constitutes a plan contradiction or unsound design. The E1-E6 enforcement specifications are fail-closed with adversarial regression suites covering each named threat scenario. The controller's phase-aware acceptance oracle enforces whitelist membership at the mutation boundary from E1's genesis merge onward, making the Phase A pre-activation constraint machine-enforced. The release pipeline is correctly structured: workflow_dispatch only (no tag-push trigger), draft-first Eye-local ceremony, ~ALL-selector tag ruleset (not a glob), default-suspended machine App installations with platform-verifiable suspension, sealed-interval publish flip, custody-drift oracle over all writer classes including App installations and deploy keys. The honest limits section correctly scopes the ptrace threat model (explicitly non-claim against a controlling parent with pre-existing ptrace capability) and the PYLAE v1 boundary. The install contract is honest (source release; external-tool manifest operator-provisioned out of band; TOFU only at first trust-root fetch, then pinned; no self-authorizing in-archive verification). The two enumerated pre-controller bootstrap merges are the minimum necessary and are the only ones. The six resolved Eye rulings are unchanged. The open questions for the Eye are properly dispositioned as ratified authorization-time decisions binding this council, not unresolved plan defects.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-6",
+    "response_id": "50d64ecf-b994-4fb7-9630-4eb484d1e3eb",
+    "source": "cli-seats/claude",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T15:26:14.875Z",
+    "tool": "cli-seats.askClaude"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "3b5f69f531e85f98e54fc96a715d53d51ba5b710a62e0be30260465e54b5e024",
+    "signed_fields": "canonical-minus-signature"
+  }
+}
