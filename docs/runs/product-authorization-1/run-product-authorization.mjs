@@ -3,10 +3,15 @@
 // Production Quest / PYLAE Gate v1.
 //
 // Sequence: the Eye commissioned product-1 (2026-08-27) -> Iliad pre-review
-// (2026-08-27-product-1.json, S0 rulings recorded) -> Daedalus workshop matured the
-// APPROACH over 10 adversarial rounds / 41 discharged objections
-// (converged-for-submission) -> TELOS AUTHORIZES (this run) -> Eye grants
-// implementation authority -> Argo implements.
+// (2026-08-27-product-1.json, S0 rulings recorded) -> Daedalus matured the APPROACH
+// (main plan converged, authorized, S3 granted) -> DISCOVERY-001 (bootstrap-pivot
+// coupling) SUSPENDED the grant -> Eye ruled the bounded AMENDMENT (Option-3 governance
+// path + Option-1 substance = two-phase pivot) -> Daedalus AMENDMENT converged at round 46
+// (AMENDMENT-1-CONVERGED.json) -> TELOS RE-AUTHORIZES the exact amended plan (this run) ->
+// Eye grants (new) implementation authority -> Argo implements Phase A.
+//
+// This run binds the amended plan_ref, the resolved DISCOVERY-001 ruling, and the frozen
+// convergence record; a plan_ref/convergence mismatch is fatal before any seat call.
 //
 // A real signed council over the matured approach's content address:
 // claude/agy/codex are REQUIRED approvers, grok/gemini advisory. Chat seats run
@@ -43,15 +48,39 @@ const { agyCheckpoint, agyAttestation } = await imp("connectors/ai-peer-mcp/lib.
 const { askClaude, askCodex, askGrok, askGemini } = await imp("docs/institutional-memory/iliad/tools/cli-seats.mjs");
 
 // ---------- bind the exact plan under authorization ----------
-const PLAN_PATH = "docs/runs/product-1-workshop/matured-approach.md";
+const PLAN_PATH = "docs/runs/product-1-workshop/matured-approach-amendment-1.md";
 const PREREVIEW_PATH = "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json";
-const EXPECTED_PLAN_REF = "sha256:523d0f4388dd0aad058f0cdb6771335d7e9a3224c9aed31d625e4d3cecf49048";
-const REVIEWED_HEAD = "268225356702fe5e645d39d478848b5d864d657c"; // full 40-char head — AMENDMENT-1 CONVERGED (round 9) per the Eye DISCOVERY-001 ruling; fresh exact-hash authorization of the amended plan
+const EXPECTED_PLAN_REF = "sha256:d1dd898d1c9c043157211cca396be1377ce9c215371210d2786041197efb56f4";
+const REVIEWED_HEAD = "b230ad75626de6a56aa52f68b9d0ef9a348e8e5e"; // full 40-char head — AMENDMENT-1 CONVERGED at round 46 (docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json), the frozen two-phase-pivot plan per the Eye DISCOVERY-001 ruling; fresh exact-hash authorization of the amended plan
+const DISCOVERY_001_RULING = "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md"; // resolved: Option 3 governance path + Option 1 substance (two-phase pivot)
+const CONVERGENCE_RECORD = "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json";
 
 const planText = readFileSync(path.join(ROOT, PLAN_PATH), "utf8");
 const planRef = "sha256:" + sha256hex(canonicalize({ kind: "candidate", plan: planText }));
 if (planRef !== EXPECTED_PLAN_REF) {
   console.error(`PLAN DRIFT: ${PLAN_PATH} recomputes to ${planRef}, expected ${EXPECTED_PLAN_REF}. Refusing to authorize.`);
+  process.exit(1);
+}
+
+// ---------- bind the RESOLVED DISCOVERY-001 ruling + convergence record (fail-closed) ----------
+// The Eye required authorization to verify against the resolved DISCOVERY-001 ruling and the
+// amendment's frozen convergence record. Absence, or a convergence-record plan_ref that disagrees
+// with the plan actually loaded, is fatal BEFORE any seat call — no ephemeral binding.
+let CONVERGENCE_META;
+try {
+  const rulingText = readFileSync(path.join(ROOT, DISCOVERY_001_RULING), "utf8");
+  if (!/DISCOVERY-001/.test(rulingText)) throw new Error("DISCOVERY-001 ruling doc does not reference DISCOVERY-001");
+  CONVERGENCE_META = JSON.parse(readFileSync(path.join(ROOT, CONVERGENCE_RECORD), "utf8"));
+} catch (e) {
+  console.error(`FATAL: cannot bind resolved DISCOVERY-001 ruling / convergence record: ${e.message}. Refusing to authorize.`);
+  process.exit(1);
+}
+if (CONVERGENCE_META.plan_ref !== planRef) {
+  console.error(`CONVERGENCE DRIFT: ${CONVERGENCE_RECORD} records plan_ref ${CONVERGENCE_META.plan_ref}, but the loaded plan is ${planRef}. Refusing to authorize.`);
+  process.exit(1);
+}
+if (CONVERGENCE_META.state !== "converged-for-submission") {
+  console.error(`CONVERGENCE STATE: ${CONVERGENCE_RECORD} state is ${CONVERGENCE_META.state}, expected converged-for-submission. Refusing to authorize.`);
   process.exit(1);
 }
 
@@ -83,14 +112,22 @@ const SIGNER_KEY_IDS = {};
   }
 }
 
-const BUILD_ID = "iliad-product-1-authz-amendment-1-two-phase-pivot-am42-am43";
+const BUILD_ID = "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43";
 const USE_CASE = "iliad-product-1";
 const TIMESTAMP = new Date().toISOString();
 const OBJECTIVE =
-  `Authorize Argo implementation of the product-1 quest matured approach ` +
-  `(content address ${planRef}; Daedalus-converged after 22 adversarial rounds with 60 discharged objections ` +
-  `plus council run 1's ratified hard stop folded and re-matured; ` +
-  `reviewed head ${REVIEWED_HEAD}) — the TELOS v0.3.0 Production Quest shipping PYLAE Gate v1 ` +
+  `Authorize Argo implementation of the product-1 quest matured approach — AMENDMENT-1 ` +
+  `(content address ${planRef}; the Daedalus AMENDMENT maturation converged at round 46 resolving ` +
+  `DISCOVERY-001's bootstrap-pivot coupling via the Eye-ruled Option-3 governance path with Option-1 ` +
+  `substance = the TWO-PHASE PIVOT (Phase A governance bootstrap, activation-deferred; Phase B atomic ` +
+  `activation under the landed discriminating verifier). The prior full-plan authorization (plan_ref ` +
+  `bb2ea18f, S3 grant 97becd37) was SUSPENDED by the Eye pending this amendment; this run RE-AUTHORIZES ` +
+  `the exact amended plan. The amendment folded genuine defects across the native trust boundary ` +
+  `(hermetic static launcher + static sandbox-builder, sealed-memfd/fs-verity mutation-point-bound tool ` +
+  `identity + exec-closure completeness, kernel-inherited arch-gated un-droppable seccomp no-listener ` +
+  `architecture, git transport allowlist, unified boot sequence, ptrace threat-model scoping, ` +
+  `unprivileged fs-verity probe) plus install-contract/tool-authentication/version-floor/font-licensing ` +
+  `corrections; reviewed head ${REVIEWED_HEAD}) — the TELOS v0.3.0 Production Quest shipping PYLAE Gate v1 ` +
   `(the productized local single-user CLI SKU over the TELOS trust spine). ` +
   `The plan's own terms to judge it on: (1) ENFORCEMENT E1-E6 are fail-closed with adversarial regression tests: ` +
   `deterministic pre-merge merge-controller (sole merge credential; models produce dossiers, never merge), ` +
@@ -116,14 +153,21 @@ const OBJECTIVE =
   `ceremony, both-strict enforcement, reconcile-and-supersede for draft docs, OAuth seat transport). ` +
   `OUT OF SCOPE (do NOT condition approval on it): identity/tenancy/clustered runtime (excluded by signed ADR ` +
   `PD-001); enrollment flips beyond the two AM-43 exclusions; Phase-1b+ register items. ` +
-  `CARRIED-FORWARD ITEMS (Daedalus converged 2026-08-28 under the recorded Eye directive; these are AUTHORIZATION-TIME ` +
+  `CARRIED-FORWARD ITEMS (Daedalus amendment converged 2026-08-28 under the recorded Eye directive; these are AUTHORIZATION-TIME ` +
   `decisions for THIS council, NOT unresolved plan defects — RATIFY or reject them explicitly): (i) the §6b Accepted ` +
   `Argo Spikes register — SPIKE-E6-EVALUATOR-FORM (oracle discrimination: sound design = a constrained DECLARATIVE ` +
   `oracle language in which lookup-table oracles are structurally inexpressible; sound INTERIM = mandatory adversarial ` +
   `source review of every normative oracle record + the determinized battery; the concrete grammar is a pre-implementation ` +
-  `MERGE-GATE on the oracle-hardening slice) — judge whether deferring the concrete grammar to that gate is acceptable; ` +
-  `(ii) the pre-review open_questions_for_the_eye (incl. product-1-oq-e6-determinism-deferral). Evidence on disk: ` +
-  `referee-adjudications/2026-08-28-e6-oracle-determinism.json (ADVISORY), EYE-DIRECTIVES/2026-08-28-product-1-spikes-nonblocking.md. ` +
+  `MERGE-GATE on the oracle-hardening slice); AND SPIKE-PD001-NOLISTENER-COMPLETENESS (the no-listener enforcement ` +
+  `ARCHITECTURE is conceptually sound and fail-closed — arch-gated kernel-inherited un-droppable seccomp + static hermetic ` +
+  `launcher/sandbox-builder + close_range + offline/online net split + fs-verity closures; only the EXHAUSTIVE enumeration ` +
+  `of residual Linux syscall/loader/namespace corners is deferred, with interim CI eBPF+strace fail-closed detection — ` +
+  `Gemini-referee-ruled argo-implementation-spike after amendment round 37). Judge whether deferring these bounded ` +
+  `implementation completeness items to their merge-gates/detection is acceptable; ` +
+  `(ii) the pre-review open_questions_for_the_eye (incl. product-1-oq-e6-determinism-deferral, ` +
+  `product-1-oq-pd001-nolistener-completeness). Evidence on disk: ` +
+  `referee-adjudications/2026-08-28-e6-oracle-determinism.json AND referee-adjudications/2026-08-28-pd001-nolistener-completeness.json (ADVISORY), ` +
+  `EYE-DIRECTIVES/2026-08-28-product-1-spikes-nonblocking.md, EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md (the resolved DISCOVERY-001 ruling this amendment implements). ` +
   `Approve ONLY if the plan is implementation-ready and consistent with its governing pre-review, the repository ` +
   `trust model (fail-closed, closed sets, content-addressed identity, no mutable label keying enforcement, ` +
   `zero-dependency core), and its own decisions and acceptance criteria, with no remaining plan CONTRADICTION or ` +
@@ -141,7 +185,7 @@ const dossier = {
   use_case: USE_CASE,
   objective: OBJECTIVE,
   proposal_ref: planRef,
-  required_docs: [PLAN_PATH, PREREVIEW_PATH],
+  required_docs: [PLAN_PATH, PREREVIEW_PATH, DISCOVERY_001_RULING, CONVERGENCE_RECORD],
   write_targets: WRITE_TARGETS,
   protected_paths: [],
   trust_mode: "signed"
@@ -152,7 +196,7 @@ const meta = {
   use_case: USE_CASE,
   proposal_ref: planRef,
   timestamp: TIMESTAMP,
-  docs_reviewed: [PLAN_PATH, PREREVIEW_PATH]
+  docs_reviewed: [PLAN_PATH, PREREVIEW_PATH, DISCOVERY_001_RULING, CONVERGENCE_RECORD]
 };
 
 // ---------- strict packet schema (instruction-enforced + strict local parse) ----------
@@ -245,8 +289,16 @@ try {
     objective: OBJECTIVE,
     plan_ref: planRef,
     reviewed_head: REVIEWED_HEAD,
+    amendment: "amendment-1 (two-phase pivot) — resolves DISCOVERY-001; supersedes the SUSPENDED prior full-plan grant (plan_ref bb2ea18f, S3 97becd37)",
+    discovery_001_ruling: DISCOVERY_001_RULING,
+    convergence_record: CONVERGENCE_RECORD,
+    referee_adjudications: [
+      "docs/runs/product-1-workshop/referee-adjudications/2026-08-28-e6-oracle-determinism.json",
+      "docs/runs/product-1-workshop/referee-adjudications/2026-08-28-pd001-nolistener-completeness.json"
+    ],
     combined_ceremony: "AM-42 enrollment-flip regularization + AM-43 exclusions (cli/, connectors/meta-ads-mcp/) — build_id names the flip",
     seat_transport: "OAuth subscription CLIs per product-1-ruling-oauth-seat-transport (agy = local deterministic checkpoint)",
+    seat_provenance_note: "claude reviewer seat pinned to claude-sonnet-4-6 via CLI_SEAT_CLAUDE_MODEL (Eye-approved mid-review switch after the session-default Fable 5 hit its usage limit; still OAuth subscription, never a metered key)",
     timestamp: TIMESTAMP,
     trust_mode: "signed",
     ephemeral_signers: EPHEMERAL_SIGNERS,
@@ -291,14 +343,19 @@ try {
   );
   const gatePassed = gate.gate_status === "pass";
   const ephemeralClean = Array.isArray(EPHEMERAL_SIGNERS) && EPHEMERAL_SIGNERS.length === 0;
+  const discovery001Bound = CONVERGENCE_META.plan_ref === planRef
+    && CONVERGENCE_META.state === "converged-for-submission";
   summary.durable_checks = {
     ephemeral_signers_empty: ephemeralClean,
     all_required_signed_durable: durableApprovals.length === requiredSeats.length,
     all_required_packets_clean: packetClean,
-    reviewed_head_full: typeof REVIEWED_HEAD === "string" && REVIEWED_HEAD.length === 40
+    reviewed_head_full: typeof REVIEWED_HEAD === "string" && REVIEWED_HEAD.length === 40,
+    discovery_001_ruling_bound: discovery001Bound,
+    plan_ref_matches_convergence_record: CONVERGENCE_META.plan_ref === planRef
   };
   summary.authorized = gatePassed && durableApprovals.length === requiredSeats.length
-    && ephemeralClean && packetClean && summary.durable_checks.reviewed_head_full;
+    && ephemeralClean && packetClean && summary.durable_checks.reviewed_head_full
+    && discovery001Bound;
   summary.authorization = summary.authorized
     ? { status: "AUTHORIZED", id: "authz-product-1", plan_ref: planRef, note: "Argo implementation of the product-1 matured plan is authorized by the signed council under the TELOS gate; this run is also the Option-A re-authorization naming the AM-42 regularization + AM-43 exclusions. The Eye's implementation-authority confirmation (plan §3 step 4) remains a separate, subsequent grant." }
     : { status: "NOT_AUTHORIZED", note: "Fail-closed: see gate.blockers and seat decisions." };
