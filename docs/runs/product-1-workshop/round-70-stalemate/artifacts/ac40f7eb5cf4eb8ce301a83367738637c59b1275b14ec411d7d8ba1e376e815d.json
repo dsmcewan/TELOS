@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:ed6c937562c8cdbec8b2e25be2c0015df71e0995bd1c86dc8b2effbe06ed5611",
+  "output_plan_artifact_hash": "sha256:ed6c937562c8cdbec8b2e25be2c0015df71e0995bd1c86dc8b2effbe06ed5611",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:db7db626ac9bddfd9cbfdc84fa6ca50317c341edf925592b1e12e610ca694402",
+    "provenance_key": "anthropic:e434f862-ccd9-40d6-8550-4a370510eb2b"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:6921d645ff1defa180af0ab0e686d68484a4db3b23f2a04a8409e82e9cfb488a",
+    "provenance_key": "openai:codex-cli-mtchck7q",
+    "bound_hash": "sha256:ed6c937562c8cdbec8b2e25be2c0015df71e0995bd1c86dc8b2effbe06ed5611"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E6-clock-correlated-oracle",
+      "claim": "E6's fixed execution schedule does not support its claimed <1.3e-10 admission bound. The 12 A-B-A′ repetitions are not independent when every oracle can observe the shared wall clock. An input-ignoring oracle can divide time into a cyclic phase sequence encoding the runner's known expected outcomes, wait until the next phase before exiting, and thereby produce 0/nonzero/0 for every negative triple plus 0 for the subsequently scheduled positive variants. Once the first invocation lands on the cycle's initial phase, later invocations remain synchronized, so repetition does not exponentiate the failure probability; A′ catches a one-way threshold but not this periodic clock oracle. Randomized mutation parameters do not help because the expected exit-status order remains fixed. Randomize and conceal the ordering of pristine, violating, and conforming cases (or deny/virtualize clock observation), and add a periodic clock-phase, input-ignoring regression that must fail. Until then the oracle runner remains nondiscriminating, violating governance correction d at candidate plan_ref sha256:ed6c937562c8cdbec8b2e25be2c0015df71e0995bd1c86dc8b2effbe06ed5611.",
+      "objection_hash": "sha256:8c1a2f4ddb28cacdcc78dacaa9ab82aaf0ef91086aaa2befbfa8017cbef5831b",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

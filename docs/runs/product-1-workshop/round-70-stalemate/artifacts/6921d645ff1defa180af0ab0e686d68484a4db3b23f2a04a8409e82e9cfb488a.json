@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E6-clock-correlated-oracle",
+        "claim": "E6's fixed execution schedule does not support its claimed <1.3e-10 admission bound. The 12 A-B-A′ repetitions are not independent when every oracle can observe the shared wall clock. An input-ignoring oracle can divide time into a cyclic phase sequence encoding the runner's known expected outcomes, wait until the next phase before exiting, and thereby produce 0/nonzero/0 for every negative triple plus 0 for the subsequently scheduled positive variants. Once the first invocation lands on the cycle's initial phase, later invocations remain synchronized, so repetition does not exponentiate the failure probability; A′ catches a one-way threshold but not this periodic clock oracle. Randomized mutation parameters do not help because the expected exit-status order remains fixed. Randomize and conceal the ordering of pristine, violating, and conforming cases (or deny/virtualize clock observation), and add a periodic clock-phase, input-ignoring regression that must fail. Until then the oracle runner remains nondiscriminating, violating governance correction d at candidate plan_ref sha256:ed6c937562c8cdbec8b2e25be2c0015df71e0995bd1c86dc8b2effbe06ed5611."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtchck7q",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtchck7q",
+    "source": "cli-seats/codex_ask"
+  }
+}

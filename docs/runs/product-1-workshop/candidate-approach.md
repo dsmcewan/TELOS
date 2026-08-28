@@ -833,17 +833,21 @@ per-file designs are in the approved plan; acceptance criteria here.
   unavailable ⇒ FAIL `oracle-unrunnable` — confinement is never
   best-effort. The remaining nondeterministic channels (the clock and
   KERNEL ENTROPY — getrandom cannot be portably denied inside the
-  sandbox) are controlled by a REPEATED A-B-A' PROTOCOL with an
-  explicit adversarial bound: each round runs baseline (exit 0
-  required), negative (nonzero required), and baseline-again (exit 0
-  required) in three pristine same-path sandboxes, and the FULL TRIPLE
-  IS REPEATED K=12 INDEPENDENT TIMES, every repetition consistent. A
-  coin-flip/entropy oracle maximizes its single-triple pass
-  probability at p(1-p)² ≤ 4/27, so K=12 bounds admission below
-  1.3e-10 — the guarantee is PROBABILISTIC AND STATED (never claimed
-  deterministic); clock-keyed oracles are additionally caught by the
-  A' drift check; a genuinely input-reading oracle passes all 36
-  executions trivially. Same argv, same entrypoint, same
+  sandbox) are controlled by a SHUFFLED, CONCEALED EXECUTION SCHEDULE
+  with an explicit adversarial bound: the full battery — 12 pristine
+  baselines, 12 mutated negatives, 12 conforming positives (36
+  executions, each in its own pristine same-path sandbox) — runs in a
+  CRYPTOGRAPHICALLY RANDOM ORDER drawn by the runner and never
+  revealed to the oracle (a FIXED A-B-A' cadence would let a periodic
+  clock-phase oracle track the known expected-outcome cycle and stay
+  synchronized — repetition alone does not decorrelate clock-observing
+  strategies); each execution's exit must match its concealed case (0
+  for baselines and positives, nonzero for negatives). Any
+  input-ignoring strategy — clock-phase, entropy, or constant — must
+  effectively guess which 12 of the 36 concealed slots hold negatives:
+  admission probability ≤ 1/C(36,12) < 8e-10, PROBABILISTIC AND STATED
+  (never claimed deterministic); a genuinely input-reading oracle
+  passes all 36 trivially. Same argv, same entrypoint, same
   absolute path, same environment VARIABLES (equal names and shapes,
   pointing at per-run instances), no special mode; the only state
   observable in both executions is the governed input — the mutation is
@@ -913,10 +917,14 @@ per-file designs are in the approved plan; acceptance criteria here.
   (shmget/semget marker planted in A, consumed in B, absent in A') ⇒
   each run has a private IPC namespace under --unshare-all, no segment
   crosses runs, the pair collapses ⇒ oracle-nondiscriminating; a CLOCK-THRESHOLD oracle
-  (0 before time T, nonzero after) ⇒ the second baseline runs after T
-  and exits nonzero ⇒ oracle-environment-sensitive; a RANDOM-EXIT
+  (0 before time T, nonzero after) ⇒ later-scheduled baselines and
+  positives after T exit nonzero ⇒ caught; a PERIODIC CLOCK-PHASE
+  oracle (cycling exits on a period tuned to the old fixed cadence) ⇒
+  the shuffled concealed ordering decorrelates it — its phase pattern
+  mismatches the hidden case assignment with overwhelming probability
+  ⇒ oracle-nondiscriminating; a RANDOM-EXIT
   oracle (crypto.randomBytes coin flip) ⇒ inconsistent across the 12
-  repetitions with overwhelming probability (admission bound < 1.3e-10,
+  repetitions with overwhelming probability (admission bound < 8e-10 under the shuffled schedule,
   documented) ⇒ oracle-nondiscriminating; a SINGLETON-DOMAIN
   declaration ⇒ FAIL mutation-domain-too-small before any execution; a
   FIXTURE-DIGEST-SPECIAL-CASING oracle (nonzero only on one memorized
