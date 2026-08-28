@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:e7287bb147bcb75de23c6309f8339aa318e4a2de85645a9fd9c95083744689f8",
+  "output_plan_artifact_hash": "sha256:e7287bb147bcb75de23c6309f8339aa318e4a2de85645a9fd9c95083744689f8",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:41db4e5b02aa65b6223e72194f123963b0b8a93f5d9dfc968ee9cffde023d6a0",
+    "provenance_key": "anthropic:6de23beb-526a-4dc6-9d61-dedae99144d9"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:b23209035aa293d81739489cc62bafc54c3199de58e48c96f4468bd864c1c681",
+    "provenance_key": "openai:codex-cli-mtch1y3q",
+    "bound_hash": "sha256:e7287bb147bcb75de23c6309f8339aa318e4a2de85645a9fd9c95083744689f8"
+  },
+  "objections": [
+    {
+      "scope": "candidate:all-tags-ruleset-coverage",
+      "claim": "Section 5(b) specifies `**` as the all-tags ruleset pattern, but GitHub ruleset patterns use `File::FNM_PATHNAME`; under those semantics `**` does not match tag names containing `/`. A listed contents:write App can therefore create a tag such as `x/malicious` and publish a release outside the claimed server-side restriction. The NON-V* regression tests only `x-malicious`, so it would not detect this bypass. Require a genuinely exhaustive tag selector/pattern and regressions for one-level and multi-level slash-containing tag names. This leaves frozen blocker 6 unresolved.",
+      "objection_hash": "sha256:cef81eb6d09a65459c0fbdbf0195024a3f1bc33f5b926b20dc2917ae882637bf",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

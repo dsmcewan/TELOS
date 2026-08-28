@@ -1387,7 +1387,11 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   other ref requesting that environment is refused by GitHub before it
   starts; the repository DEFAULT GITHUB_TOKEN permission is read-only.
   (b) TAGS ARE RULESET-PROTECTED OVER EVERY NAMESPACE: a tag ruleset
-  restricts creation/update/deletion of ALL tags (`**`, not just `v*` —
+  restricts creation/update/deletion of ALL tags — using GitHub's
+  include-all-tags target (the `~ALL` selector), NOT a glob (ruleset
+  patterns use FNM_PATHNAME semantics where `**` fails to match
+  slash-containing names like `x/malicious`, leaving those creatable) —
+  not just `v*` —
   a `v*`-only rule would leave any other name free to back a rogue
   release, since creating a release with a nonexistent tag_name creates
   that tag) to the Eye alone (no bot, no Actions principal, and NOT the
@@ -1395,11 +1399,14 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   branch pushes; tag creation is never in their capability set) — so no
   machine or workflow credential can mint or move ANY tag, which means
   none can create a publishable release under any name; releases are
-  immutable once published. NON-V* regression: a listed
-  controller/publisher credential attempts `gh release create
-  x-malicious` ⇒ the all-tags ruleset refuses the tag ref creation and
-  the release cannot be published — refused server-side, not swept
-  after exposure.
+  immutable once published. NON-V* regressions: a listed
+  controller/publisher credential attempts `gh release create` with
+  `x-malicious`, the one-level `x/malicious`, AND the multi-level
+  `a/b/malicious` ⇒ the ~ALL tag ruleset refuses each tag ref creation
+  and no release can be published — refused server-side, not swept
+  after exposure; the custody oracle additionally asserts the ruleset's
+  target is the include-all selector, not a glob (a `**` pattern found
+  there ⇒ unsafe-tag-ruleset).
   (b2) MAIN HAS PUSH RESTRICTIONS EXCLUDING ACTIONS PRINCIPALS,
   IMPLEMENTED AS SPLIT RULESETS (one ruleset cannot both restrict
   actors and enforce checks without contradiction — ruleset update

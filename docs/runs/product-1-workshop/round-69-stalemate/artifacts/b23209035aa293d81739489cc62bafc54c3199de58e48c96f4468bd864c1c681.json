@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:all-tags-ruleset-coverage",
+        "claim": "Section 5(b) specifies `**` as the all-tags ruleset pattern, but GitHub ruleset patterns use `File::FNM_PATHNAME`; under those semantics `**` does not match tag names containing `/`. A listed contents:write App can therefore create a tag such as `x/malicious` and publish a release outside the claimed server-side restriction. The NON-V* regression tests only `x-malicious`, so it would not detect this bypass. Require a genuinely exhaustive tag selector/pattern and regressions for one-level and multi-level slash-containing tag names. This leaves frozen blocker 6 unresolved."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtch1y3q",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtch1y3q",
+    "source": "cli-seats/codex_ask"
+  }
+}
