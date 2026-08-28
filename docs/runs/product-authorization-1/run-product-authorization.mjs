@@ -45,8 +45,8 @@ const { askClaude, askCodex, askGrok, askGemini } = await imp("docs/institutiona
 // ---------- bind the exact plan under authorization ----------
 const PLAN_PATH = "docs/runs/product-1-workshop/matured-approach.md";
 const PREREVIEW_PATH = "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json";
-const EXPECTED_PLAN_REF = "sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6";
-const REVIEWED_HEAD = "97becd37ba2e99055f13c97ad6780eb06c8d0e34"; // full 40-char head — Daedalus CONVERGED (Eye-authority, round 82); durable-signature rerun per Eye ruling 2026-08-28
+const EXPECTED_PLAN_REF = "sha256:523d0f4388dd0aad058f0cdb6771335d7e9a3224c9aed31d625e4d3cecf49048";
+const REVIEWED_HEAD = "268225356702fe5e645d39d478848b5d864d657c"; // full 40-char head — AMENDMENT-1 CONVERGED (round 9) per the Eye DISCOVERY-001 ruling; fresh exact-hash authorization of the amended plan
 
 const planText = readFileSync(path.join(ROOT, PLAN_PATH), "utf8");
 const planRef = "sha256:" + sha256hex(canonicalize({ kind: "candidate", plan: planText }));
@@ -83,7 +83,7 @@ const SIGNER_KEY_IDS = {};
   }
 }
 
-const BUILD_ID = "iliad-product-1-authz-am42-regularization-am43-exclusions";
+const BUILD_ID = "iliad-product-1-authz-amendment-1-two-phase-pivot-am42-am43";
 const USE_CASE = "iliad-product-1";
 const TIMESTAMP = new Date().toISOString();
 const OBJECTIVE =
