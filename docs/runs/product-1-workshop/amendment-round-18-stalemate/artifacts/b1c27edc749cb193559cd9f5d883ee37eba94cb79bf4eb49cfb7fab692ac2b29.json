@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:431ecbea656da182bc0f761930f269153e04f46853a4fda27bb6e33d14050495",
+  "output_plan_artifact_hash": "sha256:431ecbea656da182bc0f761930f269153e04f46853a4fda27bb6e33d14050495",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:39e4146296984a7c958d65861d763a209dd5be6e2eea7725d82600ea57f3f425",
+    "provenance_key": "anthropic:de54cad0-cd12-4e28-862a-f5257d6d35a7"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:11d8b84ef71f6100647dd9d7163004b9de94bf9910ceef6f3bf8f2d73946db00",
+    "provenance_key": "openai:codex-cli-mtcsvz8h",
+    "bound_hash": "sha256:431ecbea656da182bc0f761930f269153e04f46853a4fda27bb6e33d14050495"
+  },
+  "objections": [
+    {
+      "scope": "plan",
+      "claim": "The PD-001 external-tool grammar makes the required CLI verification path unsatisfiable. It permits git only for cat-file/rev-parse/log/ls-tree/bundle/verify-* forms, but `pylae verify` explicitly executes the existing self-weave verifier, whose closure at fc0fa05 invokes `git status --porcelain`, `git ls-files -z`, `git hash-object --no-filters`, and `git rev-list --max-parents=0 HEAD` (`docs/runs/clotho-self-weave/run.mjs` plus `clotho/registry.mjs`/`clotho/weavers/util.mjs`). Archive-mode `--full --bundle` also needs a defined safe way to initialize/materialize its private Git object store, yet no `git init`/equivalent form is permitted. Under the candidate's own rule, any invocation outside the grammar fails closed, so the promised clean-room full verification and blocker-3 authoritative verification cannot pass. The plan must enumerate every exact Git argv shape reachable from doctor/verify, including object-store creation, bind them to the same config/environment isolation, and add a closure-derived completeness regression proving no required invocation falls outside the grammar.",
+      "objection_hash": "sha256:9cbcb6510e30c9621b91a2dda47ffca1e3bd9c0866ad3966c4b125e20fc12ee3",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
