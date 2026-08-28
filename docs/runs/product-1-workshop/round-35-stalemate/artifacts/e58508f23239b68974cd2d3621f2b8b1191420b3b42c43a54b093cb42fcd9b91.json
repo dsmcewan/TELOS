@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:2f36a11bb2cddd78df062db5c4ea6c7ab9ee6568573240d13b0cec1822a819c6",
+  "output_plan_artifact_hash": "sha256:2f36a11bb2cddd78df062db5c4ea6c7ab9ee6568573240d13b0cec1822a819c6",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:1ca6d78c4b15d937f903b2c47014db932141144ce99ff8812328b96bb260cb9c",
+    "provenance_key": "anthropic:a35335a1-8865-4ee7-b00a-5635038d3ae4"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:1c9ab2c886461e7675323048df6d15f51e2bd66e6d517380e10c45032c4d0d56",
+    "provenance_key": "openai:01a045d9-372d-7f13-b545-cad4f37a11eb",
+    "bound_hash": "sha256:2f36a11bb2cddd78df062db5c4ea6c7ab9ee6568573240d13b0cec1822a819c6"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "The release provenance does not necessarily bind the accepted source commit. `release.yml` runs from `main`, permits `release_commit` to be merely an ancestor of main, and builds by separately archiving that older SHA. `actions/attest-build-provenance` derives its SLSA source-repository digest from the workflow-run context, not from the separately archived checkout; if main advances, the attestation identifies the newer workflow SHA as the source while the artifact was built from the older accepted SHA. Certificate-identity pinning authenticates the workflow path/ref but does not repair that false source provenance. Require `github.sha == release_commit` before building, or generate and verify provenance whose source/material digest explicitly equals `release_commit`; add a main-ahead-of-target regression. [Example GitHub attestation fields](https://github.com/actions/attest-build-provenance/attestations/822715)",
+      "objection_hash": "sha256:42efc80706f3e9b4410168bf5cb4d43396646cd5a593e86d1c813f599b128e06",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "The ATOMIC-SLOT mechanism relies on a false GitHub Releases uniqueness property. An unpublished draft does not reserve the intended tag namespace, and GitHub permits multiple draft releases carrying the same intended tag name; a second create therefore need not return 422. Consequently, later tag-addressed `gh release view`/upload/edit/delete operations can select ambiguously and the proposed regression cannot enforce the claimed invariant. Capture the exact numeric release ID returned by creation, bind it to the accepted target and signed body, use that ID for every subsequent operation, and test with a competing same-tag draft present. [GitHub CLI duplicate-draft report](https://github.com/cli/cli/issues/9367)",
+      "objection_hash": "sha256:04c3dec974c3a03e58069c2ea76484b0d68c93244ca32b589e458b9187d4a85a",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

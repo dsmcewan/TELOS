@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach",
+        "claim": "The release provenance does not necessarily bind the accepted source commit. `release.yml` runs from `main`, permits `release_commit` to be merely an ancestor of main, and builds by separately archiving that older SHA. `actions/attest-build-provenance` derives its SLSA source-repository digest from the workflow-run context, not from the separately archived checkout; if main advances, the attestation identifies the newer workflow SHA as the source while the artifact was built from the older accepted SHA. Certificate-identity pinning authenticates the workflow path/ref but does not repair that false source provenance. Require `github.sha == release_commit` before building, or generate and verify provenance whose source/material digest explicitly equals `release_commit`; add a main-ahead-of-target regression. [Example GitHub attestation fields](https://github.com/actions/attest-build-provenance/attestations/822715)"
+      },
+      {
+        "scope": "candidate-approach",
+        "claim": "The ATOMIC-SLOT mechanism relies on a false GitHub Releases uniqueness property. An unpublished draft does not reserve the intended tag namespace, and GitHub permits multiple draft releases carrying the same intended tag name; a second create therefore need not return 422. Consequently, later tag-addressed `gh release view`/upload/edit/delete operations can select ambiguously and the proposed regression cannot enforce the claimed invariant. Capture the exact numeric release ID returned by creation, bind it to the accepted target and signed body, use that ID for every subsequent operation, and test with a competing same-tag draft present. [GitHub CLI duplicate-draft report](https://github.com/cli/cli/issues/9367)"
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a045d9-372d-7f13-b545-cad4f37a11eb",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a045d9-372d-7f13-b545-cad4f37a11eb",
+    "source": "cli-seats/codex_ask"
+  }
+}

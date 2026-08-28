@@ -1106,11 +1106,15 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   telos-authority-release environment refuses the ref (no release
   secrets; the readable public roots grant no capability), the v* tag ruleset refuses tag creation, and any
   artifact it attests fails pinned-identity verification — no trusted
-  release mutation is possible; ATOMIC-SLOT regression — the Eye-local
-  create makes tag+draft in one call, and a rogue release create for
-  that tag at ANY later moment ⇒ 422 already_exists, nothing published;
-  there is no pre-draft window to race (asserted: no ceremony step ever
-  leaves a v* tag without an occupying release); NO-WORKFLOW-PUBLISH
+  release mutation is possible; RELEASE-ID BINDING regression (drafts do NOT reserve a tag name —
+  GitHub permits multiple same-tag drafts, so tag-addressed operations
+  are ambiguous): the ceremony captures the NUMERIC RELEASE ID returned
+  at draft creation, binds it to the accepted target + signed body, and
+  performs EVERY subsequent operation (view/upload/verify/flip/delete)
+  BY ID, never by tag name; fixture: a competing same-tag draft is
+  planted and the ceremony's operations verifiably touch only the bound
+  ID (the competitor cannot publish — v* ref creation is Eye-only — and
+  is reported by the release-integrity sweep); NO-WORKFLOW-PUBLISH
   assertion — the workflow-lint oracle fails any Actions job containing
   a release create/publish/edit operation; dispatching main's
   definition with a hostile tag name as input ⇒ the gate evaluates it
@@ -1131,10 +1135,19 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   (a) the block's release_commit == the draft's target (and, once
   published, the tag ref's actual target) EXACTLY, (b) plan_ref == the
   pivoted active_plan under the trusted authority chain, (c) the target
-  is an ancestor of protected main, and (d) the v* tag ruleset is in
-  force (creation Eye-only, no update/delete) with release immutability
-  enabled — any mismatch ⇒ abort `tag-not-accepted-commit`; pubkey
-  unset ⇒ abort fail-closed. SUBSTITUTION tests: a release body reused
+  is an ancestor of protected main AND `github.sha == release_commit`
+  EXACTLY (attest-build-provenance derives its SLSA source digest from
+  the WORKFLOW-RUN context — building an older accepted SHA from a
+  newer main would attest the wrong source; the ceremony dispatches
+  while main's head IS the accepted commit, else abort
+  `workflow-source-mismatch` and re-accept after the head settles), and
+  (d) the v* tag ruleset is in force (creation Eye-only, no
+  update/delete) with release immutability enabled — any mismatch ⇒
+  abort `tag-not-accepted-commit`; pubkey unset ⇒ abort fail-closed.
+  MAIN-AHEAD regression: main advanced past release_commit at dispatch
+  ⇒ gate aborts workflow-source-mismatch before build; provenance
+  verification asserts the attested source digest EQUALS
+  release_commit. SUBSTITUTION tests: a release body reused
   for a different target ⇒ release_commit ≠ target ⇒ abort; a forged
   block without the Eye's key ⇒ eye_acceptance invalid ⇒ abort.
   Required-CI check-run asserted at the tag SHA with
@@ -1176,11 +1189,11 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   (3) PUBLISH fail-closed, DRAFT-FIRST, EYE-LOCAL (checking after public
   upload is not fail-closed — an extra or unattested asset must never be
   downloadable — and per (e) no Actions job performs any release
-  mutation): the draft already exists from the Eye-local atomic
-  tag+draft create; the trusted workflow verifies the build and uploads
+  mutation): the draft already exists from the Eye-local ID-bound
+  create (no tag ref yet); the trusted workflow verifies the build and uploads
   NOTHING to the release — it emits artifacts + attestations as
   workflow outputs; the Eye's LOCAL ceremony uploads assets to the
-  DRAFT, then runs the CLOSED ALLOWLIST check (`gh release view --json
+  DRAFT BY ITS BOUND RELEASE ID, then runs the CLOSED ALLOWLIST check (`gh release view --json
   assets` must equal the literal expected filename set EXACTLY —
   missing or EXTRA assets ⇒ fail) and `gh attestation verify` per asset
   (unattested ⇒ fail, identity pinned to release.yml@refs/heads/main);
