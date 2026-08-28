@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:783f7d17478d8a19995f6004aa5766deaf0b4a9305400d850ebd6ea59fcfc066",
+  "output_plan_artifact_hash": "sha256:783f7d17478d8a19995f6004aa5766deaf0b4a9305400d850ebd6ea59fcfc066",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:203546009b7c708de19cfba86efabbf6f7bfc5bafff0ec3459f58e1994eaadc2",
+    "provenance_key": "anthropic:eb45f9d7-eb90-4fb8-8d98-948e96ee9896"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:d075c5136d195e06ece72e20e793bbd1e4eda573d8e7d2415cfbf48d73d1a57e",
+    "provenance_key": "openai:codex-cli-mtcrfzuk",
+    "bound_hash": "sha256:783f7d17478d8a19995f6004aa5766deaf0b4a9305400d850ebd6ea59fcfc066"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "E6 specifies two contradictory authoritative qualification algorithms at candidate sha256:97cd2efc59d32c8b29ca507670fbaf70bd44e3673a6d0088dcf6ca4f3d3996ad: K=12 randomly drawn mutations/fixtures, and later exhaustive execution of every element in each closed mutation and conforming-variant domain. For domains larger than 12, the sampled path can miss a lookup-table exception and produce a run-dependent qualification verdict; for domains smaller than 12, twelve independent distinct draws may be impossible. Remove sampling from the authoritative path and require enumeration of every domain/family member; retain randomized draws only in the explicitly non-authoritative dev mode, with regressions proving domains above and below 12 cannot select the sampled interpretation.",
+      "objection_hash": "sha256:966a0d53d65170c1eff139b93f5a75d7420f7aa6eaf67f9046bf81a085b866bb",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "The immutable-release deletion recovery is internally unsatisfiable at candidate sha256:97cd2efc59d32c8b29ca507670fbaf70bd44e3673a6d0088dcf6ca4f3d3996ad. It promises byte-identical v0.3.0 artifacts under successor tag v0.3.1, but the source tarball embeds RELEASE-IDENTITY.tag/product_version=v0.3.0 and the CLI package/product-version remain 0.3.0; relabeling those bytes as v0.3.1 violates the lockstep version and artifact-identity contract, while changing them destroys byte identity and requires a new commit/build. Further, RELEASE-ACCEPTANCE signs only release_commit and plan_ref, so a supposedly fresh acceptance for the same commit cannot bind the successor tag or referenced incident. Define either a newly versioned accepted recovery commit and rebuilt artifacts, or a distinct signed recovery envelope binding retired tag, successor locator, incident id, and exact escrowed artifact digests without claiming the artifacts are v0.3.1; add a consumer-facing identity regression.",
+      "objection_hash": "sha256:7ef78222149d10d21fe245aac289d5501c841ebc807c93a06f4597eab24910ba",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "The local-single-user carve-out remains non-discriminating at candidate sha256:97cd2efc59d32c8b29ca507670fbaf70bd44e3673a6d0088dcf6ca4f3d3996ad. Enumerating the CLI's transitive import/spawn closure proves which files are reachable, not that those files cannot open a listener: an already-enumerated module can reach node:net/node:http/node:dgram through aliases, process.getBuiltinModule, dynamic property access, eval, or an allowed child command without adding an unresolved closure edge. Specify a closed listener-capability grammar that rejects every ambiguous/dynamic acquisition path and constrains spawned executables, or use an enforceable runtime boundary; require adversarial indirect-listener and spawned-helper fixtures that the oracle must reject.",
+      "objection_hash": "sha256:262f069c77cc62b17f6a3428594779b9e57eb765a70703a45df3aaaecae4c55c",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
