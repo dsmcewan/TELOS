@@ -29,7 +29,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { randomBytes } from "node:crypto";
+// (randomBytes import removed - NO ephemeral signing exists in this runner; Eye ruling 2026-08-28)
 import path from "node:path";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
