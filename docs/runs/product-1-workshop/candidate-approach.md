@@ -246,10 +246,44 @@ per-file designs are in the approved plan; acceptance criteria here.
   violating the non-delegable human-authority invariant; the §6
   `review → Eye acceptance → merge` ordering is enforced by the
   controller, not left as prose): a PR is merge-eligible only with an
-  EYE-SIGNED PRE-MERGE ACCEPTANCE whose canonical payload binds
-  (owner/repo ‖ pr_number ‖ exact head SHA ‖ current base SHA and ref ‖
-  active plan_ref), verified against EYE_AUTHORITY_PUBKEY IMMEDIATELY
-  BEFORE the PUT — a head or base moved after signing invalidates the
+  EYE-SIGNED PRE-MERGE ACCEPTANCE whose canonical payload is
+  PHASE-AWARE. AFTER Phase B it binds (owner/repo ‖ pr_number ‖ exact
+  head SHA ‖ current base SHA and ref ‖ active plan_ref). DURING the
+  PHASE A→B pre-activation window — when the active plan is v15 and
+  cannot express whitelist eligibility — it binds (owner/repo ‖
+  pr_number ‖ exact head SHA ‖ current base SHA and ref ‖ active
+  plan_ref [v15] ‖ the activation-DEFERRED successor authorization id +
+  plan_ref ‖ the content-addressed WHITELIST DIGEST ‖ the content
+  address of the IMMUTABLE SLICE DESCRIPTOR this PR implements). A
+  slice ID string alone would be claimable by any PR: each Phase-A
+  whitelist entry is a content-addressed DESCRIPTOR carrying the
+  slice's CLOSED CHANGE-SURFACE CONSTRAINTS (allowed path globs,
+  forbidden surfaces, the slice's acceptance-criteria reference),
+  written BEFORE implementation — a descriptor pins WHAT a slice may
+  touch, knowable in advance, not final head/blob digests, which are
+  not. The EYE'S SIGNED ACCEPTANCE is what binds the FINALIZED PR HEAD
+  to that exact descriptor (head SHA and descriptor address in ONE
+  signed payload — an unrelated PR cannot claim a whitelisted identity
+  without the Eye signing that specific binding). Before mutation the
+  controller VERIFIES: the deferred successor authorization is the
+  registered quest-class entry; the whitelist digest matches the
+  published whitelist; the descriptor is a member; the acceptance binds
+  THIS head to THAT descriptor; AND the PR's ACTUAL DIFF satisfies the
+  descriptor's change-surface constraints via a DETERMINISTIC
+  diff-to-descriptor predicate (every changed path matches the allowed
+  globs, no forbidden surface touched — violation ⇒ refuse
+  `slice-surface-violation`; the Phase-B activation slice is the
+  whitelist's terminal descriptor and is validated the same way).
+  PHASE-AWARE regressions: an UNLISTED PR with an otherwise-valid
+  v15-bound acceptance ⇒ REFUSED slice-not-whitelisted, no mutation; a
+  PR claiming a whitelisted descriptor whose diff exceeds that
+  descriptor's change surface ⇒ REFUSED slice-surface-violation; an
+  acceptance binding a head to a DIFFERENT descriptor than the claimed
+  entry ⇒ refused; a whitelisted-slice PR with the full tuple ⇒
+  operable; the Phase-B PR (terminal descriptor) ⇒ operable; a stale
+  phase-A-form tuple used after activation ⇒ refused (payload form must
+  match the phase on disk). Verified against EYE_AUTHORITY_PUBKEY
+  IMMEDIATELY BEFORE the PUT — a head or base moved after signing invalidates the
   acceptance (refuse `acceptance-stale`), a different repo/PR cannot
   reuse it, and replay is inert (the bound head SHA can only be merged
   once). Missing/invalid acceptance ⇒ refuse `acceptance-missing`, no
