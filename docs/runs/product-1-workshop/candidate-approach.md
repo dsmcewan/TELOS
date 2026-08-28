@@ -50,7 +50,19 @@ per-file designs are in the approved plan; acceptance criteria here.
   name), not pushes. A deterministic BRANCH PUBLISHER —
   `workflows/tools/branch-publisher.mjs`, controller-class code inside
   the protected controller closure — is the sole holder of the write
-  credential: it schema-validates the patch data, applies it in a clean
+  credential, and it NEVER SHARES AN EXECUTION SUBSTRATE WITH AGENT
+  CODE (an env-absence check proves nothing if agent code ran on the
+  same runner first — a lingering background process, a poisoned PATH
+  shim, or any shared writable state could capture the credential the
+  moment the publisher receives it): agents and the publisher run in
+  SEPARATE JOBS ON FRESH RUNNERS, connected only by a SCHEMA- AND
+  DIGEST-BOUND ARTIFACT HANDOFF (the agents' job uploads the patch
+  dossier as an artifact with its recorded sha256; the publisher's
+  fresh-runner job downloads it, re-verifies the digest, and
+  schema-validates before any credential is loaded) — no shared
+  processes, no shared toolchain, no shared credential store, and the
+  credential exists only in the publisher job's environment on a
+  runner where no agent byte has ever executed: it schema-validates the patch data, applies it in a clean
   sandbox checkout, pushes the branch, opens the PR, and returns
   `{pr_url, head_sha}`; its API surface contains NO merge operation and
   the credential never enters any agent's environment. THE PUBLISHER'S
@@ -98,7 +110,15 @@ per-file designs are in the approved plan; acceptance criteria here.
   head-sha-mismatch). The workflow's output is a MERGE REQUEST dossier,
   not a merge. **Accept (credential separation)**: publisher fixture —
   agent-produced patch data results in a pushed branch + open PR; the
-  agent environment fixture asserts NO credential variable is present;
+  agent environment fixture asserts NO credential variable is present
+  AND the job-separation fixtures prove substrate isolation: a
+  LINGERING-PROCESS attempt (agent leaves a background credential
+  sniffer) never observes the token — the publisher job runs on a
+  fresh runner where the process does not exist; a TOOLCHAIN-POISON
+  attempt (agent installs a PATH shim over git/gh) never executes —
+  the publisher's runner never ran agent bytes and its handoff is
+  digest-verified data, not tools; a tampered handoff artifact ⇒
+  digest mismatch ⇒ refused before credential load;
   a patch attempting to smuggle a merge is inert data — the publisher
   only pushes and opens PRs, and merge remains exclusively the
   controller's; MALICIOUS-WORKFLOW regression: a patch adding a

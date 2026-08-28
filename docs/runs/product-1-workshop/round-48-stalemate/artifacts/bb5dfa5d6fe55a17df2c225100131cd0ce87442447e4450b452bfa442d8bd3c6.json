@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:b7e22427f1ff5efbded067fe8884e7f94181531e7cf20bd9ee6d37acb4b1df25",
+  "output_plan_artifact_hash": "sha256:b7e22427f1ff5efbded067fe8884e7f94181531e7cf20bd9ee6d37acb4b1df25",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:ef20b4be97dd5177451bc470d1c73a6fef140649164cde703ef76543b1ce92f1",
+    "provenance_key": "anthropic:b5bc0744-a2d4-4bad-aa58-6a1fc277fa68"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:49b6e8360c06385d2f3ee9638d08096ccffef7099940573dc9523a88e03caef6",
+    "provenance_key": "openai:codex-cli-mtccj4ty",
+    "bound_hash": "sha256:b7e22427f1ff5efbded067fe8884e7f94181531e7cf20bd9ee6d37acb4b1df25"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E1/branch-publisher credential isolation",
+      "claim": "The proposed credential-separation oracle proves only that credential variables are absent from the agent environment; it does not prove the non-sandboxed agent cannot reach the publisher credential. Because the publisher is described as running in-workflow without a mandatory fresh-runner/job boundary, agent code can leave a background process, writable PATH/tool shim, or other shared-runner state that captures the credential when the publisher subsequently receives it. The stolen contents:write/pull_requests:write credential bypasses the publisher's patch, ref, and execution-surface validation even though branch rules still protect main. A clean checkout does not isolate processes or the toolchain. Require the agents and publisher to run in separate jobs on fresh runners with a schema- and digest-bound artifact handoff and no shared writable state or credential store; add regressions showing lingering-process and toolchain-poison attempts cannot observe or use the publisher token.",
+      "objection_hash": "sha256:27cd491657dd4f1bf3874abe93e165eb063840ffccc8895138255ff3939e5a50",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

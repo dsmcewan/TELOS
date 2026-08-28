@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E1/branch-publisher credential isolation",
+        "claim": "The proposed credential-separation oracle proves only that credential variables are absent from the agent environment; it does not prove the non-sandboxed agent cannot reach the publisher credential. Because the publisher is described as running in-workflow without a mandatory fresh-runner/job boundary, agent code can leave a background process, writable PATH/tool shim, or other shared-runner state that captures the credential when the publisher subsequently receives it. The stolen contents:write/pull_requests:write credential bypasses the publisher's patch, ref, and execution-surface validation even though branch rules still protect main. A clean checkout does not isolate processes or the toolchain. Require the agents and publisher to run in separate jobs on fresh runners with a schema- and digest-bound artifact handoff and no shared writable state or credential store; add regressions showing lingering-process and toolchain-poison attempts cannot observe or use the publisher token."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtccj4ty",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtccj4ty",
+    "source": "cli-seats/codex_ask"
+  }
+}
