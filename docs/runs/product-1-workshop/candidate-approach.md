@@ -456,19 +456,36 @@ per-file designs are in the approved plan; acceptance criteria here.
   consensus (the human-authority invariant is non-delegable): an
   AUTHORITY-TRANSITION RECORD — `{old_chain_root: <digest at the trusted
   prior root>, new_chain_root: <digest of the proposed chain>,
-  new_verifier_closure_digest, new_trusted_workflow_digest,
-  new_controller_closure_digest, new_trusted_verdict_closure_digest,
+  old_verifier_closure_digest, new_verifier_closure_digest,
+  old_trusted_workflow_digest, new_trusted_workflow_digest,
+  old_controller_closure_digest, new_controller_closure_digest,
+  old_trusted_verdict_closure_digest, new_trusted_verdict_closure_digest,
   covered_files: [<canonical sorted list of every authority-chain,
   verifier-closure, workflow, controller-closure, and
   verdict-producer-closure file the transition touches, each with its
-  proposed blob digest>], transition_id,
+  proposed blob digest>], transition_seq, transition_id,
   eye_authorization, council_review[]}` — where `eye_authorization` is an Ed25519 SIGNATURE
   BY THE EYE over the CANONICALIZED TUPLE (old_chain_root ‖
-  new_chain_root ‖ new_verifier_closure_digest ‖
-  new_trusted_workflow_digest ‖ new_controller_closure_digest ‖
-  new_trusted_verdict_closure_digest ‖
-  sha256(canonicalize(covered_files)) ‖ transition_id) — the signature binds EVERY protected surface the
-  transition proposes, not just the chain roots, so a valid record CANNOT
+  new_chain_root ‖ old_verifier_closure_digest ‖ new_verifier_closure_digest ‖
+  old_trusted_workflow_digest ‖ new_trusted_workflow_digest ‖
+  old_controller_closure_digest ‖ new_controller_closure_digest ‖
+  old_trusted_verdict_closure_digest ‖ new_trusted_verdict_closure_digest ‖
+  sha256(canonicalize(covered_files)) ‖ transition_seq ‖ transition_id) —
+  the signature binds EVERY protected surface the transition proposes AND
+  each surface's CURRENTLY TRUSTED PREDECESSOR digest AND a MONOTONIC
+  sequence (a record binding only the chain roots would be REPLAYABLE
+  after a later code-only transition that left the chain root unchanged,
+  restoring obsolete verifier/workflow/controller/verdict bytes): the
+  protected variable set carries `LAST_TRANSITION_SEQ`; a record verifies
+  only if transition_seq == LAST_TRANSITION_SEQ + 1 AND every old_*
+  digest equals the LIVE protected value at verification time; applying
+  the transition advances LAST_TRANSITION_SEQ (Eye ceremony) — each
+  transition is durably CONSUMED and no earlier record can ever
+  re-verify. TEMPORAL-REPLAY regression (A→B→C then replay-A): after a
+  later code-only transition changes a protected closure with the chain
+  root unchanged, resubmitting the formerly-valid earlier record with its
+  exact bytes ⇒ REFUSED BEFORE MUTATION (stale old_* digests + stale
+  seq). Not just the chain roots, so a valid record CANNOT
   be reused with substituted verifier or workflow bytes (council-ratified
   hard stop, authorization run 1: a signature covering only the chain
   roots would let a legitimate transition smuggle unauthenticated
@@ -1086,9 +1103,12 @@ A4. STAGE AM-43 in its authorized NON-WOVEN location
 A5. PRE-ACTIVATION SLICE WHITELIST: Phase A publishes a CLOSED,
     CONTENT-ADDRESSED whitelist of the exact slices permitted to
     proceed BEFORE Phase B — precisely the slices needed to reach
-    Phase B in §6 order: {freshness (the discriminating current-head
-    verifier), plugin self-containment, E2, E3, E1, E6, E4, product
-    memory dir + ADRs, naming/versions}. NO UNLISTED SLICE IS
+    Phase B in §6 order: {E1 (landed FIRST after Phase A via the
+    genesis ceremony's recorded exceptional bootstrap merge, so every
+    later merge is controller-enforced at the mutation boundary),
+    freshness (the discriminating current-head verifier), plugin
+    self-containment, E2, E3, E6, E4, product memory dir + ADRs,
+    naming/versions}. NO UNLISTED SLICE IS
     MERGE-ELIGIBLE before Phase B, and NO release, settlement, or
     production-readiness claim is permitted before activation. The
     deferred quest authorization grants NO release authority, NO
@@ -2020,9 +2040,17 @@ AM-43 staged non-woven + deviation record + the closed pre-activation
 slice whitelist — docs/registry DATA only, merged under the sitting v15
 authority, which remains the ACTIVE authority throughout the
 pre-activation window; only whitelist slices are merge-eligible before
-Phase B) → freshness (the discriminating current-head verifier —
-prerequisite for Phase B) → (plugin self-containment → E2 → E3) ∥ E1 →
-E6 → E4 → product memory dir + ADRs → naming/versions →
+Phase B) → **E1 IMMEDIATELY SECOND** (the merge controller + branch
+publisher land via the Eye-local GENESIS ceremony's recorded exceptional
+bootstrap merge — the ONLY pre-controller merge in the quest, a single
+enumerated ceremonial exception — so from this point EVERY merge is
+machine-enforced: the controller's phase-aware acceptance oracle
+validates whitelist membership at the mutation boundary for every
+subsequent slice; UNLISTED-PR regression: an unlisted PR cannot mutate
+the protected branch — refused slice-not-whitelisted before mutation) →
+freshness (the discriminating current-head verifier — prerequisite for
+Phase B) → (plugin self-containment → E2 → E3) → E6 → E4 → product
+memory dir + ADRs → naming/versions →
 **PHASE B: excluded-dirs implementation slice = ATOMIC ACTIVATION**
 (cli/ package + meta-ads hardening + the 8 pinned-surface updates incl.
 inventory.mjs, PLUS §3 B1-B7: AM-43 canonicalization, woven
