@@ -92,8 +92,15 @@ export async function askClaude(args) {
   const cliArgs = ["-p", "--output-format", "json"];
   if (args.system) cliArgs.push("--append-system-prompt", args.system);
   // model "claude" = the CLI session default (the subscription's model); an
-  // explicit real model id passes through.
-  if (args.model && args.model !== "claude") cliArgs.push("--model", args.model);
+  // explicit real model id passes through. CLI_SEAT_CLAUDE_MODEL pins the
+  // claude reviewer seat to a specific SUBSCRIPTION model (OAuth, never a
+  // metered key) — used when the session-default model is rate-limited (Eye
+  // decision 2026-08-28: Fable 5 seat limit → pin claude-sonnet-4-6 for the
+  // product-1 amendment review; recorded as a mid-review provenance change).
+  const claudeModel = args.model && args.model !== "claude"
+    ? args.model
+    : (process.env.CLI_SEAT_CLAUDE_MODEL || null);
+  if (claudeModel) cliArgs.push("--model", claudeModel);
   const { stdout } = await run("claude", cliArgs, { input: prompt });
   let envelope;
   try { envelope = JSON.parse(stdout); }
