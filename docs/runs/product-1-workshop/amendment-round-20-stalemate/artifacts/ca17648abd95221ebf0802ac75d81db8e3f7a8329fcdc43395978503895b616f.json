@@ -1,0 +1,41 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "§1 / PD-001 no-listener contract",
+        "claim": "The static closure grammar does not cover Node startup capabilities. `NODE_OPTIONS=--inspect=0.0.0.0:9229 pylae ...` or an explicit `node --inspect ...` opens a listener before any CLI code or oracle executes, so the proposed inspector-source fixture cannot establish the stated no-listener property. The supported launcher must prevent or reject inspector startup before Node initializes, or the contract must explicitly bound and test this externally imposed behavior."
+      },
+      {
+        "scope": "§1 and §4 Node-version contract",
+        "claim": "The listener-capability grammar is reviewed when the 'pinned Node version changes,' but the product admits the unbounded range `>=22.12.0`; there is no pinned version whose change triggers review. A future admitted Node release can add a listener-capable builtin or native surface absent from the closed list and still pass doctor. Qualification must reject unreviewed Node versions or bind the capability registry to an explicit tested version range."
+      },
+      {
+        "scope": "E6 oracle execution",
+        "claim": "E6 requires every `file` oracle to resolve to declarative data interpreted solely by the trusted evaluator and categorically rejects imperative modules, but later directs evidence-backed records to execute `validate-evidence-dir.mjs <dir>` as a file oracle. That is an imperative `.mjs` verdict path outside the declared single evaluator ABI. Evidence-directory validation must instead be an evaluator-native declarative predicate, or the approach must specify and qualify a single trusted adapter without permitting record-authored executable paths."
+      },
+      {
+        "scope": "§4 installation trust-root contract",
+        "claim": "The stated trust-root manifest schema contains `eye_authority_pubkey`, `authority_chain_root`, a custody statement, and `manifest_version`, yet pre-execution verification is required to pin the GitHub attestation certificate identity to `release.yml@refs/heads/main` using that manifest. No typed repository/workflow identity or issuer field is present or validation rule defined, so a valid attestation from another repository or workflow is not excluded by the specified trust-root input. The manifest and pinning oracle must bind the exact attestation identity and issuer."
+      },
+      {
+        "scope": "§4 CLI doctor contract",
+        "claim": "Full and mandatory pre-execution verification requires `gh attestation verify` and `sha256sum`, but the enumerated doctor checks cover Node, git, bwrap, environment presence, and Ed25519 only. Consequently doctor can report a usable installation that cannot perform the mandatory authenticity workflow or `verify --full`. Required external tools, supported versions, resolved identities, and capability checks must be included in doctor with fail-closed diagnostics."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtct8sst",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtct8sst",
+    "source": "cli-seats/codex_ask"
+  }
+}
