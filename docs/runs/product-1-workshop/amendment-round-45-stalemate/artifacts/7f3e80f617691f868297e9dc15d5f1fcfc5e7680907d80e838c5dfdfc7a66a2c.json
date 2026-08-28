@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:301ff1db90d2a1c485b10553ee501be2046579df3683d675f8f844c511444783",
+  "output_plan_artifact_hash": "sha256:301ff1db90d2a1c485b10553ee501be2046579df3683d675f8f844c511444783",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:96627061cc502a85a148c2269f0e776aae4a260388605606cd174b8161f4b815",
+    "provenance_key": "anthropic:b88606ee-de46-46c7-8c7a-4a22dd5389cb"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:10c424772e7ea54cfa842a2ef757839e61f42df93385f4fc95d881d3abfff306",
+    "provenance_key": "openai:codex-cli-mtd1yy71",
+    "bound_hash": "sha256:301ff1db90d2a1c485b10553ee501be2046579df3683d675f8f844c511444783"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach §1/§4 — launcher trust bootstrap",
+      "claim": "The claimed whole-tree no-listener invariant begins only after the native launcher's `_start` installs seccomp, but the plan treats a hostile same-user process as in scope for SIGUSR1 and does not close ptrace. A parent can launch PYLAE under ptrace, receive the exec stop before the first `_start` instruction, and inject listener syscalls before NO_NEW_PRIVS/seccomp exists. Static linking, a custom entrypoint, and a pre-main byte inspection do not constrain tracer-injected execution. This is an architectural pre-enforcement gap, not a residual syscall-enumeration spike. The approach must either establish confinement in an independently trusted pre-launch mechanism that cannot be traced at this boundary or explicitly narrow the signed threat model and corresponding product claim.",
+      "objection_hash": "sha256:9cd260f22ab5d33eb5605af46b675ca748eeb6694fa4b27a06665f725e154b9a",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach §1/§4 — executable mutation-point binding",
+      "claim": "The out-of-artifact bootstrap verifies the source archive and writes a receipt, but then permits the extracted `pylae` launcher to execute directly. Nothing mutation-point-binds the launcher bytes actually entered: the launcher can be replaced after receipt creation and before exec, and the substituted launcher can ignore the receipt, omit seccomp, and fabricate every later check. The sealed-memfd mechanism begins inside that launcher and therefore cannot authenticate its own already-executing bytes. This contradicts the approach's own same-path/overwrite threat model. The trusted bootstrap must itself verify, seal, and execute the launcher snapshot—or an equivalent kernel-enforced immutable execution boundary must be specified and tested.",
+      "objection_hash": "sha256:3c06bd23fdcd5e49c707ba42a93ac59f7f11a6c0c4825a7a0296928cb0b4723f",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach §1/§4 — authenticated tool-root operability",
+      "claim": "The mandatory authenticated root requires creating, formatting, mounting, and enabling fs-verity on a private loopback ext4 filesystem, but the declared external-tool grammar contains only node, git, bwrap, and gh, and the product topology does not require or provision the loop-device, mount, fs-verity tooling, or privileges normally needed for these operations. Unprivileged bwrap/user namespaces do not generally grant the CAP_SYS_ADMIN and loop-device access needed to mount ext4. Consequently the asserted clean-room `doctor`/`verify --full` success is not demonstrated by an implementable capability closure. The plan must specify a qualified privilege model and complete pinned implementation/tool closure for mkfs, loop setup, mount/remount, and FS_IOC_ENABLE_VERITY, with an end-to-end non-root or explicitly rootful platform regression.",
+      "objection_hash": "sha256:feaa0dfb1ddb794cd83dbda42e6c8b00c7822c1aa07ce763c8ef0299ee7dc719",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

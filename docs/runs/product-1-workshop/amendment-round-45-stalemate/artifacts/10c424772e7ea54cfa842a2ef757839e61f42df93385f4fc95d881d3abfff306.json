@@ -1,0 +1,33 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach §1/§4 — launcher trust bootstrap",
+        "claim": "The claimed whole-tree no-listener invariant begins only after the native launcher's `_start` installs seccomp, but the plan treats a hostile same-user process as in scope for SIGUSR1 and does not close ptrace. A parent can launch PYLAE under ptrace, receive the exec stop before the first `_start` instruction, and inject listener syscalls before NO_NEW_PRIVS/seccomp exists. Static linking, a custom entrypoint, and a pre-main byte inspection do not constrain tracer-injected execution. This is an architectural pre-enforcement gap, not a residual syscall-enumeration spike. The approach must either establish confinement in an independently trusted pre-launch mechanism that cannot be traced at this boundary or explicitly narrow the signed threat model and corresponding product claim."
+      },
+      {
+        "scope": "candidate-approach §1/§4 — executable mutation-point binding",
+        "claim": "The out-of-artifact bootstrap verifies the source archive and writes a receipt, but then permits the extracted `pylae` launcher to execute directly. Nothing mutation-point-binds the launcher bytes actually entered: the launcher can be replaced after receipt creation and before exec, and the substituted launcher can ignore the receipt, omit seccomp, and fabricate every later check. The sealed-memfd mechanism begins inside that launcher and therefore cannot authenticate its own already-executing bytes. This contradicts the approach's own same-path/overwrite threat model. The trusted bootstrap must itself verify, seal, and execute the launcher snapshot—or an equivalent kernel-enforced immutable execution boundary must be specified and tested."
+      },
+      {
+        "scope": "candidate-approach §1/§4 — authenticated tool-root operability",
+        "claim": "The mandatory authenticated root requires creating, formatting, mounting, and enabling fs-verity on a private loopback ext4 filesystem, but the declared external-tool grammar contains only node, git, bwrap, and gh, and the product topology does not require or provision the loop-device, mount, fs-verity tooling, or privileges normally needed for these operations. Unprivileged bwrap/user namespaces do not generally grant the CAP_SYS_ADMIN and loop-device access needed to mount ext4. Consequently the asserted clean-room `doctor`/`verify --full` success is not demonstrated by an implementable capability closure. The plan must specify a qualified privilege model and complete pinned implementation/tool closure for mkfs, loop setup, mount/remount, and FS_IOC_ENABLE_VERITY, with an end-to-end non-root or explicitly rootful platform regression."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtd1yy71",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtd1yy71",
+    "source": "cli-seats/codex_ask"
+  }
+}
