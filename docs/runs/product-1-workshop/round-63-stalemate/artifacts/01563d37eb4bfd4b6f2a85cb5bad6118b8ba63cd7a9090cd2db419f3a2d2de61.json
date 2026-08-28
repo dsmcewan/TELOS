@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E1-controller-ruleset-custody",
+        "claim": "The candidate imposes mutually exclusive controller requirements. E1 and §5(b2) require the merge-controller to appear in the bypass_actors list of the pure actor-restriction ruleset so it can update main, while §5(e)'s exact custody manifest requires that same controller to be “excluded from every ruleset bypass list.” Consequently either the custody/configuration oracle rejects the only operable configuration, or the server denies every controller merge. Restrict the exclusion to safety/check-enforcing rulesets and record the required pure actor-restriction membership consistently, with a regression proving the manifest accepts that exact split-ruleset configuration."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcfpicc",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcfpicc",
+    "source": "cli-seats/codex_ask"
+  }
+}

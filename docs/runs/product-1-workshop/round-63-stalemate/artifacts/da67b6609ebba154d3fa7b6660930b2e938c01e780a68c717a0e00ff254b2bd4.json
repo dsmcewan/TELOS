@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:ee039f9c0a4671d5e85992a3fd15d220b8367813b3657157cb919a8e9ed03605",
+  "output_plan_artifact_hash": "sha256:ee039f9c0a4671d5e85992a3fd15d220b8367813b3657157cb919a8e9ed03605",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:bbf0b37301935c8e14f66895b07094203f32265acc9989e4c95715689d908347",
+    "provenance_key": "anthropic:57939c21-a9cd-4dc6-9c5e-1277a1ea6dfc"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:01563d37eb4bfd4b6f2a85cb5bad6118b8ba63cd7a9090cd2db419f3a2d2de61",
+    "provenance_key": "openai:codex-cli-mtcfpicc",
+    "bound_hash": "sha256:ee039f9c0a4671d5e85992a3fd15d220b8367813b3657157cb919a8e9ed03605"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E1-controller-ruleset-custody",
+      "claim": "The candidate imposes mutually exclusive controller requirements. E1 and §5(b2) require the merge-controller to appear in the bypass_actors list of the pure actor-restriction ruleset so it can update main, while §5(e)'s exact custody manifest requires that same controller to be “excluded from every ruleset bypass list.” Consequently either the custody/configuration oracle rejects the only operable configuration, or the server denies every controller merge. Restrict the exclusion to safety/check-enforcing rulesets and record the required pure actor-restriction membership consistently, with a regression proving the manifest accepts that exact split-ruleset configuration.",
+      "objection_hash": "sha256:895ef61a3cc276c733327ca99b7d4f242aeab144e8e8b339ce7ea442df6b8f0a",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

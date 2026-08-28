@@ -1445,11 +1445,19 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   contents:write + pull_requests:write (opening a PR requires PR write;
   contents alone cannot), the controller: contents:write +
   pull_requests:write (the merge endpoint) + checks:read — and nothing
-  else (no administration, no environments, excluded from every ruleset
-  bypass list, no v* tag capability), each scope set RECORDED in the
-  manifest and VERIFIED live by the custody oracle (a
-  listed principal whose live scopes exceed the recorded bounds ⇒
-  custody-drift exactly like an unlisted writer); the manifest changes
+  else (no administration, no environments, no tag capability under the
+  all-tags ruleset; excluded from the bypass list of every SAFETY/
+  CHECK-ENFORCING ruleset — while the controller's membership in the
+  PURE ACTOR-RESTRICTION ruleset's bypass list is REQUIRED and recorded
+  in the manifest as its operability grant, consistent with §5(b2): a
+  blanket every-ruleset exclusion would make the only operable
+  configuration fail its own custody oracle), each scope set RECORDED
+  in the manifest and VERIFIED live by the custody oracle (a listed
+  principal whose live scopes exceed the recorded bounds ⇒
+  custody-drift exactly like an unlisted writer; SPLIT-CONFIG
+  regression: the manifest ACCEPTS the exact split-ruleset
+  configuration — controller in the actor-restriction bypass list,
+  absent from every safety ruleset's — and rejects any deviation); the manifest changes
   only via Eye-signed transition. Custody regressions: manifest-listed
   controller/publisher ⇒ NO drift (E1 operable); unlisted writer ⇒
   drift; listed principal with escalated live scopes ⇒ drift; (iv) the
