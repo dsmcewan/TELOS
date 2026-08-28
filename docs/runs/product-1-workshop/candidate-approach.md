@@ -962,13 +962,23 @@ merges yet itself needs a merge): the four steps above land as a
 GOVERNANCE-ONLY BOOTSTRAP SLICE — strictly DATA: docs/registry surfaces
 only (the published successor plan, authorization-summary.json, AM-43
 doc, deviation record, CURRENT-AUTHORITY registry rows) with NO code and
-NO package dirs. The AM-43 decision record lands in
-`clotho/memory/DECISIONS/` — a WOVEN git-weaver input (AM-42 beside it is
-in the committed snapshot's closure) — so the bootstrap slice CARRIES ITS
-OWN SAME-PR SELF-WEAVE REPUBLICATION per the atomic weave rule (a
-re-weave is regenerated snapshot DATA, not code, so the data-only
-property holds; "no code" refers to executable logic — the §5d check —
-which still ships later in the verifier slice). The EXECUTABLE §5d pivot check is
+NO package dirs. The AM-43 decision record lands at bootstrap in a NON-WOVEN staging
+home (`telos/AMENDMENTS/AM-43.md`, content-addressed, sha-cited by the
+authorization records) — NOT yet in `clotho/memory/DECISIONS/` (that
+dir is a woven git-weaver input, and at the bootstrap head the only
+available committed-weave verifier is the KNOWN-NONDISCRIMINATING
+pre-fix one that checks the recorded input head, not the current
+checkout — a woven-input change verified by it could pivot authority
+over a stale snapshot; the frozen blocker itself forbids trusting it):
+the bootstrap therefore touches NO woven input, needs NO re-weave, and
+the existing verifier's green is honest (historical intactness of an
+unchanged closure). The EXCLUDED-DIRS IMPLEMENTATION SLICE — which per
+§6 lands AFTER the freshness slice ships the current-head
+discriminating verifier — canonicalizes AM-43 into
+`clotho/memory/DECISIONS/` (byte-identical move, sha unchanged) with
+its same-PR re-weave under the now-enforced verifier, alongside the
+activation flip. "No code" continues to hold — the §5d check still
+ships later in the verifier slice. The EXECUTABLE §5d pivot check is
 NOT in the bootstrap (it is code): it ships in the later
 verifier-hardening slice (E6/§3c work, already ordered after the
 bootstrap) and validates the then-existing pivot state; until it lands,
@@ -1523,9 +1533,14 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   so nothing can mutate the draft between verification and flip;
   (4) POST-PUBLISH re-verification asserts
   allowlist+digests+attestations against the now-immutable release;
-  (5) only after (4) passes are the installations UNSUSPENDED and
-  Actions re-enabled (rotation instead of unsuspension if any anomaly
-  was observed). FROZEN-INTERVAL regression: a
+  (5) after (4) passes, Actions is re-enabled and the installations
+  REMAIN SUSPENDED — the default-suspended posture is the ceremony's
+  END STATE, asserted by re-reading suspended_at for both installations
+  as the final ceremony step (an unsuspended installation at close ⇒
+  ceremony fails custody-close and the Eye re-suspends/rotates before
+  the run is recorded complete); they are next unsuspended only by a
+  future ceremony's dispatch wrapper (rotation instead of retention if
+  any anomaly was observed). FROZEN-INTERVAL regression: a
   mutation attempted on the bound release ID after the last pre-flip
   check (stub: workflow dispatch and API mutation during the interval)
   ⇒ platform-refused (Actions disabled, no live credential) and any
@@ -1770,10 +1785,12 @@ pins are affected) IN THE SAME PR, so every merged head passes
 such per-change re-weaves). Slices touching only non-woven surfaces
 (docs/runs/clotho-self-weave/run.mjs, workflows/, .github/, flagship+demo exclude-listed trees, new
 excluded package dirs) ride without one — each slice's PR body states which
-case applies and why. The naming/versions slice, the excluded-dirs
-implementation slice, and the GOVERNANCE BOOTSTRAP slice (its AM-43
-record is a woven memory input) are therefore each ATOMIC — the
-touched-woven-input edit plus its re-weave in one PR. The
+case applies and why. The naming/versions slice and the excluded-dirs
+implementation slice (which also canonicalizes AM-43 into the woven
+memory dir) are therefore each ATOMIC — the touched-woven-input edit
+plus its re-weave in one PR; the GOVERNANCE BOOTSTRAP slice touches NO
+woven input (AM-43 stages in the non-woven telos/AMENDMENTS home per
+§3) and needs no re-weave. The
 **train-end re-weave** remains as the FINAL capture at the qualified head
 (full self-weave republication + lachesis pins + flagship live-graph +
 expected-flagship regen + Eye re-audit + any residual woven-doc edits).

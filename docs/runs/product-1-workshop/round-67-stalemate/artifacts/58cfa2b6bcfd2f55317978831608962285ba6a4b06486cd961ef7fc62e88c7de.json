@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:4d52b0f289e982e5ac680644bcdc4cfb59f4435352cff1cf1c3a4c7edef99ece",
+  "output_plan_artifact_hash": "sha256:4d52b0f289e982e5ac680644bcdc4cfb59f4435352cff1cf1c3a4c7edef99ece",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:450b9e06370afd0c77157e9576f1a5bb6fd03bb195197c178f7cdf5295356687",
+    "provenance_key": "anthropic:382968c5-365b-4434-ac8a-e5b4529f4bda"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:96a9d43aa429d960a20597f17c0516da2e0f4e5b0ab5f1265005f5e5e665b5ff",
+    "provenance_key": "openai:codex-cli-mtcgkddn",
+    "bound_hash": "sha256:4d52b0f289e982e5ac680644bcdc4cfb59f4435352cff1cf1c3a4c7edef99ece"
+  },
+  "objections": [
+    {
+      "scope": "candidate:governance-bootstrap-freshness",
+      "claim": "The mandatory first governance bootstrap relies on the known-nondiscriminating committed-weave verifier. It changes a woven input (AM-43), republishes the weave, and accepts a green existing `--verify-committed`, but the frozen blocker establishes that this verifier checks the recorded input head rather than the current checkout. The actual freshness repair ships only afterward, while the bootstrap is expressly data-only. A stale snapshot can therefore pass the bootstrap oracle and become part of the authority pivot. Council and ledger records do not independently re-derive current-head weave freshness. The bootstrap needs a reviewed current-head discriminating verifier before merge, or must avoid woven-input changes until the freshness enforcement exists.",
+      "objection_hash": "sha256:ed39938bea0c04b80cb259fcff990ea4000e142b36fea2a5d579dd14f098f4a5",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:release-app-suspension",
+      "claim": "The release ceremony contradicts its machine-App custody invariant. Section 5(e) requires the controller and publisher installations to remain suspended outside Eye-initiated windows, but frozen-interval step (5) explicitly leaves both installations UNSUSPENDED after post-publication verification and states no final re-suspension or suspended-state assertion before the ceremony closes. Because the candidate itself acknowledges that either contents:write installation can delete even an immutable release, this leaves v0.3.0 and the historical placeholder releases destructively reachable; a later custody-drift sweep is detection and recovery, not fail-closed prevention. The ceremony must end with both installations platform-suspended and verify that final state.",
+      "objection_hash": "sha256:da7145fbce86b8bcb83c2938cdb3680266984eb706b0652d43fefe54d77105d2",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
