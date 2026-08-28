@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:b99381f2cb15a68126cd4208b2fa412dcad7772fa0c74d4a8ef324880f0bb817",
+  "output_plan_artifact_hash": "sha256:b99381f2cb15a68126cd4208b2fa412dcad7772fa0c74d4a8ef324880f0bb817",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:5b6fed9d82754afadadc0103a44689a19f1cf5f75b2082d1eb4d2d64af573c5d",
+    "provenance_key": "anthropic:e1749dcc-1ba6-4569-b249-ef14b65f3821"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:beb8481192da603f1cb7af3737d71ebf87e6a6a5100eddce4b9f9f111733abd1",
+    "provenance_key": "openai:codex-cli-mtce8t02",
+    "bound_hash": "sha256:b99381f2cb15a68126cd4208b2fa412dcad7772fa0c74d4a8ef324880f0bb817"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E1-same-run-drift",
+      "claim": "At candidate sha256:b99381f2cb15a68126cd4208b2fa412dcad7772fa0c74d4a8ef324880f0bb817, the added post-merge re-enumeration does not close the same-run race. A custody, App-permission, deploy-key, membership, or environment-policy change after attestation issuance can invalidate eligibility before the merge PUT, yet the controller still mutates protected main. Detecting the drift afterward and opening a revert PR is quarantine/recovery, not fail-closed pre-merge enforcement; the unauthorized merge and any resulting effects have already occurred, and the revert itself awaits another merge. Require a platform-enforced interval preventing every attested surface from changing through the mutation, or an atomic/serialized privileged revalidation-and-merge mechanism. The regression must prove each between-attestation-and-PUT mutation prevents the original merge, not merely that post-run detection fires.",
+      "objection_hash": "sha256:36b04d73cd573545ba74cbf9f8f190b74a1c29bdf92b614992408bf3df8963c5",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

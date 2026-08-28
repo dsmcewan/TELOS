@@ -247,19 +247,23 @@ per-file designs are in the approved plan; acceptance criteria here.
   values catches root replacement) — refusing
   `config-attestation-stale` on any drift, expiry, or mismatch;
   missing/invalid attestation ⇒ refuse `config-attestation-missing`.
-  SAME-RUN DRIFT IS CLOSED BY SOLE-ADMIN CUSTODY + POST-RUN
-  RE-ENUMERATION (the drift surfaces — collaborators, App permissions,
-  deploy keys, environment policy — are ADMIN-only mutations, and the
-  custody manifest proves the Eye is the ONLY admin; the Eye running
-  the ceremony performs no settings mutations mid-run as a recorded
-  ceremony invariant, and that invariant is MACHINE-CHECKED rather than
-  trusted: immediately after the merge mutation, the attestor RE-RUNS
-  the full enumeration and asserts ZERO drift occurred during the run —
-  any observed same-run drift ⇒ the merge is treated as compromised:
-  automatic quarantine (revert PR opened, incident record, pipeline
-  halted) rather than silent acceptance). SAME-RUN drift fixtures: each
-  surface mutated between issuance and the merge PUT (stub) ⇒ the
-  post-run re-enumeration detects it and the quarantine path fires.
+  SAME-RUN DRIFT IS CLOSED PRE-MERGE BY SERIALIZED
+  REVALIDATE-THEN-MERGE (detection-plus-revert would be recovery, not
+  fail-closed — the unauthorized merge must never happen): the attestor
+  and controller execute as ONE SERIALIZED Eye-local ceremony holding a
+  ceremony lock — (1) attestor issues the run-bound attestation, (2)
+  controller derives eligibility and STOPS before mutating, (3) the
+  PRIVILEGED attestor performs a FINAL FULL RE-ENUMERATION of every
+  attested surface and only on zero-drift issues a single-use GO
+  SIGNAL, (4) the controller PUTs immediately upon the signal. Nothing
+  can interleave between (3) and (4): the drift surfaces are admin-only
+  and the sole admin IS the serialized process's owner (custody-proven)
+  — any drift observable at (3) ⇒ the merge is REFUSED
+  (`config-drift-pre-merge`), never performed; the post-run
+  re-enumeration remains as defense-in-depth only. SAME-RUN drift
+  fixtures: each surface mutated between attestation issuance and the
+  PUT (stub) ⇒ step (3) catches it and the ORIGINAL MERGE IS PREVENTED
+  (asserted: no mutation occurred), not merely detected afterward.
   The attestation requires strict up-to-dateness in effect, and
   requires the authenticated
   principal (user or app installation) to be ABSENT from the

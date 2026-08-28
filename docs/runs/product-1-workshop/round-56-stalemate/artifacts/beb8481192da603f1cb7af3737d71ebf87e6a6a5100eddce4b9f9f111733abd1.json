@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E1-same-run-drift",
+        "claim": "At candidate sha256:b99381f2cb15a68126cd4208b2fa412dcad7772fa0c74d4a8ef324880f0bb817, the added post-merge re-enumeration does not close the same-run race. A custody, App-permission, deploy-key, membership, or environment-policy change after attestation issuance can invalidate eligibility before the merge PUT, yet the controller still mutates protected main. Detecting the drift afterward and opening a revert PR is quarantine/recovery, not fail-closed pre-merge enforcement; the unauthorized merge and any resulting effects have already occurred, and the revert itself awaits another merge. Require a platform-enforced interval preventing every attested surface from changing through the mutation, or an atomic/serialized privileged revalidation-and-merge mechanism. The regression must prove each between-attestation-and-PUT mutation prevents the original merge, not merely that post-run detection fires."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtce8t02",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtce8t02",
+    "source": "cli-seats/codex_ask"
+  }
+}
