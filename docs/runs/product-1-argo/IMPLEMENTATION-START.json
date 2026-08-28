@@ -1,0 +1,18 @@
+{
+  "record": "product-1 AMENDMENT-1 — implementation_start_head derivation + clean-delta preflight (Eye S3 grant condition)",
+  "date": "2026-08-28",
+  "grant": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-s3-grant-amendment-1.json",
+  "authorized_plan_ref": "sha256:41a1e8b6dddc12da502db305e7044570f121784903e4183cf17a03a2ca100ef7",
+  "reviewed_head": "915e12ff14203345ac8af1ae3b57624af705a2e0",
+  "implementation_start_head": "4b6b0ef8b285e2a20451f34d0772448b8efe5928",
+  "implementation_start_head_note": "The S3-grant issuance commit. Argo's Phase-A governance-bootstrap slice branches from THIS commit. Plan_ref recomputes to the authorized value at reviewed_head, unchanged through start_head.",
+  "delta_reviewed_head_to_start_head": {
+    "verified": "CLEAN — deterministically checked: every changed path is a post-review AUTHORIZATION, GOVERNANCE, or EVIDENCE artifact; NO plan/implementation/dependency/configuration/execution-surface change.",
+    "plan_byte_identical": true,
+    "product_impl_trees_byte_identical": "cli/, connectors/, build-gate/, merkle-dag/, clotho/, narcissus/, all package.json, .github/ — no change",
+    "runner_change": "run-product-authorization.mjs: single-line REVIEWED_HEAD pointer update (0da6f4b -> 915e12f); no logic/execution-surface change",
+    "changed_paths": ["docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-s3-grant-amendment-1.json", "docs/runs/product-authorization-1/agy.json", "docs/runs/product-authorization-1/authorization-summary.json", "docs/runs/product-authorization-1/claude.json", "docs/runs/product-authorization-1/codex.json", "docs/runs/product-authorization-1/gemini.json", "docs/runs/product-authorization-1/grok.json", "docs/runs/product-authorization-1/run-12-amendment-r46-authorized/agy.json", "docs/runs/product-authorization-1/run-12-amendment-r46-authorized/authorization-summary.json", "docs/runs/product-authorization-1/run-12-amendment-r46-authorized/claude.json", "docs/runs/product-authorization-1/run-12-amendment-r46-authorized/codex.json", "docs/runs/product-authorization-1/run-12-amendment-r46-authorized/gemini.json", "docs/runs/product-authorization-1/run-12-amendment-r46-authorized/grok.json", "docs/runs/product-authorization-1/run-product-authorization.mjs"]
+  },
+  "grant_invalidation_rule": "Any unreviewed plan/implementation/dependency/configuration/execution-surface change in this delta (or introduced before a slice's first implementation commit) invalidates the grant and requires a new plan_ref + reauthorization.",
+  "next": "Argo Phase A: comprehension gates re-confirmed against the amended plan, then the data-only governance-bootstrap slice (activation-deferred; CURRENT-AUTHORITY/active_plan/active_authorization untouched), branched from implementation_start_head, brought to the Eye for per-slice acceptance. Phase B (atomic activation) only after the discriminating verifier lands."
+}
