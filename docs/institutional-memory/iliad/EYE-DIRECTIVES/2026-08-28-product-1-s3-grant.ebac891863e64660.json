@@ -1,0 +1,31 @@
+{
+  "bound_to": {
+    "durable_s2_authorization": {
+      "committed_at": "b0cafa9073f6a7401ec6b9ec88df3616b8bc0f84",
+      "id": "authz-product-1"
+    },
+    "plan_ref": "sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6",
+    "reviewed_plan_commit": "97becd37ba2e99055f13c97ad6780eb06c8d0e34",
+    "six_rulings": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-six-rulings-final.md"
+  },
+  "conditions": [
+    "1. S4 begins with the applicable Iliad, TELOS, and Argo comprehension gates. No implementation begins unless the comprehension artifact passes deterministically.",
+    "2. The governance-bootstrap slice is implemented first. CURRENT-AUTHORITY and implementation-authority records may change only through the exact authorized successor-plan transition defined by the matured plan.",
+    "3. Implementation proceeds as bounded PR slices in the authorized sequence. No unplanned scope may be absorbed as implementation detail.",
+    "4. Every slice must pass its deterministic acceptance criteria, required CI, required-seat implementation review, and separate Eye acceptance before merge. This S3 grant does not substitute for per-slice Eye acceptance.",
+    "5. SPIKE-E6-EVALUATOR-FORM is ratified as a bounded Argo spike. The oracle-hardening slice may not merge until the concrete constrained declarative grammar, trusted evaluator, and adversarial conformance tests prove that lookup-table and imperative escape behavior are structurally unavailable. The interim source review and deterministic battery remain compensating controls only and must not be represented as proof of semantic soundness.",
+    "6. Any change to the plan bytes, plan_ref, product boundary, supported topology, authority semantics, or governing acceptance criteria invalidates this grant and must return through Daedalus maturation, TELOS authorization, and a new Eye grant.",
+    "7. Any implementation discovery showing that an authorized invariant is infeasible, unsound, or unfalsifiable must stop the affected slice and route back through governance. Argo may not silently reinterpret the plan.",
+    "8. Failed, blocked, superseded, or abandoned slices remain durable evidence and may not disappear from the implementation lineage.",
+    "9. No release occurs until the exact qualified and Eye-accepted commit passes the authorized release ceremony, evidence verification, and applicable production-readiness gates. This implementation grant is not a GA or production-ready declaration.",
+    "10. Record this S3 grant as a content-addressed Eye authority artifact bound to the exact plan_ref, reviewed commit, durable S2 authorization, and these conditions. Then begin S4 with the comprehension gate."
+  ],
+  "content_address_of_body": "sha256:ebac891863e646602947c5b96df86ac67e048d19eff9fb84b3d73d40e8c7c32a",
+  "granted": "2026-08-28",
+  "granted_by": "The Eye (operator; recorded verbatim)",
+  "kind": "eye-implementation-authority-grant",
+  "quest": "product-1",
+  "scope": "Implementation of the exact approved plan only. Does NOT grant autonomous acceptance, merge authority, release authority, or permission to declare production readiness.",
+  "standing_instruction": "Proceed under this authority without re-asking the six resolved rulings unless the matured plan changes.",
+  "statement": "I GRANT S3 IMPLEMENTATION AUTHORITY."
+}

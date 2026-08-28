@@ -102,5 +102,15 @@
     "auditor-exceptionless": "RESOLVED (Eye 2026-08-28 final): auditor exceptionless; the two nonconforming legacy records superseded via ordinary content-addressed authority records; no allowlist.",
     "package-name-fallback": "RESOLVED (Eye 2026-08-28 final): explicitly non-blocking this round; deferred until the package-publication decision requires it.",
     "all_six_final": "ALL SIX open authority questions resolved for this round per EYE-DIRECTIVES/2026-08-28-product-1-six-rulings-final.md; do not re-ask unless the matured plan changes."
+  },
+  "s3_implementation_authority": {
+    "status": "GRANTED",
+    "granted": "2026-08-28",
+    "artifact": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-s3-grant.ebac891863e64660.json",
+    "content_address": "sha256:ebac891863e646602947c5b96df86ac67e048d19eff9fb84b3d73d40e8c7c32a",
+    "plan_ref": "sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6",
+    "reviewed_plan_commit": "97becd37ba2e99055f13c97ad6780eb06c8d0e34",
+    "durable_s2": "authz-product-1 @ b0cafa9073f6a7401ec6b9ec88df3616b8bc0f84",
+    "note": "10 conditions; per-slice Eye acceptance still required; no release/GA authority."
   }
 }
