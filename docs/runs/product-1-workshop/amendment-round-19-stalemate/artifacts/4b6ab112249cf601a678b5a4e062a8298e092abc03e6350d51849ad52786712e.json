@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach/E6",
+        "claim": "E6 defines two incompatible oracle contracts. Its main specification permits author-supplied `file` or `npm-script` pure entrypoints `(input_snapshot) -> verdict` and claims exhaustive finite mutation/positive domains prove semantic discrimination. Section 6b correctly admits that such an author-known finite battery is defeated by a lookup-table oracle and instead requires a constrained declarative language or trusted reference evaluator. Purity and ABI isolation do not reject that lookup table. Until the operative E6 specification removes imperative author-supplied verdict functions, makes declarations data interpreted solely by the trusted declarative evaluator, and orders evaluator qualification before oracle backfill/enrollment, governance correction (d) remains unresolved; this is an internal contradiction, not merely the ratified choice of evaluator implementation form."
+      },
+      {
+        "scope": "candidate-approach/check-run-authentication",
+        "claim": "The merge controller authenticates a required check using the GitHub Actions app plus membership of the run's workflow blob in the generally trusted workflow set, but never binds each required context to its specifically authorized workflow path/ref and job identity. A different trusted workflow can therefore emit a green same-name job at the evaluated SHA and be selected despite not implementing the required invariant; recording its run ID only records the wrongly selected evidence. The same deficient rule is reused by readiness and release gates. Add a protected, transition-bound one-to-one mapping from each required context to the expected workflow path at `refs/heads/main`, job identity, and workflow digest, and reject missing, duplicate, or mismatched producers."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtct2z5d",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtct2z5d",
+    "source": "cli-seats/codex_ask"
+  }
+}
