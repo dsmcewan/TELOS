@@ -110,38 +110,67 @@ export async function askClaude(args) {
 export async function askGrok(args) {
   if (typeof args?.prompt !== "string" || !args.prompt) throw new Error("prompt required");
   const sys = args.system ? `SYSTEM CONTEXT (governs your role):\n${args.system}\n\n` : "";
-  const prompt = sys + args.prompt + schemaInstruction(args.response_schema, args.schema_name);
+  const prompt = "Do not use any tools; answer only from the provided text.\n\n" +
+    sys + args.prompt + schemaInstruction(args.response_schema, args.schema_name);
   const model = args.model && args.model !== "grok" ? args.model : (process.env.CLI_SEAT_GROK_MODEL || "grok-4.5");
-  // No hard turn cap: with the large council prompts grok may spend turns on
-  // tool-less reasoning; "--max-turns 1" starved it into "max turns reached"
-  // (authorization run 1). Tools are suppressed by instruction instead.
-  const cliArgs = ["-p", "Do not use any tools; answer only from the provided text.\n\n" + prompt, "--output-format", "json", "-m", model, "--verbatim", "--max-turns", "6", "--disable-web-search"];
-  const { stdout } = await run("grok", cliArgs);
-  let envelope;
-  try { envelope = JSON.parse(stdout); }
-  catch { throw new Error(`grok CLI returned non-JSON envelope: ${stdout.slice(0, 300)}`); }
-  const raw = typeof envelope.text === "string" ? envelope.text : JSON.stringify(envelope.text ?? "");
-  const text = args.response_schema ? extractJsonObject(raw) : raw;
-  const used = envelope.modelUsage ? Object.keys(envelope.modelUsage)[0] : model;
-  return { text, model: used, id: envelope.requestId || envelope.sessionId || `grok-cli-${Date.now().toString(36)}` };
+  // Large council prompts exceed ARG_MAX as an argv (spawn E2BIG, authz run 3) —
+  // pass the prompt via a BOUNDED TEMP FILE using grok's --prompt-file (Eye ruling
+  // 2026-08-28: fix the E2BIG transport). Tools suppressed by instruction.
+  const outDir = mkdtempSync(path.join(tmpdir(), "cli-seat-grok-"));
+  const promptFile = path.join(outDir, "prompt.txt");
+  writeFileSync(promptFile, prompt);
+  try {
+    const cliArgs = ["--prompt-file", promptFile, "--output-format", "json", "-m", model, "--verbatim", "--max-turns", "6", "--disable-web-search"];
+    const { stdout } = await run("grok", cliArgs);
+    let envelope;
+    try { envelope = JSON.parse(stdout); }
+    catch { throw new Error(`grok CLI returned non-JSON envelope: ${stdout.slice(0, 300)}`); }
+    const raw = typeof envelope.text === "string" ? envelope.text : JSON.stringify(envelope.text ?? "");
+    const text = args.response_schema ? extractJsonObject(raw) : raw;
+    const used = envelope.modelUsage ? Object.keys(envelope.modelUsage)[0] : model;
+    return { text, model: used, id: envelope.requestId || envelope.sessionId || `grok-cli-${Date.now().toString(36)}` };
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
 }
 
-// gemini -> the Antigravity CLI (`agy`, Google OAuth via OS keyring), print mode.
-// Envelope: {conversation_id, status, response, ...}; response may be fenced.
+// gemini -> the Antigravity CLI (`agy`, Google OAuth via OS keyring). Large prompts
+// exceed ARG_MAX as an argv (spawn E2BIG) AND agy silently caps stream-json content
+// at ~64KB. So the review PACKAGE (system + objective + full plan) is written to a
+// file in a SCOPED temp workspace, and agy is instructed to read it via view_file —
+// the small -p instruction fits argv, and agy reads the full 142KB from disk
+// (Eye ruling 2026-08-28: fix the E2BIG transport; verified agy reads a 2082-line
+// plan this way). File access is scoped to the temp dir via --add-dir; permissions
+// auto-allowed in print mode via --dangerously-skip-permissions (advisory seat,
+// sandboxed to the temp workspace).
 export async function askGemini(args) {
   if (typeof args?.prompt !== "string" || !args.prompt) throw new Error("prompt required");
   const sys = args.system ? `SYSTEM CONTEXT (governs your role):\n${args.system}\n\n` : "";
-  const prompt = sys + args.prompt + schemaInstruction(args.response_schema, args.schema_name);
+  const pkg = sys + args.prompt; // full review package (objective + plan)
   const model = args.model && args.model !== "gemini" ? args.model : (process.env.CLI_SEAT_GEMINI_MODEL || "gemini-3.1-pro-high");
-  const cliArgs = ["-p", prompt, "--model", model, "--output-format", "json", "--disable-slash-commands", "--print-timeout", "25m"];
-  const { stdout } = await run("agy", cliArgs);
-  let envelope;
-  try { envelope = JSON.parse(stdout); }
-  catch { throw new Error(`agy CLI returned non-JSON envelope: ${stdout.slice(0, 300)}`); }
-  if (envelope.status && envelope.status !== "SUCCESS") throw new Error(`agy CLI status ${envelope.status}`);
-  const raw = typeof envelope.response === "string" ? envelope.response : JSON.stringify(envelope.response ?? "");
-  const text = args.response_schema ? extractJsonObject(raw) : raw;
-  return { text, model, id: envelope.conversation_id || `agy-cli-${Date.now().toString(36)}` };
+  const outDir = mkdtempSync(path.join(tmpdir(), "cli-seat-gemini-"));
+  const pkgFile = path.join(outDir, "review-package.md");
+  writeFileSync(pkgFile, pkg);
+  const instruction =
+    `Use the view_file tool to read the ENTIRE file ./review-package.md in this directory. ` +
+    `It is your complete review package (role, objective, and the full plan under authorization). ` +
+    `Read all of it, then respond.` +
+    schemaInstruction(args.response_schema, args.schema_name) +
+    `\nDo not use any tool other than view_file.`;
+  try {
+    const cliArgs = [`-p=${instruction}`, "--model", model, "--output-format", "json",
+      "--disable-slash-commands", "--dangerously-skip-permissions", "--add-dir", outDir, "--print-timeout", "25m"];
+    const { stdout } = await run("agy", cliArgs);
+    let envelope;
+    try { envelope = JSON.parse(stdout); }
+    catch { throw new Error(`agy CLI returned non-JSON envelope: ${stdout.slice(0, 300)}`); }
+    if (envelope.status && envelope.status !== "SUCCESS") throw new Error(`agy CLI status ${envelope.status}: ${String(envelope.error).slice(0,200)}`);
+    const raw = typeof envelope.response === "string" ? envelope.response : JSON.stringify(envelope.response ?? "");
+    const text = args.response_schema ? extractJsonObject(raw) : raw;
+    return { text, model, id: envelope.conversation_id || `agy-cli-${Date.now().toString(36)}` };
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
 }
 
 export async function askCodex(args) {

@@ -46,7 +46,7 @@ const { askClaude, askCodex, askGrok, askGemini } = await imp("docs/institutiona
 const PLAN_PATH = "docs/runs/product-1-workshop/matured-approach.md";
 const PREREVIEW_PATH = "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json";
 const EXPECTED_PLAN_REF = "sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6";
-const REVIEWED_HEAD = "97becd3"; // matured-approach.md committed head — Daedalus CONVERGED (Eye-authority, round 82); spikes+open-questions carried forward
+const REVIEWED_HEAD = "97becd37ba2e99055f13c97ad6780eb06c8d0e34"; // full 40-char head — Daedalus CONVERGED (Eye-authority, round 82); durable-signature rerun per Eye ruling 2026-08-28
 
 const planText = readFileSync(path.join(ROOT, PLAN_PATH), "utf8");
 const planRef = "sha256:" + sha256hex(canonicalize({ kind: "candidate", plan: planText }));
@@ -55,12 +55,31 @@ if (planRef !== EXPECTED_PLAN_REF) {
   process.exit(1);
 }
 
-// ---------- signing secrets: real registry values when present, else ephemeral ----------
-const EPHEMERAL_SIGNERS = [];
-for (const m of ["CLAUDE", "AGY", "CODEX"]) {
-  if (!process.env[`TELOS_SECRET_${m}`]) {
-    process.env[`TELOS_SECRET_${m}`] = randomBytes(24).toString("hex");
-    EPHEMERAL_SIGNERS.push(m.toLowerCase());
+// ---------- signing secrets: DURABLE, operator-provisioned, FAIL-CLOSED ----------
+// Eye ruling 2026-08-28 (EYE-DIRECTIVES/2026-08-28-product-1-s3-hold-and-rulings.md):
+// NO ephemeral randomBytes fallback. Every required signer secret MUST be present
+// (operator-provisioned, durable, under recorded custody) BEFORE any seat call;
+// absence is fatal. Record stable key identifiers (a non-secret HMAC-derived
+// fingerprint) WITHOUT exposing the secret. ephemeral_signers MUST equal [].
+const EPHEMERAL_SIGNERS = []; // stays empty by construction; asserted below
+const REQUIRED_SIGNERS = ["CLAUDE", "AGY", "CODEX"];
+const SIGNER_CUSTODY = process.env.TELOS_SIGNER_CUSTODY || "(operator env; custody path unrecorded)";
+const SIGNER_KEY_IDS = {};
+{
+  const missing = REQUIRED_SIGNERS.filter((m) => !process.env[`TELOS_SECRET_${m}`]);
+  if (missing.length) {
+    console.error(
+      `FATAL: durable signer secret(s) absent: ${missing.map((m) => `TELOS_SECRET_${m}`).join(", ")}. ` +
+      `Provision operator-durable secrets under recorded custody and re-run. NO ephemeral fallback (Eye ruling 2026-08-28). No seat call made.`
+    );
+    process.exit(1);
+  }
+  // Stable, non-secret key id: HMAC(secret, "telos-signer-kid") first 16 hex.
+  // Reveals nothing about the secret but is stable across runs for the same key.
+  const { createHmac } = await import("node:crypto");
+  for (const m of REQUIRED_SIGNERS) {
+    SIGNER_KEY_IDS[m.toLowerCase()] =
+      "kid:" + createHmac("sha256", process.env[`TELOS_SECRET_${m}`]).update("telos-signer-kid").digest("hex").slice(0, 16);
   }
 }
 
@@ -231,6 +250,9 @@ try {
     timestamp: TIMESTAMP,
     trust_mode: "signed",
     ephemeral_signers: EPHEMERAL_SIGNERS,
+    durable_signing: true,
+    signer_key_ids: SIGNER_KEY_IDS,
+    signer_custody: SIGNER_CUSTODY,
     seats: []
   };
   const packetsForGate = [];
@@ -256,9 +278,27 @@ try {
   };
 
   const requiredSeats = seats.filter((s) => s.role === "approver").map((s) => s.model);
-  const approvals = summary.seats.filter((s) => requiredSeats.includes(s.model) && s.ok && s.decision === "approve");
+  // Durable-signature acceptance criteria (Eye ruling): every required approver signed with a
+  // real (non-null) provenance response_id, approves, and the packet carries empty required_edits/hard_stops.
+  const durableApprovals = summary.seats.filter((s) =>
+    requiredSeats.includes(s.model) && s.ok && s.signed === true && s.decision === "approve"
+    && s.provenance && s.provenance.response_id
+  );
+  const packetClean = packetsForGate.every((p) =>
+    !requiredSeats.includes(p.model) ? true :
+    (Array.isArray(p.required_edits) && p.required_edits.length === 0 &&
+     Array.isArray(p.hard_stops) && p.hard_stops.length === 0)
+  );
   const gatePassed = gate.gate_status === "pass";
-  summary.authorized = gatePassed && approvals.length === requiredSeats.length;
+  const ephemeralClean = Array.isArray(EPHEMERAL_SIGNERS) && EPHEMERAL_SIGNERS.length === 0;
+  summary.durable_checks = {
+    ephemeral_signers_empty: ephemeralClean,
+    all_required_signed_durable: durableApprovals.length === requiredSeats.length,
+    all_required_packets_clean: packetClean,
+    reviewed_head_full: typeof REVIEWED_HEAD === "string" && REVIEWED_HEAD.length === 40
+  };
+  summary.authorized = gatePassed && durableApprovals.length === requiredSeats.length
+    && ephemeralClean && packetClean && summary.durable_checks.reviewed_head_full;
   summary.authorization = summary.authorized
     ? { status: "AUTHORIZED", id: "authz-product-1", plan_ref: planRef, note: "Argo implementation of the product-1 matured plan is authorized by the signed council under the TELOS gate; this run is also the Option-A re-authorization naming the AM-42 regularization + AM-43 exclusions. The Eye's implementation-authority confirmation (plan §3 step 4) remains a separate, subsequent grant." }
     : { status: "NOT_AUTHORIZED", note: "Fail-closed: see gate.blockers and seat decisions." };

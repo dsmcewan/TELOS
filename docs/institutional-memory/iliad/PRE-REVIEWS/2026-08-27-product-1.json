@@ -92,5 +92,11 @@
         "provenance": "The Eye, in-session directive ('all model calls should be OAuth')."
       }
     ]
+  },
+  "eye_resolutions_2026-08-28": {
+    "AM-42/AM-43": "RESOLVED (Eye 2026-08-28): Option A \u2014 combined live re-authorization ceremony regularizes AM-42 + authorizes AM-43 exclusions (cli/, connectors/meta-ads-mcp/), bound to plan_ref bb2ea18f at 97becd37ba2e99055f13c97ad6780eb06c8d0e34.",
+    "draft-docs": "RESOLVED (Eye 2026-08-28): reconcile-and-supersede \u2014 NORMATIVE-CURRENT successors for Build-Gate + Prototype-Workflow; Claude-Grok doc historical/superseded, citations redirected; no allowlist/exception.",
+    "product-1-oq-e6-determinism-deferral": "RESOLVED (Eye 2026-08-28): ratified as a bounded Argo spike with a HARD pre-implementation merge gate \u2014 constrained declarative oracle language (lookup-tables structurally inexpressible) is the settled invariant; concrete grammar/evaluator is the spike and must pass adversarial conformance tests before the oracle-hardening slice merges; no normative oracle ships until then; interim controls are COMPENSATING ONLY, not proof of semantic soundness.",
+    "s3-status": "HELD (Eye 2026-08-28): Council run 3 used ephemeral secrets; durable-signature S2 rerun required before S3 grant. See EYE-DIRECTIVES/2026-08-28-product-1-s3-hold-and-rulings.md."
   }
 }
