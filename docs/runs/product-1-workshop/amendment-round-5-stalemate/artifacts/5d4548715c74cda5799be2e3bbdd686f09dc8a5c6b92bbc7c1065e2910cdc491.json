@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:a685f603b907b7dca29d8a13847bef6f27dd4b40816347d796e366c1141870ba",
+  "output_plan_artifact_hash": "sha256:a685f603b907b7dca29d8a13847bef6f27dd4b40816347d796e366c1141870ba",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:2be797fc5c8702a1323496d13858f2f3d352685b6f8aca39abccc4ad7a03e67a",
+    "provenance_key": "anthropic:3e7ac0a6-edf1-4ae4-bcee-8efdf809deb8"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:f0d3e5c3faa49461c1891d0b1ca28994bde1c2c50b07790b324a7df76de55e92",
+    "provenance_key": "openai:codex-cli-mtcpq0zl",
+    "bound_hash": "sha256:a685f603b907b7dca29d8a13847bef6f27dd4b40816347d796e366c1141870ba"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "Section 5(e)(iv)'s App-suspension mechanism does not establish the claimed exclusive interval or make a compromised App private key \"platform-DEAD.\" The same private key can mint the App JWT required to call DELETE /app/installations/{id}/suspended and then mint a new installation access token, so its holder can self-unsuspend the controller or publisher and regain contents:write during or outside the publish ceremony. The proposed 403 regression tests only a suspended installation credential and does not test this self-unsuspension path. Either treat compromise of either App private key explicitly as a trust-root compromise and retract the stronger closed-writer/frozen-interval claims, or use an independent revocation boundary the App key cannot reverse and add the corresponding adversarial regression.",
+      "objection_hash": "sha256:983d69d4dee8ea00591febf5f408aec66642cefafeebd4c4b97ac7d5e8c5e1f4",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

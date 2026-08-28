@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach",
+        "claim": "Section 5(e)(iv)'s App-suspension mechanism does not establish the claimed exclusive interval or make a compromised App private key \"platform-DEAD.\" The same private key can mint the App JWT required to call DELETE /app/installations/{id}/suspended and then mint a new installation access token, so its holder can self-unsuspend the controller or publisher and regain contents:write during or outside the publish ceremony. The proposed 403 regression tests only a suspended installation credential and does not test this self-unsuspension path. Either treat compromise of either App private key explicitly as a trust-root compromise and retract the stronger closed-writer/frozen-interval claims, or use an independent revocation boundary the App key cannot reverse and add the corresponding adversarial regression."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcpq0zl",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcpq0zl",
+    "source": "cli-seats/codex_ask"
+  }
+}
