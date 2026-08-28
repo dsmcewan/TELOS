@@ -1,0 +1,39 @@
+{
+  "record": "S3 implementation-authority grant — product-1 AMENDMENT-1 (two-phase pivot)",
+  "ruling": "MODIFY AND GRANT",
+  "eye": "the operator (Drason McEwan), acting as The Eye",
+  "date": "2026-08-28",
+  "supersedes": "the prior S3 grant over plan_ref bb2ea18f (commit 97becd37), which the Eye SUSPENDED on DISCOVERY-001",
+  "authorized_plan": {
+    "plan_ref": "sha256:41a1e8b6dddc12da502db305e7044570f121784903e4183cf17a03a2ca100ef7",
+    "plan_path": "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "reviewed_head": "915e12ff14203345ac8af1ae3b57624af705a2e0",
+    "convergence_record": "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  },
+  "authorization": {
+    "record": "docs/runs/product-authorization-1/run-12-amendment-r46-authorized/authorization-summary.json",
+    "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+    "gate_status": "pass",
+    "required_signers": ["claude (claude-sonnet-4-6, d115b2fc)", "agy (local checkpoint)", "codex (gpt-5.6-sol, codex-cli-mtd5bhwk)"],
+    "advisory": ["grok (approve)", "gemini (approve)"],
+    "ephemeral_signers": [],
+    "durable_signing": true,
+    "council_rounds": "7-12 (5 codex revise folds then AUTHORIZED); codex ratified SPIKE-E6 + SPIKE-PD001 and both open questions"
+  },
+  "seat_substitution_ratified": "The Eye ratifies the documented substitution of the Claude required seat from claude-fable-5 to claude-sonnet-4-6 for THIS authorization run only, pursuant to the previously approved usage-limit switch. This does NOT authorize unrecorded or automatic model substitution in future council runs.",
+  "grant": "S3 implementation authority over the EXACT authorized amended plan (plan_ref 41a1e8b6), scope as proposed and approved as written.",
+  "scope": [
+    "Comprehension gates re-confirmed against the amended plan before any code.",
+    "Phase A FIRST: data-only governance-bootstrap slice; registers the successor authorization ACTIVATION-DEFERRED; CURRENT-AUTHORITY/active_plan/active_authorization UNTOUCHED; v15/authz-008 NOT superseded; pre-existing verify-contracts green.",
+    "Phase B ONLY AFTER the discriminating verifier lands: atomic activation (AM-43 canonicalization, woven governing_authority + same-PR re-weave, active_plan/active_authorization pivot, v15 supersession, fail-closed re-verification) in one PR.",
+    "Bounded PR slices, each with per-slice Eye acceptance.",
+    "SPIKE-E6 hard pre-merge oracle-evaluator gate (no normative-oracle enrollment before it lands); SPIKE-PD001 interim CI eBPF+strace fail-closed detection; interim controls compensating-only.",
+    "Grant auto-invalidated by any plan change (new plan_ref => reauthorization).",
+    "Discoveries route back through governance (as DISCOVERY-001 did).",
+    "Durable slice lineage.",
+    "NO release/GA/production-readiness authority (S8 separate).",
+    "Grant recorded content-addressed; the six previously-resolved Eye rulings are NOT re-opened."
+  ],
+  "explicit_non_grants": "This grant provides NO autonomous acceptance, merge, release, GA, or production-readiness authority. Per-slice Eye acceptance remains required, and any discovery or plan change returns through governance before implementation continues.",
+  "preflight_condition": "Before Argo resumes: derive + durably record the exact implementation_start_head, and deterministically verify the delta from reviewed head 915e12f to that start head contains ONLY enumerated authorization/governance/evidence artifacts produced after review. Any unreviewed plan/implementation/dependency/configuration/execution-surface change invalidates this grant and requires a new plan_ref + reauthorization."
+}
