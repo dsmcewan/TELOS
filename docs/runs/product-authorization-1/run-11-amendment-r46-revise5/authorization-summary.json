@@ -1,0 +1,165 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "objective": "Authorize Argo implementation of the product-1 quest matured approach — AMENDMENT-1 (content address sha256:b154a6e676f32e515233a2ed41a98c1ce46c0c42a0ae0fcd26bb56e64a46cdcd; the Daedalus AMENDMENT maturation converged at round 46 resolving DISCOVERY-001's bootstrap-pivot coupling via the Eye-ruled Option-3 governance path with Option-1 substance = the TWO-PHASE PIVOT (Phase A governance bootstrap, activation-deferred; Phase B atomic activation under the landed discriminating verifier). The prior full-plan authorization (plan_ref bb2ea18f, S3 grant 97becd37) was SUSPENDED by the Eye pending this amendment; this run RE-AUTHORIZES the exact amended plan. The amendment folded genuine defects across the native trust boundary (hermetic static launcher + static sandbox-builder, sealed-memfd/fs-verity mutation-point-bound tool identity + exec-closure completeness, kernel-inherited arch-gated un-droppable seccomp no-listener architecture, git transport allowlist, unified boot sequence, ptrace threat-model scoping, unprivileged fs-verity probe) plus install-contract/tool-authentication/version-floor/font-licensing corrections; reviewed head 0da6f4b6a4b42981b8d63d103ea38f3764a63e8d) — the TELOS v0.3.0 Production Quest shipping PYLAE Gate v1 (the productized local single-user CLI SKU over the TELOS trust spine). The plan's own terms to judge it on: (1) ENFORCEMENT E1-E6 are fail-closed with adversarial regression tests: deterministic pre-merge merge-controller (sole merge credential; models produce dossiers, never merge), memory-gate freshness with authority chained to out-of-tree protected roots (base-anchored verifier closure, Eye-signed authority transitions, Eye-local genesis provisioning), exceptionless auditor (no allow-empty), gate production-profile default flip, discriminating oracles (closed mutation registry, mutation-based negatives, direct execution), verifier hardening (dedupe, root-invariant sweep, draft-status citation gate). (2) GOVERNANCE (TWO-PHASE PIVOT per the controlling DISCOVERY-001 ruling — NOT a one-phase transition): PHASE A is a data-only governance-bootstrap slice that lands FIRST under the sitting v15 authority and REGISTERS the successor authorization ACTIVATION-DEFERRED (publish plan hash + stage the quest-class chain entry and the AM-43 canonicalization as NON-WOVEN/activation-deferred; CURRENT-AUTHORITY, active_plan, and active_authorization are UNTOUCHED in Phase A; v15/authz-008 is NOT yet superseded; pre-existing verify-contracts stay green). PHASE B then performs the ATOMIC ACTIVATION in a single PR under the landed discriminating verifier: AM-43 canonicalization, woven governing_authority updates + same-PR re-weave, the active_plan/active_authorization PIVOT, v15 supersession, and fail-closed re-verification all occur together. AM-42 bytes are never touched (registry-row linkage only); AM-43 classifies cli/ + connectors/meta-ads-mcp/ as excluded package dirs. THIS COUNCIL re-authorizes the exact amended two-phase plan; its build_id names the enrollment flip, whose active-plan pivot + v15 supersession execute in Phase B, not in the Phase A bootstrap. (3) PRODUCT: Phase-0 contract frozen (PD-001..PD-007 ADRs, hard go-live gate with typed item-bound evidence, no report-only release mode); Phase-1a honest install contract (source release with pylae entrypoint, dual checkout/archive doctor semantics, clean-room install proof, draft-first fail-closed release publication, full-assembly reproducibility, out-of-tree signer fingerprint); flagship = future operator console with a bounded Chromium-only qualified-browser contract this round. (4) ATOMIC WEAVE RULE: every slice touching woven inputs carries its own re-weave; PR CI mode-splits historical vs authoritative exact-head verification accordingly. Judge the plan on THESE terms — do NOT require capabilities it explicitly defers to register items (multi-engine browser qualification, self-contained npm distribution, Phase-1b durable state / Auth0 identity / key rotation), and do NOT re-litigate the recorded Eye rulings it cites (PYLAE naming, Option-A combined ceremony, both-strict enforcement, reconcile-and-supersede for draft docs, OAuth seat transport). OUT OF SCOPE (do NOT condition approval on it): identity/tenancy/clustered runtime (excluded by signed ADR PD-001); enrollment flips beyond the two AM-43 exclusions; Phase-1b+ register items. CARRIED-FORWARD ITEMS (Daedalus amendment converged 2026-08-28 under the recorded Eye directive; these are AUTHORIZATION-TIME decisions for THIS council, NOT unresolved plan defects — RATIFY or reject them explicitly): (i) the §6b Accepted Argo Spikes register — SPIKE-E6-EVALUATOR-FORM (oracle discrimination: sound design = a constrained DECLARATIVE oracle language in which lookup-table oracles are structurally inexpressible; sound INTERIM = mandatory adversarial source review of every normative oracle record + the determinized battery; the concrete grammar is a pre-implementation MERGE-GATE on the oracle-hardening slice); AND SPIKE-PD001-NOLISTENER-COMPLETENESS (the no-listener enforcement ARCHITECTURE is conceptually sound and fail-closed — arch-gated kernel-inherited un-droppable seccomp + static hermetic launcher/sandbox-builder + close_range + offline/online net split + fs-verity closures; only the EXHAUSTIVE enumeration of residual Linux syscall/loader/namespace corners is deferred, with interim CI eBPF+strace fail-closed detection — Gemini-referee-ruled argo-implementation-spike after amendment round 37). Judge whether deferring these bounded implementation completeness items to their merge-gates/detection is acceptable; (ii) the pre-review open_questions_for_the_eye (incl. product-1-oq-e6-determinism-deferral, product-1-oq-pd001-nolistener-completeness). Evidence on disk: referee-adjudications/2026-08-28-e6-oracle-determinism.json AND referee-adjudications/2026-08-28-pd001-nolistener-completeness.json (ADVISORY), EYE-DIRECTIVES/2026-08-28-product-1-spikes-nonblocking.md, EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md (the resolved DISCOVERY-001 ruling this amendment implements). Approve ONLY if the plan is implementation-ready and consistent with its governing pre-review, the repository trust model (fail-closed, closed sets, content-addressed identity, no mutable label keying enforcement, zero-dependency core), and its own decisions and acceptance criteria, with no remaining plan CONTRADICTION or unsound design (a bounded, honestly-recorded implementation-spike with a fail-closed interim is NOT a contradiction).",
+  "plan_ref": "sha256:b154a6e676f32e515233a2ed41a98c1ce46c0c42a0ae0fcd26bb56e64a46cdcd",
+  "reviewed_head": "0da6f4b6a4b42981b8d63d103ea38f3764a63e8d",
+  "amendment": "amendment-1 (two-phase pivot) — resolves DISCOVERY-001; supersedes the SUSPENDED prior full-plan grant (plan_ref bb2ea18f, S3 97becd37)",
+  "discovery_001_ruling": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+  "convergence_record": "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json",
+  "referee_adjudications": [
+    "docs/runs/product-1-workshop/referee-adjudications/2026-08-28-e6-oracle-determinism.json",
+    "docs/runs/product-1-workshop/referee-adjudications/2026-08-28-pd001-nolistener-completeness.json"
+  ],
+  "combined_ceremony": "AM-42 enrollment-flip regularization + AM-43 exclusions (cli/, connectors/meta-ads-mcp/) — build_id names the flip",
+  "seat_transport": "OAuth subscription CLIs per product-1-ruling-oauth-seat-transport (agy = local deterministic checkpoint)",
+  "seat_provenance_note": "claude reviewer seat pinned to claude-sonnet-4-6 via CLI_SEAT_CLAUDE_MODEL (Eye-approved mid-review switch after the session-default Fable 5 hit its usage limit; still OAuth subscription, never a metered key)",
+  "timestamp": "2026-08-28T15:55:30.140Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [],
+  "durable_signing": true,
+  "signer_key_ids": {
+    "claude": "kid:a151bd15f757660b",
+    "agy": "kid:b0df0eb963dee57c",
+    "codex": "kid:28d7644d73a1a8e7"
+  },
+  "signer_custody": "~/.telos/product-1-signers.env (chmod 600, operator home, OUTSIDE repo); HMAC-derived non-secret kids; durable, operator-provisioned",
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-4-6",
+        "response_id": "bc75d950-6c8b-46e4-8bb3-e8f599b457c2",
+        "source": "cli-seats/claude",
+        "transport": "oauth-subscription-cli",
+        "answered_at": "2026-08-28T15:58:56.627Z",
+        "tool": "cli-seats.askClaude"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-021a1add9ccdde76ab9f4e6396e61946f95b2932",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint(local)"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "codex-cli-mtd51q10",
+        "source": "cli-seats/codex",
+        "transport": "oauth-subscription-cli",
+        "answered_at": "2026-08-28T16:00:36.613Z",
+        "tool": "cli-seats.askCodex"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5-build",
+        "response_id": "84bd516b-b991-487c-8577-165633cafdee",
+        "source": "cli-seats/grok",
+        "transport": "oauth-subscription-cli",
+        "answered_at": "2026-08-28T15:55:59.229Z",
+        "tool": "cli-seats.askGrok"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-high",
+        "response_id": "e186b31c-103f-4a29-92bd-f938b9069c47",
+        "source": "cli-seats/gemini",
+        "transport": "oauth-subscription-cli",
+        "answered_at": "2026-08-28T15:56:37.014Z",
+        "tool": "cli-seats.askGemini"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Make the entrypoint contract consistent throughout: `pylae-verify-bootstrap` is the sole supported user-facing entrypoint; direct invocation of the raw launcher or `node pylae` is unsupported.; Correct the boot-order claim to state that the static bootstrap, static launcher, and static sandbox-builder all execute before the authenticated root; the intended guarantee is that no dynamic Node/interpreter/library byte executes before that root.; Remove the claim that the bootstrap’s self-installed filter already prevents an authentic-but-defective bootstrap from listening. Explicitly bound the guarantee: the statically inspected pre-filter `_start` prologue is the trusted, qualification-proven boundary, while kernel enforcement covers all bootstrap code after filter installation and every descendant—or add an earlier independent kernel enforcer.",
+      "codex has hard stops: The exact plan contains contradictory and overstated claims at the PD-001 trust boundary: it names both the bootstrap and native launcher as the sole supported entrypoint, says only the sandbox-builder runs before the authenticated root despite the bootstrap and launcher doing so, and claims the bootstrap’s own filter protects an authentic-but-defective bootstrap before that filter has been installed."
+    ],
+    "warnings": [],
+    "provenance": [
+      {
+        "model": "claude",
+        "has_provenance": true,
+        "provider": "anthropic",
+        "response_model": "claude-sonnet-4-6",
+        "response_id": "bc75d950-6c8b-46e4-8bb3-e8f599b457c2",
+        "source": "cli-seats/claude"
+      },
+      {
+        "model": "agy",
+        "has_provenance": true,
+        "provider": "local",
+        "response_model": "agy-checkpoint",
+        "response_id": "agy-021a1add9ccdde76ab9f4e6396e61946f95b2932",
+        "source": "ai-peer-mcp/agy_checkpoint"
+      },
+      {
+        "model": "codex",
+        "has_provenance": true,
+        "provider": "openai",
+        "response_model": "gpt-5.6-sol",
+        "response_id": "codex-cli-mtd51q10",
+        "source": "cli-seats/codex"
+      }
+    ]
+  },
+  "durable_checks": {
+    "ephemeral_signers_empty": true,
+    "all_required_signed_durable": false,
+    "all_required_packets_clean": false,
+    "reviewed_head_full": true,
+    "discovery_001_ruling_bound": true,
+    "plan_ref_matches_convergence_record": true
+  },
+  "authorized": false,
+  "authorization": {
+    "status": "NOT_AUTHORIZED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

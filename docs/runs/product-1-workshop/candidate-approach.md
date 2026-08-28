@@ -134,9 +134,11 @@ enumerated safe set, so config/alias injection cannot smuggle modes).
 Any invocation outside these grammars ⇒ FAIL closed. STARTUP CAPABILITIES ARE BOUNDED TOO (a static source grammar cannot
 see `NODE_OPTIONS=--inspect=0.0.0.0:9229 pylae …` or an explicit
 `node --inspect`, which opens a listener BEFORE any CLI code runs): the
-supported entrypoint is a SMALL NATIVE LAUNCHER built from REPO-TRACKED
+env-scrubbing stage is a SMALL NATIVE LAUNCHER built from REPO-TRACKED
 SOURCE (NOT Node — which cannot scrub NODE_OPTIONS before it reads them
-— and NOT a shell/interpreter outside the closed tool set), and it is
+— and NOT a shell/interpreter outside the closed tool set), reached only
+via the sole user-facing entrypoint `pylae-verify-bootstrap` (see the
+per-invocation section below), and it is
 BROUGHT INSIDE THE ENFORCEMENT, not merely digest-pinned (digest proves
 WHICH binary ran, not that its native code cannot listen): (1) its
 single-file source (`cli/launcher/pylae-launch.c`) is IN the executable
@@ -541,12 +543,21 @@ OPENS the pinned native launcher, VERIFIES its digest LIVE (a stored
 receipt is provenance, NOT authorization — live re-verification is
 authoritative each run, so a FORGED or STALE receipt grants nothing),
 SEALS the verified launcher into a memfd (`F_SEAL_*`), and `fexecve`s it.
-Because the filter is installed by this FIRST artifact and INHERITED
-(NO_NEW_PRIVS, un-droppable) across the `fexecve`, the native launcher
-and everything after run UNDER it from the very first byte — so even an
-AUTHENTIC-BUT-DEFECTIVE bootstrap cannot open a listener (the syscalls
-are already denied), and neither can a launcher swapped on disk (it is
-never executed by pathname; nothing runs before verification). The native
+The filter is installed by this FIRST artifact and INHERITED
+(NO_NEW_PRIVS, un-droppable) across the `fexecve`. PRECISE BOUND (no
+overclaim): the ONLY code that runs BEFORE the filter is active is the
+bootstrap's own `_start` PROLOGUE, and — exactly as for the launcher —
+the guarantee for that prologue rests on it being a HAND-AUDITED,
+STATICALLY-COMPILED, LISTENER-FREE prologue (verified by the native
+capability review + packaged-artifact inspection; a `PRE-FILTER`
+regression asserts the compiled `_start` contains ONLY the audited
+prologue before the seccomp syscall), NOT on the filter retroactively
+covering pre-filter code (it cannot — it is not yet installed there).
+Once the prologue installs the filter, the native launcher and
+EVERYTHING AFTER run under it from that point, un-droppable — so no
+post-prologue bootstrap code, no launcher, and no descendant can open a
+listener; and a launcher swapped on disk is never executed by pathname
+(nothing runs before verification). The native
 launcher thus scrubs `NODE_OPTIONS` env + spawns the sandbox-builder
 UNDER the inherited filter (it no longer needs to be the filter's
 installer; it may idempotently re-assert it); invoking the raw launcher
@@ -567,12 +578,17 @@ successful install ⇒ `pylae-verify-bootstrap`'s live digest check FAILS
 `launcher-identity-mismatch`, the swapped launcher NEVER executes;
 (b) a FORGED or STALE receipt presented with a mismatched on-disk
 launcher ⇒ live re-verification (not the receipt) decides, the forged/
-stale receipt authorizes nothing and execution is refused. Only this
-native launcher is the supported entrypoint — invoking `node pylae`
-directly is unsupported and the install docs state so. BOOT-ORDER
-regression: NO node/interpreter/library byte executes before the
-authenticated root exists — a probe that would run on any pre-root Node
-load never fires; only the static builder runs before the root. This
+stale receipt authorizes nothing and execution is refused.
+`pylae-verify-bootstrap` is the SOLE supported user-facing entrypoint;
+direct invocation of the raw native launcher or `node pylae` is
+unsupported and the install docs state so. BOOT-ORDER
+regression: the STATIC bootstrap, STATIC launcher, and STATIC
+sandbox-builder are the only artifacts that execute before the
+authenticated root — the GUARANTEE is that NO DYNAMIC Node/interpreter/
+library byte executes before that root exists (a probe that would run on
+any pre-root Node load never fires); the three pre-root artifacts are
+all loader-independent static hermetic binaries, so none loads a mutable
+dynamic closure. This
 resolves the bootstrap cycle: env-scrub + seccomp happen in native code
 before anything dynamic, the static builder needs no closure, and
 node-identity binding uses fexecve from inside the authenticated root,

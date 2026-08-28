@@ -1,0 +1,33 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:b154a6e676f32e515233a2ed41a98c1ce46c0c42a0ae0fcd26bb56e64a46cdcd",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:55:30.140Z",
+  "rationale": "The amended plan at sha256:b154a6e676f32e515233a2ed41a98c1ce46c0c42a0ae0fcd26bb56e64a46cdcd correctly and completely resolves the codex hard stop from council-run-9. The prior defect was precise: pylae-verify-bootstrap was the first-executed process yet was specified only as operator-pinned, leaving its pre-seccomp dynamic loader window open. The amendment applies the identical three-layer defense — (1) STATIC HERMETIC: fully-static, no PT_INTERP, empty DT_NEEDED, no dlopen; LD_PRELOAD/loader attacks structurally inert before the first instruction; (2) FILTER-FIRST: _start's only pre-enforcement actions are prctl(PR_SET_NO_NEW_PRIVS) + the arch-gated inherited seccomp filter + close_range/stdio-scrub, denying bind/listen/accept/inet-DGRAM/io_uring/__X32_SYSCALL_BIT from the first instruction of the first process; (3) CLOSURE INCLUSION: bootstrap is inside the executable/listener-capability closure, the native-capability review, and the packaged-artifact ELF inspection — bootstrap-not-hermetic is a qualification hard failure — to the bootstrap, which now owns these same requirements the launcher had. The boot sequence is now correctly and completely ordered: bootstrap (_start: filter install, close_range/stdio-scrub, then open+verify+seal-fexecve launcher) → launcher (inherits filter from the first byte, cannot itself violate no-listener even if defective) → static sandbox-builder (no loader closure before authenticated root) → authenticated content-addressed root → Node inside root. No dynamic byte executes before the sandbox-builder establishes the root; the filter is live before any dynamic content could run. The BOOTSTRAP-FILTER-FIRST regression is correctly specified: a listener attempt after the prologue is denied by the already-installed filter; a bootstrap-not-hermetic fixture fails qualification. The PER-INVOCATION LAUNCHER regressions now cover both initial and subsequent launches, with live digest verification (not stale receipt) as the authoritative gate and sealed-memfd fexecve binding verified-bytes-to-executed-bytes. The per-invocation sealed-memfd chain (bootstrap seals+fexecves launcher; launcher seals+fexecves sandbox-builder; builder establishes inode-frozen verity root; Node runs inside) closes every TOCTOU at every mutation point. No new contradictions are introduced by these additions: the boot-order claim is now satisfied (only the static bootstrap runs before the authenticated root — it has no loader closure; the static builder likewise); the closure-completeness claim is now correct (bootstrap source is in the listener-capability closure); the filter-inheritance chain covers every executed byte. The two accepted spikes are unchanged and remain properly bounded: SPIKE-E6-EVALUATOR-FORM defers only the concrete evaluator form while enrollment of new/changed normative oracles is blocked at oracle-evaluator-pending; SPIKE-PD001-NOLISTENER-COMPLETENESS defers only exhaustive Linux syscall/loader/namespace corner audit while the kernel-inherited seccomp architecture is conceptually sound and CI eBPF+strace detection fails closed. Both carry honest non-claims. The two-phase governance (Phase A data-only under v15/authz-008, Phase B atomic activation with fail-closed fallback) correctly resolves DISCOVERY-001 and is structurally sound. All E1-E6 enforcement mechanisms remain sound as verified in run-9. No mutable label keys any enforcement decision; every enforcement identity is content-addressed; the gate reconstructs state from the ledger. The plan is implementation-ready against its own terms.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-6",
+    "response_id": "bc75d950-6c8b-46e4-8bb3-e8f599b457c2",
+    "source": "cli-seats/claude",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T15:58:56.627Z",
+    "tool": "cli-seats.askClaude"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "971453f5e719c3f415bced24114d214775206a29fee62bffc331dc830000f8e9",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

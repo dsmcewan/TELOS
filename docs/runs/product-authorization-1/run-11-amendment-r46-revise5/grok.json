@@ -1,0 +1,28 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:b154a6e676f32e515233a2ed41a98c1ce46c0c42a0ae0fcd26bb56e64a46cdcd",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:55:30.140Z",
+  "rationale": "The amended plan is implementation-ready as written. AMENDMENT-1 correctly replaces the suspended one-shot pivot with the Eye-ruled two-phase path: Phase A is data-only, activation-deferred under sitting v15/authz-008 with pre-existing gates kept green; Phase B atomically activates under the landed discriminating verifier. E1–E6 remain fail-closed with mutation-point binding, content-addressed identity, closed sets, Eye-signed transitions, and adversarial regressions; the product Phase-0/1a contract and atomic-weave rule are coherent with the trust model and do not smuggle deferred Phase-1b+ scope. I explicitly ratify both §6b carried-forward spikes: SPIKE-E6-EVALUATOR-FORM (declarative pure-evaluator design settled; enrollment blocked until the hard merge-gate; interim review/battery non-authoritative only) and SPIKE-PD001-NOLISTENER-COMPLETENESS (kernel-inherited hermetic no-listener architecture settled; residual Linux-corner audit deferred behind fail-closed CI eBPF/strace detection). Those are bounded implementation-completeness items with honest fail-closed interim postures, not plan contradictions. No remaining authorization-blocking defect or required edit.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5-build",
+    "response_id": "84bd516b-b991-487c-8577-165633cafdee",
+    "source": "cli-seats/grok",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T15:55:59.229Z",
+    "tool": "cli-seats.askGrok"
+  }
+}

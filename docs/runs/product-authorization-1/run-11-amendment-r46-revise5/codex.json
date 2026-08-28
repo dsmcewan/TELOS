@@ -1,0 +1,39 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:b154a6e676f32e515233a2ed41a98c1ce46c0c42a0ae0fcd26bb56e64a46cdcd",
+  "decision": "revise",
+  "required_edits": [
+    "Make the entrypoint contract consistent throughout: `pylae-verify-bootstrap` is the sole supported user-facing entrypoint; direct invocation of the raw launcher or `node pylae` is unsupported.",
+    "Correct the boot-order claim to state that the static bootstrap, static launcher, and static sandbox-builder all execute before the authenticated root; the intended guarantee is that no dynamic Node/interpreter/library byte executes before that root.",
+    "Remove the claim that the bootstrap’s self-installed filter already prevents an authentic-but-defective bootstrap from listening. Explicitly bound the guarantee: the statically inspected pre-filter `_start` prologue is the trusted, qualification-proven boundary, while kernel enforcement covers all bootstrap code after filter installation and every descendant—or add an earlier independent kernel enforcer."
+  ],
+  "hard_stops": [
+    "The exact plan contains contradictory and overstated claims at the PD-001 trust boundary: it names both the bootstrap and native launcher as the sole supported entrypoint, says only the sandbox-builder runs before the authenticated root despite the bootstrap and launcher doing so, and claims the bootstrap’s own filter protects an authentic-but-defective bootstrap before that filter has been installed."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:55:30.140Z",
+  "rationale": "I recomputed the disk candidate as sha256:b154a6e676f32e515233a2ed41a98c1ce46c0c42a0ae0fcd26bb56e64a46cdcd and confirmed its bytes match reviewed head 0da6f4b6a4b42981b8d63d103ea38f3764a63e8d. The two-phase Phase-A/deferred and Phase-B/atomic transition coherently implements the DISCOVERY-001 ruling. I explicitly ratify SPIKE-E6-EVALUATOR-FORM and product-1-oq-e6-determinism-deferral because normative-oracle enrollment remains blocked until the declarative evaluator passes its hard merge gate. I likewise ratify SPIKE-PD001-NOLISTENER-COMPLETENESS and product-1-oq-pd001-nolistener-completeness as bounded exhaustive-audit work with fail-closed enforcement and detection. Those spikes are not the blocker. The remaining bootstrap statements are present-tense contradictions and a factual overclaim in the first-executed TCB boundary, so the immutable plan cannot be implemented AS-IS without choosing which entrypoint, boot order, and pre-filter guarantee govern.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtd51q10",
+    "source": "cli-seats/codex",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T16:00:36.613Z",
+    "tool": "cli-seats.askCodex"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "d797969baea481ded63f00532745f06c83a874eefca74434a39c985cd7fd3182",
+    "signed_fields": "canonical-minus-signature"
+  }
+}
