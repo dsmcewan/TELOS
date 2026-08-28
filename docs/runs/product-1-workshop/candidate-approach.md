@@ -851,13 +851,22 @@ per-file designs are in the approved plan; acceptance criteria here.
   (CURRENT_AUTHORITY_CHAIN_ROOT, EYE_AUTHORITY_PUBKEY,
   TRUSTED_WORKFLOW_DIGEST, TRUSTED_CONTROLLER_DIGEST,
   TRUSTED_VERDICT_CLOSURE_DIGEST, and LAST_TRANSITION_SEQ=0) BEFORE the
-  corresponding bootstrap merges — EXCEPT the digests a genesis-class
-  transition will itself introduce: E2's staged VERIFIER_CLOSURE_DIGEST
-  is NOT pre-provisioned (the first-deployment contract in (6) requires
-  old_* to equal the LIVE pre-slice value and refuses pre-provisioned
-  new_*); the Eye advances each such variable only AFTER the
-  controller-authorized merge of its transition, per the consumption
-  discipline. THE CONTROLLER'S INTRODUCING PR lands by a
+  corresponding bootstrap merges. VERIFIER_CLOSURE_DIGEST IS
+  PROVISIONED TO ITS PRE-E2 (CURRENT-BASE) VALUE — the honest live
+  PREDECESSOR the E2 transition's `old_verifier_closure_digest` must
+  equal (this is the digest of the memory-gate closure AS IT EXISTS
+  before E2, which is real and computable at genesis; provisioning the
+  PREDECESSOR is not pre-provisioning the NEW value): E2's transition
+  record binds `old_verifier_closure_digest` == this live pre-E2 value
+  and `new_verifier_closure_digest` == E2's staged closure; the Eye
+  advances VERIFIER_CLOSURE_DIGEST to the new value ONLY AFTER the
+  controller-authorized merge (consumption discipline). The distinction
+  the (6) contract forbids is pre-provisioning the NEW digest; the
+  PREDECESSOR must be live for old_* equality to be checkable at all.
+  Regressions: E2 record with old_* == live pre-E2 value ⇒ validates; a
+  record whose old_* was pre-set to the NEW staged digest ⇒ REFUSED
+  (pre-provisioned-new); a missing/absent VERIFIER_CLOSURE_DIGEST at
+  validation ⇒ fail closed `verifier-digest-unprovisioned`. THE CONTROLLER'S INTRODUCING PR lands by a
   RECORDED EXCEPTIONAL BOOTSTRAP MERGE: the Eye merges it by hand after
   running the bootstrap tool's validation, and the exception is recorded
   (step-ledger entry + a bootstrap-merge record naming the PR, head,
