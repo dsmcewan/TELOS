@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:archive-verifier-bootstrap",
+        "claim": "The archive-mode full-verification path does not authenticate the executable tree before executing it. `pylae verify --full --bundle` authenticates the history bundle and checks its head against the archive-controlled `RELEASE-IDENTITY.commit_sha`, while doctor compares the reconstructed payload tree only against the same archive-controlled `RELEASE-IDENTITY.tree_sha`; it never binds that reconstructed tree to the authenticated bundle head's actual Git tree, and the clean-room contract does not require an external trusted verifier to validate the source-tarball attestation before extraction and execution. An attacker can replace the archive's `pylae` entrypoint with constant-success code, alter excluded `cli/` payload bytes, recompute `tree_sha`, retain the authentic bundle and `commit_sha`, and make the in-archive verifier lie before any trusted code runs. Require mandatory external pre-execution verification of the source tarball's digest/attestation, or a separately trusted bootstrap that compares the reconstructed tree to the authenticated bundle commit's tree object, plus a paired payload-and-identity tamper regression. Candidate raw artifact: sha256:f8d871c333b818edcffe315c58386ba9a50a8b9037342fb94ffcef8d0f883e74."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcgvp8g",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcgvp8g",
+    "source": "cli-seats/codex_ask"
+  }
+}

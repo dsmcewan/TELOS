@@ -1217,7 +1217,28 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   compares against the stored root rather than re-trusting the
   network. Absent `--trust-root` (and no pinned manifest), `--full`
   FAILS `trust-root-missing` — it never falls back to values found in
-  the tree, the bundle, or the release itself.
+  the tree, the bundle, or the release itself. EXECUTION TRUST IS
+  ESTABLISHED BEFORE ANY ARCHIVE CODE RUNS (an in-archive verifier
+  cannot vouch for the archive containing it — an attacker who swaps
+  the pylae entrypoint for constant-success code and recomputes the
+  archive-controlled tree_sha would have the archive lie about itself
+  while the authentic bundle sits beside it): the INSTALL CONTRACT
+  makes external pre-execution verification MANDATORY, using only the
+  operator's platform tooling (sha256sum + `gh attestation verify`
+  against the trust-root manifest's pinned identity) on the tarball
+  and bundle digests BEFORE extraction or execution — documented as a
+  non-optional step, with `pylae doctor` printing a warning banner
+  whenever it cannot find the operator's recorded pre-verification
+  receipt. AND the tree binding is TO THE BUNDLE HEAD, not to
+  self-description: full verification compares the reconstructed
+  payload tree against the AUTHENTICATED BUNDLE COMMIT'S OWN TREE
+  OBJECT (git cat-file from the verified bundle store) — the
+  archive-controlled RELEASE-IDENTITY.tree_sha is a convenience
+  cross-check, never the authority. PAIRED-TAMPER regression: payload
+  bytes + recomputed tree_sha altered, authentic bundle + commit_sha
+  retained ⇒ the external pre-check fails digest/attestation; even
+  with the pre-check bypassed, the bundle-tree comparison reports the
+  mismatch (payload ≠ bundle head's tree).
   (authority-chain anchoring via git cat-file against the bundle store,
   input-closure + input-history freshness digests, verify-contracts)
   from the extracted tree + bundle alone. **Accept**: clean-room job

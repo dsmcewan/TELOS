@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:f40274e40c80a90a1ddd3f3ffd293e0095b30c1897c7f1217f5dedf9a66aa3ad",
+  "output_plan_artifact_hash": "sha256:f40274e40c80a90a1ddd3f3ffd293e0095b30c1897c7f1217f5dedf9a66aa3ad",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:7fa4c61cd42c0c283988752bf25e6b1660dcc978ccbd5b8790b71c653e0f5740",
+    "provenance_key": "anthropic:fc35241e-e17c-4ff4-88a5-128abf857aff"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:a0812a2018bc3a32fe54c6144969484aec1dffeba66fa75fd4eb453c3a20d28f",
+    "provenance_key": "openai:codex-cli-mtcgvp8g",
+    "bound_hash": "sha256:f40274e40c80a90a1ddd3f3ffd293e0095b30c1897c7f1217f5dedf9a66aa3ad"
+  },
+  "objections": [
+    {
+      "scope": "candidate:archive-verifier-bootstrap",
+      "claim": "The archive-mode full-verification path does not authenticate the executable tree before executing it. `pylae verify --full --bundle` authenticates the history bundle and checks its head against the archive-controlled `RELEASE-IDENTITY.commit_sha`, while doctor compares the reconstructed payload tree only against the same archive-controlled `RELEASE-IDENTITY.tree_sha`; it never binds that reconstructed tree to the authenticated bundle head's actual Git tree, and the clean-room contract does not require an external trusted verifier to validate the source-tarball attestation before extraction and execution. An attacker can replace the archive's `pylae` entrypoint with constant-success code, alter excluded `cli/` payload bytes, recompute `tree_sha`, retain the authentic bundle and `commit_sha`, and make the in-archive verifier lie before any trusted code runs. Require mandatory external pre-execution verification of the source tarball's digest/attestation, or a separately trusted bootstrap that compares the reconstructed tree to the authenticated bundle commit's tree object, plus a paired payload-and-identity tamper regression. Candidate raw artifact: sha256:f8d871c333b818edcffe315c58386ba9a50a8b9037342fb94ffcef8d0f883e74.",
+      "objection_hash": "sha256:4ac709b431fad4066eb4c3aab2d3959bedc2fdea47f4ee49ad34e78fac295923",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
