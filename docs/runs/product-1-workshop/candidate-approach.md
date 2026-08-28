@@ -84,8 +84,23 @@ Node feature initialization — it re-execs with NODE_OPTIONS/NODE_REPL*
 and every inspector/debug flag stripped (or REFUSES
 `unsupported-launch-options` when inspector activation is detected) —
 and the contract states that only the sanitized launcher is the
-supported entrypoint; LAUNCH fixture: NODE_OPTIONS=--inspect ⇒ the
-launcher strips-or-refuses, no listener ever opens.
+supported entrypoint. SIGUSR1 INSPECTOR ACTIVATION IS DISABLED TOO
+(on supported Unix platforms, delivering SIGUSR1 to a running Node
+process activates the inspector and opens a TCP listener even with
+flags stripped and no inspector import — an external same-user process
+can send it, so source-grammar rules alone cannot close this): the
+launcher starts every pylae Node process — and the spawn-allowlist
+applies the same requirement to every spawned Node runtime — with
+runtime inspector activation DISABLED (`--disable-sigusr1`/
+`--no-inspector`-class startup options per the reviewed Node range's
+supported mechanism; where the reviewed range offers no such
+guarantee, doctor FAILS CLOSED `inspector-uncontainable` rather than
+reporting a usable install), the mechanism is recorded in the
+capability registry and re-reviewed with the version ceiling; LAUNCH
+fixtures: NODE_OPTIONS=--inspect ⇒ the launcher strips-or-refuses, no
+listener ever opens; LIVE SIGUSR1 fixture — a running pylae process is
+sent SIGUSR1 and provably opens NO listener (asserted by socket
+enumeration before/after).
 ADVERSARIAL fixtures the oracle must reject: an indirect
 listener via getBuiltinModule; a computed require reaching node:net; a
 process.binding('tcp_wrap') TCP-listener construction ⇒ rejected
