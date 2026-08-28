@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:4913b3bab9dca1f2bde1294438b9ee3b681b8da719a72f5755c4e61522400b3c",
+  "output_plan_artifact_hash": "sha256:4913b3bab9dca1f2bde1294438b9ee3b681b8da719a72f5755c4e61522400b3c",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:9de3eae9ad61ea77ac2bdbe19856f3ffdb641472b834ebf9f6143db841376b72",
+    "provenance_key": "anthropic:c17d961d-e9d9-4516-9397-b06900aa8de3"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:74dbf03f36a1cea9197f26294e89c8bcc74cdb2fe133b9fb466087b3425c8a2b",
+    "provenance_key": "openai:codex-cli-mtcs06ea",
+    "bound_hash": "sha256:4913b3bab9dca1f2bde1294438b9ee3b681b8da719a72f5755c4e61522400b3c"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:phase-a-whitelist-binding",
+      "claim": "At candidate artifact sha256:4913b3bab9dca1f2bde1294438b9ee3b681b8da719a72f5755c4e61522400b3c, the Phase-A whitelist is not cryptographically or semantically bound to the PR bytes the controller merges. A5 publishes the whitelist before later PR heads exist, while E1's signed acceptance tuple binds only repo/PR/head/base/active plan_ref—not the activation-deferred authorization, whitelist digest, slice descriptor, or closed change surface. Section 6 merely asserts a phase-aware oracle without specifying a deterministic diff-to-entry predicate. Consequently an otherwise accepted PR can claim a whitelisted slice identity without the controller proving its bytes fall within that entry, so the slice-not-whitelisted regression would not discriminate listed work from unrelated work. Bind each finalized PR head to an immutable Phase-A descriptor through the Eye-signed acceptance and require the controller to verify the successor authorization, whitelist digest, exact entry, and descriptor-defined change constraints before mutation.",
+      "objection_hash": "sha256:a96f23c70a46303b72ca8c5732d1c9171ed3105ff03df6397489dd9c65b9f374",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
