@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:a7e05e6d250b570a0ecad4f2edd198b0e0e95f68e8d912ef29f48816307d387b",
+  "output_plan_artifact_hash": "sha256:a7e05e6d250b570a0ecad4f2edd198b0e0e95f68e8d912ef29f48816307d387b",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:65f78b3ecaa013c9147d282a719b61111964a98570977d96b1479405f82d05b6",
+    "provenance_key": "anthropic:cebd8023-b938-4bb5-a2e9-d742bfe574f5"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:b33f97bfc3f43281599c6a8d75f33fbebfbc3373130bc0aa5eaf4614f1b53b1b",
+    "provenance_key": "openai:codex-cli-mtcyg01a",
+    "bound_hash": "sha256:a7e05e6d250b570a0ecad4f2edd198b0e0e95f68e8d912ef29f48816307d387b"
+  },
+  "objections": [
+    {
+      "scope": "plan",
+      "claim": "The claimed whole-tree no-listener invariant is unsound: the seccomp filter denies only direct bind/listen/accept/accept4 syscalls, but modern Linux exposes IORING_OP_SOCKET, IORING_OP_BIND, IORING_OP_LISTEN, and IORING_OP_ACCEPT through io_uring. Their operation codes reside in shared submission-queue memory and are not discriminable from io_uring_enter's scalar syscall arguments, so a native descendant can create a listener without invoking any denied syscall. The plan must fail closed by denying the io_uring syscall family before Node executes (and closing inherited ring descriptors), or provide an equivalently kernel-enforced construction; then add a regression that opens a listener through io_uring and proves denial inside the descendant/private namespace. Until then, PD-001's testable local-single-user boundary and the assertion that indirect/compiler-emitted listener paths are kernel-denied are false.",
+      "objection_hash": "sha256:01c249a257facc76815c8078b08d1017897d7357ae3d297ffafccae9477c4f80",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

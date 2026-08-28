@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "plan",
+        "claim": "The claimed whole-tree no-listener invariant is unsound: the seccomp filter denies only direct bind/listen/accept/accept4 syscalls, but modern Linux exposes IORING_OP_SOCKET, IORING_OP_BIND, IORING_OP_LISTEN, and IORING_OP_ACCEPT through io_uring. Their operation codes reside in shared submission-queue memory and are not discriminable from io_uring_enter's scalar syscall arguments, so a native descendant can create a listener without invoking any denied syscall. The plan must fail closed by denying the io_uring syscall family before Node executes (and closing inherited ring descriptors), or provide an equivalently kernel-enforced construction; then add a regression that opens a listener through io_uring and proves denial inside the descendant/private namespace. Until then, PD-001's testable local-single-user boundary and the assertion that indirect/compiler-emitted listener paths are kernel-denied are false."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcyg01a",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcyg01a",
+    "source": "cli-seats/codex_ask"
+  }
+}
