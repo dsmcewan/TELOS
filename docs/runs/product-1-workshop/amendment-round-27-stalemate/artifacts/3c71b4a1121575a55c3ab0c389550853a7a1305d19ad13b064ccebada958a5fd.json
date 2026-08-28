@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:b1cae7b21732d7ad6f1201ec8a14e9fa47d2c26cc5ee666169a7f3a0ab18b54f",
+  "output_plan_artifact_hash": "sha256:b1cae7b21732d7ad6f1201ec8a14e9fa47d2c26cc5ee666169a7f3a0ab18b54f",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:0765a4a8039aeef4c6c95418ad82086ab749874c1bddcb7ff888ce51089f3592",
+    "provenance_key": "anthropic:e5535116-8727-49c8-baa0-d40207ebd792"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:b8789e8a33685f89aef7d774050c845aa41b50ba5b564c6b686ca47e0540cc2b",
+    "provenance_key": "openai:codex-cli-mtcwpn1d",
+    "bound_hash": "sha256:b1cae7b21732d7ad6f1201ec8a14e9fa47d2c26cc5ee666169a7f3a0ab18b54f"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "The no-listener startup mechanism has an unresolved bootstrap cycle. A Node-based `pylae` entrypoint cannot sanitize `NODE_OPTIONS=--inspect…` before Node processes it, so the prohibited listener can open before launcher code runs. A pre-Node shell/env launcher instead executes an interpreter outside the closed external-tool set and cannot perform the required node-binary open/hash/same-fd execution using the stated in-process `node:crypto` mechanism. Thus no specified supported entrypoint simultaneously satisfies startup sanitization, complete executable-closure confinement, and mutation-point-bound Node identity; the NODE_OPTIONS regression would not discriminate a compliant installation from this gap.",
+      "objection_hash": "sha256:9191755714ec2e9f4d4be4aebb0939b519c6acf0adcdfa5032364af052df48ee",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "The Node-version prose oracle is self-referential as specified. It scans ALL tracked text while `node-version-claims.json` must store each hit's literal `matched_text`. Recording an exception such as `Node 18+` creates the same sub-22.12 hit inside the inventory; inventorying that hit creates another occurrence indefinitely. Without a structurally defined exclusion or non-matching canonical encoding for inventory payload fields, the exact-current inventory cannot reach a finite fixed point, so the reconciliation oracle is unsatisfiable whenever an exception exists.",
+      "objection_hash": "sha256:0ed9a42a517077152d02dc8a90b4e1b57899e598781a4b22e51c15ed77aa4e26",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "The archive-install acceptance contract is internally contradictory. It requires out-of-artifact digest, attestation-identity, and trust-root verification—and a recorded receipt—before any archive byte is extracted or executed, with `pylae doctor` refusing `unverified-install` without that receipt. It simultaneously requires a clean-room job to extract first and requires the archive-mode offline subset to go green from the tarball alone while reporting `publisher-unverified`. A tarball alone cannot supply the mandatory external receipt or satisfy the pre-extraction ordering; the clean-room oracle therefore cannot meet both stated acceptance conditions.",
+      "objection_hash": "sha256:aedbeab171ec963d737cf5c3c64153229ab7ab1e5180c7e845084f85e2eb9c52",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
