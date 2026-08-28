@@ -133,8 +133,17 @@ per-file designs are in the approved plan; acceptance criteria here.
   for each requested PR, AT ITS OWN MUTATION POINT, the controller
   re-queries `gh api` ground truth — PR still open, base repo/branch
   expected, head_sha equals the dossier's, `mergeable` against the CURRENT
-  base (mergeable_state not behind/dirty), required checks green at that
-  head — where "green" is NEVER keyed by check NAME alone (mutable names
+  base (mergeable_state not behind/dirty), required checks green FOR THE
+  MERGE CANDIDATE — where the EVALUATED COMMIT is resolved correctly
+  (GitHub `pull_request` runs evaluate the SYNTHETIC TEST-MERGE commit
+  of refs/pull/N/merge, not the branch head; binding evidence to the
+  head SHA alone would either find no runs or trust a run that never
+  tested the merge result): a check run is accepted for the PR iff its
+  evaluated commit is EITHER the dossier's head SHA (push-context runs)
+  OR a synthetic merge commit whose PARENTS ARE EXACTLY {current base
+  SHA, dossier head SHA} (verified via the commit object — a merge
+  commit built against an older base ⇒ `stale-merge-evidence`, refused);
+  and "green" is NEVER keyed by check NAME alone (mutable names
   cannot carry authority — the content-address rule; GitHub permits
   same-name runs from any app at the same SHA): the controller resolves
   each required check run to its PRODUCER and accepts it only if (a) the
@@ -203,7 +212,11 @@ per-file designs are in the approved plan; acceptance criteria here.
   **Accept**: adversarial fixtures pass; controller suite: colluding-agents
   fixture (ship+verify fabricate the same merged/sha — controller re-derives
   from a stub gh returning open and refuses to merge, exit 2, NO mutation);
-  ineligible-PR fixture ⇒ refused pre-merge; EYE-ACCEPTANCE regressions:
+  ineligible-PR fixture ⇒ refused pre-merge; MERGE-COMMIT-BINDING
+  regressions: a valid PR whose checks ran on the synthetic merge commit
+  (parents = {base, head}) ⇒ ACCEPTED (not wrongly refused for missing
+  head-SHA runs); a check run on a merge commit built against an older
+  base ⇒ stale-merge-evidence, refused; EYE-ACCEPTANCE regressions:
   green-checked PR with NO acceptance ⇒ acceptance-missing, no
   mutation; acceptance bound to another head/base/repository ⇒ refused;
   replayed acceptance after a new push (head moved) ⇒ acceptance-stale;

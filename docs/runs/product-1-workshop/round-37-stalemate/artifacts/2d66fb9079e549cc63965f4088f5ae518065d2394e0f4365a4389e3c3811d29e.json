@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:0a386865f594740b58361dfa3a6e19fd8d1306baf80a2f18b8dc9ffeb841c327",
+  "output_plan_artifact_hash": "sha256:0a386865f594740b58361dfa3a6e19fd8d1306baf80a2f18b8dc9ffeb841c327",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:782ffd820ed16e8f4e6fd5b6568148d5372f80bb6a8e5a64bd2c08e186200282",
+    "provenance_key": "anthropic:a1ec87be-2ecf-4a32-916c-d2c211e9f014"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:0d813887777c75c0177b75892ec9a3c374841b3f4fff1b64f089e5bd0f18e4fc",
+    "provenance_key": "openai:01a045e6-c471-7231-8e1f-aa6da058c302",
+    "bound_hash": "sha256:0a386865f594740b58361dfa3a6e19fd8d1306baf80a2f18b8dc9ffeb841c327"
+  },
+  "objections": [
+    {
+      "scope": "approach:E1",
+      "claim": "The merge controller binds required-check evidence only to the publisher-captured PR head SHA, but `pull_request` Actions normally evaluate GitHub's synthetic test-merge commit. GitHub specifies that when this test-merge commit has a status, that commit—not the source head—must pass ([required-check documentation](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks)); `GITHUB_SHA` likewise identifies the PR merge branch commit ([event documentation](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows)). Consequently, E1 can either reject valid PRs because no required runs exist at the source head or authenticate a run that did not test the merge candidate. `strict:true` only makes the server refuse the eventual PUT; it does not repair this oracle. The controller must bind the source head and current base to the API-derived test-merge SHA, verify that merge commit's parents, authenticate required runs at the SHA GitHub actually selected, and include a regression where source-head and test-merge SHAs differ.",
+      "objection_hash": "sha256:eb86bb06381b58255f940c2b63a692d317b5878fc8d67fd731194c0745754d73",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

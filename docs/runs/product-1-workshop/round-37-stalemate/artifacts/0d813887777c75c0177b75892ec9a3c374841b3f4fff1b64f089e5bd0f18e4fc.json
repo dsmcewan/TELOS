@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "approach:E1",
+        "claim": "The merge controller binds required-check evidence only to the publisher-captured PR head SHA, but `pull_request` Actions normally evaluate GitHub's synthetic test-merge commit. GitHub specifies that when this test-merge commit has a status, that commit—not the source head—must pass ([required-check documentation](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks)); `GITHUB_SHA` likewise identifies the PR merge branch commit ([event documentation](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows)). Consequently, E1 can either reject valid PRs because no required runs exist at the source head or authenticate a run that did not test the merge candidate. `strict:true` only makes the server refuse the eventual PUT; it does not repair this oracle. The controller must bind the source head and current base to the API-derived test-merge SHA, verify that merge commit's parents, authenticate required runs at the SHA GitHub actually selected, and include a regression where source-head and test-merge SHAs differ."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a045e6-c471-7231-8e1f-aa6da058c302",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a045e6-c471-7231-8e1f-aa6da058c302",
+    "source": "cli-seats/codex_ask"
+  }
+}
