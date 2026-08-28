@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "approach/release-capability-boundary",
+        "claim": "The release boundary remains fail-open for the allowlisted historical tags. At fc0fa05, v0.1.0/v0.2.0 exist without bound releases; the candidate exempts them from the tag↔release bijection while granting the controller and publisher GitHub Apps `contents:write`, which authorizes release creation. Either App can publish the first release against an existing historical tag without creating or modifying a tag ref, so the all-tags ruleset does not intervene; immutable releases only protect it after publication, and the integrity sweep detects the unauthorized public release after exposure. The EXISTING-TAG regression covers only an already-bound tag whose release slot is occupied, not these deliberately unbound historical tags. Thus blocker 6 and the fail-closed publication requirement remain unresolved."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcfkvf0",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcfkvf0",
+    "source": "cli-seats/codex_ask"
+  }
+}

@@ -1394,13 +1394,22 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   no assets and no acceptance; fabricating retroactive releases would
   forge history, so these are recorded as explicitly non-contract
   historical tags instead) — anything neither bijection-bound nor
-  historically recorded ⇒ sweep FAILS (publishing against an
-  already-existing tag needs no ref creation, so the ruleset alone
-  cannot stop it; the no-unbound-tag invariant plus this closed
-  historical record removes that surface, and the oracle proves it
-  continuously). MIGRATION regression: the sweep at the v0.3.0 head
-  passes with exactly the recorded historical tags; a NEW unbound tag
-  not in the signed record ⇒ sweep fails.
+  historically recorded ⇒ sweep FAILS. HISTORICAL SLOTS ARE OCCUPIED,
+  not left open (an unbound historical tag is a free release slot a
+  compromised contents:write App could publish first — no ref creation
+  needed, no ruleset intervening): the migration step has the EYE
+  publish a minimal immutable PLACEHOLDER release on each historical
+  tag, explicitly labeled "pre-contract historical tag — no release
+  contract claimed; see the signed HISTORICAL-TAGS record", carrying
+  only a pointer asset to that record — honest slot occupation, not
+  retroactive fabrication (the placeholder claims nothing about the
+  historical build). With every slot occupied, no machine credential
+  can ever create a first release on any existing tag. MIGRATION
+  regressions: the sweep at the v0.3.0 head passes with exactly the
+  recorded historical tags each bound to its labeled placeholder; a
+  machine credential attempting release create on v0.2.0 ⇒ 422
+  already_exists (slot occupied); a NEW unbound tag not in the signed
+  record ⇒ sweep fails.
   (e) RELEASE MUTATION IS EYE-LOCAL, THE TAG IS BORN AT PUBLISH, AND
   THE WRITER SET IS CLOSED — no workflow publishes, and no v* tag ever
   exists unpublished (the previous atomic-create design was

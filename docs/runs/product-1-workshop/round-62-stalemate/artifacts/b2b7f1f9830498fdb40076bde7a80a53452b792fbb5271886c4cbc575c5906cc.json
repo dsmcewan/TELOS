@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:e2575986780be7859d6c20f36a1bd6059a5de49843b23a657072c2f1b0b8af2f",
+  "output_plan_artifact_hash": "sha256:e2575986780be7859d6c20f36a1bd6059a5de49843b23a657072c2f1b0b8af2f",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:8b5f2cb643acec139d0969eb9268289731ea61cf898df822ee031776ea25d75f",
+    "provenance_key": "anthropic:1e950e7b-6a37-4093-851c-5b94f11263bd"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:274e5ea9cb4514eaf339b992ef5ed8b69f8aa65b50c7a46f9e1296743ffaab0d",
+    "provenance_key": "openai:codex-cli-mtcfkvf0",
+    "bound_hash": "sha256:e2575986780be7859d6c20f36a1bd6059a5de49843b23a657072c2f1b0b8af2f"
+  },
+  "objections": [
+    {
+      "scope": "approach/release-capability-boundary",
+      "claim": "The release boundary remains fail-open for the allowlisted historical tags. At fc0fa05, v0.1.0/v0.2.0 exist without bound releases; the candidate exempts them from the tag↔release bijection while granting the controller and publisher GitHub Apps `contents:write`, which authorizes release creation. Either App can publish the first release against an existing historical tag without creating or modifying a tag ref, so the all-tags ruleset does not intervene; immutable releases only protect it after publication, and the integrity sweep detects the unauthorized public release after exposure. The EXISTING-TAG regression covers only an already-bound tag whose release slot is occupied, not these deliberately unbound historical tags. Thus blocker 6 and the fail-closed publication requirement remain unresolved.",
+      "objection_hash": "sha256:00d4c9dfd8b40b9448853af18b721f7b3ec9fdffc91a6f9c8750044c9a1c6cab",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
