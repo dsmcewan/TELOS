@@ -203,14 +203,25 @@ denied syscall. Denying ring creation/entry/registration outright (no
 inspectable-arg dependence) closes this, and the launcher CLOSES ALL
 INHERITED DESCRIPTORS above stdio in ONE syscall — `close_range(3,
 ~0U, 0)` (no `/proc/self/fd` walk, hence no `getdents64` outside the
-grammar), then opens only the fds it needs — not merely io_uring rings —
-because an INHERITED ALREADY-BOUND/LISTENING SOCKET (e.g. a bound UDP
-socket that can `recvfrom` without ever calling bind/listen/accept, or a
-pre-existing io_uring ring) would otherwise receive inside the confined
-tree despite the syscall filter. INHERITED-SOCKET regression: the
-launcher is started with an inherited bound UDP socket and a pre-existing
-io_uring ring fd ⇒ `close_range` drops both before exec, neither can
-receive. (Node/libuv gracefully FALL BACK to the
+grammar) — AND VALIDATES/REPLACES fd 0/1/2, which `close_range(3,…)`
+deliberately preserves: the launcher `fstat`s each of stdin/stdout/stderr
+and, if any is NOT a safe expected character/regular/pipe type (in
+particular if it is a SOCKET — `read(0,…)` on a bound UDP socket is
+`recv()` with zero flags and would receive packets with NO denied
+syscall), REPLACES it with a launcher-created safe descriptor (reopen
+`/dev/null`, or a launcher-owned pipe) before exec — so no inherited
+standard descriptor can be a receiving endpoint. Then it opens only the
+fds it needs. This closes both HIGH fds and the STDIO trio, because an
+INHERITED ALREADY-BOUND/LISTENING SOCKET (a bound UDP socket that
+`recvfrom`/`read`s without ever calling bind/listen/accept, an AF_UNIX
+socket, or a pre-existing io_uring ring) would otherwise receive inside
+the confined tree despite the syscall filter. INHERITED-SOCKET
+regression: a bound UDP socket, an AF_UNIX socket, AND a pre-existing
+io_uring ring fd are placed INDEPENDENTLY on EACH of fd 0, 1, 2 and on a
+high fd ⇒ `close_range` drops the high fd and the stdio type-check
+replaces each unsafe standard fd, so NONE survives into the tree and none
+can receive (`read(0,…)` after replacement hits `/dev/null`, not a
+socket). (Node/libuv gracefully FALL BACK to the
 epoll/threadpool path when `io_uring_setup` returns EPERM, so
 doctor/verify --full remain operative.) CLIENT `socket()` for
 AF_INET/AF_INET6 `SOCK_STREAM` IS ALLOWED (a TCP/TLS client — gh api,
