@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6",
+  "output_plan_artifact_hash": "sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:8697ecbd539d8b291150b3ea2a9cbfaa0c9ae7b3830119e8107b9bfea6edf363",
+    "provenance_key": "anthropic:530a3cd3-9f35-401f-84e9-62ad15b6a7c7"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:905c8b0c236865e8f65684baf1928e09eabc2ccddb7cbf18adb9841c5f55c2b7",
+    "provenance_key": "openai:codex-cli-mtckputy",
+    "bound_hash": "sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "E6 does not yet provide a sound discriminating oracle mechanism. Section 6b explicitly leaves semantic discrimination and the concrete declarative language/reference evaluator to an implementation spike, while the interim relies on finite author-known test domains plus council/Eye source review. A lookup-table oracle can satisfy every enumerated positive and negative case, and source review is neither deterministic enforcement nor proof that the oracle evaluates the claimed invariant. Assertions that such an oracle will be `oracle-abi-nonconformant` are unsupported until a concrete constrained grammar and independently defined invariant semantics make lookup-table behavior structurally inexpressible. This leaves governance correction (d) and the frozen requirement that oracles discriminate unresolved; the concrete declarative semantics and its adversarial conformance tests must be settled as a pre-implementation merge gate, not deferred as evaluator form.",
+      "objection_hash": "sha256:847ecb2b5074bb53503a52480d47eaf41638e76e89ee66ac2b2fcb16432cf9f4",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

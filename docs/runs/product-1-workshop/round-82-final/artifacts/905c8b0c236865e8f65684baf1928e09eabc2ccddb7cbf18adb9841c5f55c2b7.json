@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach",
+        "claim": "E6 does not yet provide a sound discriminating oracle mechanism. Section 6b explicitly leaves semantic discrimination and the concrete declarative language/reference evaluator to an implementation spike, while the interim relies on finite author-known test domains plus council/Eye source review. A lookup-table oracle can satisfy every enumerated positive and negative case, and source review is neither deterministic enforcement nor proof that the oracle evaluates the claimed invariant. Assertions that such an oracle will be `oracle-abi-nonconformant` are unsupported until a concrete constrained grammar and independently defined invariant semantics make lookup-table behavior structurally inexpressible. This leaves governance correction (d) and the frozen requirement that oracles discriminate unresolved; the concrete declarative semantics and its adversarial conformance tests must be settled as a pre-implementation merge gate, not deferred as evaluator form."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtckputy",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtckputy",
+    "source": "cli-seats/codex_ask"
+  }
+}

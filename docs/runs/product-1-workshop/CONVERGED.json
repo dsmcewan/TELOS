@@ -1,0 +1,19 @@
+{
+  "run": "product-1-workshop (Daedalus maturation, Iliad lifecycle; OAuth CLI seats)",
+  "state": "converged-for-submission",
+  "convergence_authority": "Eye directive 2026-08-28 (docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-spikes-nonblocking.md): declare converged once no NEW plan-authorization blocker remains; spike-class objections are non-blocking and carried forward.",
+  "final_round": 82,
+  "final_round_disposition": "The sole round-82 objection is the E6 semantic-discrimination SPIKE (SPIKE-E6-EVALUATOR-FORM, \u00a76b): sound design stated (declarative oracle language makes lookup-tables structurally inexpressible), interim fail-closed (mandatory adversarial source review of every normative oracle record + battery), only the concrete declarative grammar deferred as a merge-gate on its own Argo slice \u2014 which is the reviewer's own stated resolution. No new plan-authorization blocker.",
+  "total_rounds": "82 (10 to first convergence + 72 re-maturation after council run 1's ratified hard stop and council run 2's freshness paradox)",
+  "matured_plan": "docs/runs/product-1-workshop/matured-approach.md (byte-identical to candidate-approach.md at this commit)",
+  "plan_ref": "sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6",
+  "carried_forward_not_defects": {
+    "argo_spikes": [
+      "SPIKE-E6-EVALUATOR-FORM (\u00a76b): declarative oracle language concrete grammar/evaluator form; merge-gate on the oracle-hardening slice; interim = source review + battery"
+    ],
+    "open_questions_for_the_eye": [
+      "product-1-oq-e6-determinism-deferral (+ 5 others in the pre-review) \u2014 ratified at S2 Council / S3 Eye grant"
+    ]
+  },
+  "next": "S2 TELOS Council adversarial review run 3 against this immutable candidate. NO Argo implementation until Council completes AND the Eye resolves the open authority questions AND grants implementation authority."
+}
