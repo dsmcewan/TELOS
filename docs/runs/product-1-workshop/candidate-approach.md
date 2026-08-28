@@ -697,10 +697,18 @@ per-file designs are in the approved plan; acceptance criteria here.
   after that single execution — and MANDATORY bwrap confinement (the
   repo's existing evidence.mjs closed-whitelist verifier discipline;
   bwrap is already a doctor prerequisite): each execution gets an
-  isolated mount namespace with private /tmp, /var/tmp, /dev/shm and a
-  read-only view outside its sandbox, so NO absolute shared writable
-  path exists between the two executions; bwrap unavailable ⇒ FAIL
-  `oracle-unrunnable` — confinement is never best-effort. Same argv, same entrypoint, same
+  isolated mount namespace with private /tmp, /var/tmp, /dev/shm, a
+  read-only view outside its sandbox, AND `--unshare-net`/
+  `--unshare-pid` — no network (a remote counter or any external
+  signal is unreachable) and no cross-run process signal; bwrap
+  unavailable ⇒ FAIL `oracle-unrunnable` — confinement is never
+  best-effort. The remaining nondeterministic channel (the clock) is
+  causally controlled by an A-B-A' PROTOCOL: after the negative run,
+  the BASELINE IS RE-RUN in a third pristine same-path sandbox and
+  must exit 0 AGAIN — an oracle keying on any time-varying signal to
+  produce the 0/nonzero pair will drift on the second baseline
+  (nonzero ⇒ FAIL oracle-environment-sensitive), while a genuinely
+  input-reading oracle passes all three trivially. Same argv, same entrypoint, same
   absolute path, same environment VARIABLES (equal names and shapes,
   pointing at per-run instances), no special mode; the only state
   observable in both executions is the governed input — the mutation is
@@ -743,7 +751,12 @@ per-file designs are in the approved plan; acceptance criteria here.
   uniquely keyed marker under /tmp or a cache during baseline, keying
   on its presence in the negative) ⇒ FAILS — the negative run's
   TMPDIR/HOME/caches are fresh private instances, the marker is
-  absent, the run exits 0 ⇒ oracle-nondiscriminating; a
+  absent, the run exits 0 ⇒ oracle-nondiscriminating; a REMOTE-SIGNAL
+  oracle (keying on an external incrementing counter) ⇒ the network is
+  unshared, the signal is unreachable, behavior collapses to constant
+  or error ⇒ caught by baseline or A-B-A'; a CLOCK-THRESHOLD oracle
+  (0 before time T, nonzero after) ⇒ the second baseline runs after T
+  and exits nonzero ⇒ oracle-environment-sensitive; a
   present-but-timeout oracle ⇒
   FAIL; an npm-script whose identical re-run exits 0 on the mutated sandbox
   ⇒ FAIL oracle-nondiscriminating; backfill complete (every backfilled
@@ -1166,16 +1179,33 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   update/deletion of `v*` to the Eye (no bot, no Actions principal) —
   a rogue workflow's token cannot mint or move a release tag, and
   releases are immutable once published.
-  (b2) MAIN HAS PUSH RESTRICTIONS EXCLUDING ACTIONS PRINCIPALS — the
-  PLATFORM ceiling a read-only token default cannot provide (any
-  workflow can self-grant `contents: write`, and environment policies
-  gate environment credentials, not GITHUB_TOKEN): the main ruleset's
-  "restrict who can push" list contains ONLY the Eye and the
-  merge-controller principal; the github-actions principal is NOT
-  listed, so a rogue workflow's write-scoped token is refused by the
-  server on ANY push or merge to main — the merge endpoint cannot be
-  reached around the controller regardless of what permissions the
-  workflow file requests. Draft mutation by such a token is covered by
+  (b2) MAIN HAS PUSH RESTRICTIONS EXCLUDING ACTIONS PRINCIPALS,
+  IMPLEMENTED AS SPLIT RULESETS (one ruleset cannot both restrict
+  actors and enforce checks without contradiction — ruleset update
+  restrictions admit only bypass actors, so a single combined ruleset
+  would force the controller to be a bypass actor of its own safety
+  checks): (α) the SAFETY ruleset carries strict required status checks
+  + up-to-date enforcement with an EMPTY bypass_actors list — it binds
+  EVERYONE, the Eye and controller included, and E1's non-bypass
+  precondition is scoped to exactly this class: the controller must be
+  absent from the bypass list of every ruleset that enforces checks;
+  (β) the ACTOR-RESTRICTION ruleset restricts update/push on main with
+  bypass_actors = {Eye, merge-controller} — membership here grants
+  OPERABILITY (permission to be the one who merges) and no check
+  bypass whatsoever, because (α) still applies to them; the
+  github-actions principal appears in neither list, so a rogue
+  workflow's write-scoped token is refused by the server on ANY push
+  or merge to main — the merge endpoint cannot be reached around the
+  controller regardless of what permissions the workflow file
+  requests. The custody oracle distinguishes ruleset classes by RULE
+  CONTENT (a ruleset containing required-check rules with any bypass
+  actor ⇒ unsafe-merge-environment; the controller present only in
+  pure actor-restriction bypass lists ⇒ compliant). SPLIT-RULESET
+  regressions: the controller merges an eligible PR (β operability)
+  while a stale-base PR is still refused BY THE SERVER for the
+  controller itself (α binds it); a config where the controller
+  appears in a check-enforcing ruleset's bypass list ⇒ startup
+  refusal. Draft mutation by such a token is covered by
   (iv): the pre-flip re-verification catches ANY asset/body change and
   aborts+deletes rather than publishing — fail-closed, nothing
   unverified goes public. Regressions: a workflow token with

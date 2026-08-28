@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E1-release-branch-policy",
+        "claim": "The main-branch policy is internally unsatisfiable on the stated personal repository. E1 requires the merge-controller principal to be absent from every ruleset bypass list, but §5(b2) relies on a main ruleset whose update restriction allows only the Eye and merge controller. GitHub ruleset update restrictions permit updates only by bypass actors; classic protected-branch push allowlists that remain subject to required checks are limited to organization-owned repositories. Thus either the controller is a bypass actor and fails E1's non-bypass/strict-TOCTOU precondition, or it is absent and cannot merge. Split actor restriction from safety enforcement with explicitly compatible rulesets and regressions proving the controller can merge while remaining unable to bypass strict required checks."
+      },
+      {
+        "scope": "candidate:E6-oracle-discrimination",
+        "claim": "The oracle runner still does not make the governed mutation the only observable difference. Mandatory bwrap mount confinement isolates writable filesystem state, but the plan does not isolate network access, clocks, randomness, process identity, or other nondeterministic inputs. An input-ignoring oracle can use a remote incrementing counter—or another changing external signal—to exit 0 during baseline and nonzero during the negative run while ignoring the mutation, satisfying the same-path, same-argv, fresh-filesystem test. Require a deterministic execution contract that removes these channels or an equivalent causal-control mechanism, and add a network/external-signal input-ignoring regression that must be rejected."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcbqj6q",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcbqj6q",
+    "source": "cli-seats/codex_ask"
+  }
+}
