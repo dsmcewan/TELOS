@@ -833,21 +833,28 @@ per-file designs are in the approved plan; acceptance criteria here.
   unavailable ⇒ FAIL `oracle-unrunnable` — confinement is never
   best-effort. The remaining nondeterministic channels (the clock and
   KERNEL ENTROPY — getrandom cannot be portably denied inside the
-  sandbox) are controlled by a SHUFFLED, CONCEALED EXECUTION SCHEDULE
-  with an explicit adversarial bound: the full battery — 12 pristine
-  baselines, 12 mutated negatives, 12 conforming positives (36
-  executions, each in its own pristine same-path sandbox) — runs in a
-  CRYPTOGRAPHICALLY RANDOM ORDER drawn by the runner and never
-  revealed to the oracle (a FIXED A-B-A' cadence would let a periodic
-  clock-phase oracle track the known expected-outcome cycle and stay
-  synchronized — repetition alone does not decorrelate clock-observing
-  strategies); each execution's exit must match its concealed case (0
-  for baselines and positives, nonzero for negatives). Any
-  input-ignoring strategy — clock-phase, entropy, or constant — must
-  effectively guess which 12 of the 36 concealed slots hold negatives:
-  admission probability ≤ 1/C(36,12) < 8e-10, PROBABILISTIC AND STATED
-  (never claimed deterministic); a genuinely input-reading oracle
-  passes all 36 trivially. Same argv, same entrypoint, same
+  sandbox) are controlled by EXHAUSTIVE CLOSED-DOMAIN EVALUATION under
+  a CONCEALED, CONTENT-DERIVED ORDER — the AUTHORITATIVE verdict is
+  DETERMINISTIC, never sampled (a randomized subset would make the
+  required gate probabilistic — an input-ignoring oracle could
+  authorize by chance, violating the deterministic-gate boundary): the
+  runner enumerates the ENTIRE finite mutation domain and conforming-
+  variant domain for the record (the ≥8-cardinality bound makes them
+  closed, enumerable sets; a record whose natural domain is unbounded
+  must declare a reviewed closed authoritative SUBDOMAIN) and executes
+  EVERY element plus a pristine baseline per element — each in its own
+  pristine same-path sandbox — checking each execution's exit against
+  its case (0 for baselines and conforming variants, nonzero for
+  negatives); ANY single mismatch ⇒ FAIL, deterministically. The
+  execution ORDER is a deterministic function of (governed content ‖
+  recorded run salt), concealed from the oracle — identical content
+  yields identical verdicts (determinism preserved), while an
+  input-ignoring clock-phase strategy cannot reproduce the
+  content-derived expected pattern without reading the inputs, and any
+  fixed exit pattern fails some enumerated element. Randomized
+  spot-sampling exists only as a SUPPLEMENTAL fast dev mode, never as
+  the authoritative gate; a genuinely input-reading oracle passes the
+  exhaustive battery trivially. Same argv, same entrypoint, same
   absolute path, same environment VARIABLES (equal names and shapes,
   pointing at per-run instances), no special mode; the only state
   observable in both executions is the governed input — the mutation is
@@ -919,13 +926,12 @@ per-file designs are in the approved plan; acceptance criteria here.
   crosses runs, the pair collapses ⇒ oracle-nondiscriminating; a CLOCK-THRESHOLD oracle
   (0 before time T, nonzero after) ⇒ later-scheduled baselines and
   positives after T exit nonzero ⇒ caught; a PERIODIC CLOCK-PHASE
-  oracle (cycling exits on a period tuned to the old fixed cadence) ⇒
-  the shuffled concealed ordering decorrelates it — its phase pattern
-  mismatches the hidden case assignment with overwhelming probability
-  ⇒ oracle-nondiscriminating; a RANDOM-EXIT
-  oracle (crypto.randomBytes coin flip) ⇒ inconsistent across the 12
-  repetitions with overwhelming probability (admission bound < 8e-10 under the shuffled schedule,
-  documented) ⇒ oracle-nondiscriminating; a SINGLETON-DOMAIN
+  oracle (cycling exits on any fixed period) ⇒ its phase pattern
+  cannot reproduce the content-derived concealed case assignment and
+  it fails some element of the exhaustive battery deterministically ⇒
+  oracle-nondiscriminating; a RANDOM-EXIT oracle (crypto.randomBytes
+  coin flip) ⇒ fails some element of the exhaustive battery ⇒
+  oracle-nondiscriminating; a SINGLETON-DOMAIN
   declaration ⇒ FAIL mutation-domain-too-small before any execution; a
   FIXTURE-DIGEST-SPECIAL-CASING oracle (nonzero only on one memorized
   family member) ⇒ fails on the other drawn members ⇒

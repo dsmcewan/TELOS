@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:ef9d69771884511f11b6e296bc9610f2ab9cae084febb93fc4a473957b4dab89",
+  "output_plan_artifact_hash": "sha256:ef9d69771884511f11b6e296bc9610f2ab9cae084febb93fc4a473957b4dab89",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:2fd1e5f8fd71029822b0761615c55ce5d91c816ef65a2ee0cd77bdb1397bcd76",
+    "provenance_key": "anthropic:a84912da-66d7-4f8c-b3ad-20cb3b3d0776"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:85f8ce83c9b51b05b2c217617881f0a26addae84f12e54d44e8e6abe81658b9a",
+    "provenance_key": "openai:codex-cli-mtchvoe1",
+    "bound_hash": "sha256:ef9d69771884511f11b6e296bc9610f2ab9cae084febb93fc4a473957b4dab89"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "E6 makes an authoritative required gate probabilistic: its concealed random schedule explicitly permits an input-ignoring oracle to pass with probability up to 1/C(36,12). Recording the random draws makes a completed run reproducible but does not prevent the initial false-green admission, so identical governed content can receive different gate verdicts and a nondiscriminating oracle can authorize by chance. This violates the frozen fail-closed requirement and the repository's deterministic-gate boundary. Randomized mutation testing may be supplemental, but authority must rest on a deterministic discriminator (for example, exhaustive evaluation of a closed finite domain or another deterministically complete enforcement mechanism).",
+      "objection_hash": "sha256:ff4a9fc247fdd53f5ad7502cca8bd63b27b13d5965ff8bb675c5982b84b18443",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

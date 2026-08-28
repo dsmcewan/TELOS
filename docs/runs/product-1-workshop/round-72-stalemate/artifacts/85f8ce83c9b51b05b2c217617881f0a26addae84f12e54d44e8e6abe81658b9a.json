@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach",
+        "claim": "E6 makes an authoritative required gate probabilistic: its concealed random schedule explicitly permits an input-ignoring oracle to pass with probability up to 1/C(36,12). Recording the random draws makes a completed run reproducible but does not prevent the initial false-green admission, so identical governed content can receive different gate verdicts and a nondiscriminating oracle can authorize by chance. This violates the frozen fail-closed requirement and the repository's deterministic-gate boundary. Randomized mutation testing may be supplemental, but authority must rest on a deterministic discriminator (for example, exhaustive evaluation of a closed finite domain or another deterministically complete enforcement mechanism)."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtchvoe1",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtchvoe1",
+    "source": "cli-seats/codex_ask"
+  }
+}
