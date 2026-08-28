@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach",
+        "claim": "The Phase-A pre-activation whitelist has no sound binding to the PR bytes the controller merges. A5 requires a closed, content-addressed whitelist before later slices are implemented, so it cannot contain their final head/blob digests; if entries instead address slice descriptions or self-reported IDs, an unrelated PR can claim a whitelisted identity. The Eye acceptance binds repo/PR/head/base/plan_ref but not a whitelist entry or slice descriptor, and no deterministic diff-to-entry predicate is specified. Therefore the `slice-not-whitelisted` regression would not discriminate listed work from an unlisted change, leaving the Eye-mandated activation-deferred scope boundary unenforced. Bind each finalized PR head to an immutable Phase-A slice descriptor through an Eye-signed authorization field and have the controller verify that binding plus the descriptor's closed change-surface constraints before mutation."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcrs4ya",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcrs4ya",
+    "source": "cli-seats/codex_ask"
+  }
+}
