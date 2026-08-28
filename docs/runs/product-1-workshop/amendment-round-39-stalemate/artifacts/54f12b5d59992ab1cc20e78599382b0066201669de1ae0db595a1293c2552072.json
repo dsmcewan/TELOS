@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach:PD001-inherited-stdio-socket",
+        "claim": "The whole-tree no-listener mechanism closes only descriptors 3 and above with `close_range(3, ~0U, 0)` while preserving fd 0/1/2 without validating their types. A caller can place an already-bound UDP socket on stdin, after which confined code can receive packets using ordinary `read(0, ...)`; `read()` on a socket is equivalent to `recv()` with zero flags ([Linux recv(2)](https://man7.org/linux/man-pages/man2/recvmsg.2.html)). This bypasses every listed seccomp denial because no socket, bind, listen, accept, recvfrom, SCM_RIGHTS, or pidfd syscall is needed after launch, directly contradicting the inherited-socket regression and the claim that no receiving endpoint survives. The launcher must reject or replace unsafe fd 0/1/2 entries with launcher-created safe descriptors before exec, and regressions must place bound UDP and AF_UNIX sockets plus an io_uring fd independently on each standard descriptor and prove none survives. Bound to candidate raw sha256:09623c02a2293ec9ef05dd50838fc29aee89ae4691c03c0c9ec265c486c50633."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtczxzdk",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtczxzdk",
+    "source": "cli-seats/codex_ask"
+  }
+}
