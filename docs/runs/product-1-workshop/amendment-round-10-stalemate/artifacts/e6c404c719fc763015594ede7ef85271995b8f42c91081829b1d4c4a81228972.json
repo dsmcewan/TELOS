@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:8c1b62851b3648133e0f80a005391e31f7ce63a1db17031028644f81a6302b24",
+  "output_plan_artifact_hash": "sha256:8c1b62851b3648133e0f80a005391e31f7ce63a1db17031028644f81a6302b24",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:4a7f0238c66f2a7d70aa9b88694bf8bf6b85f88dd7de86c7ea293345c8d15cf4",
+    "provenance_key": "anthropic:f3cd4d6b-ae5b-40c2-a6fd-00067bcadb97"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:310d6d11a60664a48ab2cdbc7538776a6a40620271cd6bad482d3e6e12e9fe60",
+    "provenance_key": "openai:codex-cli-mtcr4o1v",
+    "bound_hash": "sha256:8c1b62851b3648133e0f80a005391e31f7ce63a1db17031028644f81a6302b24"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "The two-phase transition deadlocks at Phase B. A5 defines the closed pre-activation whitelist as {E1, freshness, plugin self-containment, E2, E3, E6, E4, product memory/ADRs, naming/versions}, omitting the excluded-dirs/atomic-activation PR. Section 6 then requires the controller to enforce whitelist membership for every subsequent merge, and §§3/6 state that only whitelisted slices are merge-eligible until Phase B completes. Because the Phase-B PR must merge while Phase B is not yet complete, the controller must reject it as `slice-not-whitelisted`, so activation can never occur. Add the uniquely content-addressed Phase-B atomic-activation slice to A5's whitelist, constrained as its terminal transition entry, and add a regression proving it is accepted while every other unlisted PR remains refused.",
+      "objection_hash": "sha256:2e45586aa189409a570e62a6be2531e1229718c12b38d09ee44e90c9a2d0f480",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
