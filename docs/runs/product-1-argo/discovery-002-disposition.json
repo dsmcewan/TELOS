@@ -1,0 +1,29 @@
+{
+  "record": "DISCOVERY-002 disposition + required successor governance (returned to The Eye before Phase B work)",
+  "date": "2026-08-28",
+  "discovery": "docs/runs/product-1-argo/discovery-002-preexisting-meta-ads-connector.json",
+  "phase_a_status": "ACCEPTED (scoped) — docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-phase-a-acceptance.json; data-only; gates green; UNAFFECTED by DISCOVERY-002.",
+  "disposition": {
+    "classification": "PHASE B obligation change (not a Phase A defect, not an in-place interpretation).",
+    "required_path": "A bounded SUCCESSOR AMENDMENT (Amendment-2) to the plan's §3 Phase B / AM-43-activation obligation, correcting the false 'both directories do not yet exist / add both directories' framing to 'add cli/ AND formally classify the pre-existing connectors/meta-ads-mcp/', routed Daedalus -> TELOS re-authorization -> new/confirmed Eye grant (the same governance path DISCOVERY-001 followed). This produces a NEW plan_ref; the current grant is not extended to cover the re-governed Phase B obligation.",
+    "needs_eye_authorization_to_begin": "YES — as with Amendment-1, beginning the Amendment-2 Daedalus/authorization cycle requires an explicit Eye go (durable-signer cost + authorization weight)."
+  },
+  "whitelist_impact_analysis": {
+    "a5_whitelist_terminal_descriptor": "phase-b-atomic-activation lists connectors/meta-ads-mcp/** in its allowed_path_globs.",
+    "finding": "The whitelist descriptor constrains WHICH paths the Phase B slice may TOUCH; the Phase B slice touches connectors/meta-ads-mcp/ under EITHER obligation (add vs classify), so the path-glob constraint is unchanged by DISCOVERY-002. The obligation DECISION (add vs classify + the AM-43 activation semantics) lives in the plan text + AM-43, which Amendment-2 re-governs — NOT in the whitelist's change-surface constraint.",
+    "conclusion": "The A5 whitelist likely does NOT require revision from DISCOVERY-002 (its change-surface constraint stands); only the plan's Phase B obligation text + AM-43 activation semantics do. To be confirmed as part of Amendment-2 scoping."
+  },
+  "e1_genesis_merge_assessment": {
+    "question": "May the E1 genesis merge proceed as strictly the Phase A bootstrap mechanism without encoding the discovered Phase B classification?",
+    "e1_is": "the deterministic pre-merge merge-controller (sole merge credential; generic merge enforcement). E1 itself does NOT classify package dirs and does NOT encode the connectors/meta-ads-mcp/ decision.",
+    "subtlety": "The genesis merge would land the A5 whitelist as enforced authority. Per the analysis above, the whitelist's change-surface constraint does not itself encode the add-vs-classify DECISION, so landing it arguably does not encode the discovered classification. HOWEVER this is a HARD-TO-REVERSE, governance-foundational ceremony (it makes all future merges controller-enforced), and DISCOVERY-002 is open.",
+    "recommendation": "HOLD the E1 genesis merge for explicit Eye go rather than execute autonomously — the conditional permission is satisfiable on my analysis, but the hard-to-reverse + open-discovery context warrants the Eye's confirmation. Presented, not executed."
+  },
+  "not_done": [
+    "No Phase B work begun.",
+    "No Amendment-2 cycle started (awaiting Eye go).",
+    "E1 genesis merge NOT executed (held for confirmation).",
+    "Phase A slice NOT merged."
+  ],
+  "content_address": "sha256:288994125b9c9901f36ecbf337f6ccf9a48285f8640db0abb59c30edf1cffed6"
+}

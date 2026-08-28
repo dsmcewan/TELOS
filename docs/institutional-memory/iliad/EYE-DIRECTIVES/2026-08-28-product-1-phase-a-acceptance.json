@@ -1,0 +1,22 @@
+{
+  "record": "Eye ruling — product-1 AMENDMENT-1 Phase A per-slice acceptance (SCOPED)",
+  "ruling": "ACCEPT Phase A as implemented, subject to its recorded evidence",
+  "eye": "the operator (Drason McEwan), acting as The Eye",
+  "date": "2026-08-28",
+  "slice": {
+    "branch": "quest/product-1-phase-a-bootstrap",
+    "head": "9fff1275b7444d7bd208e53664c5adb39867466d",
+    "acceptance_evidence": "docs/runs/product-1-argo/phase-a-acceptance.json"
+  },
+  "authorized_plan_ref": "sha256:41a1e8b6dddc12da502db305e7044570f121784903e4183cf17a03a2ca100ef7",
+  "scope_limits": [
+    "Does NOT authorize progression toward Phase B.",
+    "Does NOT amend, waive, or extend the current plan authority.",
+    "The pre-existing connectors/meta-ads-mcp/server.mjs condition is recorded as a NEW DISCOVERY (DISCOVERY-002) against the authorized plan; the resulting Phase B obligation change MUST route through the required governance path.",
+    "'add both directories' MUST NOT be reinterpreted in-place as 'add cli/ and formally classify the existing connector' — that obligation change is a governance decision, not an implementation interpretation.",
+    "The E1 genesis merge may proceed ONLY IF it is strictly the already-authorized Phase A bootstrap mechanism and does NOT encode the newly discovered Phase B classification decision.",
+    "The discovery disposition and any required successor plan/authorization must be returned BEFORE Phase B work begins."
+  ],
+  "discovery_opened": "DISCOVERY-002 (docs/runs/product-1-argo/discovery-002-preexisting-meta-ads-connector.json)",
+  "content_address": "sha256:31be455507159e06f1d5dd0e013c8e029dd9b9e19f08775fb0bf805ddc8501b9"
+}

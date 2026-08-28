@@ -1,0 +1,20 @@
+{
+  "record": "DISCOVERY-002 — connectors/meta-ads-mcp/ pre-exists, contradicting the amended plan's Phase B obligation",
+  "date": "2026-08-28",
+  "opened_by": "The Eye, on product-1 AMENDMENT-1 Phase A acceptance",
+  "against_plan_ref": "sha256:41a1e8b6dddc12da502db305e7044570f121784903e4183cf17a03a2ca100ef7",
+  "finding": "The authorized amended plan (§3 / AM-43 activation) states that at the Phase A head 'cli/ and connectors/meta-ads-mcp/ do not yet exist' and frames Phase B as 'add both directories'. In reality connectors/meta-ads-mcp/server.mjs ALREADY EXISTS on disk (raw sha256 sha256:df4e115c266ef77441d44eda4785fea1d497e1290165fa136e0bc10fb5a5234f) and the pre-existing verify-contracts (313/313) + test-inventory are GREEN at the Phase A head with it present. cli/ still does not exist.",
+  "consequence": "The Phase B obligation is misdescribed: it is NOT 'add both directories' but 'add cli/ AND formally classify the pre-existing connectors/meta-ads-mcp/'. The plan's justification for deferring AM-43 activation to Phase B (that pinning it at the Phase A head would break inventory bijection because the dirs do not exist) is only partly accurate — it holds for cli/, but connectors/meta-ads-mcp/ already exists and is currently tolerated by the gates.",
+  "scope": "Phase A is UNAFFECTED (data-only; accepted; gates green). This is a PHASE B obligation change.",
+  "ruling": "The Eye ruled this must route through the required governance path, NOT be reinterpreted in-place. Per-slice/plan-change governance: a bounded successor amendment to the plan's Phase B obligation + TELOS re-authorization + a new/confirmed Eye grant are required BEFORE Phase B work (the same path DISCOVERY-001 followed).",
+  "does_not_affect": [
+    "Phase A (accepted, merged-eligible via the E1 genesis bootstrap mechanism)",
+    "the E1 genesis merge IF strictly Phase A bootstrap and it does not encode this classification"
+  ],
+  "connector_present_evidence": {
+    "path": "connectors/meta-ads-mcp/server.mjs",
+    "raw_sha256": "sha256:df4e115c266ef77441d44eda4785fea1d497e1290165fa136e0bc10fb5a5234f",
+    "tracked": true
+  },
+  "content_address": "sha256:d4d4bdd84cd666ae3b4a837258904d7dac990bf9c88b29b3587a25659d077347"
+}
