@@ -241,9 +241,25 @@ per-file designs are in the approved plan; acceptance criteria here.
   same-name runs from any app at the same SHA): the controller resolves
   each required check run to its PRODUCER and accepts it only if (a) the
   producing app is the authenticated GitHub Actions app, (b) the run's
-  workflow file blob at the evaluated head matches the trusted workflow
-  digest set, and (c) the exact run id + head SHA are recorded in the
-  attestation; a green same-name run from any other producer is ignored
+  workflow file blob at the evaluated commit satisfies the
+  TRANSITION-AWARE producer rule — EITHER it matches the currently
+  trusted workflow digest set, OR the PR carries a valid Eye-signed
+  transition record covering the workflow change AND the blob matches
+  EXACTLY the record's bound new workflow digest, recomputed by
+  base-sourced (transition-verifier) code, never by the proposed bytes
+  (a workflow-transition PR's checks necessarily run from the NEW blob
+  on the synthetic merge commit — e.g. Phase B adding the permanent
+  Meta-Ads job to ci.yml — so old-digest-only matching would make every
+  planned workflow change unmergeable) — and (c) the exact run id +
+  head SHA are recorded in the attestation. TRANSITION-AWARE producer
+  regressions: an unsigned workflow change ⇒ refused
+  workflow-modified; a signed record whose bound new digest mismatches
+  the actual blob ⇒ refused transition-payload-mismatch; a record
+  omitting a changed workflow file ⇒ refused; MIXED old/new bytes
+  (some workflow files at old digests, changed ones bound by the
+  record) ⇒ accepted only when every file matches either the trusted
+  set or the record's exact binding; the Phase-B ci.yml change with a
+  valid record ⇒ mergeable; a green same-name run from any other producer is ignored
   (fixture: an untrusted app posts a green same-name check at the exact
   SHA ⇒ the controller does NOT count it and refuses eligibility) — AND
   requires AUTHENTICATED EYE ACCEPTANCE FOR EVERY MERGE, ordinary PRs
