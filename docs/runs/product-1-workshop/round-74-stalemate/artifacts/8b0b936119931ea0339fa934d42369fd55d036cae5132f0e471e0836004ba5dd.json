@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:fc2f1f0e33f6e5b803858a3041054abb274a251c3cd4fe68b0330ad62ce14f21",
+  "output_plan_artifact_hash": "sha256:fc2f1f0e33f6e5b803858a3041054abb274a251c3cd4fe68b0330ad62ce14f21",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:72d472803effce54d477dabb58fa5a20a481d77c7b479bc4ea9c3e768fa43712",
+    "provenance_key": "anthropic:a9c0d781-beb6-4a58-8350-d1405d65275f"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:1d7ba4b2129eb7472ffdcb3e3add0a72f3fa87ff01eb674d29a7518b305ed3d7",
+    "provenance_key": "openai:codex-cli-mtci9v26",
+    "bound_hash": "sha256:fc2f1f0e33f6e5b803858a3041054abb274a251c3cd4fe68b0330ad62ce14f21"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:E6-oracle-determinization",
+      "claim": "E6's determinization mechanism is not implementable as specified. A bwrap seccomp-BPF filter cannot synthesize runner-fixed bytes into getrandom/getentropy caller buffers or emulate fixed clock results; it can only filter syscalls unless a separate user-notification supervisor is implemented, and vDSO clock calls can bypass seccomp entirely. No such supervisor or vDSO interception mechanism is specified. Therefore the claimed deterministic exhaustive oracle battery and RANDOM-EXIT/CLOCK-PHASE regressions are unsatisfied, leaving governance correction d unresolved.",
+      "objection_hash": "sha256:5ad4444fa103a6f0ea416ee6c90b37a70bde946f6038cba798f6e591f02cf37d",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach:release-custody",
+      "claim": "The release writer-set closure omits workflow-issued GITHUB_TOKEN credentials. The telos-authority-release environment constrains only jobs that reference it; a substituted off-main workflow can omit the environment and explicitly request contents:write because the repository's read-only default is not a permission ceiling. Main/tag rulesets protect refs, not Release API objects, and the candidate itself acknowledges that contents:write can delete an immutable release. Thus an off-main workflow can mutate drafts or delete published releases whenever Actions is enabled, outside the claimed Eye-local exclusive interval and without appearing in the collaborator/App/deploy-key custody manifest. The substituted-definition, closed-writer-set, and default-suspended acceptance claims are therefore false.",
+      "objection_hash": "sha256:c30a54ac993a4ecd6a49037c25b8b9288dc537165720ea387be3911d323de937",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

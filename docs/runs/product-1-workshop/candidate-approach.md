@@ -833,18 +833,26 @@ per-file designs are in the approved plan; acceptance criteria here.
   unavailable ⇒ FAIL `oracle-unrunnable` — confinement is never
   best-effort. The remaining nondeterministic channels (the clock and
   KERNEL ENTROPY — getrandom cannot be portably denied inside the
-  sandbox) are ELIMINATED BY SECCOMP DETERMINIZATION, making the
-  battery a genuinely deterministic discriminator (finite black-box
-  testing of a program that can still observe entropy or the clock can
-  never be deterministic — a coin-flip oracle passes any finite battery
-  with nonzero probability; the channels themselves must go): the
-  battery sandbox adds a bwrap seccomp filter under which
-  getrandom/getentropy return runner-fixed bytes,
-  clock_gettime/gettimeofday/time return a fixed epoch, and
-  /dev/{u,}random are bound to fixed-content files — every oracle
-  thereby executes as a DETERMINISTIC FUNCTION of its inputs (a
-  RANDOM-EXIT oracle collapses to a constant and deterministically
-  fails the baselines or the negatives). ROLES ARE SPLIT: this
+  sandbox) are DENIED, NOT SYNTHESIZED, and oracles are REQUIRED PURE
+  (seccomp-BPF cannot write fixed bytes into a getrandom buffer or
+  emulate a clock result — it can only filter syscalls; the sound move
+  is to FORBID the channels and require the oracle to be a pure
+  function of the provided input snapshot): a qualified oracle runs
+  under a seccomp filter returning SIGSYS for getrandom/getentropy, the
+  clock family (clock_gettime/gettimeofday/time — with the loader
+  invoked so glibc falls back to the trapped syscall rather than vDSO,
+  and /dev/{u,}random bound to fixed-content files), and all
+  network/IPC syscalls (already namespace-denied). An oracle that
+  TOUCHES any nondeterministic channel DIES (SIGSYS) and FAILS
+  qualification `oracle-impure`; a discriminating oracle needs none, so
+  under this filter every qualified oracle is a DETERMINISTIC FUNCTION
+  of its inputs and the exhaustive battery is a genuine deterministic
+  discriminator. Residual vDSO-clock leakage (if any survives the
+  fallback measure) is caught by a REPEAT-IDENTICAL-INPUTS check — the
+  same input executed twice must agree, else FAIL
+  `oracle-nondeterministic`. (A RANDOM-EXIT oracle dies on getrandom;
+  a CLOCK-PHASE oracle dies on the clock syscall or disagrees on the
+  repeat check.) ROLES ARE SPLIT: this
   exhaustive determinized battery is the ENROLLMENT-TIME QUALIFICATION
   gate — required CI on every PR that adds or changes an oracle or its
   closure, its evidence recorded — while GATE-TIME AUTHORITY is the
@@ -1620,9 +1628,27 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   ⇒ platform-refused (Actions disabled, no live credential) and any
   simulated drift observed at step (2) or (4) ⇒ publication
   refused/aborted — never published around.
-  NO Actions workflow performs any release mutation, and default
-  GITHUB_TOKEN permissions are read-only (a default, not a ceiling —
-  the plan does not claim otherwise).
+  NO Actions workflow performs any release mutation. THE ACTIONS-TOKEN
+  WRITER IS CLOSED BY WHO CAN RUN A WORKFLOW AT ALL (a substituted
+  off-main workflow CAN self-grant contents:write — read-only default
+  is not a ceiling — and contents:write reaches the Releases API, so
+  the defense is that no UNTRUSTED principal can cause any workflow to
+  run with a write-capable token): (1) `workflow_dispatch` and push
+  both require WRITE access — an outside attacker has neither, and a
+  write COLLABORATOR is exactly what the custody-drift oracle fails the
+  pipeline on; (2) the only workflow an OUTSIDE contributor can trigger
+  is via a FORK PULL REQUEST, whose GITHUB_TOKEN GitHub FORCES
+  READ-ONLY and which cannot reach the release environments or secrets
+  regardless of what the PR's workflow file requests (a platform
+  guarantee for fork PRs, not a settable default); (3) during the
+  Eye-local exclusive publish interval Actions is disabled entirely.
+  Every principal that could run a write-token workflow is therefore in
+  the custody manifest (drift-swept); the one that is not (fork-PR
+  contributor) gets a platform-forced read-only token; and the publish
+  window admits no Actions — the closed-writer-set claim covers Actions
+  tokens too. FORK-PR regression: a fork PR whose workflow requests
+  contents:write and attempts a release delete ⇒ the platform
+  read-only token yields 403, no mutation.
   **Accept (workflow trust)**: off-main-tag regression — a tag whose
   target commit carries a modified release.yml is pushed ⇒ NOTHING
   triggers (no push trigger exists); SUBSTITUTED-DEFINITION regression —
