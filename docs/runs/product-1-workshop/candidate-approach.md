@@ -88,12 +88,15 @@ clearing the environment): trusted `-c` overrides force
 `core.fsmonitor=false core.hooksPath=/dev/null core.pager=cat
 protocol.*.allow=never` and every program-valued config off, hooks
 neutralized — no daemon/serve/upload-pack/receive-pack. CATEGORICAL
-DESCENDANT CONFINEMENT: every git invocation runs inside the bwrap
-sandbox with `--unshare-net` and a read-only fs, so even a
-config/hook-launched helper that slipped through has NO network
-namespace to open a reachable listener and no writable surface — the
-git front-end AND all its descendants are network-incapable by
-construction; MALICIOUS-fsmonitor regression: a repo-local
+DESCENDANT CONFINEMENT: every git invocation runs UNDER THE
+LAUNCHER-INSTALLED INHERITED SECCOMP FILTER (§1: bind/listen/accept
+kernel-denied across the whole tree, un-droppable under NO_NEW_PRIVS) —
+the PRIMARY guarantee that no git descendant can open a listener,
+sound even inside a private network namespace — AND inside the bwrap
+sandbox with `--unshare-net` and a read-only fs as defense-in-depth (no
+reachable interface, no writable surface); so even a config/hook-launched
+helper that slipped through is network-listener-incapable by kernel
+construction, not merely by namespace isolation; MALICIOUS-fsmonitor regression: a repo-local
 core.fsmonitor helper ⇒ forced off by the trusted -c override, and
 even if invoked cannot open a listener under --unshare-net. A
 CLOSURE-DERIVED COMPLETENESS REGRESSION enumerates every git argv the
@@ -119,11 +122,14 @@ BROUGHT INSIDE THE ENFORCEMENT, not merely digest-pinned (digest proves
 WHICH binary ran, not that its native code cannot listen): (1) its
 single-file source (`cli/launcher/pylae-launch.c`) is IN the executable
 closure and subject to a NATIVE LISTENER-CAPABILITY REVIEW — a closed
-syscall grammar admitting only env-clear, open/fstat/read/close (for the
-hash), fexecve/exec-family, and process control, and CATEGORICALLY
-rejecting socket/bind/listen/connect/accept and any inspector activation
-(a launcher source with a socket syscall ⇒ oracle FAILS
-`launcher-listener-capable`); (2) the release build COMPILES it with a
+syscall grammar admitting exactly: env-clear; open/fstat/read/close and
+the SEALED-SNAPSHOT set actually required (memfd_create, write, lseek,
+fcntl(F_ADD_SEALS), mmap for the exec image); the SECCOMP-INSTALL set
+(prctl(PR_SET_NO_NEW_PRIVS), seccomp()/prctl(PR_SET_SECCOMP)); fexecve/
+exec-family; and process control — CATEGORICALLY rejecting
+bind/listen/accept/accept4, AF_INET/AF_INET6/AF_PACKET socket creation,
+and any inspector activation (a launcher source with such a syscall ⇒
+oracle FAILS `launcher-listener-capable`); (2) the release build COMPILES it with a
 pinned toolchain into a FULLY-STATIC, LOADER-INDEPENDENT executable —
 NO dynamic interpreter (no `PT_INTERP`), NO shared-library closure
 (empty `DT_NEEDED`), no `dlopen`/dynamic loading — so the pre-`main()`
@@ -146,7 +152,45 @@ static launcher ignores them entirely) and the socket-open fixture is
 provably never reached. (3) the
 no-listener oracle's closure covers the launcher source alongside the
 JS closure, and the hermetic-binary inspection covers the packaged
-launcher artifact. So the launcher, (i) CLEARS
+launcher artifact.
+
+BUT source-scan + hermetic-binary inspection + digest CANNOT by
+themselves prove an ARBITRARY native binary (or, for the external tools,
+its mutable PT_INTERP/DT_NEEDED loader closure) contains no reachable
+indirect/compiler-emitted listener syscall — so they are treated as
+IDENTITY/REPRODUCIBILITY defense-in-depth, NOT as the primary
+no-listener proof. The PRIMARY, WHOLE-TREE no-listener enforcement is a
+KERNEL-INHERITED SECCOMP-BPF FILTER: before it execs Node, the native
+launcher calls `prctl(PR_SET_NO_NEW_PRIVS,1)` then installs a seccomp
+filter that DENIES `bind`, `listen`, `accept`, `accept4`, and
+AF_INET/AF_INET6/AF_PACKET/raw `socket()` creation (returning EPERM or
+SIGKILL). Because a seccomp filter under NO_NEW_PRIVS is INHERITED
+across `execve` and by every `fork`/descendant and CANNOT be relaxed or
+dropped, this binds the ENTIRE process tree — the launcher, Node, and
+every spawned external tool (git/gh/bwrap) AND their descendants,
+INCLUDING pre-`main()` loader/library constructors and any indirect or
+compiler-emitted syscall path — regardless of what bytes those binaries
+or their dynamically-loaded libraries contain. This makes the
+no-listener property a KERNEL INVARIANT over the executed artifacts, not
+an inference from static inspection, and it holds INSIDE bwrap's private
+network namespace too: `--unshare-net` removes reachable interfaces
+(defense-in-depth) but the seccomp filter is what makes `bind`/`listen`
+themselves fail, so a descendant cannot open a listener even in its own
+namespace where a host-only observer would miss it. (Outbound clients
+still work: `connect()` is permitted; git/gh outbound TLS needs no
+bind/listen; a tool that genuinely required `bind` would fail-closed at
+qualification and route to review, never silently.) REGRESSIONS: (a)
+INDIRECT/LINKED LISTENER — a child attempts `listen()` via an indirect,
+aliased, or compiler-emitted path ⇒ KILLED by the filter, no listener
+opens; (b) PRIVATE-NAMESPACE LISTENER — a git descendant tries to
+`bind`+`listen` inside the `--unshare-net` namespace ⇒ denied by the
+inherited filter (the regression observes INSIDE the namespace, not only
+the host); (c) SUBSTITUTED-LOADER/DT_NEEDED — a node/git run against a
+substituted PT_INTERP or DT_NEEDED library whose constructor tries to
+listen ⇒ denied by the inherited filter (so the no-listener property
+does NOT depend on authenticating every loader/library byte; the digest
+still authenticates the main-ELF IDENTITY, and identity substitution is
+separately caught as `tool-identity-mismatch`). So the launcher, (i) CLEARS
 NODE_OPTIONS/NODE_REPL*/inspector-debug env before spawning Node, (ii)
 performs the SEALED-SNAPSHOT (memfd + F_SEAL_*) hash-and-fexecve
 identity check on the pinned `node` binary — same kernel-backed
