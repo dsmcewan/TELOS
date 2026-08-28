@@ -216,10 +216,28 @@ per-file designs are in the approved plan; acceptance criteria here.
   bypass" is proven from PROTECTION DATA, not identity (`gh api user`
   names the principal but says nothing about effective permission or
   bypass membership, and classic `enforce_admins` does not cover ruleset
-  `bypass_actors`): the controller enumerates EVERY effective ruleset on
-  the target branch (repository AND inherited organization rulesets, via
-  the rules/rulesets APIs) plus classic branch protection, requires
-  strict up-to-dateness in effect, and requires the authenticated
+  `bypass_actors`). THE PROTECTION DATA IS SUPPLIED BY A SIGNED
+  CONFIGURATION ATTESTATION, NOT READ BY THE MERGE CREDENTIAL (reading
+  branch protection requires Administration:read and full bypass_actors
+  visibility requires ruleset write — both excluded from the
+  controller's least-privilege manifest scopes, so a controller that
+  had to read them itself would always fail
+  bypass-visibility-unavailable): the EYE-LOCAL ceremony, under the
+  Eye's admin credential, runs a CONFIG ATTESTOR that enumerates EVERY
+  effective ruleset on the target branch (repository AND inherited
+  organization rulesets) plus classic branch protection, resolves all
+  bypass actors to effective membership, performs the custody-manifest
+  enumeration, and emits an Ed25519-SIGNED CONFIGURATION ATTESTATION
+  {safety/actor-restriction ruleset states, bypass resolutions, custody
+  enumeration, ruleset ids + updated_at timestamps as the CONFIG
+  EPOCH}. The controller VERIFIES the attestation against
+  EYE_AUTHORITY_PUBKEY and checks FRESHNESS: it re-reads what its own
+  scopes CAN see (the public active-rules endpoint for the branch and
+  ruleset ids/updated_at metadata) and refuses
+  `config-attestation-stale` on any drift from the attested epoch;
+  missing/invalid attestation ⇒ refuse `config-attestation-missing`.
+  The attestation requires strict up-to-dateness in effect, and
+  requires the authenticated
   principal (user or app installation) to be ABSENT from the
   `bypass_actors` list of every ruleset CONTAINING SAFETY RULES
   (required status checks, up-to-date enforcement, or any
@@ -282,9 +300,14 @@ per-file designs are in the approved plan; acceptance criteria here.
   listed TEAM or repository/organization ROLE (stub
   team-membership/role APIs — literal-name absence must NOT pass), an
   unresolvable group actor (⇒ bypass-resolution-incomplete),
-  or bypass-actor data omitted/refused by the API
+  or bypass-actor data omitted/refused to the EYE'S ATTESTOR
   (⇒ bypass-visibility-unavailable, never treated as absence) ⇒
-  controller refuses at startup; out-of-band-merge fixture ⇒
+  attestation refused, controller refuses at startup;
+  PERMISSION-LIMITED regression — the controller's own credential
+  receives real 403/404 responses for branch protection and bypass
+  data (as GitHub returns to non-admin callers, stubbed) and still
+  OPERATES from a valid fresh attestation, refusing only on
+  config-attestation-missing/-stale; out-of-band-merge fixture ⇒
   unattested-merge; clean run ⇒ merged + attestation; workflow agents' token
   fixture proves no merge scope; workflows CI job runs both suites green.
 - **E2 ai-native-memory gate freshness + AUTHORITY-CHAINED sources** (`ai-native-memory/scripts/gate.mjs`).

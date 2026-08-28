@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:25774f396ef390f87989f43095e2c24bfc27048e0acd4ce0672bea5900359ebc",
+  "output_plan_artifact_hash": "sha256:25774f396ef390f87989f43095e2c24bfc27048e0acd4ce0672bea5900359ebc",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:25fb1c1c49621dd8e2ec7ae84d04ea9cab0db5cd628a61ef8ff4804ad0661e56",
+    "provenance_key": "anthropic:706855fb-59b6-4af7-948a-b47633589961"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:a1681a8fab902ce61173ff09556728ed0b9a7d63dfebbcbb5fa199435cc43b71",
+    "provenance_key": "openai:codex-cli-mtccr5h4",
+    "bound_hash": "sha256:25774f396ef390f87989f43095e2c24bfc27048e0acd4ce0672bea5900359ebc"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E1-controller-permission-closure",
+      "claim": "The merge controller’s startup proof is inoperable under its own fixed credential manifest. E1 requires the controller itself to read classic branch protection (`required_status_checks.strict`) and complete bypass-actor data for every effective ruleset, refusing when visibility is unavailable. Section 5(e) simultaneously limits that credential to `contents:write + pull_requests:write + checks:read` and explicitly grants no administration permission. GitHub requires `Administration:read` to get branch protection, while ruleset `bypass_actors` are returned only to callers with write access to the ruleset. [GitHub branch-protection API](https://docs.github.com/en/enterprise-cloud@latest/rest/branches/branch-protection) and [GitHub rulesets API](https://docs.github.com/en/rest/repos/rules). Consequently, the stated compliant configuration necessarily fails `bypass-visibility-unavailable`/`unsafe-merge-environment` before every merge; adding administration access would contradict the exact least-privilege custody manifest. Separate the privileged configuration attestation from the merge credential, or reconcile the credential/trust design, with a regression exercising the real permission-limited responses.",
+      "objection_hash": "sha256:ef7440b3e79d556a910006a80918878b3cb4d8c6fe1a4e3f15beccfc47f33642",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
