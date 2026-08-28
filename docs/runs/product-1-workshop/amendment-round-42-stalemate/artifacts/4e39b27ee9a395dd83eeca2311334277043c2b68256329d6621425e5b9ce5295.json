@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "approach",
+        "claim": "The executable bootstrap sequence is internally contradictory and permits verdict-producing Node loader bytes to execute before authentication. Section 1 says the launcher sealed-snapshots and fexecves Node, but later requires the static sandbox builder to be the first external executable and says Node runs only after that builder establishes the authenticated read-only content-addressed root. Since fexecve of dynamic Node invokes its PT_INTERP/DT_NEEDED closure immediately, the stated launcher-to-Node path loads mutable host closure bytes before the sandbox root exists. The approach must define one enforceable sequence—launcher → sealed authenticated static sandbox builder → authenticated root → Node—and regress that no Node, interpreter, or library byte executes before the root is established."
+      },
+      {
+        "scope": "approach",
+        "claim": "Release blocker 10 lacks the required enforcement regression. The flagship slice merely says to add OFL license files and THIRD-PARTY-NOTICES; it specifies no discriminating oracle proving that every one of the 13 shipped WOFF2 files is mapped to the required license and notice, nor that newly added fonts cannot escape coverage. Add a closed font inventory/bijection check and negative fixtures removing a license, removing a notice entry, and adding an unmapped WOFF2."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtd0v9tf",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtd0v9tf",
+    "source": "cli-seats/codex_ask"
+  }
+}

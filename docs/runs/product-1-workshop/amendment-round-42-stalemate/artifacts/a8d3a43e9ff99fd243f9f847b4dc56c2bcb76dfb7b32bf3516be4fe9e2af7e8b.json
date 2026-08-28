@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:fa84a0e37a053c50ca3a5429138a92f4501a14f35bbfb27c27c5277920cd5b53",
+  "output_plan_artifact_hash": "sha256:fa84a0e37a053c50ca3a5429138a92f4501a14f35bbfb27c27c5277920cd5b53",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:37647b4c21be38c365a8f27b2c9e65b2682d7dd24e5a450aefc873336adbde81",
+    "provenance_key": "anthropic:4fe10b7d-e665-4f24-82b2-bebbc2135258"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:4e39b27ee9a395dd83eeca2311334277043c2b68256329d6621425e5b9ce5295",
+    "provenance_key": "openai:codex-cli-mtd0v9tf",
+    "bound_hash": "sha256:fa84a0e37a053c50ca3a5429138a92f4501a14f35bbfb27c27c5277920cd5b53"
+  },
+  "objections": [
+    {
+      "scope": "approach",
+      "claim": "The executable bootstrap sequence is internally contradictory and permits verdict-producing Node loader bytes to execute before authentication. Section 1 says the launcher sealed-snapshots and fexecves Node, but later requires the static sandbox builder to be the first external executable and says Node runs only after that builder establishes the authenticated read-only content-addressed root. Since fexecve of dynamic Node invokes its PT_INTERP/DT_NEEDED closure immediately, the stated launcher-to-Node path loads mutable host closure bytes before the sandbox root exists. The approach must define one enforceable sequence—launcher → sealed authenticated static sandbox builder → authenticated root → Node—and regress that no Node, interpreter, or library byte executes before the root is established.",
+      "objection_hash": "sha256:e9e9a4e668d974e85dd287b55b839f29d9cb565ed37ac4b65eddc2a91b9e338e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "approach",
+      "claim": "Release blocker 10 lacks the required enforcement regression. The flagship slice merely says to add OFL license files and THIRD-PARTY-NOTICES; it specifies no discriminating oracle proving that every one of the 13 shipped WOFF2 files is mapped to the required license and notice, nor that newly added fonts cannot escape coverage. Add a closed font inventory/bijection check and negative fixtures removing a license, removing a notice entry, and adding an unmapped WOFF2.",
+      "objection_hash": "sha256:22c60af34fdeb9eef24de432ab7283bca49b4c62beb32d43d34074158b79ce9d",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
