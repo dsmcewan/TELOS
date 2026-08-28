@@ -203,15 +203,25 @@ SIGKILL). THE FILTER'S FIRST CHECK VALIDATES `seccomp_data.arch`
 AGAINST THE FROZEN AUDITED ARCHITECTURE ENVELOPE (the shipped Phase-0
 platform contract freezes the OS to LINUX — not "Unix" — and the exact
 arch/ABI set, e.g. `AUDIT_ARCH_X86_64` and, if shipped,
-`AUDIT_ARCH_AARCH64`): ANY non-frozen audit arch ⇒ SIGKILL. This closes
-compat-ABI bypasses where a different ABI reaches the listener path via
-DIFFERENT syscall numbers or a MULTIPLEXED interface — i386's
-`socketcall(SYS_BIND/SYS_LISTEN/SYS_ACCEPT, …)` and x32/i386 alternate
-numbering are unreachable because the entire foreign-arch ABI is killed
-before any syscall-number match runs (and `socketcall` itself is denied
-on any admitted arch that exposes it). COMPAT-ABI REGRESSIONS: a process
-issuing bind/listen via the i386 `socketcall` multiplex or an x32/compat
-syscall number ⇒ SIGKILL at the arch gate, no listener opens. CRITICALLY
+`AUDIT_ARCH_AARCH64`): ANY non-frozen audit arch (e.g. `AUDIT_ARCH_I386`) ⇒ SIGKILL, which
+closes the i386 path (its `socketcall(SYS_BIND/SYS_LISTEN/SYS_ACCEPT, …)`
+multiplex and alternate numbering are on a DIFFERENT audit arch, killed
+before any syscall-number match). BUT THE x32 ABI IS **NOT** A FOREIGN
+AUDIT ARCH — x32 REPORTS `AUDIT_ARCH_X86_64`, identical to native
+64-bit, so the arch gate ALONE does NOT kill it; x32 syscalls are
+distinguished only by `__X32_SYSCALL_BIT` (0x40000000) SET IN
+`seccomp_data.nr`. Since x32 is OUTSIDE the frozen platform envelope, the
+filter adds a SECOND MANDATORY GUARD: on an `AUDIT_ARCH_X86_64` frame,
+`if (seccomp_data.nr & __X32_SYSCALL_BIT) ⇒ SIGKILL` — killing EVERY
+x32-encoded syscall (including an x32-numbered `bind`/`listen` that would
+otherwise bypass a denylist matching only native syscall numbers) before
+any native-nr match. (`socketcall` itself is also denied on any admitted
+arch that exposes it.) COMPAT-ABI REGRESSIONS: (a) bind/listen via the
+i386 `socketcall` multiplex ⇒ SIGKILL at the arch gate (foreign
+`AUDIT_ARCH_I386`); (b) an EXECUTABLE x32-NUMBERED bind/listen — a
+syscall issued with `__X32_SYSCALL_BIT` set on an `AUDIT_ARCH_X86_64`
+frame ⇒ SIGKILL by the `__X32_SYSCALL_BIT` guard, proving the corrected
+guard (not the arch check) denies it, no listener opens. CRITICALLY
 IT ALSO DENIES THE ENTIRE `io_uring` SYSCALL FAMILY
 (`io_uring_setup`, `io_uring_enter`, `io_uring_register`): io_uring can
 perform `IORING_OP_SOCKET`/`IORING_OP_BIND`/`IORING_OP_LISTEN`/

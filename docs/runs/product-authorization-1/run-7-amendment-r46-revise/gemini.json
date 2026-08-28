@@ -1,0 +1,28 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "gemini",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:d1dd898d1c9c043157211cca396be1377ce9c215371210d2786041197efb56f4",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:11:16.098Z",
+  "rationale": "The AMENDMENT-1 plan is implementation-ready, conceptually sound, and consistent with the repository's fail-closed trust model. The enforcement mechanisms (E1-E6) are rigorous, relying on cryptographic identities, kernel invariants, and out-of-tree protected roots. The two-phase governance pivot correctly sequences the activation without bypassing existing verification. The deferral of SPIKE-E6-EVALUATOR-FORM and SPIKE-PD001-NOLISTENER-COMPLETENESS is acceptable because they are bounded by fail-closed interim controls and hard merge gates before the final capabilities land. I ratify the spikes and authorize the plan as-is.",
+  "provenance": {
+    "provider": "google",
+    "model": "gemini-3.1-pro-high",
+    "response_id": "8dc23c53-6969-43ea-9f07-f1661f823f46",
+    "source": "cli-seats/gemini",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T15:12:23.494Z",
+    "tool": "cli-seats.askGemini"
+  }
+}

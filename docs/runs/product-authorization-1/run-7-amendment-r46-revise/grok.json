@@ -1,0 +1,28 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:d1dd898d1c9c043157211cca396be1377ce9c215371210d2786041197efb56f4",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:11:16.098Z",
+  "rationale": "The amended plan is implementation-ready as stated. DISCOVERY-001’s bootstrap-pivot coupling is resolved by the Eye-ruled two-phase path (Phase A docs/registry-only deferred quest registration under sitting v15; Phase B atomic activation only after the discriminating freshness verifier lands), with fail-closed partial-activation semantics and a closed pre-activation whitelist whose terminal entry is Phase B itself. E1–E6 remain fail-closed and content-addressed: sole deterministic merge credential with substrate-isolated publisher, Eye-signed phase-aware acceptance, config/custody attestation with serialized revalidate-then-merge, authority-chained memory-gate with out-of-tree roots and genesis-class transitions, exceptionless auditor, production-profile default flip, and discriminating declarative oracles under a single trusted evaluator. PD-001’s no-listener architecture (static hermetic launcher/sandbox-builder, arch-gated inherited seccomp, sealed-memfd/fs-verity mutation-point binding, GIT_ALLOW_PROTOCOL transport allowlist, offline/online profiles, honest ptrace threat-model scoping, unprivileged verity probe) plus the Phase-0 hard go-live gate and honest Phase-1a source-release install contract are consistent with the repository trust model and do not reopen deferred Phase-1b+/register items. I explicitly RATIFY both §6b spikes as authorization-time deferrals, not plan defects: SPIKE-E6-EVALUATOR-FORM (declarative language settled; concrete grammar/evaluator form is a hard pre-enrollment merge gate; interim blocks new/changed normative oracle enrollment) and SPIKE-PD001-NOLISTENER-COMPLETENESS (kernel-inherited architecture settled; residual corner enumeration deferred with fail-closed eBPF/strace detection). Bounded fail-closed spikes are not contradictions. No remaining plan-level contradiction or unsound design blocks AS-IS authorization of plan_ref sha256:d1dd898d1c9c043157211cca396be1377ce9c215371210d2786041197efb56f4.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5-build",
+    "response_id": "2ff9175d-44ff-4630-a1d0-73cc33cb6eef",
+    "source": "cli-seats/grok",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T15:11:50.766Z",
+    "tool": "cli-seats.askGrok"
+  }
+}

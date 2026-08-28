@@ -1,0 +1,37 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:d1dd898d1c9c043157211cca396be1377ce9c215371210d2786041197efb56f4",
+  "decision": "revise",
+  "required_edits": [
+    "Correct the x86-64 seccomp ABI design: because x32 shares AUDIT_ARCH_X86_64, add a syscall-number guard that rejects every nr carrying __X32_SYSCALL_BIT when x32 is outside the frozen platform envelope, or explicitly filter the complete x32 syscall table. Replace the claim that x32 is killed by the arch check and add an executable x32-numbered bind/listen regression proving denial by the corrected guard. Re-freeze and re-authorize the resulting plan hash."
+  ],
+  "hard_stops": [
+    "The settled no-listener proof incorrectly treats x32 as a foreign audit architecture. An x32 syscall reports AUDIT_ARCH_X86_64 and is distinguished through __X32_SYSCALL_BIT in seccomp_data.nr; therefore the specified arch gate does not kill it, and x32-encoded bind/listen calls can bypass a denylist matching only native syscall numbers."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:11:16.098Z",
+  "rationale": "I recomputed the candidate identity as sha256:d1dd898d1c9c043157211cca396be1377ce9c215371210d2786041197efb56f4 and confirmed the reviewed plan bytes match b230ad75626de6a56aa52f68b9d0ef9a348e8e5e. The Linux seccomp documentation explicitly states that x86-64 and x32 both use AUDIT_ARCH_X86_64 and must instead be distinguished using __X32_SYSCALL_BIT; the kernel dispatch likewise subtracts that bit before entering the x32 syscall table. [seccomp(2)](https://man7.org/linux/man-pages/man2/seccomp.2.html) [Linux syscall dispatch](https://github.com/torvalds/linux/blob/master/arch/x86/entry/syscall_64.c) This directly contradicts the plan’s claimed x32 arch-gate behavior and is a defect in a named, settled enforcement mechanism—not merely an unenumerated residual corner covered by an implementation-completeness spike. I ratify SPIKE-E6-EVALUATOR-FORM, product-1-oq-e6-determinism-deferral, and the other recorded pre-review dispositions. I reject SPIKE-PD001-NOLISTENER-COMPLETENESS and product-1-oq-pd001-nolistener-completeness as currently framed because their asserted sound architectural premise is false as written; the bounded residual-completeness deferral becomes acceptable once this ABI bypass is corrected.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtd3mwil",
+    "source": "cli-seats/codex",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T15:21:05.565Z",
+    "tool": "cli-seats.askCodex"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "ff3621abe8e5b57b49f11a0dd465392f04feb67b0ba219f7f1a241678cf51ef1",
+    "signed_fields": "canonical-minus-signature"
+  }
+}
