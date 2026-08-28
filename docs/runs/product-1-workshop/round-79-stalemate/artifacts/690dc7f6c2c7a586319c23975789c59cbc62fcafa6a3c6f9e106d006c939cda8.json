@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:7f209ec4ecaaf7ae50e0768271b6fe3e87b6bbba826a9e12f1be9d37c0de589f",
+  "output_plan_artifact_hash": "sha256:7f209ec4ecaaf7ae50e0768271b6fe3e87b6bbba826a9e12f1be9d37c0de589f",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:dbd577c67d4ad2b6dbacb2758db3c124ed91aac60b1f25fbaba405b23a07d1f9",
+    "provenance_key": "anthropic:b26b9eac-f633-4773-babf-182496f276fe"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:38726f83875c7c894e9d40103ce5e28315656878d1ae4f65b323377cd1370850",
+    "provenance_key": "openai:codex-cli-mtcjtqvq",
+    "bound_hash": "sha256:7f209ec4ecaaf7ae50e0768271b6fe3e87b6bbba826a9e12f1be9d37c0de589f"
+  },
+  "objections": [
+    {
+      "scope": "approach",
+      "claim": "E6's pure-ABI repair is bypassed by its own invocation contract. It requires `file` entries to run directly under `node` and `npm-script` entries directly through `npm run`, while its determinism proof depends on every oracle executing only as a pure function inside an evaluator exposing no filesystem, environment, clock, or entropy. The stated static import/entrypoint conformance check does not constrain package.json shell command chains, Node globals, or wrappers that return an exit code without invoking the evaluator. Such an oracle can still observe clock/entropy and is governed only by the acknowledged heuristic repeated-evaluation fallback, so the deterministic guarantee does not cover all mandatory oracle kinds. Require every file/npm-script declaration to be an evaluator-bound adapter with arbitrary host execution rejected, and add escape regressions for package-script chaining, ambient Node globals, and evaluator-skipping wrappers. Candidate raw sha256:6a484e9d40f3d65dec227728e886c356dd5a85fe4bf02a67d37e27fac839a64f.",
+      "objection_hash": "sha256:f1861ce96a85c5066c739c8ed8755312c79c650cd9bd9a1389aa3bcd170fabc8",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

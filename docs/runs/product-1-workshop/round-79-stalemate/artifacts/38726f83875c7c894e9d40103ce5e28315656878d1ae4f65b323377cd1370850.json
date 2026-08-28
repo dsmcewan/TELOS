@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "approach",
+        "claim": "E6's pure-ABI repair is bypassed by its own invocation contract. It requires `file` entries to run directly under `node` and `npm-script` entries directly through `npm run`, while its determinism proof depends on every oracle executing only as a pure function inside an evaluator exposing no filesystem, environment, clock, or entropy. The stated static import/entrypoint conformance check does not constrain package.json shell command chains, Node globals, or wrappers that return an exit code without invoking the evaluator. Such an oracle can still observe clock/entropy and is governed only by the acknowledged heuristic repeated-evaluation fallback, so the deterministic guarantee does not cover all mandatory oracle kinds. Require every file/npm-script declaration to be an evaluator-bound adapter with arbitrary host execution rejected, and add escape regressions for package-script chaining, ambient Node globals, and evaluator-skipping wrappers. Candidate raw sha256:6a484e9d40f3d65dec227728e886c356dd5a85fe4bf02a67d37e27fac839a64f."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcjtqvq",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcjtqvq",
+    "source": "cli-seats/codex_ask"
+  }
+}

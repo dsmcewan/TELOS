@@ -778,8 +778,22 @@ per-file designs are in the approved plan; acceptance criteria here.
   `oracle.executable` required on every NORMATIVE record + one-PR backfill.
   Oracles must DISCRIMINATE, not merely exist or merely run: new
   `docs/institutional-memory/run-oracles.mjs` executes every declared
-  `oracle.executable` — `file` entries run under `node` with a per-entry
-  timeout, nonzero/timeout/unrunnable ⇒ FAIL (distinct codes: oracle-missing /
+  `oracle.executable` — and there is EXACTLY ONE EXECUTION PATH, the
+  PURE-EVALUATOR ADAPTER (no oracle kind runs directly under `node` or
+  `npm run`; a direct host-execution path would bypass the ABI and
+  reintroduce clock/entropy access, the contradiction the ABI
+  commitment closes): EVERY declaration — whether authored as a `file`
+  module or referenced via an `npm-script` name — resolves to a PURE
+  ENTRYPOINT `(input_snapshot) -> {pass|fail, reason}` LOADED INTO THE
+  EVALUATOR (frozen realm / WASM component per the Argo-spike form),
+  never spawned as an arbitrary process. Any declaration that is not
+  evaluator-loadable — a package.json shell-command chain, a wrapper
+  that returns an exit code without invoking the pure entrypoint, a
+  module reaching ambient Node globals (process/fs/net/Date/crypto)
+  outside the sanctioned pure library — ⇒ FAIL
+  `oracle-abi-nonconformant` at qualification and CANNOT SHIP.
+  Per-entry timeout applies inside the evaluator;
+  nonzero/timeout/unrunnable ⇒ FAIL (distinct codes: oracle-missing /
   oracle-unrunnable / oracle-failed / oracle-timeout). Because a
   constant-success program passes any run-only check, every `file` oracle
   MUST also declare a MUTATION-BASED NEGATIVE CASE —
@@ -947,13 +961,21 @@ per-file designs are in the approved plan; acceptance criteria here.
   BASELINE-WHITELIST regression: an oracle hardcoded to one pristine
   digest ⇒ nonzero on the conforming variants ⇒ oracle-baseline-overfit.
   This is the clotho flagship-expectation
-  mutate-then-expect-failure pattern made mandatory and de-gameable. `npm-script` entries
-  are EXECUTED DIRECTLY by run-oracles, exactly like file entries — `npm
-  run <script> --prefix <package-dir>` under the same per-entry timeout,
-  nonzero ⇒ FAIL — with the same mutation-based negative case (sandbox-copy
-  the package's governed inputs, mutate, re-run the identical script);
-  mere presence of the package in the CI matrix proves nothing and is NOT
-  accepted as coverage. The `evidence-dir` variant is REMOVED as an oracle
+  mutate-then-expect-failure pattern made mandatory and de-gameable.
+  `npm-script` declarations are NOT run via `npm run` (that spawns an
+  arbitrary shell with full host access, bypassing the ABI) — an
+  `npm-script` reference is a NAME that must resolve, through the
+  package's declared oracle-adapter, to the SAME pure evaluator
+  entrypoint as a `file` oracle; a package whose named script is a
+  shell chain rather than an evaluator adapter ⇒
+  oracle-abi-nonconformant. The mutation-based negative applies inside
+  the evaluator (sandbox-copy the governed inputs, mutate, re-load the
+  identical pure entrypoint); mere presence of the package in the CI
+  matrix proves nothing and is NOT accepted as coverage. ESCAPE
+  regressions (all must FAIL oracle-abi-nonconformant at qualification):
+  a package.json shell-command chain declared as an oracle; a wrapper
+  returning an exit code without invoking the pure entrypoint; a module
+  reaching ambient Node globals (Date/crypto/process/fs/net). The `evidence-dir` variant is REMOVED as an oracle
   kind (nonempty-dir is not a discriminating check): records whose claim is
   backed by an evidence directory instead declare a `file` oracle pointing
   at a shared deterministic validator
@@ -1950,6 +1972,37 @@ woven input (AM-43 stages in the non-woven telos/AMENDMENTS home per
 expected-flagship regen + Eye re-audit + any residual woven-doc edits).
 Release from the qualified accepted commit. **Accept**: every merged slice
 head passes the committed-weave posture check in CI — none merges red.
+
+## 6b. Accepted Argo implementation spikes (Eye ruling: non-blocking for maturation convergence)
+
+The Eye ruled (2026-08-28) that ARGO IMPLEMENTATION-SPIKES are legitimately
+deferred build-time work: an objection whose only remaining content is "the
+exact implementation mechanism for an already-soundly-designed requirement is
+not spelled out in the plan" does NOT block maturation convergence and does NOT
+spawn further Daedalus rounds — it is recorded here, dispositioned, and its
+concrete mechanism is a merge-gate on its own slice with the fail-closed
+interim behavior stated. This register is itself an Eye-ratified artifact (S2/S3);
+each spike names its settled-in-plan design, its bounded open implementation
+choice, and its interim fail-closed posture.
+
+- **SPIKE-E6-EVALUATOR-FORM** — SETTLED IN-PLAN: oracles are pure functions over
+  a fixed input snapshot executed by an evaluator with no ambient
+  clock/entropy/network/fs; determinism is structural; ABI-conformance is the
+  fail-closed qualification gate (all `file`/`npm-script` kinds route through the
+  one evaluator adapter; non-conformant ⇒ oracle-abi-nonconformant, cannot ship).
+  OPEN (spike): the evaluator's implementation FORM — WASM component-model vs a
+  frozen-realm Node worker with clock/entropy/net/fs globals removed and a
+  pure-only module resolver. Both are known-sound; the slice picks one and proves
+  ABI-escape attempts fail. INTERIM (until the slice lands): oracles run under the
+  frozen-realm worker + seccomp-deny/`--unshare-all` defense-in-depth, with the
+  same-input-multiple-eval agreement check fail-closing on any observed variance.
+  Referee evidence: `referee-adjudications/2026-08-28-e6-oracle-determinism.json`;
+  Eye open question: `product-1-oq-e6-determinism-deferral`.
+
+Any future workshop objection reducible to "SPIKE-E6-* mechanism not fully
+specified in-plan" is CLOSED by this register per the Eye ruling — not re-opened
+as a new round. Genuinely NEW plan-level defects (internal contradictions,
+unsound designs, missing enforcement) remain in scope and are fixed normally.
 
 ## 7. Acceptance criteria (quest-level)
 
