@@ -274,12 +274,20 @@ per-file designs are in the approved plan; acceptance criteria here.
   controller derives eligibility and STOPS before mutating, (3) the
   PRIVILEGED attestor performs a FINAL FULL RE-ENUMERATION of every
   attested surface and only on zero-drift issues a single-use GO
-  SIGNAL, (4) the controller PUTs immediately upon the signal. Nothing
-  can interleave between (3) and (4): the drift surfaces are admin-only
-  and the sole admin IS the serialized process's owner (custody-proven)
-  — any drift observable at (3) ⇒ the merge is REFUSED
-  (`config-drift-pre-merge`), never performed; the post-run
-  re-enumeration remains as defense-in-depth only. SAME-RUN drift
+  SIGNAL, (4) the controller PUTs immediately upon the signal. Any
+  drift observable at (3) ⇒ the merge is REFUSED
+  (`config-drift-pre-merge`), never performed. THE (3)→(4) WINDOW IS
+  THE TRUST-ROOT BOUNDARY, STATED AS AN EXPLICIT NON-CLAIM (platform
+  atomicity across enumeration and PUT does not exist; the drift
+  surfaces are admin-only and the sole admin is the Eye, so an
+  adversary mutating them inside the window must be operating the
+  Eye's own credential concurrently — trust-root compromise, against
+  which no scheme keyed to that root can defend without a different
+  root and infinite regress; precedent: the proposal-lifecycle's
+  recorded honest-limits): the design claims protection against every
+  principal EXCEPT a compromised Eye credential, records that boundary
+  in the spec's non-claims, and keeps the post-run re-enumeration +
+  quarantine as the DETECTION layer for exactly that residual. SAME-RUN drift
   fixtures: each surface mutated between attestation issuance and the
   PUT (stub) ⇒ step (3) catches it and the ORIGINAL MERGE IS PREVENTED
   (asserted: no mutation occurred), not merely detected afterward.
@@ -848,7 +856,22 @@ per-file designs are in the approved plan; acceptance criteria here.
   oracle rejecting only that digest while accepting every other
   violation would pass); families are subject to the same
   well-formedness validation, and a family below the bound ⇒ FAIL
-  fixture-family-too-small. This is the clotho flagship-expectation
+  fixture-family-too-small. DISCRIMINATION IS TWO-SIDED — CONFORMING
+  POSITIVE VARIANTS are required too (a baseline-whitelist oracle that
+  exits 0 only on one memorized pristine digest and nonzero on
+  everything else passes every negative test without evaluating any
+  invariant): the registry also defines CONFORMING-VARIANT kinds per
+  invariant class — transformations that provably PRESERVE the claimed
+  invariant (adding an unrelated valid record, mutating a non-governed
+  field, reordering where order carries no semantics) — and the runner
+  generates ≥ 8 such variants (same unpredictable parameterization,
+  same sandboxes) on which the IDENTICAL invocation MUST EXIT 0;
+  nonzero on a conforming variant ⇒ FAIL `oracle-baseline-overfit`.
+  Classes with no safe conforming transformation declare a reviewed
+  POSITIVE-FIXTURE FAMILY (≥ 8) under the same rules.
+  BASELINE-WHITELIST regression: an oracle hardcoded to one pristine
+  digest ⇒ nonzero on the conforming variants ⇒ oracle-baseline-overfit.
+  This is the clotho flagship-expectation
   mutate-then-expect-failure pattern made mandatory and de-gameable. `npm-script` entries
   are EXECUTED DIRECTLY by run-oracles, exactly like file entries — `npm
   run <script> --prefix <package-dir>` under the same per-entry timeout,

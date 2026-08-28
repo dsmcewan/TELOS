@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "approach:E6-oracle-discrimination",
+        "claim": "The negative-only mutation protocol does not prove that an oracle evaluates its claimed invariant. An oracle that returns 0 only when the governed input set equals one hard-coded pristine digest, and nonzero for every other digest, passes every A-B-A' repetition and every randomized well-formed mutation or fixture family without implementing the invariant at all. Domain cardinality, path isolation, and K=12 repetitions do not expose this baseline-whitelist oracle. The acceptance mechanism therefore remains gameable and does not satisfy the frozen requirement that normative oracles discriminate semantically; it needs independently generated conforming positive variants or another check that distinguishes invariant evaluation from exact-baseline recognition."
+      },
+      {
+        "scope": "approach:E1-config-TOCTOU",
+        "claim": "The claimed serialized revalidate-then-merge ceremony does not close the configuration TOCTOU window. A process-local ceremony lock cannot make GitHub configuration enumeration and the later merge PUT atomic, and the statement that the sole admin owns the process is a custody assumption rather than platform enforcement. A concurrent admin session can change a safety ruleset, bypass membership, App permission, collaborator, deploy key, or environment policy after final re-enumeration in step (3) but before the PUT in step (4); if strict protection or the relevant restriction is removed, the server-side guard no longer prevents the merge. The listed drift fixtures mutate before step (3), so they do not test this remaining gap. Consequently the plan has not established that same-run drift cannot permit the original unauthorized merge."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcfuepk",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcfuepk",
+    "source": "cli-seats/codex_ask"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:2de7d66e45e3d0c2cb84a90e66295c655902ec446bc96b77ac9ab9f60c9bd941",
+  "output_plan_artifact_hash": "sha256:2de7d66e45e3d0c2cb84a90e66295c655902ec446bc96b77ac9ab9f60c9bd941",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:72e7dec74003fb7055f54510736cb6debcbea046a745f1d62c7bbb40cf74b690",
+    "provenance_key": "anthropic:8efe2da6-ea02-4812-b730-acb169e6d5e7"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:695d184d0dae4825f09817e46574210953b733fe27f2e4b1067cd593418fb9dd",
+    "provenance_key": "openai:codex-cli-mtcfuepk",
+    "bound_hash": "sha256:2de7d66e45e3d0c2cb84a90e66295c655902ec446bc96b77ac9ab9f60c9bd941"
+  },
+  "objections": [
+    {
+      "scope": "approach:E6-oracle-discrimination",
+      "claim": "The negative-only mutation protocol does not prove that an oracle evaluates its claimed invariant. An oracle that returns 0 only when the governed input set equals one hard-coded pristine digest, and nonzero for every other digest, passes every A-B-A' repetition and every randomized well-formed mutation or fixture family without implementing the invariant at all. Domain cardinality, path isolation, and K=12 repetitions do not expose this baseline-whitelist oracle. The acceptance mechanism therefore remains gameable and does not satisfy the frozen requirement that normative oracles discriminate semantically; it needs independently generated conforming positive variants or another check that distinguishes invariant evaluation from exact-baseline recognition.",
+      "objection_hash": "sha256:fee9f209d4458f20946f10d0bde956128ed40c24d109077e11ba7d0c2dbe9780",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "approach:E1-config-TOCTOU",
+      "claim": "The claimed serialized revalidate-then-merge ceremony does not close the configuration TOCTOU window. A process-local ceremony lock cannot make GitHub configuration enumeration and the later merge PUT atomic, and the statement that the sole admin owns the process is a custody assumption rather than platform enforcement. A concurrent admin session can change a safety ruleset, bypass membership, App permission, collaborator, deploy key, or environment policy after final re-enumeration in step (3) but before the PUT in step (4); if strict protection or the relevant restriction is removed, the server-side guard no longer prevents the merge. The listed drift fixtures mutate before step (3), so they do not test this remaining gap. Consequently the plan has not established that same-run drift cannot permit the original unauthorized merge.",
+      "objection_hash": "sha256:2b124c92a3bfa6757678ebf0986eff8a5fd867760084cd6eaf5cd7a530ba1c47",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
