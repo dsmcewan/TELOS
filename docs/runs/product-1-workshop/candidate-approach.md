@@ -131,9 +131,21 @@ bind/listen/accept/accept4, AF_PACKET/SOCK_RAW socket creation, the
 `io_uring` family (io_uring_setup/enter/register), and any inspector
 activation (a launcher source with such a syscall ⇒ oracle FAILS
 `launcher-listener-capable`); (2) the release build COMPILES it with a
-pinned toolchain into a FULLY-STATIC, LOADER-INDEPENDENT executable —
-NO dynamic interpreter (no `PT_INTERP`), NO shared-library closure
-(empty `DT_NEEDED`), no `dlopen`/dynamic loading — so the pre-`main()`
+pinned toolchain into a FULLY-STATIC, FREESTANDING, LOADER-INDEPENDENT
+executable — built `-static -nostartfiles` with a HAND-AUDITED CUSTOM
+`_start` and NO `.init_array`/CRT constructors, so NOTHING runs before
+the entry point — and that `_start`'s FIRST ACTIONS (a tiny audited
+prologue, the only launcher code that executes before the filter is
+live) are `prctl(PR_SET_NO_NEW_PRIVS)` + seccomp install, THEN it
+CLOSES ALL INHERITED DESCRIPTORS outside an enumerated safe set (see
+below), THEN performs the env-clear/snapshot/exec. Because there is no
+init-array and the filter is installed in the first audited basic block,
+the kernel invariant covers every subsequent launcher byte; the only
+pre-filter code is the fixed, source-grammar-bounded, provably
+listener-free install prologue itself (a PRE-MAIN regression asserts the
+compiled `_start` contains only the audited prologue before the seccomp
+syscall). It is NO dynamic interpreter (no `PT_INTERP`), NO
+shared-library closure (empty `DT_NEEDED`), no `dlopen`/dynamic loading — so the pre-`main()`
 dynamic-loader surfaces (`LD_PRELOAD`, `LD_AUDIT`, `LD_LIBRARY_PATH`,
 constructor injection) are STRUCTURALLY INERT: a static binary has no
 loader to honor them, so no library constructor can call
@@ -166,16 +178,36 @@ launcher calls `prctl(PR_SET_NO_NEW_PRIVS,1)` then installs a seccomp
 filter that DENIES `bind`, `listen`, `accept`, `accept4` — the
 listener syscalls — plus `AF_PACKET`/`SOCK_RAW` socket() creation
 (inspectable via socket()'s scalar domain/type args; returning EPERM or
-SIGKILL). CRITICALLY IT ALSO DENIES THE ENTIRE `io_uring` SYSCALL FAMILY
+SIGKILL). THE FILTER'S FIRST CHECK VALIDATES `seccomp_data.arch`
+AGAINST THE FROZEN AUDITED ARCHITECTURE ENVELOPE (the shipped Phase-0
+platform contract freezes the OS to LINUX — not "Unix" — and the exact
+arch/ABI set, e.g. `AUDIT_ARCH_X86_64` and, if shipped,
+`AUDIT_ARCH_AARCH64`): ANY non-frozen audit arch ⇒ SIGKILL. This closes
+compat-ABI bypasses where a different ABI reaches the listener path via
+DIFFERENT syscall numbers or a MULTIPLEXED interface — i386's
+`socketcall(SYS_BIND/SYS_LISTEN/SYS_ACCEPT, …)` and x32/i386 alternate
+numbering are unreachable because the entire foreign-arch ABI is killed
+before any syscall-number match runs (and `socketcall` itself is denied
+on any admitted arch that exposes it). COMPAT-ABI REGRESSIONS: a process
+issuing bind/listen via the i386 `socketcall` multiplex or an x32/compat
+syscall number ⇒ SIGKILL at the arch gate, no listener opens. CRITICALLY
+IT ALSO DENIES THE ENTIRE `io_uring` SYSCALL FAMILY
 (`io_uring_setup`, `io_uring_enter`, `io_uring_register`): io_uring can
 perform `IORING_OP_SOCKET`/`IORING_OP_BIND`/`IORING_OP_LISTEN`/
 `IORING_OP_ACCEPT` whose opcodes live in SHARED SUBMISSION-QUEUE MEMORY
 and are NOT discriminable from `io_uring_enter`'s scalar args — so a
 descendant could otherwise open a listener without ever invoking a
 denied syscall. Denying ring creation/entry/registration outright (no
-inspectable-arg dependence) closes this, and the launcher CLOSES ANY
-INHERITED io_uring RING DESCRIPTORS before exec so no pre-existing ring
-survives into the confined tree. (Node/libuv gracefully FALL BACK to the
+inspectable-arg dependence) closes this, and the launcher CLOSES ALL
+INHERITED DESCRIPTORS outside an enumerated safe set (it scans
+`/proc/self/fd` and closes every fd it did not itself open, not merely
+io_uring rings) — because an INHERITED ALREADY-BOUND/LISTENING SOCKET
+(e.g. a bound UDP socket that can `recvfrom` without ever calling
+bind/listen/accept, or a pre-existing io_uring ring) would otherwise
+receive inside the confined tree despite the syscall filter. INHERITED-
+SOCKET regression: the launcher is started with an inherited bound UDP
+socket and a pre-existing io_uring ring fd ⇒ both are closed before
+exec, neither can receive. (Node/libuv gracefully FALL BACK to the
 epoll/threadpool path when `io_uring_setup` returns EPERM, so
 doctor/verify --full remain operative.) CLIENT `socket()` for
 AF_INET/AF_INET6 STREAM/DGRAM IS ALLOWED — a TCP/TLS client (gh api, networked git) must create an
@@ -228,7 +260,7 @@ pylae` directly is unsupported and the install docs state so. This
 resolves the bootstrap cycle: env-scrub happens in native code before
 Node initializes, and node-identity binding uses fexecve from a
 tool-set member, not node:crypto. SIGUSR1 INSPECTOR ACTIVATION IS DISABLED TOO
-(on supported Unix platforms, delivering SIGUSR1 to a running Node
+(on the frozen Linux platform envelope, delivering SIGUSR1 to a running Node
 process activates the inspector and opens a TCP listener even with
 flags stripped and no inspector import — an external same-user process
 can send it, so source-grammar rules alone cannot close this): the
@@ -2174,7 +2206,16 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   pull_requests:write (the merge endpoint) + checks:read +
   statuses:read (the precedence rule enumerates commit STATUSES, which
   checks:read does not supply) + actions:read (authenticating a run's
-  workflow path/run metadata on a private repo requires it) — and
+  workflow path/run metadata on a private repo requires it) +
+  WORKFLOWS:WRITE (a GitHub App CANNOT merge a PR that adds or modifies
+  `.github/workflows/*` without the Workflows permission — Phase B's
+  `ci.yml` transition and the release-workflow slice are exactly such
+  PRs, so without this scope the sole-merger sequence would DEADLOCK
+  server-refused; it is recorded in the controller's least-privilege
+  set, custody/drift contract, and confinement tests like every other
+  scope, and does NOT relax the sole-merger rule — the controller still
+  merges only signed, gate-authorized PRs and remains excluded from
+  every safety/check-enforcing ruleset's bypass) — and
   nothing else (no administration, no environments, no tag capability under the
   all-tags ruleset; excluded from the bypass list of every SAFETY/
   CHECK-ENFORCING ruleset — while the controller's membership in the
