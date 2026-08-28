@@ -26,7 +26,12 @@ verdict-producer digest uses — enforcing a CLOSED LISTENER-CAPABILITY
 GRAMMAR, because reachability alone proves which files run, not that they
 cannot open a listener: within the closure the oracle REJECTS
 (fail-closed, never pass-on-ambiguity) any reference to server-capable
-builtins (node:net/http/https/http2/tls/dgram server constructors) AND
+builtins (the COMPLETE listener-capable surface: node:net/http/https/http2/tls/
+dgram server constructors AND node:inspector — inspector.open(port,
+host) activates a network listener without referencing any socket
+builtin — AND node:cluster/worker_threads paths that proxy listening,
+AND any future builtin enumerated by a closed-list review whenever the
+pinned Node version changes) AND
 any AMBIGUOUS/DYNAMIC acquisition path that could reach them —
 non-literal import()/require specifiers, process.getBuiltinModule,
 eval/Function construction, aliased or computed property access to module
@@ -48,7 +53,8 @@ the oracle-confinement argv shape — no --share-net; gh: only
 alias/exec), and an ISOLATED ENVIRONMENT (cleared env except an
 enumerated safe set, so config/alias injection cannot smuggle modes).
 Any invocation outside these grammars ⇒ FAIL closed. ADVERSARIAL fixtures the oracle must reject: an indirect
-listener via getBuiltinModule; a computed require reaching node:net; a
+listener via getBuiltinModule; a computed require reaching node:net; an
+inspector.open(port, host) activation ⇒ rejected; a
 spawned allowlisted helper that itself opens a listener; a helper outside
 cli/ opening a listener; git invoked in daemon/serve mode or with -c
 config injection ⇒ refused; a $PATH-substituted git/gh wrapper ⇒
@@ -767,11 +773,17 @@ per-file designs are in the approved plan; acceptance criteria here.
   takes the REVIEWED head of each protected-surface-introducing slice
   (E2's verifier, E1's controller), validates the complete closures,
   workflow files, chain roots, and the Eye's own signature end-to-end,
-  prints the digests, and the Eye sets ALL protected variables
+  prints the digests, and the Eye sets the protected variables
   (CURRENT_AUTHORITY_CHAIN_ROOT, EYE_AUTHORITY_PUBKEY,
-  VERIFIER_CLOSURE_DIGEST, TRUSTED_WORKFLOW_DIGEST,
-  TRUSTED_CONTROLLER_DIGEST, TRUSTED_VERDICT_CLOSURE_DIGEST) BEFORE the
-  corresponding slice merges. THE CONTROLLER'S INTRODUCING PR lands by a
+  TRUSTED_WORKFLOW_DIGEST, TRUSTED_CONTROLLER_DIGEST,
+  TRUSTED_VERDICT_CLOSURE_DIGEST, and LAST_TRANSITION_SEQ=0) BEFORE the
+  corresponding bootstrap merges — EXCEPT the digests a genesis-class
+  transition will itself introduce: E2's staged VERIFIER_CLOSURE_DIGEST
+  is NOT pre-provisioned (the first-deployment contract in (6) requires
+  old_* to equal the LIVE pre-slice value and refuses pre-provisioned
+  new_*); the Eye advances each such variable only AFTER the
+  controller-authorized merge of its transition, per the consumption
+  discipline. THE CONTROLLER'S INTRODUCING PR lands by a
   RECORDED EXCEPTIONAL BOOTSTRAP MERGE: the Eye merges it by hand after
   running the bootstrap tool's validation, and the exception is recorded
   (step-ledger entry + a bootstrap-merge record naming the PR, head,
@@ -795,7 +807,11 @@ per-file designs are in the approved plan; acceptance criteria here.
     together with the exact provisioned digests; unset/absent seq at
     any later validation ⇒ fail closed `transition-seq-unset`.
   - Each pre-E2 protected-surface slice (freshness; plugin
-    self-containment) is authorized by a ONE-TIME EYE-SIGNED
+    self-containment; AND — as the TERMINAL genesis-class transition —
+    the E2 SLICE ITSELF, whose PR changes the protected verifier
+    closure while the transition semantics it introduces cannot yet be
+    enforced by the base verifier and its proposed verifier may never
+    authorize its own PR) is authorized by a ONE-TIME EYE-SIGNED
     GENESIS-CLASS TRANSITION RECORD carrying the FULL tuple discipline:
     old_* digests == the LIVE provisioned protected values at
     validation time; new_* == the slice's exact staged bytes at its PR
@@ -825,7 +841,14 @@ per-file designs are in the approved plan; acceptance criteria here.
   closed (transition-seq-unset/-stale/-skipped/-partial); E2's
   retro-validation over the accumulated chain green ⇒ E2 accepts, any
   mismatch ⇒ E2's slice fails; a third pre-controller manual merge
-  attempt ⇒ refused (only the two enumerated ceremonial merges exist). **Accept (verifier
+  attempt ⇒ refused (only the two enumerated ceremonial merges exist);
+  E2-LANDING regression: the E2 introducing PR merges as the TERMINAL
+  genesis-class transition — controller-only validation, old_* == live
+  pre-E2 values, NO execution of the proposed verifier, NO third manual
+  merge — and only afterwards does the Eye advance
+  VERIFIER_CLOSURE_DIGEST; from then on E2's gate-side verifier enforces
+  all subsequent transitions (and retro-validates the accumulated
+  genesis-class chain as part of E2's acceptance). **Accept (verifier
   integrity)**: adversarial regression — a fixture PR replaces gate.mjs
   with a constant-success stub; the base-sourced execution ignores the
   stub, evaluates truthfully, and additionally reports
