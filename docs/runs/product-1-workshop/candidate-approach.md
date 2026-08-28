@@ -782,7 +782,14 @@ per-file designs are in the approved plan; acceptance criteria here.
   recognizing one memorized mutated byte-pattern (fixture overfitting:
   the K=12 repetitions each use an independent draw, and an oracle
   keyed to a single fixture fails the other draws ⇒
-  oracle-nondiscriminating), and (c) POST-MUTATION VALIDATION: after
+  oracle-nondiscriminating) with an ENFORCED MINIMUM DOMAIN
+  CARDINALITY: the runner ENUMERATES the eligible parameterizations for
+  the declared kind against the record's inputs and REQUIRES ≥ 8
+  distinct draws (a singleton domain reproduces one memorizable
+  artifact across all repetitions — FAIL `mutation-domain-too-small`;
+  the record must widen its mutation surface or declare multiple
+  registry kinds whose union meets the bound), and (c) POST-MUTATION
+  VALIDATION: after
   mutating, the runner re-parses/schema-validates the mutated artifact
   and REQUIRES IT WELL-FORMED — a mutation that breaks parsing ⇒ FAIL
   mutation-invalid (so a subsequent nonzero exit can only come from the
@@ -834,9 +841,14 @@ per-file designs are in the approved plan; acceptance criteria here.
   observable in both executions is the governed input — the mutation is
   the only discriminable difference, by construction.
   Invariants no registry kind fits declare a TRUSTED NEGATIVE FIXTURE
-  instead — a reviewed, committed violating artifact whose review rides
-  the same PR as the record — subject to the same well-formedness
-  validation. This is the clotho flagship-expectation
+  FAMILY instead — ≥ 8 reviewed, committed violating artifacts (whose
+  review rides the same PR as the record), one drawn per repetition by
+  the runner's recorded randomness — a single fixed fixture would be
+  digest-memorizable exactly like a singleton mutation domain (an
+  oracle rejecting only that digest while accepting every other
+  violation would pass); families are subject to the same
+  well-formedness validation, and a family below the bound ⇒ FAIL
+  fixture-family-too-small. This is the clotho flagship-expectation
   mutate-then-expect-failure pattern made mandatory and de-gameable. `npm-script` entries
   are EXECUTED DIRECTLY by run-oracles, exactly like file entries — `npm
   run <script> --prefix <package-dir>` under the same per-entry timeout,
@@ -882,7 +894,11 @@ per-file designs are in the approved plan; acceptance criteria here.
   and exits nonzero ⇒ oracle-environment-sensitive; a RANDOM-EXIT
   oracle (crypto.randomBytes coin flip) ⇒ inconsistent across the 12
   repetitions with overwhelming probability (admission bound < 1.3e-10,
-  documented) ⇒ oracle-nondiscriminating; a
+  documented) ⇒ oracle-nondiscriminating; a SINGLETON-DOMAIN
+  declaration ⇒ FAIL mutation-domain-too-small before any execution; a
+  FIXTURE-DIGEST-SPECIAL-CASING oracle (nonzero only on one memorized
+  family member) ⇒ fails on the other drawn members ⇒
+  oracle-nondiscriminating; a
   present-but-timeout oracle ⇒
   FAIL; an npm-script whose identical re-run exits 0 on the mutated sandbox
   ⇒ FAIL oracle-nondiscriminating; backfill complete (every backfilled

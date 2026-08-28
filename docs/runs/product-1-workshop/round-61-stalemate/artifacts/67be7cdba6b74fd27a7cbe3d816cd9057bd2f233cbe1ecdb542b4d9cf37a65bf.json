@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:d9e2baef48cd3a3c6874aa3859732a063fb040c11cbeb1a2447cd9bef2c068ee",
+  "output_plan_artifact_hash": "sha256:d9e2baef48cd3a3c6874aa3859732a063fb040c11cbeb1a2447cd9bef2c068ee",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:6a3cd78fae14450d98ed59dfa382fa6071f7a13a4abe2a6f783dd185a864713f",
+    "provenance_key": "anthropic:1e7eae78-6a34-414f-b2ea-f0679ca52e5f"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:b40a98bbd3699d63c8ccbcda23c0ecd1eaf21d559e71c05a5f5c285a2358c11c",
+    "provenance_key": "openai:codex-cli-mtcfcqgs",
+    "bound_hash": "sha256:d9e2baef48cd3a3c6874aa3859732a063fb040c11cbeb1a2447cd9bef2c068ee"
+  },
+  "objections": [
+    {
+      "scope": "approach/oracle-soundness",
+      "claim": "E6 remains gameable despite randomized repetitions. It requires neither a minimum mutation-domain cardinality nor minimum entropy per record, so a registry kind with one eligible site/value produces the same negative artifact in all 12 repetitions and an oracle hardcoded to that artifact passes. The trusted-negative-fixture fallback is necessarily fixed and has the same defect: an oracle can reject only that fixture's digest while accepting every other semantic violation. Therefore the mechanism does not establish discrimination for every NORMATIVE oracle. Require unpredictable families with enforced entropy/cardinality or an independent reference validator, and regressions for singleton-domain and fixture-digest-special-casing oracles. Candidate artifact: sha256:635e63e9390bceba570d008deddfbe0a9bd507496df3b03816030c20faba3335.",
+      "objection_hash": "sha256:82c8423fcf1c332bd918a349216f494b8baefa8750c831ad8f3ec6a2761ad1f0",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

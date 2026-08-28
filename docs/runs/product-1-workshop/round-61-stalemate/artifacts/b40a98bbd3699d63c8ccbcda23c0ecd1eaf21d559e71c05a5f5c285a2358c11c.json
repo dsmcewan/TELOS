@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "approach/oracle-soundness",
+        "claim": "E6 remains gameable despite randomized repetitions. It requires neither a minimum mutation-domain cardinality nor minimum entropy per record, so a registry kind with one eligible site/value produces the same negative artifact in all 12 repetitions and an oracle hardcoded to that artifact passes. The trusted-negative-fixture fallback is necessarily fixed and has the same defect: an oracle can reject only that fixture's digest while accepting every other semantic violation. Therefore the mechanism does not establish discrimination for every NORMATIVE oracle. Require unpredictable families with enforced entropy/cardinality or an independent reference validator, and regressions for singleton-domain and fixture-digest-special-casing oracles. Candidate artifact: sha256:635e63e9390bceba570d008deddfbe0a9bd507496df3b03816030c20faba3335."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcfcqgs",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcfcqgs",
+    "source": "cli-seats/codex_ask"
+  }
+}
