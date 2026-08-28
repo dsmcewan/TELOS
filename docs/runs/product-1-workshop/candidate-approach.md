@@ -356,8 +356,20 @@ root and enables KERNEL-ENFORCED IMMUTABILITY on each: `fs-verity` (a
 Merkle-tree measured digest the kernel re-checks on EVERY read, and the
 file becomes immutable once verity is enabled) bound to the pinned
 digest, over a store the ceremony owns with NO other writable alias to
-the backing inodes (a private tmpfs/overlay it populates by copy, never a
-bind of a host-writable path). Any closure member whose verity digest ≠
+the backing inodes. Because `fs-verity` is supported ONLY on
+ext4/f2fs/btrfs (NOT tmpfs — enabling it there fails EOPNOTSUPP, and
+missing verity is fatal here), the staging store is a FROZEN,
+PD-QUALIFIED VERITY-CAPABLE FILESYSTEM: a ceremony-owned PRIVATE
+LOOPBACK `ext4` (or f2fs/btrfs) IMAGE the ceremony creates, `mkfs`es,
+mounts read-write to populate + `fsverity enable` each member, then
+remounts READ-ONLY — no other writable alias, backing image
+ceremony-private. (A platform lacking a verity-capable fs ⇒ doctor
+refuses `verity-fs-unavailable`, routes to review, never a silent
+non-immutable fallback.) CLEAN-ROOM TOPOLOGY regression: the exact
+topology — a private loopback ext4 image with verity on every staged
+closure member — is built end-to-end and a staged library/loader/helper
+is proven verity-immutable-and-readable, so doctor/verify --full OPERATE
+(not refuse). Any closure member whose verity digest ≠
 its pin, or that lacks verity ⇒ fail-closed `tool-closure-unauthenticated`
 BEFORE the tool runs, and any at-read modification is kernel-detected.
 OVERWRITE-AFTER-VERIFICATION regression: after verification, a concurrent
@@ -1612,9 +1624,13 @@ per-file designs are in the approved plan; acceptance criteria here.
   cannot reproduce the content-derived concealed case assignment and
   it fails some element of the exhaustive battery deterministically ⇒
   oracle-nondiscriminating; a RANDOM-EXIT oracle (crypto.randomBytes
-  coin flip) ⇒ under seccomp-fixed entropy it collapses to a constant
-  exit and DETERMINISTICALLY fails the baselines (constant nonzero) or
-  every negative (constant zero) ⇒ oracle-nondiscriminating; a SINGLETON-DOMAIN
+  coin flip) ⇒ NOT EXECUTED AT ALL: `crypto.randomBytes` (ambient
+  entropy) is NOT expressible in the declarative pure-evaluator ABI, so
+  it FAILS `oracle-abi-nonconformant` at qualification BEFORE any
+  execution — there is NO `seccomp-fixed-entropy` execution path in this
+  plan and the single-evaluator contract forbids running such an
+  imperative oracle at all (the earlier constant-under-fixed-entropy
+  framing is removed as inconsistent with the settled declarative ABI); a SINGLETON-DOMAIN
   declaration ⇒ FAIL mutation-domain-too-small before any execution; a
   FIXTURE-DIGEST-SPECIAL-CASING oracle (nonzero only on one memorized
   family member) ⇒ fails on the other drawn members ⇒
