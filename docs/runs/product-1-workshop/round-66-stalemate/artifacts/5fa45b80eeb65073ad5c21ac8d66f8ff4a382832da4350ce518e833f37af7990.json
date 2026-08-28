@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:2a182a88193d7fc4035859288854f85c0faa178f0b90b09899924c66edb0873e",
+  "output_plan_artifact_hash": "sha256:2a182a88193d7fc4035859288854f85c0faa178f0b90b09899924c66edb0873e",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:d8fc887f2c9ebc1ae9a2441852f5fdf8e773cd74db3334b186eee277ed67dd1b",
+    "provenance_key": "anthropic:ea3465fb-2619-494b-a401-0ef064d07108"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:00b676b5b416d426a203c793e13fe7a5e77c3ee896071a5da6345eb3175f7999",
+    "provenance_key": "openai:codex-cli-mtcgap92",
+    "bound_hash": "sha256:2a182a88193d7fc4035859288854f85c0faa178f0b90b09899924c66edb0873e"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E1-controller-permissions",
+      "claim": "The merge controller's exact GitHub App permission set is inoperable for its required producer-authentication oracle. The candidate grants only contents:write, pull_requests:write, and checks:read, but its precedence rule must enumerate commit statuses, which requires Commit statuses:read, and authenticate each GitHub Actions run's workflow path/run metadata, which requires Actions:read for private repositories. Checks:read supplies check runs but neither resource. Under the declared “and nothing else” manifest, the controller receives 403s and must either reject every such merge or ignore evidence that its same-name-status and trusted-workflow regressions require it to evaluate. Add both read permissions or an equivalent independently authenticated mechanism, plus permission-limited regressions. Candidate artifact: sha256:770f0a338dc07040d0a4e50d96c7dc047f89b4a3ae76f3b4e0c8b4e6715a167f. Sources: [commit-status permissions](https://docs.github.com/en/rest/commits/statuses), [workflow-run permissions](https://docs.github.com/en/rest/actions/workflow-runs).",
+      "objection_hash": "sha256:2fa253bd7cb20466ed05a372c6c0b5da33a02660e7b04dd89a868864423462c6",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:release-capability-boundary",
+      "claim": "The release contract remains destructively reachable by both supposedly capability-bounded machine principals. GitHub grants Delete a release to any GitHub App installation token with Contents:write—the exact permission permanently assigned to the controller and publisher. Immutable releases protect assets and tags from modification, but GitHub explicitly permits deletion of the immutable release itself; the all-tags ruleset governs refs, not the release object. After the ceremony unsuspends these Apps, either credential can delete the v0.3.0 release or a historical placeholder, making signed assets unavailable and reopening the occupied historical slot before the integrity sweep detects anything. This is recovery/detection, not fail-closed enforcement. The approach needs a platform-enforced boundary preventing routine branch credentials from deleting releases, or must record and route the platform limitation rather than call these principals release-incapable. Add a deletion regression proving server-side refusal. Candidate artifact: sha256:770f0a338dc07040d0a4e50d96c7dc047f89b4a3ae76f3b4e0c8b4e6715a167f. Sources: [release deletion permissions](https://docs.github.com/en/rest/releases/releases), [immutable-release limits](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases).",
+      "objection_hash": "sha256:b8b96383fab622cc3b13cf782fb66b763bec6c46039bc8344ef309867fa58b71",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

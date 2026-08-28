@@ -1467,8 +1467,11 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   EXACT LEAST-PRIVILEGE permission set recorded per principal — the publisher:
   contents:write + pull_requests:write (opening a PR requires PR write;
   contents alone cannot), the controller: contents:write +
-  pull_requests:write (the merge endpoint) + checks:read — and nothing
-  else (no administration, no environments, no tag capability under the
+  pull_requests:write (the merge endpoint) + checks:read +
+  statuses:read (the precedence rule enumerates commit STATUSES, which
+  checks:read does not supply) + actions:read (authenticating a run's
+  workflow path/run metadata on a private repo requires it) — and
+  nothing else (no administration, no environments, no tag capability under the
   all-tags ruleset; excluded from the bypass list of every SAFETY/
   CHECK-ENFORCING ruleset — while the controller's membership in the
   PURE ACTOR-RESTRICTION ruleset's bypass list is REQUIRED and recorded
@@ -1481,9 +1484,27 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   regression: the manifest ACCEPTS the exact split-ruleset
   configuration — controller in the actor-restriction bypass list,
   absent from every safety ruleset's — and rejects any deviation); the manifest changes
-  only via Eye-signed transition. Custody regressions: manifest-listed
+  only via Eye-signed transition. THE MACHINE APPS ARE
+  DEFAULT-SUSPENDED (contents:write permits DELETING even an immutable
+  release — GitHub provides no platform boundary for the release
+  object, so "release-incapable" would be a false claim; the honest
+  posture is that the credentials are platform-DEAD except when
+  needed): both installations sit SUSPENDED at all times outside
+  Eye-initiated ceremony windows; the Eye's dispatch wrapper
+  unsuspends them for a specific ceremony and re-suspends at its close
+  (suspended_at verified each side), so outside those windows a
+  compromised App key can mutate nothing. WITHIN a window, release
+  deletion by a compromised App remains possible — RECORDED as a
+  routed platform limitation (bounded to ceremony duration, detected
+  by the integrity sweep, recovered by re-publication runbook), never
+  described as incapability. Custody regressions: manifest-listed
   controller/publisher ⇒ NO drift (E1 operable); unlisted writer ⇒
-  drift; listed principal with escalated live scopes ⇒ drift; (iv) the
+  drift; listed principal with escalated live scopes ⇒ drift; a
+  SUSPENDED App attempting any release/branch mutation ⇒ platform 403
+  (deletion regression); an installation found UNSUSPENDED outside a
+  ceremony window ⇒ custody-drift; permission-limited regressions
+  cover the statuses:read/actions:read endpoints under the exact
+  manifest scopes; (iv) the
   publish flip runs inside a PLATFORM-ENFORCED EXCLUSIVE INTERVAL — a
   re-check "immediately before" the flip is two API calls with a
   mutable gap, so the gap itself is removed: the ceremony (1) DISABLES
