@@ -244,14 +244,27 @@ INCLUDING pre-`main()` loader/library constructors and any indirect or
 compiler-emitted syscall path — regardless of what bytes those binaries
 or their dynamically-loaded libraries contain. This makes the
 no-listener property a KERNEL INVARIANT over the executed artifacts, not
-an inference from static inspection, and it holds INSIDE bwrap's private
-network namespace too: `--unshare-net` removes reachable interfaces
-(defense-in-depth) but the seccomp filter is what makes `bind`/`listen`
-themselves fail, so a descendant cannot open a listener even in its own
-namespace where a host-only observer would miss it. (Outbound clients
-still work: `connect()` is permitted; git/gh outbound TLS needs no
-bind/listen; a tool that genuinely required `bind` would fail-closed at
-qualification and route to review, never silently.) REGRESSIONS: (a)
+an inference from static inspection, and the no-listener invariant is delivered by
+TWO COMPLEMENTARY PROFILES so it never contradicts required outbound
+verification (`--unshare-net` gives ONLY loopback — it cannot both
+isolate the network AND carry `gh`/git TLS): (A) the OFFLINE PROFILE —
+oracle confinement, local git object ops, the offline self-consistency
+clean-room — runs under `--unshare-net` (no interface at all; fully
+sealed, no reachable endpoint inbound OR outbound); (B) the ONLINE
+PROFILE — the FEW operations that genuinely need egress (`gh api`, `gh
+attestation verify`, git remote fetch) — runs WITH the real interface
+(NOT `--unshare-net`) but UNDER THE SECCOMP FILTER, so those tools may
+`connect()` outbound yet still CANNOT `bind`/`listen`/`accept`, create
+inet DGRAM, use io_uring, or import a socket via SCM_RIGHTS. On the
+online profile the seccomp filter (not netns) is the no-listener
+enforcement; on the offline profile netns removes the interface
+entirely. Neither profile can host an inbound listener, and the online
+profile's outbound TLS works because it keeps the real interface. END-
+TO-END regressions: (i) OFFLINE — a confined op attempts any egress ⇒
+no route, fails closed; (ii) ONLINE — `gh attestation verify` succeeds
+outbound while a concurrent `listen`/inet-DGRAM/io_uring attempt in the
+same tree is denied. (A tool that genuinely required `bind` would
+fail-closed at qualification and route to review, never silently.) REGRESSIONS: (a)
 INDIRECT/LINKED LISTENER — a child attempts `listen()` via an indirect,
 aliased, or compiler-emitted path ⇒ KILLED by the filter, no listener
 opens; (b) PRIVATE-NAMESPACE LISTENER — a git descendant tries to
@@ -267,9 +280,19 @@ executed closure: a substituted `ld.so`/DT_NEEDED library could fabricate
 git objects, force a false verify success, or falsify an attestation
 while the main-ELF digest still matches and seccomp is satisfied. So for
 these VERDICT-PRODUCING tools the ENTIRE DYNAMIC CLOSURE IS AUTHENTICATED
-AS A PINNED READ-ONLY CONTENT-ADDRESSED ROOT: the ceremony runs
-node/git/gh/bwrap inside a bwrap mount over a root whose complete
-recursively-resolved closure — the ELF interpreter (`ld.so`), every
+AS A PINNED READ-ONLY CONTENT-ADDRESSED ROOT. THE SANDBOX BUILDER
+BOOTSTRAPS THAT TRUST FROM ITSELF: bwrap is the FIRST thing that runs,
+and its OWN PT_INTERP/DT_NEEDED closure would load BEFORE it could
+establish the authenticated mount — so the sandbox builder MUST BE A
+STATIC HERMETIC BINARY (a statically-linked bwrap, or a static
+purpose-built sandbox-builder — NO PT_INTERP, empty DT_NEEDED, like the
+launcher), sealed-snapshot (memfd + F_SEAL_*) authenticated against its
+pinned digest by the launcher before `fexecve`, so NO mutable loader
+byte executes before confinement; a dynamically-linked sandbox builder
+⇒ qualification FAILS `sandbox-builder-not-hermetic`. Only after this
+static, self-authenticated builder establishes the read-only
+content-addressed root does the ceremony run node/git/gh inside it over
+a root whose complete recursively-resolved closure — the ELF interpreter (`ld.so`), every
 transitive DT_NEEDED library, and the tool binary — is ENUMERATED and
 DIGEST-PINNED in the trust manifest and re-verified before use, with the
 loader constrained to that measured root (RPATH/RUNPATH pinned, `LD_*`
