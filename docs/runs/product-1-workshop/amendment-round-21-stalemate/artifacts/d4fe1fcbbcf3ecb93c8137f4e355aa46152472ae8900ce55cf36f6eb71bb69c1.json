@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:d7c797213d04a854eb54eddc432e783cff41179cf80798a576233d877b2de057",
+  "output_plan_artifact_hash": "sha256:d7c797213d04a854eb54eddc432e783cff41179cf80798a576233d877b2de057",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:3b2b6d8ec70db29e5ee6a2f9ed240f40ab159bad78dd530d3ea02fc838c364cc",
+    "provenance_key": "anthropic:32c5a53c-609d-433e-9a25-b436fd62a2ab"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:f21ff0adda4e12f7890fa651d1f3f3101f60ff38745e268fcfa91e4591db87b8",
+    "provenance_key": "openai:codex-cli-mtctd4gp",
+    "bound_hash": "sha256:d7c797213d04a854eb54eddc432e783cff41179cf80798a576233d877b2de057"
+  },
+  "objections": [
+    {
+      "scope": "plan",
+      "claim": "Section 1's no-listener mechanism omits Node's SIGUSR1 inspector activation path. On supported Unix platforms, delivering SIGUSR1 to a running Node process can activate the inspector and open a TCP listener even when inspector flags are stripped and the executable closure neither imports node:inspector nor calls inspector.open. An external same-user process can send the signal, so source-grammar rejection of process.kill alone would not close the defect. The launcher and every spawned Node runtime must disable or isolate SIGUSR1 inspector activation before startup, fail closed where that guarantee is unavailable, bind the mechanism to the reviewed Node range, and include a live adversarial fixture that sends SIGUSR1 and proves no listener opens.",
+      "objection_hash": "sha256:5e9bb155f7852ee0f2b147deb234fdce7aea8e9a24e4dc41618cd0119791b21d",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

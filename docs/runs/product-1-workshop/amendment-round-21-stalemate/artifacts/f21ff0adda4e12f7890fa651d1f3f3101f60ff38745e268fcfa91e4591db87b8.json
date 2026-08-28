@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "plan",
+        "claim": "Section 1's no-listener mechanism omits Node's SIGUSR1 inspector activation path. On supported Unix platforms, delivering SIGUSR1 to a running Node process can activate the inspector and open a TCP listener even when inspector flags are stripped and the executable closure neither imports node:inspector nor calls inspector.open. An external same-user process can send the signal, so source-grammar rejection of process.kill alone would not close the defect. The launcher and every spawned Node runtime must disable or isolate SIGUSR1 inspector activation before startup, fail closed where that guarantee is unavailable, bind the mechanism to the reviewed Node range, and include a live adversarial fixture that sends SIGUSR1 and proves no listener opens."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtctd4gp",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtctd4gp",
+    "source": "cli-seats/codex_ask"
+  }
+}
