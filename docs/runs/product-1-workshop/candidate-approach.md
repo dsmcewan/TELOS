@@ -200,8 +200,15 @@ per-file designs are in the approved plan; acceptance criteria here.
   the target branch (repository AND inherited organization rulesets, via
   the rules/rulesets APIs) plus classic branch protection, requires
   strict up-to-dateness in effect, and requires the authenticated
-  principal (user or app installation) to be ABSENT from every
-  `bypass_actors` list and from any admin-exemption path — where absence
+  principal (user or app installation) to be ABSENT from the
+  `bypass_actors` list of every ruleset CONTAINING SAFETY RULES
+  (required status checks, up-to-date enforcement, or any
+  check-bypassing capability) and from any admin-exemption path —
+  membership in the bypass list of a validated PURE ACTOR-RESTRICTION
+  ruleset (update/push restriction rules ONLY, classified by rule
+  content per §5(b2)) is REQUIRED for operability and is not a safety
+  bypass; a ruleset mixing safety rules with a controller bypass entry
+  ⇒ refuse. Absence
   is proven by EFFECTIVE-MEMBERSHIP RESOLUTION, not literal-identity
   comparison (a bypass_actors entry can be a TEAM, organization role, or
   repository role; a principal not named directly could inherit bypass
@@ -247,11 +254,14 @@ per-file designs are in the approved plan; acceptance criteria here.
   base BETWEEN the eligibility query and the PUT and (modeling strict
   protection) rejects the PUT ⇒ controller reports base-moved, no merge
   recorded; unsafe-environment fixtures: strict=false, a bypass-capable
-  credential, the principal listed as a RULESET bypass_actor (repository
-  or inherited org ruleset — stub rulesets API), the principal
-  INHERITING bypass through a listed TEAM or repository/organization
-  ROLE (stub team-membership/role APIs — literal-name absence must NOT
-  pass), an unresolvable group actor (⇒ bypass-resolution-incomplete),
+  credential, the principal listed as a bypass_actor of a
+  CHECK-ENFORCING ruleset (repository or inherited org — stub rulesets
+  API; its presence in a validated PURE actor-restriction ruleset's
+  bypass list ⇒ COMPLIANT, startup proceeds — the aligned-scope
+  fixture), the principal INHERITING a safety-ruleset bypass through a
+  listed TEAM or repository/organization ROLE (stub
+  team-membership/role APIs — literal-name absence must NOT pass), an
+  unresolvable group actor (⇒ bypass-resolution-incomplete),
   or bypass-actor data omitted/refused by the API
   (⇒ bypass-visibility-unavailable, never treated as absence) ⇒
   controller refuses at startup; out-of-band-merge fixture ⇒

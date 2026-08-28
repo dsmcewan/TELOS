@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "Candidate §2 E1 versus §5(b2) — merge-controller bypass invariant",
+        "claim": "E1 requires the merge-controller principal to be absent from every effective ruleset bypass_actors list and includes a fixture rejecting its presence in any repository or inherited-organization ruleset. Section 5(b2) simultaneously requires that principal in the actor-restriction ruleset β bypass list so it can update main, and declares that configuration compliant. The required repository configuration must therefore both pass and fail controller startup. Scope the E1 prohibition explicitly to rulesets containing required-check or up-to-date safety rules, permit only validated pure actor-restriction bypasses, and align the unsafe-environment fixtures with that distinction."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcc2hu1",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcc2hu1",
+    "source": "cli-seats/codex_ask"
+  }
+}

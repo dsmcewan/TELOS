@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:1940aa964df0c0cc5a6773ce28574dffb3530e2a8e49d443d6a3f8e79fce835b",
+  "output_plan_artifact_hash": "sha256:1940aa964df0c0cc5a6773ce28574dffb3530e2a8e49d443d6a3f8e79fce835b",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:1bff0ccc3b9bef28c2f44d037a6ba5dfc742d0b90470e04dd0130ef2facdb573",
+    "provenance_key": "anthropic:13410007-b8a6-40c4-8bbb-39931ba2bddb"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:72bf14e69b1829e4a9cfc9d20159a44e652c0bd1d4eb993ec88d9d4fe5dd30d1",
+    "provenance_key": "openai:codex-cli-mtcc2hu1",
+    "bound_hash": "sha256:1940aa964df0c0cc5a6773ce28574dffb3530e2a8e49d443d6a3f8e79fce835b"
+  },
+  "objections": [
+    {
+      "scope": "Candidate §2 E1 versus §5(b2) — merge-controller bypass invariant",
+      "claim": "E1 requires the merge-controller principal to be absent from every effective ruleset bypass_actors list and includes a fixture rejecting its presence in any repository or inherited-organization ruleset. Section 5(b2) simultaneously requires that principal in the actor-restriction ruleset β bypass list so it can update main, and declares that configuration compliant. The required repository configuration must therefore both pass and fail controller startup. Scope the E1 prohibition explicitly to rulesets containing required-check or up-to-date safety rules, permit only validated pure actor-restriction bypasses, and align the unsafe-environment fixtures with that distinction.",
+      "objection_hash": "sha256:5393dd3aebf16124950b3e529b3b199acccf5e805202c20268f191549d8f44f9",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
