@@ -1542,8 +1542,23 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   compromised App key can mutate nothing. WITHIN a window, release
   deletion by a compromised App remains possible — RECORDED as a
   routed platform limitation (bounded to ceremony duration, detected
-  by the integrity sweep, recovered by re-publication runbook), never
-  described as incapability. Custody regressions: manifest-listed
+  by the integrity sweep), never described as incapability, with a
+  recovery mechanism COMPATIBLE WITH IMMUTABLE TAG RETIREMENT (GitHub
+  permanently retires a deleted immutable release's tag name — the
+  same tag can never be republished, so a "re-publication runbook"
+  under the original name would be impossible): (i) the ceremony
+  ESCROWS every release artifact + acceptance record locally (Eye
+  custody) before publish, so deletion loses only the GitHub hosting,
+  never the signed artifacts; (ii) recovery publishes the ESCROWED,
+  byte-identical artifacts under a SUCCESSOR PATCH TAG (v0.3.0 deleted
+  ⇒ v0.3.1 carrying the same accepted commit, a fresh Eye acceptance
+  referencing the incident, and a pointer to the retired name);
+  (iii) the retired tag is appended to the Eye-signed HISTORICAL-TAGS
+  record with disposition `incident-retired` so the bijection sweep
+  stays sound. DELETION-AND-RECOVERY regression: delete a published
+  immutable release (stub) ⇒ tag name retirement observed, sweep
+  flags it, the successor-tag path republishes the escrowed artifacts
+  and the sweep returns green with the retired name recorded. Custody regressions: manifest-listed
   controller/publisher ⇒ NO drift (E1 operable); unlisted writer ⇒
   drift; listed principal with escalated live scopes ⇒ drift; a
   SUSPENDED App attempting any release/branch mutation ⇒ platform 403

@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:6a5eefd6a543995daab8897be4e1a9d3a6d8d17ccf8805e8e1baa1a3c54d15df",
+  "output_plan_artifact_hash": "sha256:6a5eefd6a543995daab8897be4e1a9d3a6d8d17ccf8805e8e1baa1a3c54d15df",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:ab2fb4add969efa2e991b0d1c3a06b7d8c25843a696148c61931120f3f5be3ba",
+    "provenance_key": "anthropic:bd6b45de-ed29-4ca5-807c-11116397b4b5"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:e45f45db3e8632095253a03c83390198f2d9a306b24b814d49fadb79bb08a292",
+    "provenance_key": "openai:codex-cli-mtchn60h",
+    "bound_hash": "sha256:6a5eefd6a543995daab8897be4e1a9d3a6d8d17ccf8805e8e1baa1a3c54d15df"
+  },
+  "objections": [
+    {
+      "scope": "candidate:immutable-release-recovery",
+      "claim": "The recorded recovery for release deletion is unsound. The candidate acknowledges that either contents:write App can delete an immutable release while temporarily unsuspended, but says this is “recovered by re-publication runbook.” GitHub states that after an immutable release is deleted, its tag name cannot be reused; therefore the exact v0.3.0 release or a deleted historical placeholder cannot be republished under its original tag. The integrity sweep detects permanent artifact loss but does not recover it, leaving the signed distribution contract unavailable after the explicitly accepted ceremony-window failure. Define a recovery mechanism compatible with immutable tag-name retirement (or prevent deletion throughout every App activation window) and add a deletion-and-recovery regression. Candidate artifact: sha256:eedcc1b29633e63053f77cdfc273c825d4fb2796f4e0d4cafe368f1037597420. Source: [GitHub immutable releases](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases).",
+      "objection_hash": "sha256:bdcd1e30f88027d83de60917b5c328db9ab7b1520806c0d75ab6adce26359102",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

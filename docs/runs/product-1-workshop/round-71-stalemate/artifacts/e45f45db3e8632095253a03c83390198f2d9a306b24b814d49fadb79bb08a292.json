@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:immutable-release-recovery",
+        "claim": "The recorded recovery for release deletion is unsound. The candidate acknowledges that either contents:write App can delete an immutable release while temporarily unsuspended, but says this is “recovered by re-publication runbook.” GitHub states that after an immutable release is deleted, its tag name cannot be reused; therefore the exact v0.3.0 release or a deleted historical placeholder cannot be republished under its original tag. The integrity sweep detects permanent artifact loss but does not recover it, leaving the signed distribution contract unavailable after the explicitly accepted ceremony-window failure. Define a recovery mechanism compatible with immutable tag-name retirement (or prevent deletion throughout every App activation window) and add a deletion-and-recovery regression. Candidate artifact: sha256:eedcc1b29633e63053f77cdfc273c825d4fb2796f4e0d4cafe368f1037597420. Source: [GitHub immutable releases](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases)."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtchn60h",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtchn60h",
+    "source": "cli-seats/codex_ask"
+  }
+}
