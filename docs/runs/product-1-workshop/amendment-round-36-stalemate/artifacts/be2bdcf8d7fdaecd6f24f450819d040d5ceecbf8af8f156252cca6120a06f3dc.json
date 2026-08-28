@@ -1,0 +1,33 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "## Required revision\n\nRetain the candidate except that §1 and every dependent acceptance criterion must replace the main-ELF-only tool binding and syscall-only listener proof with mechanisms covering the complete runtime image and post-launch descriptor acquisition. For each `node`, `git`, `gh`, and `bwrap` execution, either ship a hermetic static executable or authenticate and immutably stage the complete `PT_INTERP`/recursive `DT_NEEDED`/runtime-load closure in a private execution root, with unresolved or mutable loader/library edges refused before execution. Add regressions where an authenticated main ELF is paired with a substituted loader or library that falsifies verifier output; the invocation must be refused before its output can influence a verdict. Bind supported per-platform executable closures in signed manifests so operator-local binaries cannot self-enroll.\n\nThe no-listener control must also prevent acquiring or creating a receiving endpoint without an explicit `bind`/`listen` syscall. The revised design must address UDP implicit autobind after `sendto`/`connect`, descriptor receipt through `SCM_RIGHTS`, and equivalent post-start acquisition paths; otherwise it must narrow the claimed property and show that the narrowed property still proves the signed ADR's no-service boundary. Add adversarial regressions for each path. The launcher's closed native syscall grammar must include the actual mechanism used to enumerate and close descriptors—such as `getdents64` for the stated `/proc/self/fd` scan—or use a different fully enumerated mechanism.",
+    "objections": [
+      {
+        "scope": "candidate-approach",
+        "claim": "The sealed-memfd identity mechanism authenticates only the main ELF for `node`, `git`, `gh`, and `bwrap`; their path-resolved `PT_INTERP`, recursive `DT_NEEDED`, and runtime-loaded code remain mutable and unauthenticated. The candidate acknowledges this only for listener containment, but these tools produce authoritative verification and attestation results. A substituted loader or library can return fabricated git objects, make Node verifiers report success, or falsify `gh attestation verify` while the main-binary digest still matches and seccomp remains satisfied. Thus cryptographic identity, provenance, and fail-closed verdict production are not established."
+      },
+      {
+        "scope": "candidate-approach",
+        "claim": "The claimed whole-tree no-listener kernel invariant does not follow from denying `bind`, `listen`, `accept*`, raw sockets, and io_uring. An unconnected UDP socket becomes implicitly bound after `sendto` and can then receive without any denied syscall; a descendant can also acquire an already-bound socket after startup through Unix-domain `SCM_RIGHTS`, which inherited-descriptor cleanup does not address. Consequently the statement that an allowed client socket cannot become a receiving endpoint, and the claim that the property holds regardless of descendant bytes, are false."
+      },
+      {
+        "scope": "candidate-approach",
+        "claim": "The launcher specification says its native syscall grammar admits exactly the enumerated operations while also requiring a scan of `/proc/self/fd`. Such enumeration requires an operation such as `getdents64`, which is absent from the closed grammar; `read` alone cannot enumerate a directory. The specified launcher therefore cannot implement its mandatory inherited-descriptor closure while conforming to its own qualification oracle."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcz2s6x",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcz2s6x",
+    "source": "cli-seats/codex_ask"
+  }
+}

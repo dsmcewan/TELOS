@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:42300eebb93228d534429077d46c9fe4b0cf53dea2ac1d3c8096caa2a5f3b659",
+  "output_plan_artifact_hash": "sha256:42300eebb93228d534429077d46c9fe4b0cf53dea2ac1d3c8096caa2a5f3b659",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:29338a4007195de05ea7e9b32cc4c5059ed554cd669474f59a1958d25afd6be6",
+    "provenance_key": "anthropic:79d60475-5534-4fbb-96a9-3bada4e30bb7"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:be2bdcf8d7fdaecd6f24f450819d040d5ceecbf8af8f156252cca6120a06f3dc",
+    "provenance_key": "openai:codex-cli-mtcz2s6x",
+    "bound_hash": "sha256:b38f5e883549efc364b688bc4b3346f20b0a364ae3708bf2ad54bb6cab2c929e"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "The sealed-memfd identity mechanism authenticates only the main ELF for `node`, `git`, `gh`, and `bwrap`; their path-resolved `PT_INTERP`, recursive `DT_NEEDED`, and runtime-loaded code remain mutable and unauthenticated. The candidate acknowledges this only for listener containment, but these tools produce authoritative verification and attestation results. A substituted loader or library can return fabricated git objects, make Node verifiers report success, or falsify `gh attestation verify` while the main-binary digest still matches and seccomp remains satisfied. Thus cryptographic identity, provenance, and fail-closed verdict production are not established.",
+      "objection_hash": "sha256:43b3aeea03992c8f4aa936470363372c13bf208e71fe2186fe55e62ef352a0f9",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "The claimed whole-tree no-listener kernel invariant does not follow from denying `bind`, `listen`, `accept*`, raw sockets, and io_uring. An unconnected UDP socket becomes implicitly bound after `sendto` and can then receive without any denied syscall; a descendant can also acquire an already-bound socket after startup through Unix-domain `SCM_RIGHTS`, which inherited-descriptor cleanup does not address. Consequently the statement that an allowed client socket cannot become a receiving endpoint, and the claim that the property holds regardless of descendant bytes, are false.",
+      "objection_hash": "sha256:ed3bbbaf45a333889cdeddd716b05fb469d1c376f5e10e4b56f1139a12e21493",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "The launcher specification says its native syscall grammar admits exactly the enumerated operations while also requiring a scan of `/proc/self/fd`. Such enumeration requires an operation such as `getdents64`, which is absent from the closed grammar; `read` alone cannot enumerate a directory. The specified launcher therefore cannot implement its mandatory inherited-descriptor closure while conforming to its own qualification oracle.",
+      "objection_hash": "sha256:deca3351391a3bbeb2e60a644ac0fe90ae7942f7e51092f6e8b52fa66ac8656d",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
