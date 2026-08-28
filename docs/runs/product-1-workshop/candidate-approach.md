@@ -223,20 +223,37 @@ DNS is served WITHOUT inet UDP — via DNS-over-TCP or a small pinned set
 of pre-resolved required endpoints (pylae talks to a FIXED set of GitHub
 attestation/API hosts) — so the outbound closure needs no UDP. And
 because a descendant could otherwise acquire an ALREADY-BOUND socket
-AFTER startup through a Unix-domain `SCM_RIGHTS` fd pass (which
-inherited-fd closure at launch does not prevent), the network-using
-ceremony runs under bwrap with `--unshare-ipc` AND a read-only root
-carrying NO host unix-socket paths — and abstract unix sockets are
-network-namespace-scoped, so there is NO external unix peer from which a
-confined process could receive a passed fd. Thus a client socket cannot
-become a receiving endpoint (no listen/accept, no UDP implicit-bind, no
-SCM_RIGHTS import), while the required doctor/verify --full outbound
-(TCP/TLS) closure still works. UDP-IMPLICIT-BIND regression: a
+AFTER startup through post-launch DESCRIPTOR-IMPORT paths (which
+inherited-fd closure at launch does not prevent), the ONLINE profile
+closes that WHOLE CLASS by KERNEL-ENFORCED SYSCALL DENIAL rather than by
+namespace isolation of unix peers (the online profile deliberately keeps
+the HOST network namespace for egress, and abstract AF_UNIX is
+NETWORK-namespace-scoped — so `--unshare-ipc` does NOT isolate host
+abstract-unix peers; relying on it would be unsound). The inherited
+seccomp filter additionally DENIES, in the online profile: (1) `socket()`
+creation for `AF_UNIX` (inspectable scalar domain arg) — with no unix
+socket a descendant cannot create/connect an abstract OR pathname peer,
+so it can NEVER `recvmsg` an `SCM_RIGHTS` fd; the online tools (gh api,
+attestation verify, git-over-HTTPS) need only AF_INET stream, and a tool
+genuinely requiring a unix socket fails-closed at qualification and
+routes to review; (2) `pidfd_getfd` and `pidfd_open` — the pidfd
+cross-process fd-theft primitives; and the profile runs bwrap
+`--unshare-pid` with a PRIVATE `/proc`, so `/proc/<other-pid>/fd/<n>` of
+any host process is not reachable (the proc-fd import surface is removed).
+Thus a client socket cannot become a receiving endpoint (no
+listen/accept, no UDP implicit-bind, no SCM_RIGHTS import via any unix
+peer, no pidfd/proc fd-theft), while the required doctor/verify --full
+outbound (TCP/TLS) closure still works. UDP-IMPLICIT-BIND regression: a
 descendant creates an inet DGRAM socket and `sendto`s ⇒ socket creation
-already denied, nothing receives. SCM_RIGHTS regression: a process
-outside the sandbox tries to pass a bound socket fd to a confined
-descendant over a unix socket ⇒ no reachable unix peer (host paths
-absent, abstract namespace isolated), the pass fails. Because a seccomp filter under NO_NEW_PRIVS is INHERITED
+already denied, nothing receives. SCM_RIGHTS regression (from a HOST
+abstract-unix peer): a host process with an abstract AF_UNIX socket holds
+an already-bound UDP fd and tries to pass it into a confined online
+descendant ⇒ the descendant cannot create AF_UNIX at all (denied), so it
+can neither connect the abstract peer nor `recvmsg` the fd; the pass
+fails at the confined side regardless of host reachability. PIDFD/PROC
+regression: a descendant attempts `pidfd_getfd`/`/proc/<host-pid>/fd`
+import of a bound socket ⇒ pidfd syscalls denied and the host proc-fd
+path absent under `--unshare-pid` + private `/proc`. Because a seccomp filter under NO_NEW_PRIVS is INHERITED
 across `execve` and by every `fork`/descendant and CANNOT be relaxed or
 dropped, this binds the ENTIRE process tree — the launcher, Node, and
 every spawned external tool (git/gh/bwrap) AND their descendants,
