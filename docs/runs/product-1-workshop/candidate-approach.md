@@ -905,8 +905,23 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   run `pylae doctor` (must pass in ARCHIVE mode) and `pylae version` (must
   report the embedded identity) there, and run `pylae verify
   --offline-checks` (the archive-mode subset); any spawn of a file outside
-  the extracted root ⇒ fail. **Accept**: clean-room job green from tarball
-  alone in archive mode; tampered tracked payload ⇒ doctor fails
+  the extracted root ⇒ fail. FULL VERIFICATION IN CLEAN ROOM (the
+  offline subset alone would leave the Phase-1a verify claim
+  undemonstrated — E2's git-object anchoring and the history-sensitive
+  freshness digest need a git object database the tarball lacks):
+  `pylae verify --full --bundle <path>` consumes the release's HISTORY
+  BUNDLE asset — first verifying the bundle's digest against SHA256SUMS
+  + its attestation (identity-pinned), then unbundling into a private
+  temp object store, asserting its head equals
+  RELEASE-IDENTITY.commit_sha, and running the COMPLETE battery
+  (authority-chain anchoring via git cat-file against the bundle store,
+  input-closure + input-history freshness digests, verify-contracts)
+  from the extracted tree + bundle alone. **Accept**: clean-room job
+  green from tarball + bundle running the FULL battery (not just
+  --offline-checks); a tampered bundle ⇒ digest/attestation mismatch ⇒
+  refuse before any object is read; a bundle whose head ≠ the embedded
+  commit_sha ⇒ fail identity-drift; clean-room job green from tarball
+  alone in archive mode for the offline subset; tampered tracked payload ⇒ doctor fails
   tree-mismatch (reconstructed git root tree ≠ tree_sha); tampered generated
   file ⇒ generated-digest mismatch; doctor's offline verdict is labeled
   "self-consistent, publisher-unverified" (no authenticity claim); tampered
@@ -1131,18 +1146,33 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   (2) BUILD, reproducibility covering THE ARTIFACT OPERATORS INSTALL (the
   final source tarball is `git archive` + injected generated files, so
   "deterministic by construction" no longer holds and must be re-established
-  over the assembled result): the assembly is fully specified — `git archive`
-  the tag; inject RELEASE-IDENTITY.json + generated files; repack with
-  pinned metadata (`tar --sort=name --owner=0 --group=0 --numeric-owner
-  --mtime=@<tag-commit-timestamp>` piped through `gzip -n`) so every
-  nondeterministic tar/gzip field is fixed by the tag. The ENTIRE assembly
+  over the assembled result), and the build NEVER references the tag (no
+  v* ref exists until the publish flip — the build's identity source is
+  the DRAFT'S FROZEN Eye-accepted target commit SHA, read from the
+  acceptance block): the assembly is fully specified — `git archive`
+  <accepted-target-SHA>; inject RELEASE-IDENTITY.json + generated
+  files; repack with pinned metadata (`tar --sort=name --owner=0
+  --group=0 --numeric-owner --mtime=@<accepted-target-commit-timestamp>`
+  piped through `gzip -n`) so every nondeterministic tar/gzip field is
+  fixed by the accepted commit; every artifact identity, check-run
+  assertion, and attestation binds to that frozen SHA; tag-ref
+  verification is deferred to POST-PUBLICATION (the flip creates the
+  ref at that same target, then post-publish verification asserts ref
+  target == accepted SHA). The ENTIRE assembly
   (and `npm pack` of the cli) runs TWICE from scratch and the final
   artifact digests are byte-compared — any mismatch aborts, and any
   irreducible nondeterminism must be recorded in RELEASING.md before
   release. SHA256SUMS; syft SBOM; `actions/attest-build-provenance` per
-  artifact. **Accept**: double-build digests equal for BOTH the cli tgz and
+  artifact; PLUS a HISTORY BUNDLE asset (`<version>-history.bundle`, a
+  `git bundle` of the qualified history up to the accepted target —
+  digested in SHA256SUMS and attested like every other asset) so
+  archive-mode installs can verify the full authority chain (below).
+  **Accept**: double-build digests equal for BOTH the cli tgz and
   the assembled source tarball; a fixture varying mtime/owner in the
-  repack ⇒ digest mismatch ⇒ abort.
+  repack ⇒ digest mismatch ⇒ abort; NO-TAG regression — the entire
+  gate/build/upload sequence runs with `git rev-parse v<version>`
+  failing throughout (ref absent until flip), every artifact bound to
+  the frozen accepted SHA.
   (3) PUBLISH fail-closed, DRAFT-FIRST, EYE-LOCAL (checking after public
   upload is not fail-closed — an extra or unattested asset must never be
   downloadable — and per (e) no Actions job performs any release

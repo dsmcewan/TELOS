@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:5d16418002d242ee8887cb15fdb2a10abddbe340419a7401d57a8c595681c3dd",
+  "output_plan_artifact_hash": "sha256:5d16418002d242ee8887cb15fdb2a10abddbe340419a7401d57a8c595681c3dd",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:b2fffc956d07aedcb14866fdd2b1b374440a456144dd289ecd12f9c4f1df12e8",
+    "provenance_key": "anthropic:3c77ec96-ebdd-4af7-9b38-1b110925637a"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:49922701b6d4cc3537662bff0973daea09e1752825455c85629d9bbd830896b8",
+    "provenance_key": "openai:01a045d3-1c41-77e3-8ee2-81c46cb57d81",
+    "bound_hash": "sha256:5d16418002d242ee8887cb15fdb2a10abddbe340419a7401d57a8c595681c3dd"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "The draft-first release mechanism is internally unsatisfiable. Section 5 requires that no v* tag ref exist until the final publish flip, but the pre-publication BUILD step performs `git archive` of that tag and derives metadata/check evidence from the “tag SHA” and “tag-commit timestamp.” That ref cannot resolve before publication; creating it earlier would violate the stated no-unpublished-tag invariant. The build must instead resolve and freeze the draft’s Eye-accepted target commit SHA, archive exactly that SHA, use its commit timestamp, and defer tag-ref verification until post-publication. Add a regression proving the tag ref remains absent throughout gate/build/upload while every artifact identity and attestation binds to the frozen draft target SHA.",
+      "objection_hash": "sha256:905db301fb8ef34d8b03be3c4e71481b0afb41efe882d7176068546ad6a67271",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "The declared self-sufficient source-release installation cannot execute the required full `pylae verify` contract. Archive mode contains no Git object database, while E2 requires `git cat-file <anchor>:<path>` and freshness verification re-derives history-sensitive facts using path-limited Git history. The clean-room test avoids this conflict by running only `--offline-checks` and marking history checks not applicable, so it does not demonstrate that an operator installing the signed artifact can verify the authority chain and current weave. The release artifact must include and authenticate sufficient Git objects/history (for example, a signed release bundle) and run the full verification battery in clean room, or the artifact and Phase-1a verify claim must be revised consistently.",
+      "objection_hash": "sha256:58025d96ace8ea6793dc596640968e6be06aee1ae4eaef221f25e8c060d5ce4e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

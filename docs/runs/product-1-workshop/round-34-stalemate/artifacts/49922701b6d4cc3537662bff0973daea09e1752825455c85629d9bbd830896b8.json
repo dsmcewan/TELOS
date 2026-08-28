@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach",
+        "claim": "The draft-first release mechanism is internally unsatisfiable. Section 5 requires that no v* tag ref exist until the final publish flip, but the pre-publication BUILD step performs `git archive` of that tag and derives metadata/check evidence from the “tag SHA” and “tag-commit timestamp.” That ref cannot resolve before publication; creating it earlier would violate the stated no-unpublished-tag invariant. The build must instead resolve and freeze the draft’s Eye-accepted target commit SHA, archive exactly that SHA, use its commit timestamp, and defer tag-ref verification until post-publication. Add a regression proving the tag ref remains absent throughout gate/build/upload while every artifact identity and attestation binds to the frozen draft target SHA."
+      },
+      {
+        "scope": "candidate-approach",
+        "claim": "The declared self-sufficient source-release installation cannot execute the required full `pylae verify` contract. Archive mode contains no Git object database, while E2 requires `git cat-file <anchor>:<path>` and freshness verification re-derives history-sensitive facts using path-limited Git history. The clean-room test avoids this conflict by running only `--offline-checks` and marking history checks not applicable, so it does not demonstrate that an operator installing the signed artifact can verify the authority chain and current weave. The release artifact must include and authenticate sufficient Git objects/history (for example, a signed release bundle) and run the full verification battery in clean room, or the artifact and Phase-1a verify claim must be revised consistently."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a045d3-1c41-77e3-8ee2-81c46cb57d81",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a045d3-1c41-77e3-8ee2-81c46cb57d81",
+    "source": "cli-seats/codex_ask"
+  }
+}
