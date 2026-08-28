@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:980d25f22823b7a66333e0bbf854446b78a244957806bb43a03b842203a1a735",
+  "output_plan_artifact_hash": "sha256:980d25f22823b7a66333e0bbf854446b78a244957806bb43a03b842203a1a735",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:78944e297b39d0e97d10ea6b97d4725eff242fe37ec94687399fa2cf3e1c8ea4",
+    "provenance_key": "anthropic:0032b2ec-91d5-480b-a75b-ff57a65084ee"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:e827eaf23e79e686ff1cad4c2ffb0a42da803936d79df77521c20fa0900ec6d4",
+    "provenance_key": "openai:codex-cli-mtcagbue",
+    "bound_hash": "sha256:980d25f22823b7a66333e0bbf854446b78a244957806bb43a03b842203a1a735"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E2/release-custody",
+      "claim": "The declared closed-writer invariant is incomplete. The custody-drift oracle queries only collaborators and their permissions, but GitHub App installations are a separate authorization surface and may hold `actions`, `contents`, or `administration` write permissions without appearing as collaborators ([GitHub App installation API](https://docs.github.com/en/rest/apps/installations), [GitHub App permissions](https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps)). Such an unrecorded installation can survive `custody-drift` and directly mutate releases or dispatch an off-main workflow. Environment protection gates only jobs that reference the environment, while workflow YAML can adjust `GITHUB_TOKEN` permissions; therefore the substituted definition can omit the environment and request write authority ([GitHub permission calculation](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#how-permissions-are-calculated-for-a-workflow-job)). The `v*` tag ruleset also leaves nonmatching release/tag names available, so the later integrity sweep detects unauthorized publication only after public mutation. Enumerate and fail closed on every repository-writing credential class—including effective GitHub App installation permissions and write-enabled deploy keys—or impose a platform-level denial, with regressions proving these principals cannot mutate any release or dispatch a privileged workflow.",
+      "objection_hash": "sha256:751ecc158e20ca3eb5becb2afcf5bcafad45c0dbb993b24806626dc46497caf9",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:E6-oracle-discrimination",
+      "claim": "The two-sandbox negative-test mechanism does not make the mutation the only changed variable: sandbox A and sandbox B necessarily have different absolute paths, directory identities, and usually role-revealing names. An input-ignoring oracle can return zero when executed from the baseline sandbox and nonzero from the negative sandbox solely by inspecting `cwd` or the sandbox path, satisfying every stated check without reading the mutated governed input. The proposed relocation-sensitive fixture catches only an oracle that fails in every temporary copy, not this pair-selective attack. Recreate both pristine executions at the same canonical absolute path with controlled environment and fresh state, or otherwise equalize/conceal sandbox identity, and add a path-selective input-ignoring oracle regression that must produce `oracle-nondiscriminating`.",
+      "objection_hash": "sha256:2e437acd92c32e35ab57039fd279abbb516208f770fc1d939b5061464754da0f",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

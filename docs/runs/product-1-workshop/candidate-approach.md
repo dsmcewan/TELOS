@@ -367,18 +367,32 @@ per-file designs are in the approved plan; acceptance criteria here.
   DETERMINISTICALLY VERIFIABLE: (a) on this personal repository the
   admin set is exactly the Eye (the owner), and a CUSTODY-DRIFT oracle
   in the authority workflows queries the collaborator/permission list
-  and FAILS `custody-drift` if any principal beyond the recorded
-  custody set holds WRITE OR ADMIN (write alone reaches repository
-  variables, workflow dispatch, and the releases API — the invariant is
-  a closed WRITER set, not admin-only), or if the environment
-  protection is removed; the Eye-local release ceremony runs the same
+  and FAILS `custody-drift` if ANY repository-writing credential of ANY
+  CLASS exists beyond the recorded custody set — the enumeration covers
+  collaborators/permissions AND GitHub App INSTALLATIONS (whose
+  actions/contents/administration write permissions live on a separate
+  authorization surface and never appear as collaborators; each
+  installation's effective permissions are listed via the installations
+  API and any write-capable installation not in the recorded set ⇒
+  FAIL) AND write-enabled DEPLOY KEYS (listed and required empty or
+  recorded) — write of any class reaches repository variables, workflow
+  dispatch, or the releases API, so the invariant is a closed set over
+  EVERY writer class, not user-collaborators only; enumeration
+  unavailable for any class ⇒ FAIL custody-visibility-unavailable; or
+  if the environment protection is removed; the Eye-local release ceremony runs the same
   check first and REFUSES to proceed while custody drift exists.
   **Accept (custody split)**: a transition PR's required gate job
   (running on refs/pull/N/merge) reads the roots from
   telos-authority-roots and COMPLETES its check; a malicious PR
   workflow targeting telos-authority-release ⇒ refused by the
   deployment policy before the job starts (no release secret ever
-  reaches proposed bytes); (b) the recorded custody set lives in the governance
+  reaches proposed bytes); WRITER-CLASS regressions — a stub
+  write-capable App installation not in the recorded set ⇒
+  custody-drift; a write deploy key ⇒ custody-drift; enumeration
+  refused ⇒ custody-visibility-unavailable — in every case the release
+  ceremony refuses to run, so no such principal is left free to mutate
+  releases or dispatch privileged workflows while the pipeline
+  proceeds; (b) the recorded custody set lives in the governance
   appendix and changes only by an Eye-signed transition; (c) a
   same-custody-class store outside GitHub (the Eye's local ceremony
   records signed under the Eye key) provides the recovery root if the
@@ -652,18 +666,21 @@ per-file designs are in the approved plan; acceptance criteria here.
   relocation itself — exit 0 in the repository, nonzero whenever cwd or
   repo metadata reveals a temp copy — passing an identical-argv test
   without detecting anything): run-oracles builds an IMMUTABLE TEMPLATE
-  copy of the governed input set, then clones it into TWO SEPARATE
-  PRISTINE SANDBOXES — the baseline run executes the identical
-  production invocation in sandbox A (unmutated) and REQUIRES EXIT 0
-  (nonzero ⇒ FAIL `oracle-environment-sensitive`); the negative run
-  executes the IDENTICAL invocation in sandbox B, cloned fresh from the
-  template and mutated BEFORE any execution — never the sandbox the
-  baseline ran in (a stateful oracle could otherwise plant a marker
-  during baseline and key on its presence, faking discrimination
-  without reading any governed input) — REQUIRED TO EXIT NONZERO, else
-  FAIL `oracle-nondiscriminating`. Same argv, same entrypoint, no
-  special mode; the only difference between A and B is the mutation
-  itself, guaranteed by construction rather than by sequencing.
+  copy of the governed input set and executes BOTH cases AT THE SAME
+  CANONICAL ABSOLUTE PATH with a controlled environment (two
+  differently-named sandboxes would hand a pair-selective oracle a
+  distinguishing signal in cwd/path alone): the baseline materializes a
+  pristine clone at path P, runs the identical production invocation
+  there, REQUIRES EXIT 0 (nonzero ⇒ FAIL
+  `oracle-environment-sensitive`), then path P is DELETED ENTIRELY and
+  recreated FRESH from the template (never reusing the baseline's
+  files — a stateful oracle cannot find a planted marker) with the
+  validated mutation applied BEFORE any execution; the negative run
+  executes the IDENTICAL invocation at the SAME path P — REQUIRED TO
+  EXIT NONZERO, else FAIL `oracle-nondiscriminating`. Same argv, same
+  entrypoint, same absolute path, same environment, no special mode;
+  the only observable difference between the two executions is the
+  mutation itself, guaranteed by construction.
   Invariants no registry kind fits declare a TRUSTED NEGATIVE FIXTURE
   instead — a reviewed, committed violating artifact whose review rides
   the same PR as the record — subject to the same well-formedness
@@ -693,8 +710,12 @@ per-file designs are in the approved plan; acceptance criteria here.
   cwd/.git detection) ⇒ FAILS oracle-environment-sensitive at the
   unmutated-sandbox baseline; a STATEFUL-MARKER oracle (exit 0 while
   planting a marker, nonzero when the marker exists) ⇒ FAILS — the
-  negative runs in a pristine clone that never saw the baseline, so the
-  marker is absent and the run exits 0 ⇒ oracle-nondiscriminating; a
+  negative runs in a fresh recreation that never saw the baseline, so
+  the marker is absent and the run exits 0 ⇒ oracle-nondiscriminating;
+  a PATH-SELECTIVE input-ignoring oracle (keying on cwd/sandbox path to
+  behave differently between runs) ⇒ FAILS — both runs execute at the
+  identical canonical path, so no path signal distinguishes them ⇒
+  oracle-nondiscriminating; a
   present-but-timeout oracle ⇒
   FAIL; an npm-script whose identical re-run exits 0 on the mutated sandbox
   ⇒ FAIL oracle-nondiscriminating; backfill complete (every backfilled
