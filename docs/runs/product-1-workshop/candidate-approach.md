@@ -1657,7 +1657,23 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   claimed to be): the v1 installable artifact is the SOURCE RELEASE — the
   `git archive` tarball of the qualified release commit — with `pylae` as its
   entrypoint. PD-006 (naming/versioning/publish) records this explicitly:
-  install = extract the source tarball (or clone at the tag) + Node >=22.12;
+  install = extract the source tarball (or clone at the tag) + a Node runtime
+  in PYLAE'S SUPPORTED INTERVAL `[22.14.0, reviewed ceiling]` (the SAME bounded
+  interval §1 enforces — NOT an unbounded `>=22.12`; 22.12.x/22.13.x lack
+  `--disable-sigusr1` and are refused `node-runtime-below-pylae-floor`, and an
+  above-ceiling runtime is refused until a closed-list review extends the
+  registry). This bounded interval is the SINGLE operator-facing runtime claim:
+  the install docs, PD-006, `package.json` `engines.node`, the native launcher's
+  runtime check, `pylae doctor`, and the Node-version reconciliation oracle all
+  cite `[22.14.0, ceiling]` and no surface states a different range. A
+  cross-surface REGRESSION SUITE proves they agree — fixtures for 22.13.x
+  (refused below-floor), the 22.14.0 lower boundary (accepted), the reviewed
+  ceiling (accepted), and an above-ceiling version (refused above-ceiling) must
+  yield the identical verdict from engines-parse, launcher, doctor, install-doc
+  assertion, and the oracle, or the suite FAILS `runtime-interval-disagreement`.
+  (Distinct from the >=22.12.0 manifest-integrity oracle, which governs the
+  engines declared by INSTALLED THIRD-PARTY manifests per the repo supply-chain
+  convention, not the interpreter that runs pylae.)
   `pylae doctor` verifies the environment; every `pylae` command resolves its
   spawned tooling RELATIVE TO ITS OWN INSTALL ROOT (never cwd), so the
   extracted tree is self-sufficient. The `npm pack cli` tgz is published as a
