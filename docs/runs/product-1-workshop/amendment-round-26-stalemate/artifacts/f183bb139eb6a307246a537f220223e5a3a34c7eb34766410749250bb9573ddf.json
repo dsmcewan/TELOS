@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach:§1-external-tool-identity",
+        "claim": "Candidate artifact sha256:76ec1b2688a28a258f51605aa695914fe3fe62b829f8321b3c1b6776e4528f permits an external executable’s identity to be established by an absolute path plus a pinned version instead of requiring cryptographic byte identity. A replacement at the same path can report the expected version and then open a listener; the stated PATH-wrapper fixture does not discriminate this case. Even a separately recorded digest is insufficient unless it is verified and bound to the executable at each invocation without a path replacement race. This violates the content-address-not-mutable-label invariant and leaves the no-listener claim unsound. Require digest/equivalent authenticated package identity with mutation-point execution binding, plus a regression where a same-path binary reports the pinned version but attempts to listen and is refused before execution."
+      },
+      {
+        "scope": "candidate-approach:§1-git-descendant-containment",
+        "claim": "Candidate artifact sha256:76ec1b2688a28a258f51605aa695914fe3fe62b829f8321b3c1b6776e4528f constrains only the top-level Git binary, argv, and environment, not executables Git can launch. Git’s documented security contract states that configuration and hooks in an untrusted .git directory may run arbitrary shell commands; core.fsmonitor specifically lets `git status` execute an external hook. Checkout-mode verification operates on the connected repository, so repository-local configuration survives merely clearing global/system environment and rejecting top-level `-c` arguments. An allowlisted `git status --porcelain` can therefore launch an unallowlisted helper that opens a listener while every stated argv/identity regression remains green. Require deterministic suppression or validation of repository-local execution-bearing configuration and hooks plus confinement/recursive binding of all Git descendants, with a malicious core.fsmonitor/helper regression proving no descendant executes or listener opens."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcwclbm",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcwclbm",
+    "source": "cli-seats/codex_ask"
+  }
+}
