@@ -1,0 +1,26 @@
+{
+  "build_id": "iliad-product-1-authz-am42-regularization-am43-exclusions",
+  "use_case": "iliad-product-1",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json"
+  ],
+  "proposal_ref": "sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T07:32:33.334Z",
+  "rationale": "Plan is implementation-ready on its own stated terms: E1–E6 are fail-closed with discriminating adversarial acceptance criteria; the governance bootstrap (successor-plan publish→authorize exact hash→pivot→Eye confirmation; AM-42 bytes untouched; AM-43 deferred activation) correctly sequences this council as the enrollment-flip re-authorization; Phase-0/1a product contract is honest (hard go-live gate, source-release install, out-of-tree trust roots, Chromium-only qualification); atomic weave + CI mode-split close the self-reference trap. RATIFY (i) SPIKE-E6-EVALUATOR-FORM: settling pure-ABI + declarative-language soundness while deferring only concrete evaluator/grammar form to that slice's merge-gate is acceptable—lookup-table oracles remain structurally inexpressible at terminus, and interim mandatory adversarial source review plus the determinized battery is fail-closed, not detection-only. RATIFY (ii) product-1-oq-e6-determinism-deferral and the remaining pre-review open_questions_for_the_eye as authorization-time Eye/council dispositions per the recorded 2026-08-28 directive and advisory referee evidence—not unresolved plan contradictions. No remaining internal contradiction or unsound design that should block AS-IS authorization; deferred Phase-1b+/register items correctly out of scope.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5-build",
+    "response_id": "cb4897bc-2d0c-4983-b168-5e41e40f7890",
+    "source": "cli-seats/grok",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T07:32:58.489Z",
+    "tool": "cli-seats.askGrok"
+  }
+}
