@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:b4e363f957249f832ecb0c02d2f9baecae7c9bcbf537e075223d706ab1388850",
+  "output_plan_artifact_hash": "sha256:b4e363f957249f832ecb0c02d2f9baecae7c9bcbf537e075223d706ab1388850",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:86f8b81803a92359abff57743a9261f594bd1e2f46c93d400ad74852681911b2",
+    "provenance_key": "anthropic:bd659910-90ae-41f5-a1c9-800c47ea65c2"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:9c71b37c76ba15ee6719d69628a18860c1662795249a8136d84f7349a6d45ee0",
+    "provenance_key": "openai:codex-cli-mtckhxzw",
+    "bound_hash": "sha256:b4e363f957249f832ecb0c02d2f9baecae7c9bcbf537e075223d706ab1388850"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:E6-semantic-discrimination-spike",
+      "claim": "At candidate artifact sha256:ccfaeb61b948a47c47f8f719cdd32b6455847a304923d194dec77706b563a4c8, E6 claims its finite exhaustive battery genuinely proves that an oracle evaluates its claimed invariant and that only evaluator implementation form is deferred, but §6b expressly admits a deterministic lookup-table oracle can pass that entire author-known domain without evaluating the invariant and leaves independently defined semantics open for the implementation slice. The interim same-input agreement check detects variance only, so this deterministic attack remains green. Moreover, `product-1-oq-e6-determinism-deferral` and its referee record are narrowed to determinism/evaluator form, not semantic discrimination. Thus governance correction d and the frozen requirement for discriminating oracles remain unresolved; this is an admitted soundness gap, not merely an unspecified implementation mechanism.",
+      "objection_hash": "sha256:d5eb1f7e3861266081b96bfb6ff6638dd0e15ad98230256ff11ce245dec36554",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach:release-app-suspension-custody",
+      "claim": "Section 5(e)(iv)'s exclusive publish interval is not executable from the credential set the approach specifies. GitHub's `PUT/DELETE /app/installations/{installation_id}/suspended` endpoints require a JWT authenticating as the owning GitHub App; repository-admin credentials, installation tokens, and fine-grained PATs cannot call them ([GitHub REST Apps contract](https://docs.github.com/en/rest/apps/apps)). The approach records installation permission scopes but never requires the Eye to own/manage both Apps, places their App private keys under Eye-local custody, authenticates suspension with App JWTs, or tests that custody. Therefore the promised automated suspension/unsuspension and resulting platform-exclusive interval are unsupported, leaving the acknowledged Contents-write release-deletion capability live unless App ownership, private-key custody, JWT authentication, and fail-closed regressions are added.",
+      "objection_hash": "sha256:d20b370626def8ab844b9f6302c575cc3ad58dc5fced20b2f7fceb32d335046f",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

@@ -1619,8 +1619,11 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   ceremony fail the moment E1 becomes operable): an Eye-signed CUSTODY
   MANIFEST enumerates exactly (a) the Eye (owner/admin), (b) the
   merge-controller principal, and (c) the branch-publisher principal —
-  each machine principal a GITHUB APP INSTALLATION (chosen over PATs
-  so the release ceremony can platform-suspend them — see (iv)) with an
+  each machine principal a GITHUB APP INSTALLATION whose OWNING APP the
+  EYE OWNS with its APP PRIVATE KEY under Eye-local custody (chosen over
+  PATs so the release ceremony can App-JWT-suspend them — see (iv); the
+  custody manifest records App ownership + private-key custody, and the
+  config attestation asserts both, `unsafe-app-custody` otherwise) with an
   EXACT LEAST-PRIVILEGE permission set recorded per principal — the publisher:
   contents:write + pull_requests:write (opening a PR requires PR write;
   contents alone cannot), the controller: contents:write +
@@ -1685,10 +1688,16 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   machine principals — which are GITHUB APP INSTALLATIONS precisely so
   suspension is a PLATFORM control (a PAT cannot be suspended via API;
   "offline custody" is not machine-verifiable): the ceremony suspends
-  each installation (PUT .../suspended), VERIFIES `suspended_at` is
-  set, and PROVES denial by attempting a release-read/mutation with
-  each suspended credential and requiring the platform's 403 BEFORE
-  the final check; (2) runs the final asset-set + digest + body
+  each installation via the App-JWT-authenticated endpoint
+  (`PUT /app/installations/{id}/suspended` requires a JWT signed AS THE
+  OWNING APP — an admin PAT, installation token, or fine-grained PAT
+  CANNOT call it), which requires and is tested by: THE EYE OWNS BOTH
+  GitHub Apps, their App PRIVATE KEYS live in EYE-LOCAL CUSTODY (never in
+  the repo, never in Actions — same custody class as the release signer),
+  and the ceremony MINTS the App JWT locally to authenticate suspension;
+  it then VERIFIES `suspended_at` is set and PROVES denial by attempting
+  a release-read/mutation with each suspended credential and requiring
+  the platform's 403 BEFORE the final check; (2) runs the final asset-set + digest + body
   verification against the bound release ID; (3) flips `draft: false`
   — during (1)-(3) NO Actions token exists and every non-Eye
   release-capable credential is PLATFORM-SUSPENDED with denial proven,
@@ -2020,9 +2029,22 @@ bounded open implementation choice, and its interim fail-closed posture.
   declarative-language direction is the settled design intent; the slice picks
   the concrete language/evaluator and proves a lookup-table oracle
   oracle-abi-nonconformant (an imperative black box is not expressible in the
-  declarative surface). INTERIM (until the slice lands): oracles run under the
-  frozen-realm worker + seccomp-deny/`--unshare-all` defense-in-depth, with the
-  same-input-multiple-eval agreement check fail-closing on any observed variance.
+  declarative surface). SOUNDNESS IS NOT DEFERRED: the declarative oracle
+  language IS the sound answer to semantic discrimination — a lookup-table /
+  black-box oracle is NOT expressible in it (the invariant is stated as
+  inspectable declarative predicates the runner interprets; no imperative escape
+  hatch exists to hardcode enumerated verdicts, so such a submission ⇒
+  oracle-abi-nonconformant). Only the language/evaluator's concrete FORM is the
+  spike. INTERIM (until the declarative surface lands) IS FAIL-CLOSED, not
+  detection-only: every NORMATIVE oracle record is an authority record whose
+  addition/change passes MANDATORY ADVERSARIAL SOURCE REVIEW by the required-seat
+  council + Eye (the same gate as any authority change) — a hardcoded lookup
+  table or non-evaluating black box is VISIBLE IN THE SOURCE and rejected there;
+  the automated battery (frozen-realm worker + seccomp-deny/`--unshare-all` +
+  same-input agreement check) catches accidental non-discrimination and
+  ABI-escape. So correction d is enforced in the interim by SOURCE REVIEW +
+  battery and soundly at the terminus by the declarative language — the
+  lookup-table attack is closed at every stage, not left green.
   Referee evidence: `referee-adjudications/2026-08-28-e6-oracle-determinism.json`;
   Eye open question: `product-1-oq-e6-determinism-deferral`.
 

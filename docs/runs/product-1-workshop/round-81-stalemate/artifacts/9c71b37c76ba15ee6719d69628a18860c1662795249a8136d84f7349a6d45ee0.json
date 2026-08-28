@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach:E6-semantic-discrimination-spike",
+        "claim": "At candidate artifact sha256:ccfaeb61b948a47c47f8f719cdd32b6455847a304923d194dec77706b563a4c8, E6 claims its finite exhaustive battery genuinely proves that an oracle evaluates its claimed invariant and that only evaluator implementation form is deferred, but §6b expressly admits a deterministic lookup-table oracle can pass that entire author-known domain without evaluating the invariant and leaves independently defined semantics open for the implementation slice. The interim same-input agreement check detects variance only, so this deterministic attack remains green. Moreover, `product-1-oq-e6-determinism-deferral` and its referee record are narrowed to determinism/evaluator form, not semantic discrimination. Thus governance correction d and the frozen requirement for discriminating oracles remain unresolved; this is an admitted soundness gap, not merely an unspecified implementation mechanism."
+      },
+      {
+        "scope": "candidate-approach:release-app-suspension-custody",
+        "claim": "Section 5(e)(iv)'s exclusive publish interval is not executable from the credential set the approach specifies. GitHub's `PUT/DELETE /app/installations/{installation_id}/suspended` endpoints require a JWT authenticating as the owning GitHub App; repository-admin credentials, installation tokens, and fine-grained PATs cannot call them ([GitHub REST Apps contract](https://docs.github.com/en/rest/apps/apps)). The approach records installation permission scopes but never requires the Eye to own/manage both Apps, places their App private keys under Eye-local custody, authenticates suspension with App JWTs, or tests that custody. Therefore the promised automated suspension/unsuspension and resulting platform-exclusive interval are unsupported, leaving the acknowledged Contents-write release-deletion capability live unless App ownership, private-key custody, JWT authentication, and fail-closed regressions are added."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtckhxzw",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtckhxzw",
+    "source": "cli-seats/codex_ask"
+  }
+}
