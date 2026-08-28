@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:8909a46010e39d7e472061c120a3c7ed60c00ef70d1d877ab689d3a6d03fea87",
+  "output_plan_artifact_hash": "sha256:8909a46010e39d7e472061c120a3c7ed60c00ef70d1d877ab689d3a6d03fea87",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:962bb9a4e2654b03d886759ed4f7b095c7b54b6ebc5c37ded2abbf3c875622ba",
+    "provenance_key": "anthropic:8f314a89-69b3-4a4d-a6e3-00db605c6cb0"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:660d2014455e2c8470f5619d393c48c282a84901118ed3054e15e2e3117068d9",
+    "provenance_key": "openai:codex-cli-mtcsjk0s",
+    "bound_hash": "sha256:8909a46010e39d7e472061c120a3c7ed60c00ef70d1d877ab689d3a6d03fea87"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "Workflow-transition PRs are unsatisfiable. E1 authenticates every required check only when its workflow-file blob at the evaluated SHA matches the currently trusted workflow digest set, while E2 permits an Eye-signed transition to introduce a new workflow digest but never extends producer authentication to that transition-authorized digest. A `pull_request` run executes the workflow from the synthetic merge commit, so a PR changing a required workflow—concretely, Phase B changes `ci.yml` to add the permanent Meta Ads job—produces its checks from the new blob and is rejected under the old trusted digest even when the transition record is valid. The controller therefore cannot merge that planned slice without bypassing its required-check rule. Define a transition-aware producer rule that authenticates either an unchanged currently trusted workflow or, only under a valid Eye-signed transition, the exact recomputed new workflow blob bound by that record, with an immutable base-sourced transition-verifier check and regressions for unsigned, mismatched, omitted, and mixed old/new workflow bytes.",
+      "objection_hash": "sha256:757b0c48dd5156a2e1cc604ef9036c4d2f89d57c7f6f543641f5f56d67684cbf",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

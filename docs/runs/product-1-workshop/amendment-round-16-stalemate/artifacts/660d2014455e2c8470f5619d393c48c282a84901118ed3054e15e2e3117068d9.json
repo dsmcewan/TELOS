@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach",
+        "claim": "Workflow-transition PRs are unsatisfiable. E1 authenticates every required check only when its workflow-file blob at the evaluated SHA matches the currently trusted workflow digest set, while E2 permits an Eye-signed transition to introduce a new workflow digest but never extends producer authentication to that transition-authorized digest. A `pull_request` run executes the workflow from the synthetic merge commit, so a PR changing a required workflow—concretely, Phase B changes `ci.yml` to add the permanent Meta Ads job—produces its checks from the new blob and is rejected under the old trusted digest even when the transition record is valid. The controller therefore cannot merge that planned slice without bypassing its required-check rule. Define a transition-aware producer rule that authenticates either an unchanged currently trusted workflow or, only under a valid Eye-signed transition, the exact recomputed new workflow blob bound by that record, with an immutable base-sourced transition-verifier check and regressions for unsigned, mismatched, omitted, and mixed old/new workflow bytes."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcsjk0s",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcsjk0s",
+    "source": "cli-seats/codex_ask"
+  }
+}
