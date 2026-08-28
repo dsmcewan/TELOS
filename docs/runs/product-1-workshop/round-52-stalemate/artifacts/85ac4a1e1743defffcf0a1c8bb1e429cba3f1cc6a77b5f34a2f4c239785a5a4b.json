@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:2b43389fd955327402286a2cc7823c75ef6b6e0a9a4f981f7009fad6a95329cc",
+  "output_plan_artifact_hash": "sha256:2b43389fd955327402286a2cc7823c75ef6b6e0a9a4f981f7009fad6a95329cc",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:c05db1992611049cdb8a700e2bf22cb747410d6ee505b66c0a6acf044891dda2",
+    "provenance_key": "anthropic:af2cb118-eeb1-4fac-b18b-f7c6cd2b1102"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:e279e5deb5fb0364132830b2e82d783e2d0a10322d095a21687b012aec8bca17",
+    "provenance_key": "openai:codex-cli-mtcdd9lt",
+    "bound_hash": "sha256:2b43389fd955327402286a2cc7823c75ef6b6e0a9a4f981f7009fad6a95329cc"
+  },
+  "objections": [
+    {
+      "scope": "candidate:§5 release namespace/writer closure",
+      "claim": "The release boundary remains fail-open outside the `v*` namespace. The custody manifest deliberately permits the controller and publisher GitHub Apps to retain `contents:write`; GitHub's release API therefore lets either installation create a draft or immediately published release and, when `tag_name` does not exist, create that tag at an attacker-selected `target_commitish`. The proposed tag ruleset restricts only `v*`, so a compromised allowed principal can choose a nonmatching tag such as `x-malicious`, upload arbitrary assets, and publish without entering the Eye-local ceremony. Custody drift still passes because the principal and scope are explicitly allowed; disabling Actions and suspending installations only during the legitimate ceremony does not constrain this out-of-band operation; the release-integrity sweep detects it only after public exposure. Require server-side Eye-only creation/update/deletion protection over every tag namespace that can back a release (for example an all-tags ruleset), or otherwise remove release mutation capability from the machine principals, and add a regression proving a listed controller/publisher credential cannot create or publish a release under an arbitrary non-`v*` tag. Until then blocker 6's publish-allowlist and fail-closed signed-release contract remain unresolved at `fc0fa05`.",
+      "objection_hash": "sha256:c9b980f4f1bbfdcaad25ce3c6175bca5708a0730a3f7ff819982950176bae59e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

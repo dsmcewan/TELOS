@@ -1243,10 +1243,20 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   deployment branch policy admits ONLY protected main — a job from any
   other ref requesting that environment is refused by GitHub before it
   starts; the repository DEFAULT GITHUB_TOKEN permission is read-only.
-  (b) TAGS ARE RULESET-PROTECTED: a tag ruleset restricts creation/
-  update/deletion of `v*` to the Eye (no bot, no Actions principal) —
-  a rogue workflow's token cannot mint or move a release tag, and
-  releases are immutable once published.
+  (b) TAGS ARE RULESET-PROTECTED OVER EVERY NAMESPACE: a tag ruleset
+  restricts creation/update/deletion of ALL tags (`**`, not just `v*` —
+  a `v*`-only rule would leave any other name free to back a rogue
+  release, since creating a release with a nonexistent tag_name creates
+  that tag) to the Eye alone (no bot, no Actions principal, and NOT the
+  controller/publisher installations — their contents:write serves
+  branch pushes; tag creation is never in their capability set) — so no
+  machine or workflow credential can mint or move ANY tag, which means
+  none can create a publishable release under any name; releases are
+  immutable once published. NON-V* regression: a listed
+  controller/publisher credential attempts `gh release create
+  x-malicious` ⇒ the all-tags ruleset refuses the tag ref creation and
+  the release cannot be published — refused server-side, not swept
+  after exposure.
   (b2) MAIN HAS PUSH RESTRICTIONS EXCLUDING ACTIONS PRINCIPALS,
   IMPLEMENTED AS SPLIT RULESETS (one ruleset cannot both restrict
   actors and enforce checks without contradiction — ruleset update
@@ -1297,7 +1307,7 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   creates the DRAFT naming tag vX + target <accepted-commit> while NO
   tag ref exists — a draft stores the name+target without creating the
   ref, and a rogue cannot PUBLISH any v* release because publication
-  must create the v* ref, which the tag ruleset denies to every
+  must create the tag ref, which the all-tags ruleset denies to every
   non-Eye principal; (ii) the Eye's identity binding is the Ed25519
   RELEASE-ACCEPTANCE (over release_commit ‖ plan_ref, verified against
   EYE_AUTHORITY_PUBKEY), carried in the release BODY — this SUPERSEDES
@@ -1366,7 +1376,7 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   a dispatch of a modified definition from a non-main ref that
   self-grants `contents: write` + `id-token: write` ⇒ the
   telos-authority-release environment refuses the ref (no release
-  secrets; the readable public roots grant no capability), the v* tag ruleset refuses tag creation, and any
+  secrets; the readable public roots grant no capability), the all-tags ruleset refuses tag creation, and any
   artifact it attests fails pinned-identity verification — no trusted
   release mutation is possible; RELEASE-ID BINDING regression (drafts do NOT reserve a tag name —
   GitHub permits multiple same-tag drafts, so tag-addressed operations
@@ -1375,7 +1385,7 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   performs EVERY subsequent operation (view/upload/verify/flip/delete)
   BY ID, never by tag name; fixture: a competing same-tag draft is
   planted and the ceremony's operations verifiably touch only the bound
-  ID (the competitor cannot publish — v* ref creation is Eye-only — and
+  ID (the competitor cannot publish — tag-ref creation is Eye-only under the all-tags ruleset — and
   is reported by the release-integrity sweep); NO-WORKFLOW-PUBLISH
   assertion — the workflow-lint oracle fails any Actions job containing
   a release create/publish/edit operation; dispatching main's
@@ -1403,7 +1413,7 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   newer main would attest the wrong source; the ceremony dispatches
   while main's head IS the accepted commit, else abort
   `workflow-source-mismatch` and re-accept after the head settles), and
-  (d) the v* tag ruleset is in force (creation Eye-only, no
+  (d) the all-tags ruleset is in force (creation Eye-only, no
   update/delete) with release immutability enabled — any mismatch ⇒
   abort `tag-not-accepted-commit`; pubkey unset ⇒ abort fail-closed.
   MAIN-AHEAD regression: main advanced past release_commit at dispatch
