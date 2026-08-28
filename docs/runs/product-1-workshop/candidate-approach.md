@@ -1044,79 +1044,131 @@ grok/gemini advisory) authorizes BOTH:
 
 THE SUCCESSOR-PLAN TRANSITION IS THE MECHANISM (registry edits alone would
 leave the active v15 plan normative while AM-42/AM-43 change its governed
-roots — the exact bypass being regularized), executed in this order:
-1. PUBLISH: the matured workshop approach (this document at convergence) is
-   published as a content-addressed successor plan; its sha256 is the
-   `plan_ref` (`sha256hex(canonicalize({kind:"candidate", plan}))`).
-2. AUTHORIZE THAT EXACT HASH: the council run's PLAN_PATH/EXPECTED_PLAN_REF
-   pin it (any drift ⇒ exit 1); `authorization-summary.json` names the
-   plan_ref AND a build_id naming the enrollment flip.
-3. PIVOT: `CURRENT-AUTHORITY.active_plan` → the successor plan_ref;
-   `active_authorization` → the new authorization record; the v15 plan
-   entry gains `superseded_by: <successor plan_ref>` (registry rows only —
-   v15's bytes untouched).
-4. EYE CONFIRMATION: implementation authority over the successor plan is
-   granted by the Eye and recorded (pre-review authority_basis update +
-   the quest step-ledger header) BEFORE any slice merges.
-Until all four land, v15 remains the active plan and no slice of this quest
-is merge-eligible; the verify-contracts §5d check asserts the pivot's
-integrity (active_plan == authorized plan_ref; supersession row present;
-deviation record pins am42_sha256).
-BOOTSTRAP TRANSACTION (breaks the circularity of a ceremony that gates all
-merges yet itself needs a merge): the four steps above land as a
-GOVERNANCE-ONLY BOOTSTRAP SLICE — strictly DATA: docs/registry surfaces
-only (the published successor plan, authorization-summary.json, AM-43
-doc, deviation record, CURRENT-AUTHORITY registry rows) with NO code and
-NO package dirs. The AM-43 decision record lands at bootstrap in a NON-WOVEN staging
-home (`telos/AMENDMENTS/AM-43.md`, content-addressed, sha-cited by the
-authorization records) — NOT yet in `clotho/memory/DECISIONS/` (that
-dir is a woven git-weaver input, and at the bootstrap head the only
-available committed-weave verifier is the KNOWN-NONDISCRIMINATING
-pre-fix one that checks the recorded input head, not the current
-checkout — a woven-input change verified by it could pivot authority
-over a stale snapshot; the frozen blocker itself forbids trusting it):
-the bootstrap therefore touches NO woven input, needs NO re-weave, and
-the existing verifier's green is honest (historical intactness of an
-unchanged closure). The EXCLUDED-DIRS IMPLEMENTATION SLICE — which per
-§6 lands AFTER the freshness slice ships the current-head
-discriminating verifier — canonicalizes AM-43 into
-`clotho/memory/DECISIONS/` (byte-identical move, sha unchanged) with
-its same-PR re-weave under the now-enforced verifier, alongside the
-activation flip. "No code" continues to hold — the §5d check still
-ships later in the verifier slice. The EXECUTABLE §5d pivot check is
-NOT in the bootstrap (it is code): it ships in the later
-verifier-hardening slice (E6/§3c work, already ordered after the
-bootstrap) and validates the then-existing pivot state; until it lands,
-the pivot's integrity evidence is the council run's authorization-summary
-+ the step-ledger entry — recorded, then machine-checked as soon as the
-verifier slice merges. The bootstrap slice is merged FIRST, under the CURRENT
-(v15) authority, which is lawful because the sitting authorization already
-empowers the Eye + council to authorize successors (the change_rule being
-regularized is exactly this path, now followed rather than bypassed). The
-implementation content previously bundled with the ceremony (cli/ package,
-meta-ads hardening, the 8 pinned-surface updates incl. inventory.mjs +
-its re-weave) moves to an ORDINARY later slice that cites the
-by-then-active successor plan. Only after the bootstrap slice merges does
-any implementation slice become merge-eligible.
+roots — the exact bypass being regularized). It executes as a TWO-PHASE
+TRANSITION (amended per the Eye ruling on DISCOVERY-001, 2026-08-28,
+`docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md`:
+a single-shot pivot at the bootstrap head is INTERNALLY UNSATISFIABLE —
+verify-contracts executes the comprehension gate over WOVEN
+clotho/memory query artifacts whose governing_authority must equal the
+active plan, so pivoting without woven edits fails the pre-existing
+gates while woven edits at bootstrap are forbidden until the
+discriminating freshness verifier exists; evidence:
+`docs/runs/product-1-argo/discovery-001-bootstrap-pivot-coupling.json`):
+
+PHASE A — GOVERNANCE BOOTSTRAP (the first slice; DATA ONLY):
+A1. PUBLISH: the matured amended approach (this document at convergence)
+    is published as a content-addressed successor plan; its sha256 is
+    the `plan_ref` (`sha256hex(canonicalize({kind:"candidate", plan}))`).
+A2. AUTHORIZE THAT EXACT HASH: the council run's
+    PLAN_PATH/EXPECTED_PLAN_REF pin it (any drift ⇒ exit 1);
+    `authorization-summary.json` names the plan_ref AND a build_id
+    naming the enrollment flip.
+A3. REGISTER AS A QUEST-CLASS CHAIN ENTRY (the Lachesis/Atropos
+    precedent — verified compatible with the pre-existing gates in
+    DISCOVERY-001's dry run): the product-1 plan + authorization are
+    recorded in the telos authorization-chain's quest/enrollment
+    row-space, explicitly marked `activation: "deferred-to-phase-b"` —
+    `CURRENT-AUTHORITY.active_plan` and `active_authorization` are NOT
+    changed; v15/authz-008 REMAINS the active repository authority
+    until Phase B completes.
+A4. STAGE AM-43 in its authorized NON-WOVEN location
+    (`telos/AMENDMENTS/AM-43.md`, content-addressed, sha-cited by the
+    authorization records) and record the AM-42 regularization/
+    deviation linkage (deviation record pins am42_sha256; the
+    `amendments_in_force` registry row for AM-42 gains `amended_by:
+    "AM-43"` + `ratification: "retroactive"` + `activation:
+    "deferred-to-phase-b"`).
+A5. PRE-ACTIVATION SLICE WHITELIST: Phase A publishes a CLOSED,
+    CONTENT-ADDRESSED whitelist of the exact slices permitted to
+    proceed BEFORE Phase B — precisely the slices needed to reach
+    Phase B in §6 order: {freshness (the discriminating current-head
+    verifier), plugin self-containment, E2, E3, E1, E6, E4, product
+    memory dir + ADRs, naming/versions}. NO UNLISTED SLICE IS
+    MERGE-ELIGIBLE before Phase B, and NO release, settlement, or
+    production-readiness claim is permitted before activation. The
+    deferred quest authorization grants NO release authority, NO
+    production authority, and NO authority over unrelated work;
+    per-slice Eye acceptance remains mandatory for every slice.
+Phase A constraints (all fail-closed): NO code beyond the whitelist
+document itself being data; NO woven input touched; NO package dirs;
+`package-roots.json` REMAINS on its AM-42 pin byte-unchanged; the
+EXISTING verify-contracts battery and test-inventory run FULLY GREEN at
+the Phase A head (acceptance check).
+
+PHASE B — ATOMIC ACTIVATION (inside the EXCLUDED-DIRS IMPLEMENTATION
+SLICE, which per §6 lands AFTER the freshness slice ships the
+current-head discriminating verifier). One PR, atomically:
+B1. CANONICALIZE AM-43 into `clotho/memory/DECISIONS/` (byte-identical
+    move, sha unchanged).
+B2. UPDATE every woven comprehension/query artifact whose
+    governing_authority must match the active plan (clotho/memory
+    queries incl. task variants, lachesis/atropos memory queries) and
+    the correct-reader examples.
+B3. SAME-PR RE-WEAVE against the current checkout under the NEWLY
+    LANDED discriminating verifier (content-addressed input-closure +
+    input-history binding — never the pre-fix verifier).
+B4. PIVOT: `CURRENT-AUTHORITY.active_plan` → the amended successor
+    plan_ref; `active_authorization` → the quest authorization; the
+    v15 plan entry gains `superseded_by` (registry rows only — v15's
+    bytes untouched).
+B5. RECORD supersession + activation: the deferred quest-class chain
+    entry flips `activation: "active"`; the daedalus plan-version-chain
+    and telos authorization-chain gain their coherent entries.
+B6. RE-DERIVE AND VERIFY the complete authority, comprehension, weave,
+    and contract state FROM DISK at the Phase B head (full
+    verify-contracts + comprehension gates + committed-weave
+    verification all green).
+B7. FAIL CLOSED on any partial update, stale input, mismatched
+    plan_ref, incomplete woven closure, or failed verification — a
+    failed Phase B leaves v15/authz-008 intact as the active authority
+    and the product-1 quest BLOCKED (no partial activation exists).
+Also in Phase B's slice: `package-roots.json.authority.enrollment_ruling`
+→ AM-43's sha, both directories added, inventory.mjs + test-inventory +
+the coordinated surfaces updated (the AM-43 activation described below).
+
+The EXECUTABLE §5d check is PHASE-AWARE and is NOT in Phase A (it is
+code): it ships in the verifier-hardening slice (E6/§3c work, on the
+pre-activation whitelist) and validates whichever phase state exists on
+disk — Phase A: quest-class entry present + activation-deferred markers
+valid + active_plan/active_authorization UNTOUCHED (still v15/authz-008)
++ deviation record pins am42_sha256; Phase B: full pivot integrity
+(active_plan == authorized amended plan_ref; supersession row present;
+activation flipped; woven closure current). Until it lands, Phase A's
+integrity evidence is the council authorization-summary + the
+step-ledger entry — recorded, then machine-checked when the verifier
+slice merges.
+
+Phase A is merged FIRST, under the CURRENT (v15) authority, which is
+lawful because the sitting authorization already empowers the Eye +
+council to authorize successors (the change_rule being regularized is
+exactly this path, now followed rather than bypassed). The
+implementation content previously bundled with the ceremony (cli/
+package, meta-ads hardening, the 8 pinned-surface updates incl.
+inventory.mjs + its re-weave) lives in the Phase B slice, which cites
+the successor plan it activates. MERGE ELIGIBILITY: after Phase A
+merges, ONLY whitelist slices are merge-eligible until Phase B
+completes; after Phase B, the remaining §6 slices proceed under the
+now-active amended plan. THE SIX RESOLVED EYE RULINGS
+(EYE-DIRECTIVES/2026-08-28-product-1-six-rulings-final.md) REMAIN
+UNCHANGED by this amendment and must not be re-asked.
 
 AM-43 is a new decision doc with its own single fenced JSON block (roots
-unchanged; exclude += the two dirs). Its lifecycle is TWO-PHASE —
-AUTHORIZED AT BOOTSTRAP, ACTIVATED ATOMICALLY WITH THE DIRECTORIES IT
-GOVERNS (pinning AM-43 into package-roots.json at the bootstrap head,
-while cli/ and connectors/meta-ads-mcp/ do not yet exist and
+unchanged; exclude += the two dirs). Its lifecycle follows the SAME
+two-phase transition: AUTHORIZED AT PHASE A, ACTIVATED ATOMICALLY IN
+PHASE B WITH THE DIRECTORIES IT GOVERNS (pinning AM-43 into
+package-roots.json at the Phase A head, while cli/ and
+connectors/meta-ads-mcp/ do not yet exist and
 inventory.mjs/test-inventory are deferred, would break the repository's
-own exact-bijection inventory gates at that head): the BOOTSTRAP lands
-the AM-43 doc + the council authorization + a
-`CURRENT-AUTHORITY.amendments_in_force` entry marked `activation:
-"deferred-to-implementation-slice"` — `package-roots.json` REMAINS on
-its AM-42 pin, byte-unchanged, so every pre-existing verify-contracts
-and test-inventory gate passes at the bootstrap head unchanged
-(acceptance check: the bootstrap head itself runs those gates GREEN);
-the later EXCLUDED-DIRS IMPLEMENTATION SLICE then atomically flips
-`package-roots.json.authority.enrollment_ruling` → AM-43's sha, adds
-both directories, and updates inventory.mjs + test-inventory + the
-other coordinated surfaces + the same-PR re-weave in ONE PR, flipping
-the registry entry to `activation: "active"`. AM-42's FILE is
+own exact-bijection inventory gates at that head): Phase A lands the
+AM-43 doc (non-woven staging) + the council authorization + the
+`amendments_in_force` registry row marked `activation:
+"deferred-to-phase-b"` with `package-roots.json` byte-unchanged on its
+AM-42 pin (all pre-existing gates green — the Phase A acceptance
+check); Phase B's slice then atomically performs the flip described in
+B1-B7 above plus `package-roots.json.authority.enrollment_ruling` →
+AM-43's sha, both directories, inventory.mjs + test-inventory + the
+coordinated surfaces + the same-PR re-weave, flipping the registry
+entry to `activation: "active"`. AM-42's FILE is
 NEVER touched — its bytes stay identical and its content address stays valid.
 All amendment/regularization linkage lives ONLY in mutable registry surfaces and
 new records: the `CURRENT-AUTHORITY.amendments_in_force` ENTRY for AM-42 (a
@@ -1957,17 +2009,27 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
 Bounded PR slices, each: implement → deterministic verification → implementation
 review (4a signed council review for E1–E6 + the ceremony; 4b entry-ritual +
 adversarial subagent review for mechanical slices) → Eye acceptance → step-ledger
-entry. Order: **governance bootstrap slice FIRST** (the §3 four-step
-transaction: successor plan + authorization + pivot + Eye confirmation +
-AM-43/deviation records — docs/registry only, merged under the sitting v15
-authority; nothing else is merge-eligible before it) → freshness → (plugin
-self-containment → E2 → E3) ∥ E1 → E6 → E4 → product memory dir + ADRs →
-naming/versions → **implementation slice for the excluded dirs** (cli/
-package + meta-ads hardening + the 8 pinned-surface updates incl.
-inventory.mjs with its same-PR re-weave, citing the by-then-active
-successor plan) → release pipeline/pages/plugin-pin → flagship/demo/fonts →
-**authority-chain-repair slice** (E5 successor docs + citation redirect + new
-invariant + verifier) → **train-end re-weave**.
+entry. Order: **PHASE A governance bootstrap FIRST** (§3: successor plan
+published + quest-class chain registration marked activation-deferred +
+AM-43 staged non-woven + deviation record + the closed pre-activation
+slice whitelist — docs/registry DATA only, merged under the sitting v15
+authority, which remains the ACTIVE authority throughout the
+pre-activation window; only whitelist slices are merge-eligible before
+Phase B) → freshness (the discriminating current-head verifier —
+prerequisite for Phase B) → (plugin self-containment → E2 → E3) ∥ E1 →
+E6 → E4 → product memory dir + ADRs → naming/versions →
+**PHASE B: excluded-dirs implementation slice = ATOMIC ACTIVATION**
+(cli/ package + meta-ads hardening + the 8 pinned-surface updates incl.
+inventory.mjs, PLUS §3 B1-B7: AM-43 canonicalization, woven
+comprehension/query governing_authority updates, same-PR re-weave under
+the new verifier, the CURRENT-AUTHORITY active_plan/active_authorization
+pivot, supersession + activation records, full from-disk re-verification
+— fail-closed as one PR; a failed Phase B leaves v15/authz-008 active
+and the quest blocked) → release pipeline/pages/plugin-pin →
+flagship/demo/fonts → **authority-chain-repair slice** (E5 successor
+docs + citation redirect + new invariant + verifier) →
+**train-end re-weave** — every post-Phase-B slice proceeds under the
+now-active amended plan.
 ATOMIC WEAVE RULE (a merged head must never fail committed-weave
 verification): ANY slice that changes a WOVEN input — package manifests,
 `clotho/inventory.mjs`, woven docs, anything the snapshot pins — includes
@@ -2059,13 +2121,22 @@ over-claims) remain in scope and are fixed normally.
 
 Comprehension-gate GRANTED artifact before implementation; every slice in the
 Argo step-ledger with merge anchors + review evidence; per-slice package suites +
-verify-contracts + self-weave posture green; authoritative `--verify-committed`
-green at the release head; release.yml gate job green; every current normative
-citation terminates in a NORMATIVE-CURRENT record; enrollment.json#enrolled entry
-for the product-governance subsystem; RETROSPECTIVES/product-1.json with
-`optimizations[]` (feed-forward with landing sites) written before delivery is
-declared. v0.3.0 cut only from the exact qualified, accepted commit with required
-CI passing.
+verify-contracts + self-weave posture green. TWO-PHASE TRANSITION milestones:
+Phase A head passes the PRE-EXISTING verify-contracts + test-inventory fully
+green with active_plan/active_authorization untouched and the quest-class
+chain entry marked activation-deferred; only whitelist slices merge before
+Phase B; Phase B head passes the FULL from-disk re-verification (authority +
+comprehension + committed-weave + contracts) with the pivot complete and
+activation flipped — any Phase B failure leaves v15/authz-008 active and the
+quest blocked. Authoritative `--verify-committed` green at the release head;
+release.yml gate job green (release is only reachable AFTER Phase B — no
+release, settlement, or production-readiness claim before activation); every
+current normative citation terminates in a NORMATIVE-CURRENT record;
+enrollment.json#enrolled entry for the product-governance subsystem;
+RETROSPECTIVES/product-1.json with `optimizations[]` (feed-forward with landing
+sites) written before delivery is declared. v0.3.0 cut only from the exact
+qualified, accepted commit with required CI passing. The six resolved Eye
+rulings remain unchanged by this amendment.
 
 ## 8. Honest limits / non-claims
 
