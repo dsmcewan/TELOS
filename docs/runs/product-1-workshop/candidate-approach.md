@@ -104,10 +104,23 @@ enumerated safe set, so config/alias injection cannot smuggle modes).
 Any invocation outside these grammars ⇒ FAIL closed. STARTUP CAPABILITIES ARE BOUNDED TOO (a static source grammar cannot
 see `NODE_OPTIONS=--inspect=0.0.0.0:9229 pylae …` or an explicit
 `node --inspect`, which opens a listener BEFORE any CLI code runs): the
-supported entrypoint is a SMALL STATICALLY-COMPILED NATIVE LAUNCHER
-(NOT Node — which cannot scrub NODE_OPTIONS before it reads them — and
-NOT a shell/interpreter outside the closed tool set): the native
-launcher, itself digest-pinned in the trust-root manifest, (i) CLEARS
+supported entrypoint is a SMALL NATIVE LAUNCHER built from REPO-TRACKED
+SOURCE (NOT Node — which cannot scrub NODE_OPTIONS before it reads them
+— and NOT a shell/interpreter outside the closed tool set), and it is
+BROUGHT INSIDE THE ENFORCEMENT, not merely digest-pinned (digest proves
+WHICH binary ran, not that its native code cannot listen): (1) its
+single-file source (`cli/launcher/pylae-launch.c`) is IN the executable
+closure and subject to a NATIVE LISTENER-CAPABILITY REVIEW — a closed
+syscall grammar admitting only env-clear, open/fstat/read/close (for the
+hash), fexecve/exec-family, and process control, and CATEGORICALLY
+rejecting socket/bind/listen/connect/accept and any inspector activation
+(a launcher source with a socket syscall ⇒ oracle FAILS
+`launcher-listener-capable`); (2) the release build COMPILES it with a
+pinned toolchain, DOUBLE-BUILDS it byte-identically (like the other
+reproducible artifacts), packages it as the sole entrypoint, and its
+digest is the value pinned in the trust-root manifest; (3) the
+no-listener oracle's closure covers the launcher source alongside the
+JS closure. So the launcher, (i) CLEARS
 NODE_OPTIONS/NODE_REPL*/inspector-debug env before spawning Node, (ii)
 performs the open/hash/fexecve mutation-point-bound identity check on
 the pinned `node` binary (a compiled launcher can call fexecve
