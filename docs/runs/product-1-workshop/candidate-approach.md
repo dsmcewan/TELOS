@@ -55,13 +55,21 @@ source grammar, so each is bound instead by: CRYPTOGRAPHIC IDENTITY WITH MUTATIO
 BINDING (a recorded CONTENT DIGEST — path+version is NOT sufficient, a
 same-path replacement can report the pinned version; version is only a
 compatibility constraint; and the digest is verified WITHOUT A
-PATH-REPLACEMENT RACE: the runner OPENS the binary, hashes THAT open
-file descriptor, and execs the SAME fd (fexecve / /proc/self/fd),
-never re-resolving the path between hash and exec — so a swap after
-verification cannot execute; digest mismatch ⇒ refuse
-`tool-identity-mismatch` BEFORE execution; regression: a same-path
-binary reporting the pinned version but whose bytes differ ⇒ refused
-before execution, no listener opens), a
+TOCTOU: an open fd pins an INODE, not immutable BYTES — another writer
+can overwrite the inode's contents after the hash and leave the
+original fd executing changed bytes — so the runner does NOT hash-then-
+fexecve the live fd. Instead it COPIES the binary's bytes into a SEALED
+IMMUTABLE SNAPSHOT — a `memfd_create` region sealed with
+`F_SEAL_WRITE|F_SEAL_SHRINK|F_SEAL_GROW|F_SEAL_SEAL` via
+`fcntl(F_ADD_SEALS)` (kernel-enforced immutability, unwritable by ANY
+process including the copier) — hashes the SEALED memfd, and `fexecve`s
+THAT sealed memfd; the executed bytes are provably the hashed bytes and
+no post-hash inode overwrite can reach them. Digest mismatch ⇒ refuse
+`tool-identity-mismatch` BEFORE execution; regressions: (a) a same-path
+binary reporting the pinned version but whose bytes differ ⇒ refused, no
+listener opens; (b) an IN-PLACE-OVERWRITE-AFTER-HASH fixture — the
+source inode is rewritten between snapshot and exec ⇒ the sealed snapshot
+still executes the verified bytes, the overwrite has no effect), a
 CLOSED SUBCOMMAND/ARGUMENT GRAMMAR excluding every listener-capable or
 arbitrary-execution mode. The git grammar is DERIVED FROM THE ACTUAL
 CLOSURE, not hand-guessed (the required verification path executes the
@@ -116,15 +124,35 @@ hash), fexecve/exec-family, and process control, and CATEGORICALLY
 rejecting socket/bind/listen/connect/accept and any inspector activation
 (a launcher source with a socket syscall ⇒ oracle FAILS
 `launcher-listener-capable`); (2) the release build COMPILES it with a
-pinned toolchain, DOUBLE-BUILDS it byte-identically (like the other
-reproducible artifacts), packages it as the sole entrypoint, and its
-digest is the value pinned in the trust-root manifest; (3) the
+pinned toolchain into a FULLY-STATIC, LOADER-INDEPENDENT executable —
+NO dynamic interpreter (no `PT_INTERP`), NO shared-library closure
+(empty `DT_NEEDED`), no `dlopen`/dynamic loading — so the pre-`main()`
+dynamic-loader surfaces (`LD_PRELOAD`, `LD_AUDIT`, `LD_LIBRARY_PATH`,
+constructor injection) are STRUCTURALLY INERT: a static binary has no
+loader to honor them, so no library constructor can call
+socket/bind/listen before the launcher's env-clear runs. Qualification
+INSPECTS THE PACKAGED BINARY (not just its source): the ELF has no
+interpreter segment, an empty dynamic-NEEDED set, and no inline-syscall
+or assembly escape beyond the source grammar's admitted set (the source
+syscall grammar already bounds this, and the binary inspection confirms
+the compiled artifact matches); it DOUBLE-BUILDS byte-identically (like
+the other reproducible artifacts), packages it as the sole entrypoint,
+and its digest is pinned in the trust-root manifest; a launcher that is
+dynamically linked, carries a PT_INTERP, or has a non-empty NEEDED set
+⇒ qualification FAILS `launcher-not-hermetic`. PRELOAD-CONSTRUCTOR
+REGRESSION: the launcher is invoked with `LD_PRELOAD`/`LD_AUDIT` set to
+a library whose constructor opens a socket ⇒ NO listener opens (the
+static launcher ignores them entirely) and the socket-open fixture is
+provably never reached. (3) the
 no-listener oracle's closure covers the launcher source alongside the
-JS closure. So the launcher, (i) CLEARS
+JS closure, and the hermetic-binary inspection covers the packaged
+launcher artifact. So the launcher, (i) CLEARS
 NODE_OPTIONS/NODE_REPL*/inspector-debug env before spawning Node, (ii)
-performs the open/hash/fexecve mutation-point-bound identity check on
-the pinned `node` binary (a compiled launcher can call fexecve
-directly — the in-process node:crypto hashing applies to pylae's
+performs the SEALED-SNAPSHOT (memfd + F_SEAL_*) hash-and-fexecve
+identity check on the pinned `node` binary — same kernel-backed
+immutability as the external-tool binding above, defeating inode
+overwrite-after-hash (a compiled launcher can call memfd_create/fcntl/
+fexecve directly — the in-process node:crypto hashing applies to pylae's
 POST-trust operations, not to this pre-Node step), and (iii) execs
 node with `--disable-proto`/inspector-off startup flags; it REFUSES
 `unsupported-launch-options` if inspector activation is detected. Only
