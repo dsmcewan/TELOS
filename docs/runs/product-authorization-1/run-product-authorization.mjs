@@ -45,8 +45,8 @@ const { askClaude, askCodex, askGrok, askGemini } = await imp("docs/institutiona
 // ---------- bind the exact plan under authorization ----------
 const PLAN_PATH = "docs/runs/product-1-workshop/matured-approach.md";
 const PREREVIEW_PATH = "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json";
-const EXPECTED_PLAN_REF = "sha256:72b466d84f21756fcd9c0d7528354c6e0c18b0f0db4464e280225b9e58dba8d1";
-const REVIEWED_HEAD = "cfa6395"; // matured-approach.md committed head (S1 re-convergence, round 22, after run-1 council fold)
+const EXPECTED_PLAN_REF = "sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6";
+const REVIEWED_HEAD = "97becd3"; // matured-approach.md committed head — Daedalus CONVERGED (Eye-authority, round 82); spikes+open-questions carried forward
 
 const planText = readFileSync(path.join(ROOT, PLAN_PATH), "utf8");
 const planRef = "sha256:" + sha256hex(canonicalize({ kind: "candidate", plan: planText }));
@@ -97,9 +97,18 @@ const OBJECTIVE =
   `ceremony, both-strict enforcement, reconcile-and-supersede for draft docs, OAuth seat transport). ` +
   `OUT OF SCOPE (do NOT condition approval on it): identity/tenancy/clustered runtime (excluded by signed ADR ` +
   `PD-001); enrollment flips beyond the two AM-43 exclusions; Phase-1b+ register items. ` +
+  `CARRIED-FORWARD ITEMS (Daedalus converged 2026-08-28 under the recorded Eye directive; these are AUTHORIZATION-TIME ` +
+  `decisions for THIS council, NOT unresolved plan defects — RATIFY or reject them explicitly): (i) the §6b Accepted ` +
+  `Argo Spikes register — SPIKE-E6-EVALUATOR-FORM (oracle discrimination: sound design = a constrained DECLARATIVE ` +
+  `oracle language in which lookup-table oracles are structurally inexpressible; sound INTERIM = mandatory adversarial ` +
+  `source review of every normative oracle record + the determinized battery; the concrete grammar is a pre-implementation ` +
+  `MERGE-GATE on the oracle-hardening slice) — judge whether deferring the concrete grammar to that gate is acceptable; ` +
+  `(ii) the pre-review open_questions_for_the_eye (incl. product-1-oq-e6-determinism-deferral). Evidence on disk: ` +
+  `referee-adjudications/2026-08-28-e6-oracle-determinism.json (ADVISORY), EYE-DIRECTIVES/2026-08-28-product-1-spikes-nonblocking.md. ` +
   `Approve ONLY if the plan is implementation-ready and consistent with its governing pre-review, the repository ` +
   `trust model (fail-closed, closed sets, content-addressed identity, no mutable label keying enforcement, ` +
-  `zero-dependency core), and its own decisions and acceptance criteria, with no remaining plan contradiction.`;
+  `zero-dependency core), and its own decisions and acceptance criteria, with no remaining plan CONTRADICTION or ` +
+  `unsound design (a bounded, honestly-recorded implementation-spike with a fail-closed interim is NOT a contradiction).`;
 
 // Write targets from the plan's slice decomposition (agy derives protected_path_check from these).
 const WRITE_TARGETS = [
