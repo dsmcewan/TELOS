@@ -74,9 +74,24 @@ per-file designs are in the approved plan; acceptance criteria here.
   ref (protected-ref set fetched server-side, not assumed), pushes
   CREATE-ONLY (the ref must not exist; force-with-lease against an
   expected-empty old SHA — an existing ref ⇒ refuse `ref-exists`), and
-  its credential is verified NON-BYPASS at startup with the same
-  full-ruleset enumeration the merge controller performs (so even a
-  publisher bug cannot direct-push a protected ref). AGENT-AUTHORED
+  its credential is verified NON-BYPASS at startup via a
+  PUBLISHER-BOUND PRE-PUBLICATION ATTESTATION (the publisher's
+  least-privilege App cannot read branch protection or bypass_actors
+  itself — Administration:read and ruleset-write visibility are outside
+  its scopes — and the merge ceremony's attestation is minted LATER and
+  bound to a different dossier): the Eye's DISPATCH WRAPPER for a
+  Hestia run executes the same privileged attestor FIRST, emitting a
+  one-time Ed25519-signed attestation {publisher installation
+  permission set, ruleset states, bypass resolutions, hestia run
+  binding, issued_at, nonce, short TTL}; the publisher job verifies it
+  against EYE_AUTHORITY_PUBKEY (+ TTL + run binding + unused nonce)
+  before any push — missing/stale/foreign attestation ⇒ refuse
+  publisher-attestation-missing/-stale; PERMISSION-LIMITED regression:
+  the publisher's own credential receives the real 403/omitted-bypass
+  responses and still operates from a valid attestation, refusing only
+  when it is absent or stale (so even a publisher bug cannot
+  direct-push a protected ref, and the proof is operable under the
+  real API permission model). AGENT-AUTHORED
   EXECUTION-SURFACE CHANGES ARE REJECTED BEFORE PUBLICATION (pushing a
   branch whose patch adds or edits a push-triggered workflow would hand
   the agent's code a GitHub Actions token — and reachable secrets —

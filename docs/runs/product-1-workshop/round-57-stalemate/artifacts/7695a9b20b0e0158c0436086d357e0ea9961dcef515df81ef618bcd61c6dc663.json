@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:3e6de56330a2e1a8cfb8742b6e44da5f412f1f7805b128d2533ebb89790ebd54",
+  "output_plan_artifact_hash": "sha256:3e6de56330a2e1a8cfb8742b6e44da5f412f1f7805b128d2533ebb89790ebd54",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:be50b1d3faa5ac20973a80ef924ae954aa755faab3dad5b9c7dbaf9c4d02b034",
+    "provenance_key": "anthropic:2a0091bf-18fd-4cff-90f2-43428138fa0e"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:4610d6ff959eb660dc960afec8d10b2fd7213a5f41b6e1092fe7c97be8f9a89d",
+    "provenance_key": "openai:codex-cli-mtcefpol",
+    "bound_hash": "sha256:3e6de56330a2e1a8cfb8742b6e44da5f412f1f7805b128d2533ebb89790ebd54"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E1-branch-publisher-protection-proof",
+      "claim": "At candidate sha256:d686bc0466bccba9c113a9b83b77cf35b5d927f4ffa04e1c3e65d2bdbc079cfc, the branch publisher's mandatory startup proof is inoperable. E1 requires the publisher to verify its credential as non-bypass using full ruleset and classic-protection enumeration before any push, but §5(e) limits that GitHub App to contents:write + pull_requests:write with no administration/ruleset permission. GitHub requires Administration:read for branch-protection retrieval, and omits bypass_actors unless the caller has write access to the ruleset ([protected-branch API](https://docs.github.com/en/enterprise-cloud@latest/rest/branches/branch-protection), [rulesets API](https://docs.github.com/en/rest/orgs/rules)). The candidate's signed configuration attestation does not repair this: it is one-time, merge-dossier-bound, and issued in the later Eye-local merge ceremony after the publisher has already pushed. Therefore a compliant publisher must fail for incomplete visibility, or skip the promised proof and permit a misconfigured bypass-capable publisher credential. Specify a publisher-specific, pre-publication privileged attestation/freshness mechanism or another operable server-enforced design, with regressions for the real 403/omitted-bypass responses.",
+      "objection_hash": "sha256:8bde4bf9283f3e40c8315276c23be3609d66f094238f2b6a931cea478571db28",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

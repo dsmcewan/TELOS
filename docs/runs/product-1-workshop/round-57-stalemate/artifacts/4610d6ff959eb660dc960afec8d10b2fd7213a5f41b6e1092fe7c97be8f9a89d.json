@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E1-branch-publisher-protection-proof",
+        "claim": "At candidate sha256:d686bc0466bccba9c113a9b83b77cf35b5d927f4ffa04e1c3e65d2bdbc079cfc, the branch publisher's mandatory startup proof is inoperable. E1 requires the publisher to verify its credential as non-bypass using full ruleset and classic-protection enumeration before any push, but §5(e) limits that GitHub App to contents:write + pull_requests:write with no administration/ruleset permission. GitHub requires Administration:read for branch-protection retrieval, and omits bypass_actors unless the caller has write access to the ruleset ([protected-branch API](https://docs.github.com/en/enterprise-cloud@latest/rest/branches/branch-protection), [rulesets API](https://docs.github.com/en/rest/orgs/rules)). The candidate's signed configuration attestation does not repair this: it is one-time, merge-dossier-bound, and issued in the later Eye-local merge ceremony after the publisher has already pushed. Therefore a compliant publisher must fail for incomplete visibility, or skip the promised proof and permit a misconfigured bypass-capable publisher credential. Specify a publisher-specific, pre-publication privileged attestation/freshness mechanism or another operable server-enforced design, with regressions for the real 403/omitted-bypass responses."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcefpol",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcefpol",
+    "source": "cli-seats/codex_ask"
+  }
+}
