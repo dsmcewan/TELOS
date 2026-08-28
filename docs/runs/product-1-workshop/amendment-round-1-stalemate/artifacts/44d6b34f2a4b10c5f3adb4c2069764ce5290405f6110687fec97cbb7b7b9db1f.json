@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:a1feec8388d5a763467f4dabceafc8e041e57d1532f8afd56ca15460db5c509a",
+  "output_plan_artifact_hash": "sha256:a1feec8388d5a763467f4dabceafc8e041e57d1532f8afd56ca15460db5c509a",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:f4bc7aa392cfb12451659d851b45abe5b690b82356051a58f9c6b4be30dc8a2e",
+    "provenance_key": "anthropic:c08ef425-dbd5-463d-8927-46273c093dd2"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:78d733bfa7fe47a2cea53c3df09207e5f7cf2ca2a3ebb4d52c041fed2af2771f",
+    "provenance_key": "openai:codex-cli-mtcoqqql",
+    "bound_hash": "sha256:a1feec8388d5a763467f4dabceafc8e041e57d1532f8afd56ca15460db5c509a"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:section-6b-authority-state",
+      "claim": "Section 6b materially misstates the governing record at git:a6061953a1d3b30a49e1bb23225705a0427cf5a5: it says the six authority questions remain OPEN, prior authorization summaries are NOT_AUTHORIZED, and their ratification remains reserved to S2/S3. `docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-six-rulings-final.md` explicitly resolves all six and ratifies the bounded E6 spike, while S2 runs 3–5 are AUTHORIZED. The later DISCOVERY-001 ruling suspends the old S3 implementation grant and requires fresh exact-hash authorization plus a new S3 grant for the amended plan; it does not reopen those six fixed rulings. This contradicts §§3 and 7 and could improperly re-adjudicate Eye-fixed inputs. Revise §6b to distinguish resolved/ratified rulings from the still-pending authorization and implementation grant for the amended plan.",
+      "objection_hash": "sha256:fa017e01ff60aeaf63ddbde6dd53c73dc82c4917b00081b171b8044e554f33ac",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

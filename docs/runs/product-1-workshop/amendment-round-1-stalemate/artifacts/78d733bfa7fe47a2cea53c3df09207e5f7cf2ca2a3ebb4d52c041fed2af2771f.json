@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach:section-6b-authority-state",
+        "claim": "Section 6b materially misstates the governing record at git:a6061953a1d3b30a49e1bb23225705a0427cf5a5: it says the six authority questions remain OPEN, prior authorization summaries are NOT_AUTHORIZED, and their ratification remains reserved to S2/S3. `docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-six-rulings-final.md` explicitly resolves all six and ratifies the bounded E6 spike, while S2 runs 3–5 are AUTHORIZED. The later DISCOVERY-001 ruling suspends the old S3 implementation grant and requires fresh exact-hash authorization plus a new S3 grant for the amended plan; it does not reopen those six fixed rulings. This contradicts §§3 and 7 and could improperly re-adjudicate Eye-fixed inputs. Revise §6b to distinguish resolved/ratified rulings from the still-pending authorization and implementation grant for the amended plan."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcoqqql",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcoqqql",
+    "source": "cli-seats/codex_ask"
+  }
+}
