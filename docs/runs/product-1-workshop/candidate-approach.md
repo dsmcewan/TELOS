@@ -848,11 +848,17 @@ per-file designs are in the approved plan; acceptance criteria here.
   under this filter a qualified oracle confined to the restricted
   pure-evaluator ABI is a DETERMINISTIC FUNCTION of its inputs and the
   exhaustive battery is its discriminator.
-  HONEST LIMIT — E6 PERFECT ORACLE DETERMINISM (Gemini referee ruling,
-  2026-08-28, `referee-adjudications/2026-08-28-e6-oracle-determinism.json`,
-  after this thread recurred ~15 rounds without terminating; ruled an
-  ARGO IMPLEMENTATION-SPIKE, not an authorization blocker, per this
-  repo's proposal-lifecycle honest-limits precedent): perfectly
+  HONEST LIMIT — E6 PERFECT ORACLE DETERMINISM (ADVISORY Gemini referee
+  ruling, 2026-08-28, committed evidence at
+  `docs/runs/product-1-workshop/referee-adjudications/2026-08-28-e6-oracle-determinism.json`,
+  after this thread recurred ~15 rounds without terminating; the
+  referee ADVISES this is an ARGO IMPLEMENTATION-SPIKE not an
+  authorization blocker, per this repo's proposal-lifecycle honest-
+  limits precedent — but a model referee is ADVISORY: the deferral of
+  a would-be blocker to a spike is a governance decision RESERVED TO
+  THE EYE, carried as an EXPLICIT OPEN QUESTION FOR THE EYE in the
+  pre-review and RATIFIED at the S2 council / S3 authority grant; until
+  the Eye ratifies, this limit is proposed, not settled): perfectly
   isolating an ARBITRARY black-box Node oracle from every
   runtime/vDSO/libc nondeterminism channel via pre-execution seccomp is
   OUT OF SCOPE for this authorization plan — seccomp can SIGSYS a

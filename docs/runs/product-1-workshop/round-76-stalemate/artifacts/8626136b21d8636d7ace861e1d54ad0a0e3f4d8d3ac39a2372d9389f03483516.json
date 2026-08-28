@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E6-referee-authority",
+        "claim": "At candidate artifact sha256:490b3b4683f60bf82ccd441260d585fab2cd94edd716545fffae48923529aff3, E6 defers its sound deterministic discriminator to an Argo implementation spike solely under a claimed Gemini referee ruling at `referee-adjudications/2026-08-28-e6-oracle-determinism.json`, but that record does not exist anywhere in the repository. Its provenance, exact ruling, scope, and Eye acceptance are therefore unverifiable. Without an authenticated ruling, the candidate leaves governance correction d unresolved: its interim repeated-evaluation fallback cannot exclude deterministic clock/entropy-keyed nondiscriminating oracles. The adjudication must exist as governed disk evidence before it can authorize this deferral, or E6 must specify a sound discriminator in the approach."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtciyks7",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtciyks7",
+    "source": "cli-seats/codex_ask"
+  }
+}

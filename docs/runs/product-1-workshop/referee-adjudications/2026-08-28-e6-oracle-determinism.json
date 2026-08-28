@@ -1,0 +1,14 @@
+{
+  "referee": "gemini-3.1-pro-high (via agy OAuth)",
+  "conversation_id": "3b05ef14-ca86-4993-ab02-6ab6bfd63af4",
+  "invoked_after_round": 75,
+  "contested_thread": "E6 oracle-determinism (recurred ~15 of last ~25 rounds without terminating)",
+  "scoping_question": "Is residual E6 perfect-determinism a plan-authorization blocker or an Argo implementation-spike (bounded honest-limit per repo proposal-lifecycle precedent)?",
+  "verdict": {
+    "ruling": "argo-implementation-spike",
+    "rationale": "The fundamental requirement that oracles be deterministic and discriminating is enforceable in principle through alternative mechanisms, such as WASM sandboxing or coarse multi-evaluation agreement checks. The specific difficulty of perfectly isolating arbitrary Node.js runtimes from vDSO and libc non-determinism using seccomp is a platform engineering challenge, not a conceptual flaw in the plan itself. Consistent with repository precedent, this mechanism proof can be safely bounded as an honest limit and deferred to implementation, provided a clear detection fallback is specified.",
+    "required_plan_text_if_spike": "HONEST LIMIT - E6 Perfect Oracle Determinism: While the plan requires normative oracles to be discriminating, perfectly isolating arbitrary black-box Node.js oracles from all runtime/vDSO non-determinism channels via pre-execution seccomp is out of scope for the authorization plan. RESOLUTION PATH: This will be addressed as an Argo implementation spike to evaluate alternative sandboxing strategies, such as restricted pure-evaluator ABIs (e.g., WASM), specialized deterministic execution harnesses, or coarse-grained runtime checks. DETECTION FALLBACK: Until strict isolation is implemented, the system will enforce a coarse 'same-input-multiple-eval' agreement check-running the oracle repeatedly with identical inputs under randomized concealing schedules-and will instantly fail any oracle exhibiting output variance, flagging the run for manual governance review.",
+    "residual_blocker_if_blocker": ""
+  },
+  "disposition": "Non-convergence escalated to the Gemini referee per the standing 'no-cap-referee' directive. Referee ruled argo-implementation-spike; its prescribed honest-limit text is folded into candidate-approach.md E6, replacing the escalating perfect-determinism mechanism claims. Workshop re-runs on the folded candidate."
+}
