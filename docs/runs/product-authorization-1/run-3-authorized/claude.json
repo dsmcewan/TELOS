@@ -1,0 +1,31 @@
+{
+  "build_id": "iliad-product-1-authz-am42-regularization-am43-exclusions",
+  "use_case": "iliad-product-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json"
+  ],
+  "proposal_ref": "sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T06:34:00.675Z",
+  "rationale": "Verified against disk before signing: run-product-authorization.mjs recomputes plan_ref from docs/runs/product-1-workshop/matured-approach.md and exits on drift before dispatching this prompt, so the reviewed text is the frozen sha256:bb2ea18f… candidate at head 97becd3; CONVERGED.json, the round-82 content-addressed artifact, the Eye directive (2026-08-28-product-1-spikes-nonblocking.md), and the advisory Gemini referee record all exist and say what the plan claims — notably §6b honestly declares itself CONDITIONAL, deriving no authority from its own text, with ratification reserved to exactly this council and the S3 Eye grant. On the plan's own terms: (1) E1–E6 are fail-closed with genuinely adversarial regressions — E1's substrate-isolated publisher/controller split with sequential revalidate-then-merge, merge-commit precedence, per-merge Eye acceptance, and the honestly-recorded (3)→(4) trust-root non-claim (proposal-lifecycle honest-limits precedent); E2's out-of-tree anchoring, two-tier clean-room (denial-is-the-pass-criterion), transition records whose Eye signature binds every protected surface per covered_files (council run 1's ratified hard stop, correctly folded), and the explicit genesis ceremony with a recorded exceptional bootstrap merge; E3 exceptionless; E4's contradiction-blocking flip; E6's pure-evaluator ABI making determinism structural, closed mutation registry with ≥8-cardinality domains, two-sided discrimination, and an exhaustive deterministic battery. (2) The governance bootstrap is a docs/registry-only slice under sitting v15 authority, touches no woven input, and AM-43's two-phase authorize-then-activate keeps every pre-existing inventory gate green at the bootstrap head while AM-42's bytes stay untouched — the four-step successor-plan transition IS the regularized path, and this run's build_id names the flip. (3) The Phase-0/1a product contract is honest end to end: hard --gate with checklist bijection and bidirectional evidence binding, dual install modes that never invent provenance, out-of-band trust-root manifest with documented TOFU, and the Chromium-only qualified envelope bounding claims rather than deferring the blocker. (4) Content-addressed closure + history digests resolve council run 2's freshness paradox soundly, with union input discovery closing both add and delete blind spots. CARRIED ITEMS — I explicitly RATIFY both: (i) SPIKE-E6-EVALUATOR-FORM — deferring the concrete declarative grammar/evaluator form to a pre-implementation merge-gate on the oracle-hardening slice is acceptable because the sound design (lookup tables structurally inexpressible in a declarative surface) is settled in-plan and the interim is fail-closed, routing every normative oracle record through the same mandatory adversarial-source-review authority gate as any authority change plus the determinized battery — a bounded, honestly-recorded spike, not a contradiction; (ii) the open_questions_for_the_eye including product-1-oq-e6-determinism-deferral — the deferral is the Eye's recorded decision with the referee correctly held advisory, and the plan strengthened beyond the referee's prescription by committing to the pure ABI. Residuals are recorded as non-claims, not smuggled as capabilities (single trust principal, ceremony-window release deletion, TOFU first-fetch, human-merge override backstopped by digest failure). No remaining internal contradiction or unsound design found; nothing out-of-scope conditioned. Implementation-ready as-is; per §3 step 4 and the directive, Argo still awaits the Eye's separate implementation-authority confirmation, which this approval does not substitute for.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "737fa131-6ef6-473d-8226-4e49a73d0fd4",
+    "source": "cli-seats/claude",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T06:35:41.317Z",
+    "tool": "cli-seats.askClaude"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "a454660058df548a231bf97ab29a5c1a6d4a45b3263c649b0c612539d5551e22",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

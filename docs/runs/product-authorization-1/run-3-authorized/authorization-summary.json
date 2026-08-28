@@ -1,0 +1,124 @@
+{
+  "build_id": "iliad-product-1-authz-am42-regularization-am43-exclusions",
+  "use_case": "iliad-product-1",
+  "objective": "Authorize Argo implementation of the product-1 quest matured approach (content address sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6; Daedalus-converged after 22 adversarial rounds with 60 discharged objections plus council run 1's ratified hard stop folded and re-matured; reviewed head 97becd3) — the TELOS v0.3.0 Production Quest shipping PYLAE Gate v1 (the productized local single-user CLI SKU over the TELOS trust spine). The plan's own terms to judge it on: (1) ENFORCEMENT E1-E6 are fail-closed with adversarial regression tests: deterministic pre-merge merge-controller (sole merge credential; models produce dossiers, never merge), memory-gate freshness with authority chained to out-of-tree protected roots (base-anchored verifier closure, Eye-signed authority transitions, Eye-local genesis provisioning), exceptionless auditor (no allow-empty), gate production-profile default flip, discriminating oracles (closed mutation registry, mutation-based negatives, direct execution), verifier hardening (dedupe, root-invariant sweep, draft-status citation gate). (2) GOVERNANCE: a docs/registry-only BOOTSTRAP slice lands first under the sitting v15 authority, executing the successor-plan transition (publish plan hash -> authorize exact hash -> pivot active_plan/active_authorization + supersede v15 -> Eye implementation-authority confirmation); AM-42 bytes never touched (registry-row linkage only); AM-43 classifies cli/ + connectors/meta-ads-mcp/ as excluded package dirs. THIS COUNCIL IS that re-authorization: its build_id names the enrollment flip. (3) PRODUCT: Phase-0 contract frozen (PD-001..PD-007 ADRs, hard go-live gate with typed item-bound evidence, no report-only release mode); Phase-1a honest install contract (source release with pylae entrypoint, dual checkout/archive doctor semantics, clean-room install proof, draft-first fail-closed release publication, full-assembly reproducibility, out-of-tree signer fingerprint); flagship = future operator console with a bounded Chromium-only qualified-browser contract this round. (4) ATOMIC WEAVE RULE: every slice touching woven inputs carries its own re-weave; PR CI mode-splits historical vs authoritative exact-head verification accordingly. Judge the plan on THESE terms — do NOT require capabilities it explicitly defers to register items (multi-engine browser qualification, self-contained npm distribution, Phase-1b durable state / Auth0 identity / key rotation), and do NOT re-litigate the recorded Eye rulings it cites (PYLAE naming, Option-A combined ceremony, both-strict enforcement, reconcile-and-supersede for draft docs, OAuth seat transport). OUT OF SCOPE (do NOT condition approval on it): identity/tenancy/clustered runtime (excluded by signed ADR PD-001); enrollment flips beyond the two AM-43 exclusions; Phase-1b+ register items. CARRIED-FORWARD ITEMS (Daedalus converged 2026-08-28 under the recorded Eye directive; these are AUTHORIZATION-TIME decisions for THIS council, NOT unresolved plan defects — RATIFY or reject them explicitly): (i) the §6b Accepted Argo Spikes register — SPIKE-E6-EVALUATOR-FORM (oracle discrimination: sound design = a constrained DECLARATIVE oracle language in which lookup-table oracles are structurally inexpressible; sound INTERIM = mandatory adversarial source review of every normative oracle record + the determinized battery; the concrete grammar is a pre-implementation MERGE-GATE on the oracle-hardening slice) — judge whether deferring the concrete grammar to that gate is acceptable; (ii) the pre-review open_questions_for_the_eye (incl. product-1-oq-e6-determinism-deferral). Evidence on disk: referee-adjudications/2026-08-28-e6-oracle-determinism.json (ADVISORY), EYE-DIRECTIVES/2026-08-28-product-1-spikes-nonblocking.md. Approve ONLY if the plan is implementation-ready and consistent with its governing pre-review, the repository trust model (fail-closed, closed sets, content-addressed identity, no mutable label keying enforcement, zero-dependency core), and its own decisions and acceptance criteria, with no remaining plan CONTRADICTION or unsound design (a bounded, honestly-recorded implementation-spike with a fail-closed interim is NOT a contradiction).",
+  "plan_ref": "sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6",
+  "reviewed_head": "97becd3",
+  "combined_ceremony": "AM-42 enrollment-flip regularization + AM-43 exclusions (cli/, connectors/meta-ads-mcp/) — build_id names the flip",
+  "seat_transport": "OAuth subscription CLIs per product-1-ruling-oauth-seat-transport (agy = local deterministic checkpoint)",
+  "timestamp": "2026-08-28T06:34:00.675Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [
+    "claude",
+    "agy",
+    "codex"
+  ],
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "737fa131-6ef6-473d-8226-4e49a73d0fd4",
+        "source": "cli-seats/claude",
+        "transport": "oauth-subscription-cli",
+        "answered_at": "2026-08-28T06:35:41.317Z",
+        "tool": "cli-seats.askClaude"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-021a1add9ccdde76ab9f4e6396e61946f95b2932",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint(local)"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "codex-cli-mtcl3uge",
+        "source": "cli-seats/codex",
+        "transport": "oauth-subscription-cli",
+        "answered_at": "2026-08-28T06:42:23.342Z",
+        "tool": "cli-seats.askCodex"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": false,
+      "reason": "spawn E2BIG"
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": false,
+      "reason": "spawn E2BIG"
+    }
+  ],
+  "gate": {
+    "gate_status": "pass",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [],
+    "warnings": [
+      "No Grok advisory packet present."
+    ],
+    "provenance": [
+      {
+        "model": "claude",
+        "has_provenance": true,
+        "provider": "anthropic",
+        "response_model": "claude-fable-5",
+        "response_id": "737fa131-6ef6-473d-8226-4e49a73d0fd4",
+        "source": "cli-seats/claude"
+      },
+      {
+        "model": "agy",
+        "has_provenance": true,
+        "provider": "local",
+        "response_model": "agy-checkpoint",
+        "response_id": "agy-021a1add9ccdde76ab9f4e6396e61946f95b2932",
+        "source": "ai-peer-mcp/agy_checkpoint"
+      },
+      {
+        "model": "codex",
+        "has_provenance": true,
+        "provider": "openai",
+        "response_model": "gpt-5.6-sol",
+        "response_id": "codex-cli-mtcl3uge",
+        "source": "cli-seats/codex"
+      }
+    ]
+  },
+  "authorized": true,
+  "authorization": {
+    "status": "AUTHORIZED",
+    "id": "authz-product-1",
+    "plan_ref": "sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6",
+    "note": "Argo implementation of the product-1 matured plan is authorized by the signed council under the TELOS gate; this run is also the Option-A re-authorization naming the AM-42 regularization + AM-43 exclusions. The Eye's implementation-authority confirmation (plan §3 step 4) remains a separate, subsequent grant."
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "build_id": "iliad-product-1-authz-am42-regularization-am43-exclusions",
+  "use_case": "iliad-product-1",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json"
+  ],
+  "proposal_ref": "sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T06:34:00.675Z",
+  "rationale": "The canonical candidate identity independently recomputes to sha256:bb2ea18f2a53885cb60b45d8a54c8d25e47a5b9e93c7c091a5948903b1bcf7a6, and the reviewed plan bytes match git:97becd37ba2e99055f13c97ad6780eb06c8d0e34. The earlier authorization hard stops are discharged: protected-surface transitions bind and re-derive every covered digest and file, while weave freshness now uses non-self-referential closure and history digests with external exact-commit attestation. I explicitly ratify SPIKE-E6-EVALUATOR-FORM: the constrained declarative-oracle design, structural exclusion of imperative lookup-table oracles, mandatory pre-implementation merge gate for the concrete grammar/evaluator, and affirmative required-seat-plus-Eye source review with the determinized battery as the interim are acceptable within the repository’s human trust-root boundary. I also ratify the pre-review dispositions carried into this plan: Option-A re-authorization, reconcile-and-supersede authority repair, exceptionless auditing, the production-profile default flip, and deferral of the private-package naming fallback. The remaining Phase-1b and browser/npm-distribution items are honestly registered rather than silently claimed. E1–E6, the governance bootstrap, Phase-0/1a contract, release ceremony, and atomic weave sequencing are mutually consistent and fail closed at their stated boundaries. Council approval remains review evidence; implementation still requires the separate Eye authority grant.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcl3uge",
+    "source": "cli-seats/codex",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T06:42:23.342Z",
+    "tool": "cli-seats.askCodex"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "64cc0fcfcb6b6b41ee3e2c3ed780b89bd1c6d7ec0c242956ee8c59194c49192f",
+    "signed_fields": "canonical-minus-signature"
+  }
+}
