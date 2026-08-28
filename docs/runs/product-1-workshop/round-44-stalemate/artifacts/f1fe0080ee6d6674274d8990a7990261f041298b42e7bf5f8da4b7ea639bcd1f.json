@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:34533a2265b95a4b25f0bc2f384bf65f9a160b1ec23751c83d293c3b91d43313",
+  "output_plan_artifact_hash": "sha256:34533a2265b95a4b25f0bc2f384bf65f9a160b1ec23751c83d293c3b91d43313",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:c35d8720be4438592a00b34db0db81814ec120aeea06deb158a53f3cb71265fa",
+    "provenance_key": "anthropic:f8c03f20-19ff-410a-8083-248528d66fb9"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:b2d063c3f5a249e1f661f5bf1cbb655034ace0bfe2a0b662baa94800acc75b06",
+    "provenance_key": "openai:codex-cli-mtcbi0pi",
+    "bound_hash": "sha256:34533a2265b95a4b25f0bc2f384bf65f9a160b1ec23751c83d293c3b91d43313"
+  },
+  "objections": [
+    {
+      "scope": "E1-credential-model",
+      "claim": "The branch-publisher principal is specified as `contents:write ONLY`, yet it must open pull requests; GitHub's create-pull-request operation requires pull-request write permission. The stated credential therefore cannot perform the proposed workflow. Granting the missing permission changes the custody manifest and live-scope oracle, so the approach must reconcile and test the actual least-privilege permission set.",
+      "objection_hash": "sha256:1570cc38c8795105c8bdefc806c16666f0eed1f88c2698c4cfc79de3b2537860",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "release-workflow-trust",
+      "claim": "The substituted-definition defense is fail-open. A non-main workflow can request a write-scoped GITHUB_TOKEN; the repository's read-only default is not a permission ceiling, and an environment policy gates environment credentials, not GITHUB_TOKEN. Such a run can perform repository mutations and can invoke the merge endpoint for a branch-protection-eligible PR without the controller-only Eye-acceptance check. It can also mutate an unpublished draft release. The v* tag ruleset and attestation identity do not prevent those operations, while the closed custody manifest does not account for this ephemeral Actions writer. A platform-enforced ceiling or an architecture that makes Actions tokens incapable of these mutations is required.",
+      "objection_hash": "sha256:d4a901e12093bfda5781f2147b51d5200acf6be4d7ce1986434e916b1e11dfce",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "freshness-atomic-weave",
+      "claim": "The input-history freshness mechanism is not preserved across the proposed merge operation. The snapshot binds path-history commit identities at the PR head, but `PUT .../merge` does not pin or verify a history-preserving merge method, and the required check is expressly run against the PR-head checkout rather than the exact post-merge history. A squash, rebase, or otherwise different server-produced topology can therefore make the newly merged main immediately fail `input-history-stale`, violating the atomic-weave invariant. The controller must constrain and verify the merge strategy and test the resulting main topology, or derive eligibility against the exact history that will exist after mutation.",
+      "objection_hash": "sha256:540c975c2adf9909eaad1806b0c8d532d3afefc0abe85d14fc5faba4155f5a14",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

@@ -174,7 +174,17 @@ per-file designs are in the approved plan; acceptance criteria here.
   once). Missing/invalid acceptance ⇒ refuse `acceptance-missing`, no
   mutation — then, only on pass, performs the SOLE merge via `gh api -X PUT
   .../merge -f sha={head}` (server-enforced expected-head guard; 409 ⇒
-  `head-moved`, never retry-fresh). The check-then-PUT window is closed
+  `head-moved`, never retry-fresh) with `merge_method: "merge"` PINNED
+  EXPLICITLY — never squash or rebase (both rewrite the PR's commit
+  identities, so the input-history digest recorded at the PR head would
+  fail input-history-stale on main immediately after merge; a true
+  merge commit preserves the original commits' reachability and every
+  path-limited history fact the snapshot recorded); the controller
+  asserts at startup that merge commits are allowed (else
+  `unsafe-merge-method`) and its post-merge attestation re-derives the
+  merged main's input-history digest and asserts it still matches
+  (topology regressions: squash-configured stub ⇒ refused at startup;
+  post-merge digest mismatch ⇒ attestation exit 2). The check-then-PUT window is closed
   SERVER-SIDE, not by client timing (a base update between the
   controller's query and its PUT would otherwise merge on stale checks):
   the target branch protection MUST set `required_status_checks.strict:
@@ -1156,6 +1166,22 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   update/deletion of `v*` to the Eye (no bot, no Actions principal) —
   a rogue workflow's token cannot mint or move a release tag, and
   releases are immutable once published.
+  (b2) MAIN HAS PUSH RESTRICTIONS EXCLUDING ACTIONS PRINCIPALS — the
+  PLATFORM ceiling a read-only token default cannot provide (any
+  workflow can self-grant `contents: write`, and environment policies
+  gate environment credentials, not GITHUB_TOKEN): the main ruleset's
+  "restrict who can push" list contains ONLY the Eye and the
+  merge-controller principal; the github-actions principal is NOT
+  listed, so a rogue workflow's write-scoped token is refused by the
+  server on ANY push or merge to main — the merge endpoint cannot be
+  reached around the controller regardless of what permissions the
+  workflow file requests. Draft mutation by such a token is covered by
+  (iv): the pre-flip re-verification catches ANY asset/body change and
+  aborts+deletes rather than publishing — fail-closed, nothing
+  unverified goes public. Regressions: a workflow token with
+  self-granted contents:write attempting the merge PUT ⇒ server
+  refusal (push restriction); the same token swapping a draft asset ⇒
+  the pre-flip re-check aborts the ceremony.
   (c) ARTIFACT TRUST IS IDENTITY-PINNED: provenance attestations are
   verified — in CI and in the documented consumer instructions — with
   the certificate identity pinned to `release.yml@refs/heads/main`; an
@@ -1193,10 +1219,14 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   ceremony fail the moment E1 becomes operable): an Eye-signed CUSTODY
   MANIFEST enumerates exactly (a) the Eye (owner/admin), (b) the
   merge-controller principal, and (c) the branch-publisher principal —
-  each machine principal a fine-grained credential scoped to
-  contents:write ONLY (no administration, no environments, excluded
-  from every ruleset bypass list, no v* tag capability), its scope
-  RECORDED in the manifest and VERIFIED live by the custody oracle (a
+  each machine principal a fine-grained credential with an EXACT
+  LEAST-PRIVILEGE scope set recorded per principal — the publisher:
+  contents:write + pull_requests:write (opening a PR requires PR write;
+  contents alone cannot), the controller: contents:write +
+  pull_requests:write (the merge endpoint) + checks:read — and nothing
+  else (no administration, no environments, excluded from every ruleset
+  bypass list, no v* tag capability), each scope set RECORDED in the
+  manifest and VERIFIED live by the custody oracle (a
   listed principal whose live scopes exceed the recorded bounds ⇒
   custody-drift exactly like an unlisted writer); the manifest changes
   only via Eye-signed transition. Custody regressions: manifest-listed
