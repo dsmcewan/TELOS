@@ -1,0 +1,31 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "agy",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json"
+  ],
+  "proposal_ref": "sha256:523d0f4388dd0aad058f0cdb6771335d7e9a3224c9aed31d625e4d3cecf49048",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T09:13:31.193Z",
+  "provenance": {
+    "provider": "local",
+    "model": "agy-checkpoint",
+    "source": "ai-peer-mcp/agy_checkpoint",
+    "response_id": "agy-021a1add9ccdde76ab9f4e6396e61946f95b2932",
+    "answered_at": null,
+    "attestation": "local-deterministic",
+    "engine_version": "agy-checkpoint/1",
+    "tool": "agy_checkpoint(local)"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "579e43aba7e77a6ce9b933563a5b88c988de18db1449428a701e421416b40b51",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

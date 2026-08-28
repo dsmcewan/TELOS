@@ -1,0 +1,36 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json"
+  ],
+  "proposal_ref": "sha256:523d0f4388dd0aad058f0cdb6771335d7e9a3224c9aed31d625e4d3cecf49048",
+  "decision": "revise",
+  "required_edits": [
+    "Define a satisfiable first-deployment path for the freshness, plugin-self-containment, and E2 verifier transitions. Specify the exact protected-variable values before and after each slice and how trusted base-side verification plus the E1 controller authorize these protected-surface changes without executing the proposed verifier or pre-provisioning a new digest where the transition contract requires the live old digest. Bind any one-time genesis authorization to exact bytes, sequence, PR/head, and consumption, with regressions proving no self-authorization or third manual bootstrap merge.",
+    "Add LAST_TRANSITION_SEQ to the genesis provisioning ceremony with a defined initial value, custody location, signed bootstrap binding, advancement point, and fail-closed tests for unset, stale, skipped, or partially updated sequence state."
+  ],
+  "hard_stops": [
+    "The protected-surface bootstrap is internally incomplete: after E1, freshness and plugin-self-containment modify protected surfaces before E2 installs the gate-side transition verifier, while E2 requires both the trusted-base gate and controller to validate transitions and forbids the proposed verifier from evaluating itself. The stated genesis ceremony validates staged new bytes but supplies no controller eligibility rule reconciling those bytes with old_* values that must equal the live protected values. Implemented as written, the first such transition must either remain permanently blocked or bypass a required enforcer."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-08-28T09:13:31.193Z",
+  "rationale": "I recomputed the candidate address as sha256:523d0f4388dd0aad058f0cdb6771335d7e9a3224c9aed31d625e4d3cecf49048 and confirmed its plan bytes match reviewed head 268225356702fe5e645d39d478848b5d864d657c. I ratify SPIKE-E6-EVALUATOR-FORM: deferring the concrete constrained-declarative grammar and evaluator form is acceptable because the sound design is fixed, new or changed normative-oracle enrollment remains blocked, and the grammar's adversarial conformance proof is a hard merge gate rather than a post-release obligation. I likewise ratify the recorded dispositions of the pre-review questions, including product-1-oq-e6-determinism-deferral, Option-A AM-42/AM-43 treatment, both-strict enforcement, reconcile-and-supersede, and the non-blocking package-name fallback. The blocking issue is separate from those rulings and is localized to first deployment of the protected transition machinery. The plan correctly recognizes the bootstrap circularity but only defines the exceptional E1 controller merge; it does not provide a deterministic authorization path for protected verifier/verdict transitions occurring before the new gate can serve as the required trusted-base enforcer. LAST_TRANSITION_SEQ is also required by the transition rule but omitted from the purportedly complete genesis variable list. These are repairable specification defects, but approval means implementation AS-IS, so authorization must remain blocked until they are reconciled.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcqsdd3",
+    "source": "cli-seats/codex",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T09:21:25.672Z",
+    "tool": "cli-seats.askCodex"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "e23fc22b98d89a95dc772e737c3ef942154a8fa50efc56532cf7a44a90cf5d12",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

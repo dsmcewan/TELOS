@@ -1,0 +1,155 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "objective": "Authorize Argo implementation of the product-1 quest matured approach (content address sha256:523d0f4388dd0aad058f0cdb6771335d7e9a3224c9aed31d625e4d3cecf49048; Daedalus-converged after 22 adversarial rounds with 60 discharged objections plus council run 1's ratified hard stop folded and re-matured; reviewed head 268225356702fe5e645d39d478848b5d864d657c) — the TELOS v0.3.0 Production Quest shipping PYLAE Gate v1 (the productized local single-user CLI SKU over the TELOS trust spine). The plan's own terms to judge it on: (1) ENFORCEMENT E1-E6 are fail-closed with adversarial regression tests: deterministic pre-merge merge-controller (sole merge credential; models produce dossiers, never merge), memory-gate freshness with authority chained to out-of-tree protected roots (base-anchored verifier closure, Eye-signed authority transitions, Eye-local genesis provisioning), exceptionless auditor (no allow-empty), gate production-profile default flip, discriminating oracles (closed mutation registry, mutation-based negatives, direct execution), verifier hardening (dedupe, root-invariant sweep, draft-status citation gate). (2) GOVERNANCE: a docs/registry-only BOOTSTRAP slice lands first under the sitting v15 authority, executing the successor-plan transition (publish plan hash -> authorize exact hash -> pivot active_plan/active_authorization + supersede v15 -> Eye implementation-authority confirmation); AM-42 bytes never touched (registry-row linkage only); AM-43 classifies cli/ + connectors/meta-ads-mcp/ as excluded package dirs. THIS COUNCIL IS that re-authorization: its build_id names the enrollment flip. (3) PRODUCT: Phase-0 contract frozen (PD-001..PD-007 ADRs, hard go-live gate with typed item-bound evidence, no report-only release mode); Phase-1a honest install contract (source release with pylae entrypoint, dual checkout/archive doctor semantics, clean-room install proof, draft-first fail-closed release publication, full-assembly reproducibility, out-of-tree signer fingerprint); flagship = future operator console with a bounded Chromium-only qualified-browser contract this round. (4) ATOMIC WEAVE RULE: every slice touching woven inputs carries its own re-weave; PR CI mode-splits historical vs authoritative exact-head verification accordingly. Judge the plan on THESE terms — do NOT require capabilities it explicitly defers to register items (multi-engine browser qualification, self-contained npm distribution, Phase-1b durable state / Auth0 identity / key rotation), and do NOT re-litigate the recorded Eye rulings it cites (PYLAE naming, Option-A combined ceremony, both-strict enforcement, reconcile-and-supersede for draft docs, OAuth seat transport). OUT OF SCOPE (do NOT condition approval on it): identity/tenancy/clustered runtime (excluded by signed ADR PD-001); enrollment flips beyond the two AM-43 exclusions; Phase-1b+ register items. CARRIED-FORWARD ITEMS (Daedalus converged 2026-08-28 under the recorded Eye directive; these are AUTHORIZATION-TIME decisions for THIS council, NOT unresolved plan defects — RATIFY or reject them explicitly): (i) the §6b Accepted Argo Spikes register — SPIKE-E6-EVALUATOR-FORM (oracle discrimination: sound design = a constrained DECLARATIVE oracle language in which lookup-table oracles are structurally inexpressible; sound INTERIM = mandatory adversarial source review of every normative oracle record + the determinized battery; the concrete grammar is a pre-implementation MERGE-GATE on the oracle-hardening slice) — judge whether deferring the concrete grammar to that gate is acceptable; (ii) the pre-review open_questions_for_the_eye (incl. product-1-oq-e6-determinism-deferral). Evidence on disk: referee-adjudications/2026-08-28-e6-oracle-determinism.json (ADVISORY), EYE-DIRECTIVES/2026-08-28-product-1-spikes-nonblocking.md. Approve ONLY if the plan is implementation-ready and consistent with its governing pre-review, the repository trust model (fail-closed, closed sets, content-addressed identity, no mutable label keying enforcement, zero-dependency core), and its own decisions and acceptance criteria, with no remaining plan CONTRADICTION or unsound design (a bounded, honestly-recorded implementation-spike with a fail-closed interim is NOT a contradiction).",
+  "plan_ref": "sha256:523d0f4388dd0aad058f0cdb6771335d7e9a3224c9aed31d625e4d3cecf49048",
+  "reviewed_head": "268225356702fe5e645d39d478848b5d864d657c",
+  "combined_ceremony": "AM-42 enrollment-flip regularization + AM-43 exclusions (cli/, connectors/meta-ads-mcp/) — build_id names the flip",
+  "seat_transport": "OAuth subscription CLIs per product-1-ruling-oauth-seat-transport (agy = local deterministic checkpoint)",
+  "timestamp": "2026-08-28T09:13:31.193Z",
+  "trust_mode": "signed",
+  "ephemeral_signers": [],
+  "durable_signing": true,
+  "signer_key_ids": {
+    "claude": "kid:a151bd15f757660b",
+    "agy": "kid:b0df0eb963dee57c",
+    "codex": "kid:28d7644d73a1a8e7"
+  },
+  "signer_custody": "operator-account custody: ~/.telos/product-1-signers.env (chmod 600, outside repo; provisioned per Eye ruling 2026-08-28)",
+  "seats": [
+    {
+      "model": "claude",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "8d18bf73-b856-458e-849d-2f0f671d37a7",
+        "source": "cli-seats/claude",
+        "transport": "oauth-subscription-cli",
+        "answered_at": "2026-08-28T09:15:14.935Z",
+        "tool": "cli-seats.askClaude"
+      }
+    },
+    {
+      "model": "agy",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "local",
+        "model": "agy-checkpoint",
+        "source": "ai-peer-mcp/agy_checkpoint",
+        "response_id": "agy-021a1add9ccdde76ab9f4e6396e61946f95b2932",
+        "answered_at": null,
+        "attestation": "local-deterministic",
+        "engine_version": "agy-checkpoint/1",
+        "tool": "agy_checkpoint(local)"
+      }
+    },
+    {
+      "model": "codex",
+      "role": "approver",
+      "ok": true,
+      "signed": true,
+      "decision": "revise",
+      "confidence": "high",
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "codex-cli-mtcqsdd3",
+        "source": "cli-seats/codex",
+        "transport": "oauth-subscription-cli",
+        "answered_at": "2026-08-28T09:21:25.672Z",
+        "tool": "cli-seats.askCodex"
+      }
+    },
+    {
+      "model": "grok",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "xai",
+        "model": "grok-4.5-build",
+        "response_id": "805e6db0-8b21-45ea-94f1-43cdcdcfa77a",
+        "source": "cli-seats/grok",
+        "transport": "oauth-subscription-cli",
+        "answered_at": "2026-08-28T09:14:05.341Z",
+        "tool": "cli-seats.askGrok"
+      }
+    },
+    {
+      "model": "gemini",
+      "role": "advisory",
+      "ok": true,
+      "signed": false,
+      "decision": "approve",
+      "confidence": "high",
+      "provenance": {
+        "provider": "google",
+        "model": "gemini-3.1-pro-high",
+        "response_id": "e515e31f-c005-4e79-9993-9a7dbb9efc5f",
+        "source": "cli-seats/gemini",
+        "transport": "oauth-subscription-cli",
+        "answered_at": "2026-08-28T09:14:54.700Z",
+        "tool": "cli-seats.askGemini"
+      }
+    }
+  ],
+  "gate": {
+    "gate_status": "blocked",
+    "signing_enforced": true,
+    "provenance_enforced": true,
+    "blockers": [
+      "codex decision is 'revise', not 'approve'.",
+      "codex has required edits: Define a satisfiable first-deployment path for the freshness, plugin-self-containment, and E2 verifier transitions. Specify the exact protected-variable values before and after each slice and how trusted base-side verification plus the E1 controller authorize these protected-surface changes without executing the proposed verifier or pre-provisioning a new digest where the transition contract requires the live old digest. Bind any one-time genesis authorization to exact bytes, sequence, PR/head, and consumption, with regressions proving no self-authorization or third manual bootstrap merge.; Add LAST_TRANSITION_SEQ to the genesis provisioning ceremony with a defined initial value, custody location, signed bootstrap binding, advancement point, and fail-closed tests for unset, stale, skipped, or partially updated sequence state.",
+      "codex has hard stops: The protected-surface bootstrap is internally incomplete: after E1, freshness and plugin-self-containment modify protected surfaces before E2 installs the gate-side transition verifier, while E2 requires both the trusted-base gate and controller to validate transitions and forbids the proposed verifier from evaluating itself. The stated genesis ceremony validates staged new bytes but supplies no controller eligibility rule reconciling those bytes with old_* values that must equal the live protected values. Implemented as written, the first such transition must either remain permanently blocked or bypass a required enforcer."
+    ],
+    "warnings": [],
+    "provenance": [
+      {
+        "model": "claude",
+        "has_provenance": true,
+        "provider": "anthropic",
+        "response_model": "claude-fable-5",
+        "response_id": "8d18bf73-b856-458e-849d-2f0f671d37a7",
+        "source": "cli-seats/claude"
+      },
+      {
+        "model": "agy",
+        "has_provenance": true,
+        "provider": "local",
+        "response_model": "agy-checkpoint",
+        "response_id": "agy-021a1add9ccdde76ab9f4e6396e61946f95b2932",
+        "source": "ai-peer-mcp/agy_checkpoint"
+      },
+      {
+        "model": "codex",
+        "has_provenance": true,
+        "provider": "openai",
+        "response_model": "gpt-5.6-sol",
+        "response_id": "codex-cli-mtcqsdd3",
+        "source": "cli-seats/codex"
+      }
+    ]
+  },
+  "durable_checks": {
+    "ephemeral_signers_empty": true,
+    "all_required_signed_durable": false,
+    "all_required_packets_clean": false,
+    "reviewed_head_full": true
+  },
+  "authorized": false,
+  "authorization": {
+    "status": "NOT_AUTHORIZED",
+    "note": "Fail-closed: see gate.blockers and seat decisions."
+  }
+}

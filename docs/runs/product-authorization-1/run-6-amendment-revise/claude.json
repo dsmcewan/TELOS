@@ -1,0 +1,31 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json"
+  ],
+  "proposal_ref": "sha256:523d0f4388dd0aad058f0cdb6771335d7e9a3224c9aed31d625e4d3cecf49048",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T09:13:31.193Z",
+  "rationale": "I verified the ground evidence before judging: the plan file exists at docs/runs/product-1-workshop/matured-approach.md and the council runner (docs/runs/product-authorization-1/run-product-authorization.mjs) pins EXPECTED_PLAN_REF sha256:523d0f43… with a fail-closed drift check (recompute-and-refuse, exit 1) and REVIEWED_HEAD 2682253…657c; the cited DISCOVERY-001 coupling artifact is on disk and its sha256 recomputes to exactly the plan-recorded 214f8b51…, and the referee adjudication plus both Eye directives (spikes-nonblocking, six-rulings-final, discovery-001 ruling) exist as cited. On the merits, judged strictly on the plan's own terms: (1) E1–E6 are each fail-closed with adversarial regressions that reproduce the defect they close — the merge controller is the sole merge credential with its own closure protected, per-merge re-derived eligibility, producer-authenticated checks resolved at the synthetic merge commit with correct precedence, mandatory Eye acceptance, and serialized revalidate-then-merge with the (3)→(4) window honestly recorded as the trust-root boundary rather than falsely claimed closed; E2's authority chain is anchored out-of-tree at every context with the transition record binding every protected surface plus predecessor digests plus a monotonic consumed sequence (closing the temporal-replay and record-reuse holes run 1 ratified); E3 is genuinely exceptionless; E4 flips the production default with contradiction detection; E6's discrimination battery is two-sided, exhaustive, and baseline-controlled with mutation domains as closed enumerable sets. (2) The two-phase Phase A/B governance transition soundly resolves the bootstrap-pivot coupling: Phase A is data-only under sitting v15 authority with a closed pre-activation whitelist, Phase B is one atomic PR whose failure leaves v15/authz-008 intact — no partial-activation state exists, and this council's build_id names the flip as required. (3) The Phase-0/1a product contract is honest: the go-live gate has no report-only escape, evidence is typed and bidirectionally item-bound with a bijection against the frozen checklist manifest, the install contract distinguishes checkout/archive modes without inventing provenance, archive-mode authenticity is explicitly not claimed offline, and trust roots are operator-supplied, never tree-supplied. (4) The atomic weave rule is enforceable because freshness is content-addressed (input-closure + input-history digests), dissolving the run-2 self-reference paradox, with union input discovery closing the added/deleted-file blind spots in CI mode selection. CARRIED-FORWARD ITEMS — I RATIFY BOTH EXPLICITLY: (i) SPIKE-E6-EVALUATOR-FORM — deferring the concrete declarative-oracle grammar/evaluator form to a hard pre-implementation merge gate on the oracle-hardening slice is acceptable because the interim is genuinely fail-closed (new/changed normative oracle enrollment BLOCKED at the authority gate with oracle-evaluator-pending, not merely reviewed), the compensating controls are honestly labeled non-authoritative, the lookup-table residual is candidly stated rather than papered over, and correction (d) is explicitly not claimed closed until the gate passes — a bounded, honestly-recorded spike with a fail-closed interim is not a contradiction; (ii) product-1-oq-e6-determinism-deferral and the pre-review open questions — properly Eye-ratified per ruling 6 with the advisory Gemini referee correctly treated as non-binding evidence. The plan's non-claims (single trust principal residuals, Eye-credential compromise boundary, ceremony-window deletion, TOFU on first trust-root fetch) are recorded rather than hidden, which is the repository's honest-limits discipline. I find no remaining internal contradiction, no unsound design, no mutable-label-keyed enforcement, no closed-set violation, and nothing conditioned on explicitly deferred register items. Implementation-ready as-is; I stake the seat's signature on approval.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "8d18bf73-b856-458e-849d-2f0f671d37a7",
+    "source": "cli-seats/claude",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T09:15:14.935Z",
+    "tool": "cli-seats.askClaude"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "5240039e111f4a694ad167e1f648e62abdc5c4f9f6c360a49a40438e491b3170",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

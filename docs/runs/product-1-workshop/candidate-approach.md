@@ -715,7 +715,50 @@ per-file designs are in the approved plan; acceptance criteria here.
   DIGEST unset) refuses to operate (controller-untrusted); a substituted
   initial controller whose closure digest differs from the provisioned
   value refuses at startup; the bootstrap-merge record validates against
-  the merged head. **Accept (verifier
+  the merged head.
+  (6) FIRST-DEPLOYMENT PATH FOR THE PRE-E2 WINDOW (satisfiable by
+  construction — after E1 lands, the freshness and
+  plugin-self-containment slices MODIFY protected verdict-producer/
+  verifier surfaces BEFORE E2 installs the gate-side transition
+  verifier; without a defined path their transitions would either block
+  forever or bypass an enforcer):
+  - The genesis ceremony provisions `LAST_TRANSITION_SEQ` with INITIAL
+    VALUE 0 in the telos-authority-roots environment (same custody
+    class as every root), bound into the Eye's signed genesis record
+    together with the exact provisioned digests; unset/absent seq at
+    any later validation ⇒ fail closed `transition-seq-unset`.
+  - Each pre-E2 protected-surface slice (freshness; plugin
+    self-containment) is authorized by a ONE-TIME EYE-SIGNED
+    GENESIS-CLASS TRANSITION RECORD carrying the FULL tuple discipline:
+    old_* digests == the LIVE provisioned protected values at
+    validation time; new_* == the slice's exact staged bytes at its PR
+    head; transition_seq == LAST_TRANSITION_SEQ + 1; applied ⇒ the Eye
+    advances LAST_TRANSITION_SEQ (durable consumption).
+  - ENFORCEMENT IN THE WINDOW: the E1 CONTROLLER ALONE validates these
+    tuples (base-sourced controller code recomputes old_* from live
+    protected values and new_* from the PR head — the PROPOSED verifier
+    bytes never evaluate their own transition; the controller predates
+    every window slice). When E2 lands, its gate-side transition
+    verifier is ADDITIVE: E2's own acceptance RETROACTIVELY
+    re-validates the accumulated genesis-class chain (every consumed
+    record, in sequence, against the recorded values) — any
+    retro-validation mismatch fails E2's slice.
+  - EXACT VALUES per window slice are stated in the slice's transition
+    record (before: the genesis-provisioned digests; after: the slice's
+    staged digests) — no digest is pre-provisioned where the contract
+    requires the live old value, and no third manual bootstrap merge
+    exists (the two enumerated ceremonial merges remain the only ones).
+  **Accept (first-deployment)**: freshness-slice transition with old_*
+  == genesis-provisioned live values ⇒ controller validates and merges;
+  a record whose new_* were pre-provisioned into the variables before
+  validation ⇒ REFUSED (old_* must equal live pre-slice values); a
+  slice's proposed verifier attempting to validate its own transition ⇒
+  structurally impossible (controller-only enforcement in the window);
+  unset/stale/skipped/partially-advanced LAST_TRANSITION_SEQ ⇒ fail
+  closed (transition-seq-unset/-stale/-skipped/-partial); E2's
+  retro-validation over the accumulated chain green ⇒ E2 accepts, any
+  mismatch ⇒ E2's slice fails; a third pre-controller manual merge
+  attempt ⇒ refused (only the two enumerated ceremonial merges exist). **Accept (verifier
   integrity)**: adversarial regression — a fixture PR replaces gate.mjs
   with a constant-success stub; the base-sourced execution ignores the
   stub, evaluates truthfully, and additionally reports

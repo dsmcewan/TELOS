@@ -1,0 +1,26 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json"
+  ],
+  "proposal_ref": "sha256:523d0f4388dd0aad058f0cdb6771335d7e9a3224c9aed31d625e4d3cecf49048",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T09:13:31.193Z",
+  "rationale": "Approve as-is. The matured approach is implementation-ready on its stated terms: E1–E6 are fail-closed with adversarial regressions and content-addressed identities; the two-phase governance bootstrap (Phase A docs/registry under sitting v15, Phase B atomic activation) correctly discharges DISCOVERY-001 without touching AM-42 bytes; Phase-0/1a product contracts are frozen and honest about deferred register items. RATIFY carried-forward (i): SPIKE-E6-EVALUATOR-FORM — settling pure-ABI determinism now and deferring only the concrete declarative grammar/evaluator form to a hard pre-implementation merge gate is acceptable; the interim (oracle-evaluator-pending blocking new/changed normative oracles; adversarial review + determinized battery as compensating, non-proof controls) is fail-closed and does not leave a bypass. RATIFY carried-forward (ii): product-1-oq-e6-determinism-deferral and the other pre-review open questions for the Eye are dispositioned consistently with the Eye spikes-nonblocking directive and the advisory referee record. No remaining plan contradiction or unsound design; deferred multi-engine/npm/Phase-1b items are correctly out of scope for this authorization.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5-build",
+    "response_id": "805e6db0-8b21-45ea-94f1-43cdcdcfa77a",
+    "source": "cli-seats/grok",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T09:14:05.341Z",
+    "tool": "cli-seats.askGrok"
+  }
+}
