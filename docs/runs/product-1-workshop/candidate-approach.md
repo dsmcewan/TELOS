@@ -30,8 +30,13 @@ builtins (the COMPLETE listener-capable surface: node:net/http/https/http2/tls/
 dgram server constructors AND node:inspector — inspector.open(port,
 host) activates a network listener without referencing any socket
 builtin — AND node:cluster/worker_threads paths that proxy listening,
-AND any future builtin enumerated by a closed-list review whenever the
-pinned Node version changes) AND
+AND the registry is BOUND TO AN EXPLICIT TESTED VERSION RANGE — the
+capability list records the exact Node versions it was reviewed
+against, and doctor/qualification REFUSE `node-version-unreviewed` for
+any admitted-by-engines version ABOVE the reviewed ceiling until a
+closed-list review extends the registry — an unbounded >=22.12.0 range
+alone cannot trigger review, so the review trigger is the registry
+ceiling, not a 'pin change') AND
 any AMBIGUOUS/DYNAMIC acquisition path that could reach them —
 non-literal import()/require specifiers, process.getBuiltinModule,
 eval/Function construction, aliased or computed property access to module
@@ -71,7 +76,17 @@ the oracle-confinement argv shape — no --share-net; gh: only
 `attestation verify`/read-only api GETs — no extensions, no
 alias/exec), and an ISOLATED ENVIRONMENT (cleared env except an
 enumerated safe set, so config/alias injection cannot smuggle modes).
-Any invocation outside these grammars ⇒ FAIL closed. ADVERSARIAL fixtures the oracle must reject: an indirect
+Any invocation outside these grammars ⇒ FAIL closed. STARTUP CAPABILITIES ARE BOUNDED TOO (a static source grammar cannot
+see `NODE_OPTIONS=--inspect=0.0.0.0:9229 pylae …` or an explicit
+`node --inspect`, which opens a listener BEFORE any CLI code runs): the
+supported `pylae` launcher SANITIZES its execution environment before
+Node feature initialization — it re-execs with NODE_OPTIONS/NODE_REPL*
+and every inspector/debug flag stripped (or REFUSES
+`unsupported-launch-options` when inspector activation is detected) —
+and the contract states that only the sanitized launcher is the
+supported entrypoint; LAUNCH fixture: NODE_OPTIONS=--inspect ⇒ the
+launcher strips-or-refuses, no listener ever opens.
+ADVERSARIAL fixtures the oracle must reject: an indirect
 listener via getBuiltinModule; a computed require reaching node:net; a
 process.binding('tcp_wrap') TCP-listener construction ⇒ rejected
 (internal bindings categorically banned); a process.dlopen native-addon
@@ -1191,13 +1206,15 @@ per-file designs are in the approved plan; acceptance criteria here.
   returning an exit code without invoking the pure entrypoint; a module
   reaching ambient Node globals (Date/crypto/process/fs/net). The `evidence-dir` variant is REMOVED as an oracle
   kind (nonempty-dir is not a discriminating check): records whose claim is
-  backed by an evidence directory instead declare a `file` oracle pointing
-  at a shared deterministic validator
-  (`docs/institutional-memory/validate-evidence-dir.mjs <dir>`) that
-  recomputes every record's content address, validates schema/kind, and
-  exits nonzero on any mismatch or an empty dir — with the SAME
-  mutation-based negative case as every other file oracle (sandbox-copy the
-  dir, corrupt one record's bytes, identical re-run must exit nonzero). Wired as a step
+  backed by an evidence directory instead declare the EVALUATOR-NATIVE
+  `evidence-dir` DECLARATIVE PREDICATE — part of the trusted evaluator's
+  built-in predicate library (never a record-authored executable; a
+  shared `.mjs` validator would reopen the imperative verdict path the
+  single-evaluator ABI closes): the predicate recomputes every record's
+  content address, validates schema/kind, and fails on any mismatch or
+  an empty dir — with the SAME mutation-based negative case as every
+  other declaration (sandbox-copy the dir, corrupt one record's bytes,
+  identical evaluation must fail). Wired as a step
   in the institutional-memory CI job. **Accept**: a synthetic NORMATIVE
   record whose oracle file exits 1 ⇒ run-oracles FAIL; a constant-success
   oracle (exit 0 unchanged AND exit 0 on the mutated sandbox) ⇒ FAIL
@@ -1533,7 +1550,12 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   prose claim attempting that disposition fails; the sweep is clean at
   slice end.
 - **`cli/` package** (`pylae` bin, private): init (reads env-surface.json as
-  data) / doctor (node>=22.12, git full-history, bwrap, env presence, Ed25519) /
+  data) / doctor (node within the REVIEWED capability-registry range, git
+  full-history + resolved identity, bwrap, `gh` presence/version/
+  resolved path — required for mandatory attestation verification —
+  and `sha256sum`, env presence, Ed25519; a missing/unusable required
+  tool ⇒ fail-closed diagnostic naming the mandatory workflow it
+  breaks — doctor never reports usable when verify --full cannot run) /
   version (product-version.json + head) / verify (spawns verify-contracts +
   self-weave --verify-committed + fail-closed demo, fail-closed aggregate);
   static no-network-listener oracle over the CLI's complete executable
@@ -1602,8 +1624,14 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   Ed25519 acceptance is unverifiable without EYE_AUTHORITY_PUBKEY, and
   a pubkey read from the tarball or bundle would let the tree writer
   self-authorize): `--trust-root <manifest>` takes a TRUST-ROOT
-  MANIFEST `{eye_authority_pubkey, authority_chain_root, custody
-  statement, manifest_version}` obtained OUT-OF-BAND — canonically the
+  MANIFEST `{eye_authority_pubkey, authority_chain_root,
+  attestation_identity: {repository: <owner/repo>, workflow:
+  "release.yml@refs/heads/main", issuer: <OIDC issuer>}, custody
+  statement, manifest_version}` — the attestation-identity fields are
+  TYPED and the pre-execution pinning rule validates `gh attestation
+  verify` output against EXACTLY them (a valid attestation from another
+  repository or workflow ⇒ refused `attestation-identity-mismatch`;
+  manifest missing the identity fields ⇒ trust-root-invalid) obtained OUT-OF-BAND — canonically the
   repository's published trust page (served from the owner's GitHub
   origin, independent of any release artifact) or directly from the
   Eye — with the trust model stated honestly: first-fetch trust rests
