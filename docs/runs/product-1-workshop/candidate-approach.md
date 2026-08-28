@@ -31,11 +31,32 @@ any AMBIGUOUS/DYNAMIC acquisition path that could reach them —
 non-literal import()/require specifiers, process.getBuiltinModule,
 eval/Function construction, aliased or computed property access to module
 namespaces — and constrains every spawned executable to a closed
-allowlist of repo-tracked scripts, each recursively subject to the same
-grammar. ADVERSARIAL fixtures the oracle must reject: an indirect
+allowlist: (a) repo-tracked scripts, each recursively subject to the
+same grammar, and (b) a CAPABILITY-SCOPED EXTERNAL-TOOL EXCEPTION set
+for the three system binaries the CLI's contracts REQUIRE — `git`
+(cat-file/history/bundle ops), `bwrap` (mandatory oracle confinement),
+`gh` (attestation verification) — which cannot themselves satisfy a
+source grammar, so each is bound instead by: IDENTITY (invoked by
+absolute resolved path with version pinned or binary digest recorded —
+a $PATH wrapper substitution ⇒ refuse `tool-identity-mismatch`), a
+CLOSED SUBCOMMAND/ARGUMENT GRAMMAR excluding every listener-capable or
+arbitrary-execution mode (git: only cat-file/rev-parse/log/ls-tree/
+bundle/verify-* forms with `-c` config injection and alias expansion
+disabled via `GIT_CONFIG_*` isolation — no daemon/serve; bwrap: only
+the oracle-confinement argv shape — no --share-net; gh: only
+`attestation verify`/read-only api GETs — no extensions, no
+alias/exec), and an ISOLATED ENVIRONMENT (cleared env except an
+enumerated safe set, so config/alias injection cannot smuggle modes).
+Any invocation outside these grammars ⇒ FAIL closed. ADVERSARIAL fixtures the oracle must reject: an indirect
 listener via getBuiltinModule; a computed require reaching node:net; a
 spawned allowlisted helper that itself opens a listener; a helper outside
-cli/ opening a listener).
+cli/ opening a listener; git invoked in daemon/serve mode or with -c
+config injection ⇒ refused; a $PATH-substituted git/gh wrapper ⇒
+tool-identity-mismatch; bwrap with --share-net ⇒ refused; gh with an
+extension/alias/exec form ⇒ refused; while the REQUIRED invocations —
+git cat-file/bundle, bwrap oracle confinement, gh attestation verify —
+all PASS the scoped grammars (pylae doctor and verify --full remain
+satisfiable)).
 The flagship is the future
 production operator console (labeled demonstration/evidence-viewer this round).
 Phase 1b (durable crash-consistent state, authenticated-principal authority
