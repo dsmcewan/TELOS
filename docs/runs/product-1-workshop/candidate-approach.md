@@ -357,19 +357,36 @@ Merkle-tree measured digest the kernel re-checks on EVERY read, and the
 file becomes immutable once verity is enabled) bound to the pinned
 digest, over a store the ceremony owns with NO other writable alias to
 the backing inodes. Because `fs-verity` is supported ONLY on
-ext4/f2fs/btrfs (NOT tmpfs — enabling it there fails EOPNOTSUPP, and
-missing verity is fatal here), the staging store is a FROZEN,
-PD-QUALIFIED VERITY-CAPABLE FILESYSTEM: a ceremony-owned PRIVATE
-LOOPBACK `ext4` (or f2fs/btrfs) IMAGE the ceremony creates, `mkfs`es,
-mounts read-write to populate + `fsverity enable` each member, then
-remounts READ-ONLY — no other writable alias, backing image
-ceremony-private. (A platform lacking a verity-capable fs ⇒ doctor
-refuses `verity-fs-unavailable`, routes to review, never a silent
-non-immutable fallback.) CLEAN-ROOM TOPOLOGY regression: the exact
-topology — a private loopback ext4 image with verity on every staged
-closure member — is built end-to-end and a staged library/loader/helper
-is proven verity-immutable-and-readable, so doctor/verify --full OPERATE
-(not refuse). Any closure member whose verity digest ≠
+ext4/f2fs/btrfs (NOT tmpfs), AND because a "local single-user CLI"
+cannot assume the `CAP_SYS_ADMIN` + loop-device access an
+always-create-a-loopback-image approach would need (unprivileged
+`mkfs`/mount/`LOOP_SET_FD` are NOT generally available), the staging
+store PREFERS THE OPERATOR'S EXISTING FILESYSTEM: `pylae doctor` PROBES
+whether the store directory's OWN backing filesystem (the operator's
+`$XDG_DATA_HOME`-class data dir — commonly ALREADY ext4/btrfs on most
+Linux installs) supports `fs-verity`, via a throwaway probe file and
+`FS_IOC_ENABLE_VERITY` — REQUIRING NO PRIVILEGE, NO MOUNT, NO LOOP
+DEVICE, since it uses the filesystem that is already there. If the probe
+SUCCEEDS, the store is a plain directory on that filesystem (no loop
+image, no mount ceremony) — the COMMON CASE for most operators. If the
+probe FAILS (an unsupported fs — e.g. tmpfs-backed home, overlayfs, a
+network fs), `pylae doctor` REFUSES `verity-fs-unavailable` and
+instructs the operator to relocate `PYLAE_HOME` to a verity-capable
+filesystem — NEVER a silent non-immutable fallback, and NEVER an implicit
+privilege escalation attempt. (A DOCUMENTED, EXPLICITLY OPT-IN, clearly
+privileged one-time provisioning path — `pylae doctor --provision-
+verity-store`, requiring the operator to invoke it with elevated
+privilege themselves — MAY additionally construct a private loopback
+image on a system that lacks a verity-capable default fs; this is
+OPTIONAL and never required for basic unprivileged operation.)
+VERITY-PROBE regression: (a) on a verity-capable data-dir filesystem,
+the probe succeeds, no privilege is requested, and a staged
+library/loader/helper is proven verity-immutable-and-readable, so
+doctor/verify --full OPERATE unprivileged; (b) on a non-verity-capable
+filesystem, the probe fails and doctor refuses `verity-fs-unavailable`
+before staging any closure member — never a silent non-immutable
+fallback and never a privileged operation attempted without explicit
+operator opt-in. Any closure member whose verity digest ≠
 its pin, or that lacks verity ⇒ fail-closed `tool-closure-unauthenticated`
 BEFORE the tool runs, and any at-read modification is kernel-detected.
 OVERWRITE-AFTER-VERIFICATION regression: after verification, a concurrent
@@ -401,7 +418,44 @@ on.) (d) IO_URING LISTENER —
 a descendant submits `IORING_OP_BIND`+`IORING_OP_LISTEN` (or
 `IORING_OP_SOCKET`) via a ring ⇒ ring setup/enter is denied by the
 inherited filter (EPERM), no listener opens, proven INSIDE the
-descendant/private namespace. So the SINGLE ENFORCEABLE BOOT SEQUENCE is: LAUNCHER → SEALED
+descendant/private namespace.
+
+THE PRE-`_start` WINDOW AND THE THREAT MODEL'S BOUNDARY (a hostile
+LOCAL PARENT process — one that itself calls `ptrace(PTRACE_TRACEME)`
+before `execve`ing the launcher, or `PTRACE_SEIZE`s its own about-to-be
+child — can catch the post-exec trap and inject syscalls BEFORE
+`_start`'s first instruction runs, so static linking, a custom
+entrypoint, and pre-main byte inspection do NOT constrain a
+tracer-controlled execution; this is architecturally DIFFERENT from the
+SIGUSR1 case below, not one more corner of it). PD-001's no-listener
+property is EXPLICITLY SCOPED to CONFINE THE PYLAE PROCESS TREE'S OWN
+EXECUTED BYTES (a supply-chain-compromised dependency, a substituted
+spawned tool, or accidentally-listener-capable code running AS pylae) —
+it is NOT, and cannot structurally be, a defense against a LOCAL
+ATTACKER WHO ALREADY CONTROLS THE PROCESS THAT LAUNCHES pylae: such an
+attacker needs no ptrace injection at all — they can simply open a
+listener directly, as their own process, without touching pylae's
+launcher; ptrace-injecting into pylae's boot is a strictly HARDER path
+to something strictly EASIER to do directly. This boundary is recorded
+as an EXPLICIT, NARROWED THREAT-MODEL STATEMENT (not a silently
+overstated claim): "PD-001 confines pylae's own process tree; it assumes
+the LAUNCHING process/environment is not itself already
+adversary-controlled with ptrace capability over pylae's exec." AS
+DEFENSE-IN-DEPTH regardless of that scoping, the launcher's `_start`'s
+FIRST instructions (before seccomp install) additionally: (a) call
+`prctl(PR_SET_DUMPABLE, 0)` (blocks non-ancestor ptrace attach
+post-exec — reduces, though does not eliminate, casual same-user
+attach); (b) `pylae doctor` READS the Yama LSM `ptrace_scope` sysctl and
+WARNS `reduced-assurance-ptrace-scope` (never silently) when it is
+permissive (`0`), so an operator on a lax-ptrace-scope system is told
+their assurance is reduced, rather than the plan overclaiming a
+guarantee it cannot deliver there. TRACED-LAUNCH regression: the
+launcher is exec'd under a `PTRACE_TRACEME`-attached tracer ⇒ documented
+as OUT OF THE THREAT MODEL'S SCOPE (the regression asserts the doctor
+warning fires when `ptrace_scope=0`, not that the launcher defeats an
+already-tracing parent, which is acknowledged as impossible).
+
+So the SINGLE ENFORCEABLE BOOT SEQUENCE is: LAUNCHER → SEALED
 AUTHENTICATED STATIC SANDBOX-BUILDER → AUTHENTICATED ROOT → NODE-INSIDE-
 ROOT (the launcher does NOT fexecve dynamic Node directly — that would
 load Node's mutable `PT_INTERP`/`DT_NEEDED` host closure before any
@@ -2101,11 +2155,24 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   digests, and the operator's `gh attestation verify` to check the
   attestation against the out-of-band trust-root manifest's pinned
   identity. Only AFTER this out-of-artifact check produces a recorded
-  receipt may the archive's own pylae run; from that point pylae's
-  in-process node:crypto hashing is used for pylae's OWN subsequent
-  operations (post-trust), NOT for this bootstrap. `pylae doctor`
-  REFUSES (not merely warns) `unverified-install` when it cannot find
-  the operator's recorded out-of-artifact pre-verification receipt.
+  receipt may the archive's own pylae run — and THE TRANSITION IS ITSELF
+  MUTATION-POINT-BOUND, not a receipt-then-separate-exec (a receipt alone
+  leaves a TOCTOU: the launcher binary on disk could be swapped between
+  receipt-write and its eventual exec, ignore the receipt, omit seccomp,
+  and fabricate every later check): `pylae-verify-bootstrap`, HAVING JUST
+  COMPUTED the launcher's digest as part of the archive verification,
+  ITSELF seals that verified launcher into a memfd (memfd_create +
+  write + `F_SEAL_*`, the same primitive used throughout) and `fexecve`s
+  DIRECTLY INTO IT — the process transitions straight from
+  verified-in-memory bytes to running code, never re-reading the
+  launcher from its path after the check. `pylae doctor` REFUSES (not
+  merely warns) `unverified-install` when it cannot find the operator's
+  recorded out-of-artifact pre-verification receipt. LAUNCHER-SWAP
+  regression: the launcher binary on disk is replaced AFTER the receipt
+  is written but BEFORE the (path-based) exec would occur ⇒ the
+  bootstrap's sealed-memfd fexecve runs the bytes it verified, not the
+  swapped-in file; a path-based re-exec of the (now-substituted) on-disk
+  launcher is refused/never reached.
   BOOTSTRAP regression: digest + attestation-identity + trust-root
   checks are proven to COMPLETE (receipt written) BEFORE any archive
   byte is extracted or any archive code executes; a tampered tarball is
