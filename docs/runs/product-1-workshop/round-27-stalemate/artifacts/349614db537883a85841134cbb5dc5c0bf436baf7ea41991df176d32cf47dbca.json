@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "plan",
+        "claim": "E2 and the release gate rely on GitHub Actions repository/environment variables as Eye-only external trust roots, but the candidate supplies no enforceable custody mechanism and incorrectly asserts repository variables are admin-writable only. GitHub permits users with repository write access (or collaborators on personal repositories) to modify repository variables. Such a writer could replace EYE_AUTHORITY_PUBKEY, CURRENT_AUTHORITY_CHAIN_ROOT, every trusted closure/workflow digest, and RELEASE_SIGNER_FINGERPRINT together, making a rewritten authority chain and release signer self-validating. The plan must place these roots in a genuinely Eye-exclusive external authority store, or constrain and deterministically verify mutation authority so no other principal can update them; branch protection does not protect Actions-variable settings."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a045ac-5176-72d0-8d61-ebd60e05401f",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a045ac-5176-72d0-8d61-ebd60e05401f",
+    "source": "cli-seats/codex_ask"
+  }
+}

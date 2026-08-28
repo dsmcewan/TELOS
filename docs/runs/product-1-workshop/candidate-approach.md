@@ -285,9 +285,27 @@ per-file designs are in the approved plan; acceptance criteria here.
   closure digest, and per-file blob digests and REFUSE
   (`transition-payload-mismatch`) if any recomputed value differs from
   the signed record. Verified against the
-  Eye's public key held in a PROTECTED repo variable
-  (`EYE_AUTHORITY_PUBKEY`, admin-writable only, same custody class as
-  RELEASE_SIGNER_FINGERPRINT); `council_review[]` (the seats' HMAC
+  Eye's public key held in a PROTECTED VARIABLE (`EYE_AUTHORITY_PUBKEY`,
+  same custody class as RELEASE_SIGNER_FINGERPRINT).
+  CUSTODY DEFINITION — binding for EVERY "protected variable" in this
+  plan (repository-level Actions variables are writable by ANY
+  write-access collaborator, so they cannot carry Eye-only custody by
+  themselves; claiming admin-only there would be false): all protected
+  variables live in a dedicated GitHub ENVIRONMENT (`telos-authority`)
+  — environment configuration and its variables are manageable ONLY by
+  repository ADMINS, and the environment's deployment branch policy
+  restricts it to protected main; workflow jobs read the roots only by
+  targeting `environment: telos-authority`. Custody is then made
+  DETERMINISTICALLY VERIFIABLE: (a) on this personal repository the
+  admin set is exactly the Eye (the owner), and a CUSTODY-DRIFT oracle
+  in the authority workflows queries the collaborator/permission list
+  and FAILS `custody-drift` if any principal beyond the recorded
+  custody set holds admin (or if the environment's protection is
+  removed); (b) the recorded custody set lives in the governance
+  appendix and changes only by an Eye-signed transition; (c) a
+  same-custody-class store outside GitHub (the Eye's local ceremony
+  records signed under the Eye key) provides the recovery root if the
+  platform store is ever suspect. `council_review[]` (the seats' HMAC
   packets) is REVIEW EVIDENCE the gate records but which can never grant.
   THE TRUSTED ROOT IS ITSELF OUT-OF-TREE at every context, including
   main-push and release: a protected variable
@@ -298,7 +316,9 @@ per-file designs are in the approved plan; acceptance criteria here.
   required-check override yields a tree whose chain root DIFFERS from the
   protected variable and every subsequent gate run (main-push, release,
   local) DENIES `chain-root-untrusted`; the modified commit can never
-  self-validate because the variable only moves by admin (Eye) action.
+  self-validate because the variable only moves by admin action under the
+  telos-authority environment custody (the Eye, per the custody-drift
+  oracle).
   The gate, still anchored at the protected base,
   verifies: old_chain_root equals the protected variable's current value
   AND matches what the base anchor actually yields, new_chain_root matches
@@ -954,9 +974,10 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   (1) GATE: tag object must be ANNOTATED and its SIGNATURE VERIFIED in CI
   against an OUT-OF-TREE trust root (an in-tree public key is circular — a
   rewritten commit can carry the attacker's key plus a matching tag): the
-  EXPECTED SIGNER FINGERPRINT lives in a protected GitHub Actions
-  repository/environment VARIABLE (`RELEASE_SIGNER_FINGERPRINT`, writable
-  only by repo admins through Settings — not by any PR or push), documented
+  EXPECTED SIGNER FINGERPRINT lives in a protected variable
+  (`RELEASE_SIGNER_FINGERPRINT`, telos-authority ENVIRONMENT custody per
+  the plan-wide custody definition — admin-only, custody-drift-checked;
+  repository-level variables would be write-collaborator-mutable), documented
   in RELEASING.md with the rotation ceremony (rotation = an admin Settings
   change + a signed changelog entry, never a tree edit). The gate job builds
   an ISOLATED verifier keyring (empty GNUPGHOME) containing only key

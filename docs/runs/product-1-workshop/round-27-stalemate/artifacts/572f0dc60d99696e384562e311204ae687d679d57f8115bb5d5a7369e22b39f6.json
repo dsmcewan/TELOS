@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:f1e2eb0426a161a53afdb2dab8545baf0aa3ca6aeec1f61fc2a96e6f41ebcaa6",
+  "output_plan_artifact_hash": "sha256:f1e2eb0426a161a53afdb2dab8545baf0aa3ca6aeec1f61fc2a96e6f41ebcaa6",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:04aaaa9e32b26a998e1a6eb37502b9dfe729c2d3d948ba78d055ee3ea6e6c5b1",
+    "provenance_key": "anthropic:d493a7ac-03e9-4c60-bf4e-304d31f2636c"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:349614db537883a85841134cbb5dc5c0bf436baf7ea41991df176d32cf47dbca",
+    "provenance_key": "openai:01a045ac-5176-72d0-8d61-ebd60e05401f",
+    "bound_hash": "sha256:f1e2eb0426a161a53afdb2dab8545baf0aa3ca6aeec1f61fc2a96e6f41ebcaa6"
+  },
+  "objections": [
+    {
+      "scope": "plan",
+      "claim": "E2 and the release gate rely on GitHub Actions repository/environment variables as Eye-only external trust roots, but the candidate supplies no enforceable custody mechanism and incorrectly asserts repository variables are admin-writable only. GitHub permits users with repository write access (or collaborators on personal repositories) to modify repository variables. Such a writer could replace EYE_AUTHORITY_PUBKEY, CURRENT_AUTHORITY_CHAIN_ROOT, every trusted closure/workflow digest, and RELEASE_SIGNER_FINGERPRINT together, making a rewritten authority chain and release signer self-validating. The plan must place these roots in a genuinely Eye-exclusive external authority store, or constrain and deterministically verify mutation authority so no other principal can update them; branch protection does not protect Actions-variable settings.",
+      "objection_hash": "sha256:8b5a02a662980fce581a4dfe2e238506f06a54fa7d60fff2671beae4b1d78f24",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
