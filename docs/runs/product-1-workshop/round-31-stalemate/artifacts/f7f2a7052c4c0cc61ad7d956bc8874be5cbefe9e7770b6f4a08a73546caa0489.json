@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "release-pipeline",
+        "claim": "The Eye-local atomic tag-and-draft ceremony is internally unsatisfiable. The approach requires an annotated, signature-verified release tag, but its single operation is `gh release create vX --draft --target <accepted-commit>` while the tag is absent. The GitHub CLI contract states that an annotated tag must first be created locally and pushed; `gh release create` has no option to create or sign an annotated tag. The proposed one-call path therefore creates an ordinary tag reference that the release gate rejects as lightweight. Creating and pushing the signed annotated tag first restores the pre-draft interval this mechanism claims to eliminate. Consequently the clean release path cannot satisfy its own acceptance criteria. Candidate artifact ref sha256:c487ae840d0e1a02ed08ef28c45573d26cb763315bd7897ba2634451b2755337."
+      },
+      {
+        "scope": "release-authorization",
+        "claim": "Eye-local publication and release-slot occupancy do not protect the existing draft from a substituted off-main workflow. A write collaborator can dispatch an off-main workflow definition that omits `environment: telos-authority` and requests `contents: write`; GitHub applies environment protections only to jobs that reference that environment, while `contents: write` permits release operations. That token can upload or replace assets, edit or publish the existing draft, or delete it. The v* tag ruleset protects the Git ref, not mutations of the release object, and one-release-per-tag blocks only creation of a second release. The custody-drift mechanism also specifies failure for additional admins, not for the rogue write collaborator explicitly admitted by the threat model. Thus an untrusted workflow can still make unverified assets public before the local allowlist ceremony, violating fail-closed draft-first publication. Candidate artifact ref sha256:c487ae840d0e1a02ed08ef28c45573d26cb763315bd7897ba2634451b2755337."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a045c1-c864-7ce1-bc65-31715e9df6fc",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a045c1-c864-7ce1-bc65-31715e9df6fc",
+    "source": "cli-seats/codex_ask"
+  }
+}

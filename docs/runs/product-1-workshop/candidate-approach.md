@@ -303,7 +303,7 @@ per-file designs are in the approved plan; acceptance criteria here.
   (`transition-payload-mismatch`) if any recomputed value differs from
   the signed record. Verified against the
   Eye's public key held in a PROTECTED VARIABLE (`EYE_AUTHORITY_PUBKEY`,
-  same custody class as RELEASE_SIGNER_FINGERPRINT).
+  the release-authority custody class).
   CUSTODY DEFINITION — binding for EVERY "protected variable" in this
   plan (repository-level Actions variables are writable by ANY
   write-access collaborator, so they cannot carry Eye-only custody by
@@ -317,8 +317,11 @@ per-file designs are in the approved plan; acceptance criteria here.
   admin set is exactly the Eye (the owner), and a CUSTODY-DRIFT oracle
   in the authority workflows queries the collaborator/permission list
   and FAILS `custody-drift` if any principal beyond the recorded
-  custody set holds admin (or if the environment's protection is
-  removed); (b) the recorded custody set lives in the governance
+  custody set holds WRITE OR ADMIN (write alone reaches repository
+  variables, workflow dispatch, and the releases API — the invariant is
+  a closed WRITER set, not admin-only), or if the environment
+  protection is removed; the Eye-local release ceremony runs the same
+  check first and REFUSES to proceed while custody drift exists; (b) the recorded custody set lives in the governance
   appendix and changes only by an Eye-signed transition; (c) a
   same-custody-class store outside GitHub (the Eye's local ceremony
   records signed under the Eye key) provides the recovery root if the
@@ -1021,28 +1024,36 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   (d) DRIFT IS SWEPT: a release-integrity oracle on main enumerates all
   releases and fails on any release not bound to an Eye-accepted tag +
   main-identity attestation.
-  (e) RELEASE MUTATION IS EYE-LOCAL AND ATOMIC — no workflow publishes,
-  and no tag ever exists without its slot occupied (a rogue-first path
-  that publishes anything, however briefly, breaks draft-first
-  fail-closed; the fix is that publication authority lives OUTSIDE
-  Actions entirely): the Eye's LOCAL ceremony runs `gh release create
-  vX --draft --target <accepted-commit>` under the Eye's OWN credential
-  — this single call CREATES THE TAG AND THE DRAFT ATOMICALLY, so there
-  is no pre-draft tag window at all; a rogue workflow can neither
-  create the tag (v* ruleset) nor the release (slot occupied from
-  birth). The trusted main-dispatch workflow only VERIFIES and ATTESTS
-  the draft (gate/build/verify — its jobs need no `contents: write` for
-  releases); the final PUBLISH flip is the Eye's local act after the
-  checks are green. NO Actions workflow performs any release mutation.
-  RESIDUAL, STATED HONESTLY: `workflow_dispatch` requires WRITE access —
-  an unprivileged attacker cannot dispatch any definition; the
-  substituted-definition threat is a rogue write-collaborator, whose
-  self-granted GITHUB_TOKEN could still call the releases API — but
-  every v* slot is occupied at tag birth, non-v* releases are swept by
-  the release-integrity oracle, and the custody-drift oracle fails the
-  pipeline the moment the collaborator set grows beyond the recorded
-  custody set. Default GITHUB_TOKEN permissions are set read-only (a
-  default, not a ceiling — the plan does not claim otherwise).
+  (e) RELEASE MUTATION IS EYE-LOCAL, THE TAG IS BORN AT PUBLISH, AND
+  THE WRITER SET IS CLOSED — no workflow publishes, and no v* tag ever
+  exists unpublished (the previous atomic-create design was
+  unimplementable: `gh release create` cannot mint a signed annotated
+  tag, and tag-first ordering reopens the pre-draft window; the
+  mechanism is therefore restructured): (i) the Eye's LOCAL ceremony
+  creates the DRAFT naming tag vX + target <accepted-commit> while NO
+  tag ref exists — a draft stores the name+target without creating the
+  ref, and a rogue cannot PUBLISH any v* release because publication
+  must create the v* ref, which the tag ruleset denies to every
+  non-Eye principal; (ii) the Eye's identity binding is the Ed25519
+  RELEASE-ACCEPTANCE (over release_commit ‖ plan_ref, verified against
+  EYE_AUTHORITY_PUBKEY), carried in the release BODY — this SUPERSEDES
+  the annotated-signed-tag requirement (recorded explicitly: git
+  tag-signing cannot compose with draft-first atomicity on this
+  platform; Ed25519-against-protected-key is the stronger and
+  verifiable-everywhere binding); the tag ref is created BY the publish
+  flip at the accepted target and immediately frozen by the ruleset
+  (no update/delete) + release immutability; (iii) the WRITER SET IS
+  CLOSED BY THE CUSTODY INVARIANT: the custody-drift oracle fails on
+  ANY collaborator (write OR admin) beyond the recorded custody set —
+  the Eye alone — and the local ceremony REFUSES TO RUN
+  (`custody-drift`) while any non-custodial writer exists, so the
+  rogue-write-collaborator premise is excluded, not raced; (iv) the
+  publish flip re-verifies the asset set + digests IMMEDIATELY before
+  publishing, and POST-PUBLISH re-verification asserts
+  allowlist+digests+attestations against the now-immutable release.
+  NO Actions workflow performs any release mutation, and default
+  GITHUB_TOKEN permissions are read-only (a default, not a ceiling —
+  the plan does not claim otherwise).
   **Accept (workflow trust)**: off-main-tag regression — a tag whose
   target commit carries a modified release.yml is pushed ⇒ NOTHING
   triggers (no push trigger exists); SUBSTITUTED-DEFINITION regression —
@@ -1060,48 +1071,34 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   a release create/publish/edit operation; dispatching main's
   definition with a hostile tag name as input ⇒ the gate evaluates it
   as data and aborts.
-  (1) GATE: tag object must be ANNOTATED and its SIGNATURE VERIFIED in CI
-  against an OUT-OF-TREE trust root (an in-tree public key is circular — a
-  rewritten commit can carry the attacker's key plus a matching tag): the
-  EXPECTED SIGNER FINGERPRINT lives in a protected variable
-  (`RELEASE_SIGNER_FINGERPRINT`, telos-authority ENVIRONMENT custody per
-  the plan-wide custody definition — admin-only, custody-drift-checked;
-  repository-level variables would be write-collaborator-mutable), documented
-  in RELEASING.md with the rotation ceremony (rotation = an admin Settings
-  change + a signed changelog entry, never a tree edit). The gate job builds
-  an ISOLATED verifier keyring (empty GNUPGHOME) containing only key
-  material whose computed fingerprint EQUALS the protected variable — the
-  in-tree `docs/institutional-memory/product/KEYS/release-signing.pub` is
-  convenience distribution, imported ONLY if its fingerprint matches, else
-  abort `key-fingerprint-mismatch`; then runs `git verify-tag` against that
-  keyring (unknown/unsigned/unverifiable/wrong-key ⇒ abort); variable unset
-  ⇒ abort fail-closed. THE TAG TARGET MUST BE THE EXACT ACCEPTED COMMIT,
-  not merely a well-attested one (a correctly signed tag on some other
-  SHA would otherwise pass every property check — signature, readiness,
-  CI — without being the commit the Eye accepted). The acceptance is
-  NON-SELF-REFERENTIAL and externally anchored: it is carried IN THE
-  ANNOTATED TAG MESSAGE, not in the tree (an in-tree record cannot name
-  the very commit its own addition creates, and fetching it from
-  mutable main would key authority on a mutable ref): the tag message
-  embeds a RELEASE-ACCEPTANCE block `{release_commit, plan_ref,
-  eye_acceptance: Ed25519 over (release_commit ‖ plan_ref)}`; the tag
-  signature (already verified against the protected fingerprint) binds
-  the message to the tag object, and the gate ADDITIONALLY verifies
-  `eye_acceptance` against the protected EYE_AUTHORITY_PUBKEY and
-  requires (a) the block's release_commit == the tag's actual target
-  EXACTLY, (b) plan_ref == the pivoted active_plan under the trusted
-  authority chain, and (c) the target is an ancestor of protected main —
-  any mismatch ⇒ abort `tag-not-accepted-commit`. SUBSTITUTION test:
-  re-tagging a different SHA with the same message ⇒ the embedded
-  release_commit no longer equals the target ⇒ abort; forging a new
+  (1) GATE — identity by Ed25519 ACCEPTANCE, tag frozen by ruleset (the
+  earlier annotated-signed-tag mechanism is SUPERSEDED, recorded
+  explicitly: git tag-signing cannot compose with draft-first atomicity
+  on this platform — see (e); RELEASE_SIGNER_FINGERPRINT and the GPG
+  keyring drop out of the design, their custody class inherited by
+  EYE_AUTHORITY_PUBKEY): THE RELEASE TARGET MUST BE THE EXACT ACCEPTED
+  COMMIT, and the acceptance is NON-SELF-REFERENTIAL and externally
+  anchored — the RELEASE BODY embeds a RELEASE-ACCEPTANCE block
+  `{release_commit, plan_ref, eye_acceptance: Ed25519 over
+  (release_commit ‖ plan_ref)}`, verified against the protected
+  EYE_AUTHORITY_PUBKEY (telos-authority environment custody; not in the
+  tree — an in-tree record cannot name the very commit its own addition
+  creates, and mutable main cannot key authority). The gate requires
+  (a) the block's release_commit == the draft's target (and, once
+  published, the tag ref's actual target) EXACTLY, (b) plan_ref == the
+  pivoted active_plan under the trusted authority chain, (c) the target
+  is an ancestor of protected main, and (d) the v* tag ruleset is in
+  force (creation Eye-only, no update/delete) with release immutability
+  enabled — any mismatch ⇒ abort `tag-not-accepted-commit`; pubkey
+  unset ⇒ abort fail-closed. SUBSTITUTION tests: a release body reused
+  for a different target ⇒ release_commit ≠ target ⇒ abort; a forged
   block without the Eye's key ⇒ eye_acceptance invalid ⇒ abort.
   Required-CI check-run asserted at the tag SHA with
   the SAME producer binding (authenticated Actions app + trusted workflow
   digest + exact run id — never name-only; untrusted same-name collision
   fixture must fail the gate); local
-  verify battery incl. authoritative `--verify-committed` (content-addressed input-closure binding by default). **Accept**: a tag
-  signed by a key whose fingerprint differs from the protected variable ⇒
-  gate aborts even when the tree's committed .pub matches the tag's signer.
+  verify battery incl. authoritative `--verify-committed`
+  (content-addressed input-closure binding by default).
   (2) BUILD, reproducibility covering THE ARTIFACT OPERATORS INSTALL (the
   final source tarball is `git archive` + injected generated files, so
   "deterministic by construction" no longer holds and must be re-established
@@ -1133,15 +1130,17 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   nothing unverified is ever public. **Accept**: planted extra asset ⇒
   draft deleted, release never published; all-green ⇒ publish flip is
   the last logged step of the local ceremony.
-  RELEASING.md ceremony (local signed annotated tag with the committed public
-  key's private counterpart; immutability Setting prerequisite; correction
-  process — first application: v0.2.0 4,558→4,559). **Accept**: lightweight tag
-  ⇒ gate aborts; tampered tag signature ⇒ aborts; TRUSTED-SIGNER/
-  NONACCEPTED-SHA fixture — a correctly signed tag whose target is a
-  commit with green CI but NO Eye-signed release-acceptance record ⇒
-  gate aborts tag-not-accepted-commit (signature validity is not
-  acceptance); planted extra asset ⇒
-  publish check fails; every published artifact passes `gh attestation verify`.
+  RELEASING.md ceremony (Eye-local: custody check → draft with
+  Ed25519-signed acceptance body → dispatch trusted verification →
+  asset upload → allowlist+attestation checks → publish flip; tag
+  ruleset + release-immutability Setting prerequisites; correction
+  process — first application: v0.2.0 4,558→4,559). **Accept**: a
+  release with no valid Eye acceptance block ⇒ gate aborts;
+  NONACCEPTED-SHA fixture — a draft targeting a commit with green CI
+  but NO Eye-signed release-acceptance ⇒ gate aborts
+  tag-not-accepted-commit (CI validity is not acceptance); planted
+  extra asset ⇒ publish check fails; every published artifact passes
+  `gh attestation verify` (identity pinned).
 - **Pages provenance**, tightly bound: ci.yml uploads artifact
   `demo-${{ github.sha }}` only on main pushes after required-ci; pages.yml
   converts to `workflow_run` and the deploy job REQUIRES ALL OF:

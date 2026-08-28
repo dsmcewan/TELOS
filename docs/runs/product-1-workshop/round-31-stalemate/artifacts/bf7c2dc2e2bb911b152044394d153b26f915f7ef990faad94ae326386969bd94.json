@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:c487ae840d0e1a02ed08ef28c45573d26cb763315bd7897ba2634451b2755337",
+  "output_plan_artifact_hash": "sha256:c487ae840d0e1a02ed08ef28c45573d26cb763315bd7897ba2634451b2755337",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:b83018e3f3ff27dc1b990fb1c551d963fa365aa6ed8c70cc9e30931c672a56b9",
+    "provenance_key": "anthropic:2ee32b17-a932-40e7-828d-b1dfca83c9e3"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:f7f2a7052c4c0cc61ad7d956bc8874be5cbefe9e7770b6f4a08a73546caa0489",
+    "provenance_key": "openai:01a045c1-c864-7ce1-bc65-31715e9df6fc",
+    "bound_hash": "sha256:c487ae840d0e1a02ed08ef28c45573d26cb763315bd7897ba2634451b2755337"
+  },
+  "objections": [
+    {
+      "scope": "release-pipeline",
+      "claim": "The Eye-local atomic tag-and-draft ceremony is internally unsatisfiable. The approach requires an annotated, signature-verified release tag, but its single operation is `gh release create vX --draft --target <accepted-commit>` while the tag is absent. The GitHub CLI contract states that an annotated tag must first be created locally and pushed; `gh release create` has no option to create or sign an annotated tag. The proposed one-call path therefore creates an ordinary tag reference that the release gate rejects as lightweight. Creating and pushing the signed annotated tag first restores the pre-draft interval this mechanism claims to eliminate. Consequently the clean release path cannot satisfy its own acceptance criteria. Candidate artifact ref sha256:c487ae840d0e1a02ed08ef28c45573d26cb763315bd7897ba2634451b2755337.",
+      "objection_hash": "sha256:5cda9b2fccd7e9da1fc6d4f1c98748c8dcb9c45f2a956aac760af2e38bcbf746",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "release-authorization",
+      "claim": "Eye-local publication and release-slot occupancy do not protect the existing draft from a substituted off-main workflow. A write collaborator can dispatch an off-main workflow definition that omits `environment: telos-authority` and requests `contents: write`; GitHub applies environment protections only to jobs that reference that environment, while `contents: write` permits release operations. That token can upload or replace assets, edit or publish the existing draft, or delete it. The v* tag ruleset protects the Git ref, not mutations of the release object, and one-release-per-tag blocks only creation of a second release. The custody-drift mechanism also specifies failure for additional admins, not for the rogue write collaborator explicitly admitted by the threat model. Thus an untrusted workflow can still make unverified assets public before the local allowlist ceremony, violating fail-closed draft-first publication. Candidate artifact ref sha256:c487ae840d0e1a02ed08ef28c45573d26cb763315bd7897ba2634451b2755337.",
+      "objection_hash": "sha256:c995a6d85006f0ba68ceffef30f34811c85abed08fb8aeb1e450ab2f2e4e99f3",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
