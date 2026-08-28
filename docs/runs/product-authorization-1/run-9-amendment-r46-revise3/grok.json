@@ -1,0 +1,28 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:6f93bacdccf214b23147c7ad1b6c81560fcc55fe269e430fe4604c1f97221599",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:33:13.687Z",
+  "rationale": "Re-authorize AMENDMENT-1 (sha256:6f93bacdccf214b23147c7ad1b6c81560fcc55fe269e430fe4604c1f97221599) as implementation-ready AS-IS. The two-phase pivot (Phase A governance bootstrap under sitting v15 with activation deferred; Phase B atomic activation under the landed discriminating verifier) correctly discharges DISCOVERY-001 without woven edits at bootstrap and without claiming production/release authority before Phase B. E1–E6 remain fail-closed with adversarial regressions; the Phase-0 contract and honest Phase-1a install/runtime floor ([22.14.0, reviewed ceiling]) are frozen without smuggling deferred Phase-1b+ or multi-engine scope. RATIFY carried-forward §6b spikes: SPIKE-E6-EVALUATOR-FORM — declarative pure-evaluator design is sound; only concrete grammar/form is merge-gated, with pre-evaluator enrollment blocked (oracle-evaluator-pending) so interim review/battery cannot falsely close correction (d). SPIKE-PD001-NOLISTENER-COMPLETENESS — kernel-inherited arch-gated un-droppable seccomp + hermetic launcher/sandbox-builder + sealed-memfd/fs-verity closures are the sound primary enforcement; exhaustive residual-corner audit is an implementation completeness item with fail-closed eBPF/strace interim detection, not an architectural hole. RATIFY product-1-oq-e6-determinism-deferral and product-1-oq-pd001-nolistener-completeness as authorization-time dispositions consistent with the recorded Eye non-blocking spikes directive and advisory referee adjudications. No remaining plan contradiction or unsound design; do not re-litigate cited Eye rulings or condition on explicitly deferred register items.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5-build",
+    "response_id": "c8d4850b-7769-40ca-8015-4008142d9d75",
+    "source": "cli-seats/grok",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T15:33:42.948Z",
+    "tool": "cli-seats.askGrok"
+  }
+}

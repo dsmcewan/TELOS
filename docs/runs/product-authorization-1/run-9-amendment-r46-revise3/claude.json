@@ -1,0 +1,33 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:6f93bacdccf214b23147c7ad1b6c81560fcc55fe269e430fe4604c1f97221599",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:33:13.687Z",
+  "rationale": "The amended plan is implementation-ready and internally consistent. Every hard stop from prior council runs is properly resolved and folded into the design: the x32 __X32_SYSCALL_BIT guard (run-7) is integrated into the seccomp filter's arch-gating block with a regression that proves x32-numbered bind/listen is killed before any nr match; the pathname→inode binding defect (run-8) is closed by the by-fd/by-inode mount attach plus MS_RDONLY namespace freeze, with BOTH overwrite and rename/unlink-and-replace regressions specified. The layered no-listener architecture is conceptually sound — the kernel-inherited NO_NEW_PRIVS+seccomp filter is the primary invariant, the static hermetic launcher's custom _start installs the filter before any dynamic byte executes, the static sandbox-builder removes the loader-closure bootstrap gap, and the offline/online net-profile split delivers the invariant without contradicting required outbound verification. The boot sequence (LAUNCHER→STATIC-BUILDER→AUTHENTICATED-ROOT→NODE) correctly resolves the bootstrap cycle that DISCOVERY-001 identified: env-scrub and seccomp happen in native code before anything dynamic, the static builder needs no closure, and node-identity binding uses fexecve from inside the authenticated root. The two-phase governance transition is the correct solution to the bootstrap-pivot coupling: Phase A is pure data under the sitting v15 authority with all pre-existing gates green, Phase B is atomic activation with full from-disk re-verification and a fail-closed failure posture that leaves v15/authz-008 active on any partial state. The authority-chain machinery (E2) is coherent: the transition record covers every protected surface (chain roots, verifier, workflow, controller, verdict-producer closures) under a monotonic sequence that defeats temporal replay, and the two environment split (authority-roots readable by PR CI, authority-release restricted to main) is the correct resolution of the custody contradiction. The E1 controller's WORKFLOWS:WRITE justification is correctly bounded — necessary for Phase B's ci.yml transition, recorded in the custody manifest, and non-relaxing of the sole-merger rule. The runtime floor at 22.14.0 (--disable-sigusr1 prerequisite) is correctly distinguished from the manifest-integrity floor at 22.12.0. The fs-verity probe-on-existing-filesystem design is sound and correctly fail-closes to verity-fs-unavailable with no silent non-immutable fallback. On the two carried-forward spikes: SPIKE-E6-EVALUATOR-FORM presents a bounded implementation choice (WASM vs frozen-realm) on an already-settled sound design — lookup-table oracles are inexpressible in the declarative language by construction, and the fail-closed interim (oracle-evaluator-pending blocks all new normative oracle enrollment) prevents exploitation until the evaluator lands; the Eye has ratified this deferral and it is not a plan contradiction. SPIKE-PD001-NOLISTENER-COMPLETENESS is similarly a platform-engineering completeness problem on a conceptually sound kernel architecture — the seccomp filter already EPERM/SIGKILLs denied syscalls at runtime, making the architecture fail-closed by construction; the exhaustive corner audit is bounded verification work, not an architectural gap; the eBPF+strace detection interim catches any not-yet-enumerated path for governance review. Neither spike represents an unsound design or a plan contradiction. The plan's honest-limits section correctly scopes PD-001 to pylae's own process tree and records the ptrace-capable-launcher boundary as an explicit non-claim rather than an overclaim. No remaining contradiction, unsound design, or unrecorded over-claim is visible in the plan text. I stake my seat's signature on authorization of plan_ref sha256:6f93bacdccf214b23147c7ad1b6c81560fcc55fe269e430fe4604c1f97221599 for Argo implementation.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-6",
+    "response_id": "b6edbb46-af0b-4d17-ad3e-fe1d02ae38c1",
+    "source": "cli-seats/claude",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T15:34:42.491Z",
+    "tool": "cli-seats.askClaude"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "192a1fe5d7d7293e00203c4c162c6d913f00d10f16dc36c545e840bf3cea1510",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

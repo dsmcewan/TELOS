@@ -510,8 +510,36 @@ FIRST — a static builder has no loader closure, so no mutable byte runs;
 digest-verified); (v) ONLY THEN is `node` launched INSIDE that root, so
 Node's interpreter/`DT_NEEDED` bytes resolve from the AUTHENTICATED root,
 NOT mutable host paths — Node is itself sealed-snapshot identity-checked,
-and started with `--disable-proto`/inspector-off flags, REFUSING
-`unsupported-launch-options` on detected inspector activation. Only this
+and started with `--disable-proto=throw`/inspector-off flags, REFUSING
+`unsupported-launch-options` on detected inspector activation. THE
+LAUNCHER IS MUTATION-POINT-AUTHENTICATED ON EVERY INVOCATION, NOT ONLY
+AT INSTALL: the user-facing `pylae` command IS `pylae-verify-bootstrap`
+(the small, independently-pinned, operator-trusted verifier — the TCB
+root, §4), NOT the raw native launcher. On EVERY run it OPENS the pinned
+native launcher, VERIFIES its digest against the pinned value LIVE
+(a stored receipt is provenance, NOT authorization — live re-verification
+is authoritative each run, so a FORGED or STALE receipt grants nothing),
+SEALS the verified launcher bytes into a memfd (`F_SEAL_*`), and
+`fexecve`s THAT sealed memfd — so a launcher binary SWAPPED ON DISK after
+install is never executed by pathname; nothing runs before verification.
+The raw native launcher is thus the sole code that scrubs env + installs
+seccomp + spawns the sandbox-builder, but it is REACHED ONLY through
+`pylae-verify-bootstrap`'s per-invocation verify→seal→`fexecve`; invoking
+the raw launcher (or `node pylae`) by pathname directly is unsupported
+and the install docs state so. `pylae-verify-bootstrap` itself is the
+operator-provisioned TCB ROOT (its digest on the trust page, verified
+out-of-band at install, installed on a verity/read-only path for
+defense-in-depth); defending its OWN bytes against a same-user attacker
+who can rewrite the TCB-root binary is OUT of PD-001's scope (the same
+boundary as the ptrace scoping above — a local attacker controlling the
+user's own binaries/launch environment is outside pylae's confined-tree
+threat model). PER-INVOCATION LAUNCHER regressions (BOTH initial AND
+subsequent launches): (a) a native launcher REPLACED ON DISK after a
+successful install ⇒ `pylae-verify-bootstrap`'s live digest check FAILS
+`launcher-identity-mismatch`, the swapped launcher NEVER executes;
+(b) a FORGED or STALE receipt presented with a mismatched on-disk
+launcher ⇒ live re-verification (not the receipt) decides, the forged/
+stale receipt authorizes nothing and execution is refused. Only this
 native launcher is the supported entrypoint — invoking `node pylae`
 directly is unsupported and the install docs state so. BOOT-ORDER
 regression: NO node/interpreter/library byte executes before the

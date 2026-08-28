@@ -1,0 +1,40 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:6f93bacdccf214b23147c7ad1b6c81560fcc55fe269e430fe4604c1f97221599",
+  "decision": "revise",
+  "required_edits": [
+    "Make mutation-point-bound launcher authentication mandatory on every PYLAE invocation, not only the initial installation transition. Either make `pylae-verify-bootstrap` the user-facing per-invocation entrypoint that verifies, seals, and directly `fexecve`s the launcher, or establish an equivalent independently trusted kernel-immutable pathname-to-inode boundary. Reconcile the conflicting statements that the native launcher is the sole entrypoint, define receipt authenticity and replay semantics, and add initial-plus-subsequent-launch regressions proving that a replaced launcher and a forged or stale receipt can never execute.",
+    "Replace the invalid bare Node argument `--disable-proto` with an exact supported form such as `--disable-proto=throw` or `--disable-proto=delete` throughout the closed Node argv grammar, launcher, documentation, and runtime-interval tests.",
+    "Correct the authorization dossier’s governance summary: Phase A registers the successor authorization as activation-deferred without pivoting or superseding v15/authz-008; the active-plan/authorization pivot and v15 supersession occur atomically in Phase B. Then re-freeze and re-authorize the resulting exact plan hash."
+  ],
+  "hard_stops": [
+    "The execution trust chain currently protects only the bootstrap-to-launcher transition described during installation. Because the packaged native launcher is also declared the sole supported `pylae` entrypoint and doctor accepts a previously recorded receipt, a later pathname-based invocation can execute a substituted launcher before seccomp, manifest verification, or receipt checking exists. That substituted first process can ignore the receipt and fabricate every downstream verdict, so this is an architectural bootstrap gap rather than a residual PD-001 enumeration spike.",
+    "The authorization dossier still states that the docs/registry-only bootstrap performs the active-plan pivot and v15 supersession, directly contradicting the amended plan and the controlling DISCOVERY-001 two-phase ruling. The council cannot unambiguously sign both transition semantics."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:33:13.687Z",
+  "rationale": "The amended bytes recompute to sha256:6f93bacdccf214b23147c7ad1b6c81560fcc55fe269e430fe4604c1f97221599 and match reviewed commit e454db6729f163378c7ba5ea68803e1e6943e85c. The x32 guard and fs-verity pathname-to-inode fold resolve the prior recorded defects. I explicitly ratify SPIKE-E6-EVALUATOR-FORM and product-1-oq-e6-determinism-deferral: the concrete declarative grammar/evaluator may remain a bounded implementation spike because enrollment is blocked until its hard merge gate proves the required closed semantics. I likewise ratify SPIKE-PD001-NOLISTENER-COMPLETENESS and product-1-oq-pd001-nolistener-completeness as a bounded residual-platform audit with the stated fail-closed enforcement and detection. Neither ratification covers the separate first-byte authenticity discontinuity across later launcher invocations. Current official Node 22 documentation also requires `--disable-proto=mode`; the plan’s bare form is not executable under its own closed-argv contract.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtd4e3b4",
+    "source": "cli-seats/codex",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T15:42:14.081Z",
+    "tool": "cli-seats.askCodex"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "082b21278d96155c6642ff505f61b0b0e1826c1c703c84958db98f460c564910",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

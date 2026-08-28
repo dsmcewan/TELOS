@@ -50,7 +50,7 @@ const { askClaude, askCodex, askGrok, askGemini } = await imp("docs/institutiona
 // ---------- bind the exact plan under authorization ----------
 const PLAN_PATH = "docs/runs/product-1-workshop/matured-approach-amendment-1.md";
 const PREREVIEW_PATH = "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json";
-const EXPECTED_PLAN_REF = "sha256:6f93bacdccf214b23147c7ad1b6c81560fcc55fe269e430fe4604c1f97221599";
+const EXPECTED_PLAN_REF = "sha256:e30722d6f984faf81db00b35d30e8e04b97893c1995469e49473369146881fa3";
 const REVIEWED_HEAD = "e454db6729f163378c7ba5ea68803e1e6943e85c"; // full 40-char head — AMENDMENT-1 CONVERGED at round 46 (docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json), the frozen two-phase-pivot plan per the Eye DISCOVERY-001 ruling; fresh exact-hash authorization of the amended plan
 const DISCOVERY_001_RULING = "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md"; // resolved: Option 3 governance path + Option 1 substance (two-phase pivot)
 const CONVERGENCE_RECORD = "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json";
@@ -135,11 +135,17 @@ const OBJECTIVE =
   `Eye-signed authority transitions, Eye-local genesis provisioning), exceptionless auditor (no allow-empty), ` +
   `gate production-profile default flip, discriminating oracles (closed mutation registry, mutation-based ` +
   `negatives, direct execution), verifier hardening (dedupe, root-invariant sweep, draft-status citation gate). ` +
-  `(2) GOVERNANCE: a docs/registry-only BOOTSTRAP slice lands first under the sitting v15 authority, executing ` +
-  `the successor-plan transition (publish plan hash -> authorize exact hash -> pivot active_plan/active_authorization ` +
-  `+ supersede v15 -> Eye implementation-authority confirmation); AM-42 bytes never touched (registry-row linkage ` +
-  `only); AM-43 classifies cli/ + connectors/meta-ads-mcp/ as excluded package dirs. THIS COUNCIL IS that ` +
-  `re-authorization: its build_id names the enrollment flip. ` +
+  `(2) GOVERNANCE (TWO-PHASE PIVOT per the controlling DISCOVERY-001 ruling — NOT a one-phase transition): ` +
+  `PHASE A is a data-only governance-bootstrap slice that lands FIRST under the sitting v15 authority and REGISTERS ` +
+  `the successor authorization ACTIVATION-DEFERRED (publish plan hash + stage the quest-class chain entry and the ` +
+  `AM-43 canonicalization as NON-WOVEN/activation-deferred; CURRENT-AUTHORITY, active_plan, and active_authorization ` +
+  `are UNTOUCHED in Phase A; v15/authz-008 is NOT yet superseded; pre-existing verify-contracts stay green). ` +
+  `PHASE B then performs the ATOMIC ACTIVATION in a single PR under the landed discriminating verifier: AM-43 ` +
+  `canonicalization, woven governing_authority updates + same-PR re-weave, the active_plan/active_authorization ` +
+  `PIVOT, v15 supersession, and fail-closed re-verification all occur together. AM-42 bytes are never touched ` +
+  `(registry-row linkage only); AM-43 classifies cli/ + connectors/meta-ads-mcp/ as excluded package dirs. ` +
+  `THIS COUNCIL re-authorizes the exact amended two-phase plan; its build_id names the enrollment flip, whose ` +
+  `active-plan pivot + v15 supersession execute in Phase B, not in the Phase A bootstrap. ` +
   `(3) PRODUCT: Phase-0 contract frozen (PD-001..PD-007 ADRs, hard go-live gate with typed item-bound evidence, ` +
   `no report-only release mode); Phase-1a honest install contract (source release with pylae entrypoint, ` +
   `dual checkout/archive doctor semantics, clean-room install proof, draft-first fail-closed release publication, ` +
