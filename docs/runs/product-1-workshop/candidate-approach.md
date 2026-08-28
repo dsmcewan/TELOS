@@ -80,14 +80,33 @@ ls-tree, ls-files -z, status --porcelain, hash-object --no-filters,
 rev-list (incl. --max-parents=0 HEAD), bundle create/verify/unbundle,
 verify-* — PLUS the archive-mode object-store forms `git init --bare
 <private-tmp-dir>` and `git -C <private-tmp-dir> fetch <bundle>`
-(confined to the ceremony's private temp store, never a shared repo) —
-each run with ALL EXECUTION-BEARING CONFIG SUPPRESSED — global/system
-via `GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null` AND
-REPOSITORY-LOCAL (which checkout-mode operates on and which survives
-clearing the environment): trusted `-c` overrides force
-`core.fsmonitor=false core.hooksPath=/dev/null core.pager=cat
-protocol.*.allow=never` and every program-valued config off, hooks
-neutralized — no daemon/serve/upload-pack/receive-pack. CATEGORICAL
+(confined to the ceremony's private temp store, never a shared repo),
+PLUS the ONLINE-PROFILE HTTPS FETCH form `git -c <pinned config> -C
+<private-tmp-dir> fetch <PINNED-HTTPS-REMOTE-URL> <refspec>` (online
+profile only; the remote URL is a pinned https:// endpoint, credentials
+supplied ONLY via the pinned credential helper in the authenticated tool
+closure, never an interactive/askpass prompt: `core.askpass=` empty +
+`GIT_TERMINAL_PROMPT=0`) — each run with ALL EXECUTION-BEARING CONFIG
+SUPPRESSED — global/system via `GIT_CONFIG_GLOBAL=/dev/null
+GIT_CONFIG_SYSTEM=/dev/null` AND REPOSITORY-LOCAL (which checkout-mode
+operates on and which survives clearing the environment): trusted `-c`
+overrides force `core.fsmonitor=false core.hooksPath=/dev/null
+core.pager=cat` and every program-valued config off, hooks neutralized —
+no daemon/serve/upload-pack/receive-pack. THE TRANSPORT ALLOWLIST IS
+ENFORCED VIA `GIT_ALLOW_PROTOCOL` (env), NOT config: `protocol.*.allow`
+is NOT a valid git wildcard — `protocol.allow` sets only the FALLBACK and
+`protocol.<name>.allow` a single literal protocol, so a repo-local
+`protocol.ext.allow=always` would otherwise survive and enable an `ext::`
+arbitrary-helper remote. `GIT_ALLOW_PROTOCOL` is a trusted ENV allowlist
+that git honors ABOVE all config: it is set to EXACTLY the required
+transports — `file` (local bundle/object-store) for the offline forms and
+`file:https` for the online fetch — so every other transport (`ext`,
+`ssh`, `git`, `http`, …) is denied REGARDLESS of any repo-local
+`protocol.<name>.allow=always`. EXT-HELPER regression: repo-local config
+sets `protocol.ext.allow=always` and points a remote at an arbitrary
+`ext::<cmd>` helper ⇒ `GIT_ALLOW_PROTOCOL` (no `ext`) refuses the
+transport, the helper NEVER executes, while the pinned-HTTPS fetch and
+local-bundle forms remain operable. CATEGORICAL
 DESCENDANT CONFINEMENT: every git invocation runs UNDER THE
 LAUNCHER-INSTALLED INHERITED SECCOMP FILTER (§1: bind/listen/accept
 kernel-denied across the whole tree, un-droppable under NO_NEW_PRIVS) —
