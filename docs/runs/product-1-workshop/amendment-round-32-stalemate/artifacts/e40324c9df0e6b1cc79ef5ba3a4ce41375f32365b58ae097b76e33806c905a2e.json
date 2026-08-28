@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:3e1a8127d622071d06877c65316d6cfd350efa5b6ebacb505fb1d1e826220b94",
+  "output_plan_artifact_hash": "sha256:3e1a8127d622071d06877c65316d6cfd350efa5b6ebacb505fb1d1e826220b94",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:62af74d6511c8df9d96fa47174438ea6ed14a91c05fc9c2138401b24c39fdff0",
+    "provenance_key": "anthropic:bad03f51-3786-42a8-936f-4c0a6a77a37a"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:22a920fbb865b28624615b5ecaefc50957511f9cc591b7281177c832e5081291",
+    "provenance_key": "openai:codex-cli-mtcxzvv1",
+    "bound_hash": "sha256:3e1a8127d622071d06877c65316d6cfd350efa5b6ebacb505fb1d1e826220b94"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:§1-native-launcher",
+      "claim": "The native-launcher mechanism is internally contradictory and its oracle would not establish the claimed property. Its closed syscall grammar admits only environment clearing, open/fstat/read/close, exec-family calls, and process control, but the required sealed snapshot necessarily uses memfd_create, writes/copies bytes into the memfd, fcntl(F_ADD_SEALS), and normally seeks or maps data; the approach later explicitly says the launcher calls memfd_create/fcntl. Moreover, no PT_INTERP/DT_NEEDED plus a source scan for named socket calls does not prove a statically linked binary contains no reachable indirect or compiler/runtime syscall path. Double-building proves reproducibility, not correspondence to the reviewed syscall grammar. The plan must define an implementable syscall set and a discriminating enforcement mechanism over the executed artifact—such as a freestanding closed linked closure plus runtime syscall denial or another sound whole-binary verifier—with regressions for indirect/linked listener syscalls.",
+      "objection_hash": "sha256:5db6d343e1462ff3d45cc8f6b01453a2ab0350ba8a5e205bad06cd5c5b56cbc2",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach:§1-external-tool-containment",
+      "claim": "The external-tool exception still defeats the no-listener guarantee. `bwrap --unshare-net` creates an isolated network namespace; it does not prohibit socket(), bind(), or listen(), so a Git descendant can open a listener while the plan's claimed categorical containment and “no listener opens” regression appear green if they observe only the host namespace. In addition, sealing and hashing a dynamically linked node/git executable authenticates only its main ELF bytes: fexecve subsequently loads the PT_INTERP and DT_NEEDED closure from mutable host paths, outside the recorded digest and source grammar, where pre-main code can open a listener. The plan must either kernel-deny listener syscalls for the complete descendant/runtime closure and bind every executable loader/library byte, or explicitly freeze and authenticate that platform closure as a trust root; add private-namespace-listener and substituted-loader/DT_NEEDED regressions.",
+      "objection_hash": "sha256:8e959c5ccb08899f73fa6a1bd87d371e92edfe8a8f969194932d03b2eb73dc0f",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
