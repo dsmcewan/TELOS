@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "plan",
+        "claim": "The online no-listener mechanism is unsound. It retains the host network namespace while claiming that `--unshare-ipc` and removal of pathname Unix sockets prevent SCM_RIGHTS imports because abstract Unix sockets are network-namespace-scoped. Since the online profile explicitly does not use `--unshare-net`, host abstract AF_UNIX peers remain reachable; `--unshare-ipc` does not isolate them. A descendant can create/connect an abstract Unix socket and receive an already-bound UDP descriptor via `recvmsg`/SCM_RIGHTS, then receive traffic without invoking any denied `socket(AF_INET, SOCK_DGRAM)`, `bind`, `listen`, or `accept` syscall. The stated SCM_RIGHTS regression therefore cannot establish the claimed kernel invariant. The plan must add kernel-enforced prevention of every post-launch descriptor-acquisition path in the online profile while preserving required egress—for example, deny AF_UNIX acquisition/SCM_RIGHTS plus equivalent descriptor-import mechanisms and isolate the PID/proc surface—and require adversarial regressions from a host abstract-socket peer before PD-001 can discharge."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtczmmqp",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtczmmqp",
+    "source": "cli-seats/codex_ask"
+  }
+}

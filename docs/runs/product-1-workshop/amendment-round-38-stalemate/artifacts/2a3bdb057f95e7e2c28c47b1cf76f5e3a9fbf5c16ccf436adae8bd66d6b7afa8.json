@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:dd65e660095170ef0d47da091736a86651da9a8fc01f03a36aeeda105034edcd",
+  "output_plan_artifact_hash": "sha256:dd65e660095170ef0d47da091736a86651da9a8fc01f03a36aeeda105034edcd",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:ce2c6cd554e4ee335a02393a04ddc1a08affd16d93d95180489c6daea84030d9",
+    "provenance_key": "anthropic:462e900c-2341-4b01-9691-0d139ddd18ae"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:d1939284e35b0d8a2419ebed8b384152d1ecf8091e8407238e4fa18dc4ff93ed",
+    "provenance_key": "openai:codex-cli-mtczmmqp",
+    "bound_hash": "sha256:dd65e660095170ef0d47da091736a86651da9a8fc01f03a36aeeda105034edcd"
+  },
+  "objections": [
+    {
+      "scope": "plan",
+      "claim": "The online no-listener mechanism is unsound. It retains the host network namespace while claiming that `--unshare-ipc` and removal of pathname Unix sockets prevent SCM_RIGHTS imports because abstract Unix sockets are network-namespace-scoped. Since the online profile explicitly does not use `--unshare-net`, host abstract AF_UNIX peers remain reachable; `--unshare-ipc` does not isolate them. A descendant can create/connect an abstract Unix socket and receive an already-bound UDP descriptor via `recvmsg`/SCM_RIGHTS, then receive traffic without invoking any denied `socket(AF_INET, SOCK_DGRAM)`, `bind`, `listen`, or `accept` syscall. The stated SCM_RIGHTS regression therefore cannot establish the claimed kernel invariant. The plan must add kernel-enforced prevention of every post-launch descriptor-acquisition path in the online profile while preserving required egress—for example, deny AF_UNIX acquisition/SCM_RIGHTS plus equivalent descriptor-import mechanisms and isolate the PID/proc surface—and require adversarial regressions from a host abstract-socket peer before PD-001 can discharge.",
+      "objection_hash": "sha256:14350f86a2554192e7b6d4f5600c95515a8d3b50668b4b08928c31aa41854e7d",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
