@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:29e12f96350913dcea816c19064ba697334c6ecb6935109b52849d7663b8a555",
+  "output_plan_artifact_hash": "sha256:29e12f96350913dcea816c19064ba697334c6ecb6935109b52849d7663b8a555",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:1a01652f2e0c9a35927b713f134329113212d40eb2c5d980531bbcab13c353b6",
+    "provenance_key": "anthropic:b888803f-e801-4c54-a788-94b64bf67f5b"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:b2bd19326a9202afc91a9a5086d1b194e7007b8795e6f1d72cea9b3121903ae7",
+    "provenance_key": "openai:01a045b1-58c3-7152-90f6-5815dbd664cc",
+    "bound_hash": "sha256:29e12f96350913dcea816c19064ba697334c6ecb6935109b52849d7663b8a555"
+  },
+  "objections": [
+    {
+      "scope": "release-workflow-trust",
+      "claim": "The workflow_dispatch mechanism does not platform-select release.yml from protected main: the candidate acknowledges that GitHub executes the definition from the dispatch ref, so an off-main definition can remove the github.ref check and every needs: gate edge, then request GITHUB_TOKEN write or id-token permissions without targeting the telos-authority environment. The proposed off-main regression exercises the trusted workflow and therefore would not discriminate against this substituted-definition attack; release mutation remains possible before any trusted gate runs.",
+      "objection_hash": "sha256:3931444707788cfdf633fe0bc2b562886007b54d891773095ebd98f43f46ea3d",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "protected-workflow-set",
+      "claim": "TRUSTED_WORKFLOW_DIGEST is defined over selected verifier-invoking workflow files rather than a closed, recomputed manifest of every workflow/action execution surface. A PR can add a new .github/workflows file or composite action without changing any covered file, leaving the digest equal and avoiding workflow-modified/transition-payload-mismatch. The branch publisher's .github rejection only protects Hestia-produced branches; the merge controller handles all PRs and lacks the equivalent complete-set check, so newly added push-triggered privileged code can execute immediately after merge before later digest checks fail.",
+      "objection_hash": "sha256:222e6235ec6ca6b61d359ab16bea7b4be6dac3b6841821c43051668debc0389f",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

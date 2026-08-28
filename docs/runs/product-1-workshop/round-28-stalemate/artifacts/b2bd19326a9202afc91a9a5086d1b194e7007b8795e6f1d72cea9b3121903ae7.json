@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "release-workflow-trust",
+        "claim": "The workflow_dispatch mechanism does not platform-select release.yml from protected main: the candidate acknowledges that GitHub executes the definition from the dispatch ref, so an off-main definition can remove the github.ref check and every needs: gate edge, then request GITHUB_TOKEN write or id-token permissions without targeting the telos-authority environment. The proposed off-main regression exercises the trusted workflow and therefore would not discriminate against this substituted-definition attack; release mutation remains possible before any trusted gate runs."
+      },
+      {
+        "scope": "protected-workflow-set",
+        "claim": "TRUSTED_WORKFLOW_DIGEST is defined over selected verifier-invoking workflow files rather than a closed, recomputed manifest of every workflow/action execution surface. A PR can add a new .github/workflows file or composite action without changing any covered file, leaving the digest equal and avoiding workflow-modified/transition-payload-mismatch. The branch publisher's .github rejection only protects Hestia-produced branches; the merge controller handles all PRs and lacks the equivalent complete-set check, so newly added push-triggered privileged code can execute immediately after merge before later digest checks fail."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a045b1-58c3-7152-90f6-5815dbd664cc",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a045b1-58c3-7152-90f6-5815dbd664cc",
+    "source": "cli-seats/codex_ask"
+  }
+}

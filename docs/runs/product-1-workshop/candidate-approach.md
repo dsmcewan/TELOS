@@ -418,8 +418,14 @@ per-file designs are in the approved plan; acceptance criteria here.
   and GitHub runs PR-modified workflows; org-level required workflows are
   unavailable to a personal repo, so enforcement sits in the merge path
   we control): the protected variable set gains `TRUSTED_WORKFLOW_DIGEST`
-  covering the verifier-invoking workflow file(s) under
-  `.github/workflows/`; the E1 MERGE CONTROLLER — the sole merger —
+  — a CLOSED MANIFEST DIGEST over the ENTIRE execution surface, not a
+  hand-picked file list (a digest over selected files stays unchanged
+  when a PR ADDS a new push-triggered workflow or composite action —
+  the addition must move the digest): the canonical sorted
+  (path ‖ blob-digest) list of EVERY file under `.github/` (workflows,
+  composite actions, Actions config), where the PATH SET itself is part
+  of the digested serialization — adding, removing, or renaming any
+  file changes the digest even if all covered files are untouched; the E1 MERGE CONTROLLER — the sole merger —
   computes the digest of those files AT THE PR HEAD immediately before
   each merge and REFUSES (`workflow-modified`) unless it equals the
   protected value or the PR carries a valid Eye-signed transition record
@@ -468,7 +474,11 @@ per-file designs are in the approved plan; acceptance criteria here.
   refuses to invoke it (verifier-untrusted); WORKFLOW-ONLY BYPASS fixture
   — a PR that edits ONLY the invoking workflow to skip the digest check
   and emit success ⇒ the merge controller refuses it (workflow-modified,
-  digest ≠ TRUSTED_WORKFLOW_DIGEST, no transition record); genesis
+  digest ≠ TRUSTED_WORKFLOW_DIGEST, no transition record); ADDED-WORKFLOW
+  fixture — a PR that only ADDS a new push-triggered workflow (or a new
+  composite action) without touching any existing covered file ⇒ the
+  manifest's path set moved ⇒ the controller refuses workflow-modified
+  BEFORE merge, so the new privileged code never lands to execute; genesis
   fixture — the bootstrap tool validates a staged E2 head and its printed
   digests match what the provisioned variables must hold; ruleset-off fixture ⇒
   unsafe-branch-config.
@@ -956,21 +966,41 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   execute a SUBSTITUTED release.yml with publication permissions,
   OIDC, and secrets before any in-workflow check could refuse): there
   is NO tag-push trigger at all; release.yml runs ONLY on
-  `workflow_dispatch`, which executes the definition from the ref the
-  dispatch targets — RELEASING.md's ceremony dispatches from `main`,
-  and the workflow's first step re-asserts `github.ref ==
-  refs/heads/main` (else abort `untrusted-workflow-ref`). The tag NAME
-  is a dispatch INPUT — pure data, validated by the gate job (tag
-  object fetched via git, signature/acceptance/ancestry checks as
-  below) before anything privileged; every privileged job declares
-  `needs: gate` and is unreachable until the gate succeeds.
+  `workflow_dispatch` from `main` per RELEASING.md, the tag NAME a
+  dispatch INPUT — pure data, validated by the gate job before anything
+  privileged; every privileged job declares `needs: gate`. An
+  in-workflow ref check is NOT the defense (an off-main dispatch
+  executes the OFF-MAIN definition, which simply omits the check and
+  self-grants permissions) — the defense is that NOTHING a substituted
+  definition can reach is privileged, enforced by the PLATFORM, not by
+  the workflow's own text:
+  (a) CREDENTIALS ARE ENVIRONMENT-GATED: all release-capable secrets
+  and trust roots live in the telos-authority ENVIRONMENT whose
+  deployment branch policy admits ONLY protected main — a job from any
+  other ref requesting that environment is refused by GitHub before it
+  starts; the repository DEFAULT GITHUB_TOKEN permission is read-only.
+  (b) TAGS ARE RULESET-PROTECTED: a tag ruleset restricts creation/
+  update/deletion of `v*` to the Eye (no bot, no Actions principal) —
+  a rogue workflow's token cannot mint or move a release tag, and
+  releases are immutable once published.
+  (c) ARTIFACT TRUST IS IDENTITY-PINNED: provenance attestations are
+  verified — in CI and in the documented consumer instructions — with
+  the certificate identity pinned to `release.yml@refs/heads/main`; an
+  artifact attested by a substituted off-main definition carries an
+  off-main identity and FAILS verification everywhere it is checked.
+  (d) DRIFT IS SWEPT: a release-integrity oracle on main enumerates all
+  releases and fails on any release not bound to an Eye-accepted tag +
+  main-identity attestation.
   **Accept (workflow trust)**: off-main-tag regression — a tag whose
   target commit carries a modified release.yml is pushed ⇒ NOTHING
-  triggers (no push trigger exists); dispatching main's release.yml
-  with that tag name as input ⇒ main's own definition runs, the gate
-  evaluates the tag as data and aborts on its checks; a dispatch
-  aimed at a non-main ref ⇒ untrusted-workflow-ref before any
-  privileged job starts; no release mutation occurs in any of these.
+  triggers (no push trigger exists); SUBSTITUTED-DEFINITION regression —
+  a dispatch of a modified definition from a non-main ref that
+  self-grants `contents: write` + `id-token: write` ⇒ the
+  telos-authority environment refuses the ref (no trust roots, no
+  release secrets), the v* tag ruleset refuses tag creation, and any
+  artifact it attests fails pinned-identity verification — no trusted
+  release mutation is possible; dispatching main's definition with a
+  hostile tag name as input ⇒ the gate evaluates it as data and aborts.
   (1) GATE: tag object must be ANNOTATED and its SIGNATURE VERIFIED in CI
   against an OUT-OF-TREE trust root (an in-tree public key is circular — a
   rewritten commit can carry the attacker's key plus a matching tag): the
