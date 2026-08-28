@@ -24,10 +24,11 @@
     "First-SKU package naming fallback if the npm name/scope is unavailable at Phase-1b publish time (packages stay private this round, so non-blocking now).",
     {
       "id": "product-1-oq-e6-determinism-deferral",
-      "question": "E6 oracle-determinism: may the requirement to perfectly isolate an arbitrary black-box Node oracle from all runtime/vDSO/libc nondeterminism be DEFERRED as a bounded Argo implementation-spike (honest-limit with a same-input-multiple-eval detection fallback in-plan), rather than fully solved in the approach?",
+      "question": "E6 oracle-determinism: ratify committing oracles to a restricted PURE-EVALUATOR ABI (determinism by construction) with only the ABI's implementation FORM (WASM vs frozen-realm Node worker) deferred as a bounded Argo spike? Soundness is settled in-plan; the deferral is now narrow.",
       "context": "Thread recurred ~15 of ~25 re-maturation rounds. Escalated to the Gemini referee (advisory) per the no-cap-referee directive; referee ruled argo-implementation-spike. Committed evidence: docs/runs/product-1-workshop/referee-adjudications/2026-08-28-e6-oracle-determinism.json. The referee is advisory; the blocker->spike deferral is the Eye's decision.",
       "referee_recommendation": "argo-implementation-spike (defer, with same-input-multiple-eval fail-closed detection fallback retained in-plan)",
-      "requires": "Eye ratification at S2 council / S3 authority grant"
+      "requires": "Eye ratification at S2 council / S3 authority grant",
+      "narrowed": "Soundness no longer deferred \u2014 the pure-ABI commitment settles it in-plan; only the evaluator implementation form is the spike."
     }
   ],
   "model_review": {

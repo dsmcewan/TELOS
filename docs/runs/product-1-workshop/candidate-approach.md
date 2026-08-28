@@ -846,49 +846,53 @@ per-file designs are in the approved plan; acceptance criteria here.
   unavailable ⇒ FAIL `oracle-unrunnable` — confinement is never
   best-effort. The remaining nondeterministic channels (the clock and
   KERNEL ENTROPY — getrandom cannot be portably denied inside the
-  sandbox) are DENIED, NOT SYNTHESIZED, and oracles are REQUIRED PURE
-  (seccomp-BPF cannot write fixed bytes into a getrandom buffer or
-  emulate a clock result — it can only filter syscalls; the sound move
-  is to FORBID the channels and require the oracle to be a pure
-  function of the provided input snapshot): a qualified oracle runs
-  under a seccomp filter returning SIGSYS for getrandom/getentropy, the
-  clock family (clock_gettime/gettimeofday/time — with the loader
-  invoked so glibc falls back to the trapped syscall rather than vDSO,
-  and /dev/{u,}random bound to fixed-content files), and all
-  network/IPC syscalls (already namespace-denied). An oracle that
-  TOUCHES any nondeterministic channel DIES (SIGSYS) and FAILS
-  qualification `oracle-impure`; a discriminating oracle needs none, so
-  under this filter a qualified oracle confined to the restricted
-  pure-evaluator ABI is a DETERMINISTIC FUNCTION of its inputs and the
-  exhaustive battery is its discriminator.
-  HONEST LIMIT — E6 PERFECT ORACLE DETERMINISM (ADVISORY Gemini referee
-  ruling, 2026-08-28, committed evidence at
-  `docs/runs/product-1-workshop/referee-adjudications/2026-08-28-e6-oracle-determinism.json`,
-  after this thread recurred ~15 rounds without terminating; the
-  referee ADVISES this is an ARGO IMPLEMENTATION-SPIKE not an
-  authorization blocker, per this repo's proposal-lifecycle honest-
-  limits precedent — but a model referee is ADVISORY: the deferral of
-  a would-be blocker to a spike is a governance decision RESERVED TO
-  THE EYE, carried as an EXPLICIT OPEN QUESTION FOR THE EYE in the
-  pre-review and RATIFIED at the S2 council / S3 authority grant; until
-  the Eye ratifies, this limit is proposed, not settled): perfectly
-  isolating an ARBITRARY black-box Node oracle from every
-  runtime/vDSO/libc nondeterminism channel via pre-execution seccomp is
-  OUT OF SCOPE for this authorization plan — seccomp can SIGSYS a
-  semantically-pure oracle whose V8/loader/libc incidentally touch
-  clock/entropy, and cannot intercept vDSO reads. RESOLUTION PATH (Argo
-  spike): evaluate a restricted PURE-EVALUATOR ORACLE ABI (e.g. a WASM
-  or pure-function evaluator with no ambient authority), a
-  deterministic-replay harness, or coarse runtime checks, and pick the
-  sound one at implementation. DETECTION FALLBACK (in the plan NOW): the
-  SAME-INPUT-MULTIPLE-EVAL agreement check — the oracle is run
-  repeatedly on identical inputs under the randomized concealing
-  schedule and ANY output variance ⇒ instant FAIL
-  `oracle-nondeterministic` + flag for manual governance review — so a
-  nondeterministic oracle is caught and fail-closed even before strict
-  isolation lands. (A RANDOM-EXIT oracle either dies on getrandom under
-  the restricted ABI or varies across evals; a CLOCK-PHASE oracle
-  likewise.) ROLES ARE SPLIT: this
+  sandbox) are STRUCTURALLY UNREACHABLE because ORACLES CONFORM TO A
+  RESTRICTED PURE-EVALUATOR ABI — the concrete, enforceable mechanism
+  the plan COMMITS TO (rather than trying to determinize arbitrary Node
+  programs, which is unsound: seccomp cannot synthesize buffer bytes,
+  can SIGSYS a semantically-pure oracle whose V8/libc incidentally touch
+  clock/entropy, and cannot intercept vDSO — so "isolate an arbitrary
+  black box" is the wrong frame): an oracle is NOT an arbitrary program
+  but a PURE FUNCTION `(input_snapshot) -> {pass|fail, reason}` executed
+  by the runner's evaluator, which structurally provides NO ambient
+  authority — no clock, no entropy, no network, no filesystem, no env —
+  only the passed-in snapshot. A pure function over a fixed input is
+  DETERMINISTIC BY CONSTRUCTION, so the "different gate-time verdict"
+  failure mode cannot arise: there is no channel through which a
+  gate-time run could differ from a qualification run on identical
+  input. Conformance is STATICALLY ENFORCED at qualification (the ABI
+  is a closed evaluator surface; an oracle that imports/requires
+  anything outside the sanctioned pure standard library, or is not
+  expressible as the pure entrypoint, ⇒ FAIL `oracle-abi-nonconformant`
+  and cannot ship), with seccomp-deny + `--unshare-all` retained as
+  DEFENSE-IN-DEPTH belt-and-suspenders, not as the primary guarantee.
+  Under this ABI the exhaustive battery is a genuine deterministic
+  discriminator of WHETHER THE PURE FUNCTION EVALUATES ITS CLAIMED
+  INVARIANT (every mutation/conforming-variant element run once, result
+  reproducible by construction).
+  ARGO SPIKE (bounded, Eye-ratified — the narrow residual, NOT the
+  soundness): the ABI's exact IMPLEMENTATION FORM is chosen at
+  implementation — a WASM component-model evaluator, or a Node worker
+  with a frozen realm whose clock/entropy/network/fs globals are
+  removed and whose module resolver admits only the sanctioned pure
+  library. Both are known-sound options; the spike picks one and proves
+  ABI-escape attempts fail. This deferral is the ADVISORY Gemini referee
+  ruling (2026-08-28, committed evidence at
+  `docs/runs/product-1-workshop/referee-adjudications/2026-08-28-e6-oracle-determinism.json`)
+  carried as EXPLICIT OPEN QUESTION FOR THE EYE
+  `product-1-oq-e6-determinism-deferral` and RATIFIED at S2/S3 — a model
+  referee is advisory; the deferral is the Eye's decision. What the plan
+  SETTLES NOW (not deferred): oracles are pure-ABI functions, determinism
+  is by construction, and the ABI-conformance check is the fail-closed
+  qualification gate; only the evaluator's implementation form is the
+  spike. DETECTION FALLBACK (defense-in-depth): a same-input-multiple-
+  eval agreement check flags any observed variance
+  `oracle-nondeterministic` — honestly a DETECTION heuristic, not the
+  determinism proof (the ABI's construction is the proof); an
+  ABI-nonconformant oracle ⇒ oracle-abi-nonconformant at qualification;
+  a would-be RANDOM-EXIT or CLOCK-PHASE oracle CANNOT BE EXPRESSED in
+  the pure ABI (no entropy/clock binding exists to call) ⇒ rejected at
+  conformance. ROLES ARE SPLIT: this
   exhaustive determinized battery is the ENROLLMENT-TIME QUALIFICATION
   gate — required CI on every PR that adds or changes an oracle or its
   closure, its evidence recorded — while GATE-TIME AUTHORITY is the

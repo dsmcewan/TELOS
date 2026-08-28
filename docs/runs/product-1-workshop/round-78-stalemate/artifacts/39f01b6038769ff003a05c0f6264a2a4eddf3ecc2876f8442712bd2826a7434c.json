@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "approach",
+        "claim": "E6 remains an unresolved authorization and enforcement defect. The approach simultaneously requires mandatory bwrap/seccomp-based pure execution and deterministic exhaustive qualification, then states that reliably isolating arbitrary Node oracles is out of scope and leaves the actual ABI/harness choice to an Argo spike pending Eye ratification (`product-1-oq-e6-determinism-deferral`; `2026-08-28-e6-oracle-determinism.json`). Same-input repeated evaluation detects only observed variance; it cannot prevent a stable-within-qualification clock/entropy-dependent oracle from producing a different gate-time verdict. Therefore the plan does not yet provide a settled fail-closed mechanism or satisfiable acceptance oracle for E6. The Eye must rule the deferral and the approach must either select a concrete enforceable execution ABI or narrow/remove the unsupported determinism claims before convergence."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcjhops",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcjhops",
+    "source": "cli-seats/codex_ask"
+  }
+}
