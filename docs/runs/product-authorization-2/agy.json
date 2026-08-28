@@ -1,0 +1,33 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-2-discovery-002-phase-b-obligation",
+  "use_case": "iliad-product-1",
+  "model": "agy",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop-amendment-2/matured-approach-amendment-2.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop-amendment-2/AMENDMENT-2-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:463bde1c276ddb65b8e0cb0c89ed65a36707a968d75dc744395377f451bd3ba7",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T16:50:06.604Z",
+  "provenance": {
+    "provider": "local",
+    "model": "agy-checkpoint",
+    "source": "ai-peer-mcp/agy_checkpoint",
+    "response_id": "agy-021a1add9ccdde76ab9f4e6396e61946f95b2932",
+    "answered_at": null,
+    "attestation": "local-deterministic",
+    "engine_version": "agy-checkpoint/1",
+    "tool": "agy_checkpoint(local)"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "2de30e0e6ba4a0185fcde0272febfdce14c44460c1c5db8ba104045262f64cad",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-2-discovery-002-phase-b-obligation",
+  "use_case": "iliad-product-1",
+  "model": "gemini",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop-amendment-2/matured-approach-amendment-2.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop-amendment-2/AMENDMENT-2-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:463bde1c276ddb65b8e0cb0c89ed65a36707a968d75dc744395377f451bd3ba7",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T16:50:06.604Z",
+  "rationale": "AMENDMENT-2 correctly addresses the directory discrepancies via the TWO-PHASE PIVOT (Phase A: governance bootstrap, Phase B: atomic activation). The specified invariants, including kernel-inherited seccomp filters for the no-network-listener requirement and immutable sandbox staging via fs-verity, are technically sound and appropriately documented.",
+  "provenance": {
+    "provider": "google",
+    "model": "gemini-3.1-pro-high",
+    "response_id": "5a7029c8-3f7a-425e-ad4a-a8149f11f2c3",
+    "source": "cli-seats/gemini",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T16:51:08.114Z",
+    "tool": "cli-seats.askGemini"
+  }
+}

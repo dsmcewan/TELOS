@@ -1,0 +1,33 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-2-discovery-002-phase-b-obligation",
+  "use_case": "iliad-product-1",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop-amendment-2/matured-approach-amendment-2.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop-amendment-2/AMENDMENT-2-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:463bde1c276ddb65b8e0cb0c89ed65a36707a968d75dc744395377f451bd3ba7",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T16:50:06.604Z",
+  "rationale": "Approve AS-IS. The candidate recomputes to plan_ref sha256:463bde1c276ddb65b8e0cb0c89ed65a36707a968d75dc744395377f451bd3ba7. Its Amendment-1 delta is confined to §3: Phase B now adds absent cli/ and formally classifies pre-existing connectors/meta-ads-mcp/, whose tracked server.mjs matches DISCOVERY-002 at sha256:df4e115c266ef77441d44eda4785fea1d497e1290165fa136e0bc10fb5a5234f. The A5 whitelist, terminal Phase-B descriptor, final PACKAGE_ROOTS_EXCLUDE classification, Phase-A obligations, AM-42 byte-preservation rule, and every non-§3 obligation remain unchanged. The corrected per-directory deferral is internally consistent: cli/ cannot be classified before it exists, while the existing connector's formal classification must coincide with the single AM-43 activation, package/inventory tightening, and same-PR re-weave rather than splitting that atomic decision. This resolves DISCOVERY-002 without using the erroneous prior wording as authority and preserves the fail-closed two-phase pivot. I explicitly ratify SPIKE-E6-EVALUATOR-FORM and product-1-oq-e6-determinism-deferral because normative oracle enrollment remains blocked until the constrained declarative grammar and trusted evaluator pass their hard merge gate. I also ratify SPIKE-PD001-NOLISTENER-COMPLETENESS and product-1-oq-pd001-nolistener-completeness because the settled kernel-inherited enforcement architecture remains mandatory while only exhaustive residual-corner auditing is deferred behind fail-closed CI observability and slice qualification. The inventory oracle passes on the reviewed state. The broader contract verifier reached 312/313; its sole failure was the review sandbox's read-only /tmp preventing a test fixture from calling mkdtemp, not a repository-contract mismatch or plan defect.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtd6xmjh",
+    "source": "cli-seats/codex",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T16:53:24.701Z",
+    "tool": "cli-seats.askCodex"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "25d72928a458ca660dd813dad415437d3013c08bf1d47e255ed4b38efe1fbb6e",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

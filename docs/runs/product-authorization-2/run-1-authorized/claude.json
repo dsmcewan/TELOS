@@ -1,0 +1,33 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-2-discovery-002-phase-b-obligation",
+  "use_case": "iliad-product-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop-amendment-2/matured-approach-amendment-2.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop-amendment-2/AMENDMENT-2-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:463bde1c276ddb65b8e0cb0c89ed65a36707a968d75dc744395377f451bd3ba7",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T16:50:06.604Z",
+  "rationale": "AMENDMENT-2 is a sound, bounded, internally consistent governed correction. The factual premise is accurate: DISCOVERY-002 establishes connectors/meta-ads-mcp/server.mjs pre-exists on disk with 313/313 gates green, and the prior plan language asserting both dirs 'do not yet exist' is plainly wrong. The amendment makes a fresh governed decision grounded in the DISCOVERY-002 evidence and AM-43 exclusion authority, not in the prior wording — exactly what the Eye ruling required. Phase B's end state is unchanged (both directories excluded); only provenance semantics change (one added, one formally classified), and that distinction carries no downstream obligation mismatch. The per-directory deferral justification is now explicit and logically sound: cli/ defers because it does not yet exist and its addition must coincide atomically with inventory.mjs/test-inventory tightening; connectors/meta-ads-mcp/ defers because formal classification (exclude-pin + exact-bijection inventory tightening) must land atomically with cli/'s addition under the single AM-43 ruling and the newly-landed discriminating verifier — splitting AM-43's activation across two PRs would be incoherent with AM-43's indivisible ruling. Phase A is unaffected: package-roots.json remains byte-unchanged on its AM-42 pin, all pre-existing verify-contracts + test-inventory gates remain green at the Phase A head, and the pre-activation slice whitelist is unchanged per Eye ruling. AM-42's file bytes are never touched; all amendment/regularization linkage lives solely in mutable registry surfaces and new records. No other obligation, whitelist entry, or package classification is silently altered. The inherited AMENDMENT-1 content is sound: the E1-E6 enforcement chain is fail-closed and addresses all v0.2.0 blockers; the two-phase pivot correctly resolves DISCOVERY-001's bootstrap-pivot coupling; the carried-forward spikes (SPIKE-E6-EVALUATOR-FORM with declarative-oracle-language settled design and pre-evaluator enrollment blocked, SPIKE-PD001-NOLISTENER-COMPLETENESS with kernel-inherited seccomp architecture conceptually sound and CI eBPF+strace detection fail-closed) are bounded with explicit interim postures and Eye-ratified; honest limits and non-claims are accurately stated. The plan is implementation-ready and consistent with the repository trust model.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-6",
+    "response_id": "2deacb9a-ca77-485a-93c2-fdc93de33847",
+    "source": "cli-seats/claude",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T16:51:05.263Z",
+    "tool": "cli-seats.askClaude"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "9364cca7fb5b00fd6be08ce5fad6f046a4e9676d558e58a31854bfc56698f821",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

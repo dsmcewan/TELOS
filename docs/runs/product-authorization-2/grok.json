@@ -1,0 +1,28 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-2-discovery-002-phase-b-obligation",
+  "use_case": "iliad-product-1",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop-amendment-2/matured-approach-amendment-2.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop-amendment-2/AMENDMENT-2-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:463bde1c276ddb65b8e0cb0c89ed65a36707a968d75dc744395377f451bd3ba7",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T16:50:06.604Z",
+  "rationale": "AMENDMENT-2 is a sound, narrowly scoped governed correction of a factual discrepancy (DISCOVERY-002): Phase B correctly ADDS cli/ and FORMALLY CLASSIFIES the pre-existing connectors/meta-ads-mcp/ into PACKAGE_ROOTS_EXCLUDE under one atomic AM-43 activation, with honest per-directory deferral justifications. Whitelist, package-classification outcome, Phase A (already Eye-accepted), and all other AMENDMENT-1 obligations are unchanged; no silent expansion or reinterpretation is present. Inherited E1–E6 fail-closed enforcement, the DISCOVERY-001 two-phase pivot, product Phase-0/1a contract, and atomic-weave rule remain internally consistent with the trust model. Ratify both carried spikes as authorization-time decisions: SPIKE-E6-EVALUATOR-FORM (declarative pure-evaluator design settled; concrete form + grammar are merge-gated; interim blocks new/changed authoritative oracle enrollment) and SPIKE-PD001-NOLISTENER-COMPLETENESS (kernel-inherited seccomp architecture settled; residual corner audit deferred with fail-closed eBPF/strace detection). Bounded honestly-recorded spikes with fail-closed interims are not contradictions. Plan is implementation-ready AS-IS.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5-build",
+    "response_id": "59150342-0843-4b64-8c05-203dc580a513",
+    "source": "cli-seats/grok",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T16:50:38.316Z",
+    "tool": "cli-seats.askGrok"
+  }
+}
