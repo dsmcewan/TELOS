@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "release-pipeline",
+        "claim": "The substituted-definition defense still fails closed only after a public mutation. A write collaborator can dispatch an off-main release.yml that omits the telos-authority environment, requests contents:write, and creates or publishes a release against the already-existing Eye-created tag before the trusted draft occupies that tag’s release slot. Environment policy cannot constrain a job that does not reference the environment; the tag ruleset does not govern release creation for an existing tag; pinned attestation identity and the drift oracle detect rejection only after publication. The admitted rogue-first path—trusted run aborts, then the Eye deletes the rogue release—therefore permits unverified assets to become downloadable, contradicting the candidate’s draft-first invariant and the frozen fail-closed requirement. Release mutation must instead require platform-enforced credentials unavailable to arbitrary workflow definitions, or occur in an Eye-local/external publisher. Candidate plan_ref sha256:3ead2bb4a50cf0cf615a876fb710fcc52bea316a2c324bd6d9b78d5813ece069."
+      },
+      {
+        "scope": "release-supply-chain",
+        "claim": "TRUSTED_WORKFLOW_DIGEST authenticates only repository-local .github bytes, but the release path executes remote action/tool code, including actions/attest-build-provenance and Syft, without requiring immutable full-SHA/content-digest pins or binding those executable bytes into a protected closure. Remote code can therefore change while every workflow and verdict-producer digest remains unchanged; in an OIDC/publication-capable job that can alter or exfiltrate release authority. Require full-content pins for every uses: dependency, verified checksums/signatures for downloaded tools, a lint oracle rejecting mutable references, and substitution regressions proving changed remote action/tool bytes cannot execute. Candidate plan_ref sha256:3ead2bb4a50cf0cf615a876fb710fcc52bea316a2c324bd6d9b78d5813ece069."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a045bb-5710-7110-b87d-befd55dc3954",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a045bb-5710-7110-b87d-befd55dc3954",
+    "source": "cli-seats/codex_ask"
+  }
+}

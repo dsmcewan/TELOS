@@ -495,7 +495,20 @@ per-file designs are in the approved plan; acceptance criteria here.
   fixture — a PR that only ADDS a new push-triggered workflow (or a new
   composite action) without touching any existing covered file ⇒ the
   manifest's path set moved ⇒ the controller refuses workflow-modified
-  BEFORE merge, so the new privileged code never lands to execute; genesis
+  BEFORE merge, so the new privileged code never lands to execute;
+  REMOTE EXECUTABLE BYTES ARE CONTENT-PINNED TOO (the manifest digest
+  authenticates only repository-local .github bytes, but jobs execute
+  remote action and tool code — actions/attest-build-provenance, syft —
+  which could change while every local digest stands): the workflow-lint
+  oracle REQUIRES every `uses:` reference to be a FULL 40-hex commit SHA
+  (tag/branch refs ⇒ FAIL mutable-action-ref; a full-SHA pin is
+  content-addressed by git semantics), and every DOWNLOADED tool (syft
+  et al.) is fetched at a pinned version and its binary sha256 VERIFIED
+  against a digest recorded in the workflow before execution
+  (mismatch ⇒ abort tool-digest-mismatch); SUBSTITUTION regressions — a
+  `uses:` edited to a tag ref ⇒ lint FAIL; a tool download whose digest
+  differs from the recorded value ⇒ the job aborts before the tool
+  runs; genesis
   fixture — the bootstrap tool validates a staged E2 head and its printed
   digests match what the provisioned variables must hold; ruleset-off fixture ⇒
   unsafe-branch-config.
@@ -1008,23 +1021,28 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   (d) DRIFT IS SWEPT: a release-integrity oracle on main enumerates all
   releases and fails on any release not bound to an Eye-accepted tag +
   main-identity attestation.
-  (e) THE RELEASE SLOT IS OCCUPIED DRAFT-FIRST and the dispatch surface
-  is write-gated: GitHub allows ONE release per tag, and the ceremony
-  orders tag-then-immediate-draft — the trusted run is already gated
-  and waiting when the Eye pushes the tag, and it creates the DRAFT for
-  that tag as its next step, so a rogue `contents: write` release
-  create for the same tag fails `already_exists`; conversely if a rogue
-  release occupies the slot first, the trusted run aborts loudly on the
-  occupied slot (never publishes around it) and the Eye deletes the
-  rogue release + rotates the tag. RESIDUAL, STATED HONESTLY:
-  `workflow_dispatch` requires WRITE access — an unprivileged attacker
-  cannot dispatch any definition at all; the substituted-definition
-  threat is therefore a rogue write-collaborator, and the custody-drift
-  oracle already fails the pipeline the moment the collaborator set
-  grows beyond the recorded custody set. Default GITHUB_TOKEN
-  permissions are set read-only (a default, not a ceiling — the plan
-  does not claim otherwise; the ceiling is the write-gated dispatch +
-  slot occupancy + identity-pinned verification above).
+  (e) RELEASE MUTATION IS EYE-LOCAL AND ATOMIC — no workflow publishes,
+  and no tag ever exists without its slot occupied (a rogue-first path
+  that publishes anything, however briefly, breaks draft-first
+  fail-closed; the fix is that publication authority lives OUTSIDE
+  Actions entirely): the Eye's LOCAL ceremony runs `gh release create
+  vX --draft --target <accepted-commit>` under the Eye's OWN credential
+  — this single call CREATES THE TAG AND THE DRAFT ATOMICALLY, so there
+  is no pre-draft tag window at all; a rogue workflow can neither
+  create the tag (v* ruleset) nor the release (slot occupied from
+  birth). The trusted main-dispatch workflow only VERIFIES and ATTESTS
+  the draft (gate/build/verify — its jobs need no `contents: write` for
+  releases); the final PUBLISH flip is the Eye's local act after the
+  checks are green. NO Actions workflow performs any release mutation.
+  RESIDUAL, STATED HONESTLY: `workflow_dispatch` requires WRITE access —
+  an unprivileged attacker cannot dispatch any definition; the
+  substituted-definition threat is a rogue write-collaborator, whose
+  self-granted GITHUB_TOKEN could still call the releases API — but
+  every v* slot is occupied at tag birth, non-v* releases are swept by
+  the release-integrity oracle, and the custody-drift oracle fails the
+  pipeline the moment the collaborator set grows beyond the recorded
+  custody set. Default GITHUB_TOKEN permissions are set read-only (a
+  default, not a ceiling — the plan does not claim otherwise).
   **Accept (workflow trust)**: off-main-tag regression — a tag whose
   target commit carries a modified release.yml is pushed ⇒ NOTHING
   triggers (no push trigger exists); SUBSTITUTED-DEFINITION regression —
@@ -1033,13 +1051,15 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   telos-authority environment refuses the ref (no trust roots, no
   release secrets), the v* tag ruleset refuses tag creation, and any
   artifact it attests fails pinned-identity verification — no trusted
-  release mutation is possible; EXISTING-TAG regression — after the
-  trusted draft occupies the tag's slot, a rogue release create for the
-  same tag ⇒ 422 already_exists, nothing published; rogue-first
-  regression — a rogue release occupying the slot before the draft ⇒
-  the trusted run aborts occupied-slot, never publishes around it;
-  dispatching main's definition with a
-  hostile tag name as input ⇒ the gate evaluates it as data and aborts.
+  release mutation is possible; ATOMIC-SLOT regression — the Eye-local
+  create makes tag+draft in one call, and a rogue release create for
+  that tag at ANY later moment ⇒ 422 already_exists, nothing published;
+  there is no pre-draft window to race (asserted: no ceremony step ever
+  leaves a v* tag without an occupying release); NO-WORKFLOW-PUBLISH
+  assertion — the workflow-lint oracle fails any Actions job containing
+  a release create/publish/edit operation; dispatching main's
+  definition with a hostile tag name as input ⇒ the gate evaluates it
+  as data and aborts.
   (1) GATE: tag object must be ANNOTATED and its SIGNATURE VERIFIED in CI
   against an OUT-OF-TREE trust root (an in-tree public key is circular — a
   rewritten commit can carry the attacker's key plus a matching tag): the
@@ -1097,18 +1117,22 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   artifact. **Accept**: double-build digests equal for BOTH the cli tgz and
   the assembled source tarball; a fixture varying mtime/owner in the
   repack ⇒ digest mismatch ⇒ abort.
-  (3) PUBLISH fail-closed, DRAFT-FIRST (checking after public upload is
-  not fail-closed — an extra or unattested asset must never be
-  downloadable): the release is created as a DRAFT (`gh release create
-  --draft`), assets upload to the draft only; against the DRAFT, the
-  CLOSED ALLOWLIST check runs (`gh release view --json assets` must equal
-  the literal expected filename set EXACTLY — missing or EXTRA assets ⇒
-  fail) and `gh attestation verify` runs per asset (unattested ⇒ fail);
-  ONLY after both pass is the single final operation performed — flipping
-  the draft to published; any failure deletes the draft, so nothing
-  unverified is ever public. **Accept**: planted extra asset ⇒ draft
-  deleted, release never published; all-green ⇒ publish flip is the last
-  logged step.
+  (3) PUBLISH fail-closed, DRAFT-FIRST, EYE-LOCAL (checking after public
+  upload is not fail-closed — an extra or unattested asset must never be
+  downloadable — and per (e) no Actions job performs any release
+  mutation): the draft already exists from the Eye-local atomic
+  tag+draft create; the trusted workflow verifies the build and uploads
+  NOTHING to the release — it emits artifacts + attestations as
+  workflow outputs; the Eye's LOCAL ceremony uploads assets to the
+  DRAFT, then runs the CLOSED ALLOWLIST check (`gh release view --json
+  assets` must equal the literal expected filename set EXACTLY —
+  missing or EXTRA assets ⇒ fail) and `gh attestation verify` per asset
+  (unattested ⇒ fail, identity pinned to release.yml@refs/heads/main);
+  ONLY after both pass does the Eye perform the single final operation —
+  flipping the draft to published; any failure deletes the draft, so
+  nothing unverified is ever public. **Accept**: planted extra asset ⇒
+  draft deleted, release never published; all-green ⇒ publish flip is
+  the last logged step of the local ceremony.
   RELEASING.md ceremony (local signed annotated tag with the committed public
   key's private counterpart; immutability Setting prerequisite; correction
   process — first application: v0.2.0 4,558→4,559). **Accept**: lightweight tag
