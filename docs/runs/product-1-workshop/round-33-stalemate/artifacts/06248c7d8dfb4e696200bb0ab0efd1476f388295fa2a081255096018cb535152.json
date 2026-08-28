@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E2-protected-variable-custody",
+        "claim": "The custody mechanism makes required pull-request verification unsatisfiable. Every protected root and `EYE_AUTHORITY_PUBKEY` is available only through the `telos-authority` environment, whose deployment policy admits protected `main` only; GitHub matches that policy against the workflow run's `GITHUB_REF`, while a `pull_request` run uses `refs/pull/<n>/merge`. The PR gate therefore cannot start with or access the values it must use to grant `authority-transition`. Allowing pull-request refs into the same environment is not a safe repair because that environment also contains release-capable secrets, and the candidate itself recognizes that proposed workflow bytes can execute before merge. Separate readable trust roots from release credentials and specify a base-controlled PR execution/access path, with regressions proving both that a valid transition PR can complete its required check and that a malicious PR workflow cannot access release credentials. Candidate sha256:1e43c9055af0fcb4ea04ef0bb52f9f0c85561c453e04af4490522a5b04737376."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a045ce-f9c9-7383-a472-c1207cdd08e1",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a045ce-f9c9-7383-a472-c1207cdd08e1",
+    "source": "cli-seats/codex_ask"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:05abdaca55e8faf5275e0161846090c00e069e16bcecb923ab5612f70b51d476",
+  "output_plan_artifact_hash": "sha256:05abdaca55e8faf5275e0161846090c00e069e16bcecb923ab5612f70b51d476",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:ca90a6f65b749275e010e19ba5170d203b7497812edb1b06e6e20eb708727b3f",
+    "provenance_key": "anthropic:ceab2692-4e98-4627-b3b9-6c1b2652b380"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:06248c7d8dfb4e696200bb0ab0efd1476f388295fa2a081255096018cb535152",
+    "provenance_key": "openai:01a045ce-f9c9-7383-a472-c1207cdd08e1",
+    "bound_hash": "sha256:05abdaca55e8faf5275e0161846090c00e069e16bcecb923ab5612f70b51d476"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E2-protected-variable-custody",
+      "claim": "The custody mechanism makes required pull-request verification unsatisfiable. Every protected root and `EYE_AUTHORITY_PUBKEY` is available only through the `telos-authority` environment, whose deployment policy admits protected `main` only; GitHub matches that policy against the workflow run's `GITHUB_REF`, while a `pull_request` run uses `refs/pull/<n>/merge`. The PR gate therefore cannot start with or access the values it must use to grant `authority-transition`. Allowing pull-request refs into the same environment is not a safe repair because that environment also contains release-capable secrets, and the candidate itself recognizes that proposed workflow bytes can execute before merge. Separate readable trust roots from release credentials and specify a base-controlled PR execution/access path, with regressions proving both that a valid transition PR can complete its required check and that a malicious PR workflow cannot access release credentials. Candidate sha256:1e43c9055af0fcb4ea04ef0bb52f9f0c85561c453e04af4490522a5b04737376.",
+      "objection_hash": "sha256:225a6b16423d76ef9dfcfd070ab65f6afb104f5418f2e68d1d39342e49333ed0",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

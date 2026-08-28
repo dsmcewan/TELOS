@@ -308,11 +308,25 @@ per-file designs are in the approved plan; acceptance criteria here.
   plan (repository-level Actions variables are writable by ANY
   write-access collaborator, so they cannot carry Eye-only custody by
   themselves; claiming admin-only there would be false): all protected
-  variables live in a dedicated GitHub ENVIRONMENT (`telos-authority`)
-  — environment configuration and its variables are manageable ONLY by
-  repository ADMINS, and the environment's deployment branch policy
-  restricts it to protected main; workflow jobs read the roots only by
-  targeting `environment: telos-authority`. Custody is then made
+  variables live in dedicated GitHub ENVIRONMENTS, SPLIT BY SENSITIVITY
+  (one environment cannot serve both: a main-only deployment policy is
+  matched against GITHUB_REF, and a pull_request run's
+  `refs/pull/<n>/merge` would be refused — making required PR
+  verification unsatisfiable — while opening that environment to PR
+  refs would expose release-capable secrets to proposed workflow
+  bytes):
+  - `telos-authority-roots` holds ONLY PUBLIC verification values —
+    chain-root digests, EYE_AUTHORITY_PUBKEY, closure/workflow/
+    controller digests. These are public-key material and hashes: their
+    security property is WRITE custody (admin-only environment
+    management, custody-drift-checked), not read secrecy. Its
+    deployment policy admits ALL refs, so PR gate jobs read the roots
+    by targeting it; a malicious PR workflow that reads them gains
+    nothing (they are verification anchors, not capabilities).
+  - `telos-authority-release` holds release-capable SECRETS and admits
+    ONLY protected main — proposed PR bytes can never reach it.
+  Environment configuration for both is manageable ONLY by repository
+  ADMINS. Custody is then made
   DETERMINISTICALLY VERIFIABLE: (a) on this personal repository the
   admin set is exactly the Eye (the owner), and a CUSTODY-DRIFT oracle
   in the authority workflows queries the collaborator/permission list
@@ -321,7 +335,13 @@ per-file designs are in the approved plan; acceptance criteria here.
   variables, workflow dispatch, and the releases API — the invariant is
   a closed WRITER set, not admin-only), or if the environment
   protection is removed; the Eye-local release ceremony runs the same
-  check first and REFUSES to proceed while custody drift exists; (b) the recorded custody set lives in the governance
+  check first and REFUSES to proceed while custody drift exists.
+  **Accept (custody split)**: a transition PR's required gate job
+  (running on refs/pull/N/merge) reads the roots from
+  telos-authority-roots and COMPLETES its check; a malicious PR
+  workflow targeting telos-authority-release ⇒ refused by the
+  deployment policy before the job starts (no release secret ever
+  reaches proposed bytes); (b) the recorded custody set lives in the governance
   appendix and changes only by an Eye-signed transition; (c) a
   same-custody-class store outside GitHub (the Eye's local ceremony
   records signed under the Eye key) provides the recovery root if the
@@ -337,8 +357,8 @@ per-file designs are in the approved plan; acceptance criteria here.
   protected variable and every subsequent gate run (main-push, release,
   local) DENIES `chain-root-untrusted`; the modified commit can never
   self-validate because the variable only moves by admin action under the
-  telos-authority environment custody (the Eye, per the custody-drift
-  oracle).
+  telos-authority-roots environment custody (the Eye, per the
+  custody-drift oracle).
   The gate, still anchored at the protected base,
   verifies: old_chain_root equals the protected variable's current value
   AND matches what the base anchor actually yields, new_chain_root matches
@@ -1016,7 +1036,8 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   definition can reach is privileged, enforced by the PLATFORM, not by
   the workflow's own text:
   (a) CREDENTIALS ARE ENVIRONMENT-GATED: all release-capable secrets
-  and trust roots live in the telos-authority ENVIRONMENT whose
+  live in the telos-authority-release ENVIRONMENT (public roots in
+  telos-authority-roots per the custody definition) whose
   deployment branch policy admits ONLY protected main — a job from any
   other ref requesting that environment is refused by GitHub before it
   starts; the repository DEFAULT GITHUB_TOKEN permission is read-only.
@@ -1067,8 +1088,8 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   triggers (no push trigger exists); SUBSTITUTED-DEFINITION regression —
   a dispatch of a modified definition from a non-main ref that
   self-grants `contents: write` + `id-token: write` ⇒ the
-  telos-authority environment refuses the ref (no trust roots, no
-  release secrets), the v* tag ruleset refuses tag creation, and any
+  telos-authority-release environment refuses the ref (no release
+  secrets; the readable public roots grant no capability), the v* tag ruleset refuses tag creation, and any
   artifact it attests fails pinned-identity verification — no trusted
   release mutation is possible; ATOMIC-SLOT regression — the Eye-local
   create makes tag+draft in one call, and a rogue release create for
@@ -1089,7 +1110,7 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   anchored — the RELEASE BODY embeds a RELEASE-ACCEPTANCE block
   `{release_commit, plan_ref, eye_acceptance: Ed25519 over
   (release_commit ‖ plan_ref)}`, verified against the protected
-  EYE_AUTHORITY_PUBKEY (telos-authority environment custody; not in the
+  EYE_AUTHORITY_PUBKEY (telos-authority-roots custody; not in the
   tree — an in-tree record cannot name the very commit its own addition
   creates, and mutable main cannot key authority). The gate requires
   (a) the block's release_commit == the draft's target (and, once
