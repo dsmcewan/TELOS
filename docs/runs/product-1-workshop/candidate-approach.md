@@ -262,9 +262,13 @@ per-file designs are in the approved plan; acceptance criteria here.
   WITHOUT touching any ruleset timestamp): the attestation binds
   {safety/actor-restriction ruleset states, bypass resolutions, full
   custody enumeration (collaborators, App installations + permission
-  sets, deploy keys), environment protection state, THE DOSSIER DIGEST
-  OF THIS SPECIFIC MERGE RUN, issued_at, and a single-use nonce}, with
-  a SHORT TTL; the attestor executes at ceremony start immediately
+  sets, deploy keys), environment protection state, THE REPOSITORY
+  ACTIONS SETTINGS that affect token scope (default workflow-token
+  permission = read; "send write tokens to workflows from fork pull
+  requests" = DISABLED; "allow fork PRs to use secrets" = DISABLED — any
+  deviation ⇒ the attestor refuses `unsafe-actions-config`), THE DOSSIER
+  DIGEST OF THIS SPECIFIC MERGE RUN, issued_at, and a single-use nonce},
+  with a SHORT TTL; the attestor executes at ceremony start immediately
   before the controller, so every conclusion is at most minutes old
   and each attestation authorizes exactly one run (reuse ⇒
   `config-attestation-consumed`). The controller VERIFIES it against
@@ -1722,9 +1726,12 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   the custody manifest (drift-swept); the one that is not (fork-PR
   contributor) gets a platform-forced read-only token; and the publish
   window admits no Actions — the closed-writer-set claim covers Actions
-  tokens too. FORK-PR regression: a fork PR whose workflow requests
-  contents:write and attempts a release delete ⇒ the platform
-  read-only token yields 403, no mutation.
+  tokens too. FORK-PR regressions: with fork-PR write tokens DISABLED, a
+  fork PR requesting contents:write + a release delete ⇒ read-only token
+  yields 403, no mutation; with the setting ENABLED (stub), the config
+  attestation FAILS unsafe-fork-pr-config and the ceremony/pipeline
+  refuses to proceed — the unsound configuration is caught, not silently
+  trusted.
   **Accept (workflow trust)**: off-main-tag regression — a tag whose
   target commit carries a modified release.yml is pushed ⇒ NOTHING
   triggers (no push trigger exists); SUBSTITUTED-DEFINITION regression —
@@ -1975,34 +1982,56 @@ head passes the committed-weave posture check in CI — none merges red.
 
 ## 6b. Accepted Argo implementation spikes (Eye ruling: non-blocking for maturation convergence)
 
-The Eye ruled (2026-08-28) that ARGO IMPLEMENTATION-SPIKES are legitimately
-deferred build-time work: an objection whose only remaining content is "the
-exact implementation mechanism for an already-soundly-designed requirement is
+A RECORDED operator/Eye directive (2026-08-28,
+`docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-spikes-nonblocking.md`)
+instructs that ARGO IMPLEMENTATION-SPIKES are legitimately deferred build-time
+work: an objection whose only remaining content is "the exact implementation
+mechanism for an already-soundly-designed, fail-closed-in-interim requirement is
 not spelled out in the plan" does NOT block maturation convergence and does NOT
 spawn further Daedalus rounds — it is recorded here, dispositioned, and its
-concrete mechanism is a merge-gate on its own slice with the fail-closed
-interim behavior stated. This register is itself an Eye-ratified artifact (S2/S3);
-each spike names its settled-in-plan design, its bounded open implementation
-choice, and its interim fail-closed posture.
+concrete mechanism is a merge-gate on its own slice with the fail-closed interim
+behavior stated. IMPORTANT — THIS REGISTER IS CONDITIONAL, NOT SELF-AUTHORIZING:
+it does NOT claim prior Eye ratification, and the plan derives no authority from
+its own text or any commit message. The directive above is a recorded input, not
+a signed authorization; the referee record is ADVISORY; formal ratification of
+these deferrals and of the open_questions_for_the_eye is RESERVED to the S2 TELOS
+Council review and the S3 Eye implementation-authority grant. On disk today the
+open questions remain OPEN, prior authorization summaries are NOT_AUTHORIZED, and
+CURRENT-AUTHORITY is unchanged — §6b records PROPOSED dispositions carried forward
+for ratification, nothing more. Each spike names its settled-in-plan design, its
+bounded open implementation choice, and its interim fail-closed posture.
 
 - **SPIKE-E6-EVALUATOR-FORM** — SETTLED IN-PLAN: oracles are pure functions over
   a fixed input snapshot executed by an evaluator with no ambient
   clock/entropy/network/fs; determinism is structural; ABI-conformance is the
   fail-closed qualification gate (all `file`/`npm-script` kinds route through the
   one evaluator adapter; non-conformant ⇒ oracle-abi-nonconformant, cannot ship).
-  OPEN (spike): the evaluator's implementation FORM — WASM component-model vs a
-  frozen-realm Node worker with clock/entropy/net/fs globals removed and a
-  pure-only module resolver. Both are known-sound; the slice picks one and proves
-  ABI-escape attempts fail. INTERIM (until the slice lands): oracles run under the
+  OPEN (spike): (a) the evaluator's implementation FORM — WASM component-model
+  vs a frozen-realm Node worker with clock/entropy/net/fs globals removed and a
+  pure-only module resolver (both known-sound; the slice picks one and proves
+  ABI-escape attempts fail); AND (b) SEMANTIC DISCRIMINATION beyond finite
+  black-box testing — a finite exhaustive battery over a closed author-known
+  domain is defeatable by a lookup-table oracle (returns the expected verdict for
+  every enumerated case, passes everything else), so completeness needs an
+  INDEPENDENTLY-DEFINED INVARIANT SEMANTICS: a CONSTRAINED DECLARATIVE ORACLE
+  LANGUAGE (the oracle expresses its invariant as inspectable declarative
+  predicates the runner interprets, so semantics are read from the oracle rather
+  than inferred from black-box outputs) or a TRUSTED REFERENCE EVALUATOR. The
+  declarative-language direction is the settled design intent; the slice picks
+  the concrete language/evaluator and proves a lookup-table oracle
+  oracle-abi-nonconformant (an imperative black box is not expressible in the
+  declarative surface). INTERIM (until the slice lands): oracles run under the
   frozen-realm worker + seccomp-deny/`--unshare-all` defense-in-depth, with the
   same-input-multiple-eval agreement check fail-closing on any observed variance.
   Referee evidence: `referee-adjudications/2026-08-28-e6-oracle-determinism.json`;
   Eye open question: `product-1-oq-e6-determinism-deferral`.
 
 Any future workshop objection reducible to "SPIKE-E6-* mechanism not fully
-specified in-plan" is CLOSED by this register per the Eye ruling — not re-opened
-as a new round. Genuinely NEW plan-level defects (internal contradictions,
-unsound designs, missing enforcement) remain in scope and are fixed normally.
+specified in-plan" is CARRIED by this register per the recorded directive — not
+re-opened as a new Daedalus round; its formal disposition is a Council/Eye
+decision at S2/S3, not this document's assertion. Genuinely NEW plan-level defects
+(internal contradictions, unsound designs, missing enforcement, factual
+over-claims) remain in scope and are fixed normally.
 
 ## 7. Acceptance criteria (quest-level)
 

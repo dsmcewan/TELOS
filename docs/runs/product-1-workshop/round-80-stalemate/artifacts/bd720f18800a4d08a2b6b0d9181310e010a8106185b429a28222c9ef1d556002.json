@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:c6f913aa983bf957d0c85ec8f12af568c58cd828693cfe7dfd3526d9a94f558a",
+  "output_plan_artifact_hash": "sha256:c6f913aa983bf957d0c85ec8f12af568c58cd828693cfe7dfd3526d9a94f558a",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:9be5e3fe2524ca3cd602673107a94be2abdf7708e3a9810a86be368dabb2fb9e",
+    "provenance_key": "anthropic:9bad53a7-30b7-4cbd-9bbe-22cc9f44b868"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:8c2ac702c1d9a76ea86b0b0f0e9d558c0965ffe52496d686d17815d74f09d70f",
+    "provenance_key": "openai:codex-cli-mtck6bdp",
+    "bound_hash": "sha256:c6f913aa983bf957d0c85ec8f12af568c58cd828693cfe7dfd3526d9a94f558a"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:E6-oracle-semantic-discrimination",
+      "claim": "E6's finite exhaustive battery is still gameable. An oracle author can precompute the closed registry-generated negative and conforming-variant domains, embed lookup sets of their snapshot digests, return the expected verdict for every enumerated case, and return pass for all other inputs. That oracle satisfies the pure ABI, repeated-evaluation agreement, domain-cardinality checks, baseline-overfit tests, and exhaustive qualification while failing to evaluate the claimed invariant on a real violating input outside the test domain. Concealed execution order and recorded randomness do not help because the complete domain and transformations are author-known. Qualification therefore needs independently defined invariant semantics—such as a trusted reference evaluator or constrained declarative oracle language—not finite black-box cases alone; otherwise governance correction d remains unresolved at candidate plan_ref sha256:c6f913aa983bf957d0c85ec8f12af568c58cd828693cfe7dfd3526d9a94f558a.",
+      "objection_hash": "sha256:499455fa85ec2c63ba2e573185e8fc6306a68c0a7f6041256d783501a026b46a",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach:release-writer-closure",
+      "claim": "The release security argument incorrectly treats fork pull-request tokens as unconditionally platform-forced read-only. GitHub permits administrators to enable sending write-capable GITHUB_TOKENs to workflows from fork pull requests. A malicious fork can therefore propose workflow bytes requesting contents:write and receive mutation authority before the workflow-lint check or merge controller can reject the PR; main/tag rulesets do not prevent Releases API mutation or deletion on existing tags. The configuration attestation and custody oracle never require that setting to be disabled, so the claimed closed writer set and FORK-PR regression are unsound. Add this repository Actions setting to privileged configuration enumeration, require it disabled before any relevant workflow or release ceremony, and test the enabled-setting attack at plan_ref sha256:c6f913aa983bf957d0c85ec8f12af568c58cd828693cfe7dfd3526d9a94f558a.",
+      "objection_hash": "sha256:d0030cbf39f061abebff2b85621d11b913028bc081b8c4b55eb48a92495abd45",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach:governance-authority",
+      "claim": "Section 6b asserts that the Eye ruled the spike non-blocking and that the register is already Eye-ratified at S2/S3, then uses that assertion to close future objections. Disk authority contradicts this: `product-1-oq-e6-determinism-deferral` remains an open question whose record says S2/S3 ratification is required; both existing product-authorization summaries are NOT_AUTHORIZED; and CURRENT-AUTHORITY remains plan sha256:05a48700f92938e5fe1cf42199434ec163c86c9bda4f637d669fa89d5867f1c3 under authz-008. No stable Eye decision identifier supports the claimed ruling. The approach cannot derive authority from its own text or a commit message; §6b must remain conditional until an actual Eye ruling and authorization/implementation-authority record exist.",
+      "objection_hash": "sha256:e5138ff34f872119b8b9947891076afe22f16d42f767d96e86328d22e15e1492",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
