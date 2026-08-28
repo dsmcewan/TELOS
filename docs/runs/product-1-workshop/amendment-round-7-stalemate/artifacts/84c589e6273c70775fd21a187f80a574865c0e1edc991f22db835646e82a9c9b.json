@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach",
+        "claim": "E2's Eye-signed authority-transition record is replayable as a protected-surface rollback. Its signed tuple binds new verifier/workflow/controller/verdict digests but does not bind the currently trusted predecessor digests or a durably consumed monotonic transition identifier. After a later code-only transition that leaves the authority-chain root unchanged, an earlier valid record can accompany its formerly authorized bytes; recomputation and signature verification still succeed because old_chain_root remains current. Bind every transition to the live predecessor digest of each protected surface and an externally anchored monotonic/consumed transition state, and add an A→B→C then replay-A regression that must refuse before mutation."
+      },
+      {
+        "scope": "candidate-approach",
+        "claim": "The Phase-A pre-activation slice whitelist is not enforced at the mutation boundary. Freshness and potentially plugin/E2/E3 slices merge before E1's controller exists, while the phase-aware executable whitelist check arrives only with E6 and therefore detects violations only after merges. A content-addressed whitelist plus manual Eye compliance cannot make an unlisted PR machine-ineligible. Install an Eye-local deterministic pre-merge controller with Phase A, or land E1 immediately after Phase A before every other implementation slice, and require a regression proving an unlisted PR cannot mutate the protected branch."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcq0l15",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcq0l15",
+    "source": "cli-seats/codex_ask"
+  }
+}

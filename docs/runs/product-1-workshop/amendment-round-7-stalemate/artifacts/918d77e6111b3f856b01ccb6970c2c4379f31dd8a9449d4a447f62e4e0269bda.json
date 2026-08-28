@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:a685f603b907b7dca29d8a13847bef6f27dd4b40816347d796e366c1141870ba",
+  "output_plan_artifact_hash": "sha256:a685f603b907b7dca29d8a13847bef6f27dd4b40816347d796e366c1141870ba",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:4fbaa2f19037f6351af5453290ea9d62e908da4b8a7cda45e53dca658c1eeffc",
+    "provenance_key": "anthropic:c67aa103-1615-48ce-9f34-33847448ab59"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:84c589e6273c70775fd21a187f80a574865c0e1edc991f22db835646e82a9c9b",
+    "provenance_key": "openai:codex-cli-mtcq0l15",
+    "bound_hash": "sha256:a685f603b907b7dca29d8a13847bef6f27dd4b40816347d796e366c1141870ba"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "E2's Eye-signed authority-transition record is replayable as a protected-surface rollback. Its signed tuple binds new verifier/workflow/controller/verdict digests but does not bind the currently trusted predecessor digests or a durably consumed monotonic transition identifier. After a later code-only transition that leaves the authority-chain root unchanged, an earlier valid record can accompany its formerly authorized bytes; recomputation and signature verification still succeed because old_chain_root remains current. Bind every transition to the live predecessor digest of each protected surface and an externally anchored monotonic/consumed transition state, and add an A→B→C then replay-A regression that must refuse before mutation.",
+      "objection_hash": "sha256:658d77f02fb67420c3a281a7140b81002ec0025ad2a66074e270a2916cda260e",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "The Phase-A pre-activation slice whitelist is not enforced at the mutation boundary. Freshness and potentially plugin/E2/E3 slices merge before E1's controller exists, while the phase-aware executable whitelist check arrives only with E6 and therefore detects violations only after merges. A content-addressed whitelist plus manual Eye compliance cannot make an unlisted PR machine-ineligible. Install an Eye-local deterministic pre-merge controller with Phase A, or land E1 immediately after Phase A before every other implementation slice, and require a regression proving an unlisted PR cannot mutate the protected branch.",
+      "objection_hash": "sha256:606a60f29c11c98c36ffbdef618dedf2d0ad8bb31f19032dc73c83fa1efb9938",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
