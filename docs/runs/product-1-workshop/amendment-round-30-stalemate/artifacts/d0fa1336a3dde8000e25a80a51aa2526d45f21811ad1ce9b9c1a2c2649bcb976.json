@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:9936c06a5dd18bff771915b11f1b3f3e9ae910662806497194c55adc6e473369",
+  "output_plan_artifact_hash": "sha256:9936c06a5dd18bff771915b11f1b3f3e9ae910662806497194c55adc6e473369",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:9d26a5cbcddb501a49c8ce4e81531cbcc2dde0ee9757ca888f482523756010da",
+    "provenance_key": "anthropic:99374260-aea0-4ce9-8a18-68302bc2af52"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:8a94c37121ed79d55ef3bc36e6965e9248e4de90e183a65761671f08136e9050",
+    "provenance_key": "openai:codex-cli-mtcxhj1j",
+    "bound_hash": "sha256:9936c06a5dd18bff771915b11f1b3f3e9ae910662806497194c55adc6e473369"
+  },
+  "objections": [
+    {
+      "scope": "plan",
+      "claim": "The runtime/install contract is internally contradictory and would mislead operators. Section 1 makes `--disable-sigusr1` a prerequisite, sets PYLAE's floor to Node >=22.14.0, and requires doctor/install to refuse 22.12.x–22.13.x; it also refuses versions above the capability registry's reviewed ceiling. Section 4 nevertheless specifies the installation contract as `Node >=22.12`, an unbounded range that includes both known-refused lower versions and unreviewed future versions. Replace every operator-facing runtime claim and manifest range with the actual bounded supported interval `[22.14.0, reviewed ceiling]` (or supply a sound alternative containment mechanism), and add regressions proving 22.12.x/22.13.x, the upper boundary, and above-ceiling versions agree across engines, launcher, doctor, install docs, and the Node-version reconciliation oracle.",
+      "objection_hash": "sha256:4028451e118148218e28ad6be5bd870f33d8ac4eb8f0c635e8b8c421d012892b",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

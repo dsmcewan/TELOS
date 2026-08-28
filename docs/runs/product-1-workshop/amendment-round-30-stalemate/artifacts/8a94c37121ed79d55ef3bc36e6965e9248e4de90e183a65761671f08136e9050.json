@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "plan",
+        "claim": "The runtime/install contract is internally contradictory and would mislead operators. Section 1 makes `--disable-sigusr1` a prerequisite, sets PYLAE's floor to Node >=22.14.0, and requires doctor/install to refuse 22.12.x–22.13.x; it also refuses versions above the capability registry's reviewed ceiling. Section 4 nevertheless specifies the installation contract as `Node >=22.12`, an unbounded range that includes both known-refused lower versions and unreviewed future versions. Replace every operator-facing runtime claim and manifest range with the actual bounded supported interval `[22.14.0, reviewed ceiling]` (or supply a sound alternative containment mechanism), and add regressions proving 22.12.x/22.13.x, the upper boundary, and above-ceiling versions agree across engines, launcher, doctor, install docs, and the Node-version reconciliation oracle."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcxhj1j",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcxhj1j",
+    "source": "cli-seats/codex_ask"
+  }
+}
