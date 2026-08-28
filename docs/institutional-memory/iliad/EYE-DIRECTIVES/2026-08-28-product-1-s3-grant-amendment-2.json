@@ -1,0 +1,21 @@
+{
+  "record": "S3 implementation-authority grant — product-1 AMENDMENT-2 (DISCOVERY-002 Phase B obligation correction)",
+  "ruling": "GRANT (subject to preflight)",
+  "eye": "the operator (Drason McEwan), acting as The Eye",
+  "date": "2026-08-28",
+  "seat_substitution_ratified": "claude-sonnet-4-6 required-seat substitution ratified for the AMENDMENT-2 authorization run ONLY, with its recorded provenance (resp 2deacb9a). Does NOT establish standing substitution authority.",
+  "authorized_plan": {
+    "plan_ref": "sha256:463bde1c276ddb65b8e0cb0c89ed65a36707a968d75dc744395377f451bd3ba7",
+    "plan_path": "docs/runs/product-1-workshop-amendment-2/matured-approach-amendment-2.md",
+    "reviewed_head": "cf108ddfd2a07ac06c9c5b32b8c0c16a1cc6dd75",
+    "convergence_record": "docs/runs/product-1-workshop-amendment-2/AMENDMENT-2-CONVERGED.json",
+    "authorization": "docs/runs/product-authorization-2/run-1-authorized/authorization-summary.json"
+  },
+  "supersedes": "the AMENDMENT-1 grant's coverage of the Phase B obligation only (plan_ref 41a1e8b6); Phase A remains accepted + unchanged under AMENDMENT-1.",
+  "grant": "S3 implementation authority over the exact authorized AMENDMENT-2 plan (plan_ref 463bde1c).",
+  "preflight_condition": "Derive + durably record implementation_start_head; deterministically prove the delta from reviewed head cf108dd contains ONLY authorization/governance/evidence artifacts. Any implementation-bearing or otherwise unauthorized delta invalidates this grant and returns to governance.",
+  "e1_genesis_merge": "AUTHORIZED under the previously stated condition (strictly the Phase A bootstrap mechanism; does not encode the discovered Phase B classification). Immediately before merge, deterministically verify the exact diff contains NO package-classification decision, NO unauthorized Phase-B implementation, and NO modification beyond the authorized Phase-A/E1 bootstrap scope; record that verification as merge evidence; if the check fails, do NOT merge.",
+  "after_e1": "Resume ONLY the next S3-authorized bounded slice and STOP again at its Eye acceptance point.",
+  "standing_restrictions": "All existing scope restrictions, per-slice Eye acceptance, SPIKE-E6/SPIKE-PD001 gates, discovery routing, and the prohibition on autonomous acceptance/merge/release/GA/production-readiness remain in force.",
+  "content_address": "sha256:f610b1c0d771444a231e67b4568d524e3ead31c83a30584a2c9644d80dda16dc"
+}
