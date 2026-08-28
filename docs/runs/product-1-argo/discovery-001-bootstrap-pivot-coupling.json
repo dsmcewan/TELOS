@@ -1,0 +1,28 @@
+{
+  "kind": "argo-implementation-discovery",
+  "quest": "product-1",
+  "slice": "governance-bootstrap",
+  "recorded": "2026-08-28",
+  "status": "SLICE STOPPED per S3 grant condition 7 \u2014 routed to the Eye",
+  "discovery": "Executing \u00a73 step 3 (pivot CURRENT-AUTHORITY.active_plan/active_authorization to the product-1 successor) at the bootstrap head is UNSATISFIABLE under the plan's own joint constraints: (a) the bootstrap must touch NO woven inputs, and (b) the bootstrap head must keep the PRE-EXISTING verify-contracts green. verify-contracts section 6b EXECUTES the comprehension gate over clotho/memory/comprehension-queries.json \u2014 a WOVEN git-weaver input \u2014 whose governing_authority.plan_ref must equal CURRENT-AUTHORITY.active_plan; the same coupling exists in lachesis/atropos memory query artifacts (woven) and the correct-reader examples. A pivot without editing woven files breaks the gate; editing them at bootstrap violates the plan's woven-input prohibition (round-67: the pre-fix committed-weave verifier is known-nondiscriminating and must not verify a woven-input change).",
+  "evidence": {
+    "dry_run": "minimal pivot applied to CURRENT-AUTHORITY on branch quest/product-1-slice-bootstrap, then reverted",
+    "result": "309/315 (6 failures) with pivot; 313/313 restored",
+    "failures": [
+      "daedalus:chain-head==authority.active_plan",
+      "daedalus:chain-covers-authority",
+      "telos:chain-active==authority.active_authorization",
+      "argo:entry-ritual-grants-correct-reader (gate exit 3 \u2014 example reader resolves old active plan)",
+      "comprehension:host-schema-and-live-pointers (exit 1 \u2014 gate suite couples to woven clotho/memory queries)",
+      "authority:read (artifact of the minimal dry-run superseded-row shape; independently fixable)"
+    ],
+    "woven_coupling": "clotho/memory/comprehension-queries.json (+ .4b/.5/.6/.7 variants), lachesis/memory + atropos/memory query artifacts \u2014 all pin governing_authority.plan_ref to the active plan and are woven inputs"
+  },
+  "precedent_observed": "authz-lachesis-1 and authz-atropos-1 are registered as enrollment-class chain entries WITHOUT pivoting active_plan (both PASS in the dry run) \u2014 quest authorizations have a registry row-space that does not rewire the clotho-scoped active plan.",
+  "options_for_the_eye": {
+    "option_1_two_phase_pivot": "Bootstrap lands every \u00a73 record EXCEPT the active_plan/active_authorization flip: AM-43 staged (non-woven telos/AMENDMENTS), AM-42 deviation record, authz-product-1 registered in the authorization-chain as a quest-class entry (lachesis precedent), registry rows marked activation-deferred. The ACTIVE-PLAN PIVOT moves into the excluded-dirs implementation slice, which already carries a same-PR re-weave and can atomically update the woven comprehension/query artifacts under the by-then-landed discriminating freshness verifier. Preserves every invariant; re-sequences one step of \u00a73.",
+    "option_2_weave_at_bootstrap": "Let the bootstrap touch the woven files + re-weave now \u2014 VIOLATES the plan's own round-67 prohibition (pre-fix verifier is nondiscriminating); not recommended.",
+    "option_3_full_return": "Return through Daedalus maturation + TELOS authorization for an amended plan encoding option 1 (heavy; the amendment would be exactly option 1's re-sequencing)."
+  },
+  "argo_position": "Option 1 preserves the plan's security reasoning (the woven-input prohibition exists precisely because the freshness fix lands later) and the \u00a73 four-step transition completes in full \u2014 only the flip's TIMING moves to the slice already designed to touch woven surfaces atomically. But condition 6/7 reserve this judgment to the Eye; Argo does not reinterpret."
+}

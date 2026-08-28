@@ -1053,7 +1053,12 @@ clotho/memory query artifacts whose governing_authority must equal the
 active plan, so pivoting without woven edits fails the pre-existing
 gates while woven edits at bootstrap are forbidden until the
 discriminating freshness verifier exists; evidence:
-`docs/runs/product-1-argo/discovery-001-bootstrap-pivot-coupling.json`):
+`docs/runs/product-1-argo/discovery-001-bootstrap-pivot-coupling.json`,
+committed IN THIS BRANCH byte-identical to the frozen bootstrap-branch
+original at 73543b1, bound by digest
+sha256:214f8b51864726d8edcb59401803c135e93951c0275b4fbac87c084d31f34309 — Phase A's acceptance re-verifies this digest and that the
+artifact's recorded dry-run failures support the coupling claim before
+any successor authorization relies on it):
 
 PHASE A — GOVERNANCE BOOTSTRAP (the first slice; DATA ONLY):
 A1. PUBLISH: the matured amended approach (this document at convergence)
