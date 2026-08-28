@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:4dfdc10913d45835c91fce4db8a3123092b081de10cc69fd2bb8f62e9af575e5",
+  "output_plan_artifact_hash": "sha256:4dfdc10913d45835c91fce4db8a3123092b081de10cc69fd2bb8f62e9af575e5",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:c8a2a0f81503ead4d36eb129cba879e8c668aafac74551b824c5d8002ce0b65f",
+    "provenance_key": "anthropic:a8fc9354-3f83-4a72-8516-84654bd8dee5"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:3f7cc5d3f63d18768c644c98eb2a202e2ebf6494344a18cc6d3dce62c9c301cd",
+    "provenance_key": "openai:codex-cli-mtctzwao",
+    "bound_hash": "sha256:4dfdc10913d45835c91fce4db8a3123092b081de10cc69fd2bb8f62e9af575e5"
+  },
+  "objections": [
+    {
+      "scope": "approach",
+      "claim": "The no-listener executable-closure contract is internally unsatisfiable. Section 1 defines the external-tool exception as exactly three binaries (`git`, `bwrap`, and `gh`) and states that the spawn allowlist also applies to every spawned Node runtime, but the supported launcher must spawn the external `node` executable. Section 4 additionally requires doctor to establish that `sha256sum` is usable, although that executable is absent from the closed allowlist; the stated `gh` grammar also omits the `gh --version` operation doctor requires. Consequently the mandatory launcher/doctor path must either be refused by the closed grammar or execute unregistered external capabilities, so the claimed satisfiability and closed-listener-capability enforcement cannot both hold. The approach must enumerate capability-scoped exceptions and exact argument grammars for every required runtime/probe executable, including Node and any actually executed digest/version probes, with identity, environment, and listener-safety regressions.",
+      "objection_hash": "sha256:e18e5d3100e82494bb818f4c7b78bf47ef55ca7f7eefbb8086c70855e6bfd862",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

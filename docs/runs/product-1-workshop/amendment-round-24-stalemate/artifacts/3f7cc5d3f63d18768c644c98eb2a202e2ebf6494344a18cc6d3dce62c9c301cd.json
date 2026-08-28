@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "approach",
+        "claim": "The no-listener executable-closure contract is internally unsatisfiable. Section 1 defines the external-tool exception as exactly three binaries (`git`, `bwrap`, and `gh`) and states that the spawn allowlist also applies to every spawned Node runtime, but the supported launcher must spawn the external `node` executable. Section 4 additionally requires doctor to establish that `sha256sum` is usable, although that executable is absent from the closed allowlist; the stated `gh` grammar also omits the `gh --version` operation doctor requires. Consequently the mandatory launcher/doctor path must either be refused by the closed grammar or execute unregistered external capabilities, so the claimed satisfiability and closed-listener-capability enforcement cannot both hold. The approach must enumerate capability-scoped exceptions and exact argument grammars for every required runtime/probe executable, including Node and any actually executed digest/version probes, with identity, environment, and listener-safety regressions."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtctzwao",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtctzwao",
+    "source": "cli-seats/codex_ask"
+  }
+}

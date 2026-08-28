@@ -48,7 +48,7 @@ vm-module compilation of new code — ALL categorically rejected — and
 constrains every spawned executable to a closed
 allowlist: (a) repo-tracked scripts, each recursively subject to the
 same grammar, and (b) a CAPABILITY-SCOPED EXTERNAL-TOOL EXCEPTION set
-for the three system binaries the CLI's contracts REQUIRE — `git`
+for the system binaries the CLI's contracts REQUIRE — the external `node` runtime (the launcher must spawn it), `git`
 (cat-file/history/bundle ops), `bwrap` (mandatory oracle confinement),
 `gh` (attestation verification) — which cannot themselves satisfy a
 source grammar, so each is bound instead by: IDENTITY (invoked by
@@ -73,8 +73,12 @@ grammar entry (a required invocation outside the grammar ⇒ the
 regression fails at qualification, BEFORE an operator ever hits a
 fail-closed refusal in the field); bwrap: only
 the oracle-confinement argv shape — no --share-net; gh: only
-`attestation verify`/read-only api GETs — no extensions, no
-alias/exec), and an ISOLATED ENVIRONMENT (cleared env except an
+`attestation verify`, `--version`, and read-only api GETs — no
+extensions, no alias/exec; NODE: only the SANITIZED-LAUNCH argv shape
+(inspector/SIGUSR1 disabled per §1, NODE_OPTIONS stripped, no
+--eval/--print/-e/-p arbitrary-code flags) — so the mandatory
+launcher's own `node` spawn is INSIDE the grammar, not an unregistered
+capability), and an ISOLATED ENVIRONMENT (cleared env except an
 enumerated safe set, so config/alias injection cannot smuggle modes).
 Any invocation outside these grammars ⇒ FAIL closed. STARTUP CAPABILITIES ARE BOUNDED TOO (a static source grammar cannot
 see `NODE_OPTIONS=--inspect=0.0.0.0:9229 pylae …` or an explicit
@@ -1577,7 +1581,7 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   data) / doctor (node within the REVIEWED capability-registry range, git
   full-history + resolved identity, bwrap, `gh` presence/version/
   resolved path — required for mandatory attestation verification —
-  and `sha256sum`, env presence, Ed25519; a missing/unusable required
+  (SHA-256 done IN-PROCESS via node:crypto — no external sha256sum binary in the tool set), env presence, Ed25519; a missing/unusable required
   tool ⇒ fail-closed diagnostic naming the mandatory workflow it
   breaks — doctor never reports usable when verify --full cannot run) /
   version (product-version.json + head) / verify (spawns verify-contracts +
@@ -1671,8 +1675,9 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   archive-controlled tree_sha would have the archive lie about itself
   while the authentic bundle sits beside it): the INSTALL CONTRACT
   makes external pre-execution verification MANDATORY, using only the
-  operator's platform tooling (sha256sum + `gh attestation verify`
-  against the trust-root manifest's pinned identity) on the tarball
+  `pylae`'s TRUSTED IN-PROCESS HASHING (node:crypto createHash — not an
+  external sha256sum binary) plus `gh attestation verify` against the
+  trust-root manifest's pinned attestation identity on the tarball
   and bundle digests BEFORE extraction or execution — documented as a
   non-optional step, with `pylae doctor` printing a warning banner
   whenever it cannot find the operator's recorded pre-verification
