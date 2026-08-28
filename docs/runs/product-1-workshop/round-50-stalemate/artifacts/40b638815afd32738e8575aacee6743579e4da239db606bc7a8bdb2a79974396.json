@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:cb71f722759524aa818d24eca45cdad0642a4005a4b296a8347279ce4d4f9461",
+  "output_plan_artifact_hash": "sha256:cb71f722759524aa818d24eca45cdad0642a4005a4b296a8347279ce4d4f9461",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:b12cd9648b2c16973555b24ea59cb76710f77d29e69a53ead5c7918cfe0a8b45",
+    "provenance_key": "anthropic:37321bf7-ed26-4d2d-974d-420fcf7ee4bd"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:6c1572cafded353e4b305fe131ef52b5d45e1140eee9b2c146337cf3d42a8187",
+    "provenance_key": "openai:codex-cli-mtccyrwl",
+    "bound_hash": "sha256:cb71f722759524aa818d24eca45cdad0642a4005a4b296a8347279ce4d4f9461"
+  },
+  "objections": [
+    {
+      "scope": "candidate:release-publication-toctou",
+      "claim": "The Eye-local publish ceremony retains a fail-open TOCTOU window. The approach explicitly permits a self-granted `contents:write` Actions token to mutate the bound draft and relies on re-verifying assets/body “immediately before” the Eye flips `draft:false`. Those are separate GitHub API operations with no stated conditional update binding the flip to the verified draft state. A controller/publisher credential or rogue workflow can delete/replace an asset or edit the body after the final verification and before the flip; the Eye then publishes unverified content. The v* ruleset constrains tag refs, not draft-release mutations, and post-publication verification detects the defect only after public exposure. Require platform-enforced exclusive release mutation during the verification-to-flip interval—such as a verified release-mode custody transition that revokes/disables every non-Eye release-capable credential—or another atomic mechanism, plus a regression that mutates the bound numeric release ID after the last pre-flip check and proves publication is refused.",
+      "objection_hash": "sha256:7720c86a0892b89c9eec9807fab2075a2606ee54c6501709e07416087f37c85b",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

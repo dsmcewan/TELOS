@@ -1330,9 +1330,25 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   only via Eye-signed transition. Custody regressions: manifest-listed
   controller/publisher ⇒ NO drift (E1 operable); unlisted writer ⇒
   drift; listed principal with escalated live scopes ⇒ drift; (iv) the
-  publish flip re-verifies the asset set + digests IMMEDIATELY before
-  publishing, and POST-PUBLISH re-verification asserts
-  allowlist+digests+attestations against the now-immutable release.
+  publish flip runs inside a PLATFORM-ENFORCED EXCLUSIVE INTERVAL — a
+  re-check "immediately before" the flip is two API calls with a
+  mutable gap, so the gap itself is removed: the ceremony (1) DISABLES
+  GitHub Actions repo-wide (admin API, `enabled: false`) and confirms
+  no workflow run is in flight, and verifies the controller/publisher
+  machine credentials are in the Eye's offline custody (not loaded in
+  any process — they only ever run during merge operations, never
+  during release); (2) runs the final asset-set + digest + body
+  verification against the bound release ID; (3) flips `draft: false`
+  — during (1)-(3) NO Actions token exists and no non-Eye
+  release-capable credential is live, so nothing can mutate the draft
+  between verification and flip; (4) POST-PUBLISH re-verification
+  asserts allowlist+digests+attestations against the now-immutable
+  release; (5) re-enables Actions. FROZEN-INTERVAL regression: a
+  mutation attempted on the bound release ID after the last pre-flip
+  check (stub: workflow dispatch and API mutation during the interval)
+  ⇒ platform-refused (Actions disabled, no live credential) and any
+  simulated drift observed at step (2) or (4) ⇒ publication
+  refused/aborted — never published around.
   NO Actions workflow performs any release mutation, and default
   GITHUB_TOKEN permissions are read-only (a default, not a ceiling —
   the plan does not claim otherwise).

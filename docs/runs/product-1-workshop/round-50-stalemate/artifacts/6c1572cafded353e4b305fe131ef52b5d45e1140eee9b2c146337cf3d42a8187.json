@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:release-publication-toctou",
+        "claim": "The Eye-local publish ceremony retains a fail-open TOCTOU window. The approach explicitly permits a self-granted `contents:write` Actions token to mutate the bound draft and relies on re-verifying assets/body “immediately before” the Eye flips `draft:false`. Those are separate GitHub API operations with no stated conditional update binding the flip to the verified draft state. A controller/publisher credential or rogue workflow can delete/replace an asset or edit the body after the final verification and before the flip; the Eye then publishes unverified content. The v* ruleset constrains tag refs, not draft-release mutations, and post-publication verification detects the defect only after public exposure. Require platform-enforced exclusive release mutation during the verification-to-flip interval—such as a verified release-mode custody transition that revokes/disables every non-Eye release-capable credential—or another atomic mechanism, plus a regression that mutates the bound numeric release ID after the last pre-flip check and proves publication is refused."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtccyrwl",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtccyrwl",
+    "source": "cli-seats/codex_ask"
+  }
+}
