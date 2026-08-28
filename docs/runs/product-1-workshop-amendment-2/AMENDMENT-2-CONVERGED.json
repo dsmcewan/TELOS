@@ -1,0 +1,15 @@
+{
+  "run": "product-1 AMENDMENT-2 (DISCOVERY-002 bounded correction) Daedalus maturation",
+  "state": "converged-for-submission",
+  "convergence_authority": "Eye ruling 2026-08-28: authorize the Amendment-2 governance cycle for DISCOVERY-002; the amendment must resolve the discrepancy without treating the prior plan language as authority for an add-vs-classify decision; the whitelist + package classification remain unchanged pending the ruling.",
+  "final_round": 1,
+  "final_round_disposition": "Zero objections — the bounded DISCOVERY-002 correction (add cli/ AND formally classify the pre-existing connectors/meta-ads-mcp/, with per-directory deferral justification) converged for submission on round 1.",
+  "discovery": "docs/runs/product-1-argo/discovery-002-preexisting-meta-ads-connector.json",
+  "disposition": "docs/runs/product-1-argo/discovery-002-disposition.json",
+  "supersedes_plan_ref": "sha256:41a1e8b6dddc12da502db305e7044570f121784903e4183cf17a03a2ca100ef7 (AMENDMENT-1, authorized run-12; Phase A implemented + accepted under it)",
+  "changes_from_amendment_1": "ONLY the §3 Phase B / AM-43-activation obligation text: corrected the false 'both directories do not yet exist / add both directories' to 'add cli/ AND formally classify the pre-existing connectors/meta-ads-mcp/', with corrected per-directory deferral justification. A fresh governed decision grounded in DISCOVERY-002 evidence + AM-43 exclusion authority, NOT the prior wording. Whitelist (A5) + package classification UNCHANGED (Eye ruling). No other section changed.",
+  "matured_plan": "docs/runs/product-1-workshop-amendment-2/matured-approach-amendment-2.md",
+  "plan_ref": "sha256:463bde1c276ddb65b8e0cb0c89ed65a36707a968d75dc744395377f451bd3ba7",
+  "seat_provenance_note": "claude reviewer seat pinned to claude-sonnet-4-6 (Fable 5 still usage-limited). The Eye ratified the sonnet substitution for the Amendment-1 authorization run ONLY; the Amendment-2 council will re-flag it for explicit ratification.",
+  "next": "TELOS re-authorization of this exact amended plan_ref, then a new/confirmed Eye S3 grant covering the corrected Phase B obligation, before Phase B work. Phase A remains accepted under Amendment-1; this amendment does not alter Phase A."
+}

@@ -1,0 +1,30 @@
+{
+  "run": "product-1-workshop-amendment-2 (next-phase evaluation, Iliad lifecycle; parameterized harness)",
+  "mode": "live",
+  "candidate": "docs/runs/product-1-workshop-amendment-2/candidate.md",
+  "specs": [
+    "docs/runs/product-1-workshop/spec-review-findings.md",
+    "docs/runs/product-1-workshop/spec-master-checklist-essence.md"
+  ],
+  "state": "converged-for-submission",
+  "reason": "all-objections-accounted",
+  "terminal": "submit",
+  "rounds": 1,
+  "final_candidate_ref": "sha256:463bde1c276ddb65b8e0cb0c89ed65a36707a968d75dc744395377f451bd3ba7",
+  "creation_lineage": [
+    {
+      "seat": "claude",
+      "round": 1,
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-6",
+      "response_id": "ea74efb4-431b-4926-beb8-01c02666fc67"
+    },
+    {
+      "seat": "codex",
+      "round": 1,
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtd6qiky"
+    }
+  ]
+}
