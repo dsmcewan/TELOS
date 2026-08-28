@@ -326,7 +326,22 @@ DIGEST-PINNED in the trust manifest and re-verified before use, with the
 loader constrained to that measured root (RPATH/RUNPATH pinned, `LD_*`
 cleared, no `/etc/ld.so.*` from a host); any closure member whose digest
 does not match ⇒ fail-closed `tool-closure-unauthenticated` BEFORE the
-tool runs. SUBSTITUTED-LIBRARY regression: a swapped libc/DT_NEEDED (or
+tool runs. THE CLOSURE IS THE EXEC-CLOSURE, NOT ONLY THE LOAD-CLOSURE:
+beyond the main ELF + `PT_INTERP` + transitive `DT_NEEDED`, it RECURSIVELY
+INCLUDES EVERY EXEC EDGE reachable from the enumerated tool grammar —
+notably git's separately-executed `git-*` subprograms and PROTOCOL/REMOTE
+HELPERS (`git-remote-https`/`-http`, any credential helper) and their own
+load-closures, which are verdict-producing executable bytes NOT captured
+by DT_NEEDED (a substituted `git-remote-https` could fabricate fetched
+objects while every ELF-dependency digest stays valid). It ALSO pins the
+VERDICT-AFFECTING RUNTIME INPUTS the tools consult (the pinned git config
+set already forced by the grammar, the CA/trust store used for
+attestation/TLS). Closure construction FAILS CLOSED on ANY UNRESOLVED
+acquisition — an exec edge or runtime input it cannot resolve+digest ⇒
+`tool-closure-unresolved`, the tool never runs. NON-DT_NEEDED-HELPER
+substitution regressions: a swapped `git-remote-https` (or credential
+helper) under matching main-ELF + DT_NEEDED digests ⇒ detected
+`tool-closure-unauthenticated`, no fabricated objects are trusted. SUBSTITUTED-LIBRARY regression: a swapped libc/DT_NEEDED (or
 `ld.so`) under a matching main-ELF digest ⇒ detected `tool-closure-
 unauthenticated`, the tool never executes and no verdict is produced from
 it. (The main-ELF sealed-snapshot digest still binds IDENTITY and catches
@@ -1892,9 +1907,30 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   (Distinct from the >=22.12.0 manifest-integrity oracle, which governs the
   engines declared by INSTALLED THIRD-PARTY manifests per the repo supply-chain
   convention, not the interpreter that runs pylae.)
-  `pylae doctor` verifies the environment; every `pylae` command resolves its
-  spawned tooling RELATIVE TO ITS OWN INSTALL ROOT (never cwd), so the
-  extracted tree is self-sufficient. The `npm pack cli` tgz is published as a
+  `pylae doctor` verifies the environment. TWO DISTINCT SPAWN CLASSES are
+  reconciled here (Section 1's authenticated-tool machinery vs this
+  source-release install): (a) PYLAE'S OWN scripts/verifiers resolve
+  RELATIVE TO THE INSTALL ROOT (never cwd) and are covered by the release
+  tarball's SHA256SUMS/attestation, so the extracted tree is
+  self-sufficient for its own code; (b) the EXTERNAL SYSTEM TOOLS
+  (node/git/gh/bwrap) are HOST-PROVIDED — a local single-user CLI does NOT
+  ship a compiler toolchain or a tool-root artifact — and are admitted
+  through a DIGEST-BOUND EXTERNAL-TOOL CONTRACT, NOT by resolving inside
+  the install root (correcting any read of §1 as requiring the system
+  tools to live under the install root; only pylae's own spawns are
+  root-relative). The OPERATOR TRUST-ROOT MANIFEST SCHEMA is EXTENDED to
+  carry, per external tool, its resolved absolute path + main-ELF digest +
+  full authenticated closure digests (the exec/load closure of Fold below);
+  `pylae doctor --pin` records these under recorded operator custody
+  (operator-provisioned/first-run TOFU, same custody discipline as the
+  out-of-band trust-root), and every subsequent run verifies each host
+  tool against its pinned manifest entry, failing closed `tool-identity-
+  mismatch`/`tool-closure-unauthenticated` on drift. The clean-room oracle
+  and doctor thus BOTH use the host tools AND satisfy identity/closure
+  checks — the tools are pinned data in the operator manifest, not shipped
+  artifacts, and the `resolves inside the install root` rule is scoped to
+  pylae's own spawns; a tool that cannot be resolved+pinned ⇒ doctor
+  refuses `tool-unpinned`, never a silent host fallback. The `npm pack cli` tgz is published as a
   COMPONENT artifact, its README stating it requires the source tree
   (self-contained npm distribution = a tracked register item for a later
   phase, not silently claimed now).
