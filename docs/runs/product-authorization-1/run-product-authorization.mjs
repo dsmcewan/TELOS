@@ -51,7 +51,7 @@ const { askClaude, askCodex, askGrok, askGemini } = await imp("docs/institutiona
 const PLAN_PATH = "docs/runs/product-1-workshop/matured-approach-amendment-1.md";
 const PREREVIEW_PATH = "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json";
 const EXPECTED_PLAN_REF = "sha256:41a1e8b6dddc12da502db305e7044570f121784903e4183cf17a03a2ca100ef7";
-const REVIEWED_HEAD = "0da6f4b6a4b42981b8d63d103ea38f3764a63e8d"; // full 40-char head — AMENDMENT-1 CONVERGED at round 46 (docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json), the frozen two-phase-pivot plan per the Eye DISCOVERY-001 ruling; fresh exact-hash authorization of the amended plan
+const REVIEWED_HEAD = "915e12ff14203345ac8af1ae3b57624af705a2e0"; // full 40-char head — AMENDMENT-1 CONVERGED at round 46 (docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json), the frozen two-phase-pivot plan per the Eye DISCOVERY-001 ruling; fresh exact-hash authorization of the amended plan
 const DISCOVERY_001_RULING = "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md"; // resolved: Option 3 governance path + Option 1 substance (two-phase pivot)
 const CONVERGENCE_RECORD = "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json";
 
