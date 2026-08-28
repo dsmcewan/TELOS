@@ -2108,22 +2108,28 @@ merge-gated Argo deliverable.
   declarative-language direction is the settled design intent; the slice picks
   the concrete language/evaluator and proves a lookup-table oracle
   oracle-abi-nonconformant (an imperative black box is not expressible in the
-  declarative surface). SOUNDNESS IS NOT DEFERRED: the declarative oracle
-  language IS the sound answer to semantic discrimination — a lookup-table /
-  black-box oracle is NOT expressible in it (the invariant is stated as
-  inspectable declarative predicates the runner interprets; no imperative escape
-  hatch exists to hardcode enumerated verdicts, so such a submission ⇒
-  oracle-abi-nonconformant). Only the language/evaluator's concrete FORM is the
-  spike. INTERIM (until the declarative surface lands) IS FAIL-CLOSED, not
-  detection-only: every NORMATIVE oracle record is an authority record whose
-  addition/change passes MANDATORY ADVERSARIAL SOURCE REVIEW by the required-seat
-  council + Eye (the same gate as any authority change) — a hardcoded lookup
-  table or non-evaluating black box is VISIBLE IN THE SOURCE and rejected there;
-  the automated battery (frozen-realm worker + seccomp-deny/`--unshare-all` +
-  same-input agreement check) catches accidental non-discrimination and
-  ABI-escape. So correction d is enforced in the interim by SOURCE REVIEW +
-  battery and soundly at the terminus by the declarative language — the
-  lookup-table attack is closed at every stage, not left green.
+  declarative surface). THE SOUND DESIGN is the declarative oracle
+  language — a lookup-table / black-box oracle is NOT expressible in it
+  (the invariant is stated as inspectable declarative predicates the
+  runner interprets; no imperative escape hatch exists to hardcode
+  enumerated verdicts, so such a submission ⇒ oracle-abi-nonconformant)
+  — and only the language/evaluator's concrete FORM is the spike.
+  INTERIM POSTURE, EXACTLY PER EYE RULING 6 (six-rulings-final, item 6 —
+  never overstated): until the constrained declarative grammar + trusted
+  evaluator PASS THEIR HARD MERGE GATE, governance correction (d) is NOT
+  closed. PRE-EVALUATOR ENROLLMENT FAILS CLOSED: no NEW or CHANGED
+  normative oracle may ship as authoritative before the evaluator lands
+  — additions/changes to normative oracle records are BLOCKED at the
+  authority gate (`oracle-evaluator-pending`), not merely reviewed. The
+  interim adversarial source review (required-seat council + Eye) and
+  the deterministic battery (frozen-realm worker +
+  seccomp-deny/`--unshare-all` + same-input agreement) are COMPENSATING
+  CONTROLS ONLY — non-authoritative evidence that catches accidental
+  non-discrimination and ABI-escape; they are NOT represented as proof
+  of semantic soundness, and a deliberately-crafted lookup-table oracle
+  remains expressible until the evaluator exists — which is precisely
+  why enrollment is blocked until it does. Correction (d) closes WHEN
+  AND ONLY WHEN the evaluator merge gate passes.
   Referee evidence: `referee-adjudications/2026-08-28-e6-oracle-determinism.json`;
   Eye open question: `product-1-oq-e6-determinism-deferral`.
 
