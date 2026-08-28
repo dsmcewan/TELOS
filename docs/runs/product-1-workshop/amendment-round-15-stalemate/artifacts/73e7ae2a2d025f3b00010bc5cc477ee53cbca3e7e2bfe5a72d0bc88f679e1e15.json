@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:b3801d6555141b19c4401ede198e0210a170e376d416d209104433129dbb59da",
+  "output_plan_artifact_hash": "sha256:b3801d6555141b19c4401ede198e0210a170e376d416d209104433129dbb59da",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:b1d8d0379903acd0dab35c90ed73c54f022ad67074ad5564442b7d5dd4485eed",
+    "provenance_key": "anthropic:8d2efd9a-ad75-4793-9bb0-d82642b2951f"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:faed4c616d4e3d7ddcf3124d9a982bce312b3847b8c111f82acc3f90150ea094",
+    "provenance_key": "openai:codex-cli-mtcsb7i7",
+    "bound_hash": "sha256:b3801d6555141b19c4401ede198e0210a170e376d416d209104433129dbb59da"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:first-deployment-transition",
+      "claim": "The E2 bootstrap remains internally unsatisfied at plan_ref sha256:523d0f4388dd0aad058f0cdb6771335d7e9a3224c9aed31d625e4d3cecf49048. Section 2(5) says genesis pre-provisions E2's staged VERIFIER_CLOSURE_DIGEST before that slice merges, but §2(6) requires old_* to equal the live pre-slice value and explicitly refuses pre-provisioning new_*; moreover, the genesis-class transition sequence names only freshness and plugin-self-containment, omitting the E2 PR that itself changes the protected verifier closure. The base verifier cannot enforce E2's newly introduced transition semantics, and the proposed E2 verifier may not authorize its own PR, so E2 must either deadlock or bypass the required verifier. Include E2 as the terminal controller-only genesis-class transition, keep its new digest unprovisioned until after controller-authorized merge, and add a regression proving the E2 introducing PR lands without proposed-verifier execution or a third manual merge.",
+      "objection_hash": "sha256:94d06e923023523ab2a76c95d98aeafb9dad1cde991809cb21d25df49888d7e6",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach:no-listener-oracle",
+      "claim": "PD-001's closed listener-capability grammar is incomplete. It rejects node:net/http/https/http2/tls/dgram but permits Node 22's node:inspector; inspector.open(port, host) programmatically activates a network listener without referencing any listed built-in or prohibited dynamic acquisition path. A helper in the complete CLI closure can therefore open a listener while the stated oracle passes. Add node:inspector/inspector.open and every other listener-capable built-in surface to the closed grammar, with a rejecting inspector.open regression; otherwise the frozen checklist's testable local-single-user carve-out is not enforced.",
+      "objection_hash": "sha256:da0ceebaaaf68d23ee35c4ccfe0b757908e0f99ed1bfc72e24df95fb7adda0ea",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
