@@ -127,9 +127,10 @@ the SEALED-SNAPSHOT set actually required (memfd_create, write, lseek,
 fcntl(F_ADD_SEALS), mmap for the exec image); the SECCOMP-INSTALL set
 (prctl(PR_SET_NO_NEW_PRIVS), seccomp()/prctl(PR_SET_SECCOMP)); fexecve/
 exec-family; and process control — CATEGORICALLY rejecting
-bind/listen/accept/accept4 and AF_PACKET/SOCK_RAW socket creation, and
-any inspector activation (a launcher source with such a syscall ⇒
-oracle FAILS `launcher-listener-capable`); (2) the release build COMPILES it with a
+bind/listen/accept/accept4, AF_PACKET/SOCK_RAW socket creation, the
+`io_uring` family (io_uring_setup/enter/register), and any inspector
+activation (a launcher source with such a syscall ⇒ oracle FAILS
+`launcher-listener-capable`); (2) the release build COMPILES it with a
 pinned toolchain into a FULLY-STATIC, LOADER-INDEPENDENT executable —
 NO dynamic interpreter (no `PT_INTERP`), NO shared-library closure
 (empty `DT_NEEDED`), no `dlopen`/dynamic loading — so the pre-`main()`
@@ -165,8 +166,19 @@ launcher calls `prctl(PR_SET_NO_NEW_PRIVS,1)` then installs a seccomp
 filter that DENIES `bind`, `listen`, `accept`, `accept4` — the
 listener syscalls — plus `AF_PACKET`/`SOCK_RAW` socket() creation
 (inspectable via socket()'s scalar domain/type args; returning EPERM or
-SIGKILL). CLIENT `socket()` for AF_INET/AF_INET6 STREAM/DGRAM IS
-ALLOWED — a TCP/TLS client (gh api, networked git) must create an
+SIGKILL). CRITICALLY IT ALSO DENIES THE ENTIRE `io_uring` SYSCALL FAMILY
+(`io_uring_setup`, `io_uring_enter`, `io_uring_register`): io_uring can
+perform `IORING_OP_SOCKET`/`IORING_OP_BIND`/`IORING_OP_LISTEN`/
+`IORING_OP_ACCEPT` whose opcodes live in SHARED SUBMISSION-QUEUE MEMORY
+and are NOT discriminable from `io_uring_enter`'s scalar args — so a
+descendant could otherwise open a listener without ever invoking a
+denied syscall. Denying ring creation/entry/registration outright (no
+inspectable-arg dependence) closes this, and the launcher CLOSES ANY
+INHERITED io_uring RING DESCRIPTORS before exec so no pre-existing ring
+survives into the confined tree. (Node/libuv gracefully FALL BACK to the
+epoll/threadpool path when `io_uring_setup` returns EPERM, so
+doctor/verify --full remain operative.) CLIENT `socket()` for
+AF_INET/AF_INET6 STREAM/DGRAM IS ALLOWED — a TCP/TLS client (gh api, networked git) must create an
 AF_INET/AF_INET6 socket before `connect()`, and a socket that is never
 `bind`/`listen`ed cannot become a receiving endpoint — so denying the
 four listener syscalls (not socket creation) is BOTH sufficient for the
@@ -197,7 +209,11 @@ substituted PT_INTERP or DT_NEEDED library whose constructor tries to
 listen ⇒ denied by the inherited filter (so the no-listener property
 does NOT depend on authenticating every loader/library byte; the digest
 still authenticates the main-ELF IDENTITY, and identity substitution is
-separately caught as `tool-identity-mismatch`). So the launcher, (i) CLEARS
+separately caught as `tool-identity-mismatch`); (d) IO_URING LISTENER —
+a descendant submits `IORING_OP_BIND`+`IORING_OP_LISTEN` (or
+`IORING_OP_SOCKET`) via a ring ⇒ ring setup/enter is denied by the
+inherited filter (EPERM), no listener opens, proven INSIDE the
+descendant/private namespace. So the launcher, (i) CLEARS
 NODE_OPTIONS/NODE_REPL*/inspector-debug env before spawning Node, (ii)
 performs the SEALED-SNAPSHOT (memfd + F_SEAL_*) hash-and-fexecve
 identity check on the pinned `node` binary — same kernel-backed
