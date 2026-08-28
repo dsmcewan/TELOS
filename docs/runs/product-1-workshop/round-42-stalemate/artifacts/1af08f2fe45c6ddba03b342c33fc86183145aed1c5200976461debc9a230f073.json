@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:542cad18b5d1956addd9d25081ac3c1189de3f82ff2a7fad0e039078d4d788ae",
+  "output_plan_artifact_hash": "sha256:542cad18b5d1956addd9d25081ac3c1189de3f82ff2a7fad0e039078d4d788ae",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:e54826bf28bf84f8afe3f313d3c5b645cd5811515f19ae4782a46a4ed015bd43",
+    "provenance_key": "anthropic:096c12b9-491e-4e1d-9ac1-d9f34a7fbe93"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:c544833f1c294c9ef76087437315cb42b907867bb6a12e1c35efd580ce998c78",
+    "provenance_key": "openai:codex-cli-mtcazvq1",
+    "bound_hash": "sha256:542cad18b5d1956addd9d25081ac3c1189de3f82ff2a7fad0e039078d4d788ae"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E6/oracle-discrimination",
+      "claim": "The same-path delete/recreate mechanism does not make the semantic mutation the only observable difference: both sequential executions retain writable state outside path P. An input-ignoring oracle can exit 0 while creating a uniquely keyed marker under `/tmp` or another external cache during the baseline, then observe and remove that marker during the negative run and exit nonzero. The argv, canonical path, environment, and mutated artifact remain compliant, yet the runner falsely declares the oracle discriminating. This leaves the stated stateful-marker bypass open and violates frozen governance correction d. Isolate all mutable external state between executions or use another mechanism that establishes dependence on the governed input, with an external-marker regression. Candidate artifact: sha256:542cad18b5d1956addd9d25081ac3c1189de3f82ff2a7fad0e039078d4d788ae.",
+      "objection_hash": "sha256:6b285b2a84424f0119147d42ab751ed536b16a7f6fec69c6106abbf9a3264235",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

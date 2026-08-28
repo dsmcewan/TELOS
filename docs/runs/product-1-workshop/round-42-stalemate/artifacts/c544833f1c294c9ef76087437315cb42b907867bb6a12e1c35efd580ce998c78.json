@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E6/oracle-discrimination",
+        "claim": "The same-path delete/recreate mechanism does not make the semantic mutation the only observable difference: both sequential executions retain writable state outside path P. An input-ignoring oracle can exit 0 while creating a uniquely keyed marker under `/tmp` or another external cache during the baseline, then observe and remove that marker during the negative run and exit nonzero. The argv, canonical path, environment, and mutated artifact remain compliant, yet the runner falsely declares the oracle discriminating. This leaves the stated stateful-marker bypass open and violates frozen governance correction d. Isolate all mutable external state between executions or use another mechanism that establishes dependence on the governed input, with an external-marker regression. Candidate artifact: sha256:542cad18b5d1956addd9d25081ac3c1189de3f82ff2a7fad0e039078d4d788ae."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcazvq1",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcazvq1",
+    "source": "cli-seats/codex_ask"
+  }
+}

@@ -674,13 +674,22 @@ per-file designs are in the approved plan; acceptance criteria here.
   there, REQUIRES EXIT 0 (nonzero ⇒ FAIL
   `oracle-environment-sensitive`), then path P is DELETED ENTIRELY and
   recreated FRESH from the template (never reusing the baseline's
-  files — a stateful oracle cannot find a planted marker) with the
-  validated mutation applied BEFORE any execution; the negative run
-  executes the IDENTICAL invocation at the SAME path P — REQUIRED TO
-  EXIT NONZERO, else FAIL `oracle-nondiscriminating`. Same argv, same
-  entrypoint, same absolute path, same environment, no special mode;
-  the only observable difference between the two executions is the
-  mutation itself, guaranteed by construction.
+  files) with the validated mutation applied BEFORE any execution; the
+  negative run executes the IDENTICAL invocation at the SAME path P —
+  REQUIRED TO EXIT NONZERO, else FAIL `oracle-nondiscriminating`.
+  ALL EXTERNAL MUTABLE STATE IS ISOLATED PER EXECUTION (path P alone is
+  not enough — an oracle could key a marker under /tmp or a cache dir
+  that survives between sequential runs): each execution receives
+  FRESH, PRIVATE writable surfaces — per-run TMPDIR/HOME/
+  XDG_CACHE_HOME pointed at scratch dirs created before and destroyed
+  after that single execution — and, where available, runs under the
+  repo's existing bwrap sandbox discipline (the evidence.mjs
+  closed-whitelist verifier pattern) so no writable path whatsoever is
+  shared between the two executions. Same argv, same entrypoint, same
+  absolute path, same environment VARIABLES (equal names and shapes,
+  pointing at per-run instances), no special mode; the only state
+  observable in both executions is the governed input — the mutation is
+  the only discriminable difference, by construction.
   Invariants no registry kind fits declare a TRUSTED NEGATIVE FIXTURE
   instead — a reviewed, committed violating artifact whose review rides
   the same PR as the record — subject to the same well-formedness
@@ -715,7 +724,11 @@ per-file designs are in the approved plan; acceptance criteria here.
   a PATH-SELECTIVE input-ignoring oracle (keying on cwd/sandbox path to
   behave differently between runs) ⇒ FAILS — both runs execute at the
   identical canonical path, so no path signal distinguishes them ⇒
-  oracle-nondiscriminating; a
+  oracle-nondiscriminating; an EXTERNAL-MARKER oracle (planting a
+  uniquely keyed marker under /tmp or a cache during baseline, keying
+  on its presence in the negative) ⇒ FAILS — the negative run's
+  TMPDIR/HOME/caches are fresh private instances, the marker is
+  absent, the run exits 0 ⇒ oracle-nondiscriminating; a
   present-but-timeout oracle ⇒
   FAIL; an npm-script whose identical re-run exits 0 on the mutated sandbox
   ⇒ FAIL oracle-nondiscriminating; backfill complete (every backfilled
