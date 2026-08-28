@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:3a5d88c4679cda01ccca2047bcf3696c060383dd639f9ee0c68472eed38b9677",
+  "output_plan_artifact_hash": "sha256:3a5d88c4679cda01ccca2047bcf3696c060383dd639f9ee0c68472eed38b9677",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:0445676165f3339b697299d834e042290caeeced3e608a2c3979ae9c0bef0d0c",
+    "provenance_key": "anthropic:fd71e933-2de2-4634-bcfb-b9c9dc4b99e5"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:11ac59e323e71a07e45fd7b15e3b6b4fd782ab46c9d1d8d5b51c4f36f5d6a903",
+    "provenance_key": "openai:codex-cli-mtcenncx",
+    "bound_hash": "sha256:3a5d88c4679cda01ccca2047bcf3696c060383dd639f9ee0c68472eed38b9677"
+  },
+  "objections": [
+    {
+      "scope": "plan",
+      "claim": "E6 does not make the governed-input mutation the only observable difference. It mandates Bubblewrap `--unshare-net` and `--unshare-pid`, but IPC isolation is a separate `--unshare-ipc` option; private `/dev/shm` does not isolate System V IPC. An input-ignoring oracle can create a System V IPC marker during baseline A, detect and remove it while returning nonzero during B, then observe its absence and return zero during A′—passing the proposed A-B-A′ protocol without inspecting the mutation. This violates the frozen requirement for a discriminating oracle. Require `--unshare-all` (or an explicitly complete namespace set including IPC) and add a System-V-IPC-marker regression that the runner rejects. Candidate artifact: sha256:3e6de56330a2e1a8cfb8742b6e44da5f412f1f7805b128d2533ebb89790ebd54.",
+      "objection_hash": "sha256:6835e0b56ffb0aacfaaffd529b6d09750297bdbab50fce695b2dab0e259acce9",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

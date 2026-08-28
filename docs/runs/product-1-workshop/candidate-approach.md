@@ -856,7 +856,10 @@ per-file designs are in the approved plan; acceptance criteria here.
   absent, the run exits 0 ⇒ oracle-nondiscriminating; a REMOTE-SIGNAL
   oracle (keying on an external incrementing counter) ⇒ the network is
   unshared, the signal is unreachable, behavior collapses to constant
-  or error ⇒ caught by baseline or A-B-A'; a CLOCK-THRESHOLD oracle
+  or error ⇒ caught by baseline or A-B-A'; a SYSV-IPC-MARKER oracle
+  (shmget/semget marker planted in A, consumed in B, absent in A') ⇒
+  each run has a private IPC namespace under --unshare-all, no segment
+  crosses runs, the pair collapses ⇒ oracle-nondiscriminating; a CLOCK-THRESHOLD oracle
   (0 before time T, nonzero after) ⇒ the second baseline runs after T
   and exits nonzero ⇒ oracle-environment-sensitive; a
   present-but-timeout oracle ⇒

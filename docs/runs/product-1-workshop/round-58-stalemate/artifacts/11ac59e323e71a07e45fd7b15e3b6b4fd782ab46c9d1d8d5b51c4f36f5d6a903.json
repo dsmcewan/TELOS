@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "plan",
+        "claim": "E6 does not make the governed-input mutation the only observable difference. It mandates Bubblewrap `--unshare-net` and `--unshare-pid`, but IPC isolation is a separate `--unshare-ipc` option; private `/dev/shm` does not isolate System V IPC. An input-ignoring oracle can create a System V IPC marker during baseline A, detect and remove it while returning nonzero during B, then observe its absence and return zero during A′—passing the proposed A-B-A′ protocol without inspecting the mutation. This violates the frozen requirement for a discriminating oracle. Require `--unshare-all` (or an explicitly complete namespace set including IPC) and add a System-V-IPC-marker regression that the runner rejects. Candidate artifact: sha256:3e6de56330a2e1a8cfb8742b6e44da5f412f1f7805b128d2533ebb89790ebd54."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcenncx",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcenncx",
+    "source": "cli-seats/codex_ask"
+  }
+}
