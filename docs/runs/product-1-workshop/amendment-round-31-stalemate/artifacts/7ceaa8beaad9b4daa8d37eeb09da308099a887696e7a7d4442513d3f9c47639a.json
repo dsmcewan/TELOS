@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:d579ee3299134cd1e21560dc05a0550dc997f1e94d6e9037b09a4beef5b5c48b",
+  "output_plan_artifact_hash": "sha256:d579ee3299134cd1e21560dc05a0550dc997f1e94d6e9037b09a4beef5b5c48b",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:befe445a8863b4b6006d386696f96cae41bbb293c031dfdf077a796b40fc1f2f",
+    "provenance_key": "anthropic:278de79b-068b-4f4d-ab6f-a478d08c6deb"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:1bcf95906e950e38e5c7ea931bca25968c6afb7573a381900e30b771f60839df",
+    "provenance_key": "openai:codex-cli-mtcxq2e8",
+    "bound_hash": "sha256:d579ee3299134cd1e21560dc05a0550dc997f1e94d6e9037b09a4beef5b5c48b"
+  },
+  "objections": [
+    {
+      "scope": "plan-revision",
+      "claim": "The startup no-listener guarantee is unsound for the native launcher. Its source review and environment clearing begin only after process startup, but a normally dynamically linked launcher may execute attacker-selected code through LD_PRELOAD, LD_AUDIT, or another dynamic-loader surface before main() clears anything; a library constructor can call socket/bind/listen first. The approach neither requires a static loader-independent launcher nor verifies the packaged executable has no interpreter, shared-library closure, dynamic loading, inline-syscall, or assembly escape. The NODE_OPTIONS and SIGUSR1 fixtures therefore do not discriminate this bypass. Qualification must enforce and inspect a hermetic launcher binary/loader closure and include a preload-constructor listener regression.",
+      "objection_hash": "sha256:baea778b865dc4e1a120982b067fe9b84856fb15d0f76454a39e81f594fe5de8",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "plan-revision",
+      "claim": "Open-hash-fexecve of the same file descriptor does not provide the claimed mutation-point content binding for node, git, gh, or bwrap. An open descriptor pins an inode, not immutable bytes; another writer can modify that inode after hashing, close its write descriptor, and leave fexecve to execute the changed contents through the original descriptor. This defeats the stated same-path adversary without changing the path or reported version. The runner must execute an immutable snapshot, such as a verified copy in a sealed executable memfd, or prove equivalent kernel-backed immutability, and qualification needs an in-place-overwrite-after-hash regression.",
+      "objection_hash": "sha256:f511ad80b161292ca37113e5d89819241e077f16b149ae25a189eaa057e51d6f",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
