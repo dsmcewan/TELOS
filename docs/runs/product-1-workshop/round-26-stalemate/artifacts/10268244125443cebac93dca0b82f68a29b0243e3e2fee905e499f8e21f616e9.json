@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "plan",
+        "claim": "E1's non-bypass proof is unsound for user credentials: checking that the authenticated principal is absent from each ruleset's bypass_actors does not detect effective bypass inherited through a listed team, organization role, repository role, or other group actor. Such a principal could still bypass strict required-status enforcement, invalidating the server-side base-move/TOCTOU guarantee. The controller and publisher must resolve every bypass actor to effective membership/role for the authenticated principal and fail closed whenever that resolution is unavailable or ambiguous."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a045a8-c445-7a93-b9e0-9566fc8306b7",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a045a8-c445-7a93-b9e0-9566fc8306b7",
+    "source": "cli-seats/codex_ask"
+  }
+}

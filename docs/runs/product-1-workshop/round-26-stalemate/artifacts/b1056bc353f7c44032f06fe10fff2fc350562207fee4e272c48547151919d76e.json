@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:680a19d1fb17255d0a813cc86e248e867394e13d750c0aa8bc811ecc9da94f1e",
+  "output_plan_artifact_hash": "sha256:680a19d1fb17255d0a813cc86e248e867394e13d750c0aa8bc811ecc9da94f1e",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:c573794fd178a874d4fd1324c79042e5d69571431ad7b5ab3d378e8dbe80f0f0",
+    "provenance_key": "anthropic:0f6cfde7-f990-48dc-90e1-8604c084bddc"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:10268244125443cebac93dca0b82f68a29b0243e3e2fee905e499f8e21f616e9",
+    "provenance_key": "openai:01a045a8-c445-7a93-b9e0-9566fc8306b7",
+    "bound_hash": "sha256:680a19d1fb17255d0a813cc86e248e867394e13d750c0aa8bc811ecc9da94f1e"
+  },
+  "objections": [
+    {
+      "scope": "plan",
+      "claim": "E1's non-bypass proof is unsound for user credentials: checking that the authenticated principal is absent from each ruleset's bypass_actors does not detect effective bypass inherited through a listed team, organization role, repository role, or other group actor. Such a principal could still bypass strict required-status enforcement, invalidating the server-side base-move/TOCTOU guarantee. The controller and publisher must resolve every bypass actor to effective membership/role for the authenticated principal and fail closed whenever that resolution is unavailable or ambiguous.",
+      "objection_hash": "sha256:45515cde86e18e1304d92f1ce8b65df70b3448081ad833624640ebfcfb180434",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

@@ -176,10 +176,18 @@ per-file designs are in the approved plan; acceptance criteria here.
   the rules/rulesets APIs) plus classic branch protection, requires
   strict up-to-dateness in effect, and requires the authenticated
   principal (user or app installation) to be ABSENT from every
-  `bypass_actors` list and from any admin-exemption path; if the API
-  omits or refuses bypass-actor data (GitHub may hide it from
-  non-ruleset-writers), that is NOT treated as absence — the controller
-  refuses `bypass-visibility-unavailable`. Any failed condition ⇒ exit 2
+  `bypass_actors` list and from any admin-exemption path — where absence
+  is proven by EFFECTIVE-MEMBERSHIP RESOLUTION, not literal-identity
+  comparison (a bypass_actors entry can be a TEAM, organization role, or
+  repository role; a principal not named directly could inherit bypass
+  through any of them): every GROUP-TYPE actor entry is resolved to its
+  membership/role holders via the teams/collaborators/role APIs and the
+  principal must be absent from EVERY resolution; the principal's own
+  repository role is also checked against role-type entries. If the API
+  omits or refuses bypass-actor data OR any group actor cannot be fully
+  resolved (visibility limits, ambiguous role mapping), that is NOT
+  treated as absence — the controller refuses
+  `bypass-visibility-unavailable` / `bypass-resolution-incomplete`. Any failed condition ⇒ exit 2
   `unsafe-merge-environment` before any mutation. A request invalidated by a PRIOR merge in the same run ⇒
   reported `base-moved`/`stale-checks` and SKIPPED (exit 2 at run end
   listing it) — the controller never auto-updates a branch or re-runs
@@ -207,9 +215,13 @@ per-file designs are in the approved plan; acceptance criteria here.
   protection) rejects the PUT ⇒ controller reports base-moved, no merge
   recorded; unsafe-environment fixtures: strict=false, a bypass-capable
   credential, the principal listed as a RULESET bypass_actor (repository
-  or inherited org ruleset — stub rulesets API), or bypass-actor data
-  omitted/refused by the API (⇒ bypass-visibility-unavailable, never
-  treated as absence) ⇒ controller refuses at startup; out-of-band-merge fixture ⇒
+  or inherited org ruleset — stub rulesets API), the principal
+  INHERITING bypass through a listed TEAM or repository/organization
+  ROLE (stub team-membership/role APIs — literal-name absence must NOT
+  pass), an unresolvable group actor (⇒ bypass-resolution-incomplete),
+  or bypass-actor data omitted/refused by the API
+  (⇒ bypass-visibility-unavailable, never treated as absence) ⇒
+  controller refuses at startup; out-of-band-merge fixture ⇒
   unattested-merge; clean run ⇒ merged + attestation; workflow agents' token
   fixture proves no merge scope; workflows CI job runs both suites green.
 - **E2 ai-native-memory gate freshness + AUTHORITY-CHAINED sources** (`ai-native-memory/scripts/gate.mjs`).
