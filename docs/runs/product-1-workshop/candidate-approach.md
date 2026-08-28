@@ -35,7 +35,12 @@ pinned Node version changes) AND
 any AMBIGUOUS/DYNAMIC acquisition path that could reach them —
 non-literal import()/require specifiers, process.getBuiltinModule,
 eval/Function construction, aliased or computed property access to module
-namespaces — and constrains every spawned executable to a closed
+namespaces, AND Node's INTERNAL/NATIVE capability surfaces —
+process.binding / process._linkedBinding (binding('tcp_wrap')
+constructs, binds, and listens on a TCP handle without any public
+networking import), process.dlopen and native-addon (.node) loading, and
+vm-module compilation of new code — ALL categorically rejected — and
+constrains every spawned executable to a closed
 allowlist: (a) repo-tracked scripts, each recursively subject to the
 same grammar, and (b) a CAPABILITY-SCOPED EXTERNAL-TOOL EXCEPTION set
 for the three system binaries the CLI's contracts REQUIRE — `git`
@@ -53,7 +58,10 @@ the oracle-confinement argv shape — no --share-net; gh: only
 alias/exec), and an ISOLATED ENVIRONMENT (cleared env except an
 enumerated safe set, so config/alias injection cannot smuggle modes).
 Any invocation outside these grammars ⇒ FAIL closed. ADVERSARIAL fixtures the oracle must reject: an indirect
-listener via getBuiltinModule; a computed require reaching node:net; an
+listener via getBuiltinModule; a computed require reaching node:net; a
+process.binding('tcp_wrap') TCP-listener construction ⇒ rejected
+(internal bindings categorically banned); a process.dlopen native-addon
+load ⇒ rejected; an
 inspector.open(port, host) activation ⇒ rejected; a
 spawned allowlisted helper that itself opens a listener; a helper outside
 cli/ opening a listener; git invoked in daemon/serve mode or with -c
