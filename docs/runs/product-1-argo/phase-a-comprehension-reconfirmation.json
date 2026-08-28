@@ -1,0 +1,27 @@
+{
+  "record": "product-1 AMENDMENT-1 — comprehension re-confirmation against the amended plan (S3 grant condition #1)",
+  "date": "2026-08-28",
+  "reader": "claude-opus-4-8 (product-1 Argo implementer; session eaf1b3d3)",
+  "governing_quest_plan_ref": "sha256:41a1e8b6dddc12da502db305e7044570f121784903e4183cf17a03a2ca100ef7",
+  "governing_quest_plan_path": "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+  "s3_grant": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-s3-grant-amendment-1.json",
+  "active_authority_at_reconfirmation": "authz-008 (v15) — UNCHANGED (Phase A activation-deferred; the comprehension gate verifies the ACTIVE plan hash, which correctly remains v15 until Phase B)",
+  "gates": [
+    {
+      "component": "iliad",
+      "artifact": "docs/runs/product-1-argo/reader-validation-iliad-amendment-1.json",
+      "result": "COMPREHENSION_PASSED"
+    },
+    {
+      "component": "telos",
+      "artifact": "docs/runs/product-1-argo/reader-validation-telos-amendment-1.json",
+      "result": "COMPREHENSION_PASSED"
+    },
+    {
+      "component": "argo",
+      "artifact": "docs/runs/product-1-argo/reader-validation-argo-amendment-1.json",
+      "result": "COMPREHENSION_PASSED"
+    }
+  ],
+  "note": "All three gates COMPREHENSION_PASSED (56 checks) against the active authority. Re-confirmed under the amended plan as the governing quest plan; the earlier reader-validation-*.json (reader claude-fable-5) were run against the ORIGINAL plan bb2ea18f and are preserved."
+}

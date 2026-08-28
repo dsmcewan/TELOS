@@ -1,0 +1,251 @@
+{
+  "kind": "phase-a-pre-activation-slice-whitelist",
+  "quest": "product-1",
+  "authorized_plan_ref": "sha256:41a1e8b6dddc12da502db305e7044570f121784903e4183cf17a03a2ca100ef7",
+  "deferred_successor_authorization": "authz-product-1-amendment-1",
+  "active_authority_during_window": "authz-008 (v15) — UNCHANGED until the terminal Phase-B slice completes",
+  "rule": "NO UNLISTED SLICE IS MERGE-ELIGIBLE before Phase B (controller refuses slice-not-whitelisted). NO release/settlement/production-readiness claim before activation. Per-slice Eye acceptance mandatory for every slice.",
+  "terminal_entry": "phase-b-atomic-activation (uniquely content-addressed; must merge while Phase B is incomplete, else activation deadlocks).",
+  "slices": [
+    {
+      "descriptor": {
+        "kind": "phase-a-slice-descriptor",
+        "slice_id": "E1-merge-controller-genesis",
+        "title": "E1 merge controller / branch publisher (lands FIRST via the genesis ceremony's recorded exceptional bootstrap merge)",
+        "allowed_path_globs": [
+          "build-gate/**",
+          "docs/institutional-memory/telos/CONTRACTS/**",
+          ".github/workflows/**"
+        ],
+        "forbidden_surfaces": [
+          "no product code (cli/ etc.)",
+          "CURRENT-AUTHORITY.active_plan (must remain v15 until the terminal Phase-B slice)",
+          "CURRENT-AUTHORITY.active_authorization (must remain authz-008 until Phase B)",
+          "clotho/memory/CONTRACTS/package-roots.json (byte-unchanged on its AM-42 pin until Phase B)",
+          "any woven comprehension/query artifact governing_authority (Phase B re-weave only)",
+          "release / GA / production-readiness surfaces (no release authority is granted)"
+        ],
+        "acceptance_criteria_ref": "matured-approach-amendment-1.md §E1 + §6 (E1 first, genesis-class transition)",
+        "per_slice_eye_acceptance": "MANDATORY before merge",
+        "written_before_implementation": true
+      },
+      "content_address": "sha256:5e4935739046df6ae5c87155b89a9d8184209c06946d25773411ac4898d23248"
+    },
+    {
+      "descriptor": {
+        "kind": "phase-a-slice-descriptor",
+        "slice_id": "freshness-current-head-verifier",
+        "title": "Freshness: memory-gate freshness + the discriminating current-head verifier (the §5d phase-aware check ships here)",
+        "allowed_path_globs": [
+          "docs/institutional-memory/**",
+          "clotho/memory/**",
+          "merkle-dag/**",
+          "build-gate/**"
+        ],
+        "forbidden_surfaces": [
+          "no active-authority pivot",
+          "CURRENT-AUTHORITY.active_plan (must remain v15 until the terminal Phase-B slice)",
+          "CURRENT-AUTHORITY.active_authorization (must remain authz-008 until Phase B)",
+          "clotho/memory/CONTRACTS/package-roots.json (byte-unchanged on its AM-42 pin until Phase B)",
+          "any woven comprehension/query artifact governing_authority (Phase B re-weave only)",
+          "release / GA / production-readiness surfaces (no release authority is granted)"
+        ],
+        "acceptance_criteria_ref": "matured-approach-amendment-1.md §E2 freshness + §5d phase-aware verifier",
+        "per_slice_eye_acceptance": "MANDATORY before merge",
+        "written_before_implementation": true
+      },
+      "content_address": "sha256:e1b857248b7e8c4a2fe53ce5154ed8eb5fe35dfb4b7febca2d65610a273982dd"
+    },
+    {
+      "descriptor": {
+        "kind": "phase-a-slice-descriptor",
+        "slice_id": "plugin-self-containment",
+        "title": "Plugin self-containment slice",
+        "allowed_path_globs": [
+          "ai-native-memory/**",
+          "docs/**"
+        ],
+        "forbidden_surfaces": [
+          "no spine-root enrollment",
+          "CURRENT-AUTHORITY.active_plan (must remain v15 until the terminal Phase-B slice)",
+          "CURRENT-AUTHORITY.active_authorization (must remain authz-008 until Phase B)",
+          "clotho/memory/CONTRACTS/package-roots.json (byte-unchanged on its AM-42 pin until Phase B)",
+          "any woven comprehension/query artifact governing_authority (Phase B re-weave only)",
+          "release / GA / production-readiness surfaces (no release authority is granted)"
+        ],
+        "acceptance_criteria_ref": "matured-approach-amendment-1.md plugin self-containment register item",
+        "per_slice_eye_acceptance": "MANDATORY before merge",
+        "written_before_implementation": true
+      },
+      "content_address": "sha256:7b4ac7215ecdaf0772a1af48bb0632df42408ec88308b1efef532915a1475a18"
+    },
+    {
+      "descriptor": {
+        "kind": "phase-a-slice-descriptor",
+        "slice_id": "E2-memory-gate-authority-transitions",
+        "title": "E2 memory-gate freshness + Eye-signed authority transitions + Eye-local genesis provisioning",
+        "allowed_path_globs": [
+          "build-gate/**",
+          "merkle-dag/**",
+          "docs/institutional-memory/**"
+        ],
+        "forbidden_surfaces": [
+          "CURRENT-AUTHORITY.active_plan (must remain v15 until the terminal Phase-B slice)",
+          "CURRENT-AUTHORITY.active_authorization (must remain authz-008 until Phase B)",
+          "clotho/memory/CONTRACTS/package-roots.json (byte-unchanged on its AM-42 pin until Phase B)",
+          "any woven comprehension/query artifact governing_authority (Phase B re-weave only)",
+          "release / GA / production-readiness surfaces (no release authority is granted)"
+        ],
+        "acceptance_criteria_ref": "matured-approach-amendment-1.md §E2",
+        "per_slice_eye_acceptance": "MANDATORY before merge",
+        "written_before_implementation": true
+      },
+      "content_address": "sha256:75f232fbf8faa69c88b8887516f5062934a64e3291f5aa1c2bd3690d1cd62fef"
+    },
+    {
+      "descriptor": {
+        "kind": "phase-a-slice-descriptor",
+        "slice_id": "E3-auditor",
+        "title": "E3 exceptionless auditor (no allow-empty)",
+        "allowed_path_globs": [
+          "build-gate/**",
+          "docs/institutional-memory/**"
+        ],
+        "forbidden_surfaces": [
+          "CURRENT-AUTHORITY.active_plan (must remain v15 until the terminal Phase-B slice)",
+          "CURRENT-AUTHORITY.active_authorization (must remain authz-008 until Phase B)",
+          "clotho/memory/CONTRACTS/package-roots.json (byte-unchanged on its AM-42 pin until Phase B)",
+          "any woven comprehension/query artifact governing_authority (Phase B re-weave only)",
+          "release / GA / production-readiness surfaces (no release authority is granted)"
+        ],
+        "acceptance_criteria_ref": "matured-approach-amendment-1.md §E3",
+        "per_slice_eye_acceptance": "MANDATORY before merge",
+        "written_before_implementation": true
+      },
+      "content_address": "sha256:77e462c8ae19b7127dea1f560b84f9ccd25ea691514522f7c2ec0a538790948a"
+    },
+    {
+      "descriptor": {
+        "kind": "phase-a-slice-descriptor",
+        "slice_id": "E6-declarative-oracle-language",
+        "title": "E6 discriminating oracles — constrained declarative oracle language + trusted evaluator (SPIKE-E6 hard merge gate; no normative-oracle enrollment before it lands)",
+        "allowed_path_globs": [
+          "docs/institutional-memory/**",
+          "clotho/memory/**",
+          "build-gate/**"
+        ],
+        "forbidden_surfaces": [
+          "no oracle enrollment before the evaluator gate passes",
+          "CURRENT-AUTHORITY.active_plan (must remain v15 until the terminal Phase-B slice)",
+          "CURRENT-AUTHORITY.active_authorization (must remain authz-008 until Phase B)",
+          "clotho/memory/CONTRACTS/package-roots.json (byte-unchanged on its AM-42 pin until Phase B)",
+          "any woven comprehension/query artifact governing_authority (Phase B re-weave only)",
+          "release / GA / production-readiness surfaces (no release authority is granted)"
+        ],
+        "acceptance_criteria_ref": "matured-approach-amendment-1.md §6b SPIKE-E6-EVALUATOR-FORM + §E6",
+        "per_slice_eye_acceptance": "MANDATORY before merge",
+        "written_before_implementation": true
+      },
+      "content_address": "sha256:1219d3ff2d2ae10a62ca84bfad798d0300909d873c26b2204be302ba5f1ff479"
+    },
+    {
+      "descriptor": {
+        "kind": "phase-a-slice-descriptor",
+        "slice_id": "E4-gate-production-profile",
+        "title": "E4 gate production-profile default flip (no report-only mode produces production authority)",
+        "allowed_path_globs": [
+          "build-gate/**",
+          "docs/**"
+        ],
+        "forbidden_surfaces": [
+          "no allow_unsigned producing production authority",
+          "CURRENT-AUTHORITY.active_plan (must remain v15 until the terminal Phase-B slice)",
+          "CURRENT-AUTHORITY.active_authorization (must remain authz-008 until Phase B)",
+          "clotho/memory/CONTRACTS/package-roots.json (byte-unchanged on its AM-42 pin until Phase B)",
+          "any woven comprehension/query artifact governing_authority (Phase B re-weave only)",
+          "release / GA / production-readiness surfaces (no release authority is granted)"
+        ],
+        "acceptance_criteria_ref": "matured-approach-amendment-1.md §E4",
+        "per_slice_eye_acceptance": "MANDATORY before merge",
+        "written_before_implementation": true
+      },
+      "content_address": "sha256:9eceec7ffa8c98c13bfaebfdf18380b409b793ac1198748db366dbd0125bd358"
+    },
+    {
+      "descriptor": {
+        "kind": "phase-a-slice-descriptor",
+        "slice_id": "product-memory-dir-adrs",
+        "title": "Product memory dir + ADRs (PD-001..PD-007), Phase-0 contract",
+        "allowed_path_globs": [
+          "docs/institutional-memory/product/**",
+          "docs/**"
+        ],
+        "forbidden_surfaces": [
+          "data/docs only",
+          "CURRENT-AUTHORITY.active_plan (must remain v15 until the terminal Phase-B slice)",
+          "CURRENT-AUTHORITY.active_authorization (must remain authz-008 until Phase B)",
+          "clotho/memory/CONTRACTS/package-roots.json (byte-unchanged on its AM-42 pin until Phase B)",
+          "any woven comprehension/query artifact governing_authority (Phase B re-weave only)",
+          "release / GA / production-readiness surfaces (no release authority is granted)"
+        ],
+        "acceptance_criteria_ref": "matured-approach-amendment-1.md §3 PD-001..PD-007",
+        "per_slice_eye_acceptance": "MANDATORY before merge",
+        "written_before_implementation": true
+      },
+      "content_address": "sha256:26285bfaedf8591a9ce6ebd8e0c349ff4df6e1338f574503217c6beb5bfba4d1"
+    },
+    {
+      "descriptor": {
+        "kind": "phase-a-slice-descriptor",
+        "slice_id": "naming-versions",
+        "title": "Naming / versioning / publish (PD-006), product-version.json lockstep",
+        "allowed_path_globs": [
+          "docs/**",
+          "cli/**"
+        ],
+        "forbidden_surfaces": [
+          "CURRENT-AUTHORITY.active_plan (must remain v15 until the terminal Phase-B slice)",
+          "CURRENT-AUTHORITY.active_authorization (must remain authz-008 until Phase B)",
+          "clotho/memory/CONTRACTS/package-roots.json (byte-unchanged on its AM-42 pin until Phase B)",
+          "any woven comprehension/query artifact governing_authority (Phase B re-weave only)",
+          "release / GA / production-readiness surfaces (no release authority is granted)"
+        ],
+        "acceptance_criteria_ref": "matured-approach-amendment-1.md §3 PD-006",
+        "per_slice_eye_acceptance": "MANDATORY before merge",
+        "written_before_implementation": true
+      },
+      "content_address": "sha256:bb36baac3e646bc831ee7605c919177a5a79ea6cdeaccaa9fce5e4033446cbf9"
+    },
+    {
+      "descriptor": {
+        "kind": "phase-a-slice-descriptor",
+        "slice_id": "phase-b-atomic-activation",
+        "title": "TERMINAL: Phase B atomic-activation slice (the excluded-dirs implementation slice) — canonicalizes AM-43, re-weaves, pivots active_plan/active_authorization, supersedes v15, adds cli/ + connectors/meta-ads-mcp/",
+        "allowed_path_globs": [
+          "cli/**",
+          "connectors/meta-ads-mcp/**",
+          "clotho/**",
+          "CURRENT-AUTHORITY.json",
+          "docs/institutional-memory/**",
+          "telos/AMENDMENTS/**",
+          "lachesis/**",
+          "atropos/**",
+          ".github/**"
+        ],
+        "forbidden_surfaces": [
+          "MUST be the terminal transition — merges WHILE Phase B is incomplete; the controller ACCEPTS this uniquely content-addressed terminal entry while every unlisted PR is refused slice-not-whitelisted",
+          "CURRENT-AUTHORITY.active_plan (must remain v15 until the terminal Phase-B slice)",
+          "CURRENT-AUTHORITY.active_authorization (must remain authz-008 until Phase B)",
+          "clotho/memory/CONTRACTS/package-roots.json (byte-unchanged on its AM-42 pin until Phase B)",
+          "any woven comprehension/query artifact governing_authority (Phase B re-weave only)",
+          "release / GA / production-readiness surfaces (no release authority is granted)"
+        ],
+        "acceptance_criteria_ref": "matured-approach-amendment-1.md §3 Phase B B1-B7 + §6 excluded-dirs slice",
+        "per_slice_eye_acceptance": "MANDATORY before merge",
+        "written_before_implementation": true
+      },
+      "content_address": "sha256:24e0b2df6ca8cff9af00928b8f8e3b808b2547a02c0e73cf025c551bbd19c98b"
+    }
+  ],
+  "whitelist_digest": "sha256:0a787366eec206f42fc9e8c478f811762382bef598ee43994fbf9940cd2f79b4"
+}

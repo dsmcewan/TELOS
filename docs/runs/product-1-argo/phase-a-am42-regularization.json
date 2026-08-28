@@ -1,0 +1,16 @@
+{
+  "record": "product-1 AMENDMENT-1 — AM-42 regularization / deviation linkage (Phase A)",
+  "date": "2026-08-28",
+  "am42_doc": "clotho/memory/DECISIONS/AM-42.md",
+  "am42_sha256": "sha256:748511d4fdfb2c6c48a6e3be65ca79a3255e87d990c13f78e6df5c8cab34b24c",
+  "am43_doc": "telos/AMENDMENTS/AM-43.md",
+  "am43_sha256": "sha256:e43ac2208af4f41a595606e7272a574c059a46c4f130a6dfe4083920ee54de08",
+  "am43_activation": "deferred-to-phase-b",
+  "linkage": "AM-42.amendments_in_force row gains amended_by=AM-43, ratification=retroactive, activation=deferred-to-phase-b (Phase A), mirroring AM-40's existing amended_by=AM-42 linkage. AM-42 bytes and ruling_sha256 never rewritten.",
+  "authority": {
+    "grant": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-s3-grant-amendment-1.json",
+    "plan_ref": "sha256:41a1e8b6dddc12da502db305e7044570f121784903e4183cf17a03a2ca100ef7",
+    "discovery_001_ruling": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md"
+  },
+  "note": "Deviation pinned by am42_sha256 so the retroactive AM-43 linkage cannot silently re-point to a mutated AM-42."
+}

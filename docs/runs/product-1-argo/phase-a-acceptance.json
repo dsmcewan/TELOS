@@ -1,0 +1,56 @@
+{
+  "record": "product-1 AMENDMENT-1 — PHASE A (governance bootstrap, DATA ONLY) acceptance evidence",
+  "date": "2026-08-28",
+  "quest": "product-1",
+  "slice": "phase-a-bootstrap",
+  "branch": "quest/product-1-phase-a-bootstrap",
+  "implementation_start_head": "4b6b0ef8b285e2a20451f34d0772448b8efe5928",
+  "authorized_plan_ref": "sha256:41a1e8b6dddc12da502db305e7044570f121784903e4183cf17a03a2ca100ef7",
+  "s3_grant": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-s3-grant-amendment-1.json",
+  "deliverables": {
+    "A1_publish": "matured-approach-amendment-1.md is the content-addressed successor plan; plan_ref = sha256:41a1e8b6dddc12da502db305e7044570f121784903e4183cf17a03a2ca100ef7",
+    "A2_authorize_exact_hash": "docs/runs/product-authorization-1/run-12-amendment-r46-authorized/authorization-summary.json (gate pass; plan_ref pinned; build_id names the flip)",
+    "A3_quest_class_entry": {
+      "file": "docs/institutional-memory/telos/CONTRACTS/authorization-chain.json",
+      "added": "quest_runs[authz-product-1-amendment-1]",
+      "activation": "deferred-to-phase-b",
+      "active": false,
+      "note": "NOT an enrollment_run (no module root); active_plan/active_authorization UNCHANGED"
+    },
+    "A4_am43_staging": {
+      "file": "telos/AMENDMENTS/AM-43.md",
+      "sha256": "sha256:e43ac2208af4f41a595606e7272a574c059a46c4f130a6dfe4083920ee54de08",
+      "location": "non-woven staging (Phase B canonicalizes into clotho/memory/DECISIONS/)"
+    },
+    "A4_am42_regularization": {
+      "file": "CURRENT-AUTHORITY.json",
+      "change": "amendments_in_force[AM-42] gains amended_by=AM-43, ratification=retroactive, activation=deferred-to-phase-b (mirrors AM-40's amended_by=AM-42)",
+      "deviation_record": "docs/runs/product-1-argo/phase-a-am42-regularization.json",
+      "am42_sha256": "sha256:748511d4fdfb2c6c48a6e3be65ca79a3255e87d990c13f78e6df5c8cab34b24c"
+    },
+    "A5_preactivation_whitelist": {
+      "file": "docs/runs/product-1-argo/phase-a-preactivation-whitelist.json",
+      "whitelist_digest": "sha256:0a787366eec206f42fc9e8c478f811762382bef598ee43994fbf9940cd2f79b4",
+      "slices": 10,
+      "terminal_entry": "phase-b-atomic-activation"
+    }
+  },
+  "acceptance_checks": {
+    "verify_contracts": "313/313 PASS (exit 0)",
+    "test_inventory": "all assertions passed (exit 0)",
+    "clotho_inventory": "exit 0",
+    "package_roots_byte_unchanged": true,
+    "active_plan_active_authorization_unchanged": true,
+    "no_cli_dir_added": true,
+    "no_woven_input_touched": true,
+    "discovery_001_digest_reverified": true,
+    "discovery_001_digest": "sha256:214f8b51864726d8edcb59401803c135e93951c0275b4fbac87c084d31f34309",
+    "comprehension_gates_reconfirmed": "iliad+telos+argo COMPREHENSION_PASSED (56 checks) — docs/runs/product-1-argo/phase-a-comprehension-reconfirmation.json"
+  },
+  "honest_notes": [
+    "connectors/meta-ads-mcp/server.mjs ALREADY EXISTS on disk (the plan §3 assumed it did not yet exist). This does NOT affect data-only Phase A: verify-contracts (313/313) and test-inventory are GREEN at the Phase A head regardless, and cli/ still does not exist. Phase B's 'add both directories' should be read as 'add cli/ + formally classify the pre-existing connectors/meta-ads-mcp/'. Recorded, not treated as a blocking discovery (the Phase A acceptance gates are green).",
+    "The phase-aware executable §5d verifier is CODE and ships in a later whitelisted slice (freshness); until it lands, Phase A integrity evidence is this record + the council authorization-summary + the step-ledger entry, machine-checked when the verifier slice merges."
+  ],
+  "phase_b_gate": "NO unlisted slice is merge-eligible before Phase B; only the A5 whitelist slices proceed. Phase B (atomic activation) only after the discriminating verifier lands. Per-slice Eye acceptance mandatory.",
+  "eye_acceptance": "PENDING — this slice is presented to The Eye for per-slice acceptance before merge; NOT merged."
+}

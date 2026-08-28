@@ -67,7 +67,7 @@
         "pr": 126,
         "merge_anchor": "git:395c971",
         "reviewed_head": "git:395c971",
-        "note": "PHASE 1 CLOSURE: docs housekeeping (path-sensitivity-checked) + self-weave reproduction executed at the integrated HEAD — 4001 edges published clean, 28/28 expectations, full eight-package battery recorded, d8 flipped NORMATIVE; ZERO pending records remain; acceptance path = PR #126 review + CI + The Eye standing directive",
+        "note": "PHASE 1 CLOSURE: docs housekeeping (path-sensitivity-checked) + self-weave reproduction executed at the integrated HEAD \u2014 4001 edges published clean, 28/28 expectations, full eight-package battery recorded, d8 flipped NORMATIVE; ZERO pending records remain; acceptance path = PR #126 review + CI + The Eye standing directive",
         "entry_ritual": "docs/runs/clotho-impl-slice-7/reader-validation-artifact.json"
       }
     ],
@@ -97,7 +97,10 @@
       "integrated_in": "post-v15 (Iliad enrollment ratification)",
       "authorized_by": "authz-lachesis-1 + authz-atropos-1 (implementation) + the Eye's enrollment ruling AM-42",
       "doc": "clotho/memory/DECISIONS/AM-42.md",
-      "ruling_sha256": "sha256:748511d4fdfb2c6c48a6e3be65ca79a3255e87d990c13f78e6df5c8cab34b24c"
+      "ruling_sha256": "sha256:748511d4fdfb2c6c48a6e3be65ca79a3255e87d990c13f78e6df5c8cab34b24c",
+      "amended_by": "AM-43",
+      "ratification": "retroactive",
+      "activation": "deferred-to-phase-b"
     }
   ],
   "superseded": [

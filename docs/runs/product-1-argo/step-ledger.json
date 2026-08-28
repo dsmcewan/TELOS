@@ -10,5 +10,23 @@
     "docs/runs/product-1-argo/reader-validation-argo.json"
   ],
   "conditions": "10 Eye conditions bind every slice; per-slice Eye acceptance required before merge; failed/blocked/superseded slices remain durable lineage.",
-  "slices": []
+  "slices": [
+    {
+      "slice": "phase-a-bootstrap",
+      "phase": "A",
+      "class": "governance-bootstrap (DATA ONLY)",
+      "branch": "quest/product-1-phase-a-bootstrap",
+      "base_head": "4b6b0ef8b285e2a20451f34d0772448b8efe5928",
+      "acceptance_evidence": "docs/runs/product-1-argo/phase-a-acceptance.json",
+      "gates": "verify-contracts 313/313 + test-inventory + inventory all green; package-roots byte-unchanged; active authority unchanged",
+      "status": "IMPLEMENTED — PENDING per-slice Eye acceptance (not merged)"
+    }
+  ],
+  "amendment_1": {
+    "governing_plan_ref": "sha256:41a1e8b6dddc12da502db305e7044570f121784903e4183cf17a03a2ca100ef7",
+    "reviewed_head": "915e12ff14203345ac8af1ae3b57624af705a2e0",
+    "implementation_start_head": "4b6b0ef8b285e2a20451f34d0772448b8efe5928",
+    "s3_grant": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-s3-grant-amendment-1.json",
+    "note": "Two-phase pivot (DISCOVERY-001). The original one-phase step-ledger fields above are historical lineage."
+  }
 }

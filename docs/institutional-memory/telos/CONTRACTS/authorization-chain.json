@@ -7,7 +7,7 @@
     "pointer": "CURRENT-AUTHORITY.json",
     "vocabulary": "docs/mythological-vocabulary.md#TELOS"
   },
-  "note": "One entry per SPINE authorization run on disk (authz-001..008); module enrollment runs live in enrollment_runs below. Refusals are PRESERVED, never erased — five of eight spine runs refused authorization, which is the fail-closed posture demonstrated, not a failure history to clean up. Entries with a plan_path are re-hashed from disk by the verifier; authz-001..003 reviewed candidate bytes that are not preserved as matured-plan files on main, so their plan_ref is record-internal only (checked against the record, not the disk) — recorded honestly rather than reconstructed.",
+  "note": "One entry per SPINE authorization run on disk (authz-001..008); module enrollment runs live in enrollment_runs below. Refusals are PRESERVED, never erased — five of eight spine runs refused authorization, which is the fail-closed posture demonstrated, not a failure history to clean up. Entries with a plan_path are re-hashed from disk by the verifier; authz-001..003 reviewed candidate bytes that are not preserved as matured-plan files on main, so their plan_ref is record-internal only (checked against the record, not the disk) — recorded honestly rather than reconstructed. Quest-class runs (activation-deferred successor authorizations under the Iliad, e.g. product-1) live in quest_runs below; they do NOT change the active authority until their two-phase activation completes.",
   "chain": [
     {
       "id": "authz-001",
@@ -130,5 +130,27 @@
   },
   "normativity": "NORMATIVE",
   "status": "NORMATIVE-CURRENT",
-  "must_not_govern_new_work": false
+  "must_not_govern_new_work": false,
+  "quest_runs": [
+    {
+      "id": "authz-product-1-amendment-1",
+      "class": "quest",
+      "quest": "product-1",
+      "record": "docs/runs/product-authorization-1/run-12-amendment-r46-authorized/authorization-summary.json",
+      "status": "AUTHORIZED",
+      "authorized": true,
+      "plan_ref": "sha256:41a1e8b6dddc12da502db305e7044570f121784903e4183cf17a03a2ca100ef7",
+      "plan_path": "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+      "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+      "trust_mode": "signed",
+      "activation": "deferred-to-phase-b",
+      "active": false,
+      "reviewed_head": "915e12ff14203345ac8af1ae3b57624af705a2e0",
+      "implementation_start_head": "4b6b0ef8b285e2a20451f34d0772448b8efe5928",
+      "grant": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-s3-grant-amendment-1.json",
+      "discovery_001_ruling": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+      "supersedes_deferred_grant": "SUSPENDED prior grant over plan_ref sha256:bb2ea18f… (commit 97becd37)",
+      "note": "Quest-class chain entry, ACTIVATION-DEFERRED to Phase B. CURRENT-AUTHORITY.active_plan/active_authorization are NOT changed by this entry; v15/authz-008 remains the active repository authority until Phase B completes. Not an enrollment_run (no module root). Machine-checked by the phase-aware §5d verifier slice when it lands; until then integrity evidence is the authorization-summary + step-ledger."
+    }
+  ]
 }
