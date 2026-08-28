@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "release-workflow-trust",
+        "claim": "The substituted-definition defense still permits public release mutation. Repository-default read-only GITHUB_TOKEN permissions are not specified as a platform-enforced ceiling; an off-main workflow_dispatch definition can omit the environment and gate dependencies, request contents:write, and create or publish a release for an already-existing Eye-created v* tag. The tag ruleset does not block release creation for an existing tag, while pinned attestation identity and the drift oracle only reject or detect the release after publication. The regression therefore does not prove that the release endpoint is inaccessible before trusted-main evaluation, violating the draft-first fail-closed release requirement."
+      },
+      {
+        "scope": "ai-native-memory-self-containment",
+        "claim": "Governance correction g remains underspecified and lacks a discriminating acceptance test. The existing ai-native-memory/CURRENT-AUTHORITY.json points outside the plugin, while the candidate only says authority reads will be confined and names a later 'plugin self-containment' slice; it does not specify the in-plugin successor authority document, the authority transition that repoints CURRENT-AUTHORITY, or a clean-room test running gate/audit/verify from the plugin subtree with its repository parent absent. Path confinement alone can merely make the current plugin fail closed rather than make it self-contained."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a045b6-a1e9-7183-aca2-00e8c17c2189",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a045b6-a1e9-7183-aca2-00e8c17c2189",
+    "source": "cli-seats/codex_ask"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:df250613a59c06e3ca622b9a8e966989b1ca12832b1df96206c5381076cba9f8",
+  "output_plan_artifact_hash": "sha256:df250613a59c06e3ca622b9a8e966989b1ca12832b1df96206c5381076cba9f8",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:ddb87630470469f4d5fc4f2ba341947a5efbcf430f75d129de3c450060722962",
+    "provenance_key": "anthropic:07de4e5e-40fa-4581-87d0-1f776d61484e"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:126f2d02f898d716caec495dcbbb44ed9e37a9fae9a6d55cb9b70f0e3e5787c7",
+    "provenance_key": "openai:01a045b6-a1e9-7183-aca2-00e8c17c2189",
+    "bound_hash": "sha256:df250613a59c06e3ca622b9a8e966989b1ca12832b1df96206c5381076cba9f8"
+  },
+  "objections": [
+    {
+      "scope": "release-workflow-trust",
+      "claim": "The substituted-definition defense still permits public release mutation. Repository-default read-only GITHUB_TOKEN permissions are not specified as a platform-enforced ceiling; an off-main workflow_dispatch definition can omit the environment and gate dependencies, request contents:write, and create or publish a release for an already-existing Eye-created v* tag. The tag ruleset does not block release creation for an existing tag, while pinned attestation identity and the drift oracle only reject or detect the release after publication. The regression therefore does not prove that the release endpoint is inaccessible before trusted-main evaluation, violating the draft-first fail-closed release requirement.",
+      "objection_hash": "sha256:bcdb8f5b0e06f57a1560ada23b8ffc69aa36ee45de8bb4925b499a3335dffe24",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "ai-native-memory-self-containment",
+      "claim": "Governance correction g remains underspecified and lacks a discriminating acceptance test. The existing ai-native-memory/CURRENT-AUTHORITY.json points outside the plugin, while the candidate only says authority reads will be confined and names a later 'plugin self-containment' slice; it does not specify the in-plugin successor authority document, the authority transition that repoints CURRENT-AUTHORITY, or a clean-room test running gate/audit/verify from the plugin subtree with its repository parent absent. Path confinement alone can merely make the current plugin fail closed rather than make it self-contained.",
+      "objection_hash": "sha256:68632d2906630f57b0d74dee2c6a33c67d2552c9d1c9733b47fed9a477a074c7",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

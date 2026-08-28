@@ -228,7 +228,24 @@ per-file designs are in the approved plan; acceptance criteria here.
   Extract `scripts/lib/freshness.mjs` (byte-stable audit findings); gate
   re-derives every query `expected` from `derived_from` at gate time (REQUIRED;
   DENIED on missing/dangling/stale with distinct reason codes); authority read
-  confined to the plugin boundary (couples to E4). Re-derivation alone cannot
+  confined to the plugin boundary (couples to E4). SELF-CONTAINMENT IS A
+  CONCRETE TRANSITION, not confinement alone (confining reads against the
+  current out-of-plugin CURRENT-AUTHORITY would merely make the plugin
+  fail closed, not self-contained — governance correction g): (i) the
+  governing spec is copied BYTE-IDENTICAL into the plugin
+  (`ai-native-memory/authority/2026-07-18-….md`; its sha256 recomputed
+  and asserted UNCHANGED — the content address is the identity, the
+  location is not); (ii) `CURRENT-AUTHORITY.json.active.path` is
+  REPOINTED to the in-plugin copy via the standard authority-transition
+  discipline (registry row change, old path retained as provenance);
+  (iii) the original under docs/superpowers/specs/ stays untouched
+  (blob-pinned by the snapshot). **Accept (self-containment)**:
+  CLEAN-ROOM test — the plugin subtree is copied alone into a temp dir
+  WITH NO REPOSITORY PARENT and gate + audit + verify all run green
+  from inside it (any read escaping the subtree fails loudly by
+  nonexistence); sha-equality assertion on the copied spec; the
+  repointed active.path resolves in-plugin via the confined resolver.
+  Re-derivation alone cannot
   defeat a FULL-LOCKSTEP mutation (source+expected+answer edited consistently),
   so sources are CHAINED TO PINNED AUTHORITY: a `derived_from.file` is
   admissible only if it is (a) a content-addressed record whose recomputed
@@ -991,6 +1008,23 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   (d) DRIFT IS SWEPT: a release-integrity oracle on main enumerates all
   releases and fails on any release not bound to an Eye-accepted tag +
   main-identity attestation.
+  (e) THE RELEASE SLOT IS OCCUPIED DRAFT-FIRST and the dispatch surface
+  is write-gated: GitHub allows ONE release per tag, and the ceremony
+  orders tag-then-immediate-draft — the trusted run is already gated
+  and waiting when the Eye pushes the tag, and it creates the DRAFT for
+  that tag as its next step, so a rogue `contents: write` release
+  create for the same tag fails `already_exists`; conversely if a rogue
+  release occupies the slot first, the trusted run aborts loudly on the
+  occupied slot (never publishes around it) and the Eye deletes the
+  rogue release + rotates the tag. RESIDUAL, STATED HONESTLY:
+  `workflow_dispatch` requires WRITE access — an unprivileged attacker
+  cannot dispatch any definition at all; the substituted-definition
+  threat is therefore a rogue write-collaborator, and the custody-drift
+  oracle already fails the pipeline the moment the collaborator set
+  grows beyond the recorded custody set. Default GITHUB_TOKEN
+  permissions are set read-only (a default, not a ceiling — the plan
+  does not claim otherwise; the ceiling is the write-gated dispatch +
+  slot occupancy + identity-pinned verification above).
   **Accept (workflow trust)**: off-main-tag regression — a tag whose
   target commit carries a modified release.yml is pushed ⇒ NOTHING
   triggers (no push trigger exists); SUBSTITUTED-DEFINITION regression —
@@ -999,7 +1033,12 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   telos-authority environment refuses the ref (no trust roots, no
   release secrets), the v* tag ruleset refuses tag creation, and any
   artifact it attests fails pinned-identity verification — no trusted
-  release mutation is possible; dispatching main's definition with a
+  release mutation is possible; EXISTING-TAG regression — after the
+  trusted draft occupies the tag's slot, a rogue release create for the
+  same tag ⇒ 422 already_exists, nothing published; rogue-first
+  regression — a rogue release occupying the slot before the draft ⇒
+  the trusted run aborts occupied-slot, never publishes around it;
+  dispatching main's definition with a
   hostile tag name as input ⇒ the gate evaluates it as data and aborts.
   (1) GATE: tag object must be ANNOTATED and its SIGNATURE VERIFIED in CI
   against an OUT-OF-TREE trust root (an in-tree public key is circular — a
