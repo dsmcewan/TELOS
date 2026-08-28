@@ -257,9 +257,13 @@ per-file designs are in the approved plan; acceptance criteria here.
   `config-attestation-consumed`). The controller VERIFIES it against
   EYE_AUTHORITY_PUBKEY, requires dossier-digest match + TTL + unused
   nonce, and additionally re-reads what its own scopes CAN see — the
-  public active-rules endpoint, ruleset ids/updated_at, and the
-  telos-authority-roots VALUES (comparing read values to attested
-  values catches root replacement) — refusing
+  public active-rules endpoint, ruleset ids/updated_at, — while the telos-authority-roots VALUE comparison (catching root
+  replacement) is performed by the PRIVILEGED ATTESTOR in its final
+  pre-merge re-enumeration, NOT by the controller (reading environment
+  variables requires Environments:read, outside the controller's
+  manifest scopes; the controller never touches that endpoint and a
+  403 there is expected, covered by the permission-limited
+  regression) — refusing
   `config-attestation-stale` on any drift, expiry, or mismatch;
   missing/invalid attestation ⇒ refuse `config-attestation-missing`.
   SAME-RUN DRIFT IS CLOSED PRE-MERGE BY SERIALIZED
@@ -804,13 +808,19 @@ per-file designs are in the approved plan; acceptance criteria here.
   `--unshare-pid` — no network (a remote counter or any external
   signal is unreachable) and no cross-run process signal; bwrap
   unavailable ⇒ FAIL `oracle-unrunnable` — confinement is never
-  best-effort. The remaining nondeterministic channel (the clock) is
-  causally controlled by an A-B-A' PROTOCOL: after the negative run,
-  the BASELINE IS RE-RUN in a third pristine same-path sandbox and
-  must exit 0 AGAIN — an oracle keying on any time-varying signal to
-  produce the 0/nonzero pair will drift on the second baseline
-  (nonzero ⇒ FAIL oracle-environment-sensitive), while a genuinely
-  input-reading oracle passes all three trivially. Same argv, same entrypoint, same
+  best-effort. The remaining nondeterministic channels (the clock and
+  KERNEL ENTROPY — getrandom cannot be portably denied inside the
+  sandbox) are controlled by a REPEATED A-B-A' PROTOCOL with an
+  explicit adversarial bound: each round runs baseline (exit 0
+  required), negative (nonzero required), and baseline-again (exit 0
+  required) in three pristine same-path sandboxes, and the FULL TRIPLE
+  IS REPEATED K=12 INDEPENDENT TIMES, every repetition consistent. A
+  coin-flip/entropy oracle maximizes its single-triple pass
+  probability at p(1-p)² ≤ 4/27, so K=12 bounds admission below
+  1.3e-10 — the guarantee is PROBABILISTIC AND STATED (never claimed
+  deterministic); clock-keyed oracles are additionally caught by the
+  A' drift check; a genuinely input-reading oracle passes all 36
+  executions trivially. Same argv, same entrypoint, same
   absolute path, same environment VARIABLES (equal names and shapes,
   pointing at per-run instances), no special mode; the only state
   observable in both executions is the governed input — the mutation is
@@ -861,7 +871,10 @@ per-file designs are in the approved plan; acceptance criteria here.
   each run has a private IPC namespace under --unshare-all, no segment
   crosses runs, the pair collapses ⇒ oracle-nondiscriminating; a CLOCK-THRESHOLD oracle
   (0 before time T, nonzero after) ⇒ the second baseline runs after T
-  and exits nonzero ⇒ oracle-environment-sensitive; a
+  and exits nonzero ⇒ oracle-environment-sensitive; a RANDOM-EXIT
+  oracle (crypto.randomBytes coin flip) ⇒ inconsistent across the 12
+  repetitions with overwhelming probability (admission bound < 1.3e-10,
+  documented) ⇒ oracle-nondiscriminating; a
   present-but-timeout oracle ⇒
   FAIL; an npm-script whose identical re-run exits 0 on the mutated sandbox
   ⇒ FAIL oracle-nondiscriminating; backfill complete (every backfilled

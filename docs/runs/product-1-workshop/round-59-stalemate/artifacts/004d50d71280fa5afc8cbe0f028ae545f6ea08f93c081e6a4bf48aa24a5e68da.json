@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:ea0d971567a485ad8d1acf149cf6b725e1c966fa713a17583c9ab5a9fb25a372",
+  "output_plan_artifact_hash": "sha256:ea0d971567a485ad8d1acf149cf6b725e1c966fa713a17583c9ab5a9fb25a372",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:9df5a3562f2be2e67ba117379456d0c2fc45a5189fa30f297a77bbebdc66c82f",
+    "provenance_key": "anthropic:247e0325-81ad-4d87-adc6-8b60ae870e7b"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:b4b68e7f65e6e9bfdc1f52104e2972d2172eec06727878f5e30c10662949a24f",
+    "provenance_key": "openai:codex-cli-mtcevabv",
+    "bound_hash": "sha256:ea0d971567a485ad8d1acf149cf6b725e1c966fa713a17583c9ab5a9fb25a372"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E6-oracle-entropy",
+      "claim": "E6 falsely states that the clock is the only remaining nondeterministic channel. Bubblewrap namespace isolation and private writable directories do not virtualize or deny kernel entropy: an input-ignoring Node oracle can use `crypto.randomBytes`/`getrandom` to choose its exit status. It passes the A-B-A′ sequence with nonzero probability (0, nonzero, 0) without reading the governed input, so retries can admit a nondiscriminating oracle. Require deterministic control or denial of entropy and other nondeterministic inputs, plus a random-exit regression that can never pass. Candidate artifact sha256:a3603b44cecd61143d9df86672b36346f916cf9cef2697c3e37f5792a494eae2.",
+      "objection_hash": "sha256:07bce9cccba4002a3eb6d45687b275a61e1d2d8cd9980dc588d49f590c67cdea",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:E1-controller-root-read-permission",
+      "claim": "The merge controller's required freshness mechanism is inoperable under its declared credential. E1 requires the Eye-local controller to re-read the `telos-authority-roots` environment-variable values immediately before merging, while §5(e) fixes the controller GitHub App permissions to contents:write, pull_requests:write, and checks:read—and explicitly nothing else. Reading environment variables requires the GitHub App's Environments:read permission, and an Eye-local process does not receive Actions environment variables by job injection ([GitHub REST variables permissions](https://docs.github.com/en/rest/actions/variables)). A controller honoring the manifest therefore receives 403/404 and must always fail, while skipping the read removes the promised root-replacement detection. Add the required read-only permission and custody coverage, or move the live comparison into an authenticated privileged mechanism without claiming the controller performs it; add a permission-limited regression for this endpoint. Candidate artifact sha256:a3603b44cecd61143d9df86672b36346f916cf9cef2697c3e37f5792a494eae2.",
+      "objection_hash": "sha256:94f865815ac123bb4924811f8e3a96b53aba28944a56a5b7c263e874b8647f85",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

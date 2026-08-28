@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E6-oracle-entropy",
+        "claim": "E6 falsely states that the clock is the only remaining nondeterministic channel. Bubblewrap namespace isolation and private writable directories do not virtualize or deny kernel entropy: an input-ignoring Node oracle can use `crypto.randomBytes`/`getrandom` to choose its exit status. It passes the A-B-A′ sequence with nonzero probability (0, nonzero, 0) without reading the governed input, so retries can admit a nondiscriminating oracle. Require deterministic control or denial of entropy and other nondeterministic inputs, plus a random-exit regression that can never pass. Candidate artifact sha256:a3603b44cecd61143d9df86672b36346f916cf9cef2697c3e37f5792a494eae2."
+      },
+      {
+        "scope": "candidate:E1-controller-root-read-permission",
+        "claim": "The merge controller's required freshness mechanism is inoperable under its declared credential. E1 requires the Eye-local controller to re-read the `telos-authority-roots` environment-variable values immediately before merging, while §5(e) fixes the controller GitHub App permissions to contents:write, pull_requests:write, and checks:read—and explicitly nothing else. Reading environment variables requires the GitHub App's Environments:read permission, and an Eye-local process does not receive Actions environment variables by job injection ([GitHub REST variables permissions](https://docs.github.com/en/rest/actions/variables)). A controller honoring the manifest therefore receives 403/404 and must always fail, while skipping the read removes the promised root-replacement detection. Add the required read-only permission and custody coverage, or move the live comparison into an authenticated privileged mechanism without claiming the controller performs it; add a permission-limited regression for this endpoint. Candidate artifact sha256:a3603b44cecd61143d9df86672b36346f916cf9cef2697c3e37f5792a494eae2."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcevabv",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcevabv",
+    "source": "cli-seats/codex_ask"
+  }
+}
