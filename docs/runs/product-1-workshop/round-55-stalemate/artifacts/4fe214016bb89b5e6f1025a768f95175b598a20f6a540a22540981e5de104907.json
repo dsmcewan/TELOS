@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:106f7d5557b65e61535ee2fe9122294acefc68e8f4fcf9bdf8102ef1345af468",
+  "output_plan_artifact_hash": "sha256:106f7d5557b65e61535ee2fe9122294acefc68e8f4fcf9bdf8102ef1345af468",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:a7bad37f5fcf165bb77c065c0040e869d3e47a55875b5729ec087adc98c89ff2",
+    "provenance_key": "anthropic:97e30081-8f24-4e79-9825-d4dfcfdc6529"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:ccf7ed95986010df80c5e0e6e31395ce55dae8edce618d5f1c3763ea754e27bd",
+    "provenance_key": "openai:codex-cli-mtce3cyl",
+    "bound_hash": "sha256:106f7d5557b65e61535ee2fe9122294acefc68e8f4fcf9bdf8102ef1345af468"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E1-configuration-attestation-freshness",
+      "claim": "The round-54 freshness defect remains unresolved. A short-TTL, run-bound, single-use attestation prevents reuse but does not freeze its underlying facts during the authorized run. After the Eye attestor enumerates collaborators, App permissions, deploy keys, effective team/role membership, and environment policy, any of those surfaces can change before the controller's merge mutation without changing the ruleset ids/updated_at or public values that the controller re-reads. The proposed regressions test reuse or a later fresh attestor run, not same-run drift between issuance and the first merge. Thus the controller can merge using stale custody/non-bypass conclusions. Require a platform-enforced no-drift interval covering attestation through mutation, or privileged revalidation of every attested mutable surface at the mutation point with a mechanism that closes the subsequent race; add same-run drift fixtures for each surface.",
+      "objection_hash": "sha256:41a4a512edf05227ad9f1a4ed81a6b2cba313c6e44f37c52b8fb72600b063c22",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:release-acceptance-sequencing",
+      "claim": "The release gate has no coherent authoritative input for RELEASE-ACCEPTANCE.json. Section 5(e)(ii) says the acceptance is carried in the release body, while section 5(1) makes the body non-authoritative and says no verifier reads authority from it. The stated ceremony creates the draft with the signed body, dispatches verification, and uploads assets only afterward, so the canonical immutable acceptance asset does not yet exist when the GATE must verify it. No separately authenticated dispatch input or pre-dispatch asset handoff is specified. The workflow therefore must either trust the mutable body, contradicting the design, or cannot satisfy its gate. Define an authenticated, digest-bound pre-dispatch handoff for the acceptance record and test that the gate refuses when only the body contains acceptance data.",
+      "objection_hash": "sha256:d0f7182e4bc943c66613f751ab7786d3873d5f5be1ccc6afbe5569533eceed2c",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate:frozen-blocker-8",
+      "claim": "The approach explicitly leaves the flagship undeployed and schedules deployment later, but frozen blocker 8 includes 'flagship never deployed,' and the frozen findings require every blocker to be closed this quest. PD-003's Chromium qualification boundary and the Eye ruling that the flagship is a demonstration/evidence viewer this round limit its production claim; they do not authorize deferring deployment entirely. Deploy the flagship as an explicitly labeled demo through the required-CI exact-SHA artifact path, with provenance regressions, or route the requested deferral to The Eye as a plan-escalation rather than silently treating the blocker as closed at fc0fa05.",
+      "objection_hash": "sha256:795280171a63c4dc6eb7daa32d427b5e7258e891829b1870ed4e033a9dd29c76",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

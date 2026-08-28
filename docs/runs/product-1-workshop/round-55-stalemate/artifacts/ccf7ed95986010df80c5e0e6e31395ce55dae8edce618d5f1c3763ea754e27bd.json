@@ -1,0 +1,33 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E1-configuration-attestation-freshness",
+        "claim": "The round-54 freshness defect remains unresolved. A short-TTL, run-bound, single-use attestation prevents reuse but does not freeze its underlying facts during the authorized run. After the Eye attestor enumerates collaborators, App permissions, deploy keys, effective team/role membership, and environment policy, any of those surfaces can change before the controller's merge mutation without changing the ruleset ids/updated_at or public values that the controller re-reads. The proposed regressions test reuse or a later fresh attestor run, not same-run drift between issuance and the first merge. Thus the controller can merge using stale custody/non-bypass conclusions. Require a platform-enforced no-drift interval covering attestation through mutation, or privileged revalidation of every attested mutable surface at the mutation point with a mechanism that closes the subsequent race; add same-run drift fixtures for each surface."
+      },
+      {
+        "scope": "candidate:release-acceptance-sequencing",
+        "claim": "The release gate has no coherent authoritative input for RELEASE-ACCEPTANCE.json. Section 5(e)(ii) says the acceptance is carried in the release body, while section 5(1) makes the body non-authoritative and says no verifier reads authority from it. The stated ceremony creates the draft with the signed body, dispatches verification, and uploads assets only afterward, so the canonical immutable acceptance asset does not yet exist when the GATE must verify it. No separately authenticated dispatch input or pre-dispatch asset handoff is specified. The workflow therefore must either trust the mutable body, contradicting the design, or cannot satisfy its gate. Define an authenticated, digest-bound pre-dispatch handoff for the acceptance record and test that the gate refuses when only the body contains acceptance data."
+      },
+      {
+        "scope": "candidate:frozen-blocker-8",
+        "claim": "The approach explicitly leaves the flagship undeployed and schedules deployment later, but frozen blocker 8 includes 'flagship never deployed,' and the frozen findings require every blocker to be closed this quest. PD-003's Chromium qualification boundary and the Eye ruling that the flagship is a demonstration/evidence viewer this round limit its production claim; they do not authorize deferring deployment entirely. Deploy the flagship as an explicitly labeled demo through the required-CI exact-SHA artifact path, with provenance regressions, or route the requested deferral to The Eye as a plan-escalation rather than silently treating the blocker as closed at fc0fa05."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtce3cyl",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtce3cyl",
+    "source": "cli-seats/codex_ask"
+  }
+}

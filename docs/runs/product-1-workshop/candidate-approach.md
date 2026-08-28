@@ -247,6 +247,19 @@ per-file designs are in the approved plan; acceptance criteria here.
   values catches root replacement) — refusing
   `config-attestation-stale` on any drift, expiry, or mismatch;
   missing/invalid attestation ⇒ refuse `config-attestation-missing`.
+  SAME-RUN DRIFT IS CLOSED BY SOLE-ADMIN CUSTODY + POST-RUN
+  RE-ENUMERATION (the drift surfaces — collaborators, App permissions,
+  deploy keys, environment policy — are ADMIN-only mutations, and the
+  custody manifest proves the Eye is the ONLY admin; the Eye running
+  the ceremony performs no settings mutations mid-run as a recorded
+  ceremony invariant, and that invariant is MACHINE-CHECKED rather than
+  trusted: immediately after the merge mutation, the attestor RE-RUNS
+  the full enumeration and asserts ZERO drift occurred during the run —
+  any observed same-run drift ⇒ the merge is treated as compromised:
+  automatic quarantine (revert PR opened, incident record, pipeline
+  halted) rather than silent acceptance). SAME-RUN drift fixtures: each
+  surface mutated between issuance and the merge PUT (stub) ⇒ the
+  post-run re-enumeration detects it and the quarantine path fires.
   The attestation requires strict up-to-dateness in effect, and
   requires the authenticated
   principal (user or app installation) to be ABSENT from the
@@ -1427,8 +1440,16 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   SHA256SUMS and attested like every artifact; release immutability
   freezes ASSETS, while the release BODY remains PATCHable even on
   published immutable releases — so the body is only a
-  NON-AUTHORITATIVE POINTER to the asset and no verifier ever reads
-  authority from it), verified against the protected
+  NON-AUTHORITATIVE POINTER and no verifier ever reads authority from
+  it). SEQUENCING (the asset cannot exist before the build that the
+  gate precedes): the canonical record travels as an AUTHENTICATED
+  DISPATCH INPUT — the Eye passes the canonicalized acceptance JSON as
+  a workflow_dispatch input, the GATE verifies its Ed25519 signature
+  directly from that input (never from the body; a body-only
+  acceptance ⇒ refuse `acceptance-not-authenticated`), and the
+  ceremony later uploads the byte-identical record as the immutable
+  asset with the post-publish check asserting asset ==
+  dispatched-input digest. Verified against the protected
   EYE_AUTHORITY_PUBKEY (telos-authority-roots custody; not in the
   tree — an in-tree record cannot name the very commit its own addition
   creates, and mutable main cannot key authority). The gate requires
@@ -1534,8 +1555,13 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   `workflow_run.head_branch == 'main'`; downloads by that exact
   `workflow_run.id` and asserts the artifact name embeds
   `workflow_run.head_sha` before deploying. The deployed payload REMAINS
-  `demo/` (explicit: the flagship is NOT deployed this round per PD-003;
-  flagship deployment is a register item). **Accept**: a PR-triggered or
+  `demo/` AND the FLAGSHIP BUILD, deployed as an EXPLICITLY LABELED
+  DEMONSTRATION/EVIDENCE-VIEWER (frozen blocker 8 includes "flagship
+  never deployed" — deferral would leave the blocker open; PD-003's
+  Chromium boundary bounds the QUALIFICATION claim, not deployment):
+  both ride the same required-CI exact-SHA artifact path, the flagship
+  page carries the PD-003 demonstration label + qualified-browser
+  notice, and the provenance regressions cover both artifacts. **Accept**: a PR-triggered or
   non-main workflow_run never deploys (guard test via workflow lint/fixture);
   the deployed artifact's embedded SHA equals the triggering run's head.
 - **Review-plugin: pin AND de-privilege** (pinning alone leaves downloaded
