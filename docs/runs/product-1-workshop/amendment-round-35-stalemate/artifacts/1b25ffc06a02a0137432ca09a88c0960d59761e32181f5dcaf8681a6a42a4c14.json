@@ -1,0 +1,47 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:cb622a4a8f4b3cb901f85b73389134dc82668740b6b901b8e5a0c4b179943eb3",
+  "output_plan_artifact_hash": "sha256:cb622a4a8f4b3cb901f85b73389134dc82668740b6b901b8e5a0c4b179943eb3",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:8727f3d7cca75efaf0dff197e5011e21ecfe26d17fd6f305f66257b8ab5c8038",
+    "provenance_key": "anthropic:5aba5fcd-3caa-48c7-a95f-0cb50d620417"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:008bc9e3c38225fb9d3b7454ad7babbf4643f1b294448b72fc595d98d39ff27c",
+    "provenance_key": "openai:codex-cli-mtcytjpj",
+    "bound_hash": "sha256:cb622a4a8f4b3cb901f85b73389134dc82668740b6b901b8e5a0c4b179943eb3"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach §1 no-listener enforcement / Phase-0 platform contract",
+      "claim": "The claimed whole-tree kernel invariant is incomplete because the supported OS and syscall ABI are never frozen. The mechanism is Linux-specific, yet the text refers to supported Unix platforms, and a filter matching only bind/listen/accept/accept4 syscall numbers is bypassable on compatibility ABIs through multiplexed socketcall or alternate syscall numbering unless seccomp_data.arch is validated and every admitted ABI is handled. Freeze the exact Linux architecture/ABI envelope, reject every other audit architecture in the filter, cover any multiplexed socket interface, and add compat-ABI regressions; otherwise PD-001's no-listener boundary and the Phase-0 topology contract remain unsound.",
+      "objection_hash": "sha256:76c50ee4c7f164bf48e68583db48a4c0e67284d0f0d5503a142c427e3234e51d",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach §1 launcher bootstrap and inherited descriptors",
+      "claim": "The seccomp filter is installed by the launcher after that executable has already started, so it cannot be the asserted kernel invariant over the launcher itself: static CRT/startup and init-array code execute before the filter, and the plan expressly concedes that digest/reproducibility plus binary inspection do not prove arbitrary native bytes listener-free. In addition, closing only inherited io_uring descriptors leaves inherited bound/listening sockets available; an inherited bound UDP socket can receive without invoking bind, listen, or accept. The plan must place the launcher under a filter installed before any launcher byte executes or provide a genuinely freestanding audited entry path, and must close or fail-closed validate all inherited descriptors, with pre-main and inherited-socket regressions.",
+      "objection_hash": "sha256:34f3a19394333199f24d036fd771d3960e2760bbfced82fa0a759609c8dcf928",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach E1 transition-aware workflow merges / §5 custody manifest",
+      "claim": "The controller App is specified with exactly contents:write, pull_requests:write, checks:read, statuses:read, and actions:read, and nothing else, while the same controller is required to merge signed PRs that add or modify .github/workflows files, including Phase B's ci.yml transition and the release workflow slice. GitHub Apps require the Workflows repository permission to create or update Actions workflow files, so the merge credential's declared permission set makes those required transitions server-refused and deadlocks the sole-merger sequence. The design must either add workflows:write to the controller's recorded least-privilege and custody/drift contract with corresponding confinement tests, or define an equally governed operable mutation path that does not violate the sole-merger rule.",
+      "objection_hash": "sha256:9f54058f50ef7464af944cb5570981171a0f9d3948eeaae9815a985851defaa6",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
