@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach",
+        "claim": "The no-listener design is internally unsatisfiable for required online verification. It mandates `--unshare-net` for the bwrap sandbox, explicitly describing “no reachable interface,” while also asserting that `connect()` keeps git/gh outbound TLS operative. Bubblewrap network unsharing creates an isolated namespace with only loopback; allowing `connect` in seccomp does not supply an external interface or route. Consequently `gh api`, `gh attestation verify`, and any networked git operation cannot work, so `pylae doctor`/`verify --full` and the authenticated clean-room acceptance path cannot pass as specified. The approach must separate offline no-network execution from online confinement or define an authenticated outbound mechanism that preserves the no-listener invariant, with end-to-end regressions."
+      },
+      {
+        "scope": "candidate-approach",
+        "claim": "The authenticated dynamic-tool closure has an unresolved bootstrap gap at bwrap itself. The launcher seals and `fexecve`s the bwrap main ELF, but that ELF's `PT_INTERP` and `DT_NEEDED` closure is loaded before bwrap can establish the claimed read-only content-addressed mount. The launcher's closed syscall grammar does not include the mount/namespace operations needed to establish that root first, and the approach does not require a static hermetic bwrap. Thus mutable or substituted loader/library bytes can execute before confinement, alter bwrap's behavior or mounts, and cause unauthenticated Node/git/gh closure bytes to produce authoritative verdicts despite the main-ELF digest check. The first sandbox builder's executed closure must itself be immutable and authenticated before it is trusted."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcze28o",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcze28o",
+    "source": "cli-seats/codex_ask"
+  }
+}

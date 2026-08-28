@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:fe991328c6357626e67adea2659c9ba1dcf3b9fcd40830ccb1184e1628810d56",
+  "output_plan_artifact_hash": "sha256:fe991328c6357626e67adea2659c9ba1dcf3b9fcd40830ccb1184e1628810d56",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:0e98b45f4c172c35ee50a8866324c757fdd92e51282860e275c8772f2a561304",
+    "provenance_key": "anthropic:09a87068-43c8-44e1-9da2-690a0729bb87"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:d636d2f4a15abfcd35402c901645673a8a6cb73515420ed170b843971fe5fa13",
+    "provenance_key": "openai:codex-cli-mtcze28o",
+    "bound_hash": "sha256:fe991328c6357626e67adea2659c9ba1dcf3b9fcd40830ccb1184e1628810d56"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "The no-listener design is internally unsatisfiable for required online verification. It mandates `--unshare-net` for the bwrap sandbox, explicitly describing “no reachable interface,” while also asserting that `connect()` keeps git/gh outbound TLS operative. Bubblewrap network unsharing creates an isolated namespace with only loopback; allowing `connect` in seccomp does not supply an external interface or route. Consequently `gh api`, `gh attestation verify`, and any networked git operation cannot work, so `pylae doctor`/`verify --full` and the authenticated clean-room acceptance path cannot pass as specified. The approach must separate offline no-network execution from online confinement or define an authenticated outbound mechanism that preserves the no-listener invariant, with end-to-end regressions.",
+      "objection_hash": "sha256:52a9bcecc31244d4833ff477b024e9a21306d71cbcd28121953a0bb7893bcda5",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach",
+      "claim": "The authenticated dynamic-tool closure has an unresolved bootstrap gap at bwrap itself. The launcher seals and `fexecve`s the bwrap main ELF, but that ELF's `PT_INTERP` and `DT_NEEDED` closure is loaded before bwrap can establish the claimed read-only content-addressed mount. The launcher's closed syscall grammar does not include the mount/namespace operations needed to establish that root first, and the approach does not require a static hermetic bwrap. Thus mutable or substituted loader/library bytes can execute before confinement, alter bwrap's behavior or mounts, and cause unauthenticated Node/git/gh closure bytes to produce authoritative verdicts despite the main-ELF digest check. The first sandbox builder's executed closure must itself be immutable and authenticated before it is trusted.",
+      "objection_hash": "sha256:193641885ce0ec433662703d53f0c1d82a937285adb80b3efd6ab120822b27f9",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
