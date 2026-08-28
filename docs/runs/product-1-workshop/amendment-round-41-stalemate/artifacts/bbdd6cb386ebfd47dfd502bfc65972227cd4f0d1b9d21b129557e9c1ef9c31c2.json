@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:99aafe67e8aef63d24319e1385f583d5c77f5d587102ad2d5154f969476d639f",
+  "output_plan_artifact_hash": "sha256:99aafe67e8aef63d24319e1385f583d5c77f5d587102ad2d5154f969476d639f",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:ba0778228a0c3b211d2b4a0db892b771342936cb5a0dfa9e1d7a8a6dd52db151",
+    "provenance_key": "anthropic:5856f3f1-0ad3-4d8a-9c47-f87eadcbf16f"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:ea50a5f2e2d7b28cae678c62850c05cbb9dbed9bdf524d74645bbe803801f85a",
+    "provenance_key": "openai:codex-cli-mtd0lrlj",
+    "bound_hash": "sha256:99aafe67e8aef63d24319e1385f583d5c77f5d587102ad2d5154f969476d639f"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:§1-git-command-confinement",
+      "claim": "The Git transport confinement is unsound and internally incomplete in candidate artifact sha256:99aafe67e8aef63d24319e1385f583d5c77f5d587102ad2d5154f969476d639f. `protocol.*.allow=never` is not a wildcard recognized by Git: `protocol.allow` supplies the fallback policy, while `protocol.<name>.allow` applies to one literal protocol. Consequently a repository-local `protocol.ext.allow=always` remains effective and can make an otherwise allowlisted fetch invoke an arbitrary `ext::` remote helper despite the claimed suppression. Separately, the closed argv list admits only the private-store bundle fetch, while the online profile later requires `git remote fetch`, so that required path is either refused or must execute outside the enumerated grammar. Define the exact online-fetch argv, remote/URL and credential policy; enforce a true protocol allowlist such as trusted `GIT_ALLOW_PROTOCOL` with only the required transports; and add a regression where local config enables `ext` and points a remote at an arbitrary helper, proving the helper never executes while HTTPS and local-bundle forms remain operable.",
+      "objection_hash": "sha256:96a1d46a323c4d38010bd568b4723c55f2d8fab6b189d99ca5f510e166718419",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

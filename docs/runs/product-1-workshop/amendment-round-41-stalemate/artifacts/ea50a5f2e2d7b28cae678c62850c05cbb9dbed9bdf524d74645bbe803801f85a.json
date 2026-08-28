@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach:§1-git-command-confinement",
+        "claim": "The Git transport confinement is unsound and internally incomplete in candidate artifact sha256:99aafe67e8aef63d24319e1385f583d5c77f5d587102ad2d5154f969476d639f. `protocol.*.allow=never` is not a wildcard recognized by Git: `protocol.allow` supplies the fallback policy, while `protocol.<name>.allow` applies to one literal protocol. Consequently a repository-local `protocol.ext.allow=always` remains effective and can make an otherwise allowlisted fetch invoke an arbitrary `ext::` remote helper despite the claimed suppression. Separately, the closed argv list admits only the private-store bundle fetch, while the online profile later requires `git remote fetch`, so that required path is either refused or must execute outside the enumerated grammar. Define the exact online-fetch argv, remote/URL and credential policy; enforce a true protocol allowlist such as trusted `GIT_ALLOW_PROTOCOL` with only the required transports; and add a regression where local config enables `ext` and points a remote at an arbitrary helper, proving the helper never executes while HTTPS and local-bundle forms remain operable."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtd0lrlj",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtd0lrlj",
+    "source": "cli-seats/codex_ask"
+  }
+}
