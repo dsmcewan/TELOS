@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach",
+        "claim": "Section 6b contradicts the fixed Eye ruling in `2026-08-28-product-1-six-rulings-final.md` item 6. That ruling classifies interim source review plus the finite battery as compensating controls only and expressly forbids representing them as proof of semantic soundness; the candidate instead claims that correction (d) is enforced in the interim and that the lookup-table attack is closed at every stage. Until the constrained declarative grammar and trusted evaluator pass their hard merge gate, a lookup-table oracle remains expressible and source review is not the deterministic discriminator required by frozen governance correction (d). The approach must make pre-evaluator enrollment/authority fail closed for new or changed normative oracles, or describe the interim controls only as non-authoritative evidence without claiming correction (d) is closed."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcpdrz2",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcpdrz2",
+    "source": "cli-seats/codex_ask"
+  }
+}

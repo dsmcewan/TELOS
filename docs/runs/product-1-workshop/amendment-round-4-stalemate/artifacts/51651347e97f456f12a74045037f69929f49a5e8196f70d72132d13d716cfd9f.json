@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:effb1cc12f391f3378894c485f2c8aa96daad3b6edb66f72e4677f86df1687ef",
+  "output_plan_artifact_hash": "sha256:effb1cc12f391f3378894c485f2c8aa96daad3b6edb66f72e4677f86df1687ef",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:d2b75331147b72c7b3011b4921978b1e54f14ca4ab19f3b25a7815bef781a3c6",
+    "provenance_key": "anthropic:0cf9932a-1dd4-4c5c-9d89-0f367f21ff50"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:836c1b3aa9d38e2ff5c3d6673a41f3fa9f71ea2c448225f384de60f24efc0dfe",
+    "provenance_key": "openai:codex-cli-mtcpdrz2",
+    "bound_hash": "sha256:effb1cc12f391f3378894c485f2c8aa96daad3b6edb66f72e4677f86df1687ef"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "Section 6b contradicts the fixed Eye ruling in `2026-08-28-product-1-six-rulings-final.md` item 6. That ruling classifies interim source review plus the finite battery as compensating controls only and expressly forbids representing them as proof of semantic soundness; the candidate instead claims that correction (d) is enforced in the interim and that the lookup-table attack is closed at every stage. Until the constrained declarative grammar and trusted evaluator pass their hard merge gate, a lookup-table oracle remains expressible and source review is not the deterministic discriminator required by frozen governance correction (d). The approach must make pre-evaluator enrollment/authority fail closed for new or changed normative oracles, or describe the interim controls only as non-authoritative evidence without claiming correction (d) is closed.",
+      "objection_hash": "sha256:93331e16ea5d7561800283cb7fb1eebc671c2a270ecd56c7789f82526705ce31",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
