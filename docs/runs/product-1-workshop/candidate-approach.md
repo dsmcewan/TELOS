@@ -370,21 +370,33 @@ on.) (d) IO_URING LISTENER —
 a descendant submits `IORING_OP_BIND`+`IORING_OP_LISTEN` (or
 `IORING_OP_SOCKET`) via a ring ⇒ ring setup/enter is denied by the
 inherited filter (EPERM), no listener opens, proven INSIDE the
-descendant/private namespace. So the launcher, (i) CLEARS
-NODE_OPTIONS/NODE_REPL*/inspector-debug env before spawning Node, (ii)
-performs the SEALED-SNAPSHOT (memfd + F_SEAL_*) hash-and-fexecve
-identity check on the pinned `node` binary — same kernel-backed
-immutability as the external-tool binding above, defeating inode
-overwrite-after-hash (a compiled launcher can call memfd_create/fcntl/
-fexecve directly — the in-process node:crypto hashing applies to pylae's
-POST-trust operations, not to this pre-Node step), and (iii) execs
-node with `--disable-proto`/inspector-off startup flags; it REFUSES
-`unsupported-launch-options` if inspector activation is detected. Only
-this native launcher is the supported entrypoint — invoking `node
-pylae` directly is unsupported and the install docs state so. This
-resolves the bootstrap cycle: env-scrub happens in native code before
-Node initializes, and node-identity binding uses fexecve from a
-tool-set member, not node:crypto. SIGUSR1 INSPECTOR ACTIVATION IS DISABLED TOO
+descendant/private namespace. So the SINGLE ENFORCEABLE BOOT SEQUENCE is: LAUNCHER → SEALED
+AUTHENTICATED STATIC SANDBOX-BUILDER → AUTHENTICATED ROOT → NODE-INSIDE-
+ROOT (the launcher does NOT fexecve dynamic Node directly — that would
+load Node's mutable `PT_INTERP`/`DT_NEEDED` host closure before any
+authenticated root exists). Concretely, the launcher (i) in its
+hand-audited `_start` installs `NO_NEW_PRIVS`+seccomp and closes/replaces
+inherited fds (above), (ii) CLEARS NODE_OPTIONS/NODE_REPL*/inspector-debug
+env, (iii) sealed-snapshot (memfd + F_SEAL_*) authenticates the STATIC
+HERMETIC sandbox-builder against its pinned digest and `fexecve`s IT
+FIRST — a static builder has no loader closure, so no mutable byte runs;
+(iv) the builder establishes the read-only content-addressed root
+(node + git/gh + their FULL authenticated exec/load closures mounted and
+digest-verified); (v) ONLY THEN is `node` launched INSIDE that root, so
+Node's interpreter/`DT_NEEDED` bytes resolve from the AUTHENTICATED root,
+NOT mutable host paths — Node is itself sealed-snapshot identity-checked,
+and started with `--disable-proto`/inspector-off flags, REFUSING
+`unsupported-launch-options` on detected inspector activation. Only this
+native launcher is the supported entrypoint — invoking `node pylae`
+directly is unsupported and the install docs state so. BOOT-ORDER
+regression: NO node/interpreter/library byte executes before the
+authenticated root exists — a probe that would run on any pre-root Node
+load never fires; only the static builder runs before the root. This
+resolves the bootstrap cycle: env-scrub + seccomp happen in native code
+before anything dynamic, the static builder needs no closure, and
+node-identity binding uses fexecve from inside the authenticated root,
+not node:crypto (the in-process node:crypto hashing applies to pylae's
+POST-trust operations, not to this pre-Node step). SIGUSR1 INSPECTOR ACTIVATION IS DISABLED TOO
 (on the frozen Linux platform envelope, delivering SIGUSR1 to a running Node
 process activates the inspector and opens a TCP listener even with
 flags stripped and no inspector import — an external same-user process
@@ -2700,8 +2712,19 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   roving tabindex + arrow keys) — e2e arrow-key navigation; @axe-core/playwright
   a11y gate (wcag2a+21aa, both views/themes, zero violations); demo
   malformed-base64 ⇒ fail-closed BLOCKED + unit test (`sig.value: "!!!"` ⇒
-  `malformed-signature`); OFL font licenses + THIRD-PARTY-NOTICES. CODEOWNERS
-  register-deferred (single maintainer).
+  `malformed-signature`); OFL font licenses + THIRD-PARTY-NOTICES enforced by a DISCRIMINATING
+  FONT-LICENSE BIJECTION ORACLE (not merely "add the files"): a CLOSED
+  FONT INVENTORY enumerates every shipped WOFF2 (the 13 current files),
+  and the oracle asserts a total bijection — each shipped WOFF2 ⇔ a
+  required OFL license entry AND a THIRD-PARTY-NOTICES entry — FAILING
+  `font-license-uncovered` on any WOFF2 not mapped to both, and
+  `font-inventory-drift` if the set of shipped WOFF2 files differs from
+  the inventory (so a NEWLY ADDED font cannot escape coverage). NEGATIVE
+  FIXTURES (each must fail the gate): (a) remove one OFL license ⇒
+  `font-license-uncovered`; (b) remove one THIRD-PARTY-NOTICES entry ⇒
+  `font-license-uncovered`; (c) add an unmapped 14th WOFF2 ⇒
+  `font-inventory-drift`. CODEOWNERS register-deferred (single
+  maintainer).
   BOUNDED SUPPORTED-BROWSER CONTRACT (the engine limitation is closed by an
   explicit boundary this round, per the Eye's recorded deferral of the
   multi-engine matrix): PD-003 states the v1 qualified envelope — flagship
