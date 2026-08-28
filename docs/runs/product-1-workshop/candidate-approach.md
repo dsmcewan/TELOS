@@ -341,11 +341,30 @@ static, self-authenticated builder establishes the read-only
 content-addressed root does the ceremony run node/git/gh inside it over
 a root whose complete recursively-resolved closure — the ELF interpreter (`ld.so`), every
 transitive DT_NEEDED library, and the tool binary — is ENUMERATED and
-DIGEST-PINNED in the trust manifest and re-verified before use, with the
-loader constrained to that measured root (RPATH/RUNPATH pinned, `LD_*`
-cleared, no `/etc/ld.so.*` from a host); any closure member whose digest
-does not match ⇒ fail-closed `tool-closure-unauthenticated` BEFORE the
-tool runs. THE CLOSURE IS THE EXEC-CLOSURE, NOT ONLY THE LOAD-CLOSURE:
+DIGEST-PINNED in the trust manifest, with the loader constrained to that
+measured root (RPATH/RUNPATH pinned, `LD_*` cleared, no `/etc/ld.so.*`
+from a host). CRITICALLY, EVERY CLOSURE MEMBER IS MUTATION-POINT-BOUND,
+NOT MERELY READ-ONLY-BIND-MOUNTED: a read-only bind mount over a host
+file leaves the backing INODE writable through its original path, so a
+concurrent writer could overwrite verified bytes after the digest check
+and before/during loader/helper/trust-store access (the same
+inode-vs-bytes TOCTOU the main ELF avoids via its sealed memfd). So the
+builder STAGES each closure member and verdict-affecting runtime input
+into an IMMUTABLE SNAPSHOT WHOSE BYTES ARE THE BYTES HASHED AND
+EXECUTED/READ — it COPIES the verified bytes into the content-addressed
+root and enables KERNEL-ENFORCED IMMUTABILITY on each: `fs-verity` (a
+Merkle-tree measured digest the kernel re-checks on EVERY read, and the
+file becomes immutable once verity is enabled) bound to the pinned
+digest, over a store the ceremony owns with NO other writable alias to
+the backing inodes (a private tmpfs/overlay it populates by copy, never a
+bind of a host-writable path). Any closure member whose verity digest ≠
+its pin, or that lacks verity ⇒ fail-closed `tool-closure-unauthenticated`
+BEFORE the tool runs, and any at-read modification is kernel-detected.
+OVERWRITE-AFTER-VERIFICATION regression: after verification, a concurrent
+writer overwrites (a) a DT_NEEDED library, (b) the `ld.so` loader, (c) a
+`git-remote-https`/credential helper, and (d) a CA/trust-store input ⇒
+each is either impossible (verity-immutable) or kernel-detected on read,
+the tool never executes changed bytes, no fabricated verdict is produced. THE CLOSURE IS THE EXEC-CLOSURE, NOT ONLY THE LOAD-CLOSURE:
 beyond the main ELF + `PT_INTERP` + transitive `DT_NEEDED`, it RECURSIVELY
 INCLUDES EVERY EXEC EDGE reachable from the enumerated tool grammar —
 notably git's separately-executed `git-*` subprograms and PROTOCOL/REMOTE
@@ -1951,17 +1970,33 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   tools to live under the install root; only pylae's own spawns are
   root-relative). The OPERATOR TRUST-ROOT MANIFEST SCHEMA is EXTENDED to
   carry, per external tool, its resolved absolute path + main-ELF digest +
-  full authenticated closure digests (the exec/load closure of Fold below);
-  `pylae doctor --pin` records these under recorded operator custody
-  (operator-provisioned/first-run TOFU, same custody discipline as the
-  out-of-band trust-root), and every subsequent run verifies each host
-  tool against its pinned manifest entry, failing closed `tool-identity-
-  mismatch`/`tool-closure-unauthenticated` on drift. The clean-room oracle
-  and doctor thus BOTH use the host tools AND satisfy identity/closure
-  checks — the tools are pinned data in the operator manifest, not shipped
-  artifacts, and the `resolves inside the install root` rule is scoped to
-  pylae's own spawns; a tool that cannot be resolved+pinned ⇒ doctor
-  refuses `tool-unpinned`, never a silent host fallback. The `npm pack cli` tgz is published as a
+  full authenticated closure digests (the exec/load closure of Fold below).
+  These pins are NOT authored by a first-run TOFU — that would be CIRCULAR
+  (pinning the tools would require the launcher→builder→Node chain, which
+  is itself forbidden before the tools are pinned; a first run with no
+  manifest would either deadlock or let untrusted host bytes author their
+  own trusted manifest). Instead the EXTERNAL-TOOL MANIFEST IS
+  OPERATOR-PROVISIONED OUT OF BAND under recorded custody — EXACTLY the
+  discipline already used for the out-of-band trust-root and the durable
+  S2 signer secrets: the operator computes the tool + closure digests
+  using their platform tools and the INDEPENDENTLY-SIGNED
+  `pylae-verify-bootstrap` (the same out-of-band, separately-pinned helper
+  the install bootstrap already mandates), and records the manifest under
+  custody BEFORE first use. `pylae doctor` REQUIRES this provisioned
+  manifest and REFUSES `external-tool-manifest-missing` when it is absent
+  — NO host tool ever executes without it (no TOFU, no self-authored
+  manifest). Every run then verifies each host tool + closure against its
+  provisioned pin, failing closed `tool-identity-mismatch`/`tool-closure-
+  unauthenticated` on drift. The clean-room oracle and doctor thus BOTH
+  use the host tools AND satisfy identity/closure checks — the tools are
+  operator-provisioned pinned data, not shipped artifacts or TOFU output,
+  and the `resolves inside the install root` rule is scoped to pylae's own
+  spawns; a tool that cannot be resolved+verified against the provisioned
+  manifest ⇒ doctor refuses `tool-unpinned`, never a silent host fallback.
+  NO-MANIFEST clean-room regression: with no provisioned external-tool
+  manifest, NO host tool executes — doctor/verify refuse
+  `external-tool-manifest-missing` before any host binary runs (proving no
+  untrusted host verdict-producing bytes can author their own trust). The `npm pack cli` tgz is published as a
   COMPONENT artifact, its README stating it requires the source tree
   (self-contained npm distribution = a tracked register item for a later
   phase, not silently claimed now).
