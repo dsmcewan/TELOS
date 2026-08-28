@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E6-oracle-state-isolation",
+        "claim": "The mutation-negative oracle mechanism is still nondiscriminating because baseline and negative executions occur sequentially in the same writable sandbox. An input-ignoring oracle can exit 0 while creating a marker during the baseline run, then exit nonzero solely because that marker exists during the second run; the runner applies its valid semantic mutation between executions, so every stated check passes even though the oracle never inspects the governed input. The claim that the mutation is the only changed variable is therefore false. Run baseline and negative cases in separate pristine sandboxes cloned from the same immutable template, and add a stateful-marker oracle fixture that must be rejected. Candidate artifact sha256:036a7283e27cdcb4d900a0e8529a189449f7024e9b6394112e0d30aeca5b4db8."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "01a045c8-5033-7fb3-99b9-b1ac43e08bfb",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "01a045c8-5033-7fb3-99b9-b1ac43e08bfb",
+    "source": "cli-seats/codex_ask"
+  }
+}

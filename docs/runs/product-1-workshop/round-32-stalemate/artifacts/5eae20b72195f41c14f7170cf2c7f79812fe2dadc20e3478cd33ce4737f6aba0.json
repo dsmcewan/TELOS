@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:036a7283e27cdcb4d900a0e8529a189449f7024e9b6394112e0d30aeca5b4db8",
+  "output_plan_artifact_hash": "sha256:036a7283e27cdcb4d900a0e8529a189449f7024e9b6394112e0d30aeca5b4db8",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:71c0665d152f759b8635e086eb9424997e07361dcbffc3bb15804732748b62ef",
+    "provenance_key": "anthropic:7e42385a-bdd8-4f8a-9beb-b31ff562c6d4"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:1e885ec4736ee6b53a1ef32559b966271cecb968551511e4444f681ba199f377",
+    "provenance_key": "openai:01a045c8-5033-7fb3-99b9-b1ac43e08bfb",
+    "bound_hash": "sha256:036a7283e27cdcb4d900a0e8529a189449f7024e9b6394112e0d30aeca5b4db8"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E6-oracle-state-isolation",
+      "claim": "The mutation-negative oracle mechanism is still nondiscriminating because baseline and negative executions occur sequentially in the same writable sandbox. An input-ignoring oracle can exit 0 while creating a marker during the baseline run, then exit nonzero solely because that marker exists during the second run; the runner applies its valid semantic mutation between executions, so every stated check passes even though the oracle never inspects the governed input. The claim that the mutation is the only changed variable is therefore false. Run baseline and negative cases in separate pristine sandboxes cloned from the same immutable template, and add a stateful-marker oracle fixture that must be rejected. Candidate artifact sha256:036a7283e27cdcb4d900a0e8529a189449f7024e9b6394112e0d30aeca5b4db8.",
+      "objection_hash": "sha256:a4fc9223238d49a3d4e4c06d90e4c21048533b35d2f21e857e8048ed52a5a2f6",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
