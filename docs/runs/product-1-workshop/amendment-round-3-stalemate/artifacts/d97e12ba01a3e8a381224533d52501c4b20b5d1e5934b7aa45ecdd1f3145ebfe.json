@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:effb1cc12f391f3378894c485f2c8aa96daad3b6edb66f72e4677f86df1687ef",
+  "output_plan_artifact_hash": "sha256:effb1cc12f391f3378894c485f2c8aa96daad3b6edb66f72e4677f86df1687ef",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:90d1e89a471effe0e943dd8b19d7e42dbe2c92be8213ede1479d3967af932cdb",
+    "provenance_key": "anthropic:7875352b-6975-4245-8396-79780663538e"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:0e86703c47413ff7717775596d9f9ebb8fbcd9bf9abdb9b4fb82539f5afd54da",
+    "provenance_key": "openai:codex-cli-mtcpa6ob",
+    "bound_hash": "sha256:effb1cc12f391f3378894c485f2c8aa96daad3b6edb66f72e4677f86df1687ef"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:phase-a-merge-eligibility-binding",
+      "claim": "At candidate artifact sha256:effb1cc12f391f3378894c485f2c8aa96daad3b6edb66f72e4677f86df1687ef, E1 makes every Eye-signed pre-merge acceptance bind only `active plan_ref`, while the two-phase amendment keeps v15/authz-008 active throughout Phase A and says the activation-deferred successor authorization exclusively permits the content-addressed whitelist and Phase B activation. The controller therefore cannot authenticate the authority actually permitting those PRs or enforce that a PR is whitelisted: binding v15 omits the successor plan, whitelist digest, and slice identity, whereas binding the successor contradicts the specified active-plan field. Phase B itself reaches the controller before the pivot, so it has the same gap. The phase-aware §5d state check does not repair per-PR eligibility. Add a phase-aware acceptance tuple and controller oracle that, before mutation, binds and validates the applicable authorization, successor plan_ref, whitelist digest, exact slice id, and PR head; explicitly authorize the Phase B transition; and prove that an unlisted PR carrying an otherwise-valid v15 acceptance is refused while valid whitelisted and Phase B PRs remain operable.",
+      "objection_hash": "sha256:e6642b5080c05f6c8aee40a557e5d2fe78d4aaa4fa50867f9387b0ecc8583ef4",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

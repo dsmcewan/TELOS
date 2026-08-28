@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach:phase-a-merge-eligibility-binding",
+        "claim": "At candidate artifact sha256:effb1cc12f391f3378894c485f2c8aa96daad3b6edb66f72e4677f86df1687ef, E1 makes every Eye-signed pre-merge acceptance bind only `active plan_ref`, while the two-phase amendment keeps v15/authz-008 active throughout Phase A and says the activation-deferred successor authorization exclusively permits the content-addressed whitelist and Phase B activation. The controller therefore cannot authenticate the authority actually permitting those PRs or enforce that a PR is whitelisted: binding v15 omits the successor plan, whitelist digest, and slice identity, whereas binding the successor contradicts the specified active-plan field. Phase B itself reaches the controller before the pivot, so it has the same gap. The phase-aware §5d state check does not repair per-PR eligibility. Add a phase-aware acceptance tuple and controller oracle that, before mutation, binds and validates the applicable authorization, successor plan_ref, whitelist digest, exact slice id, and PR head; explicitly authorize the Phase B transition; and prove that an unlisted PR carrying an otherwise-valid v15 acceptance is refused while valid whitelisted and Phase B PRs remain operable."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcpa6ob",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcpa6ob",
+    "source": "cli-seats/codex_ask"
+  }
+}
