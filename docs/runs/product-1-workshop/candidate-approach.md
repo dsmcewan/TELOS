@@ -139,12 +139,22 @@ flags stripped and no inspector import — an external same-user process
 can send it, so source-grammar rules alone cannot close this): the
 launcher starts every pylae Node process — and the spawn-allowlist
 applies the same requirement to every spawned Node runtime — with
-runtime inspector activation DISABLED (`--disable-sigusr1`/
-`--no-inspector`-class startup options per the reviewed Node range's
-supported mechanism; where the reviewed range offers no such
-guarantee, doctor FAILS CLOSED `inspector-uncontainable` rather than
-reporting a usable install), the mechanism is recorded in the
-capability registry and re-reviewed with the version ceiling; LAUNCH
+runtime inspector activation DISABLED (`--disable-sigusr1`, the
+concrete SIGUSR1-inspector containment control, present from Node
+v22.14.0). Because that control is the PREREQUISITE for the no-listener
+guarantee, PYLAE'S OWN RUNTIME FLOOR IS `engines.node >=22.14.0` — the
+first version where the mechanism exists — which is DISTINCT FROM AND
+STRICTER THAN the >=22.12.0 manifest-integrity oracle (that oracle
+validates the engines declared by INSTALLED third-party manifests per
+the repo-wide supply-chain convention; this floor governs the Node
+runtime that actually executes pylae). The launcher/doctor read the
+LIVE `process.versions.node` of the interpreter about to run pylae, and
+a below-floor runtime is refused at install with `node-runtime-below-
+pylae-floor` (NOT the misleading `inspector-uncontainable`) — so no
+22.12.x/22.13.x install is ever left permanently unusable-yet-
+conforming: it is cleanly out of range against pylae's published
+engines floor. The mechanism is recorded in the capability registry and
+re-reviewed with the [22.14.0, ceiling] range; LAUNCH
 fixtures: NODE_OPTIONS=--inspect ⇒ the launcher strips-or-refuses, no
 listener ever opens; LIVE SIGUSR1 fixture — a running pylae process is
 sent SIGUSR1 and provably opens NO listener (asserted by socket
