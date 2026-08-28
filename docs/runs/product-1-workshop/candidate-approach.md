@@ -21,9 +21,21 @@ local single-user CLI; identity, multi-tenancy, and clustered runtime are OUT
 OF SCOPE by signed ADR (PD-001), with the checklist's carve-out made testable
 (a static no-network-listener oracle over the CLI's COMPLETE EXECUTABLE
 CLOSURE — the transitive spawn+import closure reachable from every `pylae`
-subcommand, not just files under `cli/`, since `pylae` spawns verifiers
-outside that dir and a `cli/`-only oracle would miss a listener a spawned
-helper opens; same closure enumeration the verdict-producer digest uses).
+subcommand, not just files under `cli/`; same closure enumeration the
+verdict-producer digest uses — enforcing a CLOSED LISTENER-CAPABILITY
+GRAMMAR, because reachability alone proves which files run, not that they
+cannot open a listener: within the closure the oracle REJECTS
+(fail-closed, never pass-on-ambiguity) any reference to server-capable
+builtins (node:net/http/https/http2/tls/dgram server constructors) AND
+any AMBIGUOUS/DYNAMIC acquisition path that could reach them —
+non-literal import()/require specifiers, process.getBuiltinModule,
+eval/Function construction, aliased or computed property access to module
+namespaces — and constrains every spawned executable to a closed
+allowlist of repo-tracked scripts, each recursively subject to the same
+grammar. ADVERSARIAL fixtures the oracle must reject: an indirect
+listener via getBuiltinModule; a computed require reaching node:net; a
+spawned allowlisted helper that itself opens a listener; a helper outside
+cli/ opening a listener).
 The flagship is the future
 production operator console (labeled demonstration/evidence-viewer this round).
 Phase 1b (durable crash-consistent state, authenticated-principal authority
@@ -879,7 +891,12 @@ per-file designs are in the approved plan; acceptance criteria here.
   parameters per repetition from cryptographic randomness — recorded
   in the run report for reproducibility — so an oracle cannot pass by
   recognizing one memorized mutated byte-pattern (fixture overfitting:
-  the K=12 repetitions each use an independent draw, and an oracle
+  the EXHAUSTIVE battery enumerates EVERY domain member (no K-sample —
+  a sampled path could miss a lookup-table exception for domains larger
+  than the sample and cannot even draw distinctly for smaller ones;
+  randomized draws exist ONLY in the explicitly NON-AUTHORITATIVE dev
+  mode, and regressions prove domains above and below any sample size
+  cannot select a sampled interpretation), and an oracle
   keyed to a single fixture fails the other draws ⇒
   oracle-nondiscriminating) with an ENFORCED MINIMUM DOMAIN
   CARDINALITY: the runner ENUMERATES the eligible parameterizations for
@@ -1802,10 +1819,18 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   under the original name would be impossible): (i) the ceremony
   ESCROWS every release artifact + acceptance record locally (Eye
   custody) before publish, so deletion loses only the GitHub hosting,
-  never the signed artifacts; (ii) recovery publishes the ESCROWED,
-  byte-identical artifacts under a SUCCESSOR PATCH TAG (v0.3.0 deleted
-  ⇒ v0.3.1 carrying the same accepted commit, a fresh Eye acceptance
-  referencing the incident, and a pointer to the retired name);
+  never the signed artifacts; (ii) recovery publishes the ESCROWED ORIGINAL artifacts
+  BYTE-UNCHANGED (still internally labeled v0.3.0 — relabeling would
+  either violate the lockstep version/artifact-identity contract or
+  destroy byte identity) under a successor LOCATOR tag, accompanied by
+  a DISTINCT EYE-SIGNED RECOVERY ENVELOPE asset binding {retired_tag,
+  successor_locator, incident_id, exact escrowed artifact digests,
+  release_commit, plan_ref} — the envelope makes NO claim that the
+  artifacts are the successor version; they remain the accepted v0.3.0
+  build, re-hosted; CONSUMER-IDENTITY regression: the documented
+  verification resolves the envelope, checks the artifacts against the
+  ORIGINAL digests + ORIGINAL acceptance, and reports the
+  retired-tag/incident provenance;
   (iii) the retired tag is appended to the Eye-signed HISTORICAL-TAGS
   record with disposition `incident-retired` so the bijection sweep
   stays sound. DELETION-AND-RECOVERY regression: delete a published
