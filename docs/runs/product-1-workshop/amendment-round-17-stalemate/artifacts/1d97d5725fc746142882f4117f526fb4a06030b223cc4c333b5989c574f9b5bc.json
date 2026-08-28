@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "plan",
+        "claim": "The PD-001 no-listener oracle's claimed COMPLETE listener-capability grammar is incomplete for the pinned Node runtime. It rejects public networking builtins and process.getBuiltinModule, but does not reject Node's internal/native capability surfaces such as process.binding('tcp_wrap')/process._linkedBinding or process.dlopen; process.binding('tcp_wrap') can construct, bind, and listen on a TCP handle without importing node:net/http or using any listed dynamic-acquisition mechanism. Therefore a closure can pass the proposed static oracle while opening a listener, so the testable local-single-user boundary is not enforced fail-closed. The plan must close or categorically reject internal bindings, native-addon loading, and equivalent code-loading/capability surfaces, with a process.binding TCP-listener regression that is refused."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcsohmb",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcsohmb",
+    "source": "cli-seats/codex_ask"
+  }
+}

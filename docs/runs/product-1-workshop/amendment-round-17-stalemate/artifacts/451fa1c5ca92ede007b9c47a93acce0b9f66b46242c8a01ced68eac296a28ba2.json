@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:4888c9615a508b4ad50fd7d6757b74ac11643c334ae2c05880f68d6aecae747c",
+  "output_plan_artifact_hash": "sha256:4888c9615a508b4ad50fd7d6757b74ac11643c334ae2c05880f68d6aecae747c",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:4e749a85dd898836339fcca3a1edf71038eb36c99f45217b6dfeb5b1272ce402",
+    "provenance_key": "anthropic:b66a26fd-038d-45f9-b247-263f49123628"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:1d97d5725fc746142882f4117f526fb4a06030b223cc4c333b5989c574f9b5bc",
+    "provenance_key": "openai:codex-cli-mtcsohmb",
+    "bound_hash": "sha256:4888c9615a508b4ad50fd7d6757b74ac11643c334ae2c05880f68d6aecae747c"
+  },
+  "objections": [
+    {
+      "scope": "plan",
+      "claim": "The PD-001 no-listener oracle's claimed COMPLETE listener-capability grammar is incomplete for the pinned Node runtime. It rejects public networking builtins and process.getBuiltinModule, but does not reject Node's internal/native capability surfaces such as process.binding('tcp_wrap')/process._linkedBinding or process.dlopen; process.binding('tcp_wrap') can construct, bind, and listen on a TCP handle without importing node:net/http or using any listed dynamic-acquisition mechanism. Therefore a closure can pass the proposed static oracle while opening a listener, so the testable local-single-user boundary is not enforced fail-closed. The plan must close or categorically reject internal bindings, native-addon loading, and equivalent code-loading/capability surfaces, with a process.binding TCP-listener regression that is refused.",
+      "objection_hash": "sha256:54206e4018f8dccf607350b2dfd8c710aafb0ac2133105f116b45032839352d1",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
