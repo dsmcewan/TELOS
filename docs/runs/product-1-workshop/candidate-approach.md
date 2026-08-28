@@ -2765,6 +2765,39 @@ merge-gated Argo deliverable.
   Referee evidence: `referee-adjudications/2026-08-28-e6-oracle-determinism.json`;
   Eye open question: `product-1-oq-e6-determinism-deferral`.
 
+- **SPIKE-PD001-NOLISTENER-COMPLETENESS** — SETTLED IN-PLAN: the PD-001
+  no-listener property is enforced by a CONCEPTUALLY SOUND, FAIL-CLOSED,
+  LAYERED KERNEL ARCHITECTURE — an arch-gated, kernel-inherited
+  (`NO_NEW_PRIVS`, un-droppable across `execve`/`fork`) seccomp-BPF filter
+  installed by a STATIC HERMETIC launcher (custom `_start`, filter-first)
+  denying `bind`/`listen`/`accept`/`accept4`, inet `SOCK_DGRAM`,
+  `AF_PACKET`/`SOCK_RAW`, the `io_uring` family, and foreign-arch/`socketcall`
+  paths; `close_range` inherited-fd scrubbing; a STATIC HERMETIC
+  sandbox-builder; an OFFLINE (`--unshare-net`, sealed) vs ONLINE
+  (real-interface-under-seccomp) net-profile split; sealed-memfd immutable
+  identity; and authenticated content-addressed full tool closures. OPEN
+  (spike): the EXHAUSTIVE ENUMERATION/AUDIT of every residual Linux
+  syscall/loader/namespace corner that could theoretically bypass the filter
+  — a bounded platform-engineering completeness problem, NOT an architectural
+  flaw (Gemini referee ruling, 2026-08-28, per the E6 precedent). INTERIM
+  FAIL-CLOSED DETECTION: CI-time eBPF + `strace` observability of the confined
+  process tree that FAILS CLOSED on any blocked-syscall attempt or unhandled
+  socket-creation in the tree (the enforcement is already fail-closed by
+  construction — the seccomp filter EPERM/SIGKILLs denied syscalls; this
+  detection catches attempts and any not-yet-enumerated corner for governance
+  review). THE SOUND DESIGN is the kernel-inherited seccomp invariant; only
+  the exhaustive-corner audit is the spike.
+  Referee evidence: `referee-adjudications/2026-08-28-pd001-nolistener-completeness.json`;
+  Eye open question: `product-1-oq-pd001-nolistener-completeness`.
+
+Any future workshop objection reducible to "SPIKE-PD001-* residual Linux
+platform corner not fully enumerated in-plan" is CARRIED by this register per the
+recorded no-cap-referee directive and the 2026-08-28 referee ruling — not
+re-opened as a new Daedalus round; its formal disposition is a Council/Eye S2/S3
+decision. Genuinely NEW no-listener defects that are ARCHITECTURAL (a conceptual
+flaw in the enforcement design itself, not one-more-corner enumeration) remain in
+scope and are fixed normally.
+
 Any future workshop objection reducible to "SPIKE-E6-* mechanism not fully
 specified in-plan" is CARRIED by this register per the recorded directive — not
 re-opened as a new Daedalus round; its formal disposition is a Council/Eye
