@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:7d436ae2e87ab54ecb2b38938a9e6600c4a827162e561d0892a0a57e1fc460f8",
+  "output_plan_artifact_hash": "sha256:7d436ae2e87ab54ecb2b38938a9e6600c4a827162e561d0892a0a57e1fc460f8",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:dae89797eaf48dc0497f6a5fdbdc8d3b5aa966e3be7d691e0bea1ce8bf9efeb2",
+    "provenance_key": "anthropic:cece0550-199f-4c1d-b9ae-191dfb6af915"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:50f95166b735247caeb2aae212ada91f823ed437934603ec37b6a60dda8c6243",
+    "provenance_key": "openai:codex-cli-mtd12ld6",
+    "bound_hash": "sha256:7d436ae2e87ab54ecb2b38938a9e6600c4a827162e561d0892a0a57e1fc460f8"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach §1/§4 external-tool authenticated root",
+      "claim": "The verdict-producing dynamic closure is digest-verified but not mutation-point-bound. The plan correctly observes that hashing an open executable fd does not freeze its bytes and therefore executes the main ELF from a sealed memfd, yet it only mounts PT_INTERP, DT_NEEDED libraries, exec helpers, credential helpers, and runtime inputs in a read-only content-addressed root. A read-only bind mount does not prevent another writable alias from overwriting the same backing inode after verification and before or during loader/helper access. Consequently matching main-ELF digests can still lead to unauthenticated bytes fabricating Node/git/gh verdicts. Every closure member and verdict-affecting runtime input must be staged into an immutable snapshot whose bytes are the bytes hashed and executed/read, with an overwrite-after-verification regression covering a library, loader, helper, and trust-store input.",
+      "objection_hash": "sha256:74299d3d025f29733c1e302f78c634bf27dadb03cfd3fcfdec97efaf96e23296",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach §4 first-run external-tool pinning",
+      "claim": "The claimed `pylae doctor --pin` first-run path is circular. The supported entrypoint requires the native launcher to authenticate the pinned static sandbox-builder before Node executes, and Node/git/gh/bwrap are forbidden before their operator-manifest identities and closures are pinned; however the plan assigns creation of those pins to `pylae doctor --pin`, which itself requires that launcher→builder→Node chain to execute. With no existing manifest the system must either deadlock or execute untrusted host verdict-producing bytes that can author their own trusted manifest. The approach needs an independently authenticated pre-Node provisioning mechanism, or must require an already provisioned external-tool manifest and remove the first-run TOFU claim, with a clean-room no-manifest regression proving no host tool executes.",
+      "objection_hash": "sha256:0c30569b3105535b4cb0b1b409a24efb47b87e4e2cfb9d073d57d9402243554b",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
