@@ -1613,10 +1613,19 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   EVERYONE, the Eye and controller included, and E1's non-bypass
   precondition is scoped to exactly this class: the controller must be
   absent from the bypass list of every ruleset that enforces checks;
-  (β) the ACTOR-RESTRICTION ruleset restricts update/push on main with
-  bypass_actors = {Eye, merge-controller} — membership here grants
-  OPERABILITY (permission to be the one who merges) and no check
-  bypass whatsoever, because (α) still applies to them; the
+  (β) the ACTOR-RESTRICTION ruleset restricts update/push on main. Its
+  bypass_actors set is PHASED: during bootstrap it is {Eye,
+  merge-controller} (the Eye must perform the two enumerated ceremonial
+  merges below); AFTER E1 lands, the Eye is REMOVED and the steady-state
+  set is {merge-controller} ONLY — the Eye merges through the controller
+  like every other principal, so the configured ordinary path cannot
+  bypass the controller's producer-authenticated checks, acceptance
+  validation, attestation, or post-merge attestation (an Eye standing
+  bypass would be a controller bypass needing no compromise at all;
+  emergency Eye access = an explicit admin ruleset change, which is
+  visible, custody-swept as drift, and recorded). Membership grants
+  OPERABILITY (permission to be the one who merges) and no check bypass
+  whatsoever, because (α) still applies to every actor; the
   github-actions principal appears in neither list, so a rogue
   workflow's write-scoped token is refused by the server on ANY push
   or merge to main — the merge endpoint cannot be reached around the
@@ -1719,8 +1728,12 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   principal whose live scopes exceed the recorded bounds ⇒
   custody-drift exactly like an unlisted writer; SPLIT-CONFIG
   regression: the manifest ACCEPTS the exact split-ruleset
-  configuration — controller in the actor-restriction bypass list,
-  absent from every safety ruleset's — and rejects any deviation); the manifest changes
+  configuration — steady-state actor-restriction bypass = controller
+  ONLY (the Eye present there post-E1 ⇒ custody-drift), controller
+  absent from every safety ruleset's list — and rejects any deviation;
+  EYE-BYPASS regression: post-E1, an Eye direct-merge attempt outside
+  the controller ⇒ server-refused (not in the bypass set), and a
+  ruleset change restoring the Eye ⇒ flagged as drift); the manifest changes
   only via Eye-signed transition. THE MACHINE APPS ARE
   DEFAULT-SUSPENDED (contents:write permits DELETING even an immutable
   release — GitHub provides no platform boundary for the release
@@ -2042,8 +2055,10 @@ authority, which remains the ACTIVE authority throughout the
 pre-activation window; only whitelist slices are merge-eligible before
 Phase B) → **E1 IMMEDIATELY SECOND** (the merge controller + branch
 publisher land via the Eye-local GENESIS ceremony's recorded exceptional
-bootstrap merge — the ONLY pre-controller merge in the quest, a single
-enumerated ceremonial exception — so from this point EVERY merge is
+bootstrap merge — one of exactly TWO enumerated pre-controller ceremonial merges in the
+quest — (1) Phase A itself and (2) this E1 genesis merge — both
+Eye-performed, both recorded in the step-ledger as bootstrap
+exceptions; no third pre-controller merge exists — so from this point EVERY merge is
 machine-enforced: the controller's phase-aware acceptance oracle
 validates whitelist membership at the mutation boundary for every
 subsequent slice; UNLISTED-PR regression: an unlisted PR cannot mutate
