@@ -1,0 +1,38 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "codex",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:e30722d6f984faf81db00b35d30e8e04b97893c1995469e49473369146881fa3",
+  "decision": "revise",
+  "required_edits": [
+    "Bring `pylae-verify-bootstrap` inside the PD-001 no-listener enforcement boundary. Make the supported entrypoint a static, hermetic, loader-independent artifact with an audited custom entrypoint that installs the inherited arch-gated seccomp filter before any potentially listener-capable code or descendant executes, then performs launcher verification and sealed-memfd `fexecve`; an equivalent kernel-enforced design is acceptable.",
+    "Extend the complete executable-closure definition, native capability review, packaged-artifact inspection, boot-order claims, and adversarial regressions to cover `pylae-verify-bootstrap` itself. Reconcile the current claim that only the static sandbox-builder executes before the authenticated root with the bootstrap’s earlier execution, and prove preload/loader substitution plus direct and indirect listener attempts from the bootstrap are denied."
+  ],
+  "hard_stops": [
+    "The supported user-facing `pylae` process begins in `pylae-verify-bootstrap` before the native launcher installs seccomp, yet the bootstrap is only independently pinned/operator-trusted and is not specified as static, hermetic, filter-first, or included in the listener-capability closure. A digest proves identity, not absence of listener capability—the exact principle the plan applies to the launcher and sandbox-builder. Consequently, authentic-but-defective bootstrap code, or its pre-entry dynamic loader/library closure, can open a listener before enforcement while still executing inside the supported pylae process tree, contradicting PD-001’s stated process-tree boundary and the boot-order claim."
+  ],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:45:35.207Z",
+  "rationale": "I recomputed the candidate address as sha256:e30722d6f984faf81db00b35d30e8e04b97893c1995469e49473369146881fa3 and confirmed the plan bytes match reviewed head db9adeb8d487c088f1dc9662f42f9d60cbe24fbb. The two-phase Phase-A/deferred and Phase-B/atomic-pivot amendment is consistent with the DISCOVERY-001 ruling, and the previous per-invocation launcher-authentication, x32, fs-verity pathname-binding, Node-option, and governance-summary defects are folded. I explicitly ratify SPIKE-E6-EVALUATOR-FORM and product-1-oq-e6-determinism-deferral: the declarative-language design is soundly bounded because new or changed normative-oracle enrollment remains blocked until its hard evaluator merge gate passes. I also ratify SPIKE-PD001-NOLISTENER-COMPLETENESS and product-1-oq-pd001-nolistener-completeness as bounded exhaustive-platform audit work with the recorded interim detection. This dissent is separate from those spikes: the final fold inserted a new supported executable stage ahead of the settled kernel invariant without extending that invariant or the closed capability review to it. The operator-trusted authenticity root may terminate self-authentication, but it cannot terminate the product’s no-listener capability claim while that binary is the supported `pylae` entrypoint. The defect is concrete and repairable, so revision—not rejection—is warranted.",
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtd4s5o4",
+    "source": "cli-seats/codex",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T15:53:10.324Z",
+    "tool": "cli-seats.askCodex"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "5e033aff376bbd0afd374434f5989a2e67e1ffc1f6c3d8ccf5cc8876d855578d",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

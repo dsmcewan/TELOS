@@ -1,0 +1,33 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "claude",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:e30722d6f984faf81db00b35d30e8e04b97893c1995469e49473369146881fa3",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:45:35.207Z",
+  "rationale": "The plan is a coherent, implementation-ready enforcement architecture with no internal contradictions or unsound designs. Every examined enforcement mechanism satisfies the fail-closed, content-addressed, closed-set, no-mutable-label-keying invariants. The two-phase governance pivot correctly resolves DISCOVERY-001's bootstrap-pivot coupling: Phase A is data-only with pre-existing gates provably green, Phase B is atomic with fail-closed fallback to v15/authz-008 on any partial failure. The no-listener architecture is kernel-level sound: the seccomp inheritance chain correctly addresses the x32 ABI (arch gate alone insufficient; __X32_SYSCALL_BIT guard is the correct fix), the io_uring family denial (opcodes indiscriminable from io_uring_enter args), inherited-fd scrubbing via close_range plus stdio type-check-and-replace (correctly distinguishing high-fd and stdio-trio surfaces), inet DGRAM implicit-bind denial (unconnected UDP becomes a receiving endpoint without any denied syscall), SCM_RIGHTS import closure (AF_UNIX creation denied in online profile, making abstract-peer connect structurally impossible before recvmsg), pidfd/proc-fd theft (pidfd syscalls denied, private /proc under --unshare-pid), and SIGUSR1 (--disable-sigusr1 tied correctly to the 22.14.0 runtime floor, distinct from the 22.12.0 supply-chain oracle). The sealed-memfd plus fs-verity plus open_tree/move_mount inode-frozen-root chain correctly addresses the inode-not-bytes TOCTOU at each mutation point. The exec-closure vs load-closure distinction (git-remote-https, credential helpers, CA stores) is correctly handled as a distinct authentication surface from DT_NEEDED. The release pipeline correctly avoids tag-push triggers (no such trigger exists), uses the ~ALL ruleset selector (not a glob, which cannot match slash-containing names), implements draft-first numeric-ID-bound Eye-local ceremony, bounds deletion-within-window risk via escrow and recovery honestly (not falsely claimed incapable), and records the release body as non-authoritative. The authority-chain transition mechanism with monotonic sequence, full covered-files binding (old+new for all protected surfaces), and controller-only enforcement during the genesis window correctly prevents replay and protected-surface substitution. The WORKFLOWS:WRITE scope inclusion in the controller's least-privilege set is correctly identified as necessary (GitHub refuses App merges of workflow-modifying PRs without it) and correctly non-relaxing of the sole-merger rule. The custody split (telos-authority-roots admits all refs for public verification anchors; telos-authority-release main-only for secrets) is correct and non-contradictory with PR gate operability. The two accepted spikes are genuinely bounded implementation-completeness items with fail-closed interims and Eye ratification: SPIKE-E6-EVALUATOR-FORM defers only the concrete evaluator form (WASM vs frozen-realm worker) while the declarative-language design is settled and enrollment is blocked until the evaluator's merge gate passes; SPIKE-PD001-NOLISTENER-COMPLETENESS defers only exhaustive Linux syscall/loader/namespace corner enumeration while the kernel-inherited seccomp architecture is conceptually sound and CI eBPF+strace detection is fail-closed. Both are honestly non-claimed and carry no architectural flaws. The pre-activation whitelist correctly includes the Phase B terminal descriptor (omitting it would deadlock activation). The genesis bootstrapping path (two enumerated ceremonial merges, both recorded, no third) is a correctly documented one-time deviation. The transition-seq monotonicity prevents temporal replay across code-only transitions that leave the chain root unchanged. The runtime-interval cross-surface regression suite enforcing agreement among engines-parse, launcher, doctor, install-docs, and oracle on [22.14.0, ceiling] is the correct single-surface-of-truth approach. No contradictions, no unsound designs, no missing enforcement, no overclaimed properties.",
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-6",
+    "response_id": "bf24a192-bbec-4714-ad84-9e09da1353d2",
+    "source": "cli-seats/claude",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T15:47:39.014Z",
+    "tool": "cli-seats.askClaude"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "f1cf7932964181864cc56e90d1bbe8a1d55e29b252b0c660c1f0aeb2a1b682d1",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

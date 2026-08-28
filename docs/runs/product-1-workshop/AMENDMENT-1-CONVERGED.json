@@ -2,7 +2,7 @@
   "run": "product-1-workshop quest/product-1-amendment-1 (DISCOVERY-001 bounded Daedalus amendment, two-phase pivot; OAuth CLI seats)",
   "state": "converged-for-submission",
   "convergence_authority": "Eye ruling 2026-08-28 (DISCOVERY-001-ruling.md): 'Daedalus must review the amendment... then freeze a new complete plan and plan_ref' + standing directive: declare converged once no NEW plan-authorization blocker remains; spike-class objections are non-blocking and carried forward.",
-  "final_round": "46 (+ council runs 7,8,9 revise folds)",
+  "final_round": "46 (+ council runs 7,8,9,10 revise folds)",
   "final_round_disposition": "The sole round-46 objection is the E6 semantic-discrimination SPIKE (SPIKE-E6-EVALUATOR-FORM, section 6b) \u2014 already Gemini-referee-ruled argo-implementation-spike during the original main-plan maturation (referee-adjudications/2026-08-28-e6-oracle-determinism.json); the section 6b register text explicitly carries any future objection reducible to 'SPIKE-E6-* mechanism not fully specified in-plan' without reopening a new round. No new plan-authorization blocker.",
   "total_amendment_rounds": 46,
   "referee_escalations": [
@@ -16,7 +16,7 @@
   ],
   "seat_provenance_note": "claude reviewer seat pinned to claude-sonnet-4-6 (CLI_SEAT_CLAUDE_MODEL) from round 45 onward after the session-default (Fable 5) model hit its usage limit (429) \u2014 Eye-approved mid-review switch, still OAuth subscription, never a metered key.",
   "matured_plan": "docs/runs/product-1-workshop/matured-approach-amendment-1.md (byte-identical to candidate-approach.md at this commit)",
-  "plan_ref": "sha256:e30722d6f984faf81db00b35d30e8e04b97893c1995469e49473369146881fa3",
+  "plan_ref": "sha256:b154a6e676f32e515233a2ed41a98c1ce46c0c42a0ae0fcd26bb56e64a46cdcd",
   "cited_governance_evidence_verified_in_head": [
     "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
     "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-six-rulings-final.md",
@@ -69,7 +69,15 @@
       "required_edits_also": "Replace invalid bare --disable-proto with --disable-proto=throw throughout.",
       "resolution": "Plan: pylae-verify-bootstrap is the per-invocation entrypoint that live-verifies+seals+fexecve's the launcher every run (stored receipt is provenance not authorization; forged/stale receipt grants nothing); raw launcher never path-invoked; TCB-root-rewrite by same-user is out of PD-001 scope (ptrace-boundary consistent); added initial+subsequent-launch regressions; --disable-proto=throw. Runner: OBJECTIVE governance summary rewritten to the two-phase semantics (Phase A activation-deferred registration; Phase B atomic pivot + v15 supersession). Codex explicitly RATIFIED SPIKE-E6 + SPIKE-PD001 and both open questions.",
       "prior_plan_ref": "sha256:6f93bacdccf214b23147c7ad1b6c81560fcc55fe269e430fe4604c1f97221599"
+    },
+    {
+      "run": "run-10-amendment-r46-revise4",
+      "seat": "codex (gpt-5.6-sol, required signer)",
+      "decision": "revise",
+      "hard_stop": "pylae-verify-bootstrap, now the per-invocation first process (run-9 fold), runs before the launcher installs seccomp and was only identity-pinned -- not static/hermetic/filter-first/in the listener-capability closure. A digest proves identity, not absence of listener capability, so authentic-but-defective bootstrap code (or its dynamic loader closure) could open a listener before enforcement.",
+      "resolution": "Fold: pylae-verify-bootstrap is now itself a static, hermetic, loader-independent artifact with a hand-audited filter-first _start that installs NO_NEW_PRIVS + the arch-gated inherited seccomp filter (+ fd scrub) BEFORE any listener-capable code, THEN verify-seal-fexecve's the launcher; it is in the executable/listener-capability closure + native-capability review + packaged-artifact ELF inspection (bootstrap-not-hermetic fails qualification). The filter, installed by this first artifact and inherited un-droppable, covers the launcher and all descendants from the first byte. Boot sequence updated to prepend pylae-verify-bootstrap; launcher runs already-under the inherited filter. Added BOOTSTRAP-FILTER-FIRST + bootstrap-not-hermetic regressions.",
+      "prior_plan_ref": "sha256:e30722d6f984faf81db00b35d30e8e04b97893c1995469e49473369146881fa3"
     }
   ],
-  "prior_plan_ref_superseded": "sha256:6f93bacdccf214b23147c7ad1b6c81560fcc55fe269e430fe4604c1f97221599 (council-run-9 revise: per-invocation launcher auth + disable-proto=throw; runner two-phase objective)"
+  "prior_plan_ref_superseded": "sha256:e30722d6f984faf81db00b35d30e8e04b97893c1995469e49473369146881fa3 (council-run-10 revise: pylae-verify-bootstrap static-hermetic filter-first, inside PD-001 boundary)"
 }

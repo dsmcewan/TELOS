@@ -1,0 +1,28 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "gemini",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:e30722d6f984faf81db00b35d30e8e04b97893c1995469e49473369146881fa3",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:45:35.207Z",
+  "rationale": "The AMENDMENT-1 plan provides a sound, implementation-ready two-phase pivot that safely resolves the DISCOVERY-001 bootstrap coupling while preserving the atomic weave rule. The fail-closed architectures for pre-merge credential separation, self-contained authority chaining, exceptionless auditing, and the no-listener kernel invariant are rigorous and structurally sound. The deferrals of the E6 evaluator form and PD001 enumeration to their respective hard merge gates under SPIKE-E6 and SPIKE-PD001 are explicitly bounded, protected by strict fail-closed interim detection mechanisms, and formally ratified by the Eye directive. I explicitly ratify these spikes and authorize the amended approach AS-IS.",
+  "provenance": {
+    "provider": "google",
+    "model": "gemini-3.1-pro-high",
+    "response_id": "b067873b-4214-4450-8f5a-49f6176aa5fc",
+    "source": "cli-seats/gemini",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T15:46:55.170Z",
+    "tool": "cli-seats.askGemini"
+  }
+}

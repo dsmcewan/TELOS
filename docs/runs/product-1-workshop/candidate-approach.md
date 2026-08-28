@@ -495,13 +495,18 @@ as OUT OF THE THREAT MODEL'S SCOPE (the regression asserts the doctor
 warning fires when `ptrace_scope=0`, not that the launcher defeats an
 already-tracing parent, which is acknowledged as impossible).
 
-So the SINGLE ENFORCEABLE BOOT SEQUENCE is: LAUNCHER → SEALED
-AUTHENTICATED STATIC SANDBOX-BUILDER → AUTHENTICATED ROOT → NODE-INSIDE-
-ROOT (the launcher does NOT fexecve dynamic Node directly — that would
-load Node's mutable `PT_INTERP`/`DT_NEEDED` host closure before any
-authenticated root exists). Concretely, the launcher (i) in its
-hand-audited `_start` installs `NO_NEW_PRIVS`+seccomp and closes/replaces
-inherited fds (above), (ii) CLEARS NODE_OPTIONS/NODE_REPL*/inspector-debug
+So the SINGLE ENFORCEABLE BOOT SEQUENCE is: `pylae-verify-bootstrap`
+(STATIC HERMETIC, FILTER-FIRST first artifact — see the per-invocation
+section below) → LAUNCHER → SEALED AUTHENTICATED STATIC SANDBOX-BUILDER →
+AUTHENTICATED ROOT → NODE-INSIDE-ROOT (no stage fexecve's dynamic Node
+directly — that would load Node's mutable `PT_INTERP`/`DT_NEEDED` host
+closure before any authenticated root exists). Concretely, (0)
+`pylae-verify-bootstrap`'s hand-audited `_start` installs
+`NO_NEW_PRIVS`+the arch-gated inherited seccomp filter and closes/replaces
+inherited fds FIRST, then verify-seals-`fexecve`s the launcher; the
+launcher therefore starts ALREADY UNDER the inherited filter. The
+launcher then (i) may idempotently re-assert the filter (already active
+by inheritance), (ii) CLEARS NODE_OPTIONS/NODE_REPL*/inspector-debug
 env, (iii) sealed-snapshot (memfd + F_SEAL_*) authenticates the STATIC
 HERMETIC sandbox-builder against its pinned digest and `fexecve`s IT
 FIRST — a static builder has no loader closure, so no mutable byte runs;
@@ -514,26 +519,49 @@ and started with `--disable-proto=throw`/inspector-off flags, REFUSING
 `unsupported-launch-options` on detected inspector activation. THE
 LAUNCHER IS MUTATION-POINT-AUTHENTICATED ON EVERY INVOCATION, NOT ONLY
 AT INSTALL: the user-facing `pylae` command IS `pylae-verify-bootstrap`
-(the small, independently-pinned, operator-trusted verifier — the TCB
-root, §4), NOT the raw native launcher. On EVERY run it OPENS the pinned
-native launcher, VERIFIES its digest against the pinned value LIVE
-(a stored receipt is provenance, NOT authorization — live re-verification
-is authoritative each run, so a FORGED or STALE receipt grants nothing),
-SEALS the verified launcher bytes into a memfd (`F_SEAL_*`), and
-`fexecve`s THAT sealed memfd — so a launcher binary SWAPPED ON DISK after
-install is never executed by pathname; nothing runs before verification.
-The raw native launcher is thus the sole code that scrubs env + installs
-seccomp + spawns the sandbox-builder, but it is REACHED ONLY through
-`pylae-verify-bootstrap`'s per-invocation verify→seal→`fexecve`; invoking
-the raw launcher (or `node pylae`) by pathname directly is unsupported
-and the install docs state so. `pylae-verify-bootstrap` itself is the
-operator-provisioned TCB ROOT (its digest on the trust page, verified
+(the TCB root, §4), NOT the raw native launcher. BECAUSE IT IS NOW THE
+FIRST-EXECUTED PROCESS, `pylae-verify-bootstrap` IS ITSELF INSIDE THE
+PD-001 NO-LISTENER ENFORCEMENT BOUNDARY WITH THE SAME STATIC-HERMETIC +
+FILTER-FIRST REQUIREMENTS THE LAUNCHER HAD (a digest proves IDENTITY,
+not ABSENCE of listener capability — so identity-pinning alone is
+insufficient for the first byte): it is a FULLY-STATIC, LOADER-INDEPENDENT
+artifact (no `PT_INTERP`, empty `DT_NEEDED`, no `dlopen`), built
+`-static -nostartfiles` with a HAND-AUDITED CUSTOM `_start` and NO
+`.init_array`/CRT constructors, and it is IN the executable/listener-
+capability closure + native-capability review + packaged-artifact ELF
+inspection (no interpreter segment, empty NEEDED, no inline-syscall/asm
+escape) — a dynamically-linked or non-hermetic bootstrap ⇒ qualification
+FAILS `bootstrap-not-hermetic`. Its `_start`'s FIRST ACTIONS (the only
+code before enforcement, the audited listener-free prologue) INSTALL
+`prctl(PR_SET_NO_NEW_PRIVS)` + THE ARCH-GATED INHERITED SECCOMP FILTER
+(the same filter: bind/listen/accept/inet-DGRAM/io_uring/__X32_SYSCALL_BIT
+guard/AF_UNIX/pidfd denials) and `close_range`/stdio-scrub inherited fds,
+BEFORE any potentially listener-capable code or descendant runs; THEN it
+OPENS the pinned native launcher, VERIFIES its digest LIVE (a stored
+receipt is provenance, NOT authorization — live re-verification is
+authoritative each run, so a FORGED or STALE receipt grants nothing),
+SEALS the verified launcher into a memfd (`F_SEAL_*`), and `fexecve`s it.
+Because the filter is installed by this FIRST artifact and INHERITED
+(NO_NEW_PRIVS, un-droppable) across the `fexecve`, the native launcher
+and everything after run UNDER it from the very first byte — so even an
+AUTHENTIC-BUT-DEFECTIVE bootstrap cannot open a listener (the syscalls
+are already denied), and neither can a launcher swapped on disk (it is
+never executed by pathname; nothing runs before verification). The native
+launcher thus scrubs `NODE_OPTIONS` env + spawns the sandbox-builder
+UNDER the inherited filter (it no longer needs to be the filter's
+installer; it may idempotently re-assert it); invoking the raw launcher
+(or `node pylae`) by pathname directly is unsupported and the install
+docs state so. `pylae-verify-bootstrap`'s OWN bytes are the
+operator-provisioned TCB ROOT (digest on the trust page, verified
 out-of-band at install, installed on a verity/read-only path for
-defense-in-depth); defending its OWN bytes against a same-user attacker
-who can rewrite the TCB-root binary is OUT of PD-001's scope (the same
-boundary as the ptrace scoping above — a local attacker controlling the
-user's own binaries/launch environment is outside pylae's confined-tree
-threat model). PER-INVOCATION LAUNCHER regressions (BOTH initial AND
+defense-in-depth); defending them against a same-user attacker who can
+rewrite the TCB-root binary is OUT of PD-001's scope (the same ptrace
+boundary above). BOOTSTRAP-FILTER-FIRST regression: a listener attempt
+from within `pylae-verify-bootstrap` AFTER its prologue (or from any
+descendant) ⇒ denied by the already-installed inherited filter; a
+`bootstrap-not-hermetic` fixture (a dynamically-linked bootstrap or one
+whose `_start` runs any code before the seccomp syscall) ⇒ FAILS
+qualification. PER-INVOCATION LAUNCHER regressions (BOTH initial AND
 subsequent launches): (a) a native launcher REPLACED ON DISK after a
 successful install ⇒ `pylae-verify-bootstrap`'s live digest check FAILS
 `launcher-identity-mismatch`, the swapped launcher NEVER executes;

@@ -1,0 +1,28 @@
+{
+  "build_id": "iliad-product-1-authz-amendment-1-r46-converged-two-phase-pivot-am42-am43",
+  "use_case": "iliad-product-1",
+  "model": "grok",
+  "role": "approver",
+  "docs_reviewed": [
+    "docs/runs/product-1-workshop/matured-approach-amendment-1.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/runs/product-1-workshop/AMENDMENT-1-CONVERGED.json"
+  ],
+  "proposal_ref": "sha256:e30722d6f984faf81db00b35d30e8e04b97893c1995469e49473369146881fa3",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-08-28T15:45:35.207Z",
+  "rationale": "AMENDMENT-1 (sha256:e30722d6…) is implementation-ready and consistent with the governing pre-review, the repository trust model (fail-closed, closed sets, content-addressed identity, no mutable-label enforcement, zero-dep core), and its own acceptance criteria. The TWO-PHASE PIVOT correctly implements the Eye's DISCOVERY-001 Option-3/Option-1 ruling: Phase A is data-only under sitting v15/authz-008 with activation-deferred quest-class registration and AM-43 staged non-woven; Phase B is the single-PR atomic activation under the landed discriminating verifier. E1–E6 are fail-closed with adversarial regressions and no remaining plan contradiction. Phase-0/1a product terms match the frozen contract; deferred Phase-1b+/multi-engine/self-contained-npm items are correctly out of scope. RATIFY carried-forward §6b spikes as authorization-time decisions: SPIKE-E6-EVALUATOR-FORM — declarative oracle language is the sound design (lookup-table structurally inexpressible); interim = enrollment blocked until the hard merge-gate (adversarial source review + determinized battery are compensating only); SPIKE-PD001-NOLISTENER-COMPLETENESS — the kernel-inherited arch-gated un-droppable seccomp + static hermetic launcher/sandbox-builder architecture is sound and fail-closed; only exhaustive residual-corner enumeration is deferred, with interim CI eBPF+strace fail-closed detection. Both open questions (product-1-oq-e6-determinism-deferral, product-1-oq-pd001-nolistener-completeness) are acceptable as bounded, honestly-recorded spikes with fail-closed interims — not contradictions. Re-authorize the exact amended plan AS-IS; Phase A bootstrap may proceed under this grant, with active-plan pivot + v15 supersession reserved to Phase B.",
+  "provenance": {
+    "provider": "xai",
+    "model": "grok-4.5-build",
+    "response_id": "aa6f8851-5dc2-4ff3-916d-577d02d2cdee",
+    "source": "cli-seats/grok",
+    "transport": "oauth-subscription-cli",
+    "answered_at": "2026-08-28T15:46:03.668Z",
+    "tool": "cli-seats.askGrok"
+  }
+}
