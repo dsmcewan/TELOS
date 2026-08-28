@@ -1202,9 +1202,14 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   acceptance block): the assembly is fully specified — `git archive`
   <accepted-target-SHA>; inject RELEASE-IDENTITY.json + generated
   files; repack with pinned metadata (`tar --sort=name --owner=0
-  --group=0 --numeric-owner --mtime=@<accepted-target-commit-timestamp>`
-  piped through `gzip -n`) so every nondeterministic tar/gzip field is
-  fixed by the accepted commit; every artifact identity, check-run
+  --group=0 --numeric-owner --mtime=@<accepted-target-commit-timestamp>
+  --mode=go=rX,u=rwX` piped through `gzip -n`) so every nondeterministic
+  tar/gzip field — INCLUDING MEMBER PERMISSIONS, which otherwise vary
+  with the build umask (extraction + injected-file modes are
+  umask-dependent and recorded by tar) — is fixed by the accepted
+  commit, while git's executable-bit and symlink semantics are
+  preserved (the mode normalization keeps u+x where git records it via
+  rwX); every artifact identity, check-run
   assertion, and attestation binds to that frozen SHA; tag-ref
   verification is deferred to POST-PUBLICATION (the flip creates the
   ref at that same target, then post-publish verification asserts ref
@@ -1219,7 +1224,10 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   archive-mode installs can verify the full authority chain (below).
   **Accept**: double-build digests equal for BOTH the cli tgz and
   the assembled source tarball; a fixture varying mtime/owner in the
-  repack ⇒ digest mismatch ⇒ abort; NO-TAG regression — the entire
+  repack ⇒ digest mismatch ⇒ abort; UMASK regression — the same source
+  built under two distinct umasks (e.g. 022 and 077) ⇒ IDENTICAL final
+  tarball bytes (mode normalization proven, not assumed); NO-TAG
+  regression — the entire
   gate/build/upload sequence runs with `git rev-parse v<version>`
   failing throughout (ref absent until flip), every artifact bound to
   the frozen accepted SHA.

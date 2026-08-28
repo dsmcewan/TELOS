@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:release-reproducibility",
+        "claim": "The source-release assembly remains nondeterministic. It extracts `git archive`, injects generated files, and repacks while fixing order, owner, group, and mtime, but it never normalizes member permissions. Extraction and generated-file modes vary with `umask`, and tar records those modes; GNU tar explicitly identifies `--mode` as necessary to eliminate permission variance ([GNU tar reproducibility guidance](https://www.gnu.org/s/tar/manual/html_chapter/Formats.html)). Two builds on the same runner and under the same umask can therefore byte-match while a clean rebuild under another valid umask produces a different tarball digest, so the stated oracle would not discriminate this blocker-6 failure. Specify deterministic modes while preserving Git executable/symlink semantics and add a regression that builds under distinct umasks and requires identical final bytes."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtca501b",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtca501b",
+    "source": "cli-seats/codex_ask"
+  }
+}

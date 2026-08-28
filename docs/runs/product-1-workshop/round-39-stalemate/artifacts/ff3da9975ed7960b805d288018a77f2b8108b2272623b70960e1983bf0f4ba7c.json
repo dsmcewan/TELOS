@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:ca527d9a3a3cb3b2dd2535cbd438e1679db6259ba3bdc35c82882805f035d191",
+  "output_plan_artifact_hash": "sha256:ca527d9a3a3cb3b2dd2535cbd438e1679db6259ba3bdc35c82882805f035d191",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:9f149a860dbdd92c92ec9669b70a6c670ee330f04c7bde026676a2922f1e9697",
+    "provenance_key": "anthropic:11fec2fa-774b-4c94-b11b-a0d69e732cbe"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:881b02d06b1109e7f2269227ed56b0e9508b497c578b490bd9fc570dceaf272c",
+    "provenance_key": "openai:codex-cli-mtca501b",
+    "bound_hash": "sha256:ca527d9a3a3cb3b2dd2535cbd438e1679db6259ba3bdc35c82882805f035d191"
+  },
+  "objections": [
+    {
+      "scope": "candidate:release-reproducibility",
+      "claim": "The source-release assembly remains nondeterministic. It extracts `git archive`, injects generated files, and repacks while fixing order, owner, group, and mtime, but it never normalizes member permissions. Extraction and generated-file modes vary with `umask`, and tar records those modes; GNU tar explicitly identifies `--mode` as necessary to eliminate permission variance ([GNU tar reproducibility guidance](https://www.gnu.org/s/tar/manual/html_chapter/Formats.html)). Two builds on the same runner and under the same umask can therefore byte-match while a clean rebuild under another valid umask produces a different tarball digest, so the stated oracle would not discriminate this blocker-6 failure. Specify deterministic modes while preserving Git executable/symlink semantics and add a regression that builds under distinct umasks and requires identical final bytes.",
+      "objection_hash": "sha256:801263d8a897ab7fa5e1de2b262bef212687cccebf2612e19d50cd7c80f39cb7",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
