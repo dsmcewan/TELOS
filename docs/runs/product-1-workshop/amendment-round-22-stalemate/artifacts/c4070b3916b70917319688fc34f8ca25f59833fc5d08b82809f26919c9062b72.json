@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "approach",
+        "claim": "The E2 first-deployment transition is internally unsatisfiable. Every genesis-class record must carry `old_verifier_closure_digest` equal to the LIVE protected `VERIFIER_CLOSURE_DIGEST`, but genesis explicitly omits that variable and E2 advances it only after the controller-authorized merge. No canonical absent-state value is defined. Therefore the controller cannot validate E2's full old/new tuple without either pre-provisioning the new digest—which the approach expressly refuses—or weakening predecessor equality. Provision the pre-E2 verifier closure digest as the live genesis value (without executing it as authority), then bind E2's proposed digest as `new_verifier_closure_digest` and advance the variable only after merge; add regressions for missing, pre-provisioned-new, and correct-old values."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtctk9m4",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtctk9m4",
+    "source": "cli-seats/codex_ask"
+  }
+}

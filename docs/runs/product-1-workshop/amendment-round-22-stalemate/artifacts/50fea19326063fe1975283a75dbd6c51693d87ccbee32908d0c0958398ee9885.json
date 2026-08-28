@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:5e7cea174fb66ac452c30b8f440d3ff4d601452926f206b239e550fb1fbbee96",
+  "output_plan_artifact_hash": "sha256:5e7cea174fb66ac452c30b8f440d3ff4d601452926f206b239e550fb1fbbee96",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:24c7040e0388a65e3c3983df18a2b351a02cb0068613543ac1b05957cc9b6137",
+    "provenance_key": "anthropic:ba2a152b-337f-44cc-8f59-284afd429e5d"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:c4070b3916b70917319688fc34f8ca25f59833fc5d08b82809f26919c9062b72",
+    "provenance_key": "openai:codex-cli-mtctk9m4",
+    "bound_hash": "sha256:5e7cea174fb66ac452c30b8f440d3ff4d601452926f206b239e550fb1fbbee96"
+  },
+  "objections": [
+    {
+      "scope": "approach",
+      "claim": "The E2 first-deployment transition is internally unsatisfiable. Every genesis-class record must carry `old_verifier_closure_digest` equal to the LIVE protected `VERIFIER_CLOSURE_DIGEST`, but genesis explicitly omits that variable and E2 advances it only after the controller-authorized merge. No canonical absent-state value is defined. Therefore the controller cannot validate E2's full old/new tuple without either pre-provisioning the new digest—which the approach expressly refuses—or weakening predecessor equality. Provision the pre-E2 verifier closure digest as the live genesis value (without executing it as authority), then bind E2's proposed digest as `new_verifier_closure_digest` and advance the variable only after merge; add regressions for missing, pre-provisioned-new, and correct-old values.",
+      "objection_hash": "sha256:9bdcfdfeb5921eeab00c800e5d0d811639090be51b22b22cfa0a01fea5774823",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
