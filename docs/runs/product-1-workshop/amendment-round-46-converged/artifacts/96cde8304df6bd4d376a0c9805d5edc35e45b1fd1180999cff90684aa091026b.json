@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:d1dd898d1c9c043157211cca396be1377ce9c215371210d2786041197efb56f4",
+  "output_plan_artifact_hash": "sha256:d1dd898d1c9c043157211cca396be1377ce9c215371210d2786041197efb56f4",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:1b73749a3f15c755431173518c7256db87f444a1d4321063c6bb90a3e3c0db2d",
+    "provenance_key": "anthropic:b6adcd13-951f-4126-9c3c-feed19dc5712"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:1bfeca067dd7e3399b685b9a49ac4b2b9678590077675ed79c282edcda5852e6",
+    "provenance_key": "openai:codex-cli-mtd2728c",
+    "bound_hash": "sha256:d1dd898d1c9c043157211cca396be1377ce9c215371210d2786041197efb56f4"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach",
+      "claim": "E6 still leaves semantic discrimination unresolved. Section 6b explicitly keeps the constrained declarative language/reference semantics open for the implementation spike, yet elsewhere asserts that lookup-table behavior is already inexpressible. “Predicates over the snapshot” does not establish that property: without a concrete closed grammar and independently defined invariant semantics, declarative equality/branching constructs could encode the complete author-known test domain and pass every finite mutation/positive fixture while accepting other violations. This is not merely evaluator-form detail; it is the mechanism required to satisfy governance correction (d) and the frozen requirement that oracles discriminate. The grammar, forbidden expressiveness, trusted semantics, and adversarial conformance oracle must be settled in the approach before implementation is delegated.",
+      "objection_hash": "sha256:b1f708de40962213ddc0d93b71b93998ee5fa0722d827a8dc05fc71c842af207",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

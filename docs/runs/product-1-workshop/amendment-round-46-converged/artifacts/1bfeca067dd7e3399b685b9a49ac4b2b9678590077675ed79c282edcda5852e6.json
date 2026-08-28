@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach",
+        "claim": "E6 still leaves semantic discrimination unresolved. Section 6b explicitly keeps the constrained declarative language/reference semantics open for the implementation spike, yet elsewhere asserts that lookup-table behavior is already inexpressible. “Predicates over the snapshot” does not establish that property: without a concrete closed grammar and independently defined invariant semantics, declarative equality/branching constructs could encode the complete author-known test domain and pass every finite mutation/positive fixture while accepting other violations. This is not merely evaluator-form detail; it is the mechanism required to satisfy governance correction (d) and the frozen requirement that oracles discriminate. The grammar, forbidden expressiveness, trusted semantics, and adversarial conformance oracle must be settled in the approach before implementation is delegated."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtd2728c",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtd2728c",
+    "source": "cli-seats/codex_ask"
+  }
+}

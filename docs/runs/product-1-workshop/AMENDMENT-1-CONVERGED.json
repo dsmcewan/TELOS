@@ -1,0 +1,44 @@
+{
+  "run": "product-1-workshop quest/product-1-amendment-1 (DISCOVERY-001 bounded Daedalus amendment, two-phase pivot; OAuth CLI seats)",
+  "state": "converged-for-submission",
+  "convergence_authority": "Eye ruling 2026-08-28 (DISCOVERY-001-ruling.md): 'Daedalus must review the amendment... then freeze a new complete plan and plan_ref' + standing directive: declare converged once no NEW plan-authorization blocker remains; spike-class objections are non-blocking and carried forward.",
+  "final_round": 46,
+  "final_round_disposition": "The sole round-46 objection is the E6 semantic-discrimination SPIKE (SPIKE-E6-EVALUATOR-FORM, section 6b) — already Gemini-referee-ruled argo-implementation-spike during the original main-plan maturation (referee-adjudications/2026-08-28-e6-oracle-determinism.json); the section 6b register text explicitly carries any future objection reducible to 'SPIKE-E6-* mechanism not fully specified in-plan' without reopening a new round. No new plan-authorization blocker.",
+  "total_amendment_rounds": 46,
+  "referee_escalations": [
+    {
+      "thread": "PD-001 no-listener kernel-enforcement over arbitrary native tool closures on Linux",
+      "invoked_after_round": 37,
+      "ruling": "argo-implementation-spike",
+      "evidence": "referee-adjudications/2026-08-28-pd001-nolistener-completeness.json",
+      "register_entry": "SPIKE-PD001-NOLISTENER-COMPLETENESS (section 6b)"
+    }
+  ],
+  "seat_provenance_note": "claude reviewer seat pinned to claude-sonnet-4-6 (CLI_SEAT_CLAUDE_MODEL) from round 45 onward after the session-default (Fable 5) model hit its usage limit (429) — Eye-approved mid-review switch, still OAuth subscription, never a metered key.",
+  "matured_plan": "docs/runs/product-1-workshop/matured-approach-amendment-1.md (byte-identical to candidate-approach.md at this commit)",
+  "plan_ref": "sha256:d1dd898d1c9c043157211cca396be1377ce9c215371210d2786041197efb56f4",
+  "cited_governance_evidence_verified_in_head": [
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-discovery-001-ruling.md",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-six-rulings-final.md",
+    "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-spikes-nonblocking.md",
+    "docs/institutional-memory/iliad/PRE-REVIEWS/2026-08-27-product-1.json",
+    "docs/institutional-memory/verify-contracts.mjs",
+    "docs/mythological-vocabulary.md",
+    "docs/runs/clotho-self-weave/run.mjs",
+    "docs/runs/product-1-argo/discovery-001-bootstrap-pivot-coupling.json",
+    "docs/runs/product-1-workshop/referee-adjudications/2026-08-28-e6-oracle-determinism.json",
+    "docs/runs/product-1-workshop/referee-adjudications/2026-08-28-pd001-nolistener-completeness.json"
+  ],
+  "cited_forward_specified_artifacts_not_yet_created": [
+    "docs/institutional-memory/product/node-version-claims.json",
+    "docs/institutional-memory/run-oracles.mjs",
+    "docs/PRODUCTION-READINESS.md"
+  ],
+  "carried_forward_not_defects": {
+    "argo_spikes": [
+      "SPIKE-E6-EVALUATOR-FORM (section 6b): declarative oracle language concrete grammar/evaluator form; merge-gate on the oracle-hardening slice",
+      "SPIKE-PD001-NOLISTENER-COMPLETENESS (section 6b): exhaustive Linux syscall/loader/namespace corner enumeration; interim CI eBPF+strace detection"
+    ]
+  },
+  "next": "TELOS must authorize this exact amended plan (update run-product-authorization.mjs EXPECTED_PLAN_REF/REVIEWED_HEAD/BUILD_ID for this plan_ref + commit), then the Eye must issue a NEW S3 implementation-authority grant before Argo resumes on quest/product-1-slice-bootstrap or a fresh/rebased slice implementing Phase A. Not launched automatically -- flagged for explicit Eye go given the durable-signer cost and authorization weight."
+}
