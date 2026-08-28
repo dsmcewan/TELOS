@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:e34b3132dadee17d9bc89fa2c1d26d32cd6b35434250dca061b57cdc196496ed",
+  "output_plan_artifact_hash": "sha256:e34b3132dadee17d9bc89fa2c1d26d32cd6b35434250dca061b57cdc196496ed",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:33b68bd46dfc6ab85195b7b5028199f25f9a4bf9e50ed09ab83bcf1c92dea0e9",
+    "provenance_key": "anthropic:69ac610b-64bf-4cd9-8715-603c5bb3197c"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:9d406afb5e40fe5ade84b7f0ee88607e1ca9f80ed0515f28bdc24dd48d54a810",
+    "provenance_key": "openai:codex-cli-mtd0a4iz",
+    "bound_hash": "sha256:e34b3132dadee17d9bc89fa2c1d26d32cd6b35434250dca061b57cdc196496ed"
+  },
+  "objections": [
+    {
+      "scope": "candidate-approach:install-toolchain-contract",
+      "claim": "The Phase-1a installation contract is internally unsatisfiable. Section 1 requires externally supplied node/git/bwrap/gh binaries and their authenticated closures, while Section 4 ships only a source archive, requires host-provided tools, simultaneously says every spawned tool resolves inside the install root, and makes any clean-room spawn outside that root fail. The out-of-band trust-root manifest schema contains no tool or closure digests, and no release artifact provisions the pinned tool root. Consequently doctor/verify cannot both use the required host tools and satisfy the claimed identity/root-confinement checks. Define and ship an authenticated toolchain-root artifact, or explicitly admit operator tools through a digest-bound external-tool contract and update the trust manifest and clean-room oracle accordingly.",
+      "objection_hash": "sha256:4c282b8755a0c0b077dedd4ea55b949a8ccf6525f84b39d9c6a53ac73927e285",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "candidate-approach:verdict-tool-closure",
+      "claim": "The authoritative-tool integrity mechanism does not authenticate the complete executed closure it claims. It reduces that closure to the main ELF, PT_INTERP, and transitive DT_NEEDED libraries, but Git can execute separate git-* programs and protocol helpers during fetch operations; those are executable verdict-producing bytes, not ELF dependencies ([Git remote-helper contract](https://git-scm.com/docs/gitremote-helpers)). Runtime-loaded trust/configuration inputs are likewise outside the stated enumeration. A substituted helper can therefore fabricate fetched objects while every listed digest remains valid. Closure construction must recursively include every exec edge and verdict-affecting runtime input, fail on unresolved acquisition, and include substitution regressions for non-DT_NEEDED helpers.",
+      "objection_hash": "sha256:15987c896363ac0f8e1b6f717368d402de5ef17a9b5a19337aff72e3275324e3",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

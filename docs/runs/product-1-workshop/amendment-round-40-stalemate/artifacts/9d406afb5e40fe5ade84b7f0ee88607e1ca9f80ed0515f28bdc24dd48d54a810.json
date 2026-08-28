@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate-approach:install-toolchain-contract",
+        "claim": "The Phase-1a installation contract is internally unsatisfiable. Section 1 requires externally supplied node/git/bwrap/gh binaries and their authenticated closures, while Section 4 ships only a source archive, requires host-provided tools, simultaneously says every spawned tool resolves inside the install root, and makes any clean-room spawn outside that root fail. The out-of-band trust-root manifest schema contains no tool or closure digests, and no release artifact provisions the pinned tool root. Consequently doctor/verify cannot both use the required host tools and satisfy the claimed identity/root-confinement checks. Define and ship an authenticated toolchain-root artifact, or explicitly admit operator tools through a digest-bound external-tool contract and update the trust manifest and clean-room oracle accordingly."
+      },
+      {
+        "scope": "candidate-approach:verdict-tool-closure",
+        "claim": "The authoritative-tool integrity mechanism does not authenticate the complete executed closure it claims. It reduces that closure to the main ELF, PT_INTERP, and transitive DT_NEEDED libraries, but Git can execute separate git-* programs and protocol helpers during fetch operations; those are executable verdict-producing bytes, not ELF dependencies ([Git remote-helper contract](https://git-scm.com/docs/gitremote-helpers)). Runtime-loaded trust/configuration inputs are likewise outside the stated enumeration. A substituted helper can therefore fabricate fetched objects while every listed digest remains valid. Closure construction must recursively include every exec edge and verdict-affecting runtime input, fail on unresolved acquisition, and include substitution regressions for non-DT_NEEDED helpers."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtd0a4iz",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtd0a4iz",
+    "source": "cli-seats/codex_ask"
+  }
+}
