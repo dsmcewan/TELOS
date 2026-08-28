@@ -971,14 +971,34 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   BUNDLE asset — first verifying the bundle's digest against SHA256SUMS
   + its attestation (identity-pinned), then unbundling into a private
   temp object store, asserting its head equals
-  RELEASE-IDENTITY.commit_sha, and running the COMPLETE battery
+  RELEASE-IDENTITY.commit_sha, and running the COMPLETE battery. THE
+  TRUST ROOTS ARE AN EXPLICIT OPERATOR INPUT, NEVER TREE-SUPPLIED (the
+  Ed25519 acceptance is unverifiable without EYE_AUTHORITY_PUBKEY, and
+  a pubkey read from the tarball or bundle would let the tree writer
+  self-authorize): `--trust-root <manifest>` takes a TRUST-ROOT
+  MANIFEST `{eye_authority_pubkey, authority_chain_root, custody
+  statement, manifest_version}` obtained OUT-OF-BAND — canonically the
+  repository's published trust page (served from the owner's GitHub
+  origin, independent of any release artifact) or directly from the
+  Eye — with the trust model stated honestly: first-fetch trust rests
+  on the publishing origin's integrity (documented TOFU), and the CLI
+  PINS the accepted manifest locally so every later verification
+  compares against the stored root rather than re-trusting the
+  network. Absent `--trust-root` (and no pinned manifest), `--full`
+  FAILS `trust-root-missing` — it never falls back to values found in
+  the tree, the bundle, or the release itself.
   (authority-chain anchoring via git cat-file against the bundle store,
   input-closure + input-history freshness digests, verify-contracts)
   from the extracted tree + bundle alone. **Accept**: clean-room job
-  green from tarball + bundle running the FULL battery (not just
-  --offline-checks); a tampered bundle ⇒ digest/attestation mismatch ⇒
-  refuse before any object is read; a bundle whose head ≠ the embedded
-  commit_sha ⇒ fail identity-drift; clean-room job green from tarball
+  green from tarball + bundle + operator trust-root manifest running
+  the FULL battery (not just --offline-checks); NO manifest and no pin
+  ⇒ trust-root-missing (never green); a SUBSTITUTED pubkey planted
+  inside the tarball or bundle ⇒ IGNORED (tree values are never
+  consulted) and verification fails against the operator manifest; a
+  manifest whose root disagrees with the pinned one ⇒ pin-mismatch
+  surfaced, not silently replaced; a tampered bundle ⇒
+  digest/attestation mismatch ⇒ refuse before any object is read; a
+  bundle whose head ≠ the embedded commit_sha ⇒ fail identity-drift; clean-room job green from tarball
   alone in archive mode for the offline subset; tampered tracked payload ⇒ doctor fails
   tree-mismatch (reconstructed git root tree ≠ tree_sha); tampered generated
   file ⇒ generated-digest mismatch; doctor's offline verdict is labeled

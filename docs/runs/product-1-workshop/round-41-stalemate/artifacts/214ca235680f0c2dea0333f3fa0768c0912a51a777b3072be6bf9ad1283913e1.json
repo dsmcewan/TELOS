@@ -1,0 +1,25 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "candidate:E2/local-release-verification",
+        "claim": "The clean-room `pylae verify --full --bundle` contract cannot authenticate the authority chain from the stated tarball + history bundle inputs. E2 requires both `CURRENT_AUTHORITY_CHAIN_ROOT` and `EYE_AUTHORITY_PUBKEY` to remain out-of-tree protected values, but neither value is distributed to operators through an independently authenticated release asset or explicit verification input; the bundle and extracted tree cannot supply them without becoming self-authorizing, and even the release-acceptance signature cannot be verified without the missing public key. Thus the claimed full clean-room battery must either fail for absent roots or trust values controlled by the tree writer. Specify an authenticated trust-root manifest/distribution chain plus missing/substituted-root regressions. Candidate artifact: sha256:4de5261c7eb1e2828355873076ad79aa518180c664581687595dab1b957652e5."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcaozyg",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcaozyg",
+    "source": "cli-seats/codex_ask"
+  }
+}

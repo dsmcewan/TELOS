@@ -1,0 +1,31 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:55d79525549d937701a4a6503a807d8653a2c7c17dffe7f9271a77af69bcf7c2",
+  "output_plan_artifact_hash": "sha256:55d79525549d937701a4a6503a807d8653a2c7c17dffe7f9271a77af69bcf7c2",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:fb8aa71909de3ebf60b419358fc66a7d4b604bd447d917ce814eb89bd176fdd8",
+    "provenance_key": "anthropic:432c8333-439c-438a-bca2-5182a10afaa1"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:214ca235680f0c2dea0333f3fa0768c0912a51a777b3072be6bf9ad1283913e1",
+    "provenance_key": "openai:codex-cli-mtcaozyg",
+    "bound_hash": "sha256:55d79525549d937701a4a6503a807d8653a2c7c17dffe7f9271a77af69bcf7c2"
+  },
+  "objections": [
+    {
+      "scope": "candidate:E2/local-release-verification",
+      "claim": "The clean-room `pylae verify --full --bundle` contract cannot authenticate the authority chain from the stated tarball + history bundle inputs. E2 requires both `CURRENT_AUTHORITY_CHAIN_ROOT` and `EYE_AUTHORITY_PUBKEY` to remain out-of-tree protected values, but neither value is distributed to operators through an independently authenticated release asset or explicit verification input; the bundle and extracted tree cannot supply them without becoming self-authorizing, and even the release-acceptance signature cannot be verified without the missing public key. Thus the claimed full clean-room battery must either fail for absent roots or trust values controlled by the tree writer. Specify an authenticated trust-root manifest/distribution chain plus missing/substituted-root regressions. Candidate artifact: sha256:4de5261c7eb1e2828355873076ad79aa518180c664581687595dab1b957652e5.",
+      "objection_hash": "sha256:6b9b82a811947a85c130717fede25ffdaa8509c31f1db6962e33c61cc34b6589",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}
