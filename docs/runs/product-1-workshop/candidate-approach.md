@@ -104,12 +104,22 @@ enumerated safe set, so config/alias injection cannot smuggle modes).
 Any invocation outside these grammars ⇒ FAIL closed. STARTUP CAPABILITIES ARE BOUNDED TOO (a static source grammar cannot
 see `NODE_OPTIONS=--inspect=0.0.0.0:9229 pylae …` or an explicit
 `node --inspect`, which opens a listener BEFORE any CLI code runs): the
-supported `pylae` launcher SANITIZES its execution environment before
-Node feature initialization — it re-execs with NODE_OPTIONS/NODE_REPL*
-and every inspector/debug flag stripped (or REFUSES
-`unsupported-launch-options` when inspector activation is detected) —
-and the contract states that only the sanitized launcher is the
-supported entrypoint. SIGUSR1 INSPECTOR ACTIVATION IS DISABLED TOO
+supported entrypoint is a SMALL STATICALLY-COMPILED NATIVE LAUNCHER
+(NOT Node — which cannot scrub NODE_OPTIONS before it reads them — and
+NOT a shell/interpreter outside the closed tool set): the native
+launcher, itself digest-pinned in the trust-root manifest, (i) CLEARS
+NODE_OPTIONS/NODE_REPL*/inspector-debug env before spawning Node, (ii)
+performs the open/hash/fexecve mutation-point-bound identity check on
+the pinned `node` binary (a compiled launcher can call fexecve
+directly — the in-process node:crypto hashing applies to pylae's
+POST-trust operations, not to this pre-Node step), and (iii) execs
+node with `--disable-proto`/inspector-off startup flags; it REFUSES
+`unsupported-launch-options` if inspector activation is detected. Only
+this native launcher is the supported entrypoint — invoking `node
+pylae` directly is unsupported and the install docs state so. This
+resolves the bootstrap cycle: env-scrub happens in native code before
+Node initializes, and node-identity binding uses fexecve from a
+tool-set member, not node:crypto. SIGUSR1 INSPECTOR ACTIVATION IS DISABLED TOO
 (on supported Unix platforms, delivering SIGUSR1 to a running Node
 process activates the inspector and opens a TCP listener even with
 flags stripped and no inspector import — an external same-user process
@@ -1565,7 +1575,16 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   grammars: "Node 18+", "NODE 18+", "Node.js 21+", "NODE_VERSION=18",
   "requires Node v20.11 or later", "Node ≥18") or appear in a reviewed inventory
   `docs/institutional-memory/product/node-version-claims.json` recording
-  {file, line, matched_text, disposition} — dispositions form a CLOSED
+  {file, line, matched_text_b64, disposition} — TWO structural devices
+  give the exact-current inventory a FINITE FIXED POINT (otherwise
+  recording `matched_text: "Node 18+"` creates a new "Node 18+" hit
+  inside the inventory, recursing forever): (a) the scanner
+  STRUCTURALLY EXCLUDES its own inventory file by exact path (the one
+  file definitionally holding the ledger of hits), and (b) the matched
+  text is stored BASE64-ENCODED (`matched_text_b64`) so even an
+  accidental scan of the payload cannot re-match the version regex. A
+  hit re-derived from the payload ⇒ impossible by construction —
+  dispositions form a CLOSED
   set with machine-checked preconditions: `third-party-dependency-
   metadata` (the hit is STRUCTURALLY a dependency entry's compatibility
   claim in PARSED lockfile/metadata — a `packages["node_modules/…"].
@@ -1737,8 +1756,22 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   manifest whose root disagrees with the pinned one ⇒ pin-mismatch
   surfaced, not silently replaced; a tampered bundle ⇒
   digest/attestation mismatch ⇒ refuse before any object is read; a
-  bundle whose head ≠ the embedded commit_sha ⇒ fail identity-drift; clean-room job green from tarball
-  alone in archive mode for the offline subset; tampered tracked payload ⇒ doctor fails
+  bundle whose head ≠ the embedded commit_sha ⇒ fail identity-drift; clean-room ACCEPTANCE HAS TWO EXPLICIT MODES, non-contradictory:
+  AUTHENTICATED clean-room (the mandatory install path) — the job is
+  given the tarball + bundle + the OUT-OF-BAND trust manifest + operator
+  tools, and STEP 1 is the out-of-artifact verification (digest +
+  attestation identity + trust-root) producing the RECEIPT, only THEN
+  does it extract and run the full battery; OFFLINE-SELF-CONSISTENCY
+  clean-room (a separate, explicitly non-authenticity mode with NO
+  manifest/network) — tree/generated-file self-consistency from the
+  tarball alone, reporting "self-consistent, PUBLISHER-UNVERIFIED" and
+  NEVER writing an authenticity receipt, so `pylae doctor` still REFUSES
+  `unverified-install` for real use. 'From the tarball alone' means no
+  live release network, NOT no verification — the authenticated mode's
+  receipt inputs (manifest + operator tools) are out-of-band, not from
+  the release. So there is no contradiction: pre-extraction receipt is
+  required for the AUTHENTICATED path; the offline subset is a labeled
+  non-authenticity diagnostic that grants no install trust; tampered tracked payload ⇒ doctor fails
   tree-mismatch (reconstructed git root tree ≠ tree_sha); tampered generated
   file ⇒ generated-digest mismatch; doctor's offline verdict is labeled
   "self-consistent, publisher-unverified" (no authenticity claim); tampered
