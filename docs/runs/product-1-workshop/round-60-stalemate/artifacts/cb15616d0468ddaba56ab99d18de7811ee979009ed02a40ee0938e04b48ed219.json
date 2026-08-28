@@ -1,0 +1,29 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [
+      {
+        "scope": "approach/oracle-soundness",
+        "claim": "E6's fixed mutation-negative protocol is gameable: an oracle can recognize only the exact deterministic mutated bytes produced by its declared registry kind, return nonzero for that fixture, and return zero for every other invalid state. It will pass all 12 A-B-A' repetitions because those repetitions constrain stochastic/stateful behavior, not fixture overfitting. Thus an unsound oracle can satisfy every stated acceptance test; the mechanism needs independently derived or unpredictably selected semantic violations, or an equivalent reference-validation mechanism."
+      },
+      {
+        "scope": "approach/release-migration",
+        "claim": "The release-integrity invariant is not satisfiable from the frozen fc0fa05 starting state. The frozen finding records an existing lightweight v0.2.0 tag with no assets, while the candidate requires every existing tag to be in exact bijection with an accepted immutable release carrying a valid RELEASE-ACCEPTANCE asset. The only stated v0.2.0 correction changes 4,558 to 4,559; no migration creates and verifies the missing historical release/acceptance asset or otherwise lawfully reconciles that tag. Consequently the integrity sweep must fail before v0.3.0 can publish, leaving blocker 6 unresolved."
+      }
+    ],
+    "dispositions": [],
+    "provenance": {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "codex-cli-mtcf1qfg",
+      "source": "cli-seats/codex_ask"
+    }
+  },
+  "provenance": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "response_id": "codex-cli-mtcf1qfg",
+    "source": "cli-seats/codex_ask"
+  }
+}

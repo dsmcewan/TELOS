@@ -1,0 +1,39 @@
+{
+  "record_type": "daedalus-round",
+  "round": 1,
+  "input_plan_artifact_hash": "sha256:b265a0ed1f55afd2b66a7712aca2bb203264122ec11fc16cd1542165b857aaf8",
+  "output_plan_artifact_hash": "sha256:b265a0ed1f55afd2b66a7712aca2bb203264122ec11fc16cd1542165b857aaf8",
+  "author": {
+    "seat": "claude",
+    "provenance_ref": "sha256:b85d956a9c98bdac249b0d54e15add3029311c26b50e3292ed62480982e5307c",
+    "provenance_key": "anthropic:0d6f8d74-c1b8-4a5f-ac21-d67341f43560"
+  },
+  "reviewer": {
+    "seat": "codex",
+    "provenance_ref": "sha256:cb15616d0468ddaba56ab99d18de7811ee979009ed02a40ee0938e04b48ed219",
+    "provenance_key": "openai:codex-cli-mtcf1qfg",
+    "bound_hash": "sha256:b265a0ed1f55afd2b66a7712aca2bb203264122ec11fc16cd1542165b857aaf8"
+  },
+  "objections": [
+    {
+      "scope": "approach/oracle-soundness",
+      "claim": "E6's fixed mutation-negative protocol is gameable: an oracle can recognize only the exact deterministic mutated bytes produced by its declared registry kind, return nonzero for that fixture, and return zero for every other invalid state. It will pass all 12 A-B-A' repetitions because those repetitions constrain stochastic/stateful behavior, not fixture overfitting. Thus an unsound oracle can satisfy every stated acceptance test; the mechanism needs independently derived or unpredictably selected semantic violations, or an equivalent reference-validation mechanism.",
+      "objection_hash": "sha256:53a17506dd324a7a1e184fa56bf5b734a3705598b5dcb33c6c596342a68199af",
+      "raised_by": {
+        "seat": "codex"
+      }
+    },
+    {
+      "scope": "approach/release-migration",
+      "claim": "The release-integrity invariant is not satisfiable from the frozen fc0fa05 starting state. The frozen finding records an existing lightweight v0.2.0 tag with no assets, while the candidate requires every existing tag to be in exact bijection with an accepted immutable release carrying a valid RELEASE-ACCEPTANCE asset. The only stated v0.2.0 correction changes 4,558 to 4,559; no migration creates and verifies the missing historical release/acceptance asset or otherwise lawfully reconciles that tag. Consequently the integrity sweep must fail before v0.3.0 can publish, leaving blocker 6 unresolved.",
+      "objection_hash": "sha256:8fde7dceb51d65cb408d26cd5200f49666405a599c5eadc2b3c0fe1d7c6412a5",
+      "raised_by": {
+        "seat": "codex"
+      }
+    }
+  ],
+  "resolutions": [],
+  "supersessions": [],
+  "withdrawals": [],
+  "rejected_dispositions": []
+}

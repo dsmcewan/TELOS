@@ -774,7 +774,15 @@ per-file designs are in the approved plan; acceptance criteria here.
   duplicate-enrollment-entry, remove-exception-anchor), (b) APPLICABILITY
   preconditions (which record/target shapes it may be declared for — a
   kind that doesn't match the record's invariant class ⇒ FAIL
-  mutation-inapplicable), and (c) POST-MUTATION VALIDATION: after
+  mutation-inapplicable), (b2) UNPREDICTABLE PARAMETERIZATION: each
+  registry kind is parameterized over its applicability class (WHICH
+  eligible field/site/value is mutated) and the RUNNER draws the
+  parameters per repetition from cryptographic randomness — recorded
+  in the run report for reproducibility — so an oracle cannot pass by
+  recognizing one memorized mutated byte-pattern (fixture overfitting:
+  the K=12 repetitions each use an independent draw, and an oracle
+  keyed to a single fixture fails the other draws ⇒
+  oracle-nondiscriminating), and (c) POST-MUTATION VALIDATION: after
   mutating, the runner re-parses/schema-validates the mutated artifact
   and REQUIRES IT WELL-FORMED — a mutation that breaks parsing ⇒ FAIL
   mutation-invalid (so a subsequent nonzero exit can only come from the
@@ -1364,11 +1372,19 @@ AUTHORIZED; verify-contracts enrollment + deferred-equality checks green.
   release-integrity oracle on main enumerates all releases AND all
   tags and fails unless they are in exact bijection — every existing
   tag bound to an accepted immutable release carrying a valid
-  acceptance ASSET (publishing against an already-existing tag needs
-  no ref creation, so the ruleset alone cannot stop it; the invariant
-  that no unbound tag ever exists — tags are born at publish with
-  their slot occupied — removes that surface, and this oracle proves
-  it continuously).
+  acceptance ASSET — OR listed in the Eye-signed HISTORICAL-TAGS
+  record: a closed, dated, Ed25519-signed enumeration of PRE-CONTRACT
+  tags (v0.1.0, the lightweight v0.2.0 — which exists at fc0fa05 with
+  no assets and no acceptance; fabricating retroactive releases would
+  forge history, so these are recorded as explicitly non-contract
+  historical tags instead) — anything neither bijection-bound nor
+  historically recorded ⇒ sweep FAILS (publishing against an
+  already-existing tag needs no ref creation, so the ruleset alone
+  cannot stop it; the no-unbound-tag invariant plus this closed
+  historical record removes that surface, and the oracle proves it
+  continuously). MIGRATION regression: the sweep at the v0.3.0 head
+  passes with exactly the recorded historical tags; a NEW unbound tag
+  not in the signed record ⇒ sweep fails.
   (e) RELEASE MUTATION IS EYE-LOCAL, THE TAG IS BORN AT PUBLISH, AND
   THE WRITER SET IS CLOSED — no workflow publishes, and no v* tag ever
   exists unpublished (the previous atomic-create design was

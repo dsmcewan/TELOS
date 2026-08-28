@@ -1,0 +1,20 @@
+{
+  "kind": "seat-response",
+  "body": {
+    "plan_revision": "",
+    "objections": [],
+    "dispositions": [],
+    "provenance": {
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "0d6f8d74-c1b8-4a5f-ac21-d67341f43560",
+      "source": "cli-seats/claude_ask"
+    }
+  },
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "0d6f8d74-c1b8-4a5f-ac21-d67341f43560",
+    "source": "cli-seats/claude_ask"
+  }
+}
