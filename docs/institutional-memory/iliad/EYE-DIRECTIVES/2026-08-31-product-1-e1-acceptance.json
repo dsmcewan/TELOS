@@ -1,0 +1,21 @@
+{
+  "record": "Eye ruling — product-1 E1 merge-controller slice per-slice acceptance",
+  "ruling": "ACCEPT E1",
+  "eye": "the operator (Drason McEwan), acting as The Eye",
+  "date": "2026-08-31",
+  "slice": {
+    "branch": "quest/product-1-slice-e1",
+    "accepted_head": "5284407",
+    "acceptance_evidence": "docs/runs/product-1-argo/e1-acceptance.json"
+  },
+  "authorized_plan_ref": "sha256:463bde1c276ddb65b8e0cb0c89ed65a36707a968d75dc744395377f451bd3ba7",
+  "grant": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-s3-grant-amendment-2.json",
+  "trusted_controller_digest": "sha256:6bb0cc5ebe4b7924e3612b02169716eeee9124264530952e4f16f85c047447e7",
+  "scope_notes": [
+    "Acceptance is of the E1 slice as implemented + adversarially tested (50 assertions + closure self-consistency; verify-contracts 313/313; pre-merge scope verification PASS).",
+    "E1 SETTLEMENT (the genesis ceremony + the two enumerated ceremonial merges) is the Eye/operator's genesis-time action: provision TRUSTED_CONTROLLER_DIGEST + LAST_TRANSITION_SEQ=0 + EYE_AUTHORITY_PUBKEY in telos-authority-roots, configure the phased rulesets, sign GENESIS.json (Ed25519), and perform the two ceremonial merges (Phase A @ 9fff127, then E1 @ 5284407).",
+    "Per the standing ruling, the next S3-authorized bounded slice resumes only AFTER E1 settlement, stopping again at its Eye acceptance point.",
+    "All standing restrictions remain in force (per-slice Eye acceptance, SPIKE-E6/SPIKE-PD001 gates, discovery routing, no autonomous acceptance/merge/release/GA/production-readiness)."
+  ],
+  "content_address": "sha256:ad6be2f6aa400d8451bbc07e9b157be214de663befcb7968e21fe4a9ca4f9223"
+}
