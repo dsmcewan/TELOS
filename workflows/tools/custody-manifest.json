@@ -1,0 +1,44 @@
+{
+  "kind": "e1-custody-manifest",
+  "component": "telos-merge-controller",
+  "note": "The custody/enforcement model E1 depends on. GitHub-side ruleset configuration is provisioned by the Eye in the genesis ceremony; the custody oracle (a later slice) drift-sweeps live state against this manifest. E1 code refuses to operate if its own closure digest drifts from the provisioned TRUSTED_CONTROLLER_DIGEST.",
+  "principals": {
+    "merge_controller": "the sole merger; controller-class code executed from a TRUSTED BASE checkout; holds no standing bypass of check-enforcing rulesets",
+    "branch_publisher": "the sole write-credential holder; separate job on a fresh runner; create-only pushes to hestia/fix-* only; no merge operation",
+    "eye": "bootstrap-only actor-restriction bypass for the two enumerated ceremonial merges; REMOVED at steady state"
+  },
+  "rulesets": {
+    "check_enforcing": {
+      "applies_to": "EVERYONE including the Eye and the controller",
+      "controller_bypass": "FORBIDDEN \u2014 the merge-controller must be ABSENT from the bypass list of every check-enforcing ruleset (checks are never bypassed)"
+    },
+    "actor_restriction": {
+      "restricts": "update/push on main",
+      "bypass_actors_phased": {
+        "bootstrap": [
+          "eye",
+          "merge-controller"
+        ],
+        "steady_state": [
+          "merge-controller"
+        ],
+        "transition": "AFTER E1 lands, the Eye is REMOVED from bypass_actors; the Eye thereafter merges THROUGH the controller like every other principal"
+      },
+      "github_actions_principal": "in NEITHER list \u2014 a rogue workflow's write-scoped token is server-refused on any push/merge to main"
+    }
+  },
+  "drift_rules": [
+    "The controller present in any check-enforcing ruleset's bypass list => custody-drift.",
+    "The Eye present in actor_restriction bypass_actors AFTER E1 lands => custody-drift (emergency Eye access is an explicit, visible, recorded admin ruleset change).",
+    "Any principal whose live scopes exceed the recorded bounds => custody-drift.",
+    "TRUSTED_CONTROLLER_DIGEST unset, or the running controller closure != it => controller-untrusted (fail-closed, controller refuses to operate)."
+  ],
+  "trusted_controller_digest": "sha256:6bb0cc5ebe4b7924e3612b02169716eeee9124264530952e4f16f85c047447e7",
+  "controller_closure_files": [
+    "workflows/tools/merge-controller.mjs",
+    "workflows/tools/merge-controller-io.mjs",
+    "workflows/tools/branch-publisher.mjs",
+    "workflows/tools/branch-publisher-io.mjs",
+    "workflows/tools/controller-closure.mjs"
+  ]
+}

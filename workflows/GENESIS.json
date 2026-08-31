@@ -1,0 +1,25 @@
+{
+  "kind": "e1-genesis-record-template",
+  "note": "Provisioning values + ceremony structure for E1's genesis. The Eye SIGNS this record (Ed25519 over its canonical payload) and provisions the environment variables in telos-authority-roots during the genesis ceremony; the two ceremonial merges are performed by the Eye. This file is the code-side template the ceremony consumes; it is NOT itself the Eye's signed record until eye_signature is filled at ceremony time.",
+  "provisioning": {
+    "TRUSTED_CONTROLLER_DIGEST": "sha256:6bb0cc5ebe4b7924e3612b02169716eeee9124264530952e4f16f85c047447e7",
+    "LAST_TRANSITION_SEQ": 0,
+    "custody_manifest": "workflows/tools/custody-manifest.json",
+    "eye_authority_pubkey": "EYE_AUTHORITY_PUBKEY (telos-authority-roots environment; not committed)"
+  },
+  "two_enumerated_ceremonial_merges": [
+    {
+      "seq": 1,
+      "merge": "Phase A governance-bootstrap slice (already Eye-accepted; branch quest/product-1-phase-a-bootstrap @ 9fff127)",
+      "mechanism": "recorded exceptional bootstrap merge under v15 authority (no controller exists yet to enforce it)"
+    },
+    {
+      "seq": 2,
+      "merge": "E1 genesis merge (this slice \u2014 the merge-controller + branch-publisher + closure + custody + CI, branch quest/product-1-slice-e1)",
+      "mechanism": "recorded exceptional bootstrap merge; AFTER it lands, every later merge is controller-enforced and the Eye is removed from actor_restriction bypass_actors"
+    }
+  ],
+  "no_third_manual_merge": "Only these two ceremonial merges exist; a third pre-controller manual merge attempt is refused.",
+  "eye_signature": null,
+  "eye_signature_note": "Ed25519 over canonical(provisioning \u2016 two_enumerated_ceremonial_merges \u2016 genesis binding), filled by the Eye at ceremony time; verified against EYE_AUTHORITY_PUBKEY."
+}

@@ -1,0 +1,50 @@
+{
+  "record": "product-1 — E1 merge-controller slice acceptance evidence",
+  "date": "2026-08-31",
+  "quest": "product-1",
+  "slice": "e1-merge-controller-genesis",
+  "phase": "pre-activation whitelist slice #1 (E1)",
+  "branch": "quest/product-1-slice-e1",
+  "implementation_start_head": "794d4e49288a38236225291451f45a5a6fc61b73",
+  "authorized_plan_ref": "sha256:463bde1c276ddb65b8e0cb0c89ed65a36707a968d75dc744395377f451bd3ba7",
+  "grant": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-s3-grant-amendment-2.json",
+  "eye_directive": "Build full E1 with TDD, run all adversarial regressions, STOP before the genesis merge for Eye acceptance.",
+  "deliverables": {
+    "decision_cores": [
+      "workflows/tools/merge-controller.mjs — pure eligibility engine (GitHub synthetic-merge-commit precedence, producer authentication never by name, self-closure protection, transition-aware digests, Eye-signed phase-aware acceptance, slice-descriptor diff predicate, transition-seq monotonic consumption). Sole decider; no I/O.",
+      "workflows/tools/branch-publisher.mjs — pure publish engine (closed dossier schema + digest, publisher-bound Ed25519 pre-publication attestation w/ TTL+nonce+run-binding, execution-surface rejection, controller-minted reserved-namespace create-only ref)."
+    ],
+    "closure_and_genesis": [
+      "workflows/tools/controller-closure.mjs — computes TRUSTED_CONTROLLER_DIGEST over the closed 5-file controller closure.",
+      "workflows/tools/custody-manifest.json — phased actor-restriction bypass ({Eye,controller} bootstrap -> {controller} steady state), controller absent from check-enforcing bypass, drift rules.",
+      "workflows/GENESIS.json — genesis provisioning template (TRUSTED_CONTROLLER_DIGEST, LAST_TRANSITION_SEQ=0, the two enumerated ceremonial merges, eye_signature placeholder)."
+    ],
+    "io_and_ci": [
+      "workflows/tools/merge-controller-io.mjs + branch-publisher-io.mjs — gh-api/push orchestration; delegate every decision to the tested pure cores; fail-closed on unresolved ground truth.",
+      ".github/workflows/merge-controller.yml — controller runs from TRUSTED BASE (main), self-verifies closure, dispatch-driven, credentialed but never runs proposed bytes.",
+      ".github/workflows/branch-publisher.yml — credentialless agent job (permissions:{}) -> digest-bound artifact -> fresh-runner publisher job (sole credential)."
+    ]
+  },
+  "trusted_controller_digest": "sha256:6bb0cc5ebe4b7924e3612b02169716eeee9124264530952e4f16f85c047447e7",
+  "tests": {
+    "test-merge-controller.mjs": "35 adversarial assertions PASS (controller-untrusted, controller-modified, workflow-modified, transition-payload-mismatch, verifier-untrusted/-modified, stale-merge-evidence incl. head-SHA-masks-merge-commit, producer-untrusted/-mismatch incl. green-same-name-from-untrusted-app-ignored, acceptance-missing/-invalid/-binding-mismatch, slice-not-whitelisted/-surface-violation, whitelist-digest-mismatch, transition-seq-unset/-stale/-skipped, + 2 eligible baselines + Phase-B workflow-transition accepted)",
+    "test-branch-publisher.mjs": "15 adversarial assertions PASS (schema, digest, attestation missing/stale/reused-nonce/foreign-run/tampered-sig, execution-surface-rejected, ref-not-minted/default/reserved-ns/create-only)",
+    "test-controller-closure.mjs": "closure self-consistency: committed TRUSTED_CONTROLLER_DIGEST == recomputed over the 5 closure files (drift guard)",
+    "verify-contracts": "313/313 (E1 additions keep the existing gate green)"
+  },
+  "pre_merge_scope_verification": {
+    "note": "The Eye's condition for the genesis merge — verified over the E1 slice diff vs implementation_start_head 794d4e4.",
+    "package_classification_decision": "NONE (package-roots.json untouched; no AM-43 activation; clotho/memory/DECISIONS untouched)",
+    "unauthorized_phase_b_implementation": "NONE (no cli/, no connectors/meta-ads-mcp/ classification)",
+    "authority_pivot": "NONE (CURRENT-AUTHORITY.json untouched)",
+    "scope": "PASS — every changed path within {workflows/**, .github/workflows/{merge-controller,branch-publisher}.yml}",
+    "changed_paths": 12
+  },
+  "honest_limits": [
+    "The genesis CEREMONY is the Eye/operator's genesis-time action, per the plan ('the Eye must perform the two enumerated ceremonial merges'): provisioning TRUSTED_CONTROLLER_DIGEST + LAST_TRANSITION_SEQ=0 + EYE_AUTHORITY_PUBKEY in the telos-authority-roots environment, configuring the phased rulesets (bootstrap {Eye,controller} -> steady {controller}), signing GENESIS.json (Ed25519), and performing the two enumerated ceremonial merges (Phase A @ 9fff127, then this E1 slice).",
+    "The gh-api I/O layers + workflow YAML are the LIVE-WIRING validated by the genesis ceremony + real GitHub; they cannot be exercised in the offline unit suite. They are FAIL-CLOSED BY CONSTRUCTION: every decision is delegated to the tested pure cores, which refuse on any unresolved ground-truth field, so no merge/push can occur on incomplete evidence.",
+    "workflows/hestia.js --produce-dossier integration (the agents' credentialless dossier production) is genesis-wired; hestia.js is not modified by this slice."
+  ],
+  "status": "IMPLEMENTED + adversarially tested; PENDING per-slice Eye acceptance; NOT MERGED (Eye chose build-full-E1-stop-before-merge). The genesis merge (Phase A + E1) awaits the Eye's explicit go + genesis ceremony.",
+  "content_address": "sha256:e5858786da6e572393f3ee2087f5a2743e2f746abbdbfc846ac584c418f13eac"
+}

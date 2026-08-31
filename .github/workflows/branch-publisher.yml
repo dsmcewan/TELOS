@@ -1,0 +1,56 @@
+# E1 — the deterministic branch publisher workflow.
+#
+# The SOLE holder of the write credential. Fix agents run in a SEPARATE JOB on a fresh
+# runner and produce a digest-bound patch dossier ARTIFACT (they hold NO repository
+# credential). The publisher job — on its own fresh runner where no agent byte has ever
+# executed — downloads that artifact, re-verifies its digest + schema, verifies the
+# publisher-bound pre-publication attestation, and pushes CREATE-ONLY to hestia/fix-*.
+# Its surface contains NO merge operation.
+name: TELOS branch publisher
+on:
+  workflow_dispatch:
+    inputs:
+      hestia_run_id:
+        description: "The Hestia run id this publication is bound to"
+        required: true
+
+jobs:
+  # STAGE 1 — agents produce validated patch data. CREDENTIALLESS: a zero-scope token,
+  # so proposed bytes that execute here can reach neither the merge endpoint nor secrets.
+  produce-patch:
+    runs-on: ubuntu-latest
+    permissions: {}          # zero scopes — no GITHUB_TOKEN capability at all
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22.14.0" }
+      - name: Produce + digest the patch dossier
+        run: node workflows/hestia.js --produce-dossier --run-id "${{ inputs.hestia_run_id }}" --out patch-dossier.json
+      - name: Upload dossier artifact (digest-bound)
+        uses: actions/upload-artifact@v4
+        with: { name: patch-dossier, path: patch-dossier.json }
+
+  # STAGE 2 — the publisher, fresh runner, sole credential holder. No shared substrate
+  # with the agents' job: connected ONLY by the digest-bound artifact handoff.
+  publish:
+    needs: produce-patch
+    runs-on: ubuntu-latest
+    environment: telos-authority-roots     # holds the publisher App credential + EYE_AUTHORITY_PUBKEY
+    permissions:
+      contents: write        # create-only pushes to hestia/fix-* (never a protected ref)
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main, persist-credentials: false }   # controller-class code from the trusted base
+      - uses: actions/setup-node@v4
+        with: { node-version: "22.14.0" }
+      - name: Download dossier artifact
+        uses: actions/download-artifact@v4
+        with: { name: patch-dossier }
+      - name: Verify attestation + digest + schema, then create-only push
+        env:
+          GH_TOKEN: ${{ secrets.PUBLISHER_APP_TOKEN }}
+          EYE_AUTHORITY_PUBKEY: ${{ secrets.EYE_AUTHORITY_PUBKEY }}
+          HESTIA_RUN_ID: ${{ inputs.hestia_run_id }}
+          PUBLISHER_ATTESTATION: ${{ secrets.PUBLISHER_ATTESTATION }}
+        run: node workflows/tools/branch-publisher-io.mjs patch-dossier.json

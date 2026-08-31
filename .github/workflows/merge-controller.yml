@@ -1,0 +1,65 @@
+# E1 — the deterministic pre-merge merge-controller workflow.
+#
+# THE SOLE MERGER. This workflow runs the controller FROM THE TRUSTED BASE (main)
+# checkout — NEVER the PR head — so a PR cannot alter the code that judges it. The
+# controller self-verifies its closure digest against the protected
+# TRUSTED_CONTROLLER_DIGEST, resolves ground truth from gh api at the mutation point,
+# and merges only on a fail-closed `eligible` verdict from merge-controller.mjs.
+#
+# Trigger is a manual/Eye dispatch (the Eye's merge request), NOT the PR head — the
+# controller is never driven by proposed bytes. It is dispatched per-PR and re-derives
+# eligibility immediately before each merge (sequential, never batched).
+name: TELOS merge controller
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to evaluate + (if eligible) merge"
+        required: true
+      dossier_head_sha:
+        description: "The exact accepted head SHA (from the Eye-signed acceptance)"
+        required: true
+
+# The controller job needs read + merge capability but NEVER runs proposed bytes.
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+  actions: read
+
+jobs:
+  control-merge:
+    runs-on: ubuntu-latest
+    environment: telos-authority-roots   # holds TRUSTED_CONTROLLER_DIGEST, EYE_AUTHORITY_PUBKEY, LAST_TRANSITION_SEQ
+    steps:
+      # Checkout the TRUSTED BASE (main) — the controller code that judges the PR is
+      # the base's code, never the PR head's.
+      - name: Checkout trusted base (main)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.14.0"
+      # Self-closure verification: running controller closure must equal the provisioned
+      # TRUSTED_CONTROLLER_DIGEST, else controller-untrusted (exit 2), no merge.
+      - name: Verify controller closure digest
+        env:
+          TRUSTED_CONTROLLER_DIGEST: ${{ vars.TRUSTED_CONTROLLER_DIGEST }}
+        run: |
+          RUNNING=$(node workflows/tools/controller-closure.mjs | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).trusted_controller_digest))")
+          if [ "$RUNNING" != "$TRUSTED_CONTROLLER_DIGEST" ]; then
+            echo "controller-untrusted: running=$RUNNING trusted=$TRUSTED_CONTROLLER_DIGEST"; exit 2
+          fi
+      # Resolve ground truth (gh api) + evaluate + merge on eligible. The gh-api I/O
+      # layer (merge-controller-io.mjs) populates the ground truth the pure core judges.
+      - name: Evaluate eligibility + merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EYE_AUTHORITY_PUBKEY: ${{ secrets.EYE_AUTHORITY_PUBKEY }}
+          LAST_TRANSITION_SEQ: ${{ vars.LAST_TRANSITION_SEQ }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          DOSSIER_HEAD_SHA: ${{ inputs.dossier_head_sha }}
+        run: node workflows/tools/merge-controller-io.mjs
