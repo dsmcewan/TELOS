@@ -1,0 +1,29 @@
+{
+  "record": "product-1 E1 genesis ceremony — FAIL-CLOSED STOP (missing non-delegable prerequisites)",
+  "date": "2026-08-31",
+  "authority": "Eye directive 2026-08-31 to perform the complete genesis ceremony, failing closed on any unavailable credential/permission/signing/ground-truth without substituting or weakening a control.",
+  "ground_truth_verified": {
+    "phase_a_head": "9fff1275b7444d7bd208e53664c5adb39867466d (exists; accepted Phase A slice)",
+    "e1_head": "5284407 (exists; accepted E1 slice)",
+    "trusted_controller_digest": "sha256:6bb0cc5ebe4b7924e3612b02169716eeee9124264530952e4f16f85c047447e7 (recomputed self-consistent)",
+    "gh_token_scopes": "gist, read:org, repo, workflow (owner dsmcewan) — repo/ruleset reads confirmed"
+  },
+  "hard_stop": {
+    "control": "EYE_AUTHORITY Ed25519 signing key + Eye signature over GENESIS.json",
+    "finding": "No EYE_AUTHORITY private key exists locally; the only local secrets are HMAC council-signer keys (TELOS_SECRET_*), which are NOT the Eye authority key. GENESIS.json cannot be signed, and the ruleset/environment cannot provision EYE_AUTHORITY_PUBKEY, without it.",
+    "why_i_will_not_substitute": "Generating and holding an Eye authority keypair myself would make a MODEL the cryptographic bearer of the Eye's authority — precisely the non-delegable-human-authority invariant E1 exists to enforce (AUTHENTICATED EYE ACCEPTANCE FOR EVERY MERGE). That is substituting/weakening the control, which the directive forbids and the trust model prohibits."
+  },
+  "additional_human_prerequisites": [
+    "The merge-controller and branch-publisher GitHub Apps (least-privilege installations) do not yet exist; the custody manifest and the actor-restriction ruleset's bypass_actors reference the merge-controller principal, and the publisher needs its own App credential. Creating/installing GitHub Apps and minting their tokens is an account/owner admin action I cannot perform.",
+    "The telos-authority-roots GitHub environment + its variables/secrets (TRUSTED_CONTROLLER_DIGEST, LAST_TRANSITION_SEQ=0, EYE_AUTHORITY_PUBKEY, PUBLISHER_APP_TOKEN) and the phased actor-restriction ruleset (bootstrap bypass {Eye, merge-controller-App}; controller absent from every check-enforcing bypass) depend on (a) the Eye key and (b) the Apps existing first."
+  ],
+  "irreversible_actions_NOT_taken": [
+    "No ruleset/environment mutation.",
+    "No provisioning.",
+    "No Phase A merge.",
+    "No E1 genesis merge.",
+    "No key generated."
+  ],
+  "single_root_human_action": "The Eye generates the EYE_AUTHORITY Ed25519 keypair on a trusted device, KEEPS the private key (never shares it with the model), signs GENESIS.json with it, and provides only the PUBLIC key as EYE_AUTHORITY_PUBKEY. All other steps unblock from there.",
+  "content_address": "sha256:6452dfae456095f778257c00b953ca789967d5d99ff5b68be797c7b8d60b9233"
+}
