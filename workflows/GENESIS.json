@@ -1,25 +1,44 @@
 {
-  "kind": "e1-genesis-record-template",
-  "note": "Provisioning values + ceremony structure for E1's genesis. The Eye SIGNS this record (Ed25519 over its canonical payload) and provisions the environment variables in telos-authority-roots during the genesis ceremony; the two ceremonial merges are performed by the Eye. This file is the code-side template the ceremony consumes; it is NOT itself the Eye's signed record until eye_signature is filled at ceremony time.",
-  "provisioning": {
-    "TRUSTED_CONTROLLER_DIGEST": "sha256:6bb0cc5ebe4b7924e3612b02169716eeee9124264530952e4f16f85c047447e7",
-    "LAST_TRANSITION_SEQ": 0,
-    "custody_manifest": "workflows/tools/custody-manifest.json",
-    "eye_authority_pubkey": "EYE_AUTHORITY_PUBKEY (telos-authority-roots environment; not committed)"
-  },
-  "two_enumerated_ceremonial_merges": [
-    {
-      "seq": 1,
-      "merge": "Phase A governance-bootstrap slice (already Eye-accepted; branch quest/product-1-phase-a-bootstrap @ 9fff127)",
-      "mechanism": "recorded exceptional bootstrap merge under v15 authority (no controller exists yet to enforce it)"
+  "kind": "e1-genesis-record",
+  "note": "The Eye signs canonicalize(signed_payload) — byte-identical to workflows/genesis-payload.canonical — with the EYE_AUTHORITY Ed25519 key (private key NEVER leaves the Eye; never requested/read/generated/stored/handled by the model). The ceremony verifies eye_signature_b64 against eye_authority_pubkey_pem over those exact bytes before any provisioning or merge.",
+  "signed_payload": {
+    "kind": "e1-genesis-record",
+    "quest": "product-1",
+    "authorized_plan_ref": "sha256:463bde1c276ddb65b8e0cb0c89ed65a36707a968d75dc744395377f451bd3ba7",
+    "grant": "docs/institutional-memory/iliad/EYE-DIRECTIVES/2026-08-28-product-1-s3-grant-amendment-2.json",
+    "provisioning": {
+      "TRUSTED_CONTROLLER_DIGEST": "sha256:6bb0cc5ebe4b7924e3612b02169716eeee9124264530952e4f16f85c047447e7",
+      "LAST_TRANSITION_SEQ": 0
     },
-    {
-      "seq": 2,
-      "merge": "E1 genesis merge (this slice \u2014 the merge-controller + branch-publisher + closure + custody + CI, branch quest/product-1-slice-e1)",
-      "mechanism": "recorded exceptional bootstrap merge; AFTER it lands, every later merge is controller-enforced and the Eye is removed from actor_restriction bypass_actors"
-    }
-  ],
-  "no_third_manual_merge": "Only these two ceremonial merges exist; a third pre-controller manual merge attempt is refused.",
-  "eye_signature": null,
-  "eye_signature_note": "Ed25519 over canonical(provisioning \u2016 two_enumerated_ceremonial_merges \u2016 genesis binding), filled by the Eye at ceremony time; verified against EYE_AUTHORITY_PUBKEY."
+    "custody_manifest_sha256": "sha256:a7a94a9742d3fc06c37d419d5410210cedcb6aebf3a328dcf156c39232cff5f9",
+    "controller_closure_files": [
+      "workflows/tools/merge-controller.mjs",
+      "workflows/tools/merge-controller-io.mjs",
+      "workflows/tools/branch-publisher.mjs",
+      "workflows/tools/branch-publisher-io.mjs",
+      "workflows/tools/controller-closure.mjs"
+    ],
+    "two_enumerated_ceremonial_merges": [
+      {
+        "seq": 1,
+        "slice": "phase-a-governance-bootstrap",
+        "head": "9fff1275b7444d7bd208e53664c5adb39867466d"
+      },
+      {
+        "seq": 2,
+        "slice": "e1-merge-controller-genesis",
+        "head": "528440798f8e9ee69b728b75ded48ac3c63a69fd"
+      }
+    ],
+    "no_third_manual_merge": true
+  },
+  "signed_payload_canonical_sha256": "sha256:aa954db20c78910c278fa235045305f0203a8b1bfd50c7739a92689b79fb775a",
+  "signed_payload_canonical_file": "workflows/genesis-payload.canonical",
+  "key": {
+    "algorithm": "Ed25519",
+    "public_key_format": "SPKI PEM (provisioned as EYE_AUTHORITY_PUBKEY)",
+    "signature_format": "raw Ed25519 detached signature over the canonical bytes, base64 single-line"
+  },
+  "eye_authority_pubkey_pem": null,
+  "eye_signature_b64": null
 }

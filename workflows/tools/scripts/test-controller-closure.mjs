@@ -22,8 +22,11 @@ const genesis = JSON.parse(readFileSync(path.join(ROOT, "workflows/GENESIS.json"
 
 assert.equal(custody.trusted_controller_digest, digest,
   `custody-manifest TRUSTED_CONTROLLER_DIGEST (${custody.trusted_controller_digest}) != recomputed (${digest})`);
-assert.equal(genesis.provisioning.TRUSTED_CONTROLLER_DIGEST, digest,
-  `GENESIS TRUSTED_CONTROLLER_DIGEST (${genesis.provisioning.TRUSTED_CONTROLLER_DIGEST}) != recomputed (${digest})`);
+// GENESIS.json carries the provisioned digest inside the Eye-signed payload.
+const genesisDigest = genesis.signed_payload && genesis.signed_payload.provisioning
+  && genesis.signed_payload.provisioning.TRUSTED_CONTROLLER_DIGEST;
+assert.equal(genesisDigest, digest,
+  `GENESIS signed_payload TRUSTED_CONTROLLER_DIGEST (${genesisDigest}) != recomputed (${digest})`);
 
 // The custody manifest's controller_closure_files must name exactly the closure set
 // (workflows/tools/-prefixed), one-to-one with CONTROLLER_CLOSURE_FILES.
