@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
 
       - name: Automated Claude review
-        uses: anthropics/claude-code-action@70fec183852c4f82f3f1969faed7dd60c5149ca7 # v1.0.207
+        uses: anthropics/claude-code-action@833fb0f8c9f6686b33d963a8bae0a94f4936ab2a # v1.0.211
         with:
           # Authenticate with the Claude subscription (Max), NOT metered API credits.
           # Mint with `claude setup-token` and store as the CLAUDE_CODE_OAUTH_TOKEN repo secret.
