@@ -473,11 +473,12 @@
       "purpose": "award-standard TELOS development-story front-end (Loom on Trial)",
       "claims": [
         {
-          "statement": "the implemented React/Vite product exposes runnable build, unit-test, and evidence-verification entry points",
+          "statement": "the implemented native DOM/WebGL product exposes zero-dependency build, unit-test, browser-test, and evidence-verification entry points",
           "grade": "executable",
           "evidence": [
             "narcissus/flagship/package.json",
-            "narcissus/flagship/src/App.tsx",
+            "narcissus/flagship/native/app.js",
+            "narcissus/flagship/native/renderer.js",
             "narcissus/flagship/scripts/verify-evidence.mjs"
           ]
         }

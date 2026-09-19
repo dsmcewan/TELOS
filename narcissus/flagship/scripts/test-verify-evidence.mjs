@@ -20,7 +20,7 @@ const VERIFIER = path.join(HERE, "verify-evidence.mjs");
 function createFixture(entries) {
   const root = mkdtempSync(path.join(os.tmpdir(), "verify-evidence-"));
   const scripts = path.join(root, "narcissus", "flagship", "scripts");
-  const src = path.join(root, "narcissus", "flagship", "src");
+  const src = path.join(root, "narcissus", "flagship", "native");
   mkdirSync(scripts, { recursive: true });
   mkdirSync(src, { recursive: true });
   copyFileSync(VERIFIER, path.join(scripts, "verify-evidence.mjs"));
@@ -53,7 +53,7 @@ test("verifies a valid path against its current Git index blob", (t) => {
     encoding: "utf8",
   }).trim();
   writeFileSync(
-    path.join(root, "narcissus", "flagship", "src", "evidence-ledger.json"),
+    path.join(root, "narcissus", "flagship", "native", "evidence-ledger.json"),
     `${JSON.stringify(
       {
         entries: [
@@ -83,7 +83,7 @@ test("rejects a malicious source_path without invoking a shell", (t) => {
   const payload =
     `$(node -e 'require("fs").writeFileSync(${JSON.stringify(marker)},"owned")')`;
   writeFileSync(
-    path.join(root, "narcissus", "flagship", "src", "evidence-ledger.json"),
+    path.join(root, "narcissus", "flagship", "native", "evidence-ledger.json"),
     `${JSON.stringify(
       {
         entries: [
@@ -124,7 +124,7 @@ test("rejects a fabricated quote even when the source blob pin is current", (t) 
     encoding: "utf8",
   }).trim();
   writeFileSync(
-    path.join(root, "narcissus", "flagship", "src", "evidence-ledger.json"),
+    path.join(root, "narcissus", "flagship", "native", "evidence-ledger.json"),
     `${JSON.stringify(
       {
         entries: [
@@ -159,7 +159,7 @@ test("rejects an entry that omits required evidence fields", (t) => {
     encoding: "utf8",
   }).trim();
   writeFileSync(
-    path.join(root, "narcissus", "flagship", "src", "evidence-ledger.json"),
+    path.join(root, "narcissus", "flagship", "native", "evidence-ledger.json"),
     `${JSON.stringify({ entries: [{ source_path: recordPath, blob_sha: blobSha }] }, null, 2)}\n`,
   );
 

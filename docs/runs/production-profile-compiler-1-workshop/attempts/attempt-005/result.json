@@ -1,0 +1,475 @@
+{
+  "kind": "evidence",
+  "component": "daedalus",
+  "id": "production-profile-compiler-1-workshop",
+  "contract": "production-profile-compiler-daedalus-workshop/1",
+  "mode": "live",
+  "selected_attempt": "attempt-005",
+  "state": "conflict",
+  "reason": "verification-conflict",
+  "terminal": "needs-eye",
+  "authorization_granted": false,
+  "implementation_started": false,
+  "inputs": {
+    "candidate": {
+      "path": "docs/superpowers/plans/2026-07-20-deterministic-production-profile-compiler.md",
+      "raw_sha256": "sha256:67de2ff93499b036a35964014a5222a504ca57c9c1f9fed6fcb9fa4f9b6b210b"
+    },
+    "design": {
+      "path": "docs/superpowers/specs/2026-07-20-deterministic-production-profile-compiler-design.md",
+      "raw_sha256": "sha256:1a0d7b96fb4d4a35313355846a205bfd7c0f6c9fa093c957ba186f5b1bac0ba6"
+    },
+    "preReview": {
+      "path": "docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-20-production-profile-compiler-1.json",
+      "raw_sha256": "sha256:7b96f60ab9280c8c8173723f30892f4104583f5c9db17c44877bc724507ab634"
+    },
+    "methodology": {
+      "path": "docs/daedalus-methodology.md",
+      "raw_sha256": "sha256:9288e17e84b202e48c4dbfad13904abc9317bae22b82aeefa01ee6b837a0c406"
+    },
+    "comprehension": {
+      "path": "docs/runs/production-profile-compiler-1-workshop/reader-validation-artifact.json",
+      "raw_sha256": "sha256:d5e896f6be4cbcc92648f78a3e3adade9a70e52edd20f531c3be525b0ff693d3"
+    }
+  },
+  "candidate_plan": {
+    "raw_sha256": "sha256:67de2ff93499b036a35964014a5222a504ca57c9c1f9fed6fcb9fa4f9b6b210b",
+    "path": "docs/runs/production-profile-compiler-1-workshop/candidate-plan.md",
+    "attempt_path": "docs/runs/production-profile-compiler-1-workshop/attempts/attempt-005/candidate-plan.md"
+  },
+  "frame_ref": "sha256:c80ce4aa8d973405a57fe6c39928587a3da7d613074328de35a282948c47cf5b",
+  "integrated_candidate": {
+    "artifact_ref": "sha256:c723f0d7c2618f2283cd8575a474eeefac60ad564b1d501db3d23fb3c8f5d751",
+    "raw_sha256": "sha256:8429574c23a456d923d30d1a31ba38ae622a94be5db0fb5ceb675572a2ba8ec1",
+    "attempt_path": "docs/runs/production-profile-compiler-1-workshop/attempts/attempt-005/integrated-candidate.md"
+  },
+  "matured_plan": null,
+  "matured_plan_changed": true,
+  "sources": [
+    {
+      "role": "constraints",
+      "seat": "codex",
+      "artifact_ref": "sha256:7218263ec3dbb7675acbd3e2a4ddf2f6a1d44cb31cd1e72c4fac378a4cf4e71f",
+      "obligations": [
+        "PPC-W01",
+        "PPC-W02",
+        "PPC-W03",
+        "PPC-W04",
+        "PPC-W05",
+        "PPC-W06",
+        "PPC-W07",
+        "PPC-W08",
+        "PPC-W09",
+        "PPC-W10",
+        "PPC-W11",
+        "PPC-W12",
+        "PPC-W13",
+        "PPC-W14",
+        "PPC-W15",
+        "PPC-W16",
+        "PPC-W17",
+        "PPC-W18",
+        "PPC-W19",
+        "PPC-W20",
+        "PPC-W21",
+        "PPC-W22",
+        "PPC-W23",
+        "PPC-W24",
+        "PPC-W25",
+        "PPC-W26",
+        "PPC-W27",
+        "PPC-W28",
+        "PPC-W29"
+      ],
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E3j6GTvcpjPLuWKyhUAorsaw8Fsvz",
+        "source": "ai-peer-mcp/codex_ask",
+        "response_artifact_ref": "sha256:b08ae3733d9d026ed2de6da7707ab5842b2f55e9631ed6f08f5f862d72f4487c"
+      },
+      "provenance_key": "openai:chatcmpl-E3j6GTvcpjPLuWKyhUAorsaw8Fsvz"
+    },
+    {
+      "role": "implementation",
+      "seat": "claude",
+      "artifact_ref": "sha256:61273b27a9b9881c5beedf3581205d7ef358d547fbc2a389d1a62ecad8ab9e35",
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011CdDTENJXK5ENU8J7JDrjk",
+        "source": "ai-peer-mcp/claude_ask",
+        "response_artifact_ref": "sha256:5be703a7e3188409ff6919168a925ef01365be6aad0899cc58a7d3cd474cc813"
+      },
+      "provenance_key": "anthropic:msg_011CdDTENJXK5ENU8J7JDrjk"
+    }
+  ],
+  "integration": {
+    "candidate_ref": "sha256:c723f0d7c2618f2283cd8575a474eeefac60ad564b1d501db3d23fb3c8f5d751",
+    "descends_from": [
+      "sha256:7218263ec3dbb7675acbd3e2a4ddf2f6a1d44cb31cd1e72c4fac378a4cf4e71f",
+      "sha256:61273b27a9b9881c5beedf3581205d7ef358d547fbc2a389d1a62ecad8ab9e35"
+    ],
+    "obligation_matrix": [
+      {
+        "obligation_id": "PPC-W01",
+        "invariant": "Implementation starts only after a real TELOS authorization whose `authorizes_plan` equals the raw hash of the exact matured plan recomputed at invocation; convergence, design approval, comprehension labels, filenames, and active authz-008 grant no authority.",
+        "mechanism": "Execution Precondition 4 and 9: zero-dependency `docs/runs/production-profile-compiler-authorization-1/verify-committed.mjs` re-reads committed packets/keys, verifies signature/provenance/gate chain, recomputes the raw SHA-256 of the plan path at invocation, and requires exact equality to `authorizes_plan`; ref-string comparison is forbidden. Every task's Step 1 re-invokes it before any red test, code edit, or Argo event.",
+        "task": "Execution Preconditions 4, 9, 10; committed verifier under docs/runs/production-profile-compiler-authorization-1/",
+        "negative_test": "`verify-committed.mjs --self-test` copies the packet set to a temporary directory, changes one plan byte, and proves rejection with exit 2 before any injected task callback, code-edit marker, or slice-event marker is touched.",
+        "exit_criterion": "Both `--self-test` and the real `--plan/--summary` invocation exit 0 on the committed clean commit; a one-byte plan mutation makes the internal replay exit 2 with zero callback/edit/event markers created."
+      },
+      {
+        "obligation_id": "PPC-W02",
+        "invariant": "Activation is the exact four-condition predicate; every activated entry point stores and compiles a complete controller profile before any model/generator/workshop/council/team call; all-false legacy behavior remains inactive.",
+        "mechanism": "Task 1 `activationFor()` frozen predicate; Task 8 `prepareProductionProposal()` invoked at the first line of `buildProject()` before `detectConventions()`/`decompose()`/any seat call, gated through the Task 1 lifecycle function to durable `COMPILED`; all-false path is exactly `LEGACY_INACTIVE` with `production_profile_evaluated: false`.",
+        "task": "Task 1 Steps 2/4; Task 8 Steps 2, 5",
+        "negative_test": "Task 8 Step 2 wraps every external callback with a counter, exercises each activation trigger with missing/incomplete/invalid profile, asserts the exact typed blocker and `{ seat: 0, workshop: 0, parallel: 0, team: 0 }`; injects a model callback between every pair of preparation operations; the all-false control still calls the planning seat with legacy bytes unchanged.",
+        "exit_criterion": "All zero-model-call activation matrix assertions pass in test-production-lifecycle.mjs/test-build-orchestrator.mjs; legacy autonomous decomposition remains byte-identical and reports `production_profile_evaluated: false`."
+      },
+      {
+        "obligation_id": "PPC-W03",
+        "invariant": "Production input is a closed controller-owned projection with all frozen enum, range, set, cross-field, path, exclusivity, and secret-rejection rules; no unknown, waiver, n/a, accepted-unknown, model resolution, or host-derived default exists.",
+        "mechanism": "Task 1 `profile-schema.mjs` with literal closed-key tables, exclusive-none semantics, cross-field rules, secret-shaped key/value rejection, NFC enforcement, and no host defaults; the revised `.telos/` evidence-path validity clause names the exact accepting validator branch with paired fixtures; the projection contains only `build_context`, `production_profile`, `production_evidence`.",
+        "task": "Task 1 Steps 2, 4 (as revised for `.telos/` evidence-path fixtures)",
+        "negative_test": "Negative table covers one unknown skip field, a contradictory `none`, and secret-shaped values (`token`, `secret`, `password`, credential material, account IDs, personal-data samples); each fails schema/contradiction validation with the exact finding shape and no compiled artifact is produced.",
+        "exit_criterion": "test-production-profile.mjs passes every closed-schema, cross-field, secret-rejection, and `.telos/`-path fixture; reordered keys/sets produce the identical canonical input and `production_input_ref`."
+      },
+      {
+        "obligation_id": "PPC-W04",
+        "invariant": "Equal canonical input, facts, policy bytes, registry bytes, and evidence configuration produce byte-identical output on Node 18 and 20 regardless of key order, set order, traversal order, locale, line endings, path separator, clock, or absolute root.",
+        "mechanism": "Shared `canonical.mjs` comparator/hash (no `localeCompare`), code-unit traversal, CRLF normalization, no timestamp/random/ambient values in the pure `compiler.mjs`, POSIX semantic paths, and the binding Node 18/20 CI matrix with local Node marked supplementary.",
+        "task": "Tasks 1–3 (canonical helpers, scanner, pure compiler); Task 13 Step 3 CI matrix; Task 14 Step 7 PPC-A02 row",
+        "negative_test": "Task 2/3 fixtures compile semantically equal inputs under reordered keys, reordered sets, and shuffled directory creation order across both binding Node versions with varied locale/root; determinism constraint excludes clock/locale so an injected locale- or clock-derived field changes bytes and fails the byte-identity assertion.",
+        "exit_criterion": "Repeated compiler runs are byte-identical locally and on both Node 18 and Node 20 CI legs; the determinism goldens in test-production-profile.mjs pass on every matrix leg."
+      },
+      {
+        "obligation_id": "PPC-W05",
+        "invariant": "Trust-boundary JSON, stable reads, containment, and atomic installation are fail-closed; writes use same-filesystem temp files, file fsync, atomic rename, and parent-directory durability; resume trusts only complete re-read bytes.",
+        "mechanism": "Task 1 `json.mjs` (full-grammar tokenizer rejecting duplicates/proto keys/surrogates/non-safe numbers/trailing content) and `artifact-io.mjs` (realpath containment, fstat identity comparison before/after bounded reads, preflight directory-fsync capability check, 0o600 temp + fsync + atomic rename + parent fsync); named `.telos/` exemption readers only.",
+        "task": "Task 1 Steps 4–5; Task 10 frontier/settlement atomic writes; Tasks 11/12 two-phase commit-marker protocols",
+        "negative_test": "Inject faults at preflight, temp-file fsync, rename, and parent fsync boundaries and race a required read: before rename the sentinel is byte-identical; after crash only complete old or new bytes exist; unsupported durability primitives and changed-during-read files return cannot-run, never best-effort success.",
+        "exit_criterion": "All fault-injection and race fixtures in test-production-profile.mjs pass; no failure path replaces a previously valid output; restart re-reads and hash-verifies before use."
+      },
+      {
+        "obligation_id": "PPC-W06",
+        "invariant": "Repository scanning is deterministic, network-free, bounded, detector-owned, and semantic; code-unit traversal, frozen skip lists, registered untracked outputs scanned, no partial facts after a safety failure.",
+        "mechanism": "Task 2 `repo-facts.mjs`: frozen SCAN_LIMITS/extensions/skip directories, policy-owned detector table validated before scanning (Task 3 step order), lstat + physical realpath containment, `declaredOutputs` union so untracked registered outputs are scanned, no-partial-facts rule, revised exemption clause naming the exact `.telos/` readers.",
+        "task": "Task 2 Steps 2, 4–5; Task 3 Step 7 order (policy loads before any repository read)",
+        "negative_test": "A registered file behind an escaping symlink and, separately, aggregate-limit excess after an earlier detector match both return cannot-run with no partial fact set and no compiled output; host ignore files cannot suppress a registered detector.",
+        "exit_criterion": "Scanner fixtures pass deterministically across creation order/key order/line endings with zero network access; every safety-failure case emits no facts and no artifact."
+      },
+      {
+        "obligation_id": "PPC-W07",
+        "invariant": "Confirmed observations only union sets, raise ordered floors, or enable capabilities; text matches remain signals; every signal resolution is controller-authored, exact-current, unique, rationale-bearing, and hash-bound; non-ordered contradictions block.",
+        "mechanism": "Task 2 Step 6 explicit rank maps and set-union/false-to-true joins; signal references hash-bound into `production_input_ref`/`profile_ref`; `reconcileProfile` validates exact-current resolution refs and rejects duplicates/stale/fabricated entries; non-monotonic inventories block with PROFILE_CONTRADICTION.",
+        "task": "Task 2 Steps 2, 6",
+        "negative_test": "Attempt to lower declared external egress via an observation (declaration must not fall) and provide a stale/fabricated false-positive resolution (must block with exact STALE_SIGNAL_RESOLUTION finding); unresolved current signals yield CLASSIFICATION_REQUIRED.",
+        "exit_criterion": "Monotonic-join and signal-resolution fixtures in test-production-profile.mjs pass; no fixture path allows an observation or resolution to lower a controller declaration or remove an obligation."
+      },
+      {
+        "obligation_id": "PPC-W08",
+        "invariant": "The built-in policy is fully validated before scanning, contains exactly the 31 IDs and eleven domains, and uses only the frozen operators, projections, tiers, kinds, templates, and required result; every rule has the five-fixture matrix.",
+        "mechanism": "Task 3 `policy-loader.mjs` closed-shape validation with `policy_ref`/`rule_ref` derivation; compiler step 2 loads/validates policy before any repository read (instrumented); EXPECTED_IDS exact-equality assertion; Task 11 Step 2 mechanically complete 31-row fixture matrix with five named fixture kinds per rule.",
+        "task": "Task 3 Steps 2–3, 5; Task 11 Step 2",
+        "negative_test": "Replace one operator with an unknown value: policy loading fails before scanner or any repository read with the sentinel artifact byte-identical. Delete one catalog rule: the deepEqual against EXPECTED_IDS identifies the exact missing ID, not merely a count mismatch.",
+        "exit_criterion": "test-production-policy.mjs passes all loader rejections, all eight operator truth tables, exact 31-ID/eleven-domain equality, and the complete per-rule five-fixture matrix."
+      },
+      {
+        "obligation_id": "PPC-W09",
+        "invariant": "The production registry is closed to exactly eight kinds; parameter schemas, limits, result semantics, environment contract, dispatcher/helpers, and exact implementation source bytes contribute to registry and check identity; the gate re-resolves contract and executable from current bytes.",
+        "mechanism": "Task 6 registry with `parameter_schema_ref`/`source_closure_ref`/`implementation_ref`/`registry_ref` derivations over exact byte hashes of the literal EXECUTION_SOURCE_FILES closure plus entry sources; `result_semantics` (0/1/2 mapping + env contract) inside the preimage; Task 9 gate re-resolves current contracts/executables; Task 7 completes the eight kinds.",
+        "task": "Task 6 Steps 2, 4; Task 7 Step 8 (zero unavailable states remain); Task 9 Step 7",
+        "negative_test": "Replace one registered implementation or exit-status mapper with a passing no-op while retaining kind and parameters: `implementation_ref`/`registry_ref` change, the stored contract is stale, and the old executable cannot authorize or discharge the obligation at the gate or settlement.",
+        "exit_criterion": "test-production-checks.mjs proves exactly eight kinds, identity change on every source/helper/mapper/schema/cap mutation, no identity change on unrelated source, and no stale contract usable at the proposal gate."
+      },
+      {
+        "obligation_id": "PPC-W10",
+        "invariant": "Every triggered obligation declares exactly one evidence tier; required adapter configuration and trust anchors exist before planning; missing operations, keyrings, formats, or targets produce typed blockers and never remove the obligation; reports claim only the tier's bounded predicate.",
+        "mechanism": "Policy rules carry exactly one tier; compiler step 6 validates evidence configuration (runtime manifest via `loadRuntimeManifest`, process keyring) and emits EVIDENCE_ADAPTER_REQUIRED/EVIDENCE_FORMAT_UNSUPPORTED typed blockers routed hold/requires_human; tier labels preserved through reports, docs, and the claim vocabulary's tier binding.",
+        "task": "Task 3 Steps 5, 7; Task 6 Steps 5–6; Task 7 Step 3; Task 9 finding-routing; Task 13 docs",
+        "negative_test": "Trigger one obligation of each tier while removing its required runtime operation, structural JSON support, or process keyring: each obligation remains in the expected set and compilation blocks with the corresponding adapter/format finding; no path drops the obligation.",
+        "exit_criterion": "Missing-adapter/unsupported-format fixtures pass per tier with the obligation still expected; tier-label assertions hold in check results, reports, and reference documentation (PPC-A11/A12 evidence rows)."
+      },
+      {
+        "obligation_id": "PPC-W11",
+        "invariant": "Every production source maps to exactly one version-2 obligation, discharge node, registered contract, and executable; every legacy obligation maps to exactly one reconstructed concern; expected and actual sets are exactly equal.",
+        "mechanism": "Task 9 Step 7 exact source-class reconciliation using sorted arrays with explicit duplicate detection before map construction (no map overwrite can hide duplicates); unmatched legacy obligations now block; exact set equality spans source refs, obligation refs, node IDs, contract refs, executable refs, and test.verifies.",
+        "task": "Task 9 Steps 3, 7; Task 4 obligation dispatch",
+        "negative_test": "Independent fixtures delete, duplicate, add, and cross-bind a production source or obligation, and orphan a legacy concern obligation; every mutation fails reconciliation with a typed protocol finding and `production_profile: \"fail\"`; no inert obligation survives.",
+        "exit_criterion": "All Task 9 Step 3 negative fixtures block the gate; the pass path requires exact bidirectional set equality re-derived from disk."
+      },
+      {
+        "obligation_id": "PPC-W12",
+        "invariant": "Versioning is additive: legacy obligations omit `obligation_version` and retain the exact four-field preimage; obligation-free and lifecycle-free plans retain byte identity; production obligations use only version 2 with source kind production-policy; V1 certificates and checks stay frozen.",
+        "mechanism": "Task 4 explicit legacy/production identity constructors with pinned legacy obligation-ref and obligation-free plan-hash goldens; explicit version 1 is rejected so no second V1 encoding exists; Task 5 pins POLICY_CONTRACT_V1; Task 6 pins both legacy check-kind contract/executable goldens; `deriveExecutableRef` preimage is conditional so legacy refs are byte-identical.",
+        "task": "Task 4 Steps 2, 4–5; Task 5 Step 2; Task 6 Step 2",
+        "negative_test": "Re-run the pinned legacy obligation, plan, check-contract, executable, and V1 certificate goldens after enabling production behavior — any byte/hash change fails; explicit `obligation_version: 1`, unknown versions, and unknown source kinds are rejected.",
+        "exit_criterion": "All pinned goldens (exact sha256 values in the plan text) hold across `npm --prefix merkle-dag test` and build-gate registry tests after every production task lands."
+      },
+      {
+        "obligation_id": "PPC-W13",
+        "invariant": "Full production identity is in `plan_hash`; local projections constrain only affected verification-node lineage; relevant changes alter the local node and global plan; unrelated changes preserve the local node but still invalidate global authorization.",
+        "mechanism": "Task 3 obligation-local profile/evidence projections feed source/check identity; Task 4 lifecycle hashing binds all nine production refs into `plan_hash`; Task 9 Step 2 asserts the local/global identity split; runtime-manifest changes propagate to both local and global identity (Task 7 Step 3).",
+        "task": "Task 3 Step 3 (paired-rule split tests); Task 4 Step 2; Task 9 Step 2",
+        "negative_test": "Mutate one projected profile field (affected node spec/effective hash and plan hash both change) and one unprojected field (that node's local identity is preserved while `profile_ref` and `plan_hash` change); acceptance requires both halves, extended to unrelated rule-body mutations via `policy_ref`.",
+        "exit_criterion": "The two-sided local/global mutation fixtures pass in test-production-policy.mjs and the Task 9 gate tests; PPC-A08 acceptance row derives from these exact tests."
+      },
+      {
+        "obligation_id": "PPC-W14",
+        "invariant": "One pure controller transition table enforces the exact thirteen-state lifecycle; every edge requires the complete state-specific durable ref set; skips, repeats, reversals, post-DONE transitions, direct construction, and stale-state resume fail.",
+        "mechanism": "Task 1 `lifecycle.mjs`: frozen state/transition arrays and pure `transitionProductionLifecycle` with closed advanced/blocked/cannot-run/new-revision-required results; callers re-read artifacts and pass independently recomputed `current` refs (stored ref-string equality insufficient); Tasks 8–10 consume it as the sole sequencing authority.",
+        "task": "Task 1 Steps 2, 4; consumed in Tasks 8 Step 5, 9 Steps 5–9, 10 Step 6",
+        "negative_test": "For every edge, delete or mutate one required durable ref and attempt both that edge and a two-state skip: neither advances and resume returns terminal cannot-run; semantic ref disagreement returns `new-revision-required` rather than reusing the stale authorization; direct construction of any non-initial state is rejected.",
+        "exit_criterion": "The table-driven per-edge lifecycle test passes for the full eleven-transition path plus LEGACY_INACTIVE isolation, with every skip/reverse/repeat/unknown/post-DONE case rejected."
+      },
+      {
+        "obligation_id": "PPC-W15",
+        "invariant": "Proposal identity binds canonical production input and the complete closed build intent; reconstruction after a real process restart uses signed proposal state and content-addressed disk artifacts only; no caller dossier, mutable prepared object, stored state label, or replacement key is accepted.",
+        "mechanism": "Task 8 Step 6 closed `build_intent_version: 1` projection, root draft artifact_refs = sorted [build_intent_ref, production_input_ref], reopen verifies the signed chain against the external key and replays the transition table from re-read artifacts; the revised Step 9 adds the forge ephemeral-key-over-persisted-ledger blocker and temporary-repository restart proof; Step 3 restart uses `spawnSync(process.execPath, ...)` in a child process.",
+        "task": "Task 8 Steps 3, 6, 9 (as revised); Task 9 Step 3 gate reconstruction",
+        "negative_test": "Restart in a child Node process without a dossier, then mutate the root build-intent artifact or reopen with a different proposal ID/key: exact state reconstructs in the control and every mutation fails before gate evaluation; a forge given a persisted ledger plus ephemeral key blocks before any generator call.",
+        "exit_criterion": "Child-process restart and all reopen-mismatch fixtures pass; forge negative/positive fixtures pass; no in-memory dossier path exists in reconstruction."
+      },
+      {
+        "obligation_id": "PPC-W16",
+        "invariant": "Workshop context is read-only with fixed source/ID/domain/tier/contract/evidence information; models cannot write controller artifacts or mint/shadow/edit/reserve/remove/replace verify-production-*; the controller alone mints nodes after workshop and binds them to all ordinary tasks plus explicit producers.",
+        "mechanism": "Task 9 Step 5: deep-frozen summary, reserved-prefix rejection before plan compilation, controller-minted nodes with empty writes and exact dependency closure over the captured ordinaryTasks array (no prefix classification); Task 8 Step 5 protected-write intersection checks pre- and post-decomposition; minting legal only from hash-verified WORKSHOP_COMPLETE.",
+        "task": "Task 9 Steps 2, 5; Task 8 Step 5",
+        "negative_test": "Return workshop output containing a reserved `verify-production-*` node and a protected controller write while omitting a required production obligation: the packet is rejected before plan compilation and before WORKSHOP_COMPLETE with no silent repair; a workshop success label alone cannot advance the lifecycle.",
+        "exit_criterion": "All Task 9 Step 2 workshop-boundary assertions pass, including reserved-ID rejection, protected-write rejection, obligation completeness, and no-state-advance on rejected packets."
+      },
+      {
+        "obligation_id": "PPC-W17",
+        "invariant": "The disk-only proposal gate recomputes plan, input, facts, policy, registry, evidence, sources, obligations, checks, executables, and lifecycle; production plans require the exact V2 certificate with production_profile pass, never n/a; finding routing is closed and independent of mutable review risk policy.",
+        "mechanism": "Task 9 `reconstructAndValidateProductionProfile` (child-process, no dossier) recomputes every reference and exact set from disk; Task 5 V2 certificate with production_profile pass-only and V1/V2 mutual exclusion; Task 9 `finding-routing.mjs` frozen mapping outside `risk-policy.mjs`; `recordDecision` selects the contract from the recomputed plan, not a caller flag.",
+        "task": "Task 5 Steps 2, 4–5; Task 9 Steps 3, 8–9",
+        "negative_test": "A byte-valid V1 certificate on a production plan, a V2 certificate with production n/a, and a V2 pass over a stale registry are each non-authorizing; changing host `dossier.risk_policy` does not alter the finding class or outcome.",
+        "exit_criterion": "All certificate-version, n/a-rejection, stale-registry, and routing-immutability fixtures pass in test-proposal-gate.mjs/test-proposal-ledger.mjs/test-risk-policy.mjs."
+      },
+      {
+        "obligation_id": "PPC-W18",
+        "invariant": "Production execution uses exact bare node resolved to process.execPath only at spawn, telos-scrubbed-v1, no shell, no ambient credentials, no caller command/env/cwd, physical containment, literal loopback, no DNS/proxy/redirect/socket escape, and fixed limits; legacy descriptors retain old behavior.",
+        "mechanism": "Task 6 Step 7 `envForTest` ten-key allowlist and `commandForTest` spawn-only execPath resolution (never serialized/hashed/logged); fixed check-runner descriptor with env_contract telos-scrubbed-v1; Task 7 Step 5 loopback client (literal 127.0.0.1/[::1], agent:false, redirect denial, no proxy consultation, fixed limits); unknown contracts and unpinned scrubbed commands fail closed before spawn.",
+        "task": "Task 6 Steps 2, 7; Task 7 Steps 2, 5",
+        "negative_test": "A fake `node` first in parent PATH plus PATH/PATHEXT/ComSpec and proxy/credential canaries (TELOS_ENV_CANARY) are invisible to a production child through defaultVerifyNode/ledger-gate.verify/runNodeTest; a redirect to an external hostname fails before external transport; the legacy no-contract descriptor still observes the canary, proving byte-compatible legacy behavior.",
+        "exit_criterion": "All environment-contract, command-pinning, canary, redirect, proxy, and limit fixtures pass across merkle-dag and build-gate tests with legacy goldens unchanged."
+      },
+      {
+        "obligation_id": "PPC-W19",
+        "invariant": "Runtime checks execute policy-owned negative and positive scenarios through the hash-bound host adapter and the actual application semantic handler; the manifest maps operations only and cannot choose expected results; passing status shape without exercising the handler is insufficient.",
+        "mechanism": "Task 7 Step 3 closed fourteen-operation manifest rejecting expected status/body/denial fields; Step 6 policy-frozen per-obligation scenario tables; Step 7 injected application-handler seam with operation-trace binding of candidate module/function identity so shape-only adapters fail.",
+        "task": "Task 7 Steps 3, 6, 7; Task 11 Step 5 (demo adapter delegates to exported candidate handlers)",
+        "negative_test": "Substitute an adapter that returns every expected status but never invokes the candidate handler: operation-trace binding fails. Mutate one required denial into success: the check exits 1 (assertion failed), not pass.",
+        "exit_criterion": "Every runtime kind's pass/1/2 matrix, the fake-handler trace-binding negative, and manifest expected-result rejections all pass in test-production-checks.mjs."
+      },
+      {
+        "obligation_id": "PPC-W20",
+        "invariant": "Structural checks parse only bounded canonical JSON, require exactly one matching control, bind exact source paths and current source hashes, and apply registry/policy-owned intrinsic relationships; evidence cannot declare its own pass criterion or prove platform application.",
+        "mechanism": "Task 6 Step 5 closed `production_controls_version: 1` envelope, exactly-one-control rule across configured artifacts, source_artifacts exact-byte binding against current repository bytes, immutable per-obligation intrinsic predicate table that caller assertions cannot replace, unknown keys/IDs return status 2; explicit no-platform-application claim.",
+        "task": "Task 6 Steps 2, 5",
+        "negative_test": "Duplicate a favorable control across artifacts (zero-or-duplicate fails; the implementation cannot select the favorable duplicate) and add an evidence-authored expected-result field (unknown key returns status 2, never silently ignored).",
+        "exit_criterion": "All eight structural value-shape fixtures plus duplicate-control, self-citation, source-hash-drift, and unknown-key negatives pass in test-production-checks.mjs."
+      },
+      {
+        "obligation_id": "PPC-W21",
+        "invariant": "Process evidence is a closed Ed25519-signed record bound to the exact obligation, source, contract, plan, executing build, source artifacts, result schema, signer, and freshness window; executing-build identity derives from current ordinary settlements and disk artifacts; a durable frontier transports exact raw-file identities after ordinary settlement.",
+        "mechanism": "Task 6 Step 6 closed record/keyring schemas with single canonical signed preimage and controller-supplied plan/contract/build/nowMs context; `merkle-dag/execution-identity.mjs` derives `executing_build_ref` from signed ledger transactions plus re-hashed current disk trees under explicit baseDir; Task 10 durable `.telos/production-evidence-frontier.json` transports raw-byte identities with re-verification on every replay.",
+        "task": "Task 6 Steps 2, 6–7; Task 10 Steps 2, 6; merkle-dag/scripts/test-execution-identity.mjs",
+        "negative_test": "Reuse a valid record from the same plan after mutating one ordinary artifact (executing_build_ref changes, old binding fails) and provide conflicting current pass/fail records for the same tuple (status 2, favorable selection impossible); plan-only executing-build refs are rejected — plan intent alone cannot discharge.",
+        "exit_criterion": "test-execution-identity.mjs and the process-check fixtures prove artifact/ledger mutation invalidation, conflict rejection, freshness enforcement, and frontier raw-byte binding end to end."
+      },
+      {
+        "obligation_id": "PPC-W22",
+        "invariant": "Settlement reauthorizes the exact live plan, settles ordinary work, prepares evidence, settles every discharge node, recompiles immediately before final completion, and compares complete expected references; any semantic difference is BLOCKED_PROFILE_DRIFT; unsafe re-evaluation is cannot-run; neither reaches done().",
+        "mechanism": "Task 10 `verifyFinalProductionProfile` with the closed settlement object (exact expected/actual ref shape), mandatory injected `finalProfileVerify` and `beforeVerificationFrontier` in `runBuild()`, lifecycle transitions gating dispatch and done(), immutable authorization certificate never rewritten, closed cannot-run code set that cannot be downgraded to reparable drift.",
+        "task": "Task 10 Steps 2, 5–6",
+        "negative_test": "Introduce a confirmed provider dependency only after authorization: even with every old verification node green, final verification returns BLOCKED_PROFILE_DRIFT, writes no pass settlement, done() is unreachable, and only a newly planned and authorized revision can pass; omitted/throwing verifier fails closed as cannot-run.",
+        "exit_criterion": "All ten drift fixtures block with exact expected/actual refs; the unchanged-state fixture passes; a fresh reauthorized revision with the changed profile subsequently passes."
+      },
+      {
+        "obligation_id": "PPC-W23",
+        "invariant": "CLI, checker, proposal, frontier, and settlement outputs use closed schemas and fixed result precedence; cannot-run cannot be downgraded; unknown public finding codes fail serialization; reports are bounded and redacted; nonzero paths never replace output.",
+        "mechanism": "Task 1 frozen FINDING_CODES and exact 0/2/1 CLI exits with cannot-run precedence and atomic no-replace-on-failure; Task 10 closed settlement/frontier result objects with legal code/status pair enforcement and 2 KiB redacted detail caps; Task 10 Step 2 asserts exact membership of every externally visible finding_code in the frozen set.",
+        "task": "Task 1 Steps 6, 8; Task 10 Steps 2, 5; Task 6 Step 7 (2 KiB redaction)",
+        "negative_test": "Trigger a blocker and an I/O cannot-run together against a sentinel output (exit 1, sentinel bytes unchanged, precedence preserved), then inject an unknown public finding_code (rejected before serialization or certificate/settlement emission; internal detail codes can never occupy the public field).",
+        "exit_criterion": "CLI precedence/sentinel fixtures and the cross-surface finding-code membership sweep pass; no fixture path downgrades cannot-run or replaces prior output."
+      },
+      {
+        "obligation_id": "PPC-W24",
+        "invariant": "Public AI claims use the versioned controller vocabulary and exact bounded predicate, tier, owning obligation, executable evidence references, and mandatory non-claims; documentation and summaries cannot promote a tier or infer security/compliance/fairness/accuracy/availability/effectiveness.",
+        "mechanism": "Task 6 `claims.v1.json` closed five-ID vocabulary with frozen row values loaded via `loadPublicClaimVocabulary`; `claim_vocabulary_ref` bound into the json-assertions implementation/registry/check/source/plan identity chain; AI-CLAIM-001 value shape requires each claim to resolve to the vocabulary row's exact current owning source/check; publication/institutional/acceptance verifiers independently load the vocabulary.",
+        "task": "Task 6 Steps 4–5; Task 11 Steps 3, 6–7; Task 12 Step 6; Task 13 Step 6",
+        "negative_test": "Sign an otherwise valid claim using an unknown ID, or broaden its predicate to a compliance/security claim while preserving old evidence refs: demo publication, self-hosting verification, and institutional verification each fail despite valid signatures and producer pass status; a stale claim_vocabulary_ref after a vocabulary-byte mutation also fails.",
+        "exit_criterion": "Unknown-ID/widened-predicate/tier-promotion/stale-ref fixtures fail in demo, self, and institutional oracles; every published machine claim resolves to one exact allowed row."
+      },
+      {
+        "obligation_id": "PPC-W25",
+        "invariant": "The bank-style demonstration traverses the actual compiler, plan, gate, registered checks, settlement, and invalidation path using only 000-00-0000 as explicitly invalid synthetic data and a loopback fake provider; unsafe egress fails, corrected pre-transport blocking passes, and profile escalation stales authorization.",
+        "mechanism": "Task 11 real-path publication over `fake-application.mjs` (delegating to candidate handlers) and the loopback `fake-provider.mjs` recorder (attempt counter + redacted classification only, per the revised item 3); committed `--verify-committed` replay; redaction sweep rejecting any real-looking SSN, raw marker in audit output, or compliance claim.",
+        "task": "Task 11 Steps 3 (as revised), 5–7, 9",
+        "negative_test": "Three-part sequence: unsafe run records exactly one attempted outbound payload classification and AI-EGRESS-001 remains undischarged with check exit 1; corrected run transports zero payloads and emits the redacted audit event; multi-tenant/subscription escalation adds AUTHZ-002/PAY-001/PAY-002, changes profile/obligation/plan hashes, and blocks the old authorization.",
+        "exit_criterion": "`--verify-committed` re-derives the full eight-point sequence including the exact unsafe/corrected transport-count observables and escalation invalidation from committed public evidence only."
+      },
+      {
+        "obligation_id": "PPC-W26",
+        "invariant": "TELOS self-hosting uses an Eye-approved tracked dossier and the ordinary production proposal, workshop, planner, V2 gate, restart, registry, post-build scan, verification ledger, and done() path; repository name, historical packet fixture, direct ledger insertion, reduced catalog, fixture-only registry, or pre-recorded summary cannot affect the verdict.",
+        "mechanism": "Task 12: controller-jurisdiction dossier plus separate Eye approval and TELOS self-authorization; `telos-adapter.mjs` forbidden from repository-name branches or direct ledger insertion; mid-run process termination and disk restart; committed summary re-derived, never trusted as a pass input; `build-gate/examples/self/` preserved byte-for-byte and explicitly insufficient.",
+        "task": "Task 12 Steps 2–6, 10–13",
+        "negative_test": "Four controls: remove an obligation, substitute a no-op check, lower confirmed egress/write/execute facts, and add a post-build provider — each blocks with the expected finding. Rename the host and substitute the historical packet-only fixture — neither changes applicability nor satisfies the self-hosting assertion; a fixture-only adapter fails trace binding.",
+        "exit_criterion": "`--verify-committed` passes with all four negative-control finding codes recorded, the restart proof included, and the packet-only fixture proven insufficient; tracked checkout is clean."
+      },
+      {
+        "obligation_id": "PPC-W27",
+        "invariant": "Self-publication attempts are immutable and append-only (PREPARED→AUTHORIZED→PUBLISHED or →SUPERSEDED); three distinct external Ed25519 roles are required; candidate directories become trusted only through a signed ledger commit marker; unsafe recovery creates an external signed forensic hold blocking every mutating mode until a separate Eye/TELOS disposition.",
+        "mechanism": "Task 12: closed hash-chained signed `publication-attempts.jsonl` with exact transition rules; three distinct external PKCS#8 keys validated by the shared key-loading helper (revised IMPL-6: demo and self use one predicate including owner-only POSIX); two-phase commit-marker protocol per phase; `--record-forensic-hold` writes the closed signed hold outside the suspected ledger; every mutating mode scans holds before opening any key; governance key retained for terminal disposition only.",
+        "task": "Task 12 Steps 3, 5–6, 8–10; Task 11 Step 6/Interfaces (shared helper)",
+        "negative_test": "Mutate the attempt-ledger prefix or leave a marker without its directory, force recovery exit 1, and record the forensic hold: after restart every prepare/authorize/publish/recover/supersede mode rejects before opening a key; deleting, mutating, duplicating, or forging the hold does not restore progress; fault injection at every fsync/rename/lock boundary yields only closed recovery states.",
+        "exit_criterion": "All attempt-machine, fault-injection, and forensic-hold fixtures in Task 12 Step 3 pass; exactly one PUBLISHED attempt exists, superseded attempts are preserved, and hold enforcement survives restart."
+      },
+      {
+        "obligation_id": "PPC-W28",
+        "invariant": "Runtime code is ESM on Node 18 and 20, uses only node: and repository-relative imports, adds zero dependencies, performs no external network, and is portable to a neutral fresh host without authority or institutional-memory files; missing host adapters block explicitly rather than invoking TELOS defaults.",
+        "mechanism": "`test-production-import-policy.mjs` tokenizes JS, derives its seed inventory mechanically from every Create:/Modify: executable row of the matured plan plus recursive directory walks, audits the transitive relative-import closure, and rejects nonliteral/external targets; `test-production-fresh-host.mjs` copies only build-gate/merkle-dag runtime into a neutral-named temporary host with no CURRENT-AUTHORITY.json or institutional memory; binding Node 18/20 CI matrix.",
+        "task": "Task 13 Steps 3, 6; Task 14 Steps 2, 4",
+        "negative_test": "Hidden nonliteral/external import mutations (comments, strings, templates, escapes, dynamic expressions, require()) fail the audit; the fresh host compiles a minimal profile, then removal of one triggered adapter returns the exact typed blocker without reading any TELOS authority or institutional-memory file.",
+        "exit_criterion": "Both proof scripts pass on every Node 18 and 20 CI leg with the plan-derived seed-set equality proven; no dependency or lockfile addition exists in build-gate/merkle-dag."
+      },
+      {
+        "obligation_id": "PPC-W29",
+        "invariant": "Governance and acceptance evidence are independently re-derived from exact committed bytes and strict Git ancestry; the live parallel workshop has two distinct source parents and an exact 29-row bijection; authorization, Argo, self-hosting, docs, Clotho, post-review, retrospective, lifecycle verification, enrollment, and binding Node 18/20 evidence retain their prescribed order; producer status strings never authorize or prove acceptance.",
+        "mechanism": "Task 13 institutional oracle verifies mode live, exactly two constraints/implementation source parents with re-hashed response artifacts, `descends_from` equal to exactly those two refs, and an exact PPC-W01–PPC-W29 29-row six-field bijection; strict ancestry chain post_review < retrospective < lifecycle_verification < enrollment with commands independently re-run; Task 14 acceptance verifier (revised to exactly --verify-local/--verify-ci) derives every predicate itself, treating asserted statuses as assertions only; --verify-ci binds GITHUB_SHA, strict ancestry, and the exact runtime major per matrix leg.",
+        "task": "Task 13 Steps 4–6, 8–13; Task 14 Steps 7–10",
+        "negative_test": "Mutation corpus: delete/duplicate/rename one matrix row or change one row's five-field tuple, stale-bind or remove one source parent, delete a required Argo slice event, place enrollment in the post-review/retrospective commit, and flip every asserted status to pass while one evidence ref/command/result is stale — the institutional and acceptance oracles reject each independently of signatures and status text.",
+        "exit_criterion": "test-production-profile-contract.mjs and test-production-profile-acceptance.mjs --self-test pass their complete mutation corpora; the default oracle proves the bijection, distinct parentage, and strict ancestry on the enrolled commit; both CI matrix legs independently re-derive acceptance."
+      }
+    ],
+    "seat": "claude",
+    "provenance": {
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011CdDTS98bmLEgXeSFMpp9Y",
+      "source": "ai-peer-mcp/claude_ask",
+      "response_artifact_ref": "sha256:94086ca5c443af76a4f935d41a2f7f597bf244f48436452e46fb5236a57fcf93"
+    },
+    "provenance_key": "anthropic:msg_011CdDTS98bmLEgXeSFMpp9Y"
+  },
+  "verifications": [
+    {
+      "role": "constraints",
+      "seat": "codex",
+      "verdict": "violated",
+      "conflicts": [
+        "The closed authority-anchor set is not preserved in the integrated plan. Global Constraints retains the approved-design raw SHA-256, but replaces the Iliad pre-review raw SHA-256 `7b96f60ab9280c8c8173723f30892f4104583f5c9db17c44877bc724507ab634` with paths and abbreviated commit `git:6bb0d5f`, and omits the binding Daedalus-methodology SHA-256 `9288e17e84b202e48c4dbfad13904abc9317bae22b82aeefa01ee6b837a0c406` and frozen-candidate SHA-256 `67de2ff93499b036a35964014a5222a504ca57c9c1f9fed6fcb9fa4f9b6b210b`. Later lineage checks do not supply predicates requiring equality to those three frozen byte hashes, so stale or substituted anchor bytes are not excluded by the matured plan itself.",
+        "Task 1's atomic-write mechanism does not satisfy the absolute nonzero-output preservation contract. It performs rename before the final parent-directory fsync and reports success only after that fsync. Therefore an injected post-rename parent-fsync failure produces a cannot-run invocation after the previously valid output may already have been replaced by complete new bytes. No rollback, indeterminate-commit protocol, or predicate reconciling this state is specified, conflicting with PPC-W23 and the global rule that a failed invocation never replaces a previously valid output.",
+        "The finding-code jurisdictions are contradictory. Task 10 requires every externally visible `finding_code`, explicitly including demo/self-publication and institutional fixtures, to belong to Task 1's 20 compiler codes. Task 12 then defines the forensic-hold `finding_code` vocabulary as `LEDGER_PREFIX_MISMATCH`, `PUBLICATION_BYTES_MISMATCH`, `MARKER_WITHOUT_DIRECTORY`, `LOCK_STATE_UNSAFE`, and `RECOVERY_STATE_UNSAFE`, none of which is in that compiler set. The source contract permits a separately closed publication/recovery diagnostic vocabulary; the integrated cross-surface membership sweep both removes that separation and is unsatisfiable with Task 12.",
+        "PPC-W27's durable forensic-hold transition is not atomic with unsafe recovery. `--recover-publication` is specified to exit `1` for an unsafe state, after which a shell wrapper separately invokes `--record-forensic-hold`. A crash, signal, or process loss between those commands leaves a completed unsafe recovery result without the required durable signed hold, allowing a subsequent process to encounter no hold. The prose assertion that recovery exit 1 is made durable before process exit is not implemented by this two-process sequence; the recovery mode already receives the governance key and must itself install and fsync the hold before returning exit 1, or use an equivalent single durable transition."
+      ],
+      "provenance": {
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "response_id": "chatcmpl-E3jC1S8a4BRX6JqXZWgP52U8Ixljh",
+        "source": "ai-peer-mcp/codex_ask",
+        "response_artifact_ref": "sha256:cf1b7fa01fb0f2d532b7852b12f80da196e4979813ccc2d993a6e7366dc4682a"
+      },
+      "provenance_key": "openai:chatcmpl-E3jC1S8a4BRX6JqXZWgP52U8Ixljh"
+    },
+    {
+      "role": "implementation",
+      "seat": "claude",
+      "verdict": "preserved",
+      "conflicts": [],
+      "provenance": {
+        "provider": "anthropic",
+        "model": "claude-fable-5",
+        "response_id": "msg_011CdDTgc2zmoGeY3gnB4hBU",
+        "source": "ai-peer-mcp/claude_ask",
+        "response_artifact_ref": "sha256:42afee7c713dd68b7b869d7360f983720facf642433fe03f90dbf0dff76346fa"
+      },
+      "provenance_key": "anthropic:msg_011CdDTgc2zmoGeY3gnB4hBU"
+    }
+  ],
+  "conflicts": [
+    {
+      "role": "constraints",
+      "detail": [
+        "The closed authority-anchor set is not preserved in the integrated plan. Global Constraints retains the approved-design raw SHA-256, but replaces the Iliad pre-review raw SHA-256 `7b96f60ab9280c8c8173723f30892f4104583f5c9db17c44877bc724507ab634` with paths and abbreviated commit `git:6bb0d5f`, and omits the binding Daedalus-methodology SHA-256 `9288e17e84b202e48c4dbfad13904abc9317bae22b82aeefa01ee6b837a0c406` and frozen-candidate SHA-256 `67de2ff93499b036a35964014a5222a504ca57c9c1f9fed6fcb9fa4f9b6b210b`. Later lineage checks do not supply predicates requiring equality to those three frozen byte hashes, so stale or substituted anchor bytes are not excluded by the matured plan itself.",
+        "Task 1's atomic-write mechanism does not satisfy the absolute nonzero-output preservation contract. It performs rename before the final parent-directory fsync and reports success only after that fsync. Therefore an injected post-rename parent-fsync failure produces a cannot-run invocation after the previously valid output may already have been replaced by complete new bytes. No rollback, indeterminate-commit protocol, or predicate reconciling this state is specified, conflicting with PPC-W23 and the global rule that a failed invocation never replaces a previously valid output.",
+        "The finding-code jurisdictions are contradictory. Task 10 requires every externally visible `finding_code`, explicitly including demo/self-publication and institutional fixtures, to belong to Task 1's 20 compiler codes. Task 12 then defines the forensic-hold `finding_code` vocabulary as `LEDGER_PREFIX_MISMATCH`, `PUBLICATION_BYTES_MISMATCH`, `MARKER_WITHOUT_DIRECTORY`, `LOCK_STATE_UNSAFE`, and `RECOVERY_STATE_UNSAFE`, none of which is in that compiler set. The source contract permits a separately closed publication/recovery diagnostic vocabulary; the integrated cross-surface membership sweep both removes that separation and is unsatisfiable with Task 12.",
+        "PPC-W27's durable forensic-hold transition is not atomic with unsafe recovery. `--recover-publication` is specified to exit `1` for an unsafe state, after which a shell wrapper separately invokes `--record-forensic-hold`. A crash, signal, or process loss between those commands leaves a completed unsafe recovery result without the required durable signed hold, allowing a subsequent process to encounter no hold. The prose assertion that recovery exit 1 is made durable before process exit is not implemented by this two-process sequence; the recovery mode already receives the governance key and must itself install and fsync the hold before returning exit 1, or use an equivalent single durable transition."
+      ]
+    }
+  ],
+  "independent_recheck": {
+    "state": "conflict",
+    "reason": "verification-conflict",
+    "terminal": "needs-eye",
+    "candidate_ref": "sha256:c723f0d7c2618f2283cd8575a474eeefac60ad564b1d501db3d23fb3c8f5d751",
+    "conflicts": [
+      {
+        "role": "constraints",
+        "detail": [
+          "The closed authority-anchor set is not preserved in the integrated plan. Global Constraints retains the approved-design raw SHA-256, but replaces the Iliad pre-review raw SHA-256 `7b96f60ab9280c8c8173723f30892f4104583f5c9db17c44877bc724507ab634` with paths and abbreviated commit `git:6bb0d5f`, and omits the binding Daedalus-methodology SHA-256 `9288e17e84b202e48c4dbfad13904abc9317bae22b82aeefa01ee6b837a0c406` and frozen-candidate SHA-256 `67de2ff93499b036a35964014a5222a504ca57c9c1f9fed6fcb9fa4f9b6b210b`. Later lineage checks do not supply predicates requiring equality to those three frozen byte hashes, so stale or substituted anchor bytes are not excluded by the matured plan itself.",
+          "Task 1's atomic-write mechanism does not satisfy the absolute nonzero-output preservation contract. It performs rename before the final parent-directory fsync and reports success only after that fsync. Therefore an injected post-rename parent-fsync failure produces a cannot-run invocation after the previously valid output may already have been replaced by complete new bytes. No rollback, indeterminate-commit protocol, or predicate reconciling this state is specified, conflicting with PPC-W23 and the global rule that a failed invocation never replaces a previously valid output.",
+          "The finding-code jurisdictions are contradictory. Task 10 requires every externally visible `finding_code`, explicitly including demo/self-publication and institutional fixtures, to belong to Task 1's 20 compiler codes. Task 12 then defines the forensic-hold `finding_code` vocabulary as `LEDGER_PREFIX_MISMATCH`, `PUBLICATION_BYTES_MISMATCH`, `MARKER_WITHOUT_DIRECTORY`, `LOCK_STATE_UNSAFE`, and `RECOVERY_STATE_UNSAFE`, none of which is in that compiler set. The source contract permits a separately closed publication/recovery diagnostic vocabulary; the integrated cross-surface membership sweep both removes that separation and is unsatisfiable with Task 12.",
+          "PPC-W27's durable forensic-hold transition is not atomic with unsafe recovery. `--recover-publication` is specified to exit `1` for an unsafe state, after which a shell wrapper separately invokes `--record-forensic-hold`. A crash, signal, or process loss between those commands leaves a completed unsafe recovery result without the required durable signed hold, allowing a subsequent process to encounter no hold. The prose assertion that recovery exit 1 is made durable before process exit is not implemented by this two-process sequence; the recovery mode already receives the governance key and must itself install and fsync the hold before returning exit 1, or use an equivalent single durable transition."
+        ]
+      }
+    ]
+  },
+  "signed_events": {
+    "path": "docs/runs/production-profile-compiler-1-workshop/attempts/attempt-005/events.jsonl",
+    "public_key_path": "docs/runs/production-profile-compiler-1-workshop/attempts/attempt-005/event-signing-public.jwk",
+    "count": 4,
+    "head_hash": "sha256:f04b3a6c3424bcf4f6fe1f234b31eea446243b2afd24c94ba1fba35bda32f5c7"
+  },
+  "creation_lineage": [
+    {
+      "seat": "codex",
+      "role": "constraints",
+      "phase": "author",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E3j6GTvcpjPLuWKyhUAorsaw8Fsvz",
+      "response_artifact_ref": "sha256:b08ae3733d9d026ed2de6da7707ab5842b2f55e9631ed6f08f5f862d72f4487c"
+    },
+    {
+      "seat": "claude",
+      "role": "implementation",
+      "phase": "author",
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011CdDTENJXK5ENU8J7JDrjk",
+      "response_artifact_ref": "sha256:5be703a7e3188409ff6919168a925ef01365be6aad0899cc58a7d3cd474cc813"
+    },
+    {
+      "seat": "claude",
+      "role": "integration",
+      "phase": "integrate",
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011CdDTS98bmLEgXeSFMpp9Y",
+      "response_artifact_ref": "sha256:94086ca5c443af76a4f935d41a2f7f597bf244f48436452e46fb5236a57fcf93"
+    },
+    {
+      "seat": "codex",
+      "role": "constraints",
+      "phase": "verify",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "response_id": "chatcmpl-E3jC1S8a4BRX6JqXZWgP52U8Ixljh",
+      "response_artifact_ref": "sha256:cf1b7fa01fb0f2d532b7852b12f80da196e4979813ccc2d993a6e7366dc4682a",
+      "verdict": "violated"
+    },
+    {
+      "seat": "claude",
+      "role": "implementation",
+      "phase": "verify",
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "response_id": "msg_011CdDTgc2zmoGeY3gnB4hBU",
+      "response_artifact_ref": "sha256:42afee7c713dd68b7b869d7360f983720facf642433fe03f90dbf0dff76346fa",
+      "verdict": "preserved"
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "kind": "model-analysis",
+  "component": "daedalus",
+  "id": "production-profile-compiler-conflict-analysis-001",
+  "authority": "ADVISORY",
+  "record_semantics": "Controller-condensed projection of the validated structured provider response; not a raw-response byte archive.",
+  "inputs": {
+    "attempt_result_ref": "sha256:63d66295b406f5342cca00e8cee3ff84fa51bccfb884df8c681c397eb96147dc",
+    "candidate_ref": "sha256:f91df09d273d8a9a406019bf5a7501f3cde31262dcc94ac0a07b3ebe4f021afb",
+    "design_ref": "sha256:1a0d7b96fb4d4a35313355846a205bfd7c0f6c9fa093c957ba186f5b1bac0ba6",
+    "constraint_source_ref": "sha256:e9276dd80e2652cbfc881ad97fb8520f0905174e441cc2a6023e9cb67213e2b8"
+  },
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-fable-5",
+    "response_id": "msg_011CdDPc8HKQuNdWrE7G6am1",
+    "source": "ai-peer-mcp/claude_ask"
+  },
+  "analysis": {
+    "shared_reason_exists": true,
+    "shared_reason": "The candidate plan decomposes the constraint contract's single closed control loop into per-task local mechanisms without a controller-owned closure layer: it never reifies the mandated thirteen-state production lifecycle as an executable transition system, and it repeatedly substitutes locally plausible artifacts (post-hoc validators, same-commit evidence bundles, producer-authored summaries, prose review, unlisted finding codes) for the contract's fail-closed, independently re-derived, ordering-exact predicates. Each objection is a different surface of the same omission — the plan enforces individual invariants but not the closed sequencing, closed vocabularies, and independent re-derivation that bind those invariants into one verifiable state machine.",
+    "causal_chain": [
+      "The constraint contract specifies a single closed production lifecycle (LEGACY_INACTIVE..DONE), closed vocabularies (finding codes, claim IDs), and independent re-derivation semantics as the top-level control structure that all 29 PPC-W obligations hang from.",
+      "The candidate plan was authored task-by-task (Tasks 1-14), mapping obligations onto per-task mechanisms (schema validation, registry hashing, drift verifiers, ledgers) without first minting a controller-owned state enum, transition function, and transition table that the tasks would instantiate.",
+      "Because no explicit state machine exists, ordering guarantees are expressed only implicitly through task step sequences and commit scripts, so pre-callback authorization verification (W01), scan-after-policy-load ordering (W06/W08), and evidence-precedes-enrollment commit ordering (W28) each drift from the contract's exact sequence.",
+      "Because closed vocabularies and closure predicates are not centrally owned, the plan invents MISSING_FINAL_PROFILE_VERIFY outside the frozen finding set (W19), omits a closed public claim-ID set (W29), and leaves the Daedalus-lineage bijection as prose review rather than an executable oracle (W28/W07-objection).",
+      "Because independent re-derivation is not the default trust posture, the loadout validator compares plan bytes to plan bytes instead of verifying the TELOS authorization packet (W01), fsync omits the directory leg of durable installation (W05), and Step 8 of Task 14 trusts a producer-authored READY_FOR_EYE_INTEGRATION string rather than re-deriving PPC-A01..A21 (integration rule).",
+      "Each verifier objection therefore lands on a distinct symptom of one missing closure layer: an executable controller-owned lifecycle plus closed-vocabulary and independent-re-derivation oracles that seal the per-task mechanisms into the contract's single state model."
+    ],
+    "clusters": [
+      {
+        "name": "Missing executable lifecycle and ordering closure",
+        "conflict_numbers": [
+          1,
+          4,
+          6
+        ],
+        "shared_mechanism": "The plan never reifies the contract's exact state sequences (production lifecycle enum/transition table; loadPolicy-before-scan trust ordering; post-review/retrospective/contract-verification-before-enrollment commit ordering). Ordering exists only as implicit task-step prose, so skipped, reversed, or interleaved sequencing cannot be mechanically rejected.",
+        "unified_plan_correction": "Add one controller-owned lifecycle module (e.g. build-gate/production-profile/lifecycle.mjs) defining the closed thirteen-state enum, a pure transition function, an explicit transition table with blocker/cannot-run termination, hash-verified-resume-only and drift-to-new-revision rules, plus an executable test that rejects skipped, reversed, and stale-resumed transitions; make the Task 3 compiler sequence load and validate pinned policy before scanRepository consumes the detector table, with a test that a policy-invalid input blocks any scan; split Task 13 so the Iliad post-review, retrospective, and green contract-verification run each land in their own commits strictly before the enrollment-entry commit, with an executable ordering check over commit ancestry."
+      },
+      {
+        "name": "Post-hoc or shallow verification where pre-action independent verification is required",
+        "conflict_numbers": [
+          2,
+          3
+        ],
+        "shared_mechanism": "Trust anchors are checked after or beside the guarded action instead of independently before it: the loadout validator hashes current plan bytes without verifying the TELOS authorization packet, and Task 1 atomic install fsyncs the temp file but not the containing directory, leaving the rename non-durable across crash.",
+        "unified_plan_correction": "Extend the loadout validator and Argo entry gate to independently load the committed authorization packet, verify its signature chain, and require authorizes_plan to equal the recomputed current plan hash before any task callback, code edit, or slice event; amend Task 1 so atomic installation fsyncs the containing directory after rename, with unsupported semantics treated as cannot-run and a crash-recovery negative test."
+      },
+      {
+        "name": "Open or widened vocabularies where the contract freezes closed sets",
+        "conflict_numbers": [
+          5,
+          8
+        ],
+        "shared_mechanism": "The plan widens or leaves open contract-frozen sets: Task 10 emits MISSING_FINAL_PROFILE_VERIFY outside the frozen finding vocabulary, while AI-CLAIM-001 has no closed allowed claim-ID set, versioned claim schema, or unknown-claim-ID rejection.",
+        "unified_plan_correction": "Map omitted final verification to frozen CANNOT_RUN with bounded detail and add a report-surface membership oracle; define a closed versioned public-claim vocabulary, require AI-CLAIM-001 IDs to resolve to it, and add unknown-ID rejection to structural, demo/self, and institutional verification."
+      },
+      {
+        "name": "Self-certified or prose evidence where executable independent predicates are required",
+        "conflict_numbers": [
+          7,
+          9
+        ],
+        "shared_mechanism": "Terminal lifecycle evidence is discharged by producer-authored artifacts and prose instead of independent executable oracles: institutional verification does not encode exact two-parent Daedalus lineage and strict 29-row obligation bijection, while acceptance trusts its own READY_FOR_EYE_INTEGRATION status.",
+        "unified_plan_correction": "Add executable Daedalus lineage and matrix-bijection predicates with removed/stale-parent negatives; freeze acceptance.json's exact schema and independently re-derive PPC-A01 through PPC-A21 from committed bytes, treating the recorded status only as an assertion."
+      }
+    ],
+    "findings": [
+      {
+        "conflict_number": 1,
+        "verdict": "valid",
+        "rationale": "The plan implements lifecycle semantics piecewise but defines no controller-owned closed state enum, transition function, transition table, or direct skipped/reversed/stale-resume negative test.",
+        "required_plan_change": "Add the closed thirteen-state lifecycle module, make it the sequencing authority, and add executable transition negatives."
+      },
+      {
+        "conflict_number": 2,
+        "verdict": "valid",
+        "rationale": "The pre-task validator compares a loadout plan reference to current plan bytes without independently verifying the committed TELOS authorization packet, so the one-byte post-authorization mutation can pass until the later slice-ledger check.",
+        "required_plan_change": "Verify authorization signatures and authorizes_plan against recomputed current plan bytes before any callback, edit, or ledger event."
+      },
+      {
+        "conflict_number": 3,
+        "verdict": "valid",
+        "rationale": "Temporary-file fsync plus rename is atomic but not crash-durable without containing-directory fsync.",
+        "required_plan_change": "Require parent-directory fsync after atomic installation, cannot-run on unsupported semantics, and a durability negative test."
+      },
+      {
+        "conflict_number": 4,
+        "verdict": "valid",
+        "rationale": "The scanner consumes policy-owned detector data before the plan says the pinned policy is loaded and validated.",
+        "required_plan_change": "Load and validate policy before scanning; malformed policy must block before any repository read or fact emission."
+      },
+      {
+        "conflict_number": 5,
+        "verdict": "valid",
+        "rationale": "MISSING_FINAL_PROFILE_VERIFY is outside the frozen finding-code set and lacks an executable mapping to CANNOT_RUN.",
+        "required_plan_change": "Map it to CANNOT_RUN bounded detail and test that every externally observable finding code belongs to the frozen set."
+      },
+      {
+        "conflict_number": 6,
+        "verdict": "valid",
+        "rationale": "Same-commit post-review, retrospective, and enrollment cannot prove that reviewed and verified evidence strictly precedes enrollment.",
+        "required_plan_change": "Commit post-review, retrospective, and green verification evidence before a separate enrollment commit; verify strict ancestry."
+      },
+      {
+        "conflict_number": 7,
+        "verdict": "valid",
+        "rationale": "The plan lacks an executable exact-two-parent Daedalus and PPC-W01 through PPC-W29 matrix-bijection institutional oracle.",
+        "required_plan_change": "Add those predicates and removed/stale-parent negative fixtures."
+      },
+      {
+        "conflict_number": 8,
+        "verdict": "valid",
+        "rationale": "Unique claim IDs and prohibited-word checks are weaker than a closed claim vocabulary.",
+        "required_plan_change": "Define a versioned closed claim-ID set and reject unknown IDs across structural, publication, and institutional verification."
+      },
+      {
+        "conflict_number": 9,
+        "verdict": "valid",
+        "rationale": "Checking only acceptance.json's producer-authored READY_FOR_EYE_INTEGRATION status is self-certification.",
+        "required_plan_change": "Freeze the schema and independently re-derive every PPC-A01 through PPC-A21 result at the final commit."
+      }
+    ],
+    "revision_order": [
+      "Add the controller-owned closed lifecycle and transition negatives.",
+      "Load validated policy before scanner consumption.",
+      "Verify exact authorization before task work and make atomic installs directory-durable.",
+      "Close finding and public-claim vocabularies.",
+      "Split lifecycle evidence and enrollment into strict commit order.",
+      "Add the executable Daedalus lineage and matrix-bijection oracle.",
+      "Replace self-certified acceptance with independent PPC-A01 through PPC-A21 re-derivation.",
+      "Rerun full Daedalus maturation over the revised candidate."
+    ],
+    "rerun_recommendation": "revise-then-rerun",
+    "concise_summary": "All nine objections are valid and share one root cause: strong per-task mechanisms were not sealed by a controller-owned closure layer enforcing the exact lifecycle, ordering, vocabularies, and independent re-derivation. The architecture remains sound; the plan must add that closure layer and its executable oracles before rerun."
+  },
+  "authorization_granted": false,
+  "implementation_started": false
+}

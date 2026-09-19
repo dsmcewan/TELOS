@@ -3,40 +3,22 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Narcissus flagship — the TELOS development-story front-end ('Loom on Trial'). WebGL is paint; XState is truth.",
+  "description": "Narcissus flagship \u2014 native DOM, state reducer and WebGL; zero runtime, build and test packages.",
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "vite",
-    "predev": "npm run check:live-graph",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview --port 4317",
-    "test": "npm run test:unit",
-    "test:unit": "node --test scripts/test-build-live-graph.mjs scripts/test-verify-evidence.mjs",
-    "test:e2e": "playwright test tests/e2e/flagship.spec.ts",
-    "capture:evidence": "playwright test tests/e2e/screenshots.spec.ts tests/e2e/motion.capture.spec.ts",
+    "dev": "node native/scripts/server.mjs",
+    "build": "node scripts/build.mjs",
+    "preview": "node native/scripts/server.mjs dist",
+    "test": "node --test native/tests/*.test.mjs scripts/test-*.mjs",
+    "test:unit": "node --test native/tests/*.test.mjs scripts/test-*.mjs",
+    "test:e2e": "node native/scripts/test-browser.mjs dist .verification/browser.json",
+    "capture:evidence": "node native/scripts/capture.mjs",
     "verify:evidence": "node scripts/verify-evidence.mjs",
-    "verify:coverage": "node scripts/verify-coverage.mjs",
+    "verify:coverage": "node scripts/verify-coverage.mjs .verification/browser.json",
     "build:live-graph": "node scripts/build-live-graph.mjs",
     "check:live-graph": "node scripts/build-live-graph.mjs --check",
-    "prebuild": "npm run check:live-graph"
-  },
-  "dependencies": {
-    "@react-three/fiber": "^8.17.10",
-    "@xstate/react": "^5.0.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "three": "^0.169.0",
-    "xstate": "^5.19.0"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.48.2",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@types/three": "^0.169.0",
-    "@vitejs/plugin-react": "^6.0.3",
-    "typescript": "^5.6.3",
-    "vite": "^8.1.5"
+    "check:dependencies": "node ../../tools/check-zero-dependencies.mjs"
   }
 }

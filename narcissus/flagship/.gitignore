@@ -5,3 +5,4 @@ test-results/
 .lighthouseci/
 *lighthouse.*/
 *.tsbuildinfo
+.verification/

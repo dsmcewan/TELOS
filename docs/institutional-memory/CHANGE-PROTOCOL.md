@@ -14,7 +14,8 @@ note: Which kind of change requires which governance path. A future model must n
 | An **amendment** to a decision the Eye already ruled | Eye ruling → Daedalus delta → new plan version → TELOS authz → Eye implementation authority (same as above; e.g. AM-40, AM-41). |
 | Retiring an obsolete relationship/artifact/plan | Mark `SUPERSEDED` with `superseded_by` + `must_not_govern_new_work: true` (Atropos); record the `supersedes` edge; update `CURRENT-AUTHORITY.json`. |
 | Introducing a **mythological term** or a new component boundary | **Human approval only** — register in `docs/mythological-vocabulary.md`. Unregistered ≠ available. |
-| Adding an npm dependency, build tooling, or committing a runtime/secret artifact | **Not permitted** (zero-dependency; secrets are env/registry only). |
+| Adding runtime/development/build/test packages, lockfiles, CDN code or vendored library substitutes in any TELOS package (including the flagship) | **Not permitted**. Repository-owned Node-built-in tooling and browser-standard APIs are permitted under the [2026-09-17 scoped user direction](../runs/zero-dependency-flagship-migration-2026-09-17.md); platform prerequisites are declared there. |
+| Committing ephemeral runtime state or secret artifacts | **Not permitted**; secrets are env/registry only. |
 
 **Precedent (institutional memory):** the PACKAGE_ROOTS scope ambiguity and the D33
 lexer-bar question were both **escalated to The Eye rather than designed around** — that

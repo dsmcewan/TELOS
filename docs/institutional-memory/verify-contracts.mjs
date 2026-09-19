@@ -25,6 +25,15 @@ const check = (id, ok, detail) => results.push({ id, ok, detail });
 const eqArr = (a, b) => Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => v === b[i]);
 const deepEq = (a, b) => canonicalize(a) === canonicalize(b);
 
+// The cross-cutting dependency contract covers every real package, including
+// deferred products; the historical Clotho slice oracle checked only Clotho.
+try {
+  const { audit } = await imp("tools/check-zero-dependencies.mjs");
+  const dependencyAudit = await audit(ROOT);
+  check("system:zero-dependencies-all-packages", dependencyAudit.status === "pass",
+    `${dependencyAudit.package_roots.length} packages; ${dependencyAudit.violations.join("; ") || "no dependency violations"}`);
+} catch (error) { check("system:zero-dependencies-all-packages", false, error.message); }
+
 // ---- 1. CURRENT-AUTHORITY.json active plan hash == disk ------------------------
 try {
   const auth = readJson("CURRENT-AUTHORITY.json");

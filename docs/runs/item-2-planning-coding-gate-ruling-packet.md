@@ -160,24 +160,88 @@ look." Two facts bound this:
 baseline), on the condition that the execution-time lifecycle re-verification
 already implemented in `checkLifecycleAuthorization`
 (`merkle-dag/orchestrate.mjs:19-45`, decision 6) remains load-bearing and is
-never weakened or bypassed for a "fast path," plus one mechanical staleness
-guard: if wall-clock time between the planning-gate decision and Stage 3
-dispatch exceeds a bound The Eye sets (or if Stage 0's cited production-profile
-/ workflow-residue hash changes in that window), `runBuild` fails closed into
-`needs-work` rather than silently proceeding, forcing the Eye to look again
-without requiring a second click on every ordinary run.** The single strongest
-reason: the risk a second mandatory gate is meant to catch — a plan approved
-before some intervening fact changed — is already caught mechanically by
-ledger re-verification for every fact the system can represent, and for the
-one class of fact it cannot represent (elapsed-time world drift with no
-ledger footprint), a bounded staleness check that reopens the stage on demand
-is cheaper than a second required human action on every compliant run while
-closing the same gap. **This flips toward Option B (mandatory second gate)**
-if either becomes true: (a) The Eye's human-adjudication UX is built such that
-real wall-clock gaps of hours or days routinely separate planning approval
-from Stage 3 dispatch (the zero-gap assumption above stops holding), or (b)
-The Eye wants the split to be risk-tiered rather than uniform — e.g., requiring
-the distinct coding go-ahead only for proposals whose `risk_policy.mjs`-derived
-`risk_class` crosses a threshold — in which case the existing risk-class
-machinery (`build-gate/risk-policy.mjs:117-145`) is already available to key
-that split without inventing a new signal.
+never weakened or bypassed for a "fast path."** The single strongest reason:
+the risk a second mandatory gate is meant to catch — a plan approved before
+some intervening fact changed — is already caught mechanically by ledger
+re-verification for every fact the system can represent, at zero marginal Eye
+cost, and bare Option A itself requires no new plumbing
+(`decision === "authorized"` already gates `runBuild` directly,
+`proposal-orchestrator.mjs:309-315`).
+
+For the one class of fact ledger re-verification cannot represent —
+elapsed-time world drift with no ledger footprint — a mechanical staleness
+guard (a wall-clock bound and/or a production-profile-hash check, failing
+`runBuild` closed into a recorded `needs-work` decision instead of proceeding)
+is the right *shape* of compensating control. An earlier draft of this ruling
+bundled that guard into the recommendation as if it were free. It is not, and
+a fix-round review of this packet found three concrete gaps between that
+claim and what is on disk today:
+
+1. **The production-profile / workflow-residue trigger arm has nothing to
+   point at.** `docs/runs/item-5-stage0-mandatory-ruling-packet.md`
+   (lines ~153-156), reviewed in this same batch and not revised on its own
+   review round, establishes: "TELOS has no compiled production profile
+   today... the compiler is an unimplemented, separately-authorized plan
+   under authz-008." A guard trigger keyed to that hash cannot be built until
+   that compiler ships. This arm is out of scope for today's ruling, not a
+   currently-available cheap check.
+2. **The wall-clock trigger arm is inert under the current architecture, and
+   making it live costs roughly what Option B's plumbing costs, not
+   "nothing."** Today `decision === "authorized"` and `runBuild` fire in the
+   same synchronous call (`proposal-orchestrator.mjs:309-315`) with no
+   persisted pause or resumption entry point, so any elapsed-time comparison
+   would always measure zero. Making it meaningful needs the same category of
+   new machinery Option B was costed with — a stop point in the loop and a
+   real resumption path — even though, unlike Option B, it would not force a
+   mandatory Eye click on every ordinary run. Separately, every
+   `recordDecision` call in `proposal-orchestrator.mjs` (lines ~219, 232, 246,
+   277, 303-308, 326 — including the authorized-decision call this guard
+   depends on) omits `recordedAt`, while every other recorder call in the same
+   function threads `recordedAt: nowMs`
+   (e.g. `recordDraft`/`recordCandidate`/`recordDisposition`/`recordCreationCall`
+   at lines 191, 215, 251, 258). `recorded_at` is therefore `null` on every
+   decision event today; there is no wall-clock data to diff without first
+   fixing that omission.
+3. **There is no ledger-recorded fail-closed pathway for the guard to
+   invoke.** `runBuild`'s authorization check
+   (`checkLifecycleAuthorization` via `merkle-dag/orchestrate.mjs:199-201`)
+   fails today by returning a raw `{ error, detail }` object
+   (`orchestrate.mjs:201`), never a proposal-ledger event. "Fails closed into
+   `needs-work`," as the guard requires, needs a new ledger-event pathway for
+   auth failures that does not exist yet.
+
+None of this reopens the choice between Option A and Option B on the ground
+originally argued in the two options above — both still get
+ledger-representable drift for free, and Option B still pays a
+mandatory-human-click cost on every run that Option A does not. What it
+changes is that the staleness guard cannot be waved in as a zero-cost rider on
+Option A today, and the packet should not have claimed it was.
+
+**Revised ruling: adopt Option A now, unconditioned on the guard.** Authorize
+the guard as a distinct, separately-scoped follow-on item, costed honestly
+as: (a) threading `recordedAt` through every `recordDecision` call site the
+way sibling recorder calls already do — small and mechanical; (b) a persisted
+pause/resumption entry point in `runProposalLifecycle` sufficient to make an
+elapsed-time read meaningful — the nontrivial piece, comparable to part of
+Option B's cost; (c) a new ledger-event pathway for
+`checkLifecycleAuthorization`/`runBuild` auth failures to record as a
+`needs-work` decision instead of returning a raw error; and (d) the wall-clock
+trigger arm only — the production-profile arm stays out of scope until the
+authz-008 compiler ships, at which point item-5's own flip condition already
+covers wiring a profile-hash check in. Built this way, the guard still leaves
+the Eye with a materially cheaper steady state than Option B — no mandatory
+click on the ordinary run — but it is a real, scoped implementation item, not
+"nothing new," and should be tracked and authorized as such rather than
+folded silently into today's ruling.
+
+**This flips toward Option B (mandatory second gate)** if either becomes
+true: (a) The Eye's human-adjudication UX is built such that real wall-clock
+gaps of hours or days routinely separate planning approval from Stage 3
+dispatch (the zero-gap assumption above stops holding) — note the same UX
+work that would create this gap is also the natural place to build the
+pause/resumption entry point item (b) above depends on, so the two are likely
+to land together; or (b) The Eye wants the split to be risk-tiered rather than
+uniform — e.g., requiring the distinct coding go-ahead only for proposals
+whose `risk_policy.mjs`-derived `risk_class` crosses a threshold — in which
+case the existing risk-class machinery (`build-gate/risk-policy.mjs:117-145`)
+is already available to key that split without inventing a new signal.

@@ -1,15 +1,24 @@
-// Functional-blade contract: coverage == inventory. Every command in the closed registry must be exercised
-// (referenced as cmd-<COMMAND>) by the E2E suite, else the surface has an untested interactive action.
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import path from "node:path";
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const cmdSrc = readFileSync(path.join(HERE, "../src/commands.ts"), "utf8");
-const start = cmdSrc.indexOf("COMMANDS = [");
-const COMMANDS = [...cmdSrc.slice(start).matchAll(/"([A-Z_]+)"/g)].map((m) => m[1]);
-const spec = readFileSync(path.join(HERE, "../tests/e2e/flagship.spec.ts"), "utf8");
-const missing = COMMANDS.filter((c) => !spec.includes(`cmd-${c}`));
-if (!COMMANDS.length) { console.error("no commands parsed"); process.exit(1); }
-if (missing.length) { console.error("UNCOVERED COMMANDS:", missing.join(", ")); process.exit(1); }
-console.log(`verify-coverage: all ${COMMANDS.length} registered commands exercised in the E2E suite`);
-process.exit(0);
+// Coverage means successful browser execution bound to current built bytes.
+// Literal command names in a test file are not evidence that actions ran.
+import { readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { pathToFileURL } from "node:url";
+import { COMMANDS } from "../native/state.js";
+import { browserHarnessHash, buildIdentity } from "./verification-identity.mjs";
+
+export function verifyCoverage(receipt, { buildHash, harnessHash }) {
+  if (receipt?.status !== "pass") throw Error("Browser run did not pass");
+  if (receipt.build_manifest_sha256 !== buildHash || receipt.harness_sha256 !== harnessHash) throw Error("Browser coverage receipt is stale for this build or harness");
+  const actual = receipt.commands_executed;
+  if (!Array.isArray(actual) || new Set(actual).size !== actual.length || JSON.stringify([...actual].sort()) !== JSON.stringify([...COMMANDS].sort())) throw Error("Executed commands differ from the closed inventory");
+  return actual.length;
+}
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  if (!process.argv[2]) throw Error("Usage: node scripts/verify-coverage.mjs <browser-run-receipt.json>");
+  const sha = bytes => createHash("sha256").update(bytes).digest("hex");
+  const count = verifyCoverage(JSON.parse(await readFile(process.argv[2], "utf8")), {
+    buildHash: await buildIdentity(new URL("../dist/", import.meta.url)),
+    harnessHash: await browserHarnessHash()
+  });
+  console.log(`verify-coverage: ${count} commands completed against current built bytes`);
+}

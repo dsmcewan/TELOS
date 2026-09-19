@@ -15,7 +15,7 @@ import { syncLiveGraph } from "./build-live-graph.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BUILDER = path.join(HERE, "build-live-graph.mjs");
-const LIVE_GRAPH = path.join(HERE, "..", "src", "live-graph.json");
+const LIVE_GRAPH = path.join(HERE, "..", "native", "live-graph.json");
 const tempDir = mkdtempSync(path.join(os.tmpdir(), "live-graph-test-"));
 process.on("exit", () => rmSync(tempDir, { recursive: true, force: true }));
 

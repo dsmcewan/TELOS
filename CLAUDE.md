@@ -2,6 +2,10 @@
 
 Guidance for Claude Code (and the `@claude` GitHub Action) when working in this repo.
 
+This is a tool-facing adapter. Start with `AI-START-HERE.md` and `AGENTS.md`;
+`CURRENT-AUTHORITY.json`, `repository-manifest.json`, the active plan, and applicable
+institutional-memory records govern authority and win over this summary.
+
 ## What TELOS is
 
 A **multi-model build-gate**. Independent AI model *seats* (claude / grok / codex / agy / gemini)
@@ -51,7 +55,7 @@ The current machine map is `repository-manifest.json` and wins over this summary
   packages; preserve each package's explicit non-claims.
 - `ai-native-memory/` — portable zero-dependency institutional-memory plugin/product;
   it is not a mythological role and its Iliad enrollment remains deferred.
-- `narcissus/flagship/` — implemented React/TypeScript/Vite product. It is distinct
+- `narcissus/flagship/` — implemented native DOM/WebGL product. It is distinct
   from the registered, still-unimplemented Narcissus role module.
 - `contracts/` — the human-readable protocol the gate enforces (incl.
   `Proposal Lifecycle.md`: audited judgment, cold review, verification obligations).
@@ -87,41 +91,56 @@ so the packages are not fully isolated — preserve those cross-package relative
 
 ## Conventions
 
-- **Core and plugin packages:** Node ≥ 18, ESM only (`"type": "module"`, `.mjs`
-  files), zero dependencies, and no package lockfiles. Use only Node standard-library
-  imports with the `node:` prefix plus the package's existing reviewed relative imports.
-- **Flagship product exception:** `narcissus/flagship/` requires Node
-  `^20.19.0 || >=22.12.0`, uses React/TypeScript/Vite, and must keep its tracked
-  `package-lock.json`. Install it with `npm ci`; do not hand-edit the lockfile or add
-  dependencies without a reviewed product change.
-- **Style:** match the surrounding package. The zero-dependency `.mjs` packages use
-  double-quoted strings, semicolons, 2-space indent, named top-level `const` config
-  sets, and small pure functions. The flagship follows its existing TypeScript/React
-  toolchain.
+- **Every package, including the flagship:** no runtime, development, build or test
+  packages, lockfiles, CDN application code or vendored library substitutes. Use
+  Node built-ins with the `node:` prefix and repository-owned relative modules;
+  the browser front end uses standard DOM/WebGL APIs.
+- Core/plugin packages keep their declared Node floor. The native flagship uses
+  Node >= 22.12 and a separately supplied Chromium executable for browser tests.
+  There is no package installation step. See
+  `docs/runs/zero-dependency-flagship-migration-2026-09-17.md` for policy scope and
+  the distinction between implementation direction and formal acceptance.
+- **Style:** match surrounding ESM code; prefer named configuration values and
+  small pure functions. Keep DOM interaction state separate from WebGL rendering.
 - Keep modules executable as scripts where they already are (`#!/usr/bin/env node` shebang).
 
 ## Testing — always run before proposing changes
 
 Use each package's own scripts; most zero-dependency packages make `npm test` run a
 `node --check` syntax pass first. `ai-native-memory` exposes that pass separately, and
-the flagship has its own locked frontend pipeline. There is no shared root script —
+the flagship has a native frontend pipeline. There is no shared root script —
 run the exact commands below for the package(s) you touched:
 
+Run each selected example from the repository root. Subshells keep later sibling
+package paths correct when several examples are pasted together:
+
 ```bash
-cd build-gate            && npm test   # gate, sign, trust, council, stress (+ runs breakout)
-cd breakout              && npm test
-cd connectors/ai-peer-mcp && npm test
-cd merkle-dag            && npm test
-cd saas-forge            && npm test
-cd ai-forge              && npm test
-cd forge                 && npm test
-cd clotho                && npm test
-cd ai-native-memory      && npm run check && npm test
-cd lachesis              && npm test
-cd atropos               && npm test
-cd narcissus/flagship    && npm ci && npm test && npm run verify:evidence \
-                           && npm run verify:coverage && npm run build && npm run test:e2e
+(cd build-gate && npm test)   # also runs breakout
+(cd breakout && npm test)
+(cd connectors/ai-peer-mcp && npm test)
+(cd merkle-dag && npm test)
+(cd saas-forge && npm test)
+(cd ai-forge && npm test)
+(cd forge && npm test)
+(cd clotho && npm test)
+(cd ai-native-memory && npm run check && npm test)
+(cd lachesis && npm test)
+(cd atropos && npm test)
 ```
+
+For the flagship, set `BROWSER_PATH` to an existing Chromium executable, then
+run the checks from the repository root. On WSL use native Linux Node/npm.
+
+```bash
+node tools/check-zero-dependencies.mjs
+(cd narcissus/flagship && node --test native/tests/*.test.mjs scripts/test-*.mjs \
+  && node scripts/verify-evidence.mjs && node scripts/build.mjs \
+  && node native/scripts/test-browser.mjs dist .verification/browser.json \
+  && node scripts/verify-coverage.mjs .verification/browser.json)
+```
+
+See `narcissus/flagship/README.md` for exact-backend visual/motion verification.
+
 
 `build-gate`'s test suite also runs `breakout`'s, so changes touching either should be
 validated via `build-gate`. Tests are plain Node scripts under each package's `scripts/`.
@@ -151,6 +170,6 @@ This is the core invariant of the project. When changing gate, signing, or prove
 ## Pull requests
 
 - Keep changes scoped; run the affected package's `npm test` and report the result.
-- Do not add dependencies or build tooling to zero-dependency packages. In the
-  flagship, keep dependency changes reviewed and lockfile-backed. Never commit
-  runtime or secret artifacts.
+- Do not add package dependencies, external build/test tooling, CDN code or
+  vendored library substitutes anywhere in TELOS. Never commit ephemeral runtime
+  state or secret artifacts.

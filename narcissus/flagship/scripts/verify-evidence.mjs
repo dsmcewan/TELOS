@@ -6,7 +6,7 @@ import path from "node:path";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "../../..");
-const LEDGER_PATH = path.join(HERE, "../src/evidence-ledger.json");
+const LEDGER_PATH = path.join(HERE, "../native/evidence-ledger.json");
 
 function readLedger() {
   try {

@@ -1,0 +1,82 @@
+{
+  "kind": "workshop-preflight",
+  "contract": "production-profile-compiler-daedalus-workshop/2",
+  "provider_calls_authorized": false,
+  "aggregate_spending_limit_usd": 500,
+  "budget_status": "eye-approved-for-future-run",
+  "call_count": 5,
+  "frozen_frame": {
+    "bytes": 397391,
+    "candidate_raw_sha256": "sha256:3beb9be7e18dc1ac68302bdba85a416eedb080d75e2955077de84310149c8bce",
+    "ruling_raw_sha256": "sha256:ce57768fbc71fab20990dc5e3314daa1545a2294738cc8435411028dc45154f4"
+  },
+  "known_prompt_bytes": 796028,
+  "all_prompt_sizes_exact": false,
+  "downstream_size_note": "Integration and verification prompt bytes become exact only after their declared model-output dependencies exist; no estimate is represented as exact.",
+  "call_plan": [
+    {
+      "sequence_group": 1,
+      "seat": "codex",
+      "role": "constraints",
+      "phase": "author",
+      "prompt_bytes": 397952,
+      "system_bytes": 739,
+      "schema_bytes": 478,
+      "max_output_tokens": 24000,
+      "depends_on": []
+    },
+    {
+      "sequence_group": 1,
+      "seat": "claude",
+      "role": "implementation",
+      "phase": "author",
+      "prompt_bytes": 398076,
+      "system_bytes": 739,
+      "schema_bytes": 303,
+      "max_output_tokens": 24000,
+      "depends_on": []
+    },
+    {
+      "sequence_group": 2,
+      "seat": "claude",
+      "role": "integration",
+      "phase": "integrate",
+      "prompt_bytes": null,
+      "system_bytes": 739,
+      "schema_bytes": 1372,
+      "max_output_tokens": 32000,
+      "depends_on": [
+        "constraints/author output",
+        "implementation/author output"
+      ]
+    },
+    {
+      "sequence_group": 3,
+      "seat": "codex",
+      "role": "constraints",
+      "phase": "verify",
+      "prompt_bytes": null,
+      "system_bytes": 739,
+      "schema_bytes": 406,
+      "max_output_tokens": 12000,
+      "depends_on": [
+        "constraints/author output",
+        "integration output"
+      ]
+    },
+    {
+      "sequence_group": 3,
+      "seat": "claude",
+      "role": "implementation",
+      "phase": "verify",
+      "prompt_bytes": null,
+      "system_bytes": 739,
+      "schema_bytes": 406,
+      "max_output_tokens": 12000,
+      "depends_on": [
+        "implementation/author output",
+        "integration output"
+      ]
+    }
+  ]
+}

@@ -9,16 +9,37 @@ and `workflow_optimization[].must_not_weaken` is commented **"friction | signatu
 eye-gates | ..."** (`:582`) — a trailing ellipsis that admits the list is open, not closed. Neither
 comment is backed by an implemented registry on disk. The Production Profile Compiler (PPC) —
 the thing Surface B says to bind to — is **HELD design + plan only**: `git log --stat` on
-`feature/deterministic-production-profile-compiler` shows every commit on that branch is a doc or
-council-authorization-run artifact (`docs(production-profile): add implementation plan`,
-`docs: design deterministic production profile compiler`, plus `run-authorization.mjs` /
-`test-runner.mjs` council packets under `docs/institutional-memory/`); there is no `.mjs` file
-anywhere in the repository, on any branch, that compiles a profile or exposes a domain registry.
-`grep -rln "compileProductionProfile\|productionProfileCompiler"` returns nothing. The
-authorization council itself has not converged on this plan — the branch's own commit history
-shows `Record authz-010 fail-closed council attempt`, `Record authz-011 retry failure`,
-`Record authz-012 plan revision verdict`, `Prepare authz-013 council runner` in sequence, i.e. a
-still-unresolved authorization loop, not a shipped registry Surface B could import today.
+`feature/deterministic-production-profile-compiler` shows no commit on that branch is compiler
+code. The commits that are actually PPC-specific are four docs commits — `d73ca28` (design),
+`1c12c6b` (require TELOS production profile dogfood), `6bb0d5f` (enter production profile compiler
+quest), `1b5bf9b` (add implementation plan); there is no `.mjs` file anywhere in the repository, on
+any branch, that compiles a profile or exposes a domain registry.
+`grep -rln "compileProductionProfile\|productionProfileCompiler"` returns nothing.
+
+**Correction to an earlier version of this packet:** this section previously also cited
+`run-authorization.mjs` / `test-runner.mjs` "council packets under `docs/institutional-memory/`"
+and a commit sequence — `643308f` ("Record authz-010 fail-closed council attempt"), `12f6bfc`
+("Record authz-011 retry failure"), `3a39f50` ("Record authz-012 plan revision verdict"), `585e8bd`
+("Prepare authz-013 council runner") — as proof "the authorization council itself has not converged
+on this plan." Direct verification (`git show --stat` on each) shows none of those four commits
+touch PPC: all four live entirely under `docs/runs/daedalus-family-lifecycle-authorization-*/`, and
+that sequence's own `authorization-summary.json` states its objective as certifying "the exact
+Daedalus-family multi-model-seat lifecycle plan... The implementation target is the source plugin
+at /home/colchis/plugins/multi-model-seats" — a different feature (the multi-model-seats plugin)
+that merely shares this branch. That citation is withdrawn.
+
+What the committed record actually shows for PPC's authorization status: the Iliad pre-review
+(`docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-20-production-profile-compiler-1.json`,
+committed in `6bb0d5f`) records that The Eye approved the written design and that this entry
+"authorizes no implementation," and it points at an in-progress Daedalus workshop
+(`docs/runs/production-profile-compiler-1-workshop/`). That workshop directory, however, is
+**untracked in git** (`git status --porcelain` reports it `??`) — so while its current on-disk
+`result.json` shows eleven attempts and records `state: conflict`, `terminal: needs-eye`,
+`authorization_granted: false`, that is a signal outside this packet's verified git-commit
+evidence chain, not a ruled fact. Net honest state: PPC's authorization has not converged and
+there is no committed evidence it is close — but the specific "two failures and a retry" claim
+previously made here was about the wrong subject and is corrected rather than reasserted with
+different numbers.
 
 Worse, the domain-id **literal strings** the PPC corpus itself uses are not even internally
 consistent. Across the entire PPC design + plan corpus, exactly two literal domain slugs appear:
@@ -88,15 +109,23 @@ following the `Object.freeze` pattern already used by `EVIDENCE_KINDS`
 validation, not a hot path.
 
 **What breaks if it is wrong.** If PPC ships with different domain ids, the failure mode is a
-one-time migration of research-artifact `domain` values, surfaced by the same content-address
-discipline that already protects this repo (an artifact citing a hash whose referent has changed
-identity fails closed per invariant 5's "you cannot recurse on a ghost",
-`daedalus-workflow-v2-design.md:443-444`) — not a silent security gap. The § Relation to
-Production Profile Compiler section already anticipates supersession: "If a deterministic
-production profile is compiled for the host, Stage 0 treats its obligation set and profile hash as
-prior residue" (`:596-598`). That clause should explicitly extend to domain ids: **the moment PPC
-compiles and exports its own registry, that registry supersedes the v2-minted list — this is a
-one-time controlled migration cited by hash, not a standing dual-maintenance burden.**
+one-time migration of research-artifact `domain` values. This is **not** caught by invariant 5's
+"you cannot recurse on a ghost" (`daedalus-workflow-v2-design.md:443-444`) — that invariant governs
+a recursive frame that cites a **hash** whose bytes are missing or drifted; `production[].domain`
+is a plain string field, not a hash citation, so a stale domain value does not trip that mechanism,
+and citing invariant 5 here overstated how automatically this drift is caught. The actual bound is
+narrower and structural rather than automatic: Stage 1 disposition review already gates whether any
+Stage 0 `production[].domain` value reaches the obligation matrix ("Suggested obligations are never
+auto-inserted... without Seat 2 constraint ownership and controller validation",
+`daedalus-workflow-v2-design.md:590-593`), so a stale domain id can sit unflagged inside
+already-recorded Stage 0 evidence, but it cannot promote itself into an enforced production
+obligation without passing back through that gate — bounded bookkeeping exposure, not a route past
+Stage 1 enforcement. The § Relation to Production Profile Compiler section already anticipates
+supersession: "If a deterministic production profile is compiled for the host, Stage 0 treats its
+obligation set and profile hash as prior residue" (`:596-598`). That clause should explicitly
+extend to domain ids: **the moment PPC compiles and exports its own registry, that registry
+supersedes the v2-minted list — this is a one-time controlled migration, not a standing
+dual-maintenance burden.**
 
 #### Option B — Leave `domain` as free text / `unknown` until PPC ships; enforce only the `governance-runtime:*` prefix today
 
@@ -105,10 +134,12 @@ catalog**" — by waiting for the actual catalog rather than inventing a stand-i
 drift risk in Option A entirely: there is only ever one canonical domain-id source, whenever it
 arrives.
 
-**The case against it.** This is not a deferral to a near-term event — the PPC authorization loop
-has already failed once and retried at least twice on this branch (`authz-010 fail-closed council
-attempt` → `authz-011 retry failure` → `authz-012 plan revision verdict` → `authz-013` in
-preparation), so "until PPC ships" has no bound today. Leaving `domain` as free text means Surface
+**The case against it.** This is not confirmed to be a near-term deferral — as corrected above,
+there is no committed evidence PPC's authorization is close to converging (the only PPC-specific
+commits on this branch are four docs commits, with no committed authorization pass or fail
+recorded for PPC at all), and the uncommitted workshop evidence that does exist for PPC shows
+eleven attempts still unresolved in a `conflict` / `needs-eye` state — so "until PPC ships" has no
+demonstrated bound today. Leaving `domain` as free text means Surface
 B is not actually closed for however long that authorization loop runs — any seat can write any
 string, and Stage 1 rule 2's own enforcement ("Production-bound frames cannot set aside all of
 Surface B without an Eye-visible waiver hash", `:621-622`) becomes unenforceable, because there is
@@ -131,14 +162,22 @@ degrades gracefully.
 already-named eleven domains, plus the seven governance-runtime suffixes already listed in the v2
 design doc itself — and add one sentence to § Relation to Production Profile Compiler stating that
 PPC's own exported registry supersedes this list on a one-time hash-cited migration, not a
-standing parallel source of truth.** The single strongest reason: the PPC authorization loop is
-demonstrably not close to done (two recorded failures and a retry already on disk), so "wait for
-the real catalog" is not a short deferral — it is an indefinite one that leaves Stage 1 rule 2
-unenforceable in the meantime, which is the exact defect the content-address rule exists to
-prevent. This recommendation flips if The Eye judges the PPC authorization loop close enough to
-resolution (e.g., authz-013 converges) that Surface B can simply wait the remaining distance — in
-that case Option B's single-source-of-truth purity is worth the short wait, and Item 8's Surface B
-half should be re-opened once PPC's actual registry lands rather than ruled now.
+standing parallel source of truth.** The single strongest reason: the committed record contains
+zero evidence that PPC's authorization is close to done — only four docs commits exist for PPC on
+this branch (design, dogfood-request, quest-entry, implementation plan), with no committed
+authorization attempt, pass, or fail recorded for PPC at all, and the uncommitted (untracked)
+workshop evidence that does exist for PPC shows eleven attempts still unresolved in a `conflict` /
+`needs-eye` state. (An earlier version of this ruling cited a different, wrong-subject
+authorization sequence — `authz-010` through `authz-013` — as this evidence; those commits record
+the multi-model-seats plugin's Daedalus-family lifecycle authorization, not PPC's, and that
+citation is withdrawn.) With no committed proof of proximity either way, "wait for the real
+catalog" cannot be treated as a short deferral — it is unbounded on the evidence actually on disk,
+and Stage 1 rule 2 would be unenforceable for that unknown duration, which is the exact defect the
+content-address rule exists to prevent. This recommendation flips if The Eye can confirm — through
+the committed record, or by resolving the uncommitted workshop's `conflict` state — that PPC's
+authorization is genuinely close to resolution; in that case Option B's single-source-of-truth
+purity is worth the short wait, and Item 8's Surface B half should be re-opened once PPC's actual
+registry lands rather than ruled now.
 
 ---
 
@@ -189,10 +228,20 @@ friction," "secondary friction," "Seat 5 = neutral," "role R," "Merkle-DAG suppl
 mechanisms, not inventing new ones. It gives Stage 1 rule 4 a genuinely closed reject-list: any
 `workflow_optimization` proposal that claims to touch a load-bearing mechanism must cite one of a
 complete, enumerable set of tokens, and the controller can reject "used" dispositions against every
-one of them, not just four. Proposed enum (12 tokens, `SCREAMING_SNAKE` to match this codebase's
-other frozen constant style, e.g. `EVIDENCE_KINDS`):
+one of them, not just four.
+
+**Correction to an earlier version of this enum:** it previously omitted a token for invariant 0
+("Governance first," `:679-680`) — despite the paragraph above correctly counting twelve numbered
+invariants — and mislabeled the resulting 13-token list as "12 tokens." Both are fixed below: a
+`GOVERNANCE_FIRST` token is added for invariant 0, bringing the enum to fourteen tokens total, so
+it actually covers every numbered invariant (0 through 11) as claimed, not just 1 through 11.
+
+Proposed enum (14 tokens — one per numbered invariant 0-11, plus `SIGNATURES` and `EYE_GATES` for
+the two protected mechanisms the Invariants section references but does not itself number;
+`SCREAMING_SNAKE` to match this codebase's other frozen constant style, e.g. `EVIDENCE_KINDS`):
 
 ```
+GOVERNANCE_FIRST                // invariant 0 — fail-closed over convenience, always
 FRICTION                        // invariant 1 — dual ownership + external deny-back
 SEAT5_NEUTRAL                   // invariant 2 — no technical tie-break
 HASH_IS_LAW                     // invariant 3 — content addresses, never mutable labels
@@ -218,7 +267,7 @@ Surface C proposal has ever attempted to weaken a deep invariant like hash-is-la
 order-is-compiled — the risk being closed is hypothetical, not observed, the same evidentiary gap
 item 7's ruling flagged for the referee-model question.
 
-**What it costs.** Defining twelve frozen tokens plus one Stage 1 controller check enumerating
+**What it costs.** Defining fourteen frozen tokens plus one Stage 1 controller check enumerating
 them against the doc's own Invariants section — a small, one-time authoring cost, following the
 same `Object.freeze` pattern as `EVIDENCE_KINDS` (`build-gate/evidence.mjs:84`) and the same
 closed-array pattern as `POLICY_CHECK_KEYS` (`merkle-dag/proposal-ledger.mjs:229-233`).

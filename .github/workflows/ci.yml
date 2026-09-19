@@ -129,43 +129,36 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: npm
-          cache-dependency-path: narcissus/flagship/package-lock.json
+          node-version: '24'
 
-      - name: Install locked dependencies
+      - name: Enforce repository-wide dependency policy
+        run: |
+          node --test tools/test-zero-dependencies.mjs
+          node tools/check-zero-dependencies.mjs
+
+      - name: Run unit and evidence regression tests
         working-directory: narcissus/flagship
-        run: npm ci
+        run: node --test native/tests/*.test.mjs scripts/test-*.mjs
 
-      - name: Audit production and development dependencies
-        working-directory: narcissus/flagship
-        run: npm audit --audit-level=moderate
-
-      - name: Run verifier regression tests
-        working-directory: narcissus/flagship
-        run: npm test
-
-      - name: Verify evidence pins and command coverage
+      - name: Verify evidence and build native static site
         working-directory: narcissus/flagship
         run: |
-          npm run verify:evidence
-          npm run verify:coverage
+          node scripts/verify-evidence.mjs
+          node scripts/build-live-graph.mjs --check
+          node scripts/build.mjs
 
-      - name: Verify committed live graph is current
-        working-directory: narcissus/flagship
-        run: npm run check:live-graph
+      - name: Locate declared browser platform
+        shell: bash
+        run: |
+          flagship_browser="$(command -v google-chrome || command -v chromium || true)"
+          test -n "$flagship_browser" || { echo 'An existing Chromium browser platform is required'; exit 1; }
+          echo "BROWSER_PATH=$(readlink -f "$flagship_browser")" >> "$GITHUB_ENV"
 
-      - name: Build production bundle
+      - name: Run native browser tests and verify executed command coverage
         working-directory: narcissus/flagship
-        run: npm run build
-
-      - name: Install Playwright Chromium
-        working-directory: narcissus/flagship
-        run: npx playwright install --with-deps chromium
-
-      - name: Run end-to-end tests
-        working-directory: narcissus/flagship
-        run: npm run test:e2e
+        run: |
+          node native/scripts/test-browser.mjs dist .verification/browser.json
+          node scripts/verify-coverage.mjs .verification/browser.json
 
       - name: Require a clean tracked checkout
         run: git diff --exit-code -- .

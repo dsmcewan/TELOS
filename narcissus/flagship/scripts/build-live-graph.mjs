@@ -12,7 +12,7 @@ import { loadAuthority, verify } from "../../../atropos/verify.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "../../..");
-export const LIVE_GRAPH_PATH = path.join(HERE, "..", "src", "live-graph.json");
+export const LIVE_GRAPH_PATH = path.join(HERE, "..", "native", "live-graph.json");
 
 export function generateLiveGraph() {
   // --- CLOTHO: the live weave (via Lachesis's pinned view of the current snapshot) ---

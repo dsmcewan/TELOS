@@ -4,15 +4,42 @@
 
 **Goal:** Add a deterministic, controller-owned compiler that turns production facts into fixed, content-addressed obligations before planning, proves those obligations through closed executable checks, and blocks authorization or settlement when profile evidence is missing, stale, weakened, or contradicted.
 
-**Architecture:** A zero-dependency compiler under `build-gate/production-profile/` validates a closed controller dossier, scans bounded repository facts, evaluates a pinned JSON policy, and emits content-addressed production-policy source records. `merkle-dag` gains backward-compatible version-2 obligations and production lifecycle hashing; `build-gate` records the input before model calls, mints fixed verification nodes after workshop, re-resolves checks in the proposal gate, and re-runs classification before settlement. Deterministic bank-style and TELOS self-hosting runs prove the negative path without external network or real personal data.
+**Architecture:** A zero-dependency compiler under `build-gate/production-profile/` validates a closed controller dossier, loads a pinned JSON policy before scanning bounded repository facts, and emits content-addressed production-policy source records. A controller-owned lifecycle module is the sole sequencing authority for the exact thirteen-state production path, closed failure/claim vocabularies, hash-verified resume, and drift-to-new-revision behavior. `merkle-dag` gains backward-compatible version-2 obligations and production lifecycle hashing; `build-gate` records the input before model calls, mints fixed verification nodes after workshop, independently re-verifies authorization before execution, re-resolves checks in the proposal gate, and re-runs classification before settlement. Deterministic bank-style and TELOS self-hosting runs prove the negative path without external network or real personal data.
 
 **Tech Stack:** Node.js `>=18`, ESM `.mjs`, `node:` standard library only, canonical JSON, SHA-256 content addresses, Ed25519 process-evidence signatures, loopback HTTP fixtures, existing TELOS Merkle-DAG and proposal lifecycle.
 
 ## Global Constraints
 
 - Governing design: `docs/superpowers/specs/2026-07-20-deterministic-production-profile-compiler-design.md` at `git:1c12c6b36de31b62de7d6a0f1ce02db3f13ded69`, raw file SHA-256 `1a0d7b96fb4d4a35313355846a205bfd7c0f6c9fa093c957ba186f5b1bac0ba6`.
-- Quest entry: `docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-20-production-profile-compiler-1.json` and `docs/runs/production-profile-compiler-1/reader-validation-artifact.json`, committed at `git:6bb0d5f`.
+- Iliad pre-review anchor: `docs/institutional-memory/iliad/PRE-REVIEWS/2026-07-20-production-profile-compiler-1.json`, raw file SHA-256 `7b96f60ab9280c8c8173723f30892f4104583f5c9db17c44877bc724507ab634`; its reader-validation companion is `docs/runs/production-profile-compiler-1/reader-validation-artifact.json`, and both were committed at `git:6bb0d5f`.
+- Daedalus-methodology anchor: `docs/daedalus-methodology.md`, raw file SHA-256 `9288e17e84b202e48c4dbfad13904abc9317bae22b82aeefa01ee6b837a0c406`.
+- Workshop predecessor anchor: the candidate presented to `attempt-005` at `docs/runs/production-profile-compiler-1-workshop/attempts/attempt-005/candidate-plan.md`, raw file SHA-256 `67de2ff93499b036a35964014a5222a504ca57c9c1f9fed6fcb9fa4f9b6b210b`. A corrected candidate records and verifies its own new raw hash separately; it cannot overwrite or substitute this predecessor-lineage anchor.
+- These four authority anchors are a closed exact set. Workshop, institutional, and acceptance verification re-read and hash the named bytes and reject a missing, extra, path-only, abbreviated-commit-only, stale, or substituted anchor before treating a plan as matured.
+- Workshop maturation additionally consumes a closed exact input-binding set, each re-read from named
+  bytes and SHA-256-verified at evaluation time before any provider seat is called:
+  - Controller-ruling input binding:
+    `docs/runs/production-profile-compiler-1-workshop/controller-ruling-file-ingress.json`, The Eye's
+    non-authorizing 2026-07-20 file-ingress ruling. Its recorded `candidate_plan.raw_sha256`
+    identifies the exact ruled-on revision; a later corrected revision does not inherit the ruling for
+    changed requirements.
+  - Current candidate input binding: the exact bytes of this plan revision. A corrected candidate
+    records and verifies its own new raw hash; it cannot overwrite or substitute the
+    predecessor-lineage anchor above.
+  - Daedalus comprehension-result input binding:
+    `docs/runs/production-profile-compiler-1-workshop/reader-validation-artifact.json`, the passed
+    comprehension-gate artifact whose resolved plan ref and `authz-008` resolution must match the
+    active authority record.
+  A missing, extra, path-only, stale, or substituted input binding is a mechanical-preflight blocker;
+  none of these bindings authorizes implementation, provider calls, or Argo execution.
 - Current `authz-008` does **not** authorize this plan. No production-code task begins until Daedalus matures this candidate, TELOS authorizes the exact matured hash, The Eye directs Argo execution, and the Argo entry ritual passes.
+- The only legal production lifecycle states, in order, are exactly
+  `LEGACY_INACTIVE`, `ACTIVE_UNPREPARED`, `INPUT_RECORDED`, `COMPILED`,
+  `WORKSHOP_COMPLETE`, `PLANNED`, `GATE_PASSED`, `AUTHORIZED_BUILD`,
+  `ORDINARY_SETTLED`, `EVIDENCE_FRONTIER_PREPARED`, `VERIFICATION_SETTLED`,
+  `FINAL_PROFILE_PASSED`, and `DONE`. One controller-owned pure transition function and closed
+  transition table enforce that order. A blocker or cannot-run result terminates the invocation;
+  recovery resumes only from re-read, hash-verified durable artifacts; any semantic drift or `respec`
+  starts a new planning revision and requires fresh authorization.
 - The production dossier, signal resolutions, policy choice, implementation acceptance, and enrollment remain controller/The Eye jurisdiction. Models cannot author or lower the effective profile, select a waiver, remove an obligation, substitute a check, or declare required evidence not applicable.
 - Activation is exact: production enforcement is required when `proposal_lifecycle === true`, `market_bound === true`, or either `production_profile` or `production_evidence` is present. Activated builds require `proposal_lifecycle === true` and a complete profile before any model call.
 - Preserve byte identity for existing obligation-free plans and legacy concern obligations. Legacy hash preimages remain unchanged; production behavior is additive behind explicit version and lifecycle fields.
@@ -20,11 +47,26 @@
 - Node.js 18 and Node.js 20 are the binding portability matrix. Local Node 24 results are supplementary only and never substitute for both CI matrix legs.
 - Determinism excludes wall-clock time, locale, traversal order, JSON key order, host path separators, absolute host paths, random identifiers, ambient defaults, and unpinned environment values from semantic output.
 - All semantic arrays that represent sets are deduplicated and sorted. All semantic object keys are closed and canonicalized before hashing.
-- Compiler CLI exits are exact: `0` success, `2` deterministic blocker, `1` cannot-run. Registered production checks exit `0` proved, `1` assertion failed, `2` cannot run safely. No failure replaces a previously valid output artifact.
+- Compiler CLI exits are exact: `0` success, `2` deterministic blocker, `1` cannot-run. Registered production checks exit `0` proved, `1` assertion failed, `2` cannot run safely. A blocker or cannot-run detected before the atomic rename commit point never replaces a previously valid output artifact. A failure of the required parent-directory fsync after rename is instead the sole closed `ATOMIC_REPLACEMENT_INDETERMINATE` cannot-run state: only complete old or complete new bytes may be visible, no lifecycle transition or downstream artifact is written, and a fresh invocation must re-read and reconcile the exact old/new hashes before it can retry or report success.
 - Repository observations are monotonic: they may union sets, raise ordered floors, turn capabilities on, or require classification; they may never lower a controller declaration or suppress a triggered obligation.
 - Text matches are signals, not facts. Every accepted signal resolution is controller-authored, bound to the exact current signal reference, and invalid when stale or fabricated.
 - Policy version 1 is one local canonical JSON document with only `all`, `any`, `not`, `eq`, `contains`, `intersects`, `gte`, and `lte`. Unknown operators, paths, templates, versions, duplicate IDs, or check kinds fail loading.
-- The initial catalog is exactly the 31 stable obligation IDs and eleven production domains frozen in the design. No obligation ships without a non-trigger fixture, a one-fact trigger fixture, passing evidence, failing evidence, and stale-identity mutation.
+- The initial design catalog's 31 stable obligation IDs remain unchanged. The Eye's additive
+  2026-07-20 file-ingress ruling adds exactly `FILE-INGRESS-001` in the existing data domain, producing
+  a closed 32-ID catalog without changing the eleven-domain or eight-check-kind sets. No obligation
+  ships without a non-trigger fixture, a one-fact trigger fixture, passing evidence, failing evidence,
+  and stale-identity mutation.
+- File ingress is controller-declared as the sorted non-empty set `["none"]` or a subset of
+  `["csv","json","xlsx"]`; `"none"` is exclusive. Images are not a version-1 format. A host that
+  admits files must validate actual bytes locally before durable application storage, model context,
+  tool use, or provider/integration egress. Extensions, MIME headers, and filenames are signals only.
+  Every admitted file and locally extracted value inherits the profile's complete top-level
+  `data_classification` set before any egress decision; no host, model, or classifier may lower it.
+  JSON and CSV must satisfy bounded local format validation. XLSX must be a bounded valid OOXML ZIP and
+  is rejected as one complete workbook when it contains embedded images/media, macros, OLE/embedded
+  objects, external relationships, encryption, duplicate or traversing entries, malformed ZIP/XML, or
+  unsupported relationships. Renamed, MIME-mislabeled, Base64/data-URI, archived, embedded, corrupt,
+  encrypted, unknown, or uninspectable image content is rejected rather than stripped or ignored.
 - The closed production check registry contains exactly eight version-1 kinds. Callers cannot provide commands, interpreters, scripts, arguments, working directories, environments, shell fragments, external URLs, expected outcomes, or implementation references.
 - Runtime checks use literal loopback only (`127.0.0.1` or `[::1]`), deny redirects and proxy environment variables, use synthetic data, and enforce fixed request/body/time limits. No compiler, scanner, test, demo, or reproducible self-hosting run contacts an external provider.
 - Every production verification node declares `test.env_contract: "telos-scrubbed-v1"`. The generic
@@ -49,6 +91,9 @@
 - The full production input, compiled profile, semantic repo facts, policy, registry, evidence configuration, production source set, obligations, checks, and lifecycle metadata are hash-bound into the plan.
 - Post-build reclassification runs immediately before settlement. Any changed profile, source set, obligation set, registry contract, or evidence identity returns `BLOCKED_PROFILE_DRIFT`; stale work cannot settle.
 - Runtime, structural, and process evidence labels remain explicit in code, reports, docs, and public claims. No check is described as proving a stronger tier.
+- Public production-profile claims use one versioned controller-owned claim vocabulary. Unknown claim
+  IDs, unregistered predicates, widened prose, or evidence-tier promotion fail structural,
+  publication, institutional, and acceptance verification even when signed.
 - The synthetic bank demonstration uses only the invalid marker `000-00-0000`, a loopback fake provider, and redacted audit output. It never uses a bank, customer, live provider, or real personal data.
 - TELOS is the first non-synthetic host. Its exact controller-approved dossier enters a separately authorized production proposal and uses the same compiler, policy, registry, proposal reconstruction, post-build scan, obligation discharge, and settlement path as fresh hosts.
 - No repository-name branch, TELOS waiver, reduced policy, fixture-only registry, pre-recorded pass, direct ledger insertion, or alternate settlement path may make self-hosting pass.
@@ -59,11 +104,19 @@
 - An unsafe recovery state creates an exclusive signed forensic-hold record outside the suspected
   attempt ledger. Every mutating self-publication mode, including recovery and supersession, blocks on
   that durable hold before opening a key until a separate The Eye/TELOS change-protocol disposition.
+- Public finding-code jurisdiction is closed by owning protocol. Compiler, CLI, proposal, frontier,
+  and settlement surfaces use only Task 1's exact 20-code `FINDING_CODES`. Self-publication recovery
+  uses only Task 12's exact five-code `PUBLICATION_RECOVERY_FINDING_CODES`. Demo and institutional
+  verifiers may relay a referenced result only under its owning vocabulary; they cannot merge,
+  widen, or substitute one vocabulary for another.
 - A root README dogfood claim, production-profile release tag, or institutional enrollment is prohibited until the reproducible TELOS self-hosting run and its negative controls are green.
 - New behavior is developed test-first. Each task begins with a discriminating failing test, records the expected failure, adds the smallest implementation, runs focused and regression tests, and commits only its named files.
 - New scripts use double quotes, semicolons, two-space indentation, explicit `node:` imports, small pure functions, and `#!/usr/bin/env node` on executable entry points.
 - Preserve unrelated user work. Never use destructive Git cleanup. Every verification run must leave the tracked checkout clean.
 - Green evidence proves only the bounded predicates in the design. Preserve every explicit non-claim; do not claim legal compliance, certification, universal security, operational effectiveness, or completeness of repository discovery.
+- Producer-authored status strings and summaries are assertions only. Institutional and final
+  acceptance oracles independently re-derive their predicates from exact committed bytes and Git
+  ancestry; they never treat `READY_FOR_EYE_INTEGRATION`, enrollment prose, or object counts as proof.
 
 ---
 
@@ -81,20 +134,24 @@
   - Owns the zero-dependency recursive JSON parser used at trust boundaries, including duplicate-key rejection, fatal UTF-8 decoding, prototype-key rejection, and canonical serialization.
 - Create `build-gate/production-profile/artifact-io.mjs`
   - Owns bounded stable JSON reads, physical containment, content-addressed controller artifacts, and atomic current-view replacement.
+- Create `build-gate/production-profile/lifecycle.mjs`
+  - Owns the exact thirteen-state enum, legal transition table, pure transition function, terminal
+    blocker/cannot-run results, hash-verified resume, and drift-to-new-revision rules.
 - Create `build-gate/production-profile/repo-facts.mjs`
   - Owns bounded deterministic traversal, structured detectors, text signals, signal-reference derivation, controller resolution validation, and monotonic fact reconciliation.
 - Create `build-gate/production-profile/policy-loader.mjs`
   - Owns closed policy-schema validation, JSON-Pointer resolution, condition evaluation, rule projections, and policy/rule references.
 - Create `build-gate/production-profile/policy.v1.json`
-  - Owns the 31 stable obligations, eleven domains, trigger expressions, evidence tiers, projections, and registered check templates.
+  - Owns the 32 stable obligations, eleven domains, trigger expressions, evidence tiers, projections, and registered check templates.
 - Create `build-gate/production-profile/source-record.mjs`
   - Owns production-policy source records, source references, obligation-set references, and source-to-obligation conversion.
-- Create `build-gate/production-profile/finding-routing.mjs`
-  - Owns the immutable compiler-finding to policy-finding mapping; host review risk policy cannot alter it.
 - Create `build-gate/production-profile/compiler.mjs`
   - Composes schema, scanner, policy, registry, evidence configuration, references, findings, and canonical compiled artifacts without performing writes.
 - Create `build-gate/production-profile/check-registry.mjs`
   - Owns the version-2 production registry, closed per-kind parameter schemas, safety caps, implementation-source closures, and registry reference without mutating legacy version-1 checks.
+- Create `build-gate/production-profile/claims.v1.json`
+  - Owns the exact versioned public-claim ID set, bounded predicates, evidence tiers, and mandatory
+    non-claims consumed by `AI-CLAIM-001` and every publication/institutional verifier.
 - Create `build-gate/production-profile/check-runner.mjs`
   - Resolves and runs registered production checks with exact `0`/`1`/`2` status preservation and canonical bounded detail.
 - Create `build-gate/production-profile/checks/bounded-json.mjs` and `checks/loopback-client.mjs`
@@ -178,7 +235,7 @@
 - Create `build-gate/scripts/test-production-profile-cli.mjs`
   - Covers exact CLI syntax, stdout/stderr, atomic replacement, and `0`/`1`/`2` exits.
 - Create `build-gate/scripts/test-production-policy.mjs`
-  - Covers policy schema, all 31 trigger transitions, projections, source records, and obligation-set identity.
+  - Covers policy schema, all 32 trigger transitions, projections, source records, and obligation-set identity.
 - Create `build-gate/scripts/test-production-checks.mjs`
   - Covers all eight passing/failing/cannot-run paths, containment, limits, registry drift, and executable substitution.
 - Create `build-gate/scripts/test-production-lifecycle.mjs`
@@ -201,15 +258,31 @@
   - The historical packet-only fixture remains valid prior evidence and is explicitly insufficient for the new production self-hosting assertion.
 - Create `build-gate/examples/production-profile-self/README.md`, `dossier.json`, `runtime-adapter.json`, and `production-controls.json`
   - Provides the separately authorized TELOS self-profile and machine-readable host adapter/control artifacts.
-- Create `docs/runs/production-profile-demo/run.mjs`, `fixtures/`, `README.md`, and one immutable
-  manifest-closed `publication/` directory
-  - Proves unsafe synthetic AI egress blocks, corrected behavior passes, and profile escalation invalidates authorization from exact committed fixtures.
+- Create `docs/runs/production-profile-demo/run.mjs`, `fixtures/`, `README.md`,
+  `publication-attempts.jsonl`, immutable `attempts/attempt-NNN/` manifest and summary artifacts, and
+  exactly
+  `publication/run-summary.json`, `publication/manifest.json`, `publication/public-keyring.json`,
+  `publication/plan-before.snapshot.json`, `publication/plan-after.snapshot.json`,
+  `publication/proposal-ledger.snapshot.jsonl`, and
+  `publication/proposal-artifacts.snapshot.json`
+  - Proves unsafe synthetic AI egress and unsafe file admission block, corrected behavior passes, and
+    profile escalation invalidates authorization from exact committed fixtures. File bytes are
+    generated deterministically in memory by `fixtures/file-fixtures.mjs`; no binary fixture or
+    sensitive payload is committed.
+- Create only on the demo forensic branch
+  `docs/runs/production-profile-demo/forensic-holds/attempt-NNN.json`
+  - Records the exclusive signed demo forensic hold outside the suspected demo attempt ledger; it is
+    not part of a normal successful demo publication inventory.
 - Create `docs/runs/production-profile-self/run.mjs`, `publication-attempts.jsonl`, `fixtures/`,
   `README.md`, and immutable `attempts/attempt-NNN/` plan, public-keyring, approval, authorization,
   review-packet, ledger, process-record, manifest, and summary artifacts
   - Publishes signed public evidence once per immutable attempt, preserves every superseded attempt,
     then provides a deterministic `--verify-committed` path that re-derives and verifies the uniquely
     published attempt offline without regenerating signatures or retaining a private key.
+- Create only on the forensic branch
+  `docs/runs/production-profile-self/forensic-holds/attempt-NNN.json`
+  - Records the exclusive signed hold outside the suspected immutable attempt ledger; it is not part
+    of a normal successful publication inventory.
 - Create `docs/production-profile.md`
   - Explains the host dossier, evidence adapters, obligation catalog, operational limits, and extension seam.
 - Modify `README.md`
@@ -223,6 +296,11 @@
   - Stores candidate/matured plan, signed workshop events, actual seat provenance, result, and verifier for the exact Daedalus run.
 - Create before implementation: `docs/runs/production-profile-compiler-authorization-1/`
   - Stores required/advisory authorization packets, exact matured-plan hash, gate summary, and refusal/pass result.
+- Create before implementation:
+  `docs/runs/production-profile-compiler-authorization-1/verify-committed.mjs`
+  - Independently verifies committed packet bytes, signatures, actual seat provenance, gate result,
+    and exact `authorizes_plan` equality to the current matured-plan raw SHA-256 before Argo entry or
+    any task callback/edit/ledger event.
 - Create before implementation: `docs/runs/production-profile-compiler-argo-1/reader-answers.json`, `reader-validation-artifact.json`, and `STEP-LEDGER.json`
   - Stores the Argo entry comprehension result and append-only authorized-slice evidence; it is separate from the already committed Iliad quest-entry artifacts under `docs/runs/production-profile-compiler-1/`.
 - Create `docs/institutional-memory/telos/CONTRACTS/production-profile.json`
@@ -237,8 +315,14 @@
   - Records actual stage provenance, defects, verification, and at least one feed-forward optimization with an exact landing path.
 - Create `docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-20-production-profile-compiler-1.json`
   - Records the post-implementation Iliad review with actual seat provenance, exact reviewed commit, findings, dispositions, and submission status.
+- Create `docs/runs/production-profile-compiler-1/lifecycle-verification.json`
+  - Records the exact clean commit and command results independently re-run after the retrospective and
+    before enrollment; the institutional oracle re-runs them and verifies strict commit ancestry.
 - Create `docs/runs/production-profile-compiler-1/acceptance.json`
   - Records the final whole-branch acceptance matrix from committed bytes, including Node 18/20 CI links and explicit non-claims.
+- Create `docs/institutional-memory/test-production-profile-acceptance.mjs`
+  - Treats acceptance as an assertion, validates its exact closed schema, and independently re-derives
+    `PPC-A01` through `PPC-A21` from committed artifacts, commands, Git ancestry, and binding CI refs.
 - Create one loadout per authorized slice:
   - `docs/institutional-memory/loadout/TASK-LOADOUTS/task-production-profile-01.json`
   - `docs/institutional-memory/loadout/TASK-LOADOUTS/task-production-profile-02.json`
@@ -263,7 +347,14 @@
 1. Fetch `origin`, require no unexpected divergence, read `CURRENT-AUTHORITY.json`, and run `node docs/institutional-memory/verify-contracts.mjs`.
 2. Require the committed quest-entry artifact to report `COMPREHENSION_PASSED`, `19` passed, `0` failed, active-plan hash verified, and all superseded authorizations excluded.
 3. Run the Daedalus workshop over this candidate plan. Preserve every round, controller-computed objection identity, and actual per-seat provenance. Convergence means submission, never authorization.
-4. Obtain a TELOS authorization whose `authorizes_plan` exactly equals the matured plan hash. Required-seat dissent, missing signature/provenance, unavailable seat, stale plan, or certificate mismatch blocks.
+4. Obtain a TELOS authorization whose `authorizes_plan` exactly equals the matured plan hash.
+   Implement the authorization run's zero-dependency `verify-committed.mjs` before Argo entry. It must
+   re-read every committed packet and public key, verify the signature/provenance/gate chain, recompute
+   the raw SHA-256 of the exact plan path supplied at invocation, and require exact equality to
+   `authorizes_plan`; comparing two stored refs is forbidden. Its `--self-test` copies the packet set to
+   a temporary directory, changes one plan byte, and proves rejection before an injected task callback,
+   code-edit marker, or slice-event marker can be touched. Required-seat dissent, missing
+   signature/provenance, unavailable seat, stale plan, or certificate mismatch blocks.
 5. Update `CURRENT-AUTHORITY.json` only through the reviewed change protocol if The Eye adopts the new plan; do not infer authority from this filename, branch, design approval, or model consensus.
 6. Produce a per-slice loadout record before each authorized Argo slice. Slice IDs are exactly
    `production-profile-01` through `production-profile-14`, so the existing loadout oracle's
@@ -298,6 +389,18 @@
    Argo entry run, and each record must name the commit it evaluated. If The Eye directs an active
    authority change, update `CURRENT-AUTHORITY.json` only in its own reviewed change-protocol commit;
    these commands do not silently grant that change.
+   Before creating the Argo entry artifacts, run:
+
+   ```bash
+   node docs/runs/production-profile-compiler-authorization-1/verify-committed.mjs --self-test
+   node docs/runs/production-profile-compiler-authorization-1/verify-committed.mjs \
+     --plan docs/superpowers/plans/2026-07-20-deterministic-production-profile-compiler.md \
+     --summary docs/runs/production-profile-compiler-authorization-1/authorization-summary.json
+   ```
+
+   Both commands must exit `0`; a one-byte plan mutation must make the internal replay exit `2` with
+   no callback/edit/event marker. The Argo reader run then independently invokes the same committed
+   verifier before reading or writing its own artifacts.
 10. In every task, Step 1 instantiates this exact loadout envelope, replacing `NN`, subject,
     capabilities, reuse/review/verification arrays, and stop conditions with that slice's reviewed
     values:
@@ -329,9 +432,13 @@
     }
     ```
 
-    Validate the exact file before any red test, code edit, publication, or external seat call:
+    Independently verify authorization, then validate the exact loadout before any red test, code edit,
+    publication, external seat call, or Argo slice event:
 
     ```bash
+    node docs/runs/production-profile-compiler-authorization-1/verify-committed.mjs \
+      --plan docs/superpowers/plans/2026-07-20-deterministic-production-profile-compiler.md \
+      --summary docs/runs/production-profile-compiler-authorization-1/authorization-summary.json
     node --input-type=module - \
       docs/institutional-memory/loadout/TASK-LOADOUTS/task-production-profile-NN.json \
       production-profile-NN \
@@ -584,9 +691,10 @@
 
 ## Task Dependency Map
 
-1. Task 1 freezes production input, activation, findings, canonical references, and CLI behavior.
+1. Task 1 freezes production input, activation, the controller-owned thirteen-state lifecycle,
+   findings, canonical references, crash-durable artifact installation, and CLI behavior.
 2. Task 2 adds deterministic repository facts and monotonic reconciliation on Task 1's profile types.
-3. Task 3 adds the pinned policy, all 31 rules, source records, and pure compiler over Tasks 1–2.
+3. Task 3 adds the pinned policy, all 32 rules, source records, and pure compiler over Tasks 1–2.
 4. Task 4 adds backward-compatible Merkle obligation/lifecycle identity consumed by later proposal tasks.
 5. Task 5 adds additive policy certificate version 2 and plan-aware authorization dispatch.
 6. Task 6 adds registry versioning plus structural/process checks.
@@ -609,6 +717,7 @@
 - Create: `build-gate/production-profile/json.mjs`
 - Create: `build-gate/production-profile/profile-schema.mjs`
 - Create: `build-gate/production-profile/artifact-io.mjs`
+- Create: `build-gate/production-profile/lifecycle.mjs`
 - Create: `build-gate/production-profile/cli.mjs`
 - Create: `build-gate/scripts/test-production-profile.mjs`
 - Create: `build-gate/scripts/test-production-profile-cli.mjs`
@@ -625,6 +734,9 @@
 - Produces: `canonicalProductionInput(dossier) -> { canonical, input, production_input_ref }`; throws only for programmer misuse, never for controller validation findings.
 - Produces: `makeFinding(code, severity, path, detail) -> closed finding`.
 - Produces: `readStableJson(repoRoot, relPath, { maxBytes }) -> parsed value` and `writeCanonicalJsonAtomic(repoRoot, relPath, value) -> { path, bytes_sha256 }`.
+- Produces: frozen `PRODUCTION_LIFECYCLE_STATES`, `PRODUCTION_LIFECYCLE_TRANSITIONS`, and
+  `transitionProductionLifecycle({ state, event, durable, current }) -> transition result` from
+  `lifecycle.mjs`. No other module may infer, skip, or synthesize a production state.
 - Produces: `parseCliArgs(argv) -> { command, dossier?, inputArtifact?, compiledArtifact?, repo, out? }` and `runCli({ argv, compileFn, verifyFn, stdout, stderr }) -> Promise<0|1|2>`.
 - Consumes later: `compileFn` and `verifyFn` from Task 3. This task tests command parsing and status/output behavior with injected deterministic functions; it does not invent a temporary compiler.
 
@@ -651,12 +763,39 @@ Add a complete minimal valid dossier and negative table covering:
 - sorting and duplicate rejection for every set-like array;
 - exclusive `"none"` semantics;
 - all AI, payment, tenancy, retention, recovery, integration, and provider cross-field rules;
+- `file_ingress_formats` is exactly `["none"]` or a sorted, duplicate-free non-empty subset of
+  `["csv","json","xlsx"]`; image, PDF, archive, legacy XLS, XLSM, XLSB, and unknown format values are
+  schema blockers rather than extensible strings;
 - AI/integration data classes outside the top-level declaration;
 - unsafe evidence paths, external/non-literal-loopback URLs, malformed health paths, and duplicate evidence paths;
+- `.telos/` evidence-path validity is explicit: a `production_evidence.process_keyring` or proposal-artifact value beneath `.telos/` is a valid safe repository-relative path accepted by the evidence-path validator branch of `profile-schema.mjs` (one positive fixture: `.telos/evidence-keys.json` accepted for `process_keyring`); every other `.telos/` target, including structural artifacts and process records, is rejected (one negative fixture: `.telos/plan.json` rejected as a `structural_artifacts` entry);
 - secret-shaped keys and values, including `token`, `secret`, `password`, credential material, account IDs, and personal-data samples; the synthetic marker belongs only in Task 11 runtime fixtures, never in the controller dossier;
 - exact `PROFILE_REQUIRED`, `PROPOSAL_LIFECYCLE_REQUIRED`, `PROFILE_SCHEMA`, and `PROFILE_CONTRADICTION` finding shape and severity.
 
 Assert reordered object keys and reordered set arrays produce the exact same canonical input and `production_input_ref`.
+
+Add a table-driven lifecycle test over this exact state/event path:
+
+```text
+ACTIVE_UNPREPARED --RECORD_INPUT--> INPUT_RECORDED
+INPUT_RECORDED --COMPILE--> COMPILED
+COMPILED --COMPLETE_WORKSHOP--> WORKSHOP_COMPLETE
+WORKSHOP_COMPLETE --RECORD_PLAN--> PLANNED
+PLANNED --PASS_GATE--> GATE_PASSED
+GATE_PASSED --AUTHORIZE_BUILD--> AUTHORIZED_BUILD
+AUTHORIZED_BUILD --SETTLE_ORDINARY--> ORDINARY_SETTLED
+ORDINARY_SETTLED --PREPARE_EVIDENCE_FRONTIER--> EVIDENCE_FRONTIER_PREPARED
+EVIDENCE_FRONTIER_PREPARED --SETTLE_VERIFICATION--> VERIFICATION_SETTLED
+VERIFICATION_SETTLED --PASS_FINAL_PROFILE--> FINAL_PROFILE_PASSED
+FINAL_PROFILE_PASSED --COMPLETE--> DONE
+```
+
+The state list also contains `LEGACY_INACTIVE` as the only all-false state; it has no transition into an
+active build. Assert exact enum equality and reject every skipped, reversed, repeated, unknown, or
+post-`DONE` transition. For every edge, delete or mutate one required durable ref and prove resume
+returns a terminal `cannot-run` result without advancing. A blocker/cannot-run result seals that
+invocation; profile/source/obligation/policy/registry/executable/evidence/repository-fact drift returns
+`new-revision-required`, never a transition on the stale authorization.
 
 - [ ] **Step 3: Run the focused test and record the red result**
 
@@ -666,7 +805,8 @@ Run:
 node build-gate/scripts/test-production-profile.mjs
 ```
 
-Expected: failure because `production-profile/profile-schema.mjs` and `artifact-io.mjs` do not exist.
+Expected: failure because `production-profile/profile-schema.mjs`, `artifact-io.mjs`, and
+`lifecycle.mjs` do not exist.
 
 - [ ] **Step 4: Implement the closed controller schema**
 
@@ -723,7 +863,36 @@ export function activationFor(dossier = {}) {
 }
 ```
 
+`FINDING_CODES` is the exact compiler/lifecycle public vocabulary, not a repository-global union of
+unrelated protocol diagnostics. `finding-routing.mjs` maps only these 20 values. Task 12 owns the
+separate publication/recovery vocabulary; neither module imports, appends, or accepts values from the
+other.
+
 Validation must reject non-NFC controller strings rather than silently changing controller-authored meaning. Canonicalization normalizes path separators to POSIX only after validating safe repository-relative paths. It never inserts host-derived defaults.
+
+The Eye-approved additive profile field is:
+
+```js
+file_ingress_formats: ["none"] | Array<"csv" | "json" | "xlsx">
+```
+
+The array is set-like, sorted in code-unit order, and non-empty; `"none"` is exclusive. This field
+declares the host's complete application-level file-admission surface, not repository source files or
+controller evidence artifacts. Its absence in an activated dossier is `PROFILE_SCHEMA`; a runtime
+manifest exposing `file-admit` while the field is `["none"]`, or accepting a format outside the
+declared set, is `PROFILE_CONTRADICTION`. The effective file content class is the complete normalized
+top-level `data_classification` set. Runtime evidence may prove rejection or correct routing but may
+never narrow that set from filename, extension, MIME, workbook content, or model judgment.
+
+Implement `lifecycle.mjs` from literal frozen arrays and a lookup table. Its success result is closed:
+`{ status: "advanced", previous_state, event, state, durable_refs }`; its terminal result is
+`{ status: "blocked" | "cannot-run" | "new-revision-required", state, finding_code, detail }`.
+`durable_refs` is the exact state-specific set of canonical content addresses, plan/certificate refs,
+signed settlement refs, or frontier refs. Before every transition or resume, the function's controller
+caller re-reads those artifacts and passes independently recomputed `current` refs; byte equality of
+stored ref strings alone is insufficient. A terminal result cannot be passed back as an active state.
+The transition table, not task order or node naming, is the sole sequencing authority used by Tasks
+8–10.
 
 - [ ] **Step 5: Implement stable JSON I/O and atomic replacement**
 
@@ -733,8 +902,32 @@ Validation must reject non-NFC controller strings rather than silently changing 
 - reject absolute, empty, dot-segment, NUL, backslash-semantic, and physically escaping paths;
 - open required files, compare `fstat` identity/size/mtime before and after the bounded read, and return cannot-run detail if changed;
 - decode JSON bytes as fatal UTF-8 through `parseClosedJson`, reject duplicate keys before object materialization, and reject prototype-polluting keys recursively;
-- write a sibling temporary file with mode `0o600`, fsync, rename atomically, and remove only its own temporary file on failure;
-- never replace a valid existing output after validation, compilation, serialization, or fsync failure.
+- before replacement, stable-read the current output when present and bind its exact `old_ref`; bind the
+  canonical candidate bytes as `new_ref`;
+- open and fsync the containing directory as a preflight capability check before replacement; an
+  unsupported directory handle/fsync returns cannot-run before rename;
+- write a sibling temporary file with mode `0o600`, fsync the file, rename atomically on the same
+  filesystem, then fsync the already-open containing directory before reporting success, and remove
+  only its own temporary file on pre-rename failure;
+- never begin rename after validation, compilation, serialization, temporary-file fsync, or directory
+  capability failure; never report success until the post-rename parent-directory fsync completes;
+- if rename succeeds but the parent-directory fsync fails, stable-read the path without attempting a
+  rollback and return exit `1`, public `finding_code: "CANNOT_RUN"`, and bounded internal
+  `detail.code: "ATOMIC_REPLACEMENT_INDETERMINATE"` with exact `old_ref`, `new_ref`, and
+  `observed_ref` when the observed bytes equal one of those refs. No caller may advance lifecycle,
+  emit a certificate, or write a second artifact from that result;
+- on the next invocation, recompute both refs from durable bytes and current input. Exact old bytes
+  permit a normal retry. Exact new bytes require a successful parent-directory fsync before the
+  invocation may return success without rewriting. Missing, unreadable, partial, or third-party bytes
+  remain cannot-run and cannot be selected as either version.
+
+Inject faults at temp-file fsync, rename, and parent-directory fsync boundaries. Before rename, the
+sentinel must remain byte-identical. A crash or injected parent-fsync failure after rename may expose
+only the complete old or complete new canonical file, never partial bytes; the invocation returns the
+indeterminate cannot-run result and the lifecycle remains unchanged. Restart tests exercise exact-old,
+exact-new, and neither-version observations: old retries, new becomes successful only after a fresh
+parent fsync, and neither blocks. A platform that cannot provide the required parent-directory
+durability semantics is `CANNOT_RUN`, not a best-effort success.
 
 `json.mjs` must tokenize the complete JSON grammar, reject trailing content, duplicate keys at every
 depth, `__proto__`/`prototype`/`constructor` keys, unpaired surrogates, non-safe integers, `NaN`, and
@@ -751,7 +944,9 @@ In `test-production-profile-cli.mjs`, test:
   writes one atomic output artifact, while `verify` is read-only and replaces neither input;
 - deterministic blockers return `2`;
 - cannot-run takes precedence and returns `1`;
-- a failed invocation leaves a sentinel output byte-for-byte unchanged;
+- every pre-rename failed invocation leaves a sentinel output byte-for-byte unchanged; the distinct
+  post-rename parent-fsync fixture returns the exact indeterminate cannot-run result, writes no
+  lifecycle/certificate artifact, and passes the old/new/neither restart reconciliation matrix;
 - absolute `--repo` is accepted only at the process boundary; semantic reports contain repository-relative POSIX paths;
 - injected functions are called exactly once and receive no ambient environment or clock.
 
@@ -809,6 +1004,7 @@ git add build-gate/production-profile/canonical.mjs \
   build-gate/production-profile/profile-schema.mjs \
   build-gate/production-profile/json.mjs \
   build-gate/production-profile/artifact-io.mjs \
+  build-gate/production-profile/lifecycle.mjs \
   build-gate/production-profile/cli.mjs \
   build-gate/scripts/test-production-profile.mjs \
   build-gate/scripts/test-production-profile-cli.mjs \
@@ -968,9 +1164,11 @@ The final scan contract must accept `declaredOutputs`; it unions those safe path
 paths before traversal so a newly generated, untracked structural artifact cannot evade drift
 classification.
 
-General repository-fact traversal always skips `.telos/`. Explicit evidence readers may still read the
-exact controller-declared process keyring or proposal artifact below `.telos/`; those bytes contribute
-only to `evidence_config_ref`/reconstruction and never become repository facts. Declared structural
+General repository-fact traversal always skips `.telos/`. The only exempted `.telos/` readers are the
+`readStableJson` callers in `compiler.mjs` step 6 (evidence-configuration canonicalization) and the
+proposal-gate/settlement reconstruction path; they may read only the exact controller-declared process
+keyring or proposal artifact below `.telos/` accepted by Task 1's evidence-path validator branch. Those
+bytes contribute only to `evidence_config_ref`/reconstruction and never become repository facts. Declared structural
 outputs below ordinary host paths are included in final scanning even when untracked.
 
 - [ ] **Step 6: Implement field-specific monotonic joins**
@@ -1014,7 +1212,7 @@ git commit -m "feat(production-profile): add deterministic repository facts"
 
 ---
 
-### Task 3: Add the pinned policy, 31 source records, and pure compiler
+### Task 3: Add the pinned policy, 32 source records, and pure compiler
 
 **Files:**
 - Create: `docs/institutional-memory/loadout/TASK-LOADOUTS/task-production-profile-03.json`
@@ -1060,6 +1258,10 @@ Test every closed operator (`all`, `any`, `not`, `eq`, `contains`, `intersects`,
 false, malformed, and wrong-type cases. Unknown pointers and type-invalid comparisons must fail policy
 loading or compilation, never evaluate false silently.
 
+Instrument `scanRepository` and every repository-read primitive. A malformed, unknown-version, or
+wrong-hash policy must fail loading before the scanner or any repository read is invoked, emit no fact
+or signal, and leave a sentinel compiled artifact byte-identical.
+
 - [ ] **Step 3: Freeze and test the exact catalog**
 
 Assert exact equality to this ordered ID set:
@@ -1070,13 +1272,13 @@ const EXPECTED_IDS = [
   "AI-OPS-001", "AI-OUTPUT-001", "AI-PROVIDER-001", "AI-RAG-001",
   "AI-TENANT-001", "AI-TOOL-001", "AUTHN-001", "AUTHN-002",
   "AUTHZ-001", "AUTHZ-002", "DATA-001", "DATA-002", "DELIVERY-001",
-  "DELIVERY-002", "OBS-001", "OBS-002", "PAY-001", "PAY-002",
+  "DELIVERY-002", "FILE-INGRESS-001", "OBS-001", "OBS-002", "PAY-001", "PAY-002",
   "PRIV-001", "PRIV-002", "PRIV-003", "RECOVERY-001", "RECOVERY-002",
   "SCALE-001", "SCALE-002", "SUPPLY-001", "SUPPLY-002"
 ];
 ```
 
-For each of the 31 rules, add five table-driven fixtures:
+For each of the 32 rules, add five table-driven fixtures:
 
 1. nearest valid non-trigger profile;
 2. one-fact trigger profile;
@@ -1084,7 +1286,22 @@ For each of the 31 rules, add five table-driven fixtures:
 4. violating or missing evidence;
 5. one-byte relevant policy/profile/registry mutation that changes the expected local identity.
 
-Also assert all eleven domains are represented and every tier/kind exactly matches the design catalog.
+Also assert all eleven domains are represented and every tier/kind exactly matches the design catalog
+plus the Eye-approved additive row:
+
+```text
+FILE-INGRESS-001:
+  domain data
+  trigger file_ingress_formats != ["none"]
+  tier runtime
+  kind production-loopback-http-v1
+  required_result pass
+```
+
+Its profile projection contains exactly `file_ingress_formats` and `data_classification`. Its evidence
+projection contains the runtime manifest reference and the policy-owned bounded file-admission
+scenario. A format-order change normalizes to the same source; adding or removing a declared format
+changes the source, obligation set, and plan.
 For paired triggered rules, prove an unrelated profile-field mutation leaves the other rule's
 profile projection, source, and check identity unchanged while `profile_ref` changes; prove an
 unrelated rule-body mutation leaves the first rule/source unchanged while `policy_ref` changes. Task 9
@@ -1144,9 +1361,10 @@ Sort sources by `source_ref`, reject duplicate IDs/refs, and derive
 The compiler sequence is exact:
 
 1. validate/project canonical controller input;
-2. scan registered repository facts;
-3. reconcile monotonically and stop on unresolved signals/contradictions;
-4. load the pinned policy;
+2. stable-read, parse, and fully validate the pinned policy; derive `policy_ref`, its rule set, and the
+   only detector table the scanner may consume;
+3. scan registered repository facts using only that validated detector table;
+4. reconcile monotonically and stop on unresolved signals/contradictions;
 5. obtain current registry metadata and `registry_ref`;
 6. canonicalize evidence configuration, validate/hash the runtime manifest when configured, and derive
    the public process keyring reference;
@@ -1156,9 +1374,15 @@ The compiler sequence is exact:
 10. derive `production_input_ref`, `profile_ref`, `repo_facts_ref`, `policy_ref`, `registry_ref`,
     `evidence_config_ref`, and `obligation_set_ref`.
 
+No scanner call, repository traversal, fact/signal emission, or output write is legal until step 2
+finishes. Only after all ten steps and the compiled artifact's references re-verify may the controller
+advance `INPUT_RECORDED --COMPILE--> COMPILED`; a loader/scanner/compiler blocker terminates the
+invocation in `INPUT_RECORDED`.
+
 `compiled_profile` is the flattened closed object `{ build_context, exposure, users, identity, ...,
-ai }`; it does not retain a nested `production_profile` wrapper. Policy pointers such as `/ai/enabled`
-therefore resolve exactly as specified by the design.
+file_ingress_formats, ai }`; it does not retain a nested `production_profile` wrapper. Policy pointers
+such as `/ai/enabled` and `/file_ingress_formats` therefore resolve exactly as specified by the design
+plus the additive Eye ruling.
 
 Derive references exactly:
 
@@ -1607,6 +1831,7 @@ git commit -m "feat(merkle-dag): add production policy certificate v2"
 - Create: `docs/institutional-memory/loadout/TASK-LOADOUTS/task-production-profile-06.json`
 - Create: `build-gate/production-profile/check-registry.mjs`
 - Create: `build-gate/production-profile/check-runner.mjs`
+- Create: `build-gate/production-profile/claims.v1.json`
 - Create: `merkle-dag/execution-identity.mjs`
 - Create: `merkle-dag/scripts/test-execution-identity.mjs`
 - Create: `build-gate/production-profile/checks/bounded-json.mjs`
@@ -1635,6 +1860,8 @@ git commit -m "feat(merkle-dag): add production policy certificate v2"
 **Interfaces:**
 - Preserves: legacy `checkContractRef({ kind, params_json })`, the two V1 review kinds, their resolved tests, and their exact hashes.
 - Produces: `productionCheckKinds()`, `productionRegistryEntries()`, `productionRegistryRef()`, `resolveProductionCheck(kind, params_json)`, and `runResolvedProductionCheck(resolved, context)`.
+- Produces: `loadPublicClaimVocabulary(rawBytes) -> { vocabulary, claim_vocabulary_ref, claimsById }`;
+  callers cannot add an ID, predicate, tier, owning obligation, or non-claim.
 - Produces contract V2 identity:
 
 ```text
@@ -1709,6 +1936,9 @@ In `test-production-checks.mjs`, assert:
 - executing-build derivation rejects an absent/relative/escaping `baseDir`, a ledger tree hash that
   differs from current disk, and any attempt to substitute ambient `cwd`;
 - best-effort review `evidence.mjs` cannot satisfy a production source or suppress a mandatory write.
+- the public-claim vocabulary is exact, versioned, canonical, duplicate-free, and hash-bound; an
+  unknown/misspelled claim ID, widened predicate, wrong tier/owning obligation, omitted non-claim, or
+  one-byte vocabulary mutation cannot reuse the old registry/check/source/plan identity.
 
 In `test-production-profile-cli.mjs`, replace Task 3's default-registry cannot-run expectation with a
 real compile and verify through the checked-in production registry. The exact same fixture must pass via
@@ -1789,6 +2019,11 @@ const EXECUTION_SOURCE_FILES = [
 ];
 ```
 
+The `production-json-assertions-v1` entry's literal source closure additionally contains
+`build-gate/production-profile/claims.v1.json`. Its parameter/result schema binds
+`claim_vocabulary_ref`; changing the vocabulary therefore changes `implementation_ref`,
+`registry_ref`, `AI-CLAIM-001`'s check/source identities, and the global plan hash.
+
 Include every additional repository-relative module transitively imported by one of those files in the
 literal closure. The implementation closure for a kind is the sorted union of
 `EXECUTION_SOURCE_FILES`, that entry's `entry_source_files`, and every transitive helper. Thus the
@@ -1837,12 +2072,16 @@ unavailable.
 {
   obligation_id,
   artifact_paths,
+  claim_vocabulary_ref,
   control_selector: { pointer, equals },
   assertions: [
     { pointer, operator: "eq" | "contains" | "intersects" | "gte" | "lte", expected }
   ]
 }
 ```
+
+`claim_vocabulary_ref` is the current vocabulary ref only for `AI-CLAIM-001` and exact `null` for the
+other seven structural IDs; any other combination is status `2`.
 
 Every configured artifact has this closed normalized envelope:
 
@@ -1906,13 +2145,37 @@ AI-PROVIDER-001:
   The sorted closed list exactly equals the projected controller provider inventory.
 
 AI-CLAIM-001:
-  { claims: [{ id, source_path, source_sha256, claim_ref,
+  { public_claim_vocabulary_version: 1,
+    claim_vocabulary_ref,
+    claims: [{ id, source_path, source_sha256, claim_ref,
                evidence_source_ref, evidence_check_contract_ref }] }
   Each source tuple occurs in source_artifacts; IDs are unique; all refs are SHA-256; every evidence
-  source/check pair resolves to a different current compiled obligation and registry check; the
-  AI-CLAIM control cannot cite itself. The check covers every entry in this configured normalized
-  inventory and makes no claim that repository discovery found every public statement.
+  source/check pair resolves to the vocabulary entry's exact current compiled owning obligation and
+  registry check; `claim_vocabulary_ref` equals the independently loaded current vocabulary; the
+  AI-CLAIM control cannot cite itself. Unknown claim IDs are status `2`. The check covers every entry
+  in this configured normalized inventory and makes no claim that repository discovery found every
+  public statement.
 ```
+
+`claims.v1.json` is a closed canonical object with exact top-level keys
+`public_claim_vocabulary_version` and `claims`. Its initial sorted ID set is exactly:
+
+```text
+AI-CLAIM-AGENTIC-ACTIONS-001
+AI-CLAIM-CONSEQUENTIAL-DECISIONING-001
+AI-CLAIM-CUSTOMER-FACING-001
+AI-CLAIM-INTERNAL-ASSISTANT-001
+AI-CLAIM-RETRIEVAL-AUGMENTED-001
+```
+
+Each vocabulary row is exactly
+`{ id, predicate, evidence_tier, owning_obligation_id, non_claims }`; `predicate` is one bounded
+machine predicate, `evidence_tier` is the owning obligation's frozen tier,
+`owning_obligation_id` is respectively `AI-TOOL-001`, `AI-DECISION-001`, `AI-OUTPUT-001`,
+`AI-PROVIDER-001`, or `AI-RAG-001`, and `non_claims` is a non-empty sorted subset of the design's
+explicit non-claims. The loader freezes those exact row values; host evidence supplies only an allowed
+ID and exact source/evidence refs. An unrepresented marketing claim remains blocked until a separately
+reviewed vocabulary version is authorized; a model cannot mint a convenient ID.
 
 The policy supplies selector/assertion operators and expected values; evidence supplies only bounded
 artifact paths through the compiled evidence projection. Require exactly one matching
@@ -1931,7 +2194,7 @@ Freeze the structural control predicates:
 | `PRIV-003` | every projected provider/subprocessor has exact purpose, regions, data classes, and non-empty transfer-mechanism ref |
 | `SUPPLY-001` | exact lockfile hash, integrity verification enabled, secret-scan evidence ref, approved-source ref |
 | `AI-PROVIDER-001` | exact equality with projected provider IDs/purposes/regions/retention/training/external fields |
-| `AI-CLAIM-001` | every public AI claim has a non-empty executable evidence ref resolving to a current source/check |
+| `AI-CLAIM-001` | every configured public AI claim uses an exact V1 vocabulary ID and a non-empty executable evidence ref resolving to that row's current owning source/check |
 
 Paths and hashes come from the evidence artifact; operators and required relationships come only from
 the policy rule.
@@ -2197,7 +2460,7 @@ production children cannot observe the canary; legacy child-environment and hash
 ```bash
 git add build-gate/production-profile/check-registry.mjs \
   build-gate/production-profile/check-runner.mjs \
-  merkle-dag/execution-identity.mjs \
+  build-gate/production-profile/claims.v1.json \
   build-gate/production-profile/checks/bounded-json.mjs \
   build-gate/production-profile/checks/json-assertions-v1.mjs \
   build-gate/production-profile/checks/record-v1.mjs \
@@ -2237,6 +2500,8 @@ git commit -m "feat(production-profile): add bound structural and process checks
 - Modify: `build-gate/production-profile/policy.v1.json`
 - Modify: `build-gate/scripts/test-production-checks.mjs`
 - Modify: `build-gate/scripts/test-production-policy.mjs`
+- Modify: `build-gate/scripts/test-production-profile.mjs`
+- Modify: `build-gate/scripts/test-production-profile-cli.mjs`
 - Modify: `build-gate/package.json`
 
 **Interfaces:**
@@ -2263,7 +2528,12 @@ For each runtime kind, test at least:
 - stale implementation identity;
 - a no-op implementation mutation;
 - an external hostname, redirect, proxy environment, oversized body, request-limit excess, timeout, and
-  unavailable required operation.
+  unavailable required operation;
+- a tier-substitution negative per runtime kind: supply structurally valid canonical JSON evidence
+  (correct schema, hashes, and refs) for the runtime obligation while omitting the actual loopback
+  operation. The obligation must remain undischarged and its report must state only the bounded
+  runtime predicate, proving structural evidence cannot substitute for runtime evidence; the same
+  fixture family proves process evidence cannot discharge a runtime obligation either.
 
 Use a fixed controller-declared loopback port, normally `43119`. Bind an alternate fixed port only in
 parallel unit fixtures whose port is explicit in the dossier; never discover an ephemeral port and place
@@ -2286,10 +2556,10 @@ The manifest is closed:
 }
 ```
 
-Allow only the design's fourteen operation names:
+Allow only the design's fourteen operation names plus the Eye-approved `file-admit` operation:
 `authenticate`, `authorize`, `tenant-read`, `tenant-write`, `payment-apply`, `webhook-receive`,
-`data-mutate`, `delete-source`, `integration-send`, `ai-invoke`, `egress-observer`, `audit-read`,
-`provider-failure`, and `kill-switch`.
+`data-mutate`, `delete-source`, `file-admit`, `integration-send`, `ai-invoke`, `egress-observer`,
+`audit-read`, `provider-failure`, and `kill-switch`.
 
 Reject expected status, expected body, denial semantics, shell commands, scripts, arbitrary headers,
 external URLs, query strings, fragments, dot segments, duplicate operation names, or undeclared fixture
@@ -2360,6 +2630,7 @@ Freeze generic loopback scenarios in `policy.v1.json`:
 |---|---|---|
 | `PAY-001` | `payment-apply`, same event twice | both `200`; one settlement ID; application count `1` |
 | `DATA-001` | valid `data-mutate`, invalid atomic mutation | `200` then `409`; invalid mutation leaves state unchanged |
+| `FILE-INGRESS-001` | benign declared JSON, CSV, and XLSX `file-admit` fixtures when present; undeclared format; direct PNG; PNG renamed and MIME-labeled as JSON; Base64/data-URI PNG; archive containing PNG; XLSX with `xl/media/`; macro-enabled workbook; OLE/embedded object; external relationship; encrypted package; duplicate/traversing ZIP entry; malformed ZIP/XML; then `egress-observer` and `audit-read` | each declared benign fixture `202`; every undeclared, image-bearing, active-content, external, encrypted, malformed, unknown, or uninspectable fixture `415`; rejected count matches; durable application-storage and model/provider egress counts remain `0`; audit contains only declared format, inherited data classes, and disposition |
 | `OBS-001` | triggering operation, `audit-read` | `200`; required event exists; configured sensitive pointers absent |
 | `PRIV-001` | expired `delete-source`; active-hold delete; hold release and delete | `204`, `423`, `204`; source absent only after allowed deletion |
 | `SUPPLY-002` | declared `integration-send`; excessive-class send | `202`, `403`; provider sees only the declared class |
@@ -2370,6 +2641,34 @@ Freeze generic loopback scenarios in `policy.v1.json`:
 
 Unknown statuses or response fields are not inferred. Changing one of these expected outcomes changes
 the rule/check contract and requires plan reauthorization.
+
+`FILE-INGRESS-001` is implemented through the existing generic
+`production-loopback-http-v1` kind; it does not add a ninth registry kind or grant the controller a
+caller-selected parser. The policy owns a bounded set of exact in-memory synthetic fixture
+descriptions. The check serializes each fixture through the manifest's closed `file-admit` request
+binding and compares only bounded status, redacted class/disposition, storage count, and egress count.
+It never persists fixture bytes or response bodies.
+
+The host's candidate handler, not the test adapter, must inspect actual bytes before durable
+application storage or any model/provider call:
+
+- JSON requires bounded fatal UTF-8 decoding, exact JSON grammar, duplicate/prototype-key rejection,
+  and no trailing content.
+- CSV requires bounded fatal UTF-8 decoding, bounded rows/columns/cells, closed quote handling, and no
+  NUL or malformed record.
+- XLSX requires a bounded ZIP/OOXML validation path with finite entry, compressed-byte,
+  expanded-byte, compression-ratio, XML-depth, relationship, shared-string, worksheet, row, column,
+  and cell limits. Duplicate names, absolute/backslash/traversing names, ambiguous content types,
+  `xl/media/`, `xl/embeddings/`, VBA/macro parts, OLE/package parts, external relationships,
+  encrypted-package signatures, malformed ZIP/XML, and unsupported relationships reject the complete
+  workbook. The host may not strip, ignore, or partially admit a rejected part.
+- Actual byte signatures and container structure govern. Filename, extension, MIME, Base64/data-URI
+  wrapper, and archive label cannot turn image bytes into an allowed format.
+
+On acceptance, normalized JSON values, CSV cells, and XLSX cells/comments/hidden-sheet values retain
+the profile's complete `data_classification` set. The runtime adapter cannot claim that a local
+content detector lowered those classes. A separately triggered `AI-EGRESS-001` still decides whether
+that inherited class may reach a selected AI provider.
 
 - [ ] **Step 7: Prove the generic host-adapter seam exercises real code**
 
@@ -2407,6 +2706,8 @@ git add build-gate/production-profile/checks/loopback-client.mjs \
   build-gate/production-profile/policy.v1.json \
   build-gate/scripts/test-production-checks.mjs \
   build-gate/scripts/test-production-policy.mjs \
+  build-gate/scripts/test-production-profile.mjs \
+  build-gate/scripts/test-production-profile-cli.mjs \
   build-gate/package.json \
   docs/institutional-memory/loadout/TASK-LOADOUTS/task-production-profile-07.json
 git commit -m "feat(production-profile): add bounded runtime verification"
@@ -2451,6 +2752,8 @@ git commit -m "feat(production-profile): add bounded runtime verification"
 - Changes: `runProposalLifecycle()` requires prepared state for an activated dossier and never trusts a fresh mutable dossier during reconstruction.
 - Preserves: all-false legacy builds take the old path with `production_profile_evaluated: false` and unchanged plan bytes.
 - Enforces: every genuine `market_bound: true` build uses proposal lifecycle; a market-readiness evidence helper has no authority result.
+- Consumes: Task 1's `transitionProductionLifecycle`; proposal/build code may report progress only from
+  its returned state and may not infer lifecycle state from a callback, filename, or completed task.
 
 - [ ] **Step 1: Create the authorized slice loadout**
 
@@ -2486,6 +2789,11 @@ Cover:
   throwing `decompose()`;
 - all-false legacy autonomous decomposition still calls the planning seat and reports
   `production_profile_evaluated: false`.
+
+Drive preparation through the Task 1 transition function and prove the all-false path is exactly
+`LEGACY_INACTIVE`, while every active trigger begins `ACTIVE_UNPREPARED`. Reject direct construction
+of `INPUT_RECORDED`, `COMPILED`, or any later state. Inject a model callback between every pair of
+preparation operations and require zero calls until the controller has durably reached `COMPILED`.
 
 - [ ] **Step 3: Add durable recorder/restart red tests**
 
@@ -2533,19 +2841,21 @@ if (!production.ok) return production.blocked;
 
 Preparation order is exact:
 
-1. require proposal lifecycle;
-2. require externally supplied/persisted proposal-controller private key;
-3. validate and canonicalize production input and the closed build intent;
-4. write both content-addressed artifacts;
-5. create/reopen the recorder and append the root draft with both typed refs if absent;
-6. scan and compile;
-7. write the evidence-config sidecar, compiled artifact, and atomic
+1. enter `ACTIVE_UNPREPARED`, require proposal lifecycle, and require an externally
+   supplied/persisted proposal-controller private key;
+2. validate and canonicalize production input and the closed build intent;
+3. write both content-addressed artifacts;
+4. create/reopen the recorder, append the signed root draft with both typed refs if absent, re-read and
+   hash-verify it, then advance `ACTIVE_UNPREPARED --RECORD_INPUT--> INPUT_RECORDED`;
+5. load/validate the pinned policy, scan, reconcile, and compile in Task 3's exact order;
+6. write the evidence-config sidecar, compiled artifact, and atomic
    `.telos/production-profile.json` current view;
-8. append controller-owned compiled references;
-9. return a frozen summary containing only stable IDs, domains, tiers, source refs, and check refs.
+7. append controller-owned compiled references, re-read/hash-verify every state ref, then advance
+   `INPUT_RECORDED --COMPILE--> COMPILED`;
+8. return a frozen summary containing only stable IDs, domains, tiers, source refs, and check refs.
 
 No `detectConventions`, `decompose`, `callSeat`, workshop, council, team, or provider call occurs before
-step 8 succeeds.
+step 7 succeeds and the lifecycle function returns `COMPILED`.
 
 Before returning prepared state, reject protected controller paths in `dossier.write_targets` or any
 provided task writes with `PROFILE_CONTRADICTION`. Policy-declared structural artifacts and unsigned
@@ -2606,6 +2916,10 @@ On reopen:
 - identify the latest completed lifecycle stage and resume without duplicating earlier controller
   records.
 
+Reopen never trusts a stored state label. It reconstructs the signed event prefix, re-reads every
+state-specific artifact, independently recomputes the required refs, and replays the closed transition
+table. A missing/stale ref terminates cannot-run; semantic drift returns `new-revision-required`.
+
 The host stores the private controller key outside artifacts and source control. Production mode never
 generates an ephemeral replacement over durable state.
 
@@ -2631,7 +2945,8 @@ rg -n '"proposal_lifecycle"\s*:\s*true|proposal_lifecycle\s*:\s*true|"market_bou
 Classify every match in the task evidence:
 
 - true build entry -> route through `buildProject()` with an explicit production profile/evidence;
-- proposal-lifecycle fixture -> add a complete minimal controller profile/evidence;
+- proposal-lifecycle fixture -> add a complete minimal controller profile/evidence, including exact
+  `file_ingress_formats: ["none"]` unless that fixture also supplies and tests `file-admit`;
 - team/council unit input that only tests roster selection -> keep it as pure planning input and assert it
   has no authorization claim;
 - breakout/readiness unit -> use the non-authorizing readiness helper;
@@ -2645,6 +2960,12 @@ for production obligations. Require caller/controller `dossierMeta.production_pr
 key only in a fresh temporary test repository, explicitly labeled non-production and never over a
 persisted ledger.
 
+Every migrated activated dossier must make file ingress explicit. `["none"]` is not an ambient default:
+it is a controller declaration validated and hash-bound into the production input. A dossier that
+declares JSON/CSV/XLSX must also provide the `file-admit` runtime operation and trigger
+`FILE-INGRESS-001`; adding the operation to a `["none"]` dossier or omitting it from an enabled dossier
+blocks before any generator/model call.
+
 - [ ] **Step 9: Prove no direct market authorization remains**
 
 Add tests that:
@@ -2654,9 +2975,19 @@ Add tests that:
 - missing profile cannot be repaired by green breakout packets;
 - valid synthetic profiles produce V2 proposal state;
 - lower-level readiness reports cannot be passed to `runBuild()` as authorization;
-- the repository inventory has no unclassified activated literal.
+- the repository inventory has no unclassified activated literal;
+- a forge invocation given a persisted `.telos/` ledger plus an ephemeral non-externally-persisted key
+  blocks with a typed finding before any generator/model call, proving the ephemeral-key path cannot
+  run over durable state;
+- the temporary-repository keyless synthetic demo path records an explicit non-production label in its
+  recorded artifacts, and a child-process restart over that temporary repository reconstructs the exact
+  forge-created proposal state from disk alone.
 
 - [ ] **Step 10: Run migrated package regressions**
+
+Before running the battery, add `build-gate/scripts/test-production-lifecycle.mjs` to both `check` and
+`test` in `build-gate/package.json` in deterministic order. A direct invocation that passes while the
+package script omits it is not green evidence.
 
 Run:
 
@@ -2717,6 +3048,8 @@ git commit -m "feat(build-gate): enforce production preflight before model calls
 - Produces: exact source reconciliation for both source classes; no map overwrite can hide duplicates.
 - Changes: `recordDecision({ plan, ... })` selects the certificate contract from the recomputed plan.
 - Preserves: production policy sources are not concerns and cannot receive review dispositions.
+- Consumes: Task 1's transition function for `COMPILED -> WORKSHOP_COMPLETE -> PLANNED ->
+  GATE_PASSED`; a V2 gate certificate alone cannot synthesize `AUTHORIZED_BUILD`.
 
 - [ ] **Step 1: Create the authorized slice loadout**
 
@@ -2744,6 +3077,9 @@ Assert:
 - a profile change outside one obligation's projection leaves that node's local spec/effective identity
   unchanged, while the lifecycle `profile_ref` changes global `plan_hash`; an unrelated rule change has
   the same local/global split through `policy_ref`.
+- a workshop success label cannot advance lifecycle state. Only after reserved-ID/protected-write
+  validation and durable recording of the complete response may the controller advance
+  `COMPILED --COMPLETE_WORKSHOP--> WORKSHOP_COMPLETE`; a rejected packet leaves no advanced state.
 
 - [ ] **Step 3: Add red disk-only gate reconciliation tests**
 
@@ -2799,6 +3135,9 @@ Do not classify tasks by ID prefix and do not infer evidence production from pro
 `verify-*` name without escaping dependency closure. Attach version-2 obligations through Task 4 so
 `test.verifies`, `discharge_test_ref`, local node hashes, and global plan hash are all bound.
 
+Minting is legal only from hash-verified `WORKSHOP_COMPLETE`. Re-read and verify the workshop response
+and its controller event before invoking the transition; no in-memory packet advances state.
+
 - [ ] **Step 6: Bind the complete lifecycle before candidate recording**
 
 Compile with:
@@ -2820,6 +3159,10 @@ lifecycle.production_profile = {
 Record the candidate only after combined graph, obligations, lifecycle, and plan hash exist. Store the
 compiled-artifact and evidence-config refs in candidate artifact refs. Never reconstruct from the
 in-memory `prepared` object once the plan is written.
+
+After writing the candidate, re-read and recompute its plan hash, lifecycle refs, sources, obligations,
+tests, and executable identities, then advance `WORKSHOP_COMPLETE --RECORD_PLAN--> PLANNED`. A failed
+write/re-read or mismatch terminates without a `PLANNED` record.
 
 - [ ] **Step 7: Implement exact source-class reconciliation**
 
@@ -2883,6 +3226,11 @@ Update off-plan `naChecks()` to choose V1 only for off-plan legacy decisions. An
 cannot yet produce a plan emits a non-authorizing typed blocker record and never a V2 certificate with
 `n/a`.
 
+Only a disk-only exact pass with the V2 certificate durably recorded and re-verified advances
+`PLANNED --PASS_GATE--> GATE_PASSED`. This is policy-gate evidence, not build authorization:
+`recordDecision()` cannot invoke `AUTHORIZE_BUILD`, and tests reject a caller that attempts to jump
+directly from `PLANNED` or `GATE_PASSED` to dispatch.
+
 - [ ] **Step 10: Run focused and package regressions**
 
 Run:
@@ -2945,6 +3293,9 @@ git commit -m "feat(build-gate): reconcile fixed production obligations"
   from the signed evidence outcome later evaluated by `production-record-v1`.
 - Changes: final profile verification runs after the task frontier drains and before the final ledger-gate ready verdict.
 - Preserves: authorization certificate is immutable pre-build evidence and is never rewritten by settlement.
+- Consumes: Task 1's transition function for `GATE_PASSED -> AUTHORIZED_BUILD ->
+  ORDINARY_SETTLED -> EVIDENCE_FRONTIER_PREPARED -> VERIFICATION_SETTLED ->
+  FINAL_PROFILE_PASSED -> DONE`; dispatch and `done()` are illegal outside those exact states.
 
 Freeze `settlement_contract` as `"telos-production-settlement-v1"` and `status` as exactly
 `"pass" | "blocked" | "cannot-run"`. Both reference objects always have this closed shape:
@@ -3073,7 +3424,9 @@ Assert every change returns `BLOCKED_PROFILE_DRIFT`, no `ready`, and exact expec
 
 - exact closed pass, blocked, and cannot-run settlement objects reject unknown statuses, missing/extra
   keys, illegal finding-code/status pairs, unsorted ref arrays, or non-null pass detail;
-- omitted final verifier on a production plan fails `MISSING_FINAL_PROFILE_VERIFY`;
+- omitted final verifier on a production plan returns externally visible
+  `status: "cannot-run"`, `finding_code: "CANNOT_RUN"`, and bounded internal
+  `detail.code: "MISSING_FINAL_PROFILE_VERIFY"`;
 - a throwing verifier fails closed;
 - a legacy plan still works without the callback;
 - final verification cannot edit or replace the V2 authorization certificate;
@@ -3096,6 +3449,17 @@ Assert every change returns `BLOCKED_PROFILE_DRIFT`, no `ready`, and exact expec
 - every invalid frontier result shape and each closed blocked/cannot-run mapping stops before the first
   discharge node;
 - a fresh reauthorized revision with the changed profile can later pass.
+
+Collect every externally visible compiler/lifecycle `finding_code` from compiler, CLI, proposal,
+frontier, and settlement surfaces and assert exact membership in Task 1's frozen `FINDING_CODES`.
+For demo/self/institutional artifacts, classify each referenced field by its owning protocol before
+checking it: relayed compiler/lifecycle results use `FINDING_CODES`; forensic-hold and
+publication-recovery diagnostics use Task 12's exact `PUBLICATION_RECOVERY_FINDING_CODES`;
+institutional records originate neither vocabulary and may only hash-bind and re-derive the referenced
+owner result. A field with no unique owner, a compiler code on a recovery field, a recovery code on a
+compiler field, or any unknown code is rejected before serialization, certificate output, publication,
+or enrollment. Internal `detail.code` values are separately closed and can never occupy a public
+field. Include one negative mutation for every cross-surface direction plus one unknown public code.
 
 - [ ] **Step 3: Add generic exit-detail red tests**
 
@@ -3142,7 +3506,12 @@ finalProfileVerify = null
 ```
 
 Treat the exact set of `plan.obligations[].discharge_node_id` as the verification frontier; do not use
-prefixes. Once every other node is settled and before dispatching the first discharge node:
+prefixes. At entry, independently re-read the immutable V2 certificate, recompute the current plan,
+require its authorized hash and contract to match, and only then advance
+`GATE_PASSED --AUTHORIZE_BUILD--> AUTHORIZED_BUILD`; no task dispatch is legal before this transition.
+Once every ordinary node is settled, re-hash its disk artifacts and signed settlement set, derive
+`executing_build_ref`, and advance `AUTHORIZED_BUILD --SETTLE_ORDINARY--> ORDINARY_SETTLED`.
+Before dispatching the first discharge node:
 
 1. re-run lifecycle authorization against the exact recomputed live plan and stop if its hash differs
    from the V2-authorized plan;
@@ -3158,13 +3527,19 @@ prefixes. Once every other node is settled and before dispatching the first disc
    `.telos/` mutation;
 5. validate the exact closed callback result and stop with its typed blocked/cannot-run mapping unless
    it returns `status: "prepared"`; then atomically write the controller-owned canonical frontier
-   artifact and re-read it;
+   artifact, re-read it, and advance
+   `ORDINARY_SETTLED --PREPARE_EVIDENCE_FRONTIER--> EVIDENCE_FRONTIER_PREPARED`;
 6. bind each exact artifact `evidence_files` entry to its corresponding discharge invocation as
    immutable controller execution context, recompute/re-read state, re-check exact V2 authorization,
    then permit discharge-node execution. Neither generic callers nor node descriptors can replace that
    context;
 7. retain the artifact through final generic `verify()`/`done()` and include its exact ref in production
    settlement.
+
+Only after every exact discharge node runs the current registered executable, returns zero, and has a
+current signed settlement may the controller advance
+`EVIDENCE_FRONTIER_PREPARED --SETTLE_VERIFICATION--> VERIFICATION_SETTLED`. Exit `1`, exit `2`,
+missing discharge, stale artifact, or registry drift terminates without that transition.
 
 The build-gate production wrapper always supplies this callback. It verifies already-present signed
 records or obtains fresh records through an explicitly injected external signer; no model callback,
@@ -3178,7 +3553,10 @@ After the complete frontier drains, recompute the plan. If production lifecycle 
 3. invoke it with `{ telosDir, baseDir, plan: livePlan, nowMs }`;
 4. atomically write `.telos/production-settlement.json`;
 5. return a blocked report immediately unless `status === "pass"`;
-6. only then call generic `verify()`.
+6. re-read/hash-verify the settlement and advance
+   `VERIFICATION_SETTLED --PASS_FINAL_PROFILE--> FINAL_PROFILE_PASSED`;
+7. only then call generic `verify()` and `done()`; after both independently prove complete discharge,
+   advance `FINAL_PROFILE_PASSED --COMPLETE--> DONE`.
 
 The settlement file is a current controller result, not an authorization certificate and not an input
 to its own pass decision.
@@ -3233,6 +3611,7 @@ git commit -m "feat(production-profile): block post-build profile drift"
 - Create: `docs/runs/production-profile-demo/fixtures/dossier-escalated.json`
 - Create: `docs/runs/production-profile-demo/fixtures/runtime-adapter.json`
 - Create: `docs/runs/production-profile-demo/fixtures/production-controls.json`
+- Create: `docs/runs/production-profile-demo/fixtures/file-fixtures.mjs`
 - Create: `docs/runs/production-profile-demo/fixtures/fake-application.mjs`
 - Create: `docs/runs/production-profile-demo/fixtures/fake-provider.mjs`
 - Create: `docs/runs/production-profile-demo/publication/public-keyring.json`
@@ -3240,16 +3619,24 @@ git commit -m "feat(production-profile): block post-build profile drift"
 - Create: `docs/runs/production-profile-demo/publication/plan-after.snapshot.json`
 - Create: `docs/runs/production-profile-demo/publication/proposal-ledger.snapshot.jsonl`
 - Create: `docs/runs/production-profile-demo/publication/proposal-artifacts.snapshot.json`
+- Create: `docs/runs/production-profile-demo/publication-attempts.jsonl`
+- Create: `docs/runs/production-profile-demo/attempts/attempt-NNN/manifest.json`
+- Create: `docs/runs/production-profile-demo/attempts/attempt-NNN/summary.json`
+- Create on forensic branch: `docs/runs/production-profile-demo/forensic-holds/attempt-NNN.json`
 - Modify: `build-gate/package.json`
 
 **Interfaces:**
 - Produces: `node docs/runs/production-profile-demo/run.mjs --verify-committed`.
 - Produces: one-time publication mode
   `node docs/runs/production-profile-demo/run.mjs --publish --controller-private-key <absolute-external-path>`;
-  it exits `0` only after one crash-safe publication-directory rename, `2` on a deterministic blocker,
-  and `1` on cannot-run.
-  Unknown/duplicate flags, a relative/in-repository/symlink key, or a non-Ed25519 PKCS#8 key blocks
-  before output; no key bytes enter committed output.
+  it exits `0` only after writing this attempt's complete immutable `attempts/attempt-NNN/`
+  directory, appending exactly one signed `publication-attempts.jsonl` transition, and one
+  crash-safe publication-directory rename; `2` on a deterministic blocker, and `1` on cannot-run.
+  Unknown/duplicate flags block before output. The key path must be absolute, physically outside the
+  repository after realpath resolution, a regular non-symlink file containing an Ed25519 PKCS#8 private
+  key, and owner-only on POSIX; this predicate is enforced by the same shared key-loading helper Task 12
+  Step 5 uses, so demo and self-hosting key validation cannot diverge. No key bytes enter committed
+  output.
 - Proves: unsafe egress blocks, corrected egress discharges, and profile escalation invalidates authorization through the actual compiler/Merkle/proposal/ledger path.
 - Preserves: synthetic evidence is not represented as bank, customer, provider, compliance, or production evidence.
 
@@ -3260,7 +3647,7 @@ capability/stop condition (not a nonexistent path), actual Node matrix, and auth
 invalid marker is the only SSN-shaped value permitted and must be labeled synthetic at every
 occurrence.
 
-- [ ] **Step 2: Complete the 31-rule transition matrix**
+- [ ] **Step 2: Complete the 32-rule transition matrix**
 
 Extend `test-production-policy.mjs` so its table is mechanically complete:
 
@@ -3281,25 +3668,39 @@ for (const id of EXPECTED_IDS) {
 ```
 
 For each triggered fixture, compile and verify that exactly the intended source, tier, kind, operation
-requirements, check contract, node ID, and local identity appear. A test that only counts 31 entries is
+requirements, check contract, node ID, and local identity appear. A test that only counts 32 entries is
 insufficient.
 
 - [ ] **Step 3: Write the bank-demo red acceptance test**
 
 The committed verifier must assert this exact sequence:
 
-1. AI profile compilation includes `AI-PROVIDER-001`, `AI-EGRESS-001`, `AI-LINEAGE-001`, and `OBS-001`.
-2. Unsafe application attempts to pass `000-00-0000` to a disallowed provider.
-3. `production-ai-egress-v1` exits `1`; fake provider transport count is zero only in the corrected
-   implementation, and the unsafe obligation remains undischarged.
-4. Corrected application blocks before transport, records only a redacted marker classification, and
-   discharges all four named obligations.
-5. Escalating the dossier to multi-tenant plus subscription adds at least `AUTHZ-002`, `PAY-001`, and
+1. AI profile compilation with `file_ingress_formats: ["csv","json","xlsx"]` includes
+   `AI-PROVIDER-001`, `AI-EGRESS-001`, `AI-LINEAGE-001`, `AI-CLAIM-001`,
+   `FILE-INGRESS-001`, and `OBS-001`; its configured public claim uses the exact current
+   `AI-CLAIM-CUSTOMER-FACING-001` vocabulary row and owning evidence.
+2. Deterministic in-memory fixtures prove benign declared JSON, CSV, and XLSX are admitted; direct and
+   mislabeled PNG, a Base64/data-URI PNG, an archive containing PNG, and every forbidden XLSX
+   construction are rejected as complete inputs before durable application storage or provider/model
+   transport. Replacing actual-byte inspection with extension/MIME-only acceptance makes verification
+   fail.
+3. Unsafe application separately attempts to pass `000-00-0000` to a disallowed provider.
+4. The unsafe fixture's fake provider records exactly one attempted outbound payload containing only
+   the synthetic marker classification, never the payload itself (proving the unsafe path transmits to
+   the loopback boundary); `production-ai-egress-v1` exits `1`, and the obligation remains
+   undischarged. The fake-provider recorder exposes an attempt counter plus redacted classification
+   only and never echoes request bodies.
+5. Corrected application blocks before transport, records only a redacted marker classification, and
+   discharges all six named obligations.
+6. Escalating the dossier to multi-tenant plus subscription adds at least `AUTHZ-002`, `PAY-001`, and
    `PAY-002`, changes profile/obligation/plan hashes, and makes the prior V2 authorization unusable.
-6. No tenant/payment fixture exists in the first build, so the escalated plan remains blocked.
-7. Fault injection before/after each candidate-file fsync, pending-directory fsync, final directory
+7. No tenant/payment fixture exists in the first build, so the escalated plan remains blocked.
+8. Fault injection before/after each candidate-file fsync, pending-directory fsync, final directory
    rename, and parent-directory fsync leaves either ignored `publication.pending` or one complete
    manifest-verified `publication`; no partial set is trusted.
+9. Replacing the configured claim ID with an unknown ID, changing its bounded predicate to a broad
+   security/compliance claim, or retaining the old `claim_vocabulary_ref` after a vocabulary-byte
+   mutation makes committed verification fail before publication.
 
 - [ ] **Step 4: Run the red demo**
 
@@ -3317,6 +3718,12 @@ Expected: failure because the committed snapshots and verifier do not exist.
 exported candidate handler. The unsafe and corrected handlers differ only at the AI egress boundary.
 `fake-provider.mjs` is a literal-loopback transport recorder with no external forwarding.
 
+`file-fixtures.mjs` is a zero-dependency deterministic byte generator used by tests and the demo. It
+constructs bounded JSON/CSV and minimal OOXML ZIP fixtures plus each forbidden case in memory using
+only `node:` modules. It writes no fixture bytes to the repository or temporary disk. Its ZIP builder
+is test-fixture construction only; production admission remains a host responsibility verified
+through the `file-admit` adapter operation.
+
 The adapter must produce an operation trace containing candidate module/function identity and input
 class, not payload. A fixture that returns expected statuses without calling the handler fails trace
 binding.
@@ -3331,7 +3738,9 @@ Publication:
 - runs the actual production proposal, Merkle planner, gate, verification nodes, final profile verifier,
   and `done()` path in a temporary clone/workspace;
 - writes only public JWK, signed snapshots, canonical plan/artifact snapshots, summary, and a closed
-  exact-path/hash manifest beneath absent `publication.pending`;
+  exact-path/hash manifest beneath absent `publication.pending`, plus this attempt's immutable
+  `attempts/attempt-NNN/` manifest and summary and exactly one appended signed
+  `publication-attempts.jsonl` transition;
 - fsyncs every file/directory, verifies the pending manifest, atomically renames that single directory
   to absent `publication` on the same filesystem, and fsyncs the parent;
 - deletes temporary `.telos/`, key path under the temporary workspace, and runtime state;
@@ -3342,6 +3751,25 @@ is the sole demo commit marker. On restart, pending-only is verified and promote
 complete final is idempotently verified; simultaneous pending/final, a final manifest mismatch, or an
 unsupported rename/fsync primitive is cannot-run and never repaired in place.
 
+Demo publication uses the same attempt model as Task 12's self-publication, with demo-scoped paths:
+
+- Publication writes only complete
+  immutable demo publication attempt directories (`attempts/attempt-NNN/`), each containing its
+  manifest and summary; a marked attempt is never reopened, edited, renumbered, or deleted, and a
+  failed attempt is preserved rather than overwritten.
+- The demo attempt ledger `publication-attempts.jsonl` records
+  append-only signed demo publication state transitions under the external Ed25519 controller key
+  discipline shared with Task 12 Step 5. Ledger appends are crash-safe (temp-file write, fsync,
+  atomic rename, parent-directory fsync), and fault injection around each of those windows must
+  leave either no new transition or exactly one complete signed transition;
+  exactly one ledger-verified attempt may be promoted to the final `publication` directory, and
+  supersession appends a new attempt rather than mutating any singleton artifact.
+- An unsafe recovery state (simultaneous pending/final, final-manifest mismatch, or unverifiable
+  attempt bytes) creates an exclusive signed demo forensic hold at `forensic-holds/attempt-NNN.json`
+  outside the suspected attempt ledger, using the five-code `PUBLICATION_RECOVERY_FINDING_CODES`
+  vocabulary. Every mutating demo publication mode, including recovery and supersession, blocks on
+  that durable hold until a separate The Eye disposition; producer summaries are never pass inputs.
+
 `--verify-committed`:
 
 - is read-only;
@@ -3351,6 +3779,8 @@ unsupported rename/fsync primitive is cannot-run and never repaired in place.
 - verifies public signatures and hashes from committed bytes;
 - re-runs compiler, registry, unsafe/corrected runtime checks, source/obligation reconciliation, and
   profile escalation;
+- independently loads the exact claim vocabulary and rejects every unknown ID, wrong owning
+  source/check, widened predicate, tier promotion, or missing non-claim;
 - compares semantic summary and snapshot identities;
 - does not regenerate keys/signatures or trust `run-summary.json` as a pass input.
 
@@ -3370,8 +3800,11 @@ Fail if any output contains:
 - a claim of bank use, regulatory compliance, certification, complete security, or production
   effectiveness.
 
-`README.md` and `run-summary.json` state that the demo proves a bounded synthetic egress control and
-dynamic invalidation only.
+`README.md` and `run-summary.json` state that the demo proves bounded synthetic file-admission and
+egress controls plus dynamic invalidation only. It does not claim complete file-content
+classification, malware detection, OCR safety, DLP completeness, or support for formats outside
+declared JSON/CSV/XLSX. Every machine-readable public claim is an exact V1 claim-vocabulary row; prose
+cannot introduce a second unregistered claim surface.
 
 - [ ] **Step 8: Commit the complete proof harness before publication**
 
@@ -3398,6 +3831,7 @@ git add build-gate/scripts/test-production-policy.mjs \
   docs/runs/production-profile-demo/fixtures/dossier-escalated.json \
   docs/runs/production-profile-demo/fixtures/runtime-adapter.json \
   docs/runs/production-profile-demo/fixtures/production-controls.json \
+  docs/runs/production-profile-demo/fixtures/file-fixtures.mjs \
   docs/runs/production-profile-demo/fixtures/fake-application.mjs \
   docs/runs/production-profile-demo/fixtures/fake-provider.mjs \
   docs/institutional-memory/loadout/TASK-LOADOUTS/task-production-profile-11.json
@@ -3439,6 +3873,9 @@ docs/runs/production-profile-demo/publication/plan-before.snapshot.json
 docs/runs/production-profile-demo/publication/plan-after.snapshot.json
 docs/runs/production-profile-demo/publication/proposal-ledger.snapshot.jsonl
 docs/runs/production-profile-demo/publication/proposal-artifacts.snapshot.json
+docs/runs/production-profile-demo/publication-attempts.jsonl
+docs/runs/production-profile-demo/attempts/attempt-001/manifest.json
+docs/runs/production-profile-demo/attempts/attempt-001/summary.json
 ```
 
 Then run:
@@ -3450,7 +3887,7 @@ node build-gate/scripts/test-production-checks.mjs
 git diff --check
 ```
 
-Expected: verification passes against the candidate public evidence, all 31 matrix rows pass, no
+Expected: verification passes against the candidate public evidence, all 32 matrix rows pass, no
 harness/static fixture is modified, no `publication.pending` remains, and no private material is
 present.
 
@@ -3463,7 +3900,10 @@ git add docs/runs/production-profile-demo/publication/run-summary.json \
   docs/runs/production-profile-demo/publication/plan-before.snapshot.json \
   docs/runs/production-profile-demo/publication/plan-after.snapshot.json \
   docs/runs/production-profile-demo/publication/proposal-ledger.snapshot.jsonl \
-  docs/runs/production-profile-demo/publication/proposal-artifacts.snapshot.json
+  docs/runs/production-profile-demo/publication/proposal-artifacts.snapshot.json \
+  docs/runs/production-profile-demo/publication-attempts.jsonl \
+  docs/runs/production-profile-demo/attempts/attempt-001/manifest.json \
+  docs/runs/production-profile-demo/attempts/attempt-001/summary.json
 git diff --cached --check
 git commit -m "test(production-profile): publish bank-style fail-closed proof"
 node docs/runs/production-profile-demo/run.mjs --verify-committed
@@ -3513,7 +3953,7 @@ the mandatory Argo ledger closure.
 - Produces: read-only `--print-current-attempt-id`, which derives the sole legal `attempt-NNN` from the
   signed ledger and prints only that ID.
 - Produces: `--prepare-plan`, `--record-authorization`, `--publish`,
-  `--recover-publication`, `--record-forensic-hold`, and `--supersede-attempt` modes over an exact
+  `--recover-publication`, and `--supersede-attempt` modes over an exact
   immutable `attempt-NNN` identifier.
 - Requires three distinct external Ed25519 PKCS#8 private-key paths: controller, process evidence, and
   The Eye's attempt-governance signer. Their public JWKs are attempt-scoped and no private bytes enter
@@ -3565,6 +4005,9 @@ The dossier must declare at least:
 - every current external provider/connector and processing purpose;
 - external egress wherever a connector crosses local trust;
 - `can_write: true` and `can_execute: true`;
+- `file_ingress_formats: ["none"]`, because repository/controller files read by TELOS seats are
+  governed model context rather than an application-level upload surface; adding a host `file-admit`
+  operation later changes the dossier, obligation set, and authorization;
 - data classes covering repository/operator material eligible for model context.
 
 The Eye must later choose exposure, identity, tenancy, authorization, retention/deletion, residency,
@@ -3589,6 +4032,8 @@ Before the run exists, assert publication/verification must prove:
 - substituting a no-op implementation blocks;
 - lowering confirmed AI egress/write/execute facts blocks;
 - adding one newly confirmed provider fact blocks;
+- replacing the TELOS fixture's exact `AI-CLAIM-AGENTIC-ACTIONS-001` row with an unknown ID, wrong
+  owning source/check, widened predicate, or stale vocabulary ref blocks;
 - duplicate/unknown mode flags, relative/in-repository key paths, non-Ed25519 keys, key-material reuse
   across roles, a caller-selected/reused/skipped/noncontiguous attempt ID, illegal attempt-state
   transitions, a rewritten attempt-ledger prefix, and overwrite of any existing attempt artifact block
@@ -3600,6 +4045,10 @@ Before the run exists, assert publication/verification must prove:
 - recovery exit `1` writes and signs the exact forensic hold; a fresh process then blocks every listed
   mutating mode, including `--recover-publication`/`--supersede-attempt`, before key access, while
   deletion, mutation, duplicate hold, or forged clearance remains dirty/tamper-blocking;
+- fault injection after unsafe-state detection and before/after forensic-hold exclusive create, file
+  fsync, parent-directory fsync, and verification never permits another mutating mode to proceed.
+  After restart, only `--recover-publication` may open the attempt-governance key in an unresolved
+  unsafe-without-hold state, and only to finish the same hold transition;
 - `.telos/` and temporary workspaces are removed and tracked checkout remains clean.
 
 - [ ] **Step 4: Run the red committed verifier**
@@ -3747,17 +4196,33 @@ its own closed phase state and never rewrites a marked directory.
 implements the state table above, never rewrites a final publication file, and can append the marker
 only after full public-key/hash/authorization/manifest verification. It exits `0` only for an
 idempotently complete or newly marked publication, exits `2` after safely discarding an incomplete
-pending-only candidate and releasing its stale lock, and exits `1` for tamper/unsafe state while
-preserving it for investigation. Supersession is allowed after recovery exit `2`, never as a way to
-paper over recovery exit `1` or an unmarked complete directory.
+pending-only candidate and releasing its stale lock, and exits `1` for tamper/unsafe state only after
+it has atomically installed and re-verified the signed forensic hold described below. Supersession is
+allowed after recovery exit `2`, never as a way to paper over recovery exit `1` or an unmarked complete
+directory.
 
-Recovery exit `1` must be made durable before the process exits. The controller invokes
-`--record-forensic-hold --attempt-id "$ATTEMPT_ID"
---attempt-governance-private-key "$ATTEMPT_GOVERNANCE_PRIVATE_KEY"`. That mode independently re-reads
-the repository, writes with exclusive create plus fsync, and signs this exact canonical record at
+Unsafe-state detection and forensic-hold installation are one controller-owned durable transition
+inside the `--recover-publication` process. The mode re-reads the repository, derives the finding code
+from observations, signs with the already-open attempt-governance key, writes the absent hold with
+exclusive create, fsyncs the file and containing directory, then re-reads and verifies its exact bytes
+before returning exit `1`. It cannot return controlled exit `1` before that sequence completes. If the
+process crashes or receives a signal before the hold is durable, the unsafe repository state remains
+unresolved: every mutating mode except `--recover-publication` blocks before key access, and a restarted
+recovery may open only the attempt-governance key and may perform only this hold transition. No separate
+CLI mode or second process can create the hold.
+
+The hold is this exact canonical record at
 `docs/runs/production-profile-self/forensic-holds/attempt-NNN.json`:
 
 ```js
+export const PUBLICATION_RECOVERY_FINDING_CODES = Object.freeze([
+  "LEDGER_PREFIX_MISMATCH",
+  "LOCK_STATE_UNSAFE",
+  "MARKER_WITHOUT_DIRECTORY",
+  "PUBLICATION_BYTES_MISMATCH",
+  "RECOVERY_STATE_UNSAFE"
+]);
+
 {
   production_publication_forensic_hold_version: 1,
   attempt_id: "attempt-NNN",
@@ -3770,12 +4235,7 @@ the repository, writes with exclusive create plus fsync, and signs this exact ca
     kind: "file" | "directory",
     sha256: "sha256:<exact file bytes or canonical bounded tree manifest>"
   }],
-  finding_code:
-    "LEDGER_PREFIX_MISMATCH"
-    | "PUBLICATION_BYTES_MISMATCH"
-    | "MARKER_WITHOUT_DIRECTORY"
-    | "LOCK_STATE_UNSAFE"
-    | "RECOVERY_STATE_UNSAFE",
+  finding_code: "<exact member of PUBLICATION_RECOVERY_FINDING_CODES>",
   prohibited_modes: [
     "prepare-plan",
     "publish",
@@ -3806,6 +4266,13 @@ files block globally. `--print-current-attempt-id` also exits `2` while a hold i
 silently cleared. Only a separate The Eye/TELOS change-protocol disposition may reference its exact
 hash, preserve it, install a terminal attempt disposition, and authorize governance-key destruction or
 future work.
+
+Before that common hold scan, each mutating mode also performs a read-only classification of the closed
+publication-recovery state. An unresolved unsafe state without a valid hold returns
+`RECOVERY_STATE_UNSAFE` before key access for every mode except `--recover-publication`; recovery may
+then open only the attempt-governance key to install the hold as specified above. Fault injection proves
+there is no restart state in which prepare, authorize, publish, or supersede can pass between unsafe
+detection and durable hold installation.
 
 `--supersede-attempt --attempt-id "$ATTEMPT_ID"
 --attempt-governance-private-key "$ATTEMPT_GOVERNANCE_PRIVATE_KEY" --reason-code <closed-code>` uses no
@@ -3859,6 +4326,9 @@ extra unenumerated current record fails verification.
 - reconstructs the profile from the committed input artifact;
 - reruns safe loopback/structural checks against a temporary clean host;
 - validates final profile settlement and all negative-control finding codes;
+- independently loads `claims.v1.json`, verifies every published machine claim uses an exact allowed
+  ID/predicate/tier/owning-obligation/non-claim row, and rejects an unknown or broadened claim even when
+  the summary and signature are otherwise valid;
 - compares exact summary identities;
 - rejects any stale source/check/implementation/policy/plan hash;
 - leaves `git status --porcelain` identical before and after.
@@ -4068,9 +4538,12 @@ if [ "$publish_status" -ne 0 ]; then
     exit "$publish_status"
   else
     HOLD_PATH="docs/runs/production-profile-self/forensic-holds/$ATTEMPT_ID.json"
-    node docs/runs/production-profile-self/run.mjs --record-forensic-hold \
-      --attempt-id "$ATTEMPT_ID" \
-      --attempt-governance-private-key "$ATTEMPT_GOVERNANCE_PRIVATE_KEY"
+    test -f "$HOLD_PATH"
+    set +e
+    node docs/runs/production-profile-self/run.mjs --verify-committed
+    hold_verify_status=$?
+    set -e
+    test "$hold_verify_status" -eq 2
     git add "$HOLD_PATH"
     git diff --cached --check
     git commit -m "docs(telos): record forensic hold for $ATTEMPT_ID"
@@ -4092,8 +4565,9 @@ trap - EXIT HUP INT TERM
 durable and re-verified. On controlled exit `1`/`2` it leaves no trusted marker; any pending/unmarked
 candidate is ignored and preserved or removed only under the closed recovery protocol. The wrapper
 first runs recovery: exit `0` resumes the successful evidence path, exit `2` appends an independent
-signed `SUPERSEDED` event and stops, and exit `1` writes/commits the signed forensic hold before a hard
-stop with no supersession. Every
+signed `SUPERSEDED` event and stops, and exit `1` means the recovery process has already written and
+verified the signed forensic hold; the wrapper independently verifies and commits that exact record
+before a hard stop with no supersession. Every
 normal success/supersession branch removes all external private keys. On forensic exit `1`, it removes
 the controller/process keys immediately but retains the distinct governance key, owner-only and
 outside the repository, solely so The Eye can authenticate a later terminal forensic disposition
@@ -4201,9 +4675,11 @@ root README still cannot claim dogfood until Task 13 documents this committed re
 - Modify: `docs/institutional-memory/examples/reader-telos-correct.json`
 - Modify: `docs/institutional-memory/examples/reader-telos-hallucinating.json`
 - Create: `docs/institutional-memory/test-production-profile-contract.mjs`
+- Create: `docs/institutional-memory/test-production-profile-acceptance.mjs`
 - Modify: `docs/institutional-memory/verify-contracts.mjs`
 - Create: `docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-20-production-profile-compiler-1.json`
 - Create: `docs/institutional-memory/iliad/RETROSPECTIVES/production-profile-compiler-1.json`
+- Create: `docs/runs/production-profile-compiler-1/lifecycle-verification.json`
 - Modify: `docs/institutional-memory/iliad/CONTRACTS/enrollment.json`
 - Modify publication outputs: `docs/runs/clotho-self-weave/expected-match-report.json`
 - Modify publication outputs: `docs/runs/clotho-self-weave/review-set.json`
@@ -4212,9 +4688,13 @@ root README still cannot claim dogfood until Task 13 documents this committed re
 - Modify publication outputs: `docs/runs/clotho-self-weave/verification.json`
 
 **Interfaces:**
-- Documents the exact host contract, 31 obligations, eight checks, evidence tiers, failure codes, scalability, portability, and non-claims.
+- Documents the exact host contract, 32 obligations, eight checks, evidence tiers, failure codes, scalability, portability, and non-claims.
 - CI runs package, bank-demo, self-hosting, import audit, portability, institutional verification, and clean-checkout checks on Node 18/20.
 - Institutional verification re-derives contract values from code and committed evidence.
+- Institutional verification proves the selected live Daedalus result has exactly two independently
+  hashed source parents, exact integration descent from both, and an exact
+  `PPC-W01`–`PPC-W29` matrix bijection; it also proves strict Git ancestry from post-review through
+  retrospective and green contract verification to enrollment.
 - Enrolls this as a build-gate spine extension maintained under existing `docs/institutional-memory/telos/`; creates no new mythological role, package root, or repository-manifest component.
 
 - [ ] **Step 1: Create the authorized documentation/lifecycle loadout**
@@ -4230,8 +4710,11 @@ Document:
 - why production systems controls are required before model planning;
 - exact activation and controller jurisdiction;
 - complete profile/evidence schema and CLI;
+- exact file-ingress contract: declared JSON/CSV/XLSX only, byte-identity validation, whole-workbook
+  rejection for unsafe XLSX content, inherited data classes, and no OCR/image support in version 1;
 - scanner limits and signal-resolution workflow;
-- exact 31-ID catalog and eight-kind registry;
+- exact 32-ID catalog and eight-kind registry;
+- exact thirteen-state lifecycle and five-ID V1 public-claim vocabulary;
 - runtime, structural, and process proof boundaries;
 - V2 source/obligation/certificate/lifecycle identities;
 - durable restart and final drift behavior;
@@ -4262,7 +4745,8 @@ First create and register two zero-dependency executable proofs:
   comments/strings/templates, escaped `../`, dynamic expressions, `.js`/`.cjs`, and a relative module
   whose transitive import is forbidden.
 - `test-production-fresh-host.mjs` creates a temporary repository with a neutral name, copies only the
-  candidate `build-gate` and `merkle-dag` runtime, writes a minimal dossier and host-owned adapters,
+  candidate `build-gate` and `merkle-dag` runtime, writes a minimal dossier with
+  `file_ingress_formats: ["none"]` and host-owned adapters,
   proves deterministic compile/verify, then removes an activated adapter and requires the exact typed
   blocker. It asserts the temporary root has no `CURRENT-AUTHORITY.json`, `docs/institutional-memory/`,
   TELOS dossier, or source-repository fallback path.
@@ -4278,6 +4762,9 @@ node docs/runs/production-profile-self/run.mjs --verify-committed
 node .github/scripts/check-portable-paths.mjs
 node docs/institutional-memory/verify-contracts.mjs
 node docs/institutional-memory/test-comprehension-gate.mjs
+test ! -f docs/runs/production-profile-compiler-1/acceptance.json || \
+  node docs/institutional-memory/test-production-profile-acceptance.mjs \
+    --verify-ci docs/runs/production-profile-compiler-1/acceptance.json
 node docs/runs/clotho-self-weave/run.mjs --verify-committed
 git diff --check
 test -z "$(git status --porcelain)"
@@ -4305,8 +4792,28 @@ Add invariants for:
 Add the comprehension questions, but do not update either reader fixture yet. Create
 `test-production-profile-contract.mjs` first; it spawns the global verifier and requires a closed list of
 new named checks for exact IDs/kinds, V1/V2 goldens, import policy, demo/self replay, enrollment
-prerequisites, and no new package/component. It fails when a named check is absent even if the old
-global verifier exits zero. Do not implement those new branches in `verify-contracts.mjs` yet.
+prerequisites, Daedalus lineage/matrix bijection, strict lifecycle commit ancestry, closed public-claim
+vocabulary, and no new package/component. It fails when a named check is absent even if the old global
+verifier exits zero. Its mutation corpus copies the relevant artifacts and Git metadata to an isolated
+fixture, then proves failure after: removing either Daedalus source parent, substituting a stale parent
+ref, deleting/duplicating/renaming one `PPC-W01`–`PPC-W29` row, changing one row's five-field
+enforcement tuple, deleting a required Argo slice event, stale-binding the retrospective or self
+publication, moving enrollment to the same or an earlier commit, or inserting an unknown public claim
+ID. Do not implement those new branches in `verify-contracts.mjs` yet.
+
+The script has only three closed modes: default read-only verification,
+`--record-pre-enrollment <safe-path>`, and
+`--verify-prospective-enrollment <exact-enrollment-path>`. The prospective mode validates one dirty
+candidate enrollment only when all committed prerequisites are green and `HEAD` is the exact
+lifecycle-verification commit; it grants no status and writes nothing.
+
+Create `test-production-profile-acceptance.mjs` in the same red phase. Its `--self-test` owns an
+isolated mutation corpus for the exact acceptance schema and 21 independent criterion handlers. Its
+verify modes are exactly `--verify-local <path>` and `--verify-ci <path>`; both must exit
+`2`/`ACCEPTANCE_NOT_FOUND` while the Task 14 artifact is absent, and neither may accept a
+caller-supplied expected outcome. Mutation fixtures prove that changing
+only the producer's top-level/row status to pass does not change a derived failure, and that an unknown,
+missing, duplicate, reordered, stale-ref, wrong-command, wrong-exit, or wrong-evidence criterion fails.
 
 - [ ] **Step 5: Run institutional red tests before updating expected records**
 
@@ -4314,27 +4821,56 @@ Run:
 
 ```bash
 node docs/institutional-memory/test-production-profile-contract.mjs
+node docs/institutional-memory/test-production-profile-acceptance.mjs --self-test
 node docs/institutional-memory/verify-contracts.mjs
 node docs/institutional-memory/test-comprehension-gate.mjs
 ```
 
 Expected: the dedicated contract test fails because the named production oracle checks are absent, and
-the comprehension regression fails because both reader fixtures lack the new answers. The old global
-verifier may still exit zero at this red point; that cannot be mistaken for green because the dedicated
-meta-oracle must fail.
+the comprehension regression fails because both reader fixtures lack the new answers. The acceptance
+self-test passes its mutation corpus, while normal verification returns
+`2`/`ACCEPTANCE_NOT_FOUND`. The old global verifier may still exit zero at this red point; that cannot
+be mistaken for green because the dedicated meta-oracle must fail.
 
 - [ ] **Step 6: Implement the oracle, update both fixtures, and run green tests**
 
 Now update `verify-contracts.mjs` and both reader fixtures. The oracle must re-derive values from live
 modules and committed snapshots rather than match truthy strings or prose, and must prove:
 
-- exact 31 IDs and eight kinds;
+- exact 32 IDs and eight kinds, including `FILE-INGRESS-001` as a runtime/data obligation owned by
+  `production-loopback-http-v1` with exact `file_ingress_formats` and inherited
+  `data_classification` projections;
+- exact V1 public-claim vocabulary IDs, row fields, row semantics, and current
+  `claim_vocabulary_ref`; every demo/self/institutional claim resolves to one exact allowed row;
 - V1/V2 contract goldens;
 - production files exist and use only allowed imports;
 - demo/self committed verification succeeds, including exact attempt-ledger signatures/transitions,
   immutable superseded refs, no active forensic hold, and one uniquely published self attempt;
 - existing enrollment entries remain valid, and the oracle has a closed branch that will require this
   candidate's evidence/pre-review/post-review/retrospective paths once its entry is appended;
+- the selected workshop result is `mode: "live"` and converged, has exactly two `sources` whose roles
+  are exactly `constraints` and `implementation`, whose response artifact bytes and actual
+  provider/model/response IDs re-hash and verify, and whose two unique `artifact_ref` values are
+  exactly the sorted `integration.descends_from` set. The signed negotiation event must name
+  `workshop_stage: "parallel-authorship"`, the same two roles, and exactly those two artifact refs
+  before the signed integration event descends from both; one source cannot descend from or replace
+  the other;
+- the closed authority-anchor table re-hashes to the exact approved-design
+  `1a0d7b96fb4d4a35313355846a205bfd7c0f6c9fa093c957ba186f5b1bac0ba6`, Iliad pre-review
+  `7b96f60ab9280c8c8173723f30892f4104583f5c9db17c44877bc724507ab634`, Daedalus methodology
+  `9288e17e84b202e48c4dbfad13904abc9317bae22b82aeefa01ee6b837a0c406`, and `attempt-005`
+  predecessor-candidate `67de2ff93499b036a35964014a5222a504ca57c9c1f9fed6fcb9fa4f9b6b210b`
+  bytes. The selected attempt's separately recomputed candidate/integrated hashes must bind its own
+  exact files; neither current hash may stand in for a predecessor anchor;
+- `integration.obligation_matrix` has exactly 29 unique rows with IDs exactly `PPC-W01` through
+  `PPC-W29`; every row has exactly
+  `obligation_id`, `invariant`, `mechanism`, `task`, `negative_test`, and `exit_criterion`, and each
+  source-declared obligation occurs exactly once. The integrated/matured plan refs are recomputed from
+  bytes and descend from the exact selected attempt; a stale/removed parent or row fails;
+- once enrollment is present, the post-review commit is a strict ancestor of the retrospective commit,
+  which is a strict ancestor of the committed lifecycle-verification record, which is a strict
+  ancestor of the enrollment commit. The oracle independently re-runs the recorded contract commands
+  against the recorded retrospective commit; the record's own exit/status fields are not proof;
 - no package root/new component was added for this spine extension.
 
 Run:
@@ -4343,6 +4879,7 @@ Run:
 node build-gate/scripts/test-production-import-policy.mjs
 node build-gate/scripts/test-production-fresh-host.mjs
 node docs/institutional-memory/test-production-profile-contract.mjs
+node docs/institutional-memory/test-production-profile-acceptance.mjs --self-test
 node docs/institutional-memory/verify-contracts.mjs
 node docs/institutional-memory/test-comprehension-gate.mjs
 ```
@@ -4367,6 +4904,7 @@ git add build-gate/production-profile/README.md build-gate/README.md \
   docs/institutional-memory/examples/reader-telos-correct.json \
   docs/institutional-memory/examples/reader-telos-hallucinating.json \
   docs/institutional-memory/test-production-profile-contract.mjs \
+  docs/institutional-memory/test-production-profile-acceptance.mjs \
   docs/institutional-memory/verify-contracts.mjs \
   docs/institutional-memory/loadout/TASK-LOADOUTS/task-production-profile-13.json
 git commit -m "docs(production-profile): publish reference contracts"
@@ -4407,12 +4945,86 @@ The review record includes:
 
 Any unresolved Critical/Important finding returns to the authorized revision path before enrollment.
 
-- [ ] **Step 10: Write retrospective and enrollment**
+- [ ] **Step 10: Commit the post-review by itself**
+
+Verify the record's exact provider/model/response IDs, reviewed commit/tree, artifact refs, finding
+identities, and submission-only status. Then commit only that record:
+
+```bash
+node docs/institutional-memory/test-production-profile-contract.mjs
+git add docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-20-production-profile-compiler-1.json
+git diff --cached --check
+git commit -m "docs(iliad): review production profile implementation"
+```
+
+The resulting commit is the unique `post_review_commit`; it must be a strict descendant of the
+pre-review Clotho weave and cannot contain the retrospective, lifecycle-verification artifact, or
+enrollment change.
+
+- [ ] **Step 11: Write and commit the retrospective by itself**
 
 The retrospective records actual stage provenance, defects found, why they escaped, test evidence, and
 at least one feed-forward optimization with an exact landing file.
 
-Append one delivered enrollment:
+```bash
+git add docs/institutional-memory/iliad/RETROSPECTIVES/production-profile-compiler-1.json
+git diff --cached --check
+git commit -m "docs(iliad): record production profile retrospective"
+```
+
+The resulting `retrospective_commit` must be a strict descendant of `post_review_commit`. It contains
+no enrollment edit.
+
+- [ ] **Step 12: Independently verify the retrospective commit and commit the verification record**
+
+From the clean retrospective commit, run:
+
+```bash
+node docs/institutional-memory/test-production-profile-contract.mjs
+node docs/institutional-memory/verify-contracts.mjs
+node docs/institutional-memory/test-comprehension-gate.mjs
+node docs/institutional-memory/test-production-profile-contract.mjs \
+  --record-pre-enrollment docs/runs/production-profile-compiler-1/lifecycle-verification.json
+```
+
+The record mode reruns those exact three commands against `HEAD`, rejects any dirty tracked path, and
+writes canonical JSON with exact closed keys:
+
+```text
+lifecycle_verification_version
+subject_commit
+subject_tree
+plan_ref
+post_review_commit
+retrospective_commit
+commands
+required_artifact_refs
+```
+
+Each command row is exactly `{ command, exit, output_sha256 }`; every exit must be zero. The record
+contains no `status`, `ready`, or enrollment assertion. Re-run the default read-only contract test,
+which independently re-executes the predicates instead of trusting those rows, then commit only:
+
+```bash
+node docs/institutional-memory/test-production-profile-contract.mjs
+git add docs/runs/production-profile-compiler-1/lifecycle-verification.json
+git diff --cached --check
+git commit -m "docs(telos): verify production profile lifecycle prerequisites"
+```
+
+This `lifecycle_verification_commit` is a strict descendant of `retrospective_commit`; neither can be
+the enrollment commit.
+
+- [ ] **Step 13: Append and commit enrollment only after strict ancestry verifies**
+
+Before editing enrollment, `test-production-profile-contract.mjs` must prove:
+
+```text
+post_review_commit < retrospective_commit < lifecycle_verification_commit == HEAD
+```
+
+where `<` means strict Git ancestry and only the explicit `== HEAD` is equality; timestamp order or a
+path appearing in the same tree is insufficient. Then append one delivered enrollment:
 
 - name `deterministic-production-profile-compiler`;
 - kind `build-gate trust-spine extension`;
@@ -4427,19 +5039,25 @@ Append one delivered enrollment:
 
 Do not add a package root, top-level component, new mythology term, or remove any deferred product.
 
-- [ ] **Step 11: Verify and commit post-review, retrospective, and enrollment**
-
 ```bash
+node docs/institutional-memory/test-production-profile-contract.mjs \
+  --verify-prospective-enrollment docs/institutional-memory/iliad/CONTRACTS/enrollment.json
+git add docs/institutional-memory/iliad/CONTRACTS/enrollment.json
+git diff --cached --check
+git commit -m "docs(iliad): enroll production profile delivery"
 node docs/institutional-memory/verify-contracts.mjs
 node docs/institutional-memory/test-comprehension-gate.mjs
-git add \
-  docs/institutional-memory/iliad/MODEL-REVIEWS/2026-07-20-production-profile-compiler-1.json \
-  docs/institutional-memory/iliad/RETROSPECTIVES/production-profile-compiler-1.json \
-  docs/institutional-memory/iliad/CONTRACTS/enrollment.json
-git commit -m "docs(iliad): enroll production profile delivery"
+node docs/institutional-memory/test-production-profile-contract.mjs
 ```
 
-- [ ] **Step 12: Refresh Clotho so committed verification covers lifecycle records**
+The institutional verifier resolves the enrollment path's first-introducing commit and requires every
+strict ancestor above plus the green committed self-run. A mutation fixture placing enrollment in the
+review, retrospective, or verification commit must fail even if file contents and timestamps match.
+The prospective mode validates the exact candidate entry while requiring
+`lifecycle_verification_commit == HEAD`; it cannot claim the ancestry check has passed until the
+post-commit default invocation proves `lifecycle_verification_commit < enrollment_commit`.
+
+- [ ] **Step 14: Refresh Clotho so committed verification covers lifecycle records**
 
 The pre-review weave already established lifecycle ordering. Re-publish from the clean enrollment commit
 so CI's committed self-weave also covers the post-review, retrospective, and enrollment bytes:
@@ -4455,12 +5073,13 @@ git add docs/runs/clotho-self-weave/expected-match-report.json \
 git commit -m "docs(clotho): refresh enrolled production profile weave"
 ```
 
-- [ ] **Step 13: Re-run documentation and institutional verification**
+- [ ] **Step 15: Re-run documentation and institutional verification**
 
 Run:
 
 ```bash
 node docs/institutional-memory/verify-contracts.mjs
+node docs/institutional-memory/test-production-profile-contract.mjs
 node docs/runs/clotho-self-weave/run.mjs --verify-committed
 node docs/runs/production-profile-self/run.mjs --verify-committed
 node docs/runs/production-profile-demo/run.mjs --verify-committed
@@ -4481,6 +5100,9 @@ Expected: all pass and the worktree is clean.
 
 **Interfaces:**
 - Produces a machine-readable acceptance matrix over every design section and `PPC-A01` through `PPC-A21`.
+- Consumes `test-production-profile-acceptance.mjs` from Task 13. Its criterion handlers own expected
+  predicates and commands; acceptance rows are evidence locators/assertions only and cannot define
+  their own pass conditions.
 - Requires independent whole-branch review and binding Node 18/20 CI.
 - Does not authorize merge; it records evidence for The Eye's final integration decision.
 
@@ -4508,6 +5130,14 @@ target that is not `node:` or repository-relative, and rejects JSON import asser
 `import.meta.dirname`, `fs.glob`, global `fetch`, shell execution, and `localeCompare`. Its report must
 prove exact seed-set equality with the matured plan-derived inventory, so a new executable cannot be
 silently omitted. Its own mutation corpus must pass; a prose/manual grep is not acceptance evidence.
+
+Then run the byte-determinism portability matrix: compile the same semantic fixture set on both
+binding Node versions (18 and 20) from two distinct absolute repository roots and under both
+POSIX and Windows path separators (native runners where available; otherwise an explicit
+separator/root-remapping harness whose mapping is itself part of the audited evidence). Every matrix
+leg must produce byte-identical canonical artifacts and references. Any byte or reference difference
+across roots, separators, or Node versions is a defect owned by the task that introduced it, not an
+environment note, and blocks acceptance.
 
 Verify no dependency or lockfile was added to `build-gate`/`merkle-dag`.
 
@@ -4540,7 +5170,7 @@ Re-run explicit negative fixtures for:
 
 - every profile/schema/cross-field branch;
 - unresolved/stale scanner signals, unsafe path, limit, race, malformed input;
-- all 31 trigger transitions;
+- all 32 trigger transitions;
 - all eight pass/fail/cannot-run check kinds;
 - stale implementation/policy/registry/evidence/input/profile refs;
 - duplicate/missing/extra/cross-bound source or obligation;
@@ -4549,6 +5179,8 @@ Re-run explicit negative fixtures for:
 - child-process restart mismatch;
 - post-build fact drift;
 - unsafe bank egress and profile escalation;
+- declared benign file admission plus direct, disguised, archived, and embedded-image rejection before
+  durable application storage or provider/model egress;
 - four TELOS self-bypass controls;
 - fresh host with no `CURRENT-AUTHORITY.json`, institutional-memory records, TELOS docs, or repository
   name, using only the candidate `build-gate`/`merkle-dag` runtime, dossier, and host evidence adapters.
@@ -4608,13 +5240,76 @@ for a binding result.
 The artifact may summarize existing evidence; it cannot turn a failed test or missing capability into
 pass.
 
+Its exact closed schema is:
+
+```js
+{
+  production_profile_acceptance_version: 1,
+  subject: {
+    design_ref,
+    matured_plan_ref,
+    authorization_ref,
+    implementation_commit,
+    implementation_tree
+  },
+  criteria: [{
+    id: "PPC-A01",
+    asserted_status: "pass" | "blocked",
+    evidence_refs: [{ path, bytes_sha256, commit }],
+    commands: [{
+      command,
+      asserted_exit,
+      node: "18" | "20" | "supplementary",
+      artifact_refs
+    }]
+  }],
+  ci_runs: [{
+    node: "18" | "20",
+    run_url,
+    run_id,
+    commit,
+    jobs: [{ name, conclusion: "success" | "failure" | "cancelled" }]
+  }],
+  review: {
+    record_ref,
+    reviewed_commit,
+    verdict: "ready" | "blocked",
+    finding_refs
+  },
+  non_claims,
+  asserted_status: "READY_FOR_EYE_INTEGRATION" | "BLOCKED"
+}
+```
+
+Objects reject unknown/missing keys. `criteria` is exactly one code-unit-sorted row for every
+`PPC-A01` through `PPC-A21`; `ci_runs` is exactly one unique row for Node 18 and one for Node 20;
+evidence, command, job, finding, artifact-ref, and non-claim arrays are non-empty where required,
+duplicate-free, and sorted by their documented identity. Every ref/path/commit/run ID has a closed
+format. `asserted_status`, row `asserted_status`, `asserted_exit`, CI `conclusion`, and review `verdict`
+are producer assertions, never inputs to a derived pass.
+
+`test-production-profile-acceptance.mjs --verify-local <path>` re-reads the subject commit in a clean
+temporary checkout, hash-verifies every evidence ref, rejects command text outside its hard-coded
+criterion-to-command table, executes each owning local oracle, and independently derives every
+non-CI predicate for `PPC-A01`–`PPC-A21`. It requires exact V1 claim-vocabulary membership and the
+Task 13 lineage/ancestry oracle. Flipping all asserted fields to pass cannot change a derived blocker.
+
+Each protected Node 18/20 production-proof leg runs
+`test-production-profile-acceptance.mjs --verify-ci <path>`. That mode additionally requires
+the current `GITHUB_SHA` to contain the exact acceptance bytes, requires the artifact's
+`implementation_commit` to be its strict ancestor, requires the current runtime major to match the
+exact matrix leg, reruns the full local derivation, and emits a closed derived result for that leg. It
+performs no network request and uses no producer conclusion as proof. The existing `required-ci`
+aggregation job requires both exact matrix leg job IDs to succeed; thus the pair of independent
+executions, not `ci_runs[].conclusion`, discharges the binding Node matrix.
+
 Use this minimum owning-evidence map; each row still records exact command, artifact, and commit refs:
 
 | Criterion | Minimum owning evidence |
 |---|---|
 | `PPC-A01` | Task 8 zero-model-call activation matrix |
 | `PPC-A02` | repeated compiler golden plus binding Node 18/20 CI |
-| `PPC-A03` | Task 3/11 exact 31-rule, eleven-domain fixture matrix |
+| `PPC-A03` | Task 3/11 exact 32-rule, eleven-domain fixture matrix |
 | `PPC-A04` | Task 4 version-2 source golden and Task 9 reconciliation |
 | `PPC-A05` | Task 4/6 legacy obligation, plan, contract, and executable goldens |
 | `PPC-A06` | Task 9 duplicate/missing/extra/cross-bound exact-set negatives |
@@ -4624,7 +5319,7 @@ Use this minimum owning-evidence map; each row still records exact command, arti
 | `PPC-A10` | Task 10 post-build reclassification drift cases |
 | `PPC-A11` | per-tier result labels, reports, reference docs, and non-claims |
 | `PPC-A12` | missing adapter and unsupported structural/process format blockers |
-| `PPC-A13` | Task 11 unsafe/corrected/escalated synthetic bank sequence |
+| `PPC-A13` | Task 11 safe structured-file admission, unsafe image/workbook rejection, and unsafe/corrected/escalated synthetic bank sequence |
 | `PPC-A14` | zero-dependency import audit over every new script/module |
 | `PPC-A15` | complete package/demo/institutional battery and clean-checkout assertion |
 | `PPC-A16` | fresh-host fixture with no TELOS authority or institutional files |
@@ -4639,13 +5334,16 @@ Use this minimum owning-evidence map; each row still records exact command, arti
 Run:
 
 ```bash
-node -e 'const fs=require("node:fs"); const p="docs/runs/production-profile-compiler-1/acceptance.json"; const x=JSON.parse(fs.readFileSync(p,"utf8")); if(x.status!=="READY_FOR_EYE_INTEGRATION") process.exit(2)'
+node docs/institutional-memory/test-production-profile-acceptance.mjs \
+  --verify-local docs/runs/production-profile-compiler-1/acceptance.json
 git diff --check
 git status --short
 ```
 
-Expected before commit: only `acceptance.json` is untracked because Step 1 already committed the Task 14
-loadout. After commit: clean tree.
+Expected before commit: the independent verifier reports every local predicate re-derived and only
+`acceptance.json` is untracked because Step 1 already committed the Task 14 loadout. A mutation copy
+whose asserted statuses are all changed to pass while one evidence ref/command/result is stale must
+still fail. After commit: clean tree.
 
 - [ ] **Step 9: Commit final acceptance evidence**
 
@@ -4659,8 +5357,10 @@ git commit -m "docs(production-profile): record final acceptance evidence"
 
 The acceptance artifact binds the reviewed implementation commit and the first binding CI run. After
 committing the documentation-only acceptance record, require protected `required CI` to pass again on
-that final branch commit. Record the final commit/run URL in the handoff; do not rewrite the artifact and
-create an evidence/CI commit loop.
+that final branch commit. Both production-proof matrix legs must run
+`test-production-profile-acceptance.mjs --verify-ci` and the aggregation job must require both exact
+leg IDs; a skipped verifier or producer-authored success string is not a pass. Record the final
+commit/run URL in the handoff; do not rewrite the artifact and create an evidence/CI commit loop.
 
 - [ ] **Step 11: Hand off to The Eye**
 

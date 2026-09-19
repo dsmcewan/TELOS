@@ -1,0 +1,1 @@
+{"kind":"seat-response","phase":"verify","provenance":{"model":"claude-fable-5","provider":"anthropic","response_id":"msg_011CdDTgc2zmoGeY3gnB4hBU","source":"ai-peer-mcp/claude_ask"},"response":{"conflicts":[],"verdict":"preserved"},"role":"implementation","seat":"claude"}

@@ -1,0 +1,23 @@
+{
+  "kind": "controller-ruling",
+  "id": "production-profile-file-ingress-v1",
+  "authority": "The Eye",
+  "decision": "approved",
+  "candidate_plan": {
+    "path": "docs/superpowers/plans/2026-07-20-deterministic-production-profile-compiler.md",
+    "raw_sha256": "sha256:3beb9be7e18dc1ac68302bdba85a416eedb080d75e2955077de84310149c8bce"
+  },
+  "file_ingress": {
+    "allowed_formats": [
+      "csv",
+      "json",
+      "xlsx"
+    ],
+    "image_handling": "block",
+    "unsafe_xlsx_handling": "reject-entire-workbook",
+    "classification": "inherit-complete-profile-data-classification"
+  },
+  "implementation_authorized": false,
+  "provider_calls_authorized": false,
+  "non_authorization": "This ruling matures candidate requirements only; it grants no implementation, authority-record, commit, provider-call, or deployment authorization."
+}
