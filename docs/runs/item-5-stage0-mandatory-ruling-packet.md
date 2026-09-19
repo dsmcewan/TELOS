@@ -1,5 +1,37 @@
 ## Item 5 — Whether Stage 0 is mandatory for all plans or skippable for small-delta serial
 
+> **Evidence provenance (round 2, 2026-09-19).** This packet's `design.md`/design-doc
+> citations and its `candidate-plan.md` citation were never committed on any branch —
+> they existed only as untracked/dirty scratch in the working tree at ruling time
+> (`c9d543f`). That evidence is now quarantined, immutable, and content-addressed at
+> git branch `quarantine/evidence-2026-09-19` (manifest: `QUARANTINE-MANIFEST.json` on
+> that branch), and is **not part of the mainline tree**. Every bare `design.md:NNN`
+> citation below resolves against `quarantine/evidence-2026-09-19:docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md`
+> (sha256:`0df4bf6bf84ef27df418dace08dc30fec209d2a870cc9670d00e4b0015b5ae58`); the bare
+> `candidate-plan.md` citations resolve against
+> `quarantine/evidence-2026-09-19:docs/runs/production-profile-compiler-1-workshop/candidate-plan.md`
+> (sha256:`a84b65055b0dff79fa62f1e087d90faf5fc052f3439887881c96594b7c5e033f`). Verify with
+> `git show quarantine/evidence-2026-09-19:<path>`. The `reader-validation-artifact.json`
+> citation below is a **different, mainline (committed) file** —
+> `docs/runs/production-profile-compiler-1/reader-validation-artifact.json` (note:
+> `production-profile-compiler-1`, not `-workshop`) — and is unaffected.
+
+### ROUND-1 CORRECTION (do not rule until resolved)
+
+This packet states authz-008 is "a separate, not-yet-executed authorization chain."
+This is contradicted by two mainline (committed) sources: `repository-manifest.json:362`
+records the `telos` role's status as "active (authz-001..008 recorded, all trust_mode
+signed; five refusals preserved; **authz-008 active**)", and `clotho/memory/README.md:17`
+states "**Phase 1 complete, plan v15 / authz-008**." Both indicate authz-008 is active
+and has a completed phase, not "not-yet-executed." This affects the packet's argument
+that the profile-hash arm of item 5's stated skip condition is dead solely because it
+sits under an unexecuted authorization chain — the chain itself is live; what remains
+unconfirmed is only whether the Production Profile Compiler specifically (as opposed
+to other authz-008-governed work, e.g. Clotho v15) has produced a compiled profile.
+The directory-search finding that `build-gate/production-profile/` does not exist and
+that no `.mjs` compiles a profile stands independently of this correction. Whether
+this changes the recommended ruling is The Eye's call, not resolved here.
+
 ### What is actually at stake
 
 The end-to-end flow diagram draws Stage 0 as the unconditional entry point before Stage 1

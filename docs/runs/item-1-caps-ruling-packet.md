@@ -1,12 +1,51 @@
 ## Item 1 — Caps (challenge round cap default 4 / code-produce round cap default 8)
 
+> **Evidence provenance (round 2, 2026-09-19).** This packet's design-doc and workshop
+> citations were never committed on any branch — they existed only as untracked/dirty
+> scratch in the working tree at ruling time (`c9d543f`). That evidence is now
+> quarantined, immutable, and content-addressed at git branch
+> `quarantine/evidence-2026-09-19` (manifest: `QUARANTINE-MANIFEST.json` on that
+> branch), and is **not part of the mainline tree**. Full-path citations below are
+> rewritten to the quarantined form; every bare filename citation elsewhere in this
+> document (`daedalus-v2.mjs`, `test-daedalus-v2.mjs`) resolves to the same branch via
+> this table — verify with `git show quarantine/evidence-2026-09-19:<path>`:
+>
+> | Bare filename | Full quarantined path | sha256 |
+> |---|---|---|
+> | `daedalus-v2.mjs` | `quarantine/evidence-2026-09-19:docs/runs/production-profile-compiler-1-workshop/daedalus-v2.mjs` | `d99426b4a11e4c8016cf6b12488349af354a518dd2d75e5aa993b27ec2642a96` |
+> | `test-daedalus-v2.mjs` | `quarantine/evidence-2026-09-19:docs/runs/production-profile-compiler-1-workshop/test-daedalus-v2.mjs` | `1b6ab34a5674052e73203978bf6c082b0ae6c1d4d085a4667990d59ed70af2ec` |
+> | design doc | `quarantine/evidence-2026-09-19:docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md` | `0df4bf6bf84ef27df418dace08dc30fec209d2a870cc9670d00e4b0015b5ae58` |
+
+### ROUND-1 CORRECTION (do not rule until resolved)
+
+1. **The "already-latent bug" claim below is INVERTED.** The section "The item-7
+   coupling" asserts `daedalus-v2.mjs:34` hardcodes `const REFEREE_MIN_CHALLENGE_ROUND
+   = 2;` as a bare literal independent of `maxChallengeRounds`. This is false against
+   the quarantined evidence itself: `quarantine/evidence-2026-09-19:docs/runs/production-profile-compiler-1-workshop/daedalus-v2.mjs`
+   (sha256 above) shows, at line 353, `const refereeMinChallengeRound =
+   Math.ceil(maxChallengeRounds / 2);` — a derived expression, with a comment
+   explaining exactly why ("never a module-level literal — so a future change to the
+   cap cannot silently desync referee cadence"). That is the very fix this packet's
+   "mandatory rider" demands. **The rider is moot, and the "Recommended ruling"
+   section's rider instruction should be reconsidered on that basis** — whether to
+   drop it, or to verify it against the actual shipped file (not the workshop
+   prototype) before ratifying, is The Eye's call, not resolved here.
+2. **The claim "zero occurrences of `CODE_MAX_ROUNDS` ... outside the design doc
+   itself" is false.** `CODE_MAX_ROUNDS` also appears in the item-2 and item-4 ruling
+   packets (`docs/runs/item-2-planning-coding-gate-ruling-packet.md:89`,
+   `docs/runs/item-4-stage3-team-leads-ruling-packet.md:7,15`). Those are sibling
+   review documents, not implementation evidence, so this does not change the
+   underlying finding that no code implements the constant — but the "zero
+   occurrences" sentence as written is factually wrong and should be corrected or
+   scoped to "zero occurrences in executable code."
+
 ### What is actually at stake
 
-The design doc's "Call accounting (bounds)" table (`docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md:705-717`) proposes two named constants that do not yet both exist: `ADVERSARIAL_MAX_ROUNDS` / `CODE_REVIEW_MAX_ROUNDS` for the challenge stages (default 4) and `CODE_MAX_ROUNDS` for Stage 3 code-produce (default 8). These read as a matched pair in the doc, but they are not symmetric in evidentiary status. One of them is already load-bearing, tested code; the other names a mechanism — Stage 3 code-produce friction between Seats 1∥2 — that has zero lines of implementation anywhere on disk. Ruling on them as if they were equally mature would ratify a real number and an invented one under the same vote. The cap value also silently feeds item 7's cadence formula (`⌈cap/2⌉` per the chair's ruling there), so changing either default here re-tunes a threshold that item 7 already fixed against the current values.
+The design doc's "Call accounting (bounds)" table (`quarantine/evidence-2026-09-19:docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md:705-717` (sha256:0df4bf6bf84ef27df418dace08dc30fec209d2a870cc9670d00e4b0015b5ae58)) proposes two named constants that do not yet both exist: `ADVERSARIAL_MAX_ROUNDS` / `CODE_REVIEW_MAX_ROUNDS` for the challenge stages (default 4) and `CODE_MAX_ROUNDS` for Stage 3 code-produce (default 8). These read as a matched pair in the doc, but they are not symmetric in evidentiary status. One of them is already load-bearing, tested code; the other names a mechanism — Stage 3 code-produce friction between Seats 1∥2 — that has zero lines of implementation anywhere on disk. Ruling on them as if they were equally mature would ratify a real number and an invented one under the same vote. The cap value also silently feeds item 7's cadence formula (`⌈cap/2⌉` per the chair's ruling there), so changing either default here re-tunes a threshold that item 7 already fixed against the current values.
 
 ### Evidence: what is actually shipped
 
-**The challenge cap (4) is already implemented, not merely proposed.** `docs/runs/production-profile-compiler-1-workshop/daedalus-v2.mjs:344` defines `maxChallengeRounds = 4` as the literal default parameter to `runDaedalusV2`, and the Stage 2 loop at `daedalus-v2.mjs:482` (`for (let round = 1; round <= maxChallengeRounds; round += 1)`) enforces it as a hard global ceiling — round counters are explicitly documented as never reset by defend, modify, or re-entry (`daedalus-v2.mjs:478-479`, matching the design doc's own claim at line 716-717). Two tests exercise this directly: Case 14 (`test-daedalus-v2.mjs:407-420`) drives 5 denied rounds against `maxChallengeRounds: 4` and asserts `result.reason === "challenge-round-cap"` with exactly 4 rounds recorded; Case 29 (`test-daedalus-v2.mjs:765-778`) proves a `modify` re-entry does not reset the counter, using `maxChallengeRounds: 2`. So "4" is not an undemonstrated design-doc number — it is the value already chosen, coded, and tested in the one stage of v2 that exists.
+**The challenge cap (4) is already implemented, not merely proposed.** `quarantine/evidence-2026-09-19:docs/runs/production-profile-compiler-1-workshop/daedalus-v2.mjs:344` (sha256:d99426b4a11e4c8016cf6b12488349af354a518dd2d75e5aa993b27ec2642a96) defines `maxChallengeRounds = 4` as the literal default parameter to `runDaedalusV2`, and the Stage 2 loop at `daedalus-v2.mjs:482` (`for (let round = 1; round <= maxChallengeRounds; round += 1)`) enforces it as a hard global ceiling — round counters are explicitly documented as never reset by defend, modify, or re-entry (`daedalus-v2.mjs:478-479`, matching the design doc's own claim at line 716-717). Two tests exercise this directly: Case 14 (`test-daedalus-v2.mjs:407-420`) drives 5 denied rounds against `maxChallengeRounds: 4` and asserts `result.reason === "challenge-round-cap"` with exactly 4 rounds recorded; Case 29 (`test-daedalus-v2.mjs:765-778`) proves a `modify` re-entry does not reset the counter, using `maxChallengeRounds: 2`. So "4" is not an undemonstrated design-doc number — it is the value already chosen, coded, and tested in the one stage of v2 that exists.
 
 **The code-produce cap (8) has no implementation to inherit.** A repo-wide search finds zero occurrences of `CODE_MAX_ROUNDS` or `CODE_REVIEW_MAX_ROUNDS` outside the design doc itself. `daedalus-v2.mjs` is 731 lines and covers Stage 0 (research breakout), Stage 1 (plan produce, via injected `runJoin`), and Stage 2 (plan challenge) only — there is no Stage 3 (code produce) or Stage 4 (code challenge) function, loop, or call site anywhere in the file. `test-daedalus-v2.mjs`'s 30 cases cover research survivors, plan-produce disposition, the challenge-round cap, denied-twice, oscillation, referee cadence/burn, and provenance rules — none exercise a code-produce round or a code-round cap. Item 7's exemplar brief independently confirms this from the referee side: "The 8-round produce loop, where a semantic watcher would actually earn its call, has no referee call site at all. Produce-side cadence is specified and unimplemented" (`item-7-referee-ruling-packet.md:30`). Item 1's cap and item 7's cadence are pointing at the same hole: Stage 3 does not exist yet.
 

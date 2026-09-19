@@ -1,11 +1,31 @@
 ## Item 3 — Grok search honesty for Stage 0 / Stage 4
 
+> **Evidence provenance (round 2, 2026-09-19).** This packet's design-doc and workshop
+> transport citations were never committed on any branch — they existed only as
+> untracked/dirty scratch in the working tree at ruling time (`c9d543f`). That evidence
+> is now quarantined, immutable, and content-addressed at git branch
+> `quarantine/evidence-2026-09-19` (manifest: `QUARANTINE-MANIFEST.json` on that
+> branch), and is **not part of the mainline tree**. Full-path citations below are
+> rewritten to the quarantined form; every bare filename citation elsewhere in this
+> document resolves to the same branch via this table — verify with `git show
+> quarantine/evidence-2026-09-19:<path>`:
+>
+> | Bare filename | Full quarantined path | sha256 |
+> |---|---|---|
+> | design doc / `2026-07-20-daedalus-workflow-v2-design.md` | `docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md` | `0df4bf6bf84ef27df418dace08dc30fec209d2a870cc9670d00e4b0015b5ae58` |
+> | `daedalus-v2.mjs` | `docs/runs/production-profile-compiler-1-workshop/daedalus-v2.mjs` | `d99426b4a11e4c8016cf6b12488349af354a518dd2d75e5aa993b27ec2642a96` |
+> | `test-daedalus-v2.mjs` | `docs/runs/production-profile-compiler-1-workshop/test-daedalus-v2.mjs` | `1b6ab34a5674052e73203978bf6c082b0ae6c1d4d085a4667990d59ed70af2ec` |
+> | `live-seats-v2.mjs` | `docs/runs/production-profile-compiler-1-workshop/live-seats-v2.mjs` | `28bf31a671cc597ea8b564db41da4b16bbe5c65e65a9135e3b55cb98270989d9` |
+> | `test-live-seats-v2.mjs` | `docs/runs/production-profile-compiler-1-workshop/test-live-seats-v2.mjs` | `e200ae3e94622d9632acf24432c7cef600a72673bd01cec930f085e1631656d3` |
+> | `hallucination-metrics.mjs` | `docs/runs/production-profile-compiler-1-workshop/hallucination-metrics.mjs` | `ece71b6b9cdc6bc9eaa802986e1f481d2836cd4a3928801d840e515e042dada2` |
+
 ### What is actually at stake
 
 The design doc's own promise is narrow and correct: "Grok live-landscape and Gemini
 grounding run **upstream** only if transport supports them. Otherwise those seats still
 complete Surfaces A–C without false citation claims"
-(`docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md:604-608`). That is a
+(`quarantine/evidence-2026-09-19:docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md:604-608`
+sha256:0df4bf6bf84ef27df418dace08dc30fec209d2a870cc9670d00e4b0015b5ae58). That is a
 behavioral requirement on the model's prose. Item 3 asks for its enforcement mechanism —
 a controller-checkable field, modeled on `empty_list_attestation`, that proves rather than
 claims whether live search actually ran.
@@ -29,7 +49,8 @@ does.
 ### Option A — promote existing telemetry into a required, hashed field; stop discarding it (recommended)
 
 **The case for it.** The transport already does the hard part. `makeGrokChallenger`
-(`docs/runs/production-profile-compiler-1-workshop/live-seats-v2.mjs:61-165`) attaches
+(`quarantine/evidence-2026-09-19:docs/runs/production-profile-compiler-1-workshop/live-seats-v2.mjs:61-165`
+sha256:28bf31a671cc597ea8b564db41da4b16bbe5c65e65a9135e3b55cb98270989d9) attaches
 `web_search`/`x_search` tools only when `DAEDALUS_V2_GROK_SEARCH=on`
 (`live-seats-v2.mjs:65,116-121` — "search must be opt-in, not default," asserted by
 `test-live-seats-v2.mjs:69`), and on every call it captures
@@ -84,7 +105,8 @@ reports show X" in `inclusions[].claim` with `evidence_refs` that don't correspo
 entry in `search_evidence.citations`, and nothing here catches that; matching a specific
 prose claim to a specific citation is a judgment call left to Seat 4's Stage 0 mandate to
 "cross-check production claims against frame" (design doc seat-weighting table,
-`2026-07-20-daedalus-workflow-v2-design.md:555`) and to The Eye at review — not something
+`quarantine/evidence-2026-09-19:docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md:555`
+sha256:0df4bf6bf84ef27df418dace08dc30fec209d2a870cc9670d00e4b0015b5ae58) and to The Eye at review — not something
 the controller can close mechanically today, the same honest gap already conceded for
 `objections[].evidence_refs` never being checked against real citation content.
 

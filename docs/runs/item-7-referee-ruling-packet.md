@@ -1,11 +1,48 @@
 ## Item 7 — Referee: distinct model, and cadence
 
+> **Evidence provenance (round 2, 2026-09-19).** All `live-seats-v2.mjs`,
+> `daedalus-v2.mjs`, `test-daedalus-v2.mjs`, and `hallucination-metrics.mjs` citations
+> in this packet were never committed on any branch — they existed only as
+> untracked/dirty scratch in the working tree at ruling time (`c9d543f`). That evidence
+> is now quarantined, immutable, and content-addressed at git branch
+> `quarantine/evidence-2026-09-19` (manifest: `QUARANTINE-MANIFEST.json` on that
+> branch), and is **not part of the mainline tree**. Verify with `git show
+> quarantine/evidence-2026-09-19:<path>`:
+>
+> | Bare filename | Full quarantined path | sha256 |
+> |---|---|---|
+> | `live-seats-v2.mjs` | `docs/runs/production-profile-compiler-1-workshop/live-seats-v2.mjs` | `28bf31a671cc597ea8b564db41da4b16bbe5c65e65a9135e3b55cb98270989d9` |
+> | `daedalus-v2.mjs` | `docs/runs/production-profile-compiler-1-workshop/daedalus-v2.mjs` | `d99426b4a11e4c8016cf6b12488349af354a518dd2d75e5aa993b27ec2642a96` |
+> | `test-daedalus-v2.mjs` | `docs/runs/production-profile-compiler-1-workshop/test-daedalus-v2.mjs` | `1b6ab34a5674052e73203978bf6c082b0ae6c1d4d085a4667990d59ed70af2ec` |
+> | `hallucination-metrics.mjs` | `docs/runs/production-profile-compiler-1-workshop/hallucination-metrics.mjs` | `ece71b6b9cdc6bc9eaa802986e1f481d2836cd4a3928801d840e515e042dada2` |
+>
+> The absolute-path form `/home/colchis/Projects/TELOS/docs/runs/production-profile-compiler-1-workshop/live-seats-v2.mjs`
+> below resolves to the same quarantined file.
+
+### ROUND-1 CORRECTION (do not rule until resolved)
+
+The "Recommended ruling" says to "ship role R advisory on the current double-rolled
+configuration," describing it as "already built and tested." That is true only of the
+**quarantined workshop prototype** (`live-seats-v2.mjs`, `daedalus-v2.mjs`,
+`test-daedalus-v2.mjs` above) — none of it is committed to mainline. The shipped,
+mainline `build-gate/daedalus.mjs` (351 lines) has **no referee logic at all**: it
+implements only an author/reviewer loop (`callSeat({..., role: "author", ...})` and
+`callSeat({..., role: "reviewer", ...})`), with no role-R call site, no cadence check,
+and no `stalemate` terminal anywhere in the file. "Ship ... as already built/tested"
+should be read as "the mechanics are prototyped and tested in a disposable workshop,
+not yet promoted to the trust-sensitive orchestrator" — the recommendation to proceed
+on that basis is unaffected in substance (this packet's own evidence never claimed the
+referee was already live in `build-gate/`), but the phrasing risks being read as "ready
+to ship into `daedalus.mjs` today," which is not supported. Promotion into
+`build-gate/daedalus.mjs` remains a separate, unstarted engineering step, consistent
+with item 6's recommended workshop-first-then-scoped-extension path.
+
 ### What is actually at stake
 Role R is the only non-deterministic actor that can end a stage, and it currently sits on gemini — the same model that occupies Seat 4 as a challenger — so a `stalemate` can convert gemini's own live objection into an immediate escalation to The Eye without a further defense round. The independence question is real but small; the larger unresolved fact is that no evidence exists anywhere on disk that *any* model configuration detects a planted semantic loop at v2's log lengths, so the model choice is currently being argued rather than measured.
 
 ### Option A — keep gemini double-rolled (Seat 4 + role R)
 
-**The case for it.** It is what is already built and tested: `makeGeminiReferee` exists in `/home/colchis/Projects/TELOS/docs/runs/production-profile-compiler-1-workshop/live-seats-v2.mjs`, `readRefereeVerdict` burns on provenance reuse, malformed shape, empty `loop_evidence`, and unresolvable refs (`daedalus-v2.mjs:298-330`), per-seat counters already attribute to `gemini:referee` (`hallucination-metrics.mjs`), and `test-daedalus-v2.mjs` cases 15/16/21 already exercise cadence, stalemate-ends-run, evidence-or-burn, and Seat-4-id reuse. The escape hatch is narrower than first alleged: the both-accepted branch returns before the referee block is reached (`daedalus-v2.mjs:565-581` vs `:583`), so role R can never override a unanimous accept. Rule 2 already burns a verdict that reuses a Seat 4 challenge response id. And no additional provider seat, key, or budget line is required.
+**The case for it.** It is what is already built and tested: `makeGeminiReferee` exists in `quarantine/evidence-2026-09-19:docs/runs/production-profile-compiler-1-workshop/live-seats-v2.mjs` (sha256:28bf31a671cc597ea8b564db41da4b16bbe5c65e65a9135e3b55cb98270989d9), `readRefereeVerdict` burns on provenance reuse, malformed shape, empty `loop_evidence`, and unresolvable refs (`daedalus-v2.mjs:298-330`), per-seat counters already attribute to `gemini:referee` (`hallucination-metrics.mjs`), and `test-daedalus-v2.mjs` cases 15/16/21 already exercise cadence, stalemate-ends-run, evidence-or-burn, and Seat-4-id reuse. The escape hatch is narrower than first alleged: the both-accepted branch returns before the referee block is reached (`daedalus-v2.mjs:565-581` vs `:583`), so role R can never override a unanimous accept. Rule 2 already burns a verdict that reuses a Seat 4 challenge response id. And no additional provider seat, key, or budget line is required.
 
 **The case against.** The referee reads a ledger containing its own Seat 4 text and is therefore judging an exchange it is a party to. The reachable conflict is *unilateral acceleration*: gemini denies with objection O, grok accepts, the run continues, role R (gemini) rules `stalemate` citing O, and the stage exits `needs-work` with O undisposed — gemini alone converts its own objection into an Eye action instead of taking one more defense round. Separately, finding 4's contamination instrument (`cross_sender_adoption`, 9 adoptions across a speaker boundary vs 0 independent) requires a speaker boundary; double-rolling removes the boundary, so the axis stops being measurable. This is an instrument fact, not a demonstrated harm.
 

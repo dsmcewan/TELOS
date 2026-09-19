@@ -1,5 +1,35 @@
 ## Item 4 — How tightly Stage 3 maps to parallel dual seats vs team-leads under the DAG
 
+> **Evidence provenance (round 2, 2026-09-19).** Every bare "design doc line NNN"
+> citation in this packet refers to `docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md`,
+> which was never committed on any branch — it existed only as untracked/dirty scratch
+> in the working tree at ruling time (`c9d543f`). That evidence is now quarantined,
+> immutable, and content-addressed at git branch `quarantine/evidence-2026-09-19`
+> (manifest: `QUARANTINE-MANIFEST.json` on that branch), and is **not part of the
+> mainline tree**. Full path: `quarantine/evidence-2026-09-19:docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md`
+> (sha256:`0df4bf6bf84ef27df418dace08dc30fec209d2a870cc9670d00e4b0015b5ae58`); verify with
+> `git show quarantine/evidence-2026-09-19:docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md`.
+> All bare `daedalus.mjs` citations in this packet are `build-gate/daedalus.mjs`
+> (mainline, ordinary shipped file, unaffected) — not the quarantined workshop
+> `daedalus-v2.mjs` cited by items 1, 3, 6, and 7.
+
+### ROUND-1 CORRECTION (do not rule until resolved)
+
+Option A's "case for it" cites `docs/runs/clotho-loader-redesign/run-loader-redesign.mjs:238`
+as evidence that `runParallelDaedalus` is "already exists and is unit-tested ... and
+**live-run** (... invoked over one frozen frame there too)." This is contradicted by
+the introducing commit for that directory: `274b136` ("Loader redesign: frozen frame +
+parallel-workshop harness (**held, no live run**)") states explicitly: "Held at the
+smoke-verified state: `--smoke` converges with five distinct provenance keys and an
+exact obligation bijection, independent recheck agrees. **No live seat calls made; no
+budget spent.**" `run-loader-redesign.mjs` and its `frame.md` are both mainline,
+committed files (not quarantined), so this is a straightforward mis-citation, not a
+provenance-quarantine issue. **The evidence should be re-marked as a smoke-tested
+wiring proof (five-key provenance bijection under `--smoke`), not a live run** — it
+does not demonstrate `runParallelDaedalus` converging on a real model-produced
+candidate, only that the harness's plumbing and obligation accounting are internally
+consistent. Whether this changes Option A's overall case is The Eye's call.
+
 ### What is actually at stake
 
 Stage 3's own text tries to reconcile two mechanisms that already exist on disk, already diverge, and today are wired together with **no code-level friction step between them at all**. `runParallelDaedalus` (`build-gate/daedalus.mjs:311-351`) is a **whole-frame, single-round** parallel-authorship join: two seats each produce one source node, one integrator produces one candidate that must `descends_from` exactly both, two verifiers attest preservation, and `deriveParallelState` returns one verdict for the whole candidate. It has no concept of a DAG node, a topo position, or "node-by-node" iteration — it does not decompose at all. Separately, `teamForNode` (`build-gate/teams.mjs:81-89`) + `runBuild` (`merkle-dag/orchestrate.mjs:190-279`) is the **actual node-by-node-in-topo-order** executor already in production: `readySet` (`orchestrate.mjs:68-74`) computes the topo-respecting frontier, `criticalWeights` (`orchestrate.mjs:78-92`) schedules it, and each ready node is dispatched to exactly one owning team whose **lead alone** emits the files (`teamPrompts.mjs:52,100` — "team's buildable lead... asked to emit the node's files"; the roster's `member` seats are declared for composition/prompting rationale, not co-authorship at dispatch time). This is single-writer-per-node, not dual-pressure.

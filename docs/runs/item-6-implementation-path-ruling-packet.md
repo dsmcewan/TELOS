@@ -1,5 +1,65 @@
 ## Item 6 — Implementation: extend `daedalus.mjs` + orchestrator vs workshop-first proof
 
+> **Evidence provenance (round 2, 2026-09-19).** This packet's citations to the v2
+> design doc and to `docs/runs/production-profile-compiler-1-workshop/daedalus-v2.mjs`
+> (and its test suite) were never committed on any branch — they existed only as
+> untracked/dirty scratch in the working tree at ruling time (`c9d543f`). That evidence
+> is now quarantined, immutable, and content-addressed at git branch
+> `quarantine/evidence-2026-09-19` (manifest: `QUARANTINE-MANIFEST.json` on that
+> branch), and is **not part of the mainline tree**. Verify with `git show
+> quarantine/evidence-2026-09-19:<path>`:
+>
+> | Citation | Full quarantined path | sha256 |
+> |---|---|---|
+> | design doc / "Mapping to..." table | `docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md` | `0df4bf6bf84ef27df418dace08dc30fec209d2a870cc9670d00e4b0015b5ae58` |
+> | `daedalus-v2.mjs` (731 lines claimed) | `docs/runs/production-profile-compiler-1-workshop/daedalus-v2.mjs` | `d99426b4a11e4c8016cf6b12488349af354a518dd2d75e5aa993b27ec2642a96` |
+> | `test-daedalus-v2.mjs` (35/35 claimed) | `docs/runs/production-profile-compiler-1-workshop/test-daedalus-v2.mjs` | `1b6ab34a5674052e73203978bf6c082b0ae6c1d4d085a4667990d59ed70af2ec` |
+> | `workshop-lib.mjs` | `docs/runs/production-profile-compiler-1-workshop/workshop-lib.mjs` | `4e5f307f57f4cdc459f9c473d285ce2cd15f13f2a7a8108dc8532d2c32c27f1e` |
+>
+> By contrast, `docs/superpowers/specs/2026-07-21-daedalus-family-multi-model-seat-lifecycle-design.md`,
+> `docs/superpowers/plans/2026-07-21-daedalus-family-multi-model-seat-lifecycle.md`,
+> the `docs/runs/daedalus-family-lifecycle-authorization-*/` directories, and
+> `build-gate/daedalus.mjs` (351 lines) cited throughout this packet are ordinary,
+> **mainline, committed** files and are unaffected by this provenance note.
+
+### ROUND-1 CORRECTION (do not rule until resolved)
+
+1. **Numeric drift confirms the cited workshop scratch has mutated since this packet
+   was written.** This packet claims `daedalus-v2.mjs` is "731 lines" and its test
+   suite is "903 lines of tests" covering "35 cases," "35/35 passing." Re-reading the
+   now-frozen quarantined snapshot shows `daedalus-v2.mjs` is **767 lines** and
+   `test-daedalus-v2.mjs` is **960 lines** containing **38** numbered cases (Case 1
+   through Case 38), not 35. Because the workshop directory was untracked scratch at
+   ruling time, its content was not append-only or hash-pinned when this packet was
+   written — the file changed between whenever this packet's author last read it and
+   whenever the working tree was frozen into quarantine. The qualitative claim (a
+   passing test suite exists exercising these mechanics) is not falsified by the line
+   drift, but the specific numbers ("731 lines," "35 cases," "35/35") should not be
+   relied on as citable facts, and any decision keyed to the *size* of the diff (e.g.
+   "smaller than a single bullet of the family-lifecycle plan's Global Constraints
+   section") should be re-checked against the frozen quarantined snapshot's actual
+   size, not the numbers in this packet's prose.
+2. **A present-tense claim about the family-lifecycle plan's text is falsified as of
+   the ruling commit.** This packet states the credential-value detector "as specified
+   would reject the plan's own test literal (`Bearer abcdefghijklmnopqrstuvwxyz`,
+   **present in** `docs/superpowers/plans/2026-07-21-daedalus-family-multi-model-seat-lifecycle.md`'s
+   own recipe)." That literal was removed from the plan document at mainline commit
+   `f2db463` ("Harden Daedalus family lifecycle plan") — which is an ancestor of the
+   ruling commit `c9d543f` — and does not appear in the file at `c9d543f` or in the
+   current tree (`grep` returns nothing). The literal did appear in an earlier version
+   of the document (prior to `f2db463`), so **this finding should be re-scoped as
+   historical** — describing what an earlier draft of the plan contained when
+   authz-012's review ran, not a defect present in the document as it stood at ruling
+   time. Whether authz-012's actual review target (the pre-`f2db463` draft) still had
+   this defect at the moment codex reviewed it is not re-verified here; only the
+   present-tense claim about the document's current state is corrected.
+
+Neither correction changes the packet's core finding (that the extend-in-place mode
+produced zero executable code across four real council rounds while the workshop-first
+mode produced a running implementation) — both corrections are about citation
+precision, not about the underlying comparison. Whether either affects the confidence
+of the "Recommended ruling" is The Eye's call.
+
 ### What is actually at stake
 
 The v2 design doc's own "Mapping to `C:\Users\dsmce\telos`" table (`docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md:721-732`) says Stage 1 (`runParallelDaedalus`, `build-gate/daedalus.mjs:311`) and hash/order (`compileAndHashPlan`, `merkle-dag/planner.mjs:42`) already exist and are wired into `build-gate/proposal-orchestrator.mjs:32,35,210,242`; what v2 would newly require is Stage 0 (research pre-flight), full Stage 2/4 challenge-as-gate-plus-deny-back (today "Grok often advisory"), and the referee wired over a produce loop. Item 6 asks how that delta gets built: by extending the shipped `daedalus.mjs`/`proposal-orchestrator.mjs` in place under a fully-specified, committee-authorized plan before any of it runs once, or by proving the mechanics in a disposable workshop first and only then writing a scoped extension.

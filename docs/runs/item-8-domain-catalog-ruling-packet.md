@@ -1,10 +1,78 @@
 ## Item 8 — Closed domain id catalog for Surface B (bind to Production Profile Compiler registry) and closed `must_not_weaken` enum for Surface C
 
+> **Evidence provenance (round 2, 2026-09-19).** This packet cites two distinct
+> "design doc" families — do not conflate them:
+>
+> 1. **The Daedalus v2 workflow design doc** (`daedalus-workflow-v2-design.md`,
+>    cited both by full path and by the short form `daedalus-workflow-v2-design.md:NNN`)
+>    was never committed on any branch — it existed only as untracked/dirty scratch in
+>    the working tree at ruling time (`c9d543f`). It is now quarantined, immutable, and
+>    content-addressed at git branch `quarantine/evidence-2026-09-19` (manifest:
+>    `QUARANTINE-MANIFEST.json` on that branch), and is **not part of the mainline
+>    tree**. Full path: `quarantine/evidence-2026-09-19:docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md`
+>    (sha256:`0df4bf6bf84ef27df418dace08dc30fec209d2a870cc9670d00e4b0015b5ae58`). Every
+>    bare `daedalus-workflow-v2-design.md:NNN` citation below resolves against this
+>    path — verify with `git show quarantine/evidence-2026-09-19:docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md`.
+> 2. **The Production Profile Compiler (PPC) design doc**
+>    (`docs/superpowers/specs/2026-07-20-deterministic-production-profile-compiler-design.md`)
+>    and **PPC plan doc** (`docs/superpowers/plans/2026-07-20-deterministic-production-profile-compiler.md`)
+>    are ordinary **mainline, committed** files and are unaffected by this note — with
+>    one exception, flagged in the correction block below: the PPC plan doc was also
+>    independently *modified* in the dirty tree (an "M" record in the quarantine
+>    manifest), and one specific citation into it resolves only against the dirty
+>    (quarantined) version, not the committed mainline content at that line range.
+>
+> Bare "design doc" prose without a filename is ambiguous between the two; where the
+> surrounding text says "PPC design doc" or "the compiler," it means family (2)
+> (mainline); where it discusses Surface B/C artifact shape or the v2 Goal/Invariants
+> table, it means family (1) (quarantined).
+
+### ROUND-1 CORRECTION (do not rule until resolved)
+
+1. **The `FILE-INGRESS-001` "fixture-matrix row" cited for Surface B is not present in
+   the committed mainline text at the cited location — it exists only in the dirty,
+   quarantined overlay of that file.** This packet cites `docs/superpowers/plans/2026-07-20-deterministic-production-profile-compiler.md:1293-1298`
+   for the row (`FILE-INGRESS-001: domain data / trigger ... / tier runtime / kind
+   production-loopback-http-v1 / required_result pass`). The mainline (committed)
+   version of that file is 4669 lines and has completely different content at lines
+   1285-1300 (a legacy obligation-preimage example, no domain catalog material). The
+   cited row exists only in the dirty-tree version of this file captured in quarantine
+   (`quarantine/evidence-2026-09-19:docs/superpowers/plans/2026-07-20-deterministic-production-profile-compiler.md`,
+   sha256:`3beb9be7e18dc1ac68302bdba85a416eedb080d75e2955077de84310149c8bce`, 5369
+   lines there vs. 4669 committed) — a search of the entire mainline tree for
+   `FILE-INGRESS-001` returns zero hits outside this packet itself. **This citation
+   should be removed or explicitly re-marked as quarantined-only, unverified-as-Eye-approved
+   evidence** — the packet calls it "Eye-approved," but no committed record of that
+   approval exists in the mainline tree either (see finding 2 below). Since this row
+   was the *second* of only two literal domain-slug examples the "internally
+   inconsistent naming" argument relies on, removing it halves that argument's
+   evidence base to a single literal (`ai-use-and-data-egress`) — the underlying
+   naming-inconsistency point may still hold, but on weaker evidence than presented.
+2. **A decision record claiming item 8 was "adversarially reviewed and reverified
+   2026-07-22" is itself quarantined evidence, not a mainline record, and should be
+   treated as unverified.** `docs/institutional-memory/daedalus/DECISIONS/domain-catalog.md`
+   does not exist in the mainline tree at `c9d543f` or in the current tree (`git show
+   c9d543f:<path>` fails; the path is untracked). It exists only in the quarantine
+   snapshot (`quarantine/evidence-2026-09-19:docs/institutional-memory/daedalus/DECISIONS/domain-catalog.md`,
+   sha256:`9711f0cb31893008af6af58b590a5eb7af1ff2838ce50775af7ce599354cd713`) and states,
+   in its own header and authority-chain line, that this very packet was
+   "adversarially reviewed and reverified 2026-07-22" / "adversarially reviewed,
+   revised, and passed bounded review 2026-07-22." No committed record of that review
+   exists anywhere on disk. Per Eye direction, **this claim should be treated as an
+   unverified, self-referential assertion made from within the same quarantined
+   scratch this whole round-1 review was triggered by** — it does not corroborate
+   anything about this packet's own soundness, and should not be cited as evidence
+   that item 8 already cleared adversarial review.
+
+Neither correction resolves the substantive Surface B/C ruling question; both concern
+citation integrity. Whether either changes the recommended ruling is The Eye's call.
+
 ### What is actually at stake
 
 The Artifact shape in the v2 design doc specifies both fields as if a closed set already
 exists to bind to: `production[].domain` is commented **"closed id from profile catalog or
-`governance-runtime:*`"** (`docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md:571`),
+`governance-runtime:*`"** (`quarantine/evidence-2026-09-19:docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md:571`
+sha256:0df4bf6bf84ef27df418dace08dc30fec209d2a870cc9670d00e4b0015b5ae58),
 and `workflow_optimization[].must_not_weaken` is commented **"friction | signatures | rule-3 |
 eye-gates | ..."** (`:582`) — a trailing ellipsis that admits the list is open, not closed. Neither
 comment is backed by an implemented registry on disk. The Production Profile Compiler (PPC) —

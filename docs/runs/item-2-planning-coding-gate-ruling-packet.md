@@ -1,12 +1,53 @@
 ## Item 2 — Planning-gate vs coding-gate: one Eye action or two
 
+> **Evidence provenance (round 2, 2026-09-19).** The design doc this packet cites
+> (`daedalus-workflow-v2-design.md`, referred to below also as `design.md`) was never
+> committed on any branch — it existed only as untracked/dirty scratch in the working
+> tree at ruling time (`c9d543f`). That evidence is now quarantined, immutable, and
+> content-addressed at git branch `quarantine/evidence-2026-09-19` (manifest:
+> `QUARANTINE-MANIFEST.json` on that branch), and is **not part of the mainline
+> tree**. Full path: `quarantine/evidence-2026-09-19:docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md`
+> (sha256:`0df4bf6bf84ef27df418dace08dc30fec209d2a870cc9670d00e4b0015b5ae58`). Every
+> bare `design.md:NNN` citation below resolves against that path — verify with
+> `git show quarantine/evidence-2026-09-19:docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md`.
+> All other citations in this packet (`build-gate/proposal-orchestrator.mjs`,
+> `merkle-dag/orchestrate.mjs`, `contracts/Proposal Lifecycle.md`, `build-gate/risk-policy.mjs`,
+> `CLAUDE.md`) are ordinary mainline files and are unaffected.
+
+### ROUND-1 CORRECTION (do not rule until resolved)
+
+The Option A "case for it" and the "Recommended ruling" both state that
+`checkLifecycleAuthorization`'s Decision-6 re-verification "re-runs the **full**
+ledger-reconstructed `lifecycleVerify`" before Stage 3 dispatch. This is contradicted
+by the cited code's own comment. `merkle-dag/orchestrate.mjs:41-44` (mainline, not
+quarantined) reads:
+
+> "Re-run the ledger-reconstructable lifecycle verification (the injected
+> `lifecycleVerify` wraps `validateProposalLifecycle` with `requiredModels=[]`/`packets=[]`
+> — the full packets are not on the ledger, so a literal 'full' re-run would false-fail
+> `proposal_ref_binding`/`cold_review`)."
+
+So the binding checks (`proposal_ref_binding`, `cold_review`) are deliberately
+no-op'd via empty `requiredModels`/`packets` arrays — this is a narrower,
+ledger-reconstructable-state-only re-verification, not the full lifecycle check the
+packet's central argument relies on. Separately, the packet's Option A case for it
+cites an unbuilt Stage-4 "code challenge" as part of what bounds the harm of
+collapsing to one Eye action ("the harm is bounded by Stage 4 ... and the Eye release
+gate downstream") — no Stage-4 implementation exists anywhere on disk (confirmed
+independently by items 3, 4, and 6's findings that `daedalus-v2.mjs` implements only
+Stages 0 and 2); the real bounding mechanism on the shipped path is team-dispatch
+plus the deterministic per-node test gate (`orchestrate.mjs`'s `defaultVerifyNode`),
+not a code-challenge stage. Both points weaken the "case for it" as written; whether
+they change the recommended ruling is The Eye's call, not resolved here.
+
 ### What is actually at stake
 
 The design doc's own end-to-end flow diagram draws exactly one Eye box between
 Stage 2 (plan challenge, both accept) and Stage 3 (code produce): `Eye —
 planning gate (authorize this plan_hash)` feeds straight into `Stage 3 Code
 PRODUCE` with no second Eye node drawn in between
-(`docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md:152-156`).
+(`quarantine/evidence-2026-09-19:docs/superpowers/specs/2026-07-20-daedalus-workflow-v2-design.md:152-156`
+sha256:0df4bf6bf84ef27df418dace08dc30fec209d2a870cc9670d00e4b0015b5ae58).
 The four-point list is where the split is reserved as an option, not asserted:
 point 3, "Approve coding," is explicitly "optional separate go-ahead; default
 may collapse into (2) if The Eye so rules" (same file, lines 121-122). So the
