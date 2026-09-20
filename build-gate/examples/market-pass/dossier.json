@@ -1,4 +1,5 @@
 {
+  "trust_mode": "advisory",
   "build_id": "market-demo-pass",
   "idea_id": "idea-market-demo-pass",
   "use_case": "market-readiness-pass",

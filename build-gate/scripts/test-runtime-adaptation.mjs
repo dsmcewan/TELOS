@@ -95,7 +95,7 @@ const node = (id) => ({
 // --- end-to-end: two-level adaptation reaches ready via buildProject ---
 {
   const { baseDir, telosDir } = tmpWs();
-  const dossier = { build_id: "ad1", use_case: "u", objective: "o", required_docs: [], write_targets: ["a.txt"] };
+  const dossier = { build_id: "ad1", use_case: "u", trust_mode: "advisory", objective: "o", required_docs: [], write_targets: ["a.txt"] };
   const callSeat = async ({ model, intent }) => intent === "decompose" ? { tasks: [] } : ({
     packet: { build_id: "ad1", use_case: "u", model, role: "approver", docs_reviewed: [], proposal_ref: "ad1", decision: "approve", required_edits: [], hard_stops: [], confidence: "high", timestamp: "2026-06-28T00:00:00Z" },
     provenance: { model, source: "mock", response_id: `r_${model}` }
@@ -115,7 +115,7 @@ const node = (id) => ({
 // fails defaultVerifyNode's (different) test must NOT settle ---
 {
   const { baseDir, telosDir } = tmpWs();
-  const dossier = { build_id: "ad2", use_case: "u", objective: "o", required_docs: [], write_targets: ["z.txt"] };
+  const dossier = { build_id: "ad2", use_case: "u", trust_mode: "advisory", objective: "o", required_docs: [], write_targets: ["z.txt"] };
   const callSeat = async ({ model, intent }) => intent === "decompose" ? { tasks: [] } : ({
     packet: { build_id: "ad2", use_case: "u", model, role: "approver", docs_reviewed: [], proposal_ref: "ad2", decision: "approve", required_edits: [], hard_stops: [], confidence: "high", timestamp: "2026-06-28T00:00:00Z" },
     provenance: { model, source: "mock", response_id: `r_${model}` }

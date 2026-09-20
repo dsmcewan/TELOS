@@ -49,7 +49,7 @@ function parallelWorkshop(prov, { conflict = false } = {}) {
   };
 }
 
-function baseDossier(extra = {}) { return { build_id: "b1", use_case: "governance", objective: "add an auth boundary", proposal_lifecycle: true, write_targets: [TARGET], required_docs: [], ...extra }; }
+function baseDossier(extra = {}) { return { build_id: "b1", use_case: "governance", objective: "add an auth boundary", proposal_lifecycle: true, trust_mode: "advisory", write_targets: [TARGET], required_docs: [], ...extra }; }
 function baseTasks(writes = [TARGET]) { return [{ id: "A", writes, reads: [], requirements: "write the auth boundary", test: { cmd: "node", args: ["-e", "process.exit(0)"] } }]; }
 
 async function drive({ dossier, tasks, callSeat, callWorkshopSeat, callParallelSeat, callTeam, env }) {

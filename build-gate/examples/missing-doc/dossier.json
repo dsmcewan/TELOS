@@ -1,4 +1,5 @@
 {
+  "trust_mode": "advisory",
   "build_id": "build-gate-demo-missing-doc",
   "use_case": "missing-doc-negative-test",
   "objective": "Show that missing documentation coverage blocks the gate.",

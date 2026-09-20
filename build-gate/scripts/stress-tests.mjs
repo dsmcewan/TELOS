@@ -38,6 +38,7 @@ const travBlock1 = validateRecords(
   {
     build_id: "trav-1",
     use_case: "test",
+    trust_mode: "advisory",
     objective: "Test traversal blocking",
     required_docs: ["doc-a"],
     write_targets: ["shared/../../CHATGPT/exploit.md"],
@@ -60,6 +61,7 @@ const travBlock2 = validateRecords(
   {
     build_id: "trav-2",
     use_case: "test",
+    trust_mode: "advisory",
     objective: "Test traversal blocking with absolute paths",
     required_docs: ["doc-a"],
     write_targets: ["C:\\CHATGPT\\subfolder\\exploit.md"],
@@ -81,6 +83,7 @@ const travBlock3 = validateRecords(
   {
     build_id: "trav-3",
     use_case: "test",
+    trust_mode: "advisory",
     objective: "Test escape blocking with absolute paths outside root",
     required_docs: ["doc-a"],
     write_targets: ["C:\\Windows\\exploit.md"],
@@ -100,6 +103,7 @@ const travBlock4 = validateRecords(
   {
     build_id: "trav-4",
     use_case: "test",
+    trust_mode: "advisory",
     objective: "Test slash variations",
     required_docs: ["doc-a"],
     write_targets: ["shared\\..\\..\\chatgpt/exploit.md"],
@@ -126,6 +130,7 @@ const sibPass1 = validateRecords(
   {
     build_id: "sib-1",
     use_case: "test",
+    trust_mode: "advisory",
     objective: "Test sibling folder safety",
     required_docs: ["doc-a"],
     write_targets: ["me/gemini-addon/file.txt"],
@@ -137,13 +142,14 @@ const sibPass1 = validateRecords(
     approvalPacket("sib-1", "test", "codex", [])
   ]
 );
-assert.equal(sibPass1.gate_status, "pass");
+assert.equal(sibPass1.gate_status, "advisory-unsigned");
 
 // Test 2.2: Sibling folder safety with CHATGPT
 const sibPass2 = validateRecords(
   {
     build_id: "sib-2",
     use_case: "test",
+    trust_mode: "advisory",
     objective: "Test sibling folder safety",
     required_docs: ["doc-a"],
     write_targets: ["CHATGPT-backup/file.txt"],
@@ -155,13 +161,14 @@ const sibPass2 = validateRecords(
     approvalPacket("sib-2", "test", "codex", [])
   ]
 );
-assert.equal(sibPass2.gate_status, "pass");
+assert.equal(sibPass2.gate_status, "advisory-unsigned");
 
 // Test 2.3: Target is inside the protected path (should be blocked)
 const sibBlock1 = validateRecords(
   {
     build_id: "sib-3",
     use_case: "test",
+    trust_mode: "advisory",
     objective: "Verify target inside is blocked",
     required_docs: ["doc-a"],
     write_targets: ["me/gemini/addon/file.txt"],
@@ -187,6 +194,7 @@ const lexiFail1 = validateRecords(
   {
     build_id: "lexi-1",
     use_case: "test",
+    trust_mode: "advisory",
     objective: "LEXI verification",
     required_docs: ["doc-a"],
     write_targets: ["shared/Coordination/example.md"],
@@ -207,6 +215,7 @@ const lexiFail2 = validateRecords(
   {
     build_id: "lexi-2",
     use_case: "test",
+    trust_mode: "advisory",
     objective: "LEXI verification",
     required_docs: ["doc-a"],
     write_targets: ["shared/Coordination/example.md"],
@@ -227,6 +236,7 @@ const lexiPass1 = validateRecords(
   {
     build_id: "lexi-3",
     use_case: "test",
+    trust_mode: "advisory",
     objective: "LEXI verification",
     required_docs: ["doc-a"],
     write_targets: ["shared/Coordination/example.md"],
@@ -239,7 +249,7 @@ const lexiPass1 = validateRecords(
     approvalPacket("lexi-3", "test", "codex", [])
   ]
 );
-assert.equal(lexiPass1.gate_status, "pass");
+assert.equal(lexiPass1.gate_status, "advisory-unsigned");
 
 console.log("LEXI Checks tests passed.");
 

@@ -17,6 +17,10 @@ function makeDossier() {
   return {
     build_id: "ap1",
     use_case: "autonomous-build",
+    // KEYLESS mock (deterministic council, no HMAC secrets): opt into EXPLICIT advisory
+    // so the gate runs without signing. Under the fail-closed default an absent trust_mode
+    // would (correctly) block these unsigned mock packets at the approval phase.
+    trust_mode: "advisory",
     objective: "build a tiny project autonomously",
     required_docs: [],
     write_targets: []

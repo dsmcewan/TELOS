@@ -1,0 +1,25 @@
+{
+  "build_id": "build-gate-demo-signed",
+  "use_case": "signed-default-certified-smoke-test",
+  "model": "codex",
+  "role": "implementation-review",
+  "docs_reviewed": [
+    "shared/Coordination/Multi-Model Agentic Build Gate.md"
+  ],
+  "proposal_ref": "shared/Coordination/Multi-Model Agentic Build Gate.md",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-09-19T12:00:00-04:00",
+  "provenance": {
+    "model": "real-codex",
+    "source": "ai-peer-mcp",
+    "response_id": "resp_signed_codex_001"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "7f79e50167773195520a42aec001936aa0abbbd8cd4b0c73d6bc99c9bce4803d",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

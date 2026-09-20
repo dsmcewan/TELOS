@@ -1,0 +1,25 @@
+{
+  "build_id": "build-gate-demo-signed",
+  "use_case": "signed-default-certified-smoke-test",
+  "model": "claude",
+  "role": "builder",
+  "docs_reviewed": [
+    "shared/Coordination/Multi-Model Agentic Build Gate.md"
+  ],
+  "proposal_ref": "shared/Coordination/Multi-Model Agentic Build Gate.md",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-09-19T12:00:00-04:00",
+  "provenance": {
+    "model": "real-claude",
+    "source": "ai-peer-mcp",
+    "response_id": "resp_signed_claude_001"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "bfd666d57aeaa11f74631ede7443da670ba03552ce9a328ae6bc570f4d99bcce",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

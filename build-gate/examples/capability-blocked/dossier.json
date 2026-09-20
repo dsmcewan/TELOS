@@ -1,4 +1,5 @@
 {
+  "trust_mode": "advisory",
   "build_id": "prototype-demo-capability-blocked",
   "idea_id": "idea-needs-external-connector",
   "use_case": "capability-blocked-negative-test",
