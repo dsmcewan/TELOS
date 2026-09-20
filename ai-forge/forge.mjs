@@ -105,7 +105,8 @@ export function syntheticApprovals(dossierMeta) {
  *   makeGenerators  (pattern, ctx) -> generateFiles adapter  [default: makePatternGenerators]
  *   makeBreakoutFns optional breakout factory; default = factBreakout (keyless, verdict on disk)
  *   makeApprovals   (dossierMeta) -> packet[]  [default: syntheticApprovals]
- *   signed          default false; when true, gate runs under trust_mode: "signed"
+ *   signed          default false; true -> gate runs trust_mode:"signed" (certified);
+ *                   false -> gate runs trust_mode:"advisory" (loud non-certified marker)
  *   maxCycles       plan->build->breakout->gate iterations before giving up  [default: 3]
  *
  * Returns { converged, cycles[], records[], verdict }.
@@ -179,7 +180,11 @@ export async function forge({
         idea_id: dossierMeta.idea_id,
         use_case: dossierMeta.use_case,
         objective: dossierMeta.objective,
-        trust_mode: signed ? "signed" : undefined,
+        // Keyless/synthetic demo path opts into EXPLICIT advisory so the gate returns the
+        // loud non-certified "advisory-unsigned" marker instead of (a) a silent legacy
+        // "pass" — the old Round-1 hole — or (b) a confusing "no secret" block. Certified
+        // convergence requires signed:true with HMAC-signed, provenance-bound approvals.
+        trust_mode: signed ? "signed" : "advisory",
         required_docs: [],
         write_targets: [],
         protected_paths: [],

@@ -1,4 +1,5 @@
 {
+  "trust_mode": "advisory",
   "build_id": "telos-build-gate-self",
   "use_case": "dogfood-the-gate-on-its-own-build",
   "objective": "Validate the build-gate's own construction (gate + verifier + connector) through the build-gate itself, so the tool that authorizes builds must pass its own bar.",

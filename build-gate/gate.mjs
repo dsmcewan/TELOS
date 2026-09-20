@@ -55,7 +55,12 @@ async function main() {
       await writeFile(options.ledgerPath, renderLedger(report), "utf8");
     }
     console.log(JSON.stringify(report, null, 2));
-    process.exitCode = report.gate_status === "pass" ? 0 : 1;
+    // Only a signed/default CERTIFIED pass exits 0. Advisory (the explicit bypass) exits
+    // a distinct non-zero code (3) so a CI that only inspects the exit code can NEVER
+    // mistake it for certification; blockers stay exit 1, usage/errors exit 2.
+    process.exitCode = report.gate_status === "pass" ? 0
+      : report.gate_status === "advisory-unsigned" ? 3
+      : 1;
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
     process.exitCode = 2;
@@ -104,7 +109,21 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
   const warnings = [];
 
   validateDossierShape(dossier, blockers);
-  const signed = dossier?.trust_mode === "signed";
+  // FAIL-CLOSED DEFAULT (Eye ruling 2026-09-19): cryptographically signed approvals
+  // are REQUIRED unless the dossier EXPLICITLY opts out with trust_mode:"advisory".
+  // Absent, "signed", OR ANY UNRECOGNIZED trust_mode value all enforce HMAC signatures
+  // + real provenance — the "never a model's self-report" guarantee now holds on every
+  // default path. Advisory is the loud, explicit exception: it authenticates nothing
+  // and can never mint a certified "pass" (see gateStatus below).
+  const advisory = dossier?.trust_mode === "advisory";
+  const signed = !advisory;
+  if (advisory) {
+    warnings.unshift(
+      "ADVISORY MODE (trust_mode:\"advisory\"): signature + identity enforcement is DISABLED — " +
+      "this gate result is NOT certified and MUST NOT be treated as merge-ready; supply " +
+      "trust_mode:\"signed\" (or omit trust_mode) with HMAC-signed approvals to certify."
+    );
+  }
   const proposalMode = dossier?.proposal_lifecycle === true;
 
   const packetsByModel = new Map();
@@ -262,12 +281,23 @@ export function validateRecords(dossier, packets, source = {}, capabilityPackets
     proposal_lifecycle_enforced: proposalMode
   };
 
-  const gateStatus = blockers.length === 0 ? "pass" : "blocked";
+  // Blockers always win. A clean run under EXPLICIT advisory opt-in is reported as the
+  // non-certified "advisory-unsigned" class — never a bare "pass" that could be mistaken
+  // for certification. Only signed/default zero-blocker runs are certified.
+  const gateStatus = blockers.length > 0
+    ? "blocked"
+    : (advisory ? "advisory-unsigned" : "pass");
+  const certified = gateStatus === "pass";
   return {
     gate_status: gateStatus,
+    certified,
+    trust_mode: advisory ? "advisory" : "signed",
     build_id: dossier.build_id ?? null,
     use_case: dossier.use_case ?? null,
-    safe_next_action: gateStatus === "pass" ? "begin-build" : "resolve-blockers-before-build",
+    safe_next_action:
+      gateStatus === "pass" ? "begin-build"
+      : gateStatus === "advisory-unsigned" ? "advisory-only-NOT-certified-do-not-merge"
+      : "resolve-blockers-before-build",
     blockers,
     warnings,
     required_models: REQUIRED_MODELS,

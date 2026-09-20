@@ -1,0 +1,25 @@
+{
+  "build_id": "build-gate-demo-signed",
+  "use_case": "signed-default-certified-smoke-test",
+  "model": "agy",
+  "role": "checkpoint",
+  "docs_reviewed": [
+    "shared/Coordination/Multi-Model Agentic Build Gate.md"
+  ],
+  "proposal_ref": "shared/Coordination/Multi-Model Agentic Build Gate.md",
+  "decision": "approve",
+  "required_edits": [],
+  "hard_stops": [],
+  "confidence": "high",
+  "timestamp": "2026-09-19T12:00:00-04:00",
+  "provenance": {
+    "model": "real-agy",
+    "source": "ai-peer-mcp",
+    "response_id": "resp_signed_agy_001"
+  },
+  "signature": {
+    "alg": "HMAC-SHA256",
+    "value": "d0fef0b209d46a5ab819331f8a24b85e681691d083beeadee654d9c1415eed80",
+    "signed_fields": "canonical-minus-signature"
+  }
+}

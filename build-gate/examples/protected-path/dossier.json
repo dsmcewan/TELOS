@@ -1,4 +1,5 @@
 {
+  "trust_mode": "advisory",
   "build_id": "build-gate-demo-protected-path",
   "use_case": "protected-path-negative-test",
   "objective": "Show that protected write targets block the gate.",

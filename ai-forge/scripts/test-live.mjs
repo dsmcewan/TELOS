@@ -134,10 +134,16 @@ assert.ok(result.cycles.length >= 1,
 // syntheticApprovals — which carry NO provenance. The stub's council packets do,
 // so require real provenance to reach the gate (only observable once the build
 // converges and the market gate runs).
-assert.equal(result.converged, true,
-  "live path must converge (stubbed seats + fact breakouts) so the council-fed gate runs");
-assert.ok(result.verdict && result.verdict.gate_status === "pass",
-  `market gate must pass on real council approvals; got ${JSON.stringify(result.verdict && result.verdict.gate_status)}`);
+// Keyless live path: the REAL council runs and feeds the gate, but without HMAC
+// secrets its approvals are provenance-bearing yet UNSIGNED — under the fail-closed
+// default the gate returns the loud non-certified "advisory-unsigned" marker, not a
+// certified "pass". The arg-shape regression is still observable via real provenance
+// (the synthetic fallback carries none). Certified convergence is proven in the
+// signed-mode block below.
+assert.ok(result.verdict && result.verdict.gate_status === "advisory-unsigned",
+  `keyless live council must yield the non-certified advisory marker; got ${JSON.stringify(result.verdict && result.verdict.gate_status)}`);
+assert.equal(result.converged, false, "keyless live path is not CERTIFIED-convergent");
+assert.deepEqual(result.verdict.blockers, [], "keyless live run has no real blockers, only non-certification");
 const provByModel = new Map((result.verdict.provenance || []).map((p) => [p.model, p]));
 for (const model of ["claude", "agy", "codex"]) {
   const pv = provByModel.get(model);

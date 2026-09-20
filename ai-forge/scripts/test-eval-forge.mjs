@@ -11,10 +11,15 @@ const dossierMeta = { build_id: "eval-e2e", idea_id: "eval", use_case: "eval", o
 {
   const root = mkdtempSync(path.join(os.tmpdir(), "aiforge-eval-"));
   const result = await forge({ pattern: evalPattern, ctx: evalContext(), projectRoot: root, dossierMeta, maxCycles: 2 });
-  assert.equal(result.converged, true, JSON.stringify(result.cycles, null, 2));
-  assert.equal(result.verdict.gate_status, "pass");
+  // Keyless synthetic approvals are NOT certified under the fail-closed default: the
+  // gate returns the loud non-certified "advisory-unsigned" marker (Eye ruling 2026-09-19).
   assert.equal(result.records.length, 8);
   assert.ok(result.records.every((r) => r.converged), "every component converges");
+  assert.equal(result.verdict.gate_status, "advisory-unsigned", "keyless synthetic approvals are not certified");
+  assert.equal(result.verdict.certified, false);
+  assert.deepEqual(result.verdict.blockers, [], "no real blockers; the gate just refuses to certify unsigned approvals");
+  assert.ok((result.verdict.warnings || []).some((w) => /ADVISORY MODE/.test(w)), "loud non-certified banner present");
+  assert.equal(result.converged, false, "keyless demo does not reach CERTIFIED convergence");
 }
 
 // Fail-closed #1: break `scorecard` so its selftest asserts a tampered card verifies -> node test fails -> not converged.

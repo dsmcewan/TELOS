@@ -70,12 +70,44 @@ assert.equal(validateRecords(dossier, signedTrio()).gate_status, "pass", "valid 
   process.env.TELOS_SECRET_AGY = "agy-secret";
 }
 
-// 6. Legacy mode (no trust_mode) ignores signatures/provenance entirely.
+// 6. REGRESSION (Round-1 break, Eye ruling 2026-09-19): a dossier with NO trust_mode
+//    now FAILS CLOSED. Three hand-typed, unsigned approve packets can no longer mint a
+//    "pass" on the default path — absent trust_mode is treated as signed enforcement.
 {
-  const legacy = { ...dossier }; delete legacy.trust_mode;
-  const plain = ["claude", "agy", "codex"].map((m) => approval(m, ["doc-a"])); // unsigned, real-ish provenance
-  const r = validateRecords(legacy, plain);
-  assert.equal(r.gate_status, "pass", "legacy mode must ignore signatures");
+  const noTrustMode = { ...dossier }; delete noTrustMode.trust_mode;
+  const savedTrio = { agy: process.env.TELOS_SECRET_AGY };
+  // Even WITH secrets present, unsigned/plain packets fail signature verification;
+  // and provenance-only packets are not HMAC-signed. Prove the default blocks.
+  const plain = ["claude", "agy", "codex"].map((m) => approval(m, ["doc-a"])); // unsigned
+  const r = validateRecords(noTrustMode, plain);
+  assert.equal(r.gate_status, "blocked", "absent trust_mode must fail closed (signed by default)");
+  assert.equal(r.certified, false);
+  assert.equal(r.trust_mode, "signed", "absent trust_mode reports as signed enforcement");
+  assert.ok(
+    r.blockers.some((b) => /signature invalid|no secret to verify/i.test(b)),
+    "unsigned packets on the default path must block on signature/secret; got: " + JSON.stringify(r.blockers)
+  );
+  void savedTrio;
+}
+
+// 6b. EXPLICIT ADVISORY opt-in (case c): the checks still RUN, but the result is
+//     unmistakably NON-certified — never a bare "pass", carries the loud banner,
+//     and certified:false. This is the ONLY way to bypass signing, and it is loud.
+{
+  const advisoryDossier = { ...dossier, trust_mode: "advisory" };
+  const plain = ["claude", "agy", "codex"].map((m) => approval(m, ["doc-a"])); // unsigned, allowed in advisory
+  const r = validateRecords(advisoryDossier, plain);
+  assert.equal(r.gate_status, "advisory-unsigned", "explicit advisory clean run is the non-certified class");
+  assert.notEqual(r.gate_status, "pass", "advisory must never report a bare pass");
+  assert.equal(r.certified, false, "advisory is never certified");
+  assert.equal(r.trust_mode, "advisory");
+  assert.equal(r.safe_next_action, "advisory-only-NOT-certified-do-not-merge");
+  assert.equal(r.headline_checks.signing_enforced, false, "advisory does not enforce signing");
+  assert.ok(r.warnings.some((w) => /ADVISORY MODE/.test(w)), "advisory carries the loud non-certified banner");
+  // Advisory still enforces the real checks: a genuine blocker (bad decision) still blocks.
+  const withReject = [ { ...approval("claude", ["doc-a"]), decision: "revise", required_edits: ["fix x"] }, approval("agy", ["doc-a"]), approval("codex", ["doc-a"]) ];
+  const rr = validateRecords(advisoryDossier, withReject);
+  assert.equal(rr.gate_status, "blocked", "advisory still fails closed on real blockers");
 }
 
 // 7. Sufficiency: signed-mode meets with existence-only checks -> blocked; with file_contains on non-empty -> pass that aspect.
