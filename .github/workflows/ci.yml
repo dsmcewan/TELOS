@@ -140,6 +140,12 @@ jobs:
       - name: Verify committed Clotho self-weave against current bytes
         run: node docs/runs/clotho-self-weave/run.mjs --verify-committed
 
+      # The workflow-record oracle existed but was never wired in — a content-address
+      # drift (argo/IDENTITY.md pin) sat uncaught on main for two months (found by the
+      # 2026-09-20 Iliad-layer review). records == reality must include this record.
+      - name: Verify Iliad workflow record (content-addressed pins + canonical stages)
+        run: node docs/institutional-memory/iliad/workflow/check-workflow.mjs
+
   narcissus-flagship:
     runs-on: ubuntu-latest
     name: narcissus flagship

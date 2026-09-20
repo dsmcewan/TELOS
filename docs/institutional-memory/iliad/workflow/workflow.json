@@ -1,5 +1,5 @@
 {
-  "id": "sha256:4cf043b6781e3a5a75b9ac4dc7c936aeccaf78799dc0649647553b91cd105116",
+  "id": "sha256:76cf0ad671b1530dcab12a1444b75e311d600f6c174b38309123e85ccdd9980c",
   "kind": "contract",
   "title": "The Iliad-quest workflow — canonical stage order (advisory record, links the enforced invariants)",
   "what": "The canonical order a new system traverses to become an enrolled part of The Iliad. The Iliad IS the quest (enter -> trials -> enrolled), not a bookend. This record is ADVISORY: it documents the order and, for the stages whose rules are already enforced, AUTHORITY-LINKS the existing NORMATIVE-CURRENT iliad invariants by content-addressed reference — it does not restate or re-enforce them. The new documentation/reference stage is ADVISORY per The Eye's option (b), 2026-07-18.",
@@ -46,7 +46,7 @@
       "order": 4,
       "stage": "argo",
       "role": "implement + verify + document the authorized plan",
-      "owning_module": "file:docs/institutional-memory/argo/IDENTITY.md@87c8fbadb0b0bb2dabdf8f8cda7d9805cdf1b00e",
+      "owning_module": "file:docs/institutional-memory/argo/IDENTITY.md@e8b7479529ff0a0a038155e1a6ce0182b71bbc1c",
       "authority_link": null,
       "advisory": false
     },
