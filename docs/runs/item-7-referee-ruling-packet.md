@@ -25,10 +25,9 @@ The "Recommended ruling" says to "ship role R advisory on the current double-rol
 configuration," describing it as "already built and tested." That is true only of the
 **quarantined workshop prototype** (`live-seats-v2.mjs`, `daedalus-v2.mjs`,
 `test-daedalus-v2.mjs` above) — none of it is committed to mainline. The shipped,
-mainline `build-gate/daedalus.mjs` (351 lines) has **no referee logic at all**: it
+mainline `build-gate/daedalus.mjs` (351 lines) has **no role-R / third-party-referee logic**: it
 implements only an author/reviewer loop (`callSeat({..., role: "author", ...})` and
-`callSeat({..., role: "reviewer", ...})`), with no role-R call site, no cadence check,
-and no `stalemate` terminal anywhere in the file. "Ship ... as already built/tested"
+`callSeat({..., role: "reviewer", ...})`), with no role-R call site and no referee cadence check. [ROUND-2 CORRECTION: an earlier draft of this block said "no `stalemate` terminal anywhere in the file" — that is FALSE. `build-gate/daedalus.mjs` DOES have a deterministic `stalemate` terminal (`state: "stalemate"` at lines 78/82, on `repeated-candidate-hash` / `round-cap` convergence). What is absent is a *referee-authored* stalemate, not a stalemate terminal as such. Citation caveat: this packet's `daedalus-v2.mjs` line numbers (e.g. :583, :565-581) are ~8-13 lines stale against the frozen quarantine snapshot, which mutated after drafting (731→767 lines; see item-6); the cited content is correct, the pinpoint line numbers are approximate.] "Ship ... as already built/tested"
 should be read as "the mechanics are prototyped and tested in a disposable workshop,
 not yet promoted to the trust-sensitive orchestrator" — the recommendation to proceed
 on that basis is unaffected in substance (this packet's own evidence never claimed the

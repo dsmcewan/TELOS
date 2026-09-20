@@ -94,7 +94,7 @@ regardless of how many Eye clicks preceded it: `runBuild`'s
 disk (`PLAN_TAMPERED` if it drifted), re-derives the latest decision **for
 that exact plan_hash** from the ledger (`DECISION_NOT_AUTHORIZED` if it is not
 `authorized`), and — per the code's own "Decision 6" comment
-(`orchestrate.mjs:41-44`) — re-runs the **full** ledger-reconstructed
+(`orchestrate.mjs:41-44`) — re-runs the ~~**full**~~ **[ROUND-2 STRIKE: NOT full — the injected `lifecycleVerify` wraps `validateProposalLifecycle` with `requiredModels=[]`/`packets=[]`, so proposal_ref_binding/cold_review are deliberately NOT re-checked; the same cited comment says so. It re-derives ledger-reconstructable holds/concerns, not the full packet-binding verification.]** ledger-reconstructed
 `lifecycleVerify` (`validateProposalLifecycle`) immediately before dispatch,
 specifically because the static authorization certificate "does NOT catch a
 hold appended AFTER that decision." A new concern, a new hold, a chain
@@ -125,7 +125,7 @@ technically unchanged (same plan_hash, no new ledger holds) but whose
 real-world premises have shifted. Nothing in the current architecture would
 stop or flag this — Rule 3 and the lifecycle re-verify only prove the plan and
 ledger are internally consistent, never that the world outside the ledger
-still matches. The harm is bounded by Stage 4 (code challenge, Seats 3+4) and
+still matches. ~~The harm is bounded by Stage 4 (code challenge, Seats 3+4)~~ **[ROUND-2 STRIKE: Stage 4 code-challenge is UNBUILT — no implementation exists; the real downstream path is team-dispatch + a deterministic per-node test gate, not a Seats 3+4 adversarial challenge. Do not credit an unbuilt safety net.]** and
 the Eye release gate downstream, so it is not un-recoverable, but it can burn
 a full produce+challenge cycle (up to `CODE_MAX_ROUNDS`, default 8,
 `design.md:712`) on a plan nobody would have greenlit today.
@@ -175,7 +175,7 @@ between plan-authorization and Stage 3 dispatch should force a fresh Eye
 look." Two facts bound this:
 
 1. **Ledger-representable drift is already caught, structurally, regardless of
-   option.** `checkLifecycleAuthorization`'s re-run of the full
+   option.** `checkLifecycleAuthorization`'s re-run of the ~~full~~ **[ROUND-2 STRIKE: "full" is inaccurate — see the strike at the Decision-6 citation above; binding/cold-review checks are deliberately excluded. This premise holds only for *ledger-reconstructable* drift, which is what the sentence actually describes; the "full" qualifier overstates it.]**
    `lifecycleVerify` (`orchestrate.mjs:41-44`) means any hold, concern, or
    chain event appended after the authorization decision blocks Stage 3
    outright (`DECISION_NOT_AUTHORIZED` / a fresh lifecycle-gate failure) with
