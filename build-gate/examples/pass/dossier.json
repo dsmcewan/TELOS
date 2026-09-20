@@ -1,4 +1,5 @@
 {
+  "trust_mode": "advisory",
   "build_id": "build-gate-demo-pass",
   "use_case": "orchestration-layer-smoke-test",
   "objective": "Validate the multi-model build gate before any vault mapping pass begins.",

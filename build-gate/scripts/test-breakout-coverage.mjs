@@ -37,6 +37,7 @@ function marketPacket(checks, lexi = "not-applicable") {
 // Non-UI (user_facing_frontend:false) so the frontend-meets requirement is off.
 const dossier = {
   build_id: "bc", idea_id: "idea-bc", use_case: "breakout-coverage", objective: "o",
+  trust_mode: "advisory", // this test isolates breakout re-verification, not signing
   required_docs: [], write_targets: [], protected_paths: [],
   market_bound: true, user_facing_frontend: false,
   required_market_workstreams: ["backend-schema"]
@@ -45,8 +46,9 @@ const approvals = ["claude", "agy", "codex"].map(approval);
 
 // 1. A non-UI team's breakout with a check that holds is re-verified -> pass.
 const pass = validateRecords(dossier, approvals, {}, [], [marketPacket([{ type: "file_exists", path: "gate.mjs" }])]);
-assert.equal(pass.gate_status, "pass",
-  "non-UI breakout with a passing check should pass; blockers=" + JSON.stringify(pass.blockers));
+assert.equal(pass.gate_status, "advisory-unsigned",
+  "non-UI breakout with a passing check should clear blockers; blockers=" + JSON.stringify(pass.blockers));
+assert.deepEqual(pass.blockers, [], "a passing re-verified check leaves no blockers");
 
 // 2. The SAME packet with a check that does NOT hold is now re-verified -> blocked.
 //    (Before this change a 'not-applicable' packet's breakout was never re-run.)

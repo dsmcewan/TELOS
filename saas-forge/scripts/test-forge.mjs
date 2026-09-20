@@ -24,17 +24,21 @@ const dossierMeta = {
 const telos = "Make the convergence demo market-ready.";
 
 // ---------------------------------------------------------------------------
-// Case 1: full 7-team loop converges — build ready, every team's breakout
-// survives on facts, and the market gate passes.
+// Case 1: full 7-team loop — build ready, every team's breakout survives on
+// facts. Keyless path is EXPLICIT advisory (Eye ruling 2026-09-19, signed-by-
+// default): the gate returns the loud non-certified "advisory-unsigned" marker,
+// so CERTIFIED convergence is NOT reached. Certified convergence requires signed.
 // ---------------------------------------------------------------------------
 {
   const root = mkdtempSync(path.join(os.tmpdir(), "saas-forge-"));
   const result = await forge({ projectRoot: root, telos, dossierMeta });
 
-  assert.equal(result.converged, true, `forge must converge; cycles=${JSON.stringify(result.cycles, null, 2)}`);
   assert.equal(result.cycles[0].built, true, "Case 1: build settled all nodes (ledger ready)");
   assert.equal(result.cycles[0].teams_converged, true, "Case 1: every team breakout converged");
-  assert.equal(result.verdict.gate_status, "pass", "Case 1: market gate passed");
+  assert.equal(result.verdict.gate_status, "advisory-unsigned", "Case 1: keyless synthetic approvals are NOT certified");
+  assert.equal(result.verdict.certified, false, "Case 1: advisory run is not certified");
+  assert.ok((result.verdict.warnings || []).some((w) => /ADVISORY MODE/.test(w)), "Case 1: loud non-certified banner present");
+  assert.equal(result.converged, false, "Case 1: keyless demo does not reach CERTIFIED convergence");
 
   // One real breakout per team, each converged with re-verifiable checks.
   assert.equal(result.teams.length, ALL_WORKSTREAMS.length, "Case 1: a breakout per team");

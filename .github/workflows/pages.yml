@@ -1,11 +1,19 @@
 # Deploys demo/ to GitHub Pages. `enablement: true` creates the Pages site on
 # first run (works on public repos — same pattern as the Convergence demo).
+#
+# SECURITY: this used to trigger on `push: branches:[main]` directly, with no
+# dependency on ci.yml's `required-ci` gate — a push to main that broke tests,
+# the fail-closed proof, or institutional-memory verification would still
+# publish demo/ to the public site. Fix: trigger on the CI workflow finishing
+# (`workflow_run`) and gate the job on its conclusion being "success", so a
+# failed/cancelled CI run never reaches the deploy steps.
 name: Deploy demo to Pages
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI] # must match ci.yml's top-level `name:`
+    types: [completed]
     branches: [main]
-    paths: ['demo/**', '.github/workflows/pages.yml']
   workflow_dispatch:
 
 permissions:
@@ -19,6 +27,11 @@ concurrency:
 
 jobs:
   deploy:
+    # Fail-closed gate: workflow_run fires on every CI completion regardless
+    # of outcome, so without this `if` a failing/cancelled CI run would still
+    # deploy. workflow_dispatch has no workflow_run context to check, and a
+    # manual run implies explicit operator intent, so it's allowed through.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -26,14 +39,37 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          # Pin to the exact commit CI just evaluated, not whatever main is at
+          # trigger time. Depth 2 so the path-relevance diff below has a base.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 2
+
+      # Preserves the old `paths: ['demo/**', '.github/workflows/pages.yml']`
+      # trigger filter's intent: workflow_run can't filter by path at trigger
+      # time (it fires on every push to main once CI completes), so re-check
+      # here and skip the actual deploy steps when neither path changed.
+      - name: Check whether demo/ or this workflow changed
+        id: changed
+        if: github.event_name != 'workflow_dispatch'
+        run: |
+          if git diff --quiet HEAD^ HEAD -- demo .github/workflows/pages.yml; then
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup Pages
+        if: github.event_name == 'workflow_dispatch' || steps.changed.outputs.relevant == 'true'
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
         with:
           enablement: true
       - name: Upload demo directory
+        if: github.event_name == 'workflow_dispatch' || steps.changed.outputs.relevant == 'true'
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
         with:
           path: demo
       - name: Deploy
+        if: github.event_name == 'workflow_dispatch' || steps.changed.outputs.relevant == 'true'
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5

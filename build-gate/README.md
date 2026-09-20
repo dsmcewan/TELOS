@@ -66,15 +66,36 @@ Run a market-bound TELOS readiness example:
 node .\me\codex\build-gate\gate.mjs validate .\me\codex\build-gate\examples\market-pass\dossier.json .\me\codex\build-gate\examples\market-pass\packets --market-readiness .\me\codex\build-gate\examples\market-pass\market
 ```
 
+## Trust mode: signed by default (fail-closed)
+
+**The gate REQUIRES cryptographically signed, provenance-bound approvals by default.**
+Absent, `"signed"`, or any unrecognized `trust_mode` is treated as **signed
+enforcement**: each required approval must be HMAC-signed (per-model `TELOS_SECRET_*`)
+and carry real, unique provenance, or the gate blocks. This is the core guarantee —
+merge-readiness is never certified from a model's self-report.
+
+Bypassing signature enforcement is an **explicit, loud exception**: a dossier must set
+`"trust_mode": "advisory"`. An advisory run still executes every structural and
+fact-re-verification check, but its result is the **non-certified `advisory-unsigned`**
+class — never a bare `"pass"` — carries a prominent warning banner, and exits with a
+distinct non-zero code. Advisory can never be mistaken for a certified pass.
+
+See `examples/signed-pass/` for the certified default path (with documented fixed test
+secrets) and the `advisory`-marked `examples/*` for the non-certified demo path.
+
 ## Gate Result
 
-- Exit code `0`: gate passes.
-- Exit code `1`: gate is blocked.
+- Exit code `0`: gate **passes** (certified — signed/default, no blockers).
+- Exit code `1`: gate is **blocked**.
 - Exit code `2`: usage, read, or JSON parse error.
+- Exit code `3`: **advisory-unsigned** — an explicit `trust_mode:"advisory"` run cleared
+  all blockers but is **NOT certified** and must not be treated as merge-ready.
 
 The command prints a JSON report with:
 
-- `gate_status`
+- `gate_status` — `"pass"` | `"blocked"` | `"advisory-unsigned"`
+- `certified` — `true` only for a signed/default zero-blocker pass
+- `trust_mode` — `"signed"` (default/enforced) or `"advisory"` (explicit bypass)
 - `safe_next_action`
 - `blockers`
 - `warnings`
@@ -102,13 +123,19 @@ packet — a single actor can write all of `claude` / `agy` / `codex`. The gate
 enforces *structure* and *re-verifies facts* (see breakout re-verification
 above); it does not establish *who* approved.
 
-To make identity real, a packet may carry a `provenance` block captured from an
+To make identity real, a packet carries a `provenance` block captured from an
 actual model call — `ai-peer-mcp`'s `council_review` returns the model the API
-*actually answered with* (`provenance.{claude,grok}.model` + `response_id`). The
-gate surfaces each required model's provenance in `report.provenance` and
-**warns** when an approval packet carries none (identity is then self-declared).
-Provenance is advisory: it is surfaced and warned on, never used to block. Real
-authentication (signing keyed to a per-model secret) is future work.
+*actually answered with* (`provenance.{claude,grok}.model` + `response_id`), plus an
+HMAC signature keyed to the per-model `TELOS_SECRET_*` (see `sign.mjs`).
+
+**Under the default (signed) trust mode this is ENFORCED, not advisory:** a required
+approval that is unsigned, carries no provenance, uses a placeholder `response_id`, or
+borrows another seat's id **blocks** the gate. The self-declared `model` string alone
+never satisfies the gate. Only when a dossier explicitly opts into
+`trust_mode:"advisory"` are provenance/signatures downgraded to surfaced warnings (and
+that run is reported as the non-certified `advisory-unsigned` class). The honest
+residual is in `sign.mjs`: a single actor holding every `TELOS_SECRET_*` can still forge
+all packets — this defeats careless cross-signing, not a malicious key-holder.
 
 ## Capability Acquisition Packets
 

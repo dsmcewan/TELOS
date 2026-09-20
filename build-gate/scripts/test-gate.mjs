@@ -12,9 +12,14 @@ const passReport = await validateGate(
   ex("examples/pass/dossier.json"),
   ex("examples/pass/packets")
 );
-assert.equal(passReport.gate_status, "pass");
-assert.equal(passReport.safe_next_action, "begin-build");
+// examples/pass is an ADVISORY demo (no crypto): a clean run is the non-certified
+// "advisory-unsigned" class, never a bare "pass". See examples/signed-pass for the
+// certified default path (test-trust.mjs / the signed-example block below).
+assert.equal(passReport.gate_status, "advisory-unsigned");
+assert.equal(passReport.certified, false);
+assert.equal(passReport.safe_next_action, "advisory-only-NOT-certified-do-not-merge");
 assert.deepEqual(passReport.blockers, []);
+assert.ok(passReport.warnings.some((w) => /ADVISORY MODE/.test(w)), "advisory run carries the loud non-certified banner");
 
 const missingDocReport = await validateGate(
   ex("examples/missing-doc/dossier.json"),
@@ -127,6 +132,7 @@ assert.ok(
       build_id: "advisory-absent-demo",
       use_case: "advisory-absent",
       objective: "Show missing advisory seats never block.",
+      trust_mode: "advisory",
       required_docs: ["doc-a"],
       write_targets: ["shared/Coordination/example.md"],
       protected_paths: []
@@ -137,8 +143,8 @@ assert.ok(
       approvalPacket("advisory-absent-demo", "advisory-absent", "codex", [])
     ]
   );
-  assert.equal(advisoryAbsentReport.gate_status, "pass",
-    "the gate passes on the required trio alone — no advisory packet, no advisory key");
+  assert.equal(advisoryAbsentReport.gate_status, "advisory-unsigned",
+    "advisory opt-in with the required trio alone is a clean (non-certified) advisory run — no advisory packet, no advisory key");
   const advisoryBlockers = advisoryAbsentReport.blockers.filter((m) => /\bgrok\b|\bgemini\b/i.test(m));
   assert.deepEqual(advisoryBlockers, [],
     "no BLOCKER demands an advisory (grok/gemini) seat");
@@ -155,8 +161,10 @@ const cliPass = spawnSync(
   ["gate.mjs", "validate", "examples/pass/dossier.json", "examples/pass/packets"],
   { cwd: new URL("..", import.meta.url), encoding: "utf8" }
 );
-assert.equal(cliPass.status, 0, cliPass.stderr);
-assert.match(cliPass.stdout, /"gate_status": "pass"/);
+// examples/pass is advisory: distinct non-zero exit (3) and the non-certified status,
+// so a CI checking only the exit code can never mistake it for certification.
+assert.equal(cliPass.status, 3, cliPass.stderr);
+assert.match(cliPass.stdout, /"gate_status": "advisory-unsigned"/);
 
 const cliBlocked = spawnSync(
   process.execPath,
@@ -171,7 +179,7 @@ const prototypePassReport = await validateGate(
   ex("examples/prototype-pass/packets"),
   { capabilityDir: ex("examples/prototype-pass/capabilities") }
 );
-assert.equal(prototypePassReport.gate_status, "pass");
+assert.equal(prototypePassReport.gate_status, "advisory-unsigned");
 assert.deepEqual(
   prototypePassReport.required_capability_models,
   ["claude", "codex", "agy", "grok"]
@@ -200,7 +208,7 @@ const convergenceDemoReport = await validateGate(
     marketReadinessDir: ex("examples/convergence-demo/market")
   }
 );
-assert.equal(convergenceDemoReport.gate_status, "pass");
+assert.equal(convergenceDemoReport.gate_status, "advisory-unsigned");
 assert.deepEqual(
   convergenceDemoReport.capability_packets_seen,
   ["agy", "claude", "codex", "grok"]
@@ -309,6 +317,7 @@ function marketMeetsDossier(id) {
     build_id: id,
     idea_id: `idea-${id}`,
     use_case: id,
+    trust_mode: "advisory",
     objective: "Show meets requires a breakout record.",
     required_docs: ["doc-a"],
     write_targets: ["shared/Coordination/example.md"],
@@ -368,9 +377,10 @@ const meetsGoodBreakout = validateRecords(
 );
 assert.equal(
   meetsGoodBreakout.gate_status,
-  "pass",
-  `meets with a passing breakout record should pass; blockers: ${JSON.stringify(meetsGoodBreakout.blockers)}`
+  "advisory-unsigned",
+  `meets with a passing breakout record should clear all blockers (advisory demo); blockers: ${JSON.stringify(meetsGoodBreakout.blockers)}`
 );
+assert.deepEqual(meetsGoodBreakout.blockers, [], "a passing breakout leaves no blockers");
 
 // FABRICATED FACTS: converged:true is asserted, but the gate RE-RUNS the record's
 // declared checks and one fails (a file that does not exist) -> blocked. This is
@@ -470,8 +480,8 @@ const marketPassCli = spawnSync(
   ],
   { cwd: new URL("..", import.meta.url), encoding: "utf8" }
 );
-assert.equal(marketPassCli.status, 0, marketPassCli.stderr);
-assert.match(marketPassCli.stdout, /"gate_status": "pass"/);
+assert.equal(marketPassCli.status, 3, marketPassCli.stderr);
+assert.match(marketPassCli.stdout, /"gate_status": "advisory-unsigned"/);
 
 // Test 1: Sibling paths like me/gemini-addon are NOT blocked when me/gemini/ is protected.
 const siblingPathReport = validateRecords(
@@ -479,6 +489,7 @@ const siblingPathReport = validateRecords(
     build_id: "sibling-demo",
     use_case: "sibling-check",
     objective: "Verify sibling paths are not blocked.",
+    trust_mode: "advisory",
     required_docs: ["doc-a"],
     write_targets: ["me/gemini-addon/foo.txt"],
     protected_paths: ["me/gemini/"]
@@ -489,7 +500,7 @@ const siblingPathReport = validateRecords(
     approvalPacket("sibling-demo", "sibling-check", "codex", [])
   ]
 );
-assert.equal(siblingPathReport.gate_status, "pass");
+assert.equal(siblingPathReport.gate_status, "advisory-unsigned");
 
 // Test 2: A write target containing directory traversal (e.g. shared/../../CHATGPT/exploit.md) is blocked.
 const traversalReport = validateRecords(
@@ -566,6 +577,7 @@ const lexiPassReport = validateRecords(
     build_id: "lexi-pass-demo",
     use_case: "lexi-check",
     objective: "LEXI check",
+    trust_mode: "advisory",
     required_docs: ["doc-a"],
     write_targets: ["shared/Coordination/example.md"],
     lexi_required: true,
@@ -577,7 +589,7 @@ const lexiPassReport = validateRecords(
     approvalPacket("lexi-pass-demo", "lexi-check", "codex", [])
   ]
 );
-assert.equal(lexiPassReport.gate_status, "pass");
+assert.equal(lexiPassReport.gate_status, "advisory-unsigned");
 
 // PROVENANCE: the gate cannot authenticate model identity, so it surfaces whether
 // each required approval carries a `provenance` block and WARNS when it does not.
@@ -586,6 +598,7 @@ const provReport = validateRecords(
     build_id: "prov-demo",
     use_case: "prov-check",
     objective: "Surface provenance.",
+    trust_mode: "advisory",
     required_docs: ["doc-a"],
     write_targets: ["shared/Coordination/example.md"]
   },
@@ -595,8 +608,8 @@ const provReport = validateRecords(
     approvalPacket("prov-demo", "prov-check", "codex", [])
   ]
 );
-// still passes (provenance is advisory, not a blocker)
-assert.equal(provReport.gate_status, "pass");
+// clean advisory run (in advisory mode provenance is surfaced as a warning, not a blocker)
+assert.equal(provReport.gate_status, "advisory-unsigned");
 // report carries per-required-model provenance status
 const claudeProv = provReport.provenance.find((p) => p.model === "claude");
 assert.equal(claudeProv.has_provenance, true);
@@ -611,7 +624,7 @@ assert.ok(
 
 // (#5a) required-doc membership is path-normalized: separators (\ vs /) and case.
 const docNormReport = validateRecords(
-  { build_id: "doc-norm", use_case: "doc-norm", objective: "x", required_docs: ["build-gate/gate.mjs"], write_targets: ["shared/Coordination/example.md"] },
+  { build_id: "doc-norm", use_case: "doc-norm", objective: "x", trust_mode: "advisory", required_docs: ["build-gate/gate.mjs"], write_targets: ["shared/Coordination/example.md"] },
   [
     approvalPacket("doc-norm", "doc-norm", "claude", ["build-gate\\Gate.mjs"]),
     approvalPacket("doc-norm", "doc-norm", "agy", []),
@@ -620,9 +633,10 @@ const docNormReport = validateRecords(
 );
 assert.equal(
   docNormReport.gate_status,
-  "pass",
-  `a \\-separated, differently-cased doc path should satisfy required_docs; blockers: ${JSON.stringify(docNormReport.blockers)}`
+  "advisory-unsigned",
+  `a \\-separated, differently-cased doc path should satisfy required_docs (no doc blocker); blockers: ${JSON.stringify(docNormReport.blockers)}`
 );
+assert.deepEqual(docNormReport.blockers, [], "path-normalized doc match leaves no blockers");
 
 // (#5b) duplicate-model packets are surfaced (first wins, but no longer silently).
 const dupReport = validateRecords(
@@ -653,14 +667,58 @@ assert.equal(headlineReport.headline_checks.capability_evaluated, false);
 const selfReport = await validateGate(ex("examples/self/dossier.json"), ex("examples/self/packets"));
 assert.equal(
   selfReport.gate_status,
-  "pass",
-  `the gate must pass its own build; blockers: ${JSON.stringify(selfReport.blockers)}`
+  "advisory-unsigned",
+  `the gate must clear every blocker on its own build (advisory demo); blockers: ${JSON.stringify(selfReport.blockers)}`
 );
+assert.deepEqual(selfReport.blockers, [], "the gate's own build leaves no blockers");
 assert.ok(selfReport.provenance.every((p) => p.has_provenance), "self approval packets carry provenance");
 assert.ok(
-  !selfReport.warnings.some((w) => /provenance/i.test(w)),
-  `a clean dogfood has no provenance warnings; warnings: ${JSON.stringify(selfReport.warnings)}`
+  !selfReport.warnings.some((w) => /carries no provenance|placeholder provenance|self-declared/i.test(w)),
+  `a clean dogfood has no per-packet provenance warnings; warnings: ${JSON.stringify(selfReport.warnings)}`
 );
+
+// (#signed-default) The NEW fail-closed default: examples/signed-pass carries HMAC-signed,
+// provenance-bound approvals and certifies with NO trust_mode gymnastics — gate_status
+// "pass", certified:true, exit 0. Secrets are the example's documented fixed test secrets.
+{
+  const saved = {
+    claude: process.env.TELOS_SECRET_CLAUDE,
+    agy: process.env.TELOS_SECRET_AGY,
+    codex: process.env.TELOS_SECRET_CODEX
+  };
+  process.env.TELOS_SECRET_CLAUDE = "signed-example-claude-secret";
+  process.env.TELOS_SECRET_AGY = "signed-example-agy-secret";
+  process.env.TELOS_SECRET_CODEX = "signed-example-codex-secret";
+  try {
+    const signedReport = await validateGate(ex("examples/signed-pass/dossier.json"), ex("examples/signed-pass/packets"));
+    assert.equal(signedReport.gate_status, "pass", `signed example must certify under the default; blockers: ${JSON.stringify(signedReport.blockers)}`);
+    assert.equal(signedReport.certified, true, "signed example is certified");
+    assert.equal(signedReport.trust_mode, "signed", "signed example reports signed trust_mode");
+    assert.equal(signedReport.headline_checks.signing_enforced, true, "signing enforced");
+    assert.equal(signedReport.headline_checks.provenance_enforced, true, "provenance enforced");
+    assert.deepEqual(signedReport.blockers, []);
+
+    const cliSigned = spawnSync(
+      process.execPath,
+      ["gate.mjs", "validate", "examples/signed-pass/dossier.json", "examples/signed-pass/packets"],
+      { cwd: new URL("..", import.meta.url), encoding: "utf8", env: { ...process.env } }
+    );
+    assert.equal(cliSigned.status, 0, cliSigned.stderr);
+    assert.match(cliSigned.stdout, /"gate_status": "pass"/);
+
+    // Missing a required secret must fail closed even for the on-disk signed example.
+    delete process.env.TELOS_SECRET_AGY;
+    const noSecretReport = await validateGate(ex("examples/signed-pass/dossier.json"), ex("examples/signed-pass/packets"));
+    assert.equal(noSecretReport.gate_status, "blocked", "signed example without a required secret must fail closed");
+    assert.ok(noSecretReport.blockers.some((b) => b.includes("no secret to verify agy")), "missing secret blocker surfaced");
+    process.env.TELOS_SECRET_AGY = "signed-example-agy-secret";
+  } finally {
+    for (const [m, v] of Object.entries(saved)) {
+      const key = "TELOS_SECRET_" + m.toUpperCase();
+      if (v === undefined) delete process.env[key]; else process.env[key] = v;
+    }
+  }
+}
 
 console.log("build-gate tests passed");
 

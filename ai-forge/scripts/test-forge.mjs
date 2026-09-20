@@ -11,16 +11,23 @@ import { makeDesignWorkstream } from "../workstreams/design.mjs";
 
 const dossierMeta = { build_id: "rag-e2e", idea_id: "rag", use_case: "ai-architecture", objective: "Forge a RAG architecture" };
 
-// ─── Happy path: all 7 workstreams generate, breakout-survive, gate passes ───
+// ─── Keyless path: all 7 workstreams generate, breakout-survive, the market gate
+// runs but under the FAIL-CLOSED DEFAULT the synthetic (unsigned) approvals can no
+// longer mint a certified "pass" — the gate returns the loud non-certified
+// "advisory-unsigned" marker (Eye ruling 2026-09-19). Certified convergence requires
+// signed:true (see test-live.mjs). ─────────────────────────────────────────────
 {
   const root = mkdtempSync(path.join(os.tmpdir(), "aiforge-rag-"));
   const result = await forge({ pattern: ragPattern, ctx: ragContext(), projectRoot: root, dossierMeta, maxCycles: 2 });
-  assert.equal(result.converged, true, JSON.stringify(result.cycles, null, 2));
-  assert.equal(result.verdict.gate_status, "pass");
   assert.equal(result.records.length, 8);
-  assert.ok(result.records.every(r => r.converged));
+  assert.ok(result.records.every(r => r.converged), "every workstream record survives its breakout");
   assert.ok(result.records.some(r => r.workstream === "design" && r.converged), "design workstream converges");
-  console.log("Happy path PASS: converged=true, gate_status=pass, 8 records all converged");
+  assert.equal(result.verdict.gate_status, "advisory-unsigned", "keyless synthetic approvals are NOT certified");
+  assert.equal(result.verdict.certified, false);
+  assert.deepEqual(result.verdict.blockers, [], "no real blockers — the gate simply refuses to certify unsigned approvals");
+  assert.ok((result.verdict.warnings || []).some(w => /ADVISORY MODE/.test(w)), "loud non-certified banner present");
+  assert.equal(result.converged, false, "keyless demo does not reach CERTIFIED convergence");
+  console.log("Keyless path PASS: records converge, gate=advisory-unsigned (non-certified), converged=false");
 }
 
 // ─── Fail-closed: inject a broken generator for guardrails so its artifact

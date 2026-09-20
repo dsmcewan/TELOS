@@ -95,7 +95,10 @@ export function runMarketGate({ projectRoot, dossierMeta, teamRecords, approvals
     idea_id: dossierMeta.idea_id,
     use_case: dossierMeta.use_case,
     objective: dossierMeta.objective,
-    trust_mode: signed ? "signed" : undefined,
+    // Keyless path opts into EXPLICIT advisory so the gate returns the loud non-certified
+    // "advisory-unsigned" marker instead of a silent legacy pass (Eye ruling 2026-09-19,
+    // signed-by-default). Certified convergence still requires signed:true. Mirrors ai-forge.
+    trust_mode: signed ? "signed" : "advisory",
     required_docs: [],
     write_targets: [],
     protected_paths: [],

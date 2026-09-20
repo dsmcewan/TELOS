@@ -20,6 +20,28 @@ jobs:
         with:
           fetch-depth: 0
 
+      # SECURITY: `plugin_marketplaces` as a git URL has NO supported pinning
+      # syntax (the action's MARKETPLACE_URL_REGEX requires the string to end
+      # in literal ".git", so `#<sha>`/`@<ref>` suffixes are rejected) — a bare
+      # URL always resolves the plugin from the marketplace repo's LIVE
+      # default-branch HEAD. That is unacceptable in a job that holds
+      # `pull-requests: write` + `id-token: write` and the OAuth secret: a
+      # compromised or force-pushed upstream branch would run arbitrary
+      # plugin code here. Fix: check out the marketplace source ourselves at
+      # a pinned, human-reviewed commit, then hand claude-code-action a local
+      # filesystem path — its isLocalPath() check accepts paths starting with
+      # "/", "./", "../", so plugin resolution is content-pinned instead of
+      # live-HEAD.
+      - name: Checkout pinned plugin marketplace (anthropics/claude-code)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          repository: anthropics/claude-code
+          # v2.1.278 — contains plugins/code-review and marketplace name
+          # claude-code-plugins. Bump deliberately after reviewing the diff.
+          ref: bf7d404e26a5fb6167d21b46c93a2bf6c22ab274
+          path: .ci/claude-code-marketplace
+          persist-credentials: false
+
       - name: Automated Claude review
         uses: anthropics/claude-code-action@70fec183852c4f82f3f1969faed7dd60c5149ca7 # v1.0.207
         with:
@@ -28,8 +50,9 @@ jobs:
           # The token is long-lived but NOT eternal — when it lapses this check fails fast
           # (~15s, is_error with no findings), which looks identical to an exhausted balance.
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # Install the code-review plugin and run its skill against this PR.
-          plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
+          # Install the code-review plugin from the pinned local checkout above
+          # (not a live-HEAD URL — see the checkout step's comment).
+          plugin_marketplaces: "${{ github.workspace }}/.ci/claude-code-marketplace"
           plugins: "code-review@claude-code-plugins"
           # --comment POSTS findings as inline PR comments. Without it the review still runs
           # (minutes, real cost) and then DISCARDS its conclusion: `show_full_output` is false

@@ -1,4 +1,5 @@
 {
+  "trust_mode": "advisory",
   "build_id": "convergence-demo-prototype-readiness",
   "idea_id": "idea-convergence-agentic-prototype",
   "use_case": "test-prototype-workflow-on-convergence-demo",

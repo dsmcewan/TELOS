@@ -87,10 +87,16 @@ export const provenanceWorkstream = componentWorkstream({
 function gateSelftest(spineRoot) {
   return `import assert from "node:assert/strict";
 import { validateRecords } from "${spineRoot}build-gate/gate.mjs";
-const dossier = { build_id: "t", use_case: "u", objective: "o", required_docs: [], write_targets: [], protected_paths: [] };
+// Fail-closed default: the gate REQUIRES signed approvals unless a dossier explicitly
+// opts into trust_mode:"advisory". This keyless selftest exercises the council DECISION
+// logic under advisory (unanimous clears every blocker; any dissent blocks). It stays
+// non-certified on purpose — "advisory-unsigned" can never be mistaken for a signed pass.
+const dossier = { build_id: "t", use_case: "u", objective: "o", trust_mode: "advisory", required_docs: [], write_targets: [], protected_paths: [] };
 const pkt = (model, decision = "approve") => ({ build_id: "t", use_case: "u", model, role: "approver", docs_reviewed: [], proposal_ref: "r", decision, required_edits: [], hard_stops: [], confidence: "high", timestamp: "2026-06-30T00:00:00Z" });
-const pass = validateRecords(dossier, [pkt("claude"), pkt("agy"), pkt("codex")]);
-assert.equal(pass.gate_status, "pass", "all-approve -> pass");
+const clean = validateRecords(dossier, [pkt("claude"), pkt("agy"), pkt("codex")]);
+assert.equal(clean.gate_status, "advisory-unsigned", "all-approve advisory -> non-certified, no blockers");
+assert.deepEqual(clean.blockers, [], "unanimous council leaves no blockers");
+assert.equal(clean.certified, false, "advisory is never certified");
 const blocked = validateRecords(dossier, [pkt("claude", "reject"), pkt("agy"), pkt("codex")]);
 assert.equal(blocked.gate_status, "blocked", "a reject -> blocked");
 console.log("telos/gate selftest OK");

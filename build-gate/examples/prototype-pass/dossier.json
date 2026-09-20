@@ -1,4 +1,5 @@
 {
+  "trust_mode": "advisory",
   "build_id": "prototype-demo-pass",
   "idea_id": "idea-agentic-prototype-loop",
   "use_case": "future-idea-prototype",

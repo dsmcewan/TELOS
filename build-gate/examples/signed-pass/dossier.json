@@ -1,0 +1,23 @@
+{
+  "build_id": "build-gate-demo-signed",
+  "use_case": "signed-default-certified-smoke-test",
+  "objective": "Demonstrate the FAIL-CLOSED DEFAULT: signed approvals certify the gate with no trust_mode gymnastics.",
+  "trust_mode": "signed",
+  "affected_directories": [
+    "shared/Coordination/"
+  ],
+  "write_targets": [
+    "shared/Coordination/Multi-Model Agentic Build Gate.md"
+  ],
+  "protected_paths": [
+    "CHATGPT/",
+    "me/claude-code/",
+    "me/claude-desktop/",
+    "me/gemini/"
+  ],
+  "required_docs": [
+    "shared/Coordination/Multi-Model Agentic Build Gate.md"
+  ],
+  "lexi_required": false,
+  "grok_objections": []
+}

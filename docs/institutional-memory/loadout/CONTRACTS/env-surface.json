@@ -65,6 +65,10 @@
     {
       "file": "build-gate/scripts/stress-tests.mjs",
       "why": "generates child-process fixture code (template literals) exercising the registry loader with throwaway names"
+    },
+    {
+      "file": "build-gate/scripts/test-gate.mjs",
+      "why": "signed-by-default regression fixture: snapshots then deletes/restores TELOS_SECRET_<seat> vars (prefixed pattern) to prove the on-disk signed example fails closed when a required secret is missing"
     }
   ],
   "whole_env_files": [
@@ -95,6 +99,10 @@
     {
       "file": "connectors/ai-peer-mcp/scripts/test-win32-env.mjs",
       "why": "snapshots and restores the whole env around the registry-loader fixture"
+    },
+    {
+      "file": "build-gate/scripts/test-gate.mjs",
+      "why": "signed-by-default regression fixture: passes the parent env (carrying the test's TELOS_SECRET_<seat> vars) to the gate CLI child via spawnSync so the on-disk signed example verifies — the child's surface stays bounded by this contract"
     }
   ],
   "why": "A future model must be able to answer 'what outside the repo can influence this code?' from one record. Everything ambient is here: API keys, model overrides, HMAC secret patterns, plugin locations, and the enumerated files that handle the env wholesale — each of those either bounds, scrubs, or neutralizes it.",

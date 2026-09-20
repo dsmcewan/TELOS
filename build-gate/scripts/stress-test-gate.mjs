@@ -36,6 +36,7 @@ console.log("Running Sibling Folder Safety tests...");
 // Test A: Sibling folders of protected paths should be allowed.
 const siblingPassDossier = {
   build_id: "sibling-stress",
+  trust_mode: "advisory",
   use_case: "sibling-stress-case",
   objective: "Verify sibling paths are not blocked.",
   required_docs: ["doc-a"],
@@ -53,11 +54,12 @@ const siblingPassPackets = [
   approvalPacket("sibling-stress", "sibling-stress-case", "codex", [])
 ];
 const siblingPassReport = validateRecords(siblingPassDossier, siblingPassPackets);
-assert.equal(siblingPassReport.gate_status, "pass", "Sibling paths should not block the gate.");
+assert.equal(siblingPassReport.gate_status, "advisory-unsigned", "Sibling paths should not block the gate (advisory demo).");
 
 // Test B: Subfolders of protected paths must be blocked.
 const subfolderBlockDossier = {
   build_id: "subfolder-stress",
+  trust_mode: "advisory",
   use_case: "subfolder-stress-case",
   objective: "Verify subfolder paths are blocked.",
   required_docs: ["doc-a"],
@@ -81,6 +83,7 @@ assert.ok(
 // Test C: Exact protected path (with or without slash) must be blocked.
 const exactBlockDossier = {
   build_id: "exact-stress",
+  trust_mode: "advisory",
   use_case: "exact-stress-case",
   objective: "Verify exact paths are blocked.",
   required_docs: ["doc-a"],
@@ -105,6 +108,7 @@ console.log("Running Traversal Resistance tests...");
 // Test A: Targets trying to traverse into protected paths must block.
 const traversalBlockDossier = {
   build_id: "traversal-stress",
+  trust_mode: "advisory",
   use_case: "traversal-stress-case",
   objective: "Verify traversal into protected paths blocks.",
   required_docs: ["doc-a"],
@@ -125,6 +129,7 @@ assert.equal(traversalBlockReport.blockers.length, 2, "Both traversal targets sh
 // Test B: Targets that traverse but resolve outside protected paths should pass (within reason).
 const traversalPassDossier = {
   build_id: "traversal-pass-stress",
+  trust_mode: "advisory",
   use_case: "traversal-pass-case",
   objective: "Verify traversal resolving to safe paths passes.",
   required_docs: ["doc-a"],
@@ -138,7 +143,7 @@ const traversalPassReport = validateRecords(traversalPassDossier, [
   approvalPacket("traversal-pass-stress", "traversal-pass-case", "agy", []),
   approvalPacket("traversal-pass-stress", "traversal-pass-case", "codex", [])
 ]);
-assert.equal(traversalPassReport.gate_status, "pass", "Traversal resolving to safe paths should pass.");
+assert.equal(traversalPassReport.gate_status, "advisory-unsigned", "Traversal resolving to safe paths should not block (advisory demo).");
 
 // ----------------------------------------------------
 // 3. LEXI Gate Verification (lexi_required: true)
@@ -150,6 +155,7 @@ const LEXI_DOC = "shared/Filing_Package_July_2026/LEXI_DB_REFERENCE.md";
 // Test A: lexi_required is true, but lexi_reference_read is false/missing.
 const lexiNoReadDossier = {
   build_id: "lexi-no-read",
+  trust_mode: "advisory",
   use_case: "lexi-no-read-case",
   objective: "LEXI check",
   required_docs: ["doc-a"],
@@ -171,6 +177,7 @@ assert.ok(
 // Test B: lexi_required is true, lexi_reference_read is true, but no packet reviewed the LEXI doc.
 const lexiNoDocDossier = {
   build_id: "lexi-no-doc",
+  trust_mode: "advisory",
   use_case: "lexi-no-doc-case",
   objective: "LEXI check",
   required_docs: ["doc-a"],
@@ -201,6 +208,7 @@ for (const variant of variations) {
   const lexiPassDossier = {
     build_id: `lexi-pass-${variant.replace(/[\\/]/g, "-")}`,
     use_case: "lexi-pass-case",
+    trust_mode: "advisory",
     objective: "LEXI check",
     required_docs: ["doc-a"],
     write_targets: ["shared/Coordination/example.md"],
@@ -212,7 +220,7 @@ for (const variant of variations) {
     approvalPacket(lexiPassDossier.build_id, "lexi-pass-case", "agy", []),
     approvalPacket(lexiPassDossier.build_id, "lexi-pass-case", "codex", [])
   ]);
-  assert.equal(lexiPassReport.gate_status, "pass", `LEXI check should pass with variant: ${variant}`);
+  assert.equal(lexiPassReport.gate_status, "advisory-unsigned", `LEXI check should not block with variant: ${variant}`);
 }
 
 console.log("All build-gate stress and security tests passed successfully!");
