@@ -70,8 +70,13 @@ const result = await forge({
   makeApprovals: councilApprovals({ callTool })
 });
 
-assert.equal(result.converged, true, `live forge must converge; cycles=${JSON.stringify(result.cycles, null, 2)}`);
-assert.equal(result.verdict.gate_status, "pass", "live: market gate passed");
+// Signed-by-default (Eye ruling 2026-09-19): the council supplies REAL provenance but
+// this path is unsigned, so the gate is fail-closed advisory — real provenance does not
+// substitute for a signature. Certified convergence requires signed:true (tracked: the
+// saas-forge cryptographic-signing upgrade ticket). Provenance assertions below still hold.
+assert.equal(result.verdict.gate_status, "advisory-unsigned", "live: unsigned council run is NOT certified");
+assert.equal(result.verdict.certified, false, "live: advisory run is not certified");
+assert.equal(result.converged, false, "live: unsigned path does not reach CERTIFIED convergence");
 
 // The required-seat approvals carry REAL provenance from the council — not
 // fabricated by the forge. Every required model has a non-null response_id.
