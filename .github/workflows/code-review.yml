@@ -42,6 +42,22 @@ jobs:
           path: .ci/claude-code-marketplace
           persist-credentials: false
 
+      # The marketplace name 'claude-code-plugins' is RESERVED for anthropics-org GitHub
+      # sources — a local (pinned) checkout may not claim it (first live run failed on
+      # exactly this, 2026-09-20). Rename the pinned copy's marketplace; content remains
+      # the SHA-pinned official plugin, only the label changes.
+      - name: Rename pinned marketplace (reserved-name rule for local sources)
+        run: |
+          python3 - <<'PY'
+          import json
+          p = '.ci/claude-code-marketplace/.claude-plugin/marketplace.json'
+          m = json.load(open(p))
+          assert m.get('name') == 'claude-code-plugins', f"unexpected marketplace name: {m.get('name')!r}"
+          m['name'] = 'telos-pinned-plugins'
+          json.dump(m, open(p, 'w'), indent=2)
+          print('marketplace renamed -> telos-pinned-plugins')
+          PY
+
       - name: Automated Claude review
         uses: anthropics/claude-code-action@70fec183852c4f82f3f1969faed7dd60c5149ca7 # v1.0.207
         with:
@@ -53,7 +69,7 @@ jobs:
           # Install the code-review plugin from the pinned local checkout above
           # (not a live-HEAD URL — see the checkout step's comment).
           plugin_marketplaces: "${{ github.workspace }}/.ci/claude-code-marketplace"
-          plugins: "code-review@claude-code-plugins"
+          plugins: "code-review@telos-pinned-plugins"
           # --comment POSTS findings as inline PR comments. Without it the review still runs
           # (minutes, real cost) and then DISCARDS its conclusion: `show_full_output` is false
           # (and must stay false — this repo is public and those logs are world-readable), so an
