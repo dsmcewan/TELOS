@@ -406,6 +406,17 @@ revision cycle is spent before iteration 2 (no findings left) lands on `blocked`
 authorizes, so fail-closed holds, but a base-gate blocker of the protocol kind (unsigned packet,
 missing provenance) arguably belongs in the `blocked` short-circuit.
 
+**F1b — `docs/runs/agentic-teams-situational/run-teams-situational.mjs` is a second instance of
+F1.** Its inline dossier (`:20-26`) sets no `trust_mode`, its mock seats return unsigned packets, and
+no secrets exist, so keyless it now ends `phase: "approval", ok: false` while the committed
+`run-summary.json` still says `phase: "build", ok: true` (last touched 2026-06-28). With
+`TELOS_SECRET_*` set it passes (`merge_status=ready self_corrected=true`). The sibling scripts
+`agentic-teams/run-teams.mjs` and `agentic-teams-market/run-teams-market.mjs` still pass keyless only
+because they load `build-gate/examples/*/dossier.json`, which were switched to
+`trust_mode: "advisory"` in the same change; none of the three is in CI. The same ephemeral-secret
+fix applied to the lifecycle e2e (F1) applies here. `agentic-teams-live` and
+`agentic-teams-plugin-seats` need real seats and were not run.
+
 **F2 — CLI path skips proposal-lifecycle enforcement while reporting it enforced.** `validateGate`
 (`gate.mjs:93-104`) never sets `source.telosDir`; `validateRecords` only runs
 `validateProposalLifecycle` when it is set (`:260`). A `proposal_lifecycle: true` dossier validated
@@ -568,3 +579,35 @@ does not block merges, but it also means the automated review has not actually r
 since 2026-08-27. Candidates: bump to the action version in #185 (its two review runs passed),
 serialize the workflow with a `concurrency` group, or add `show_full_output: true` once to capture
 the SDK error text.
+
+## 10. Build orchestrator lineage
+
+`build-gate/build-orchestrator.mjs` has had seven commits since it was created; its three exports
+(`makeTeamDispatch`, `makeTeamKeyring`, `buildProject`) have been stable since the first one.
+
+| Date | Commit | Landed via | What changed in the orchestrator |
+|---|---|---|---|
+| 2026-06-28 | `17bffa6` | #11 (merged in the #83 daedalus/implementation batch) | Created: council + merkle-dag composed into one autonomous builder; single-shot `callTeam`; 160 lines |
+| 2026-06-28 | `7378804` | #13 (same batch) | `makeTeamDispatch` gains the inner repair loop (`maxAttempts`, `priorFailure`, `respec` hand-up); `senseProject`/`detectConventions` and `runNodeTest` wired in; `situation` phase added |
+| 2026-07-01 | `be5796d` | #64 (same batch) | Fail-closed hole closed: a team may only write files its node spec declared (`declared` set, `resolveUnder`) |
+| 2026-07-14 | `947e3ed` | M4 (same batch) | Council runs *after* `compileAndHashPlan`; packets bound to `plan_hash` via `councilContext.proposal_ref`; `gateSource.telosDir` supplied only in lifecycle mode; `authorizedPlanHash` passed to `runBuild` (TOCTOU strengthening) |
+| 2026-07-15 | `0901c66` | #84, merged by `557f444` | `buildProject` gains `callWorkshopSeat`, `nowMs`, `maxRevisions` and the early `return runProposalLifecycle(...)` branch (§3.1 step 4) — the point after which the ternaries at `:192-197` became dead (F7) |
+| 2026-07-16 | `2e530b2` | #99 | `callParallelSeat` threaded through to the lifecycle |
+| 2026-07-19 | `0cfb280` | #133 | Path re-resolved immediately before `writeFileSync` (second `resolveUnder`) — the review-remediation sweep |
+| 2026-09-19 | `c8f4ebf` | #186 | No change to the orchestrator itself; its two unit tests switched to `trust_mode: "advisory"` and the example dossiers followed. The evidence scripts did not (F1, F1b) |
+| 2026-09-23 | #192 (open, WIP) | — | Adds a verify stage inside `makeTeamDispatch` (`readArtifactFiles`, `runVerify` not yet defined, `requireVerify` opt-in); fail-soft `parseVerdict` (§9.2) |
+
+Dependency churn since creation: `teams.mjs` 2 commits, `decompose.mjs` 2, `situation.mjs` 1,
+`test-runner.mjs` 2, `teamPrompts.mjs` 8, `council.mjs` 5, `proposal-orchestrator.mjs` 4,
+`merkle-dag/orchestrate.mjs` 5. The orchestrator's own logic has not changed since 2026-07-19; every
+later behavioural change reached it through `gate.mjs` (signed-by-default) or the lifecycle module.
+
+Consumers of `buildProject` and their keyless status on this commit:
+
+| Consumer | Keyless today | Why |
+|---|---|---|
+| `build-gate/scripts/test-build-orchestrator.mjs`, `test-runtime-adaptation.mjs`, `test-proposal-orchestrator.mjs` | pass | switched to `trust_mode: "advisory"` in `c8f4ebf` |
+| `docs/runs/agentic-teams/run-teams.mjs`, `agentic-teams-market/run-teams-market.mjs` | pass | fixture dossiers in `build-gate/examples/` are advisory |
+| `docs/runs/agentic-teams-situational/run-teams-situational.mjs` | **blocked at approval** | inline dossier, no `trust_mode`, no secrets (F1b) |
+| `docs/runs/proposal-lifecycle/run-lifecycle-e2e.mjs` | pass on the signed path | fixed in this PR (F1) |
+| `docs/runs/agentic-teams-live/`, `agentic-teams-plugin-seats/` | not runnable here | need live seats via MCP |
