@@ -458,6 +458,13 @@ anyone from the checkpoint (`connectors/ai-peer-mcp/lib.mjs:112-128`); the HMAC 
 thing that makes the `agy` packet trustworthy. The README already says agy is "a deterministic local
 governance attestation, not a remote model"; this is a restatement for readers of the gate code.
 
+**F14 — `connectors/meta-ads-mcp/server.mjs` is outside every oracle.** The Meta Marketing API
+stdio server (168 lines, reached via the seat router as `meta:<tool>`) has no `package.json`, no
+tests, no CI job, and is absent from `repository-manifest.json` and from Clotho's `PACKAGE_ROOTS`
+(`clotho/inventory.mjs:21`) and its exclusion list (`:36`). Its safety invariants (PAUSED-by-default,
+`META_MAX_DAILY_CENTS` cap, no delete tool) are asserted in comments only. Open issue #177 already
+names the bypassable spend cap; the enrollment gap is the wider point.
+
 ## 8. Reading order for a new maintainer
 
 1. `README.md` trust model, then `CURRENT-AUTHORITY.json`, then `repository-manifest.json`.
@@ -468,3 +475,78 @@ governance attestation, not a remote model"; this is a restatement for readers o
 5. `build-gate/build-orchestrator.mjs:143` → `build-gate/proposal-orchestrator.mjs:145` →
    `merkle-dag/proposal-ledger.mjs:229-257`.
 6. Run `node docs/runs/fail-closed-demo/run.mjs`, then `cd build-gate && npm test`.
+
+## 9. GitHub lineage (what shipped, what is open, how CI behaves)
+
+Read from the GitHub API on 2026-09-23. Tags: `v0.1.0`, `v0.2.0`.
+
+### 9.1 How the current `main` got here
+
+| Date | PR | Change | Why it matters to the trace |
+|---|---|---|---|
+| 2026-07-15 | #84 | proposal lifecycle composed into `buildProject` | origin of §3 and of the e2e script in F1 |
+| 2026-07-19/20 | #133, #135 | governance/evidence hardening; evidence-backed README + fail-closed proof | `docs/runs/fail-closed-demo/run.mjs` becomes the public proof |
+| 2026-07-26 | #136, #137 | `check-node.mjs`, `generatorDispatch`, `factBreakout` extracted into `forge/` | why saas-forge/ai-forge import `forge/*` (§4) |
+| 2026-07-30 | #138, #139 | Claude Code GitHub workflow; in-browser demo page | `claude.yml` and `demo/` |
+| 2026-08-13 | #145 | Hestia maintenance workflow definition | F11 (unregistered name) |
+| 2026-08-27 | #155–#161 | security sweep closing issues #148–#154: workstream-id confinement, operator ledger fail-closed, bwrap-only sandbox (replaced `unshare` fallback), clotho roots race, AM-42 authority reconciliation, hestia residue gate, Node/Action pins | §3.6 sandbox whitelist; `forge/operator.mjs` fail-closed; `CURRENT-AUTHORITY.json` chain |
+| 2026-08-27 | #162–#164 | flagship fixes, docs reconciliation, ESLint + coverage floor | `narcissus/flagship` CI job |
+| 2026-09-20 | #186 | **signed-by-default gate** (commit `c8f4ebf`) + Pages gated on CI (#181) + pinned plugin marketplace (#182) | §2.2 step 2; root cause of F1; saas-forge switched to explicit advisory (`613a738`) |
+| 2026-09-20 | #191 | rename pinned marketplace (`claude-code-plugins` is reserved) | `code-review.yml` §5 |
+| 2026-09-20 | #188 | check-workflow oracle wired into CI; stale argo pin fixed | `institutional-memory` CI job |
+
+`main` CI: the last 12 `CI` runs on `main` (#157 through #188 merges) all concluded `success`.
+
+### 9.2 Open pull requests (12)
+
+- **#192** `WIP: per-node verify stage (incomplete — do not merge)`, opened 2026-09-23, `mergeable_state: dirty`.
+  Adds `VERDICT_SCHEMA` (`schemas.mjs`), `verifyTeamForNode` (`teams.mjs`), `promptForVerify` /
+  `parseVerdict` / `makeLiveCallVerify` (`teamPrompts.mjs`), and a verify stage inside
+  `makeTeamDispatch` that re-runs the verdict's declarative checks through `reverifyRecord`. Its own
+  description says `runVerify` is referenced but not defined and `buildProject` is not wired. Two
+  things to watch when it resumes: `parseVerdict` is deliberately fail-soft (an unparseable verdict
+  is `ok: true`), which is the opposite default from the rest of the gate; and the stage runs
+  *inside* the team dispatch, before `defaultVerifyNode`, so it is advisory-blocking only and does
+  not change F3.
+- **#146** `Add a concise TELOS engineering review path`, opened 2026-08-25, no activity since.
+- **#193** this trace (draft).
+- **Dependabot (9):** GitHub Actions bumps #165 (`deploy-pages` 5.0.1), #166 (`checkout` 7.0.1),
+  #167 (`upload-pages-artifact` 5.0.0), #168 (`setup-node` 7.0.0), #185 (`claude-code-action`
+  1.0.228); flagship npm bumps #169 (`@xstate/react` 6.1.0), #170 (`@playwright/test` 1.62.1),
+  #171 (`react-dom`), #172 (`react`), #173 (`@vitejs/plugin-react` 6.1.0). All opened 2026-08-27
+  or 2026-09-03; none merged. #185 matters because the pinned `claude-code-action@70fec18`
+  (1.0.207) is the one whose review runs are failing (§9.4).
+
+### 9.3 Open issues (14) mapped to the trace
+
+| Issue | Title (abridged) | Where it lands in this document |
+|---|---|---|
+| #190 | DECISIONS/ records have no oracle | §5 `verify-contracts.mjs` covers contracts, not decisions |
+| #189 | Iliad weave-coherence claim has zero consumers | §4 lachesis/atropos are the only weave readers |
+| #187 | saas-forge: replace `--advisory` fallback with real signing | §4 saas-forge row; same fallout as F1 |
+| #184 | v0.2.0 review corrections (7) | governance; not code-traced here |
+| #183 | flagship fonts ship without OFL texts | `narcissus/flagship` |
+| #180 | flagship failure and mobile paths | `narcissus/flagship` |
+| #179 | no reproducible release contract | tags exist, no release oracle |
+| #178, #175 | ai-native-memory auditor / gate re-derivation | §4 ai-native-memory non-claims |
+| #177 | meta-ads-mcp ungoverned runtime, bypassable spend cap | **F14** |
+| #176 | clotho `--verify-committed` conflates snapshot with freshness | §5 institutional-memory job |
+| #174 | hestia: bind merged artifact to PR head SHA | `workflows/hestia.js`; see also F11 |
+| #63, #30 | ai-forge hygiene / shared helper extraction | partially done by #136/#137 |
+
+Closed on 2026-08-27 and 2026-09-20 by the PRs in §9.1: #148–#154, #181, #182.
+
+### 9.4 The `Claude Code Review` workflow is unreliable
+
+Of the last 40 `code-review.yml` runs, 29 failed and 11 succeeded. Every failure has the same
+signature: marketplace and plugin install succeed, then the Claude Code SDK run ends in under two
+seconds with `is_error: true`, one turn, zero cost, empty `modelUsage`. Failures cluster when
+several PRs trigger at once (six dependabot PRs at 2026-08-27 18:44 and 18:54, five at 2026-09-20
+00:47 and 02:33/02:36), with one or two runs in each burst succeeding. That pattern fits a
+per-account concurrency or rate limit on the `CLAUDE_CODE_OAUTH_TOKEN` subscription auth better
+than an expired token. Either way the check is not a signal about the diff; on this PR it failed
+twice on a docs-only change. Practical consequences: `review` is not part of `required-ci`, so it
+does not block merges, but it also means the automated review has not actually reviewed most PRs
+since 2026-08-27. Candidates: bump to the action version in #185 (its two review runs passed),
+serialize the workflow with a `concurrency` group, or add `show_full_output: true` once to capture
+the SDK error text.
