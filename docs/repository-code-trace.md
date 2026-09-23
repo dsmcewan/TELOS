@@ -21,6 +21,8 @@ Verified on the tracing commit (Node 22.22.2):
 | `cd build-gate && npm test` (runs `breakout` too) | green |
 | `cd merkle-dag && npm test` | green |
 | `node docs/runs/fail-closed-demo/run.mjs` | `BLOCKED` / `HALTED` / `VERIFIED`, `ok:true` |
+| `node docs/runs/proposal-lifecycle/run-lifecycle-e2e.mjs` | failed on the tracing commit (F1); `ACCEPTANCE OK` after the fix in this PR, keyless and with operator secrets |
+| `node docs/runs/proposal-lifecycle/run-proposal-lifecycle.mjs` | `ACCEPTANCE OK` |
 | `node docs/institutional-memory/verify-contracts.mjs` | 313/313 contracts match |
 | `node docs/runs/clotho-self-weave/run.mjs --verify-committed` | `ok:true`, 4559 trusted records (needs full history) |
 
@@ -347,7 +349,7 @@ Excluded by contract (`:36`): ai-forge, ai-native-memory, demo, forge, narcissus
 | Job | Runs |
 |---|---|
 | `test` (node 22 × 24) | `npm test` in the 12 zero-dependency packages; clotho with full history |
-| `fail-closed-proof` | `node docs/runs/fail-closed-demo/run.mjs` |
+| `fail-closed-proof` | `node docs/runs/fail-closed-demo/run.mjs`, then both `docs/runs/proposal-lifecycle/` evidence scripts (added in this PR) |
 | `repository-portability` | `.github/scripts/check-portable-paths.mjs` (Windows-safe paths, case collisions) |
 | `workflow-scripts` | `workflows/tests/test-hestia.mjs` (`workflows/` is deliberately package-less) |
 | `institutional-memory` | `verify-contracts.mjs`, `clotho-self-weave/run.mjs --verify-committed`, `check-workflow.mjs` |
@@ -376,17 +378,33 @@ reserved.
 ## 7. Findings from the trace
 
 Ordered by how much they matter to the trust claim. Each was confirmed by reading the cited lines or
-by running the cited command on the tracing commit; none has been changed by this document.
+by running the cited command on the tracing commit. F1 is fixed in the same PR as this document;
+the rest are left for separate, scoped changes.
 
-**F1 — `run-lifecycle-e2e.mjs` no longer passes keyless.** `node
-docs/runs/proposal-lifecycle/run-lifecycle-e2e.mjs` exits 1 with `ACCEPTANCE FAILED`; both variants
-end `decision: "blocked"`. With `TELOS_SECRET_CLAUDE/AGY/CODEX` set it passes (`ACCEPTANCE OK`,
-discharged → `ready`, control → `blocked` by `UNDISCHARGED_OBLIGATION`). Cause: the dossier at `:33`
-sets no `trust_mode`, and since commit `c8f4ebf` the gate requires HMAC by default. The committed
-`run-lifecycle-e2e-summary.json` still records `acceptance_ok: true` (last touched 2026-07-15), and
-`docs/runs/proposal-lifecycle/README.md:41` says the script "doubles as executable evidence in CI" —
-it is not in any CI job. The unit test was updated (`scripts/test-proposal-orchestrator.mjs:52` uses
-`trust_mode:"advisory"`); the evidence script was not.
+**F1 — `run-lifecycle-e2e.mjs` no longer passed keyless (fixed in this PR).** On the tracing
+commit, `node docs/runs/proposal-lifecycle/run-lifecycle-e2e.mjs` exited 1 with `ACCEPTANCE FAILED`;
+both variants ended `decision: "blocked"` on `trust_mode 'signed' but no secret to verify … packet`.
+Cause: the dossier at `:33` set no `trust_mode` and no seat secrets, and since commit `c8f4ebf` the
+gate requires HMAC by default. The committed summary still recorded `acceptance_ok: true` (last
+touched 2026-07-15), and neither lifecycle evidence script was in any CI job, although the README
+said the primitive demo "doubles as executable evidence in CI". The unit test had been updated
+(`scripts/test-proposal-orchestrator.mjs:52` uses `trust_mode:"advisory"`); the evidence script had
+not. Fix applied here, chosen to keep the evidence on the *certified* path rather than downgrade it
+to advisory: the script mints ephemeral per-run `TELOS_SECRET_<SEAT>` values when none are set
+(never overriding operator secrets, nothing written to disk), sets `trust_mode: "signed"`
+explicitly, records which secrets were ephemeral in the summary, and adds an `unsigned` variant
+that withholds `TELOS_SECRET_CODEX` and must be `blocked` at the approval phase. Both lifecycle
+scripts now run in the `fail-closed-proof` CI job. `docs/runs/` is outside the env-surface
+contract's scan scope (`verify-contracts.mjs:679`, package roots only), so the new env writes do
+not touch that contract.
+
+**F1a — a signature failure does not short-circuit `deriveOutcome`.** The `unsigned` variant's
+ledger shows `["revise", "blocked"]`: in iteration 1 the missing-secret blocker coexists with the
+reviewer's reparable hold-request finding, and `deriveOutcome` (`proposal-ledger.mjs:248-257`)
+checks finding classes before it checks the blocker count, so the outcome is `revise` and a
+revision cycle is spent before iteration 2 (no findings left) lands on `blocked`. Never
+authorizes, so fail-closed holds, but a base-gate blocker of the protocol kind (unsigned packet,
+missing provenance) arguably belongs in the `blocked` short-circuit.
 
 **F2 — CLI path skips proposal-lifecycle enforcement while reporting it enforced.** `validateGate`
 (`gate.mjs:93-104`) never sets `source.telosDir`; `validateRecords` only runs
