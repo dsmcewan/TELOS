@@ -39,6 +39,57 @@ function readArtifactFiles(node, baseDir) {
 }
 
 /**
+ * VERIFY STAGE (per node): an independent verify team adversarially re-checks a
+ * built node's artifact. It is NOT a settle authority — its verdict can only
+ * BLOCK; Rule 3 (defaultVerifyNode) remains the sole thing that settles the
+ * ledger. Two blocking sources, both fail-closed-safe:
+ *   1. FACT-GROUNDING — the verdict's declarative file_exists/file_contains checks
+ *      are re-run against disk via reverifyRecord. A check the verifier itself
+ *      declared that does NOT hold blocks the node: the artifact demonstrably
+ *      lacks required evidence, and the model cannot bluff "ok" past disk truth.
+ *   2. EXPLICIT STOP — the verifier saying ok:false or raising blockers. Blocking
+ *      is always safe (it can only stop a node, never approve one).
+ * Returns { block, error, detail }. A verify team that cannot run (throws, no
+ * team, no verdict) returns { error:true } — advisory by default; the caller's
+ * `requireVerify` decides whether an un-runnable verify hard-fails the node.
+ */
+async function runVerify({ node, baseDir, dossier, verifyTeamFor, callVerify }) {
+  const team = typeof verifyTeamFor === "function" ? verifyTeamFor(node.id) : null;
+  if (!team) return { block: false, error: true, detail: `no verify team for ${node.id}` };
+
+  const artifactFiles = readArtifactFiles(node, baseDir);
+  let verdict;
+  try {
+    verdict = await callVerify({ team, node, artifactFiles, dossier });
+  } catch (e) {
+    return { block: false, error: true, detail: `verify team ${team.id} threw: ${e?.message || String(e)}` };
+  }
+  if (!verdict || typeof verdict !== "object") {
+    return { block: false, error: true, detail: `verify team ${team.id} returned no verdict` };
+  }
+
+  const checks = Array.isArray(verdict.checks) ? verdict.checks : [];
+  const blockers = Array.isArray(verdict.blockers) ? verdict.blockers.filter((s) => typeof s === "string") : [];
+  const reasons = [];
+
+  // 1. Re-run the verdict's declared checks against disk (verdict-on-facts).
+  if (checks.length > 0) {
+    const rr = reverifyRecord({ checks }, baseDir);
+    if (!rr.allPass) {
+      for (const f of rr.failing) reasons.push(f.detail || f.description || f.id);
+    }
+  }
+  // 2. The verifier explicitly stopping the node.
+  if (verdict.ok === false) reasons.push("verifier verdict: artifact does not satisfy the node");
+  for (const b of blockers) reasons.push(b);
+
+  if (reasons.length > 0) {
+    return { block: true, error: false, detail: `verify ${team.id} blocked ${node.id}: ${reasons.join("; ")}` };
+  }
+  return { block: false, error: false, detail: "" };
+}
+
+/**
  * Build a dispatch(injected) for runBuild that routes each node to its owning
  * team and lets that team WRITE the node's files. Verification is NOT done here —
  * it stays in verifyNode (Rule 3), so the team cannot self-certify.
@@ -158,7 +209,7 @@ export function makeTeamKeyring(teams) {
  * to execution unless the council approval gate passed (fail-closed sequencing).
  *   { phase: "decompose"|"approval"|"plan"|"build", ok, ... }
  */
-export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, keyring, signerFor, baseDir, telosDir, marketPackets = [], source, maxRepairRounds = 8, adaptAttempts = 2, concurrency }) {
+export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, callVerify, requireVerify = false, keyring, signerFor, baseDir, telosDir, marketPackets = [], source, maxRepairRounds = 8, adaptAttempts = 2, concurrency }) {
   const teams = planTeams(dossier);
 
   // PROJECT SENSE (conventions): read the real project BEFORE decompose so the
@@ -207,11 +258,21 @@ export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, 
   const nodeTeam = new Map(taskList.map((t) => [t.id, teamForNode(t, teams)]));
   const routeFor = (id) => nodeTeam.get(id) || teamForNode({}, teams);
 
+  // Decide each node's VERIFY team the same way (from the task while `verify`/
+  // `workstream` are still present). Only active when a callVerify is provided —
+  // absent it, the verify stage stays inert and behavior is byte-identical.
+  const nodeVerifyTeam = new Map(taskList.map((t) => [t.id, verifyTeamForNode(t, teams)]));
+  const verifyTeamFor = (id) => nodeVerifyTeam.get(id) || verifyTeamForNode({}, teams);
+  const requireVerifyFlag = requireVerify === true || dossier?.require_verify === true;
+
   // 4. Execute: teams build, the controller verifies (Rule 3) and settles the ledger.
   const build = await runBuild({
     telosDir,
     baseDir,
-    dispatch: makeTeamDispatch({ routeFor, callTeam, baseDir, dossier, maxAttempts: adaptAttempts }),
+    dispatch: makeTeamDispatch({
+      routeFor, callTeam, baseDir, dossier, maxAttempts: adaptAttempts,
+      verifyTeamFor, callVerify, requireVerify: requireVerifyFlag
+    }),
     verifyNode: defaultVerifyNode,
     signerFor,
     maxRounds: maxRepairRounds,
