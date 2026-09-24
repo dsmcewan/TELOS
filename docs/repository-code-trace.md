@@ -23,6 +23,7 @@ Verified on the tracing commit (Node 22.22.2):
 | `node docs/runs/fail-closed-demo/run.mjs` | `BLOCKED` / `HALTED` / `VERIFIED`, `ok:true` |
 | `node docs/runs/proposal-lifecycle/run-lifecycle-e2e.mjs` | failed on the tracing commit (F1); `ACCEPTANCE OK` after the fix in this PR, keyless and with operator secrets |
 | `node docs/runs/proposal-lifecycle/run-proposal-lifecycle.mjs` | `ACCEPTANCE OK` |
+| `node docs/runs/agentic-teams-situational/run-teams-situational.mjs` | blocked at approval on the tracing commit (F1b); `merge_status=ready` after the fix in this PR, keyless and with operator secrets |
 | `node docs/institutional-memory/verify-contracts.mjs` | 313/313 contracts match |
 | `node docs/runs/clotho-self-weave/run.mjs --verify-committed` | `ok:true`, 4559 trusted records (needs full history) |
 
@@ -349,7 +350,7 @@ Excluded by contract (`:36`): ai-forge, ai-native-memory, demo, forge, narcissus
 | Job | Runs |
 |---|---|
 | `test` (node 22 × 24) | `npm test` in the 12 zero-dependency packages; clotho with full history |
-| `fail-closed-proof` | `node docs/runs/fail-closed-demo/run.mjs`, then both `docs/runs/proposal-lifecycle/` evidence scripts (added in this PR) |
+| `fail-closed-proof` | `node docs/runs/fail-closed-demo/run.mjs`, then both `docs/runs/proposal-lifecycle/` evidence scripts and the three keyless `docs/runs/agentic-teams*` scripts (added in this PR) |
 | `repository-portability` | `.github/scripts/check-portable-paths.mjs` (Windows-safe paths, case collisions) |
 | `workflow-scripts` | `workflows/tests/test-hestia.mjs` (`workflows/` is deliberately package-less) |
 | `institutional-memory` | `verify-contracts.mjs`, `clotho-self-weave/run.mjs --verify-committed`, `check-workflow.mjs` |
@@ -378,7 +379,7 @@ reserved.
 ## 7. Findings from the trace
 
 Ordered by how much they matter to the trust claim. Each was confirmed by reading the cited lines or
-by running the cited command on the tracing commit. F1 is fixed in the same PR as this document;
+by running the cited command on the tracing commit. F1 and F1b are fixed in the same PR as this document;
 the rest are left for separate, scoped changes.
 
 **F1 — `run-lifecycle-e2e.mjs` no longer passed keyless (fixed in this PR).** On the tracing
@@ -406,15 +407,17 @@ revision cycle is spent before iteration 2 (no findings left) lands on `blocked`
 authorizes, so fail-closed holds, but a base-gate blocker of the protocol kind (unsigned packet,
 missing provenance) arguably belongs in the `blocked` short-circuit.
 
-**F1b — `docs/runs/agentic-teams-situational/run-teams-situational.mjs` is a second instance of
-F1.** Its inline dossier (`:20-26`) sets no `trust_mode`, its mock seats return unsigned packets, and
-no secrets exist, so keyless it now ends `phase: "approval", ok: false` while the committed
-`run-summary.json` still says `phase: "build", ok: true` (last touched 2026-06-28). With
-`TELOS_SECRET_*` set it passes (`merge_status=ready self_corrected=true`). The sibling scripts
-`agentic-teams/run-teams.mjs` and `agentic-teams-market/run-teams-market.mjs` still pass keyless only
-because they load `build-gate/examples/*/dossier.json`, which were switched to
-`trust_mode: "advisory"` in the same change; none of the three is in CI. The same ephemeral-secret
-fix applied to the lifecycle e2e (F1) applies here. `agentic-teams-live` and
+**F1b — `docs/runs/agentic-teams-situational/run-teams-situational.mjs` was a second instance of
+F1 (fixed in this PR).** Its inline dossier (`:20-26`) set no `trust_mode`, its mock seats returned
+unsigned packets, and no secrets existed, so keyless it ended `phase: "approval", ok: false` while
+the committed `run-summary.json` still said `phase: "build", ok: true` (last touched 2026-06-28).
+Fix applied here, same shape as F1: the script mints ephemeral per-run `TELOS_SECRET_<SEAT>` values
+when none are set, declares `trust_mode: "signed"`, and records the seat-secret provenance in its
+summary; keyless and operator-secret runs both end `merge_status=ready self_corrected=true`, and
+the regenerated summary is byte-identical across runs. The sibling scripts
+`agentic-teams/run-teams.mjs` and `agentic-teams-market/run-teams-market.mjs` pass keyless because
+they load `build-gate/examples/*/dossier.json`, which were switched to `trust_mode: "advisory"` in
+`c8f4ebf`. All three now run in the `fail-closed-proof` CI job. `agentic-teams-live` and
 `agentic-teams-plugin-seats` need real seats and were not run.
 
 **F2 — CLI path skips proposal-lifecycle enforcement while reporting it enforced.** `validateGate`
@@ -607,7 +610,7 @@ Consumers of `buildProject` and their keyless status on this commit:
 | Consumer | Keyless today | Why |
 |---|---|---|
 | `build-gate/scripts/test-build-orchestrator.mjs`, `test-runtime-adaptation.mjs`, `test-proposal-orchestrator.mjs` | pass | switched to `trust_mode: "advisory"` in `c8f4ebf` |
-| `docs/runs/agentic-teams/run-teams.mjs`, `agentic-teams-market/run-teams-market.mjs` | pass | fixture dossiers in `build-gate/examples/` are advisory |
-| `docs/runs/agentic-teams-situational/run-teams-situational.mjs` | **blocked at approval** | inline dossier, no `trust_mode`, no secrets (F1b) |
+| `docs/runs/agentic-teams/run-teams.mjs`, `agentic-teams-market/run-teams-market.mjs` | pass | fixture dossiers in `build-gate/examples/` are advisory; now in CI (this PR) |
+| `docs/runs/agentic-teams-situational/run-teams-situational.mjs` | pass on the signed path | fixed in this PR (F1b): ephemeral seat secrets, explicit `trust_mode: "signed"` |
 | `docs/runs/proposal-lifecycle/run-lifecycle-e2e.mjs` | pass on the signed path | fixed in this PR (F1) |
 | `docs/runs/agentic-teams-live/`, `agentic-teams-plugin-seats/` | not runnable here | need live seats via MCP |
