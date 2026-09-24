@@ -138,12 +138,13 @@ export function makeTeamKeyring(teams) {
  *
  * Returns a phased result: it STOPS at the first failing phase and never advances
  * to execution unless the council approval gate passed (fail-closed sequencing).
- *   { phase: "decompose"|"approval"|"plan"|"build", ok, ... }
- * In the build phase `ok` is the LEDGER verdict (merge_status === "ready") and `certified`
- * is the GATE verdict (report.certified). Under trust_mode "advisory" the gate never
- * certifies, so `ok:true` with `certified:false` is a keyless/advisory build that must
- * not be treated as merge-ready. A runBuild refusal (PLAN_INVALID, PLAN_TAMPERED,
- * PLAN_HASH_MISMATCH, MUTATE_FAILED) is returned as { phase:"build", ok:false, error, detail }.
+ *   { phase: "decompose"|"situation"|"plan"|"approval"|"build", ok, ... }
+ * In the build phase `ok` is the LEDGER verdict (report.merge_status === "ready") and
+ * `merge_ready` is the single merge verdict: ok AND the gate certified the approval
+ * (council.certified). Under trust_mode "advisory" the gate never certifies, so a keyless
+ * build is ok:true, merge_ready:false and must not be treated as merge-ready. A runBuild
+ * refusal (PLAN_INVALID, PLAN_TAMPERED, PLAN_HASH_MISMATCH, MUTATE_FAILED) is returned as
+ * { phase:"build", ok:false, merge_ready:false, error, detail } with no report.
  */
 export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, callWorkshopSeat, callParallelSeat, keyring, signerFor, baseDir, telosDir, marketPackets = [], source, maxRepairRounds = 8, adaptAttempts = 2, concurrency, nowMs = 0, maxRevisions }) {
   const teams = planTeams(dossier);
@@ -223,34 +224,17 @@ export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, 
     authorizedPlanHash: planHash
   });
 
+  // Shared shape of both build-phase results. `ok` is the ledger verdict; `merge_ready` is the
+  // single merge verdict (ledger ready AND gate certified). The gate's own verdict stays in
+  // `council` (report.certified), so an advisory build is ok:true, merge_ready:false.
+  const buildResult = { phase: "build", trace: build.trace, council: report, plan: compiled.plan, advisories: compiled.advisories, situation, teams };
+
   // A refusal at execution start (or a failed mutation mid-build) carries no report. Return it
   // as a phased result, as the lifecycle path does, instead of dereferencing a missing report.
   if (build.error) {
-    return {
-      phase: "build",
-      ok: false,
-      certified: report.certified,
-      error: build.error,
-      detail: build.detail,
-      trace: build.trace,
-      council: report,
-      plan: compiled.plan,
-      advisories: compiled.advisories,
-      situation,
-      teams
-    };
+    return { ...buildResult, ok: false, merge_ready: false, error: build.error, detail: build.detail };
   }
 
-  return {
-    phase: "build",
-    ok: build.report.merge_status === "ready",
-    certified: report.certified,
-    report: build.report,
-    trace: build.trace,
-    council: report,
-    plan: compiled.plan,
-    advisories: compiled.advisories,
-    situation,
-    teams
-  };
+  const ok = build.report.merge_status === "ready";
+  return { ...buildResult, ok, merge_ready: ok && report.certified === true, report: build.report };
 }
