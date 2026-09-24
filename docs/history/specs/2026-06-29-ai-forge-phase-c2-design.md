@@ -14,7 +14,7 @@ keyless, deterministic selftest run as its `nodeTest` (the RAG-pattern model). S
 `saas-forge`, the RAG/TELOS patterns, and the Phase A/B forge modules are unchanged.
 
 **Status:** design approved 2026-06-29; spec → (this doc) → `writing-plans` → build. See
-[`docs/ROADMAP.md`](../ROADMAP.md). Builds on
+[`docs/ROADMAP.md`](../../ROADMAP.md). Builds on
 [Phase A](2026-06-29-ai-forge-phase-a-design.md),
 [Phase B](2026-06-29-ai-forge-phase-b-design.md),
 [Phase C](2026-06-29-ai-forge-phase-c-design.md).

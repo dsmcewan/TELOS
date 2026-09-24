@@ -53,6 +53,11 @@ The current machine map is `repository-manifest.json` and wins over this summary
   it is not a mythological role and its Iliad enrollment remains deferred.
 - `narcissus/flagship/` — implemented React/TypeScript/Vite product. It is distinct
   from the registered, still-unimplemented Narcissus role module.
+- `demo/` — static in-browser evidence verifier (`verify.js` is a line-for-line port of
+  `forge/operator.mjs`'s canonicalization; `test/verify.test.mjs` enforces parity) that
+  `.github/workflows/pages.yml` deploys to GitHub Pages after `required-ci` succeeds.
+- `workflows/` — deliberately package-less workflow definitions; CI runs
+  `workflows/tests/` as its own job, not through the package matrix.
 - `contracts/` — the human-readable protocol the gate enforces (incl.
   `Proposal Lifecycle.md`: audited judgment, cold review, verification obligations).
 - `docs/` — status, specs, plans, and run evidence.
@@ -125,7 +130,8 @@ cd narcissus/flagship    && npm ci && npm test && npm run verify:evidence \
 ```
 
 `build-gate`'s test suite also runs `breakout`'s, so changes touching either should be
-validated via `build-gate`. Tests are plain Node scripts under each package's `scripts/`.
+validated via `build-gate`. Tests are plain Node scripts under each package's `scripts/`
+(`tests/` in `ai-native-memory`, `test/` in `demo`).
 
 ## Security & trust — do not weaken
 
