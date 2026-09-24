@@ -21,7 +21,7 @@ import { createPublicKey, createPrivateKey } from "node:crypto";
 import { canonicalize } from "../merkle-dag/vendor.mjs";
 import { runCouncil, planSeats } from "./council.mjs";
 import { validateRecords } from "./gate.mjs";
-import { authorizedSignersFor, teamForNode } from "./teams.mjs";
+import { authorizedSignersFor, teamForNode, verifyTeamForNode } from "./teams.mjs";
 import { makeTeamDispatch } from "./build-orchestrator.mjs";
 import {
   processReviewPackets, sweepExpiredHolds, deriveRevisionDispositions,
@@ -143,7 +143,7 @@ function normalizeParallelWorkshop(result) {
 }
 
 export async function runProposalLifecycle({
-  dossier, taskList, teams, situation = null, callSeat, callWorkshopSeat, callParallelSeat, callTeam,
+  dossier, taskList, teams, situation = null, callSeat, callWorkshopSeat, callParallelSeat, callTeam, callVerify, requireVerify = false,
   keyring, signerFor: injectedSignerFor, baseDir, telosDir, marketPackets = [], source,
   maxRepairRounds = 8, adaptAttempts = 2, concurrency, nowMs = 0, maxRevisions
 }) {
@@ -307,9 +307,15 @@ export async function runProposalLifecycle({
 
     // j. Branch on the gate-derived outcome.
     if (decision === "authorized") {
+      const nodeVerifyTeam = new Map(allTasks.map((task) => [task.id, verifyTeamForNode(task, teams)]));
+      const verifyTeamFor = (id) => nodeVerifyTeam.get(id) || verifyTeamForNode({}, teams);
       const build = await runBuild({
         telosDir, baseDir,
-        dispatch: makeTeamDispatch({ routeFor: (id) => routeForNode(id, allTasks, teams), callTeam, baseDir, dossier, maxAttempts: adaptAttempts }),
+        dispatch: makeTeamDispatch({
+          routeFor: (id) => routeForNode(id, allTasks, teams), callTeam, baseDir, dossier,
+          maxAttempts: adaptAttempts, verifyTeamFor, callVerify,
+          requireVerify: requireVerify === true || dossier?.require_verify === true
+        }),
         verifyNode: defaultVerifyNode, signerFor, maxRounds: maxRepairRounds, concurrency,
         requireAuthorizedDecision: true, lifecycleVerify, nowMs
       });

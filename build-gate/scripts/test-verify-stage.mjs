@@ -8,12 +8,13 @@
 // bluff "ok". By default the stage is advisory (a broken verifier cannot wedge
 // the build); requireVerify makes an un-runnable verify hard-fail the node.
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync } from "node:fs";
+import { mkdtempSync, mkdirSync, existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { readLedger } from "../../merkle-dag/crypto.mjs";
 import { buildProject, makeTeamKeyring } from "../build-orchestrator.mjs";
 import { planTeams, verifyTeamForNode } from "../teams.mjs";
+import { makeLiveCallVerify } from "../teamPrompts.mjs";
 
 function makeDossier() {
   // Keyless, so opt into advisory mode: under the fail-closed default an absent
@@ -111,6 +112,31 @@ assert.ok(verifyTeamForNode({ workstream: "product-architecture" }, planTeams(ma
   assert.equal(result.report.merge_status, "ready", "no verify stage -> unchanged ready");
   assert.deepEqual(readLedger(path.join(telosDir, "ledger.jsonl")).map((r) => r.task_id), ["core"], "node settled");
   console.log("OK: absent callVerify is byte-compatible");
+}
+
+// 7. An explicit requirement with no verify caller fails before team files are written.
+{
+  const { result, telosDir } = await run({ requireVerify: true });
+  assert.equal(result.report.merge_status, "blocked", "required verify cannot silently disappear");
+  assert.deepEqual(readLedger(path.join(telosDir, "ledger.jsonl")), [], "no node settled");
+  assert.equal(existsSync(path.join(path.dirname(telosDir), "out/core.txt")), false, "no build output written before missing-caller refusal");
+  console.log("OK: required verify refuses a missing caller");
+}
+
+// 8. A live seat may return error text instead of throwing. It is not a pass verdict.
+{
+  const verify = makeLiveCallVerify({ client: { async callTool() { return "Missing required environment variable: ANTHROPIC_API_KEY"; } } });
+  const { result, telosDir } = await run({ callVerify: verify, dossier: { ...makeDossier(), require_verify: true } });
+  assert.equal(result.report.merge_status, "blocked", "required verify blocks on unusable live response");
+  assert.deepEqual(readLedger(path.join(telosDir, "ledger.jsonl")), [], "no node settled on error text");
+  console.log("OK: required verify refuses live error text");
+}
+
+// 9. Injected callbacks are checked too; a malformed object cannot masquerade as a verdict.
+{
+  const { result } = await run({ callVerify: async () => ({ ok: true }), requireVerify: true });
+  assert.equal(result.report.merge_status, "blocked", "incomplete verdict is unavailable, not approval");
+  console.log("OK: required verify refuses a malformed verdict object");
 }
 
 console.log("test-verify-stage.mjs OK");

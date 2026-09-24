@@ -153,21 +153,15 @@ export function verifyPrompt(node, artifactFiles) {
   ].join("\n");
 }
 
-// Parse a verify response into a verdict. Fail-SOFT: an unparseable answer yields a
-// non-blocking ok verdict (verify is supplementary adversarial scrutiny; Rule 3 is
-// the load-bearing gate — a broken verifier must not wedge the build).
+// An unusable response is not a verdict. The dispatch decides whether that
+// unavailable verify is advisory or blocks an explicitly required verify.
 export function parseVerdict(text) {
   const direct = (() => { try { return JSON.parse(text); } catch { return null; } })();
+  if (direct?.is_error === true) return null;
   const body = direct && typeof direct.text === "string" ? (() => { try { return JSON.parse(direct.text); } catch { return null; } })() : direct;
   const v = body && typeof body === "object" ? body : extractJson(text);
-  if (!v || typeof v !== "object") return { ok: true, blockers: [], findings: [], checks: [] };
-  const okCheck = (c) => c && (c.type === "file_exists" || c.type === "file_contains") && typeof c.path === "string";
-  return {
-    ok: v.ok !== false,
-    blockers: Array.isArray(v.blockers) ? v.blockers.filter((s) => typeof s === "string") : [],
-    findings: Array.isArray(v.findings) ? v.findings.filter((s) => typeof s === "string") : [],
-    checks: Array.isArray(v.checks) ? v.checks.filter(okCheck).map((c) => ({ type: c.type, path: c.path, needle: typeof c.needle === "string" ? c.needle : "" })) : []
-  };
+  if (!validateAgainstSchema(SCHEMAS.verdict.schema, v).ok) return null;
+  return v;
 }
 
 /**

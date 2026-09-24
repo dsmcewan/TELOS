@@ -26,6 +26,7 @@ import { generateKeypair } from "../merkle-dag/crypto.mjs";
 import { resolveUnder } from "../merkle-dag/vendor.mjs";
 import { runProposalLifecycle } from "./proposal-orchestrator.mjs";
 import { reverifyRecord } from "../breakout/verifier.mjs";
+import { SCHEMAS, validateAgainstSchema } from "./schemas.mjs";
 
 // Read a node's declared files from disk (confined under baseDir) so a verify team
 // can review the actual built artifact. Missing/escaping files are skipped.
@@ -65,8 +66,8 @@ async function runVerify({ node, baseDir, dossier, verifyTeamFor, callVerify }) 
   } catch (e) {
     return { block: false, error: true, detail: `verify team ${team.id} threw: ${e?.message || String(e)}` };
   }
-  if (!verdict || typeof verdict !== "object") {
-    return { block: false, error: true, detail: `verify team ${team.id} returned no verdict` };
+  if (!validateAgainstSchema(SCHEMAS.verdict.schema, verdict).ok) {
+    return { block: false, error: true, detail: `verify team ${team.id} returned an unusable verdict` };
   }
 
   const checks = Array.isArray(verdict.checks) ? verdict.checks : [];
@@ -115,6 +116,9 @@ async function runVerify({ node, baseDir, dossier, verifyTeamFor, callVerify }) 
  */
 export function makeTeamDispatch({ routeFor, callTeam, baseDir, dossier, maxAttempts = 2, verifyTeamFor, callVerify, requireVerify = false }) {
   return async (injected) => {
+    if (requireVerify && (typeof callVerify !== "function" || typeof verifyTeamFor !== "function")) {
+      return { ok: false, reason: `required verify could not run for ${injected.id}: verify caller or team route unavailable` };
+    }
     const team = routeFor(injected.id);
     let priorFailure = null;
     let lastDetail = "";
@@ -161,8 +165,8 @@ export function makeTeamDispatch({ routeFor, callTeam, baseDir, dossier, maxAtte
       // verdict can only BLOCK (Rule 3 / defaultVerifyNode still independently
       // settles). It is fact-grounded — the verdict's declarative checks are re-run
       // against disk via reverifyRecord, so the model can't bluff "ok".
-      if (callVerify && verifyTeamFor) {
-        const verify = await runVerify({ node: injected, baseDir, dossier, verifyTeamFor, callVerify, requireVerify });
+      if (typeof callVerify === "function" && typeof verifyTeamFor === "function") {
+        const verify = await runVerify({ node: injected, baseDir, dossier, verifyTeamFor, callVerify });
         if (verify.block) {
           priorFailure = { detail: verify.detail, stdout: "", stderr: verify.detail, status: 1 };
           lastDetail = verify.detail;
@@ -253,7 +257,7 @@ export async function buildProject({ dossier, telos, tasks, callSeat, callTeam, 
   // advisory path below is byte-identical. runProposalLifecycle owns compile/review/decision/execution.
   if (dossier?.proposal_lifecycle === true) {
     return await runProposalLifecycle({
-      dossier, taskList, teams, situation, callSeat, callWorkshopSeat, callParallelSeat, callTeam,
+      dossier, taskList, teams, situation, callSeat, callWorkshopSeat, callParallelSeat, callTeam, callVerify, requireVerify,
       keyring, signerFor, baseDir, telosDir, marketPackets, source,
       maxRepairRounds, adaptAttempts, concurrency, nowMs, maxRevisions
     });

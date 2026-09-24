@@ -52,7 +52,7 @@ function parallelWorkshop(prov, { conflict = false } = {}) {
 function baseDossier(extra = {}) { return { build_id: "b1", use_case: "governance", objective: "add an auth boundary", proposal_lifecycle: true, trust_mode: "advisory", write_targets: [TARGET], required_docs: [], ...extra }; }
 function baseTasks(writes = [TARGET]) { return [{ id: "A", writes, reads: [], requirements: "write the auth boundary", test: { cmd: "node", args: ["-e", "process.exit(0)"] } }]; }
 
-async function drive({ dossier, tasks, callSeat, callWorkshopSeat, callParallelSeat, callTeam, env }) {
+async function drive({ dossier, tasks, callSeat, callWorkshopSeat, callParallelSeat, callTeam, callVerify, env }) {
   const dir = ws();
   const teams = planTeams({});
   const { keyring, signerFor } = makeTeamKeyring(teams);
@@ -60,7 +60,7 @@ async function drive({ dossier, tasks, callSeat, callWorkshopSeat, callParallelS
   if (env && env.TELOS_PROPOSAL_CONTROLLER_SK) process.env.TELOS_PROPOSAL_CONTROLLER_SK = env.TELOS_PROPOSAL_CONTROLLER_SK;
   else delete process.env.TELOS_PROPOSAL_CONTROLLER_SK;
   try {
-    const res = await buildProject({ dossier, telos: "t", tasks, callSeat, callWorkshopSeat, callParallelSeat, callTeam, keyring, signerFor, baseDir: dir, telosDir: path.join(dir, ".telos"), nowMs: 1000, maxRevisions: 3 });
+    const res = await buildProject({ dossier, telos: "t", tasks, callSeat, callWorkshopSeat, callParallelSeat, callTeam, callVerify, keyring, signerFor, baseDir: dir, telosDir: path.join(dir, ".telos"), nowMs: 1000, maxRevisions: 3 });
     return { res, dir };
   } finally {
     if (prevEnv === undefined) delete process.env.TELOS_PROPOSAL_CONTROLLER_SK; else process.env.TELOS_PROPOSAL_CONTROLLER_SK = prevEnv;
@@ -97,6 +97,27 @@ const D = (dossier) => (fn) => (seatArg) => fn(seatArg, dossier);
   const decisions = readProposalEvents(path.join(dir, ".telos")).events.filter((e) => e.stage === "decision");
   assert.ok(decisions.some((e) => e.decision === "authorized"), "(a) ledger carries an authorized decision");
   console.log("Case (a) OK: clean run -> authorized -> ready");
+}
+
+// A required per-node verify is enforced in the proposal-lifecycle execution path too.
+{
+  const { prov } = fixture();
+  const dossier = baseDossier({ require_verify: true });
+  const callSeat = D(dossier)(async ({ model }, d) => ({ packet: reviewPacket(model, d), provenance: prov(model === "agy" ? "agentic" : model === "claude" ? "anthropic" : "openai") }));
+  const args = { dossier, tasks: baseTasks(), callSeat, callWorkshopSeat: convergingWorkshop(prov), callTeam: makeCallTeam() };
+
+  const missing = await drive(args);
+  assert.equal(missing.res.decision, "authorized", "council authorization still precedes execution");
+  assert.equal(missing.res.report.merge_status, "blocked", "missing required verify caller blocks lifecycle execution");
+
+  let verifyCalls = 0;
+  const explicitStop = await drive({ ...args, callVerify: async () => {
+    verifyCalls++;
+    return { ok: false, blockers: ["artifact requires correction"], findings: [], checks: [] };
+  } });
+  assert.ok(verifyCalls > 0, "lifecycle execution actually invokes the verify caller");
+  assert.equal(explicitStop.res.report.merge_status, "blocked", "verify verdict stops lifecycle execution");
+  console.log("Case (a-verify) OK: lifecycle honors required per-node verify");
 }
 
 // ---------------------------------------------------------------------------

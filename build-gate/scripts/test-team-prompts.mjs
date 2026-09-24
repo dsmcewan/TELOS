@@ -3,7 +3,7 @@
 // buildable-seat selection, prompt construction, response parsing/clamping, and a
 // fake-client callTeam round-trip.
 import assert from "node:assert/strict";
-import { buildableSeat, promptForTeam, nodeBuildPrompt, parseTeamFiles, makeLiveCallTeam, approvalPromptFor, parseApprovalPacket, decomposePrompt, parseDecomposeTasks, extractJson, makeLiveCallSeat } from "../teamPrompts.mjs";
+import { buildableSeat, promptForTeam, nodeBuildPrompt, parseTeamFiles, makeLiveCallTeam, approvalPromptFor, parseApprovalPacket, decomposePrompt, parseDecomposeTasks, extractJson, makeLiveCallSeat, parseVerdict } from "../teamPrompts.mjs";
 
 // --- buildableSeat: skip a structured lead (agy) for the first _ask-capable seat ---
 {
@@ -43,6 +43,15 @@ import { buildableSeat, promptForTeam, nodeBuildPrompt, parseTeamFiles, makeLive
   assert.deepEqual(env, [{ path: "keep.txt", content: "v" }], "unwraps the provenance envelope text");
 
   assert.deepEqual(parseTeamFiles("not json", node), [], "garbage -> no files (fail-closed)");
+}
+
+// --- parseVerdict: a response must satisfy the declared verdict schema ---
+{
+  const verdict = { ok: true, blockers: [], findings: [], checks: [{ type: "file_exists", path: "out.txt", needle: "" }] };
+  assert.deepEqual(parseVerdict(JSON.stringify({ text: JSON.stringify(verdict), provenance: { response_id: "r1" } })), verdict);
+  assert.equal(parseVerdict("Missing API key"), null, "error text is not a passing verdict");
+  assert.equal(parseVerdict(JSON.stringify({ ok: true })), null, "incomplete object is not a passing verdict");
+  assert.equal(parseVerdict(JSON.stringify({ is_error: true, text: JSON.stringify(verdict) })), null, "error envelope is not a verdict");
 }
 
 // --- makeLiveCallTeam: round-trips through a fake client; empty -> decline ---
