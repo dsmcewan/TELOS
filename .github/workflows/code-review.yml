@@ -2,7 +2,7 @@ name: Claude Code Review
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, ready_for_review, converted_to_draft, reopened]
 
 # Allow the action to read the code, post review feedback on the PR, and
 # request an OIDC token (required by claude-code-action for authentication).
@@ -13,6 +13,9 @@ permissions:
 
 jobs:
   review:
+    # The pinned code-review command skips draft PRs. Keep the check visibly
+    # skipped until a ready_for_review event can produce an actual review.
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
