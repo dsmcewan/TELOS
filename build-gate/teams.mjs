@@ -89,6 +89,30 @@ export function teamForNode(node, teams) {
 }
 
 /**
+ * Select the VERIFY team that adversarially re-checks a built node before it
+ * settles. A node's explicit `verify` field (a team id) wins; else its workstream
+ * routes to the matching `lifecycle:"verify"` team (security-trust -> security,
+ * accuracy-evals -> evals, scale-operations -> ops); else the always-on `integrity`
+ * team (gemini, independent re-derivation). So different nodes draw different
+ * verifiers, and every node gets at least integrity. Pure.
+ */
+export function verifyTeamForNode(node, teams) {
+  const roster = Array.isArray(teams) && teams.length ? teams : TEAMS;
+  const verifiers = roster.filter((t) => t.lifecycle === "verify");
+  const pick = (id) => verifiers.find((t) => t.id === id);
+  if (node && typeof node.verify === "string") {
+    const explicit = pick(node.verify);
+    if (explicit) return explicit;
+  }
+  const ws = node && typeof node.workstream === "string" ? node.workstream : null;
+  if (ws) {
+    const byWorkstream = verifiers.find((t) => t.workstream === ws);
+    if (byWorkstream) return byWorkstream;
+  }
+  return pick("integrity") || verifiers[0] || null;
+}
+
+/**
  * Collect the Ed25519 authorized_signers map { key_id: publicJwk } that
  * compileAndHashPlan pins into plan_hash. Only signers present in `keyring`
  * (a { key_id: publicJwk } map) are included — a team whose signer key is absent

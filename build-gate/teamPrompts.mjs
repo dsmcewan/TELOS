@@ -123,6 +123,67 @@ export function makeLiveCallTeam({ client }) {
 // The schema carries the JSON contract (response_schema); the instruction text
 // lives in prompts.json per purpose.
 
+// System prompt for a VERIFY team: its mission + the verdict contract. Framed via
+// the verifier's strength (gemini "re-derive" / grok "adversary").
+export function promptForVerify(team) {
+  const mission = team && team.mission ? team.mission : "independently verify the built artifact";
+  return [
+    `You are the TELOS "${team?.id ?? "verify"}" team. Mission: ${mission}.`,
+    "You REVIEW one already-built node. You see only this node's spec and its produced files — never the wider plan.",
+    "Decide whether the artifact actually satisfies the node's requirements.",
+    "Return the verdict as the structured fields: ok (does it satisfy?), blockers (hard problems that must stop it),",
+    "findings (non-blocking observations), and checks (declarative file_exists/file_contains evidence that MUST hold for this artifact — these are re-run against disk, so propose checks that would fail if the artifact were wrong)."
+  ].join(" ");
+}
+
+// The per-node verify user prompt: the node's requirements + the BUILT files, so
+// the verifier reviews what was actually produced (Rule-1 safe — its own node only).
+export function verifyPrompt(node, artifactFiles) {
+  const files = Array.isArray(artifactFiles) ? artifactFiles : [];
+  const body = files.map((f) => `--- ${f.path} ---\n${f.content}`).join("\n\n");
+  return [
+    `Node id: ${node.id}`,
+    `Requirements: ${node.requirements}`,
+    `Declared files: ${JSON.stringify(node.files)}`,
+    "",
+    "Built artifact:",
+    body || "(no files produced)",
+    "",
+    "Emit your verdict now."
+  ].join("\n");
+}
+
+// An unusable response is not a verdict. The dispatch decides whether that
+// unavailable verify is advisory or blocks an explicitly required verify.
+export function parseVerdict(text) {
+  const direct = (() => { try { return JSON.parse(text); } catch { return null; } })();
+  if (direct?.is_error === true) return null;
+  const body = direct && typeof direct.text === "string" ? (() => { try { return JSON.parse(direct.text); } catch { return null; } })() : direct;
+  const v = body && typeof body === "object" ? body : extractJson(text);
+  if (!validateAgainstSchema(SCHEMAS.verdict.schema, v).ok) return null;
+  return v;
+}
+
+/**
+ * Build a live callVerify({team,node,artifactFiles}) over an MCP client: the verify
+ * team's buildable lead reviews the built artifact and returns a structured verdict.
+ * A transport error throws (the dispatch decides whether that blocks or is skipped).
+ *   client { callTool(name, args) -> Promise<string> }  (../breakout/mcp_client.mjs)
+ */
+export function makeLiveCallVerify({ client }) {
+  return async ({ team, node, artifactFiles }) => {
+    const model = buildableSeat(team);
+    const text = await client.callTool(`${model}_ask`, {
+      system: profileFor(model).frame(promptForVerify(team)),
+      prompt: verifyPrompt(node, artifactFiles),
+      include_provenance: true,
+      response_schema: SCHEMAS.verdict.schema,
+      schema_name: SCHEMAS.verdict.schema_name
+    });
+    return parseVerdict(text);
+  };
+}
+
 /**
  * Build a promptFor(model, role, dossier, workstream) for liveSeatCaller
  * (council.mjs) so the approval council emits gate-valid JSON packets. agy stays
