@@ -5,10 +5,12 @@
 // ledger -> done() ready. No API keys: council + teams are deterministic mocks;
 // the Ed25519 substrate is real.
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, existsSync, symlinkSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, symlinkSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { readLedger } from "../../merkle-dag/crypto.mjs";
+import { compileAndHashPlan } from "../../merkle-dag/planner.mjs";
+import { writePlan } from "../../merkle-dag/merkle.mjs";
 import { buildProject, makeTeamDispatch, makeTeamKeyring } from "../build-orchestrator.mjs";
 import { planTeams, teamForNode } from "../teams.mjs";
 
@@ -80,7 +82,12 @@ function fixture() {
   assert.ok(ledger.every((r) => r.sig && r.sig.alg === "Ed25519"), "ledger entries are Ed25519-signed");
   const settled = result.trace.filter((t) => t.action === "settled").map((t) => t.id).sort();
   assert.deepEqual(settled, ["app", "core"], "both nodes appear settled in the trace");
-  console.log("OK: happy path -> ready");
+  // `ok` is the ledger verdict; `merge_ready` is ok AND gate-certified. This keyless run opted
+  // into trust_mode "advisory", so the gate did NOT certify it even though the ledger is ready.
+  assert.equal(result.merge_ready, false, "advisory build is ready but NOT merge-ready");
+  assert.equal(result.council.certified, false, "the gate report says not certified");
+  assert.equal(result.council.safe_next_action, "advisory-only-NOT-certified-do-not-merge");
+  console.log("OK: happy path -> ready (advisory: merge_ready:false)");
 }
 
 // --- Fail-closed sequencing: a council 'revise' blocks at approval; NO plan, NO ledger ---
@@ -374,6 +381,77 @@ function fixture() {
   assert.equal(result.ok, false, "fail-closed when greenfield-only is requested");
   assert.equal(existsSync(path.join(telosDir, "plan.json")), false, "no plan written when collision blocks");
   console.log("OK: block_on_collision opt-in fails closed on a collision");
+}
+
+// --- runBuild refusal is a phased result (not a TypeError): the written plan is tampered
+// between writePlan and runBuild, so the authorizedPlanHash check refuses with PLAN_TAMPERED ---
+{
+  const { baseDir, telosDir, keyring, signerFor } = fixture();
+  // The council runs AFTER the candidate plan is written and BEFORE runBuild reads it back.
+  // A seat caller that corrupts .telos/plan.json in that window models a control-plane write
+  // the orchestrator must refuse to execute on.
+  const tamperingSeat = makeCallSeat();
+  const callSeat = async (args) => {
+    if (args.intent !== "decompose") {
+      const planPath = path.join(telosDir, "plan.json");
+      const plan = JSON.parse(readFileSync(planPath, "utf8"));
+      plan.plan_hash = "sha256:" + "0".repeat(64);
+      writeFileSync(planPath, JSON.stringify(plan, null, 2));
+    }
+    return tamperingSeat(args);
+  };
+  const result = await buildProject({
+    dossier: makeDossier(), telos: "x", tasks,
+    callSeat, callTeam: buildTeam,
+    keyring, signerFor, baseDir, telosDir
+  });
+  assert.equal(result.phase, "build", "refusal is reported in the build phase");
+  assert.equal(result.ok, false, "refusal is not ok");
+  assert.equal(result.merge_ready, false, "refusal is never merge-ready");
+  assert.equal(result.error, "PLAN_TAMPERED", "the substrate's refusal code is passed through");
+  assert.equal(result.report, undefined, "no report is fabricated for a refused build");
+  assert.ok(Array.isArray(result.trace), "trace is returned (empty) for the refusal");
+  assert.equal(existsSync(path.join(telosDir, "ledger.jsonl")), false, "no ledger written when execution is refused");
+  console.log("OK: runBuild refusal -> { phase:\"build\", ok:false, error } (no TypeError)");
+}
+
+// --- runBuild refusal, second shape: a SELF-CONSISTENT but different plan is substituted on
+// disk after review (plan_hash recomputes fine, but is not the hash the council approved), so
+// the authorizedPlanHash check refuses with PLAN_HASH_MISMATCH — the case that check exists for ---
+{
+  const { baseDir, telosDir, keyring, signerFor } = fixture();
+  const approvingSeat = makeCallSeat();
+  // The council calls the seat once per model; substitute the plan on the FIRST call only (the
+  // later calls already see the substitute on disk). Never assert inside the seat: a throw there
+  // becomes a "seat returned no packet" council failure, which blocks at approval instead.
+  let substituteHash = null;
+  const callSeat = async (args) => {
+    if (args.intent !== "decompose" && substituteHash === null) {
+      const written = JSON.parse(readFileSync(path.join(telosDir, "plan.json"), "utf8"));
+      const swapped = compileAndHashPlan({
+        tasks: tasks.map((t) => ({ ...t, requirements: `${t.requirements} (swapped after review)` })),
+        authorizedSigners: written.authorized_signers,
+        repoRoot: baseDir
+      });
+      substituteHash = swapped.plan.plan_hash;
+      writePlan(telosDir, swapped.plan);
+    }
+    return approvingSeat(args);
+  };
+  const result = await buildProject({
+    dossier: makeDossier(), telos: "x", tasks,
+    callSeat, callTeam: buildTeam,
+    keyring, signerFor, baseDir, telosDir
+  });
+  assert.ok(substituteHash, "the substitute plan was written during council review");
+  assert.notEqual(result.plan.plan_hash, substituteHash, "the substitute is a different (self-consistent) plan from the approved one");
+  assert.equal(result.phase, "build", "refusal is reported in the build phase");
+  assert.equal(result.ok, false, "refusal is not ok");
+  assert.equal(result.merge_ready, false, "refusal is never merge-ready");
+  assert.equal(result.error, "PLAN_HASH_MISMATCH", "a substituted plan is refused by the approved-hash check");
+  assert.equal(result.report, undefined, "no report is fabricated for a refused build");
+  assert.equal(existsSync(path.join(telosDir, "ledger.jsonl")), false, "no ledger written when execution is refused");
+  console.log("OK: substituted plan -> PLAN_HASH_MISMATCH phased result (no TypeError)");
 }
 
 console.log("test-build-orchestrator.mjs OK");

@@ -6,8 +6,14 @@
 // adaptation). Deterministic mock seats; real gate, real Ed25519 ledger, real
 // merkle-dag. Throwaway temp workspace, so no .telos artifacts hit the repo.
 //
+// The gate is signed-by-default, so "keyless" does NOT mean unsigned: the script mints
+// throwaway TELOS_SECRET_<SEAT> values for the required seats (never overriding
+// operator-set ones, nothing written to disk) so the mock council signs and the gate
+// verifies on the certified trust_mode:"signed" path.
+//
 //   node docs/runs/agentic-teams-situational/run-teams-situational.mjs
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,9 +23,19 @@ import { planTeams } from "../../../build-gate/teams.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
+// Ephemeral per-run seat secrets (secretFor() in build-gate/sign.mjs reads these at call time).
+const REQUIRED_SEATS = ["claude", "agy", "codex"];
+const seatSecrets = {};
+for (const seat of REQUIRED_SEATS) {
+  const name = "TELOS_SECRET_" + seat.toUpperCase();
+  if (!process.env[name]) { process.env[name] = randomBytes(32).toString("hex"); seatSecrets[seat] = "ephemeral"; }
+  else seatSecrets[seat] = "operator-provided";
+}
+
 const dossier = {
   build_id: "situational-demo",
   use_case: "autonomous-build",
+  trust_mode: "signed",
   objective: "Add a greeting module to an existing project, autonomously.",
   required_docs: [],
   write_targets: ["src/greet.mjs"]
@@ -77,6 +93,8 @@ const ledger = result.phase === "build" ? readLedger(path.join(telosDir, "ledger
 const summary = {
   generated_for: dossier.build_id,
   keyless: true,
+  trust_mode: "signed",
+  seat_secrets: seatSecrets,
   phase: result.phase,
   ok: result.ok,
   merge_status: result.report ? result.report.merge_status : null,
