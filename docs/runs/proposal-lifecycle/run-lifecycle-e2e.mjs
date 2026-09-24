@@ -6,14 +6,21 @@
 //
 //   node docs/runs/proposal-lifecycle/run-lifecycle-e2e.mjs
 //
-// Two variants, both keyless (ephemeral controller key, mock seats with DISJOINT creation/review
-// provenance, no API keys, no network):
+// Two variants, both keyless (ephemeral controller key, ephemeral per-run seat HMAC secrets, mock
+// seats with DISJOINT creation/review provenance, no API keys, no network). The gate is
+// signed-by-default, so "keyless" does NOT mean unsigned: the script mints throwaway TELOS_SECRET_*
+// values for the required seats (never overriding operator-set ones) so the council signs and the
+// gate verifies on the real certified path — the same discipline as the ephemeral controller key.
 //   1. discharged — a review requires a verification; the revised candidate mints a dedicated verify
 //                   node; execution discharges it -> merge_status "ready".
 //   2. control    — same flow, but the remediation omits the marker so the verify check FAILS; the
 //                   decision is still "authorized" (the concern is cleared by verification-required),
 //                   yet merge_status is NOT "ready" — proving the obligation is load-bearing at Rule 3.
+//   3. unsigned   — same flow with one required seat's secret withheld; the gate must BLOCK before
+//                   any build, proving the signed path is what the first two variants passed through
+//                   (so "trust_mode: signed" in the summary is a verified fact, not a self-report).
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,15 +29,34 @@ import { planTeams } from "../../../build-gate/teams.mjs";
 import { readProposalEvents } from "../../../merkle-dag/proposal-ledger.mjs";
 
 const NEEDLE = "AUTH_GUARD", TARGET = "out.txt";
+const REQUIRED_SEATS = ["claude", "agy", "codex"];
 
-async function variant({ poison }) {
+// Ephemeral per-run seat secrets. secretFor() (build-gate/sign.mjs) reads TELOS_SECRET_<SEAT> at
+// call time; an operator-provided secret is left alone, a missing one is minted for this process
+// only. Nothing is written to disk, so the evidence stays keyless AND signed.
+const seatSecrets = {};
+for (const seat of REQUIRED_SEATS) {
+  const name = "TELOS_SECRET_" + seat.toUpperCase();
+  if (!process.env[name]) { process.env[name] = randomBytes(32).toString("hex"); seatSecrets[seat] = "ephemeral"; }
+  else seatSecrets[seat] = "operator-provided";
+}
+
+async function variant({ poison, withholdSecret = null }) {
+  const withheldName = withholdSecret ? "TELOS_SECRET_" + withholdSecret.toUpperCase() : null;
+  const withheldValue = withheldName ? process.env[withheldName] : undefined;
+  if (withheldName) delete process.env[withheldName];
+  try { return await runVariant({ poison, withholdSecret }); }
+  finally { if (withheldName && withheldValue !== undefined) process.env[withheldName] = withheldValue; }
+}
+
+async function runVariant({ poison, withholdSecret }) {
   let uid = 0;
   const prov = (provider) => ({ provider, response_id: `resp-${++uid}`, tool: "mock" });
   const dir = mkdtempSync(path.join(os.tmpdir(), "telos-e2e-")); mkdirSync(path.join(dir, ".telos"), { recursive: true });
   const teams = planTeams({});
   const { keyring, signerFor } = makeTeamKeyring(teams);
   delete process.env.TELOS_PROPOSAL_CONTROLLER_SK; // ephemeral over a fresh telosDir
-  const dossier = { build_id: "b1", use_case: "governance", objective: "add an auth boundary", proposal_lifecycle: true, write_targets: [TARGET], required_docs: [] };
+  const dossier = { build_id: "b1", use_case: "governance", objective: "add an auth boundary", proposal_lifecycle: true, trust_mode: "signed", write_targets: [TARGET], required_docs: [] };
   const tasks = [{ id: "A", writes: [TARGET], reads: [], requirements: "write the auth boundary", test: { cmd: "node", args: ["-e", "process.exit(0)"] } }];
 
   const rp = (model, decision, concerns = []) => ({ build_id: "b1", use_case: "governance", model, role: "approver", hard_stops: [], docs_reviewed: [], timestamp: new Date(0).toISOString(), decision, confidence: "high", required_edits: [], considerations: [], concerns, rationale: "ok" });
@@ -50,26 +76,30 @@ async function variant({ poison }) {
   const events = readProposalEvents(path.join(dir, ".telos")).events;
   const verifyNode = (res.report?.nodes || []).find((n) => n.id.startsWith("verify-"));
   return {
-    variant: poison ? "control" : "discharged",
+    variant: withholdSecret ? "unsigned" : (poison ? "control" : "discharged"),
     decision: res.decision,
+    phase: res.phase,
     merge_status: res.report ? res.report.merge_status : null,
     verify_node_settled: verifyNode ? verifyNode.ok : null,
     verify_node_obligation_check: verifyNode ? (verifyNode.checks.obligations || null) : null,
     revise_then_authorize: events.filter((e) => e.stage === "decision").map((e) => e.decision),
-    minted_verify_node: !!verifyNode
+    minted_verify_node: !!verifyNode,
+    ...(withholdSecret ? { withheld_secret: "TELOS_SECRET_" + withholdSecret.toUpperCase(), blockers: res.blocked ?? null } : {})
   };
 }
 
 const discharged = await variant({ poison: false });
 const control = await variant({ poison: true });
-const summary = { generated_by: "run-lifecycle-e2e.mjs", entry_point: "buildProject({ proposal_lifecycle: true })", keyless: true, variants: [discharged, control] };
+const unsigned = await variant({ poison: false, withholdSecret: "codex" });
+const summary = { generated_by: "run-lifecycle-e2e.mjs", entry_point: "buildProject({ proposal_lifecycle: true })", keyless: true, trust_mode: "signed", seat_secrets: seatSecrets, variants: [discharged, control, unsigned] };
 console.log(JSON.stringify(summary, null, 2));
 
 const ok =
   discharged.decision === "authorized" && discharged.merge_status === "ready" && discharged.verify_node_settled === true &&
-  control.decision === "authorized" && control.merge_status !== "ready" && control.verify_node_obligation_check === "UNDISCHARGED_OBLIGATION";
+  control.decision === "authorized" && control.merge_status !== "ready" && control.verify_node_obligation_check === "UNDISCHARGED_OBLIGATION" &&
+  unsigned.decision === "blocked" && unsigned.merge_status === null && unsigned.minted_verify_node === false;
 
 const outPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "run-lifecycle-e2e-summary.json");
 writeFileSync(outPath, JSON.stringify({ ...summary, acceptance_ok: ok }, null, 2) + "\n");
 if (!ok) { console.error("ACCEPTANCE FAILED"); process.exit(1); }
-console.log("\nACCEPTANCE OK: revise->authorize->discharge->ready via buildProject; negative control authorized-but-not-ready (obligation load-bearing at Rule 3)");
+console.log("\nACCEPTANCE OK: revise->authorize->discharge->ready via buildProject; negative control authorized-but-not-ready (obligation load-bearing at Rule 3); unsigned seat blocked before build (signed path verified)");

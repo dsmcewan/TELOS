@@ -2,10 +2,17 @@
   "generated_by": "run-lifecycle-e2e.mjs",
   "entry_point": "buildProject({ proposal_lifecycle: true })",
   "keyless": true,
+  "trust_mode": "signed",
+  "seat_secrets": {
+    "claude": "ephemeral",
+    "agy": "ephemeral",
+    "codex": "ephemeral"
+  },
   "variants": [
     {
       "variant": "discharged",
       "decision": "authorized",
+      "phase": "build",
       "merge_status": "ready",
       "verify_node_settled": true,
       "verify_node_obligation_check": "ok",
@@ -18,6 +25,7 @@
     {
       "variant": "control",
       "decision": "authorized",
+      "phase": "build",
       "merge_status": "blocked",
       "verify_node_settled": false,
       "verify_node_obligation_check": "UNDISCHARGED_OBLIGATION",
@@ -26,6 +34,23 @@
         "authorized"
       ],
       "minted_verify_node": true
+    },
+    {
+      "variant": "unsigned",
+      "decision": "blocked",
+      "phase": "approval",
+      "merge_status": null,
+      "verify_node_settled": null,
+      "verify_node_obligation_check": null,
+      "revise_then_authorize": [
+        "revise",
+        "blocked"
+      ],
+      "minted_verify_node": false,
+      "withheld_secret": "TELOS_SECRET_CODEX",
+      "blockers": [
+        "trust_mode 'signed' but no secret to verify codex packet (set TELOS_SECRET_CODEX)."
+      ]
     }
   ],
   "acceptance_ok": true

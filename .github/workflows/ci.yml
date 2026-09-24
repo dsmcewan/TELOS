@@ -77,6 +77,23 @@ jobs:
       - name: Run the public fail-closed proof
         run: node docs/runs/fail-closed-demo/run.mjs
 
+      # Proposal-lifecycle evidence, keyless: the e2e script mints ephemeral per-run
+      # seat secrets and runs on the signed gate path (its third variant withholds a
+      # secret and must be blocked); the primitive demo composes the substrate directly.
+      - name: Run the proposal-lifecycle evidence scripts
+        run: |
+          node docs/runs/proposal-lifecycle/run-lifecycle-e2e.mjs
+          node docs/runs/proposal-lifecycle/run-proposal-lifecycle.mjs
+
+      # Keyless buildProject evidence (deterministic mock seats, real gate + ledger).
+      # The situational script mints ephemeral seat secrets and runs on the signed
+      # path; the other two use the advisory example dossiers in build-gate/examples.
+      - name: Run the keyless agentic-teams evidence scripts
+        run: |
+          node docs/runs/agentic-teams-situational/run-teams-situational.mjs
+          node docs/runs/agentic-teams/run-teams.mjs
+          node docs/runs/agentic-teams-market/run-teams-market.mjs
+
   repository-portability:
     runs-on: ubuntu-latest
     name: repository paths are portable
