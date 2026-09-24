@@ -1,6 +1,12 @@
 {
   "generated_for": "situational-demo",
   "keyless": true,
+  "trust_mode": "signed",
+  "seat_secrets": {
+    "claude": "ephemeral",
+    "agy": "ephemeral",
+    "codex": "ephemeral"
+  },
   "phase": "build",
   "ok": true,
   "merge_status": "ready",
