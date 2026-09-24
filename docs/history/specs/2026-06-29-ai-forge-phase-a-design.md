@@ -14,7 +14,7 @@ verify → signed Ed25519 ledger → `done()`). The one new abstraction is the
 artifact / fact-checks / generator that `saas-forge` currently hard-codes.
 
 **Status:** design approved 2026-06-29; spec → (this doc) → `writing-plans` → build.
-See [`docs/ROADMAP.md`](../ROADMAP.md) Phase A.
+See [`docs/ROADMAP.md`](../../ROADMAP.md) Phase A.
 
 ---
 

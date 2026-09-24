@@ -15,7 +15,7 @@ truth (`.telos/plan.json`, `.telos/ledger.jsonl`, on-disk artifacts). Rides Phas
 A's forge driver and the TELOS spine verbatim.
 
 **Status:** design approved 2026-06-29; spec → (this doc) → `writing-plans` → build.
-See [`docs/ROADMAP.md`](../ROADMAP.md) Phase B. Builds on
+See [`docs/ROADMAP.md`](../../ROADMAP.md) Phase B. Builds on
 [Phase A](2026-06-29-ai-forge-phase-a-design.md).
 
 ---

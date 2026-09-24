@@ -15,7 +15,7 @@ Phase A's eval and Phase B's verify). Spine, `saas-forge`, the RAG pattern, and 
 Phase A/B ai-forge modules are unchanged.
 
 **Status:** design approved 2026-06-29; spec → (this doc) → `writing-plans` → build.
-See [`docs/ROADMAP.md`](../ROADMAP.md) Phase C. Builds on
+See [`docs/ROADMAP.md`](../../ROADMAP.md) Phase C. Builds on
 [Phase A](2026-06-29-ai-forge-phase-a-design.md) +
 [Phase B](2026-06-29-ai-forge-phase-b-design.md).
 
