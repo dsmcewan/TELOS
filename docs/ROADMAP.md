@@ -155,11 +155,6 @@ Iliad lifecycle); naming here is not authorization.
    pending conscious enrollment at the Iliad — never absorption by proximity.
 5. Older open items (issues #30/#37): composable-workstream-library
    generalization (deferred beyond C.2, unchanged).
-6. **Multi-seat research** — the Codex *Better Researcher* workflow re-designed
-   over the council seats (`docs/multi-seat-research-design.md`): signed,
-   provenance-bound research packets, a closed research check registry, a pure
-   eligibility function over a signed ledger, and Eye-gated route activation.
-   Candidate design only; spec → plan → build under CHANGE-PROTOCOL.
 
 ## Decisions log
 
