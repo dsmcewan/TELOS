@@ -13,9 +13,10 @@ permissions:
 
 jobs:
   review:
-    # The pinned code-review command skips draft PRs. Keep the check visibly
-    # skipped until a ready_for_review event can produce an actual review.
-    if: ${{ !github.event.pull_request.draft }}
+    # The pinned code-review command skips draft PRs. Dependabot PRs cannot
+    # access this workflow's Actions OAuth secret and the action rejects bot
+    # initiators, so leave both cases visibly skipped before starting the job.
+    if: ${{ !github.event.pull_request.draft && github.event.pull_request.user.login != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
