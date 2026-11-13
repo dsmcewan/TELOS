@@ -99,12 +99,18 @@ export class ScopedTraceStore {
   escalateToGate(scope,author,{traceId,reason}) {
     const s=this.#get(scope);
     if (!s.members.has(author)) fail('ACCESS_DENIED','Escalation must originate in the team');
+    if (s.closed || this.#clock()>s.expiresAtMs) fail('EXPIRED_SCOPE','Closed/expired scope cannot escalate');
+    if (s.traces.length>=s.maxWrites) fail('WRITE_BUDGET','No trace capacity for escalation');
     if (!s.traces.some(t=>t.id===traceId)) fail('INVALID_REFERENCE','Missing trace for escalation');
     if (typeof this.#gate.escalate !== 'function') fail('NO_ESCALATION_GATE','No external escalation adapter');
-    const receipt=this.#gate.escalate({scope,author,traceId,reason});
-    if (!receipt || receipt.accepted!==true) fail('ESCALATION_REJECTED','External gate did not accept unresolved dispute');
-    // The worker still has to reread before the actual trace write.
-    return this.write(scope,author,{type:'danger',payload:{escalated_to:'TELOS',reason,receipt:receipt.id||'accepted'},response_to:traceId});
+    if (typeof reason !== 'string' || reason.length<1 || reason.length>1000) fail('INVALID_REASON','Bounded escalation reason required');
+    // Persist the request BEFORE contacting the external gate. Rejected calls
+    // and transport failures still have an auditable origin. write() enforces
+    // read-before-write, current context, resource and lifetime constraints.
+    const trace=this.write(scope,author,{type:'danger',payload:{escalated_to:'TELOS',status:'requested',reason},response_to:traceId});
+    const receipt=this.#gate.escalate({scope,author,traceId,reason,requestTraceId:trace.id});
+    if (!receipt || receipt.accepted!==true) fail('ESCALATION_REJECTED','External gate did not accept unresolved dispute; request trace persists');
+    return {...trace,receipt_id:receipt.id||'accepted'};
   }
   // Read-only audit replay; no claims that it is a cross-process transactional DB.
   readDisk(scope) {const s=this.#get(scope); return readFileSync(s.file,'utf8').trim().split('\n').filter(Boolean).map(line=>JSON.parse(line));}
