@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { ScopedTraceStore } from '../trace-mesh/trace-store.mjs';
 import { makeTELOSInvariantGate } from '../trace-mesh/telos-gate.mjs';
+import { computePlan, writePlan } from '../../merkle-dag/merkle.mjs';
+import { generateKeypair } from '../../merkle-dag/crypto.mjs';
+import { PROPOSAL_KEY_ID, POLICY_CONTRACT_V1, POLICY_CHECK_KEYS, makeProposalEvent, atomicAppendProposalEvent, writeProposalArtifact } from '../../merkle-dag/proposal-ledger.mjs';
 
 let count = 0;
 function test(name, fn) { fn(); count++; console.log('PASS',name); }
@@ -72,4 +75,39 @@ test('trace store rejects unauthorized state delta before append',()=>{
    assert.deepEqual(store.readDisk('S'),[]);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
+
+test('real signed TELOS authorization admits only a node proposal and blocks lifecycle drift',()=>{
+ const ws=mkdtempSync(join(tmpdir(),'telos-mesh-signed-'));
+ try {
+   const telosDir=join(ws,'.telos'); mkdirSync(telosDir,{recursive:true});
+   const {privatePem,publicJwk}=generateKeypair();
+   const tasks=[{id:'N1',files:['src/safe.mjs'],requirements:'produce safe artifact',test:{cmd:'node',args:['-e','process.exit(0)']},dependencies:[]}];
+   const computed=computePlan(tasks,{authorizedSigners:{[PROPOSAL_KEY_ID]:publicJwk}});
+   assert.equal(computed.errors,undefined);
+   const plan=computed.plan; writePlan(telosDir,plan);
+   const checks=Object.fromEntries(POLICY_CHECK_KEYS.map(k=>[k,'pass']));
+   const artifact={policy_contract_ref:POLICY_CONTRACT_V1,plan_hash:plan.plan_hash,outcome:'authorized',checks,blockers:[],findings:[],revision:{index:1,maximum:3}};
+   const {ref}=writeProposalArtifact(telosDir,artifact);
+   atomicAppendProposalEvent(telosDir,(parentHash,sequence)=>makeProposalEvent({
+     proposal_id:'proposal-mesh',sequence,stage:'decision',plan_hash:plan.plan_hash,
+     parent_event_hash:parentHash,artifact_refs:[ref],actor:{},provenance:null,
+     policy_result:null,recorded_at:'t',decision:'authorized',policy_result_ref:ref
+   },privatePem),{publicJwk});
+   const proposed={action:'propose_node_delta',node_id:'N1',file_path:'src/safe.mjs',plan_hash:plan.plan_hash};
+   const allowed=makeTELOSInvariantGate({telosDir,lifecycleVerify:()=>({ok:true})});
+   assert.deepEqual(allowed.validateProposedStateChange({stateChange:proposed,invariantLink:plan.plan_hash}),{
+     ok:true,authorized_plan_hash:plan.plan_hash,decision:'TRACE_ADMISSION_ONLY'
+   });
+   const dir=join(ws,'trace');
+   const store=new ScopedTraceStore({dir,gate:allowed});
+   store.register({scope:'S',parent:'P',members:['A','B','C'],criterionId:'signed',expiresAtMs:Date.now()+2000});
+   store.read('S','A');
+   const trace=store.write('S','A',{type:'claim',payload:{state_change:proposed},invariant_link:plan.plan_hash});
+   assert.equal(trace.type,'claim');
+   assert.equal(existsSync(join(ws,'src','safe.mjs')),false,'trace never writes the declared artifact');
+   const stale=makeTELOSInvariantGate({telosDir,lifecycleVerify:()=>({ok:false,blockers:['hold after decision']})});
+   assert.equal(stale.validateProposedStateChange({stateChange:proposed,invariantLink:plan.plan_hash}).reason,'LIFECYCLE_STATE_DRIFT');
+ }finally{rmSync(ws,{recursive:true,force:true});}
+});
+
 console.log('TELOS trace gate:',count,'tests passed');
