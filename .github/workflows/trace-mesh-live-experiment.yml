@@ -1,10 +1,5 @@
 name: TELOS Scoped Trace Mesh Live Trial
 on:
-  push:
-    branches:
-      - feat/scoped-stigmergic-mesh-first-slice
-    paths:
-      - .github/workflows/trace-mesh-live-experiment.yml
   workflow_dispatch:
 permissions:
   contents: read
