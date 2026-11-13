@@ -1,0 +1,50 @@
+name: TELOS Scoped Trace Mesh Live Trial
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  comparison:
+    name: source-backed three-peer vs serial review
+    if: github.repository == 'dsmcewan/TELOS'
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+      XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+      XAI_MODEL: ${{ vars.XAI_MODEL }}
+    steps:
+      - name: Checkout bounded experiment branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Node 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+      - name: Check configured provider seats without printing secrets
+        id: seats
+        shell: bash
+        run: |
+          node --input-type=module -e '
+            import {appendFileSync} from "node:fs";
+            const names = [
+              ["ANTHROPIC_API_KEY","ANTHROPIC_MODEL"],
+              ["OPENAI_API_KEY","OPENAI_MODEL"],
+              ["GEMINI_API_KEY","GEMINI_MODEL"],
+              ["XAI_API_KEY","XAI_MODEL"]
+            ];
+            const count = names.filter(([k,m]) => Boolean(process.env[k]) && Boolean(process.env[m])).length;
+            appendFileSync(process.env.GITHUB_OUTPUT, "count=" + count + "\n");
+            console.log("Configured model seats: " + count + " / 4");
+          '
+      - name: Run bounded live model comparison
+        if: steps.seats.outputs.count >= 3
+        shell: bash
+        run: node build-gate/scripts/live-trace-mesh-compare.mjs ./run-data
+      - name: Record blocked credential state
+        if: steps.seats.outputs.count < 3
+        run: echo 'BLOCKED_NO_LIVE_SEATS -- no live-model result exists; no simulated data substituted.'
