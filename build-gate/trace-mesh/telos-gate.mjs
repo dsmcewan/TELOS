@@ -18,7 +18,7 @@ export function makeTELOSInvariantGate({
 } = {}) {
   if (typeof telosDir !== 'string' || !telosDir.trim()) throw Error('TELOS_DIR_REQUIRED');
   return Object.freeze({
-    validateProposedStateChange({ stateChange, invariantLink }) {
+    validateProposedStateChange({ scope, stateChange, invariantLink }) {
       // TELOS's gate is for code/build state. World RPG state requires its OWN
       // domain invariant verifier and must not borrow a build-plan certificate.
       if (!stateChange || typeof stateChange !== 'object' || Array.isArray(stateChange))
@@ -28,6 +28,7 @@ export function makeTELOSInvariantGate({
       if (typeof stateChange.node_id !== 'string' || !safePath(stateChange.file_path) ||
           typeof stateChange.plan_hash !== 'string' || typeof invariantLink !== 'string')
         return denial('INVALID_NODE_DELTA');
+      if (scope !== 'node:' + stateChange.node_id) return denial('SCOPE_NODE_MISMATCH');
       let plan;
       try { plan = loadPlan(); } catch { return denial('PLAN_UNAVAILABLE'); }
       if (!plan || typeof plan.plan_hash !== 'string' ||
