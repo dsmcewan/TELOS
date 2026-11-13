@@ -11,11 +11,11 @@ import { deployMutualMesh } from '../trace-mesh/mutual-mesh.mjs';
 
 const here=dirname(fileURLToPath(import.meta.url)), root=resolve(here,'../..');
 const available=[
- {id:'implementation',tool:'claude_ask',key:'ANTHROPIC_API_KEY',model:'ANTHROPIC_MODEL'},
- {id:'test-contract',tool:'codex_ask',key:'OPENAI_API_KEY',model:'OPENAI_MODEL'},
- {id:'independent',tool:'gemini_ask',key:'GEMINI_API_KEY',model:'GEMINI_MODEL'},
- {id:'alternative',tool:'grok_ask',key:'XAI_API_KEY',model:'XAI_MODEL'}
-].filter(x=>Boolean(process.env[x.key])&&Boolean(process.env[x.model]));
+ {id:'implementation',tool:'claude_ask',keyAvailable:Boolean(process.env.ANTHROPIC_API_KEY),modelName:process.env.ANTHROPIC_MODEL},
+ {id:'test-contract',tool:'codex_ask',keyAvailable:Boolean(process.env.OPENAI_API_KEY),modelName:process.env.OPENAI_MODEL},
+ {id:'independent',tool:'gemini_ask',keyAvailable:Boolean(process.env.GEMINI_API_KEY),modelName:process.env.GEMINI_MODEL},
+ {id:'alternative',tool:'grok_ask',keyAvailable:Boolean(process.env.XAI_API_KEY),modelName:process.env.XAI_MODEL}
+].filter(x=>x.keyAvailable&&Boolean(x.modelName));
 if(available.length<3){
  console.error(JSON.stringify({status:'BLOCKED_NO_LIVE_SEATS',required:3,available:available.length,note:'Cannot report live-model measurements using simulated callbacks.'}));
  process.exit(2);
@@ -48,7 +48,7 @@ const store=new ScopedTraceStore({dir:outDir,gate});
 const {client,close}=spawnMcpClient({serverPath:resolve(root,'connectors/ai-peer-mcp/server.mjs')});
 const ask=async(seat,system,context)=>{
  const prompt=[task,context,'Return JSON only: {"finding":"strict-blocks-advisory-passes|always-blocks|strict-also-passes|uncertain","reason":"short cited explanation"}'].join('\n\n');
- return parse(await client.callTool(seat.tool,{system,prompt,model:process.env[seat.model],include_provenance:true,max_tokens:700,effort:'medium'}));
+ return parse(await client.callTool(seat.tool,{system,prompt,model:seat.modelName,include_provenance:true,max_tokens:700,effort:'medium'}));
 };
 const agents=[
  {id:'S1',run:async a=>{
