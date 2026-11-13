@@ -37,7 +37,7 @@ const parse=raw=>{
  let env; try{env=JSON.parse(raw)}catch{throw Error('model returned invalid provenance envelope')}
  if(typeof env?.text!=='string'||!env?.provenance?.response_id||!env?.provenance?.model)
    throw Error('model response missing actual provider provenance');
- let answer;try{answer=JSON.parse(env.text.trim().replace(/^`?`(?:json)?\s*/i,'').replace(/`?`$/,'').trim())}catch{throw Error('model must return structured JSON')}
+ let answer;try { const clean=env.text.trim().replace(/^\x60{3}(?:json)?\s*/i,'').replace(/\x60{3}\s*$/,''); answer=JSON.parse(clean); } catch { throw Error('model must return structured JSON'); }
  if(!allowed.has(answer.finding)||typeof answer.reason!=='string'||answer.reason.length>1000)
    throw Error('invalid model answer contract');
  return {finding:answer.finding,reason:answer.reason,provenance:{model:env.provenance.model,response_id:env.provenance.response_id}};
