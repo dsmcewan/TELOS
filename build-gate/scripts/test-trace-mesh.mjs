@@ -50,4 +50,46 @@ await test('no consensus is allowed to bypass TELOS',dir=>{
 await test('exactly three callback agents required',async dir=>{
  const {store}=make(dir);await assert.rejects(deployMutualMesh({store,parentId:'P',scope:'few',agents:[{id:'A',run:()=>{}}],criterion:{id:'test',check:()=>true}}),e=>e.code==='INVALID_TEAM');
 });
+
+
+await test('gate is not called when peer has not read scope',dir=>{
+ const {store,s,stats}=make(dir);store.read(s,'A');
+ const e=store.write(s,'A',{type:'contradiction',payload:{issue:'unknown'}});
+ throwsCode(()=>store.escalateToGate(s,'B',{traceId:e.id,reason:'dispute'}),'READ_REQUIRED');
+ assert.equal(stats.escalations,0);
+});
+await test('gate is not called with stale peer context',dir=>{
+ const {store,s,stats}=make(dir);store.read(s,'A');store.read(s,'B');
+ const e=store.write(s,'A',{type:'contradiction',payload:{issue:'unknown'}});
+ throwsCode(()=>store.escalateToGate(s,'B',{traceId:e.id,reason:'dispute'}),'STALE_PEER_CONTEXT');
+ assert.equal(stats.escalations,0);
+});
+await test('gate is not called after scope closure',dir=>{
+ const {store,s,stats}=make(dir);store.read(s,'A');
+ const e=store.write(s,'A',{type:'contradiction',payload:{issue:'unknown'}});
+ store.close(s);
+ throwsCode(()=>store.escalateToGate(s,'A',{traceId:e.id,reason:'dispute'}),'EXPIRED_SCOPE');
+ assert.equal(stats.escalations,0);
+});
+await test('rejected gate call preserves auditable request',dir=>{
+ const gate={validateProposedStateChange:()=>({ok:true}),escalate:()=>({accepted:false})};
+ const store=new ScopedTraceStore({dir,gate});
+ const s='rejected-gate';
+ store.register({scope:s,parent:'P',members:['A','B','C'],expiresAtMs:Date.now()+2000,criterionId:'check'});
+ store.read(s,'A');const e=store.write(s,'A',{type:'contradiction',payload:{issue:'unknown'}});
+ throwsCode(()=>store.escalateToGate(s,'A',{traceId:e.id,reason:'dispute'}),'ESCALATION_REJECTED');
+ assert.equal(store.readDisk(s).length,2);
+ assert.equal(store.read(s,'P')[1].payload.status,'requested');
+ assert.equal(store.metrics(s).escalations_to_external_invariant_gate,1);
+});
+await test('throwing gate call preserves auditable request',dir=>{
+ const gate={validateProposedStateChange:()=>({ok:true}),escalate:()=>{throw new Error('external-down')}};
+ const store=new ScopedTraceStore({dir,gate});
+ const s='throwing-gate';
+ store.register({scope:s,parent:'P',members:['A','B','C'],expiresAtMs:Date.now()+2000,criterionId:'check'});
+ store.read(s,'A');const e=store.write(s,'A',{type:'contradiction',payload:{issue:'unknown'}});
+ assert.throws(()=>store.escalateToGate(s,'A',{traceId:e.id,reason:'dispute'}),/external-down/);
+ assert.equal(store.readDisk(s).length,2);
+ assert.equal(store.metrics(s).escalations_to_external_invariant_gate,1);
+});
 console.log('trace-mesh: '+testCount+' tests passed');
