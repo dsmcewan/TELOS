@@ -13,7 +13,7 @@ let count = 0;
 function test(name, fn) { fn(); count++; console.log('PASS',name); }
 const plan={plan_hash:'sha256:case-one',nodes:[{id:'N1',files:['src/safe.mjs']}]};
 const delta={action:'propose_node_delta',node_id:'N1',file_path:'src/safe.mjs',plan_hash:plan.plan_hash};
-const request=d=>({stateChange:d,invariantLink:plan.plan_hash});
+const request=d=>({scope:'node:N1',stateChange:d,invariantLink:plan.plan_hash});
 const authorized=()=>({ok:true,planHash:plan.plan_hash});
 const opts={telosDir:'/nonexistent-test-plan',loadPlan:()=>structuredClone(plan),lifecycleVerify:()=>({ok:true})};
 
@@ -28,12 +28,12 @@ test('gate refuses absent production lifecycle reverify',()=>{
 test('gate refuses wrong plan hash and invariant pointer',()=>{
  const g=makeTELOSInvariantGate({...opts,authorize:authorized});
  assert.equal(g.validateProposedStateChange(request({...delta,plan_hash:'sha256:wrong'})).reason,'PLAN_HASH_MISMATCH');
- assert.equal(g.validateProposedStateChange({stateChange:delta,invariantLink:'sha256:wrong'}).reason,'PLAN_HASH_MISMATCH');
+ assert.equal(g.validateProposedStateChange({scope:'node:N1',stateChange:delta,invariantLink:'sha256:wrong'}).reason,'PLAN_HASH_MISMATCH');
 });
 test('gate refuses undeclared file and node',()=>{
  const g=makeTELOSInvariantGate({...opts,authorize:authorized});
  assert.equal(g.validateProposedStateChange(request({...delta,file_path:'src/other.mjs'})).reason,'NODE_FILE_NOT_DECLARED');
- assert.equal(g.validateProposedStateChange(request({...delta,node_id:'N2'})).reason,'NODE_FILE_NOT_DECLARED');
+ assert.equal(g.validateProposedStateChange({scope:'node:N2',stateChange:{...delta,node_id:'N2'},invariantLink:plan.plan_hash}).reason,'NODE_FILE_NOT_DECLARED');
 });
 test('gate refuses path traversal even when plan is mocked authorized',()=>{
  const g=makeTELOSInvariantGate({...opts,authorize:authorized});
@@ -69,10 +69,10 @@ test('trace store rejects unauthorized state delta before append',()=>{
  try{
    const g=makeTELOSInvariantGate({...opts,authorize:()=>({ok:false,error:'DECISION_NOT_AUTHORIZED'})});
    const store=new ScopedTraceStore({dir,gate:g});
-   store.register({scope:'S',parent:'P',members:['A','B','C'],criterionId:'check',expiresAtMs:Date.now()+1000});
-   store.read('S','A');
-   assert.throws(()=>store.write('S','A',{type:'result',payload:{state_change:delta},invariant_link:plan.plan_hash}),e=>e.code==='INVARIANT_REJECTED');
-   assert.deepEqual(store.readDisk('S'),[]);
+   store.register({scope:'node:N1',parent:'P',members:['A','B','C'],criterionId:'check',expiresAtMs:Date.now()+1000});
+   store.read('node:N1','A');
+   assert.throws(()=>store.write('node:N1','A',{type:'result',payload:{state_change:delta},invariant_link:plan.plan_hash}),e=>e.code==='INVARIANT_REJECTED');
+   assert.deepEqual(store.readDisk('node:N1'),[]);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
 
@@ -95,19 +95,25 @@ test('real signed TELOS authorization admits only a node proposal and blocks lif
    },privatePem),{publicJwk});
    const proposed={action:'propose_node_delta',node_id:'N1',file_path:'src/safe.mjs',plan_hash:plan.plan_hash};
    const allowed=makeTELOSInvariantGate({telosDir,lifecycleVerify:()=>({ok:true})});
-   assert.deepEqual(allowed.validateProposedStateChange({stateChange:proposed,invariantLink:plan.plan_hash}),{
+   assert.deepEqual(allowed.validateProposedStateChange({scope:'node:N1',stateChange:proposed,invariantLink:plan.plan_hash}),{
      ok:true,authorized_plan_hash:plan.plan_hash,decision:'TRACE_ADMISSION_ONLY'
    });
    const dir=join(ws,'trace');
    const store=new ScopedTraceStore({dir,gate:allowed});
-   store.register({scope:'S',parent:'P',members:['A','B','C'],criterionId:'signed',expiresAtMs:Date.now()+2000});
-   store.read('S','A');
-   const trace=store.write('S','A',{type:'claim',payload:{state_change:proposed},invariant_link:plan.plan_hash});
+   store.register({scope:'node:N1',parent:'P',members:['A','B','C'],criterionId:'signed',expiresAtMs:Date.now()+2000});
+   store.read('node:N1','A');
+   const trace=store.write('node:N1','A',{type:'claim',payload:{state_change:proposed},invariant_link:plan.plan_hash});
    assert.equal(trace.type,'claim');
    assert.equal(existsSync(join(ws,'src','safe.mjs')),false,'trace never writes the declared artifact');
    const stale=makeTELOSInvariantGate({telosDir,lifecycleVerify:()=>({ok:false,blockers:['hold after decision']})});
-   assert.equal(stale.validateProposedStateChange({stateChange:proposed,invariantLink:plan.plan_hash}).reason,'LIFECYCLE_STATE_DRIFT');
+   assert.equal(stale.validateProposedStateChange({scope:'node:N1',stateChange:proposed,invariantLink:plan.plan_hash}).reason,'LIFECYCLE_STATE_DRIFT');
  }finally{rmSync(ws,{recursive:true,force:true});}
+});
+
+
+test('node-scoped gate refuses a proposal targeting another pod',()=>{
+ const g=makeTELOSInvariantGate({...opts,authorize:authorized});
+ assert.equal(g.validateProposedStateChange({scope:'node:N2',stateChange:delta,invariantLink:plan.plan_hash}).reason,'SCOPE_NODE_MISMATCH');
 });
 
 console.log('TELOS trace gate:',count,'tests passed');
