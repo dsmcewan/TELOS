@@ -29,7 +29,7 @@ export class ScopedTraceStore {
     if (this.#scopes.has(scope)) fail('DUPLICATE_SCOPE', 'Scope already registered');
     const file = join(this.#dir, createHash('sha256').update(scope).digest('hex') + '.jsonl');
     if (existsSync(file)) fail('DUPLICATE_SCOPE', 'Trace file already exists; no implicit replay/reuse');
-    this.#scopes.set(scope, {scope, parent, members:new Set(members), membersList:[...members], expiresAtMs, maxWrites, criterionId, parentScope, traces:[], seen:new Map(), file, closed:false});
+    this.#scopes.set(scope, {scope, parent, members:new Set(members), membersList:[...members], expiresAtMs, maxWrites, criterionId, parentScope, traces:[], seen:new Map(), file, closed:false, escalated:false, externalDeliveries:0});
     return {scope, members:[...members], parent, criterionId, expiresAtMs, maxWrites, parentScope};
   }
   #get(scope) {
@@ -40,6 +40,7 @@ export class ScopedTraceStore {
   read(scope, actor, { sinceVersion = 0, includeSuperseded = false } = {}) {
     const s=this.#get(scope);
     if (!s.members.has(actor) && actor!==s.parent) fail('ACCESS_DENIED', 'Actor does not share this scope');
+    if (actor===s.parent && !s.closed && !s.escalated) fail('PARENT_READ_EMBARGO','Parent receives traces only when team closes or external escalation is accepted');
     if (!Number.isInteger(sinceVersion) || sinceVersion < 0) fail('INVALID_CURSOR', 'Invalid version');
     // A read acknowledges all committed peer traces up to the current version.
     if (s.members.has(actor)) s.seen.set(actor, s.traces.length);
@@ -87,7 +88,9 @@ export class ScopedTraceStore {
     }).filter(v=>v!==null);
     const corrections=s.traces.filter(t=>t.type==='result'&&t.payload.resolution==='corrected'&&t.response_to);
     const localCorrections=corrections.filter(t=>s.members.has(t.author)&&s.traces.some(src=>src.id===t.response_to&&src.scope===scope)).length;
-    const toGate=s.traces.filter(t=>t.type==='danger'&&t.payload.escalated_to==='TELOS').length;
+    // Never count self-reported danger traces as actual deliveries.
+    // An exception thrown by the transport does not prove the gate received it.
+    const toGate=s.externalDeliveries;
     return {
       contradiction_first_peer_reaction_ms:delays.length?Math.round(Math.min(...delays)*1000)/1000:null,
       corrections_remaining_in_team: {local:localCorrections,total:corrections.length,fraction:corrections.length?localCorrections/corrections.length:null},
@@ -109,9 +112,11 @@ export class ScopedTraceStore {
     // read-before-write, current context, resource and lifetime constraints.
     const trace=this.write(scope,author,{type:'danger',payload:{escalated_to:'TELOS',status:'requested',reason},response_to:traceId});
     const receipt=this.#gate.escalate({scope,author,traceId,reason,requestTraceId:trace.id});
+    if (receipt && typeof receipt.accepted==='boolean') s.externalDeliveries++;
     if (!receipt || receipt.accepted!==true) fail('ESCALATION_REJECTED','External gate did not accept unresolved dispute; request trace persists');
+    s.escalated=true;
     return {...trace,receipt_id:receipt.id||'accepted'};
   }
   // Read-only audit replay; no claims that it is a cross-process transactional DB.
-  readDisk(scope) {const s=this.#get(scope); return readFileSync(s.file,'utf8').trim().split('\n').filter(Boolean).map(line=>JSON.parse(line));}
+  readDisk(scope) {const s=this.#get(scope); if (!existsSync(s.file)) return []; return readFileSync(s.file,'utf8').trim().split('\n').filter(Boolean).map(line=>JSON.parse(line));}
 }
