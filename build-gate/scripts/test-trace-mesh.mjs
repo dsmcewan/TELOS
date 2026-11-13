@@ -21,13 +21,13 @@ await test('typed trace schema and bounded payloads',dir=>{
  const {store,s}=make(dir);store.read(s,'A');throwsCode(()=>store.write(s,'A',{type:'new_unknown',payload:{}}),'INVALID_TYPE');throwsCode(()=>store.write(s,'A',{type:'info',payload:{raw:'x'.repeat(5000)}}),'PAYLOAD_TOO_LARGE');
 });
 await test('external invariant gate rejects state-change proposal before append',dir=>{
- const {store,s,stats}=make(dir);store.read(s,'A');throwsCode(()=>store.write(s,'A',{type:'result',payload:{state_change:{allowed:false,operation:'transfer_unique_item'}}}),'INVARIANT_REJECTED');assert.equal(store.read(s,'P').length,0);assert.equal(stats.gateCalls,1);
+ const {store,s,stats}=make(dir);store.read(s,'A');throwsCode(()=>store.write(s,'A',{type:'result',payload:{state_change:{allowed:false,operation:'transfer_unique_item'}}}),'INVARIANT_REJECTED');store.close(s);assert.equal(store.read(s,'P').length,0);assert.equal(stats.gateCalls,1);
 });
 await test('permitted state proposal is a trace, never a world commit',dir=>{
- const {store,s,stats}=make(dir);store.read(s,'A');store.write(s,'A',{type:'result',payload:{state_change:{allowed:true,operation:'checked_only'}}});assert.equal(stats.gateCalls,1);assert.equal(store.read(s,'P').length,1);
+ const {store,s,stats}=make(dir);store.read(s,'A');store.write(s,'A',{type:'result',payload:{state_change:{allowed:true,operation:'checked_only'}}});assert.equal(stats.gateCalls,1);store.close(s);assert.equal(store.read(s,'P').length,1);
 });
 await test('supersession leaves source history intact with filtered view',dir=>{
- const {store,s}=make(dir);store.read(s,'A');const first=store.write(s,'A',{type:'claim',payload:{text:'wrong'}});store.write(s,'A',{type:'result',payload:{text:'corrected'},supersedes:first.id});assert.equal(store.read(s,'P').length,1);assert.equal(store.read(s,'P',{includeSuperseded:true}).length,2);assert.equal(store.readDisk(s).length,2);
+ const {store,s}=make(dir);store.read(s,'A');const first=store.write(s,'A',{type:'claim',payload:{text:'wrong'}});store.write(s,'A',{type:'result',payload:{text:'corrected'},supersedes:first.id});store.close(s);assert.equal(store.read(s,'P').length,1);assert.equal(store.read(s,'P',{includeSuperseded:true}).length,2);assert.equal(store.readDisk(s).length,2);
 });
 await test('scope bound and resource exhaustion',dir=>{
  const {store,s}=make(dir);throwsCode(()=>store.read('other','A'),'UNKNOWN_SCOPE');store.read(s,'A');for(let i=0;i<16;i++)store.write(s,'A',{type:'info',payload:{i}});throwsCode(()=>store.write(s,'A',{type:'info',payload:{i:16}}),'WRITE_BUDGET');
@@ -79,7 +79,7 @@ await test('rejected gate call preserves auditable request',dir=>{
  store.read(s,'A');const e=store.write(s,'A',{type:'contradiction',payload:{issue:'unknown'}});
  throwsCode(()=>store.escalateToGate(s,'A',{traceId:e.id,reason:'dispute'}),'ESCALATION_REJECTED');
  assert.equal(store.readDisk(s).length,2);
- assert.equal(store.read(s,'P')[1].payload.status,'requested');
+ store.close(s);assert.equal(store.read(s,'P')[1].payload.status,'requested');
  assert.equal(store.metrics(s).escalations_to_external_invariant_gate,1);
 });
 await test('throwing gate call preserves auditable request',dir=>{
@@ -90,6 +90,31 @@ await test('throwing gate call preserves auditable request',dir=>{
  store.read(s,'A');const e=store.write(s,'A',{type:'contradiction',payload:{issue:'unknown'}});
  assert.throws(()=>store.escalateToGate(s,'A',{traceId:e.id,reason:'dispute'}),/external-down/);
  assert.equal(store.readDisk(s).length,2);
+ assert.equal(store.metrics(s).escalations_to_external_invariant_gate,0);
+});
+
+await test('parent cannot inspect an active team until it completes',dir=>{
+ const {store,s}=make(dir);store.read(s,'A');
+ store.write(s,'A',{type:'result',payload:{done:true}});
+ throwsCode(()=>store.read(s,'P'),'PARENT_READ_EMBARGO');
+ store.close(s);assert.equal(store.read(s,'P').length,1);
+});
+await test('spoofed danger trace cannot release parent embargo or count as external escalation',dir=>{
+ const {store,s}=make(dir);store.read(s,'A');
+ store.write(s,'A',{type:'danger',payload:{escalated_to:'TELOS',status:'requested',reason:'spoofed'}});
+ throwsCode(()=>store.read(s,'P'),'PARENT_READ_EMBARGO');
+ assert.equal(store.metrics(s).escalations_to_external_invariant_gate,0);
+});
+await test('accepted gate escalation opens parent read before team completion',dir=>{
+ const {store,s}=make(dir);store.read(s,'A');
+ const t=store.write(s,'A',{type:'contradiction',payload:{issue:'unresolved'}});
+ throwsCode(()=>store.read(s,'P'),'PARENT_READ_EMBARGO');
+ store.escalateToGate(s,'A',{traceId:t.id,reason:'unresolved matter'});
+ assert.equal(store.read(s,'P').length,2);
+ assert.equal(store.status(s).closed,false);
  assert.equal(store.metrics(s).escalations_to_external_invariant_gate,1);
+});
+await test('empty scope audit is an empty list without an on-disk trace file',dir=>{
+ const {store,s}=make(dir);assert.deepEqual(store.readDisk(s),[]);
 });
 console.log('trace-mesh: '+testCount+' tests passed');
