@@ -27,13 +27,13 @@ Run `cd build-gate && npm run test:trace-mesh:live` only in an environment with 
 
 The task is the existing larger-context verification-stage contract in `build-gate/build-orchestrator.mjs` and `build-gate/scripts/test-verify-stage.mjs`: missing/malformed verification is advisory by default but blocks when `requireVerify:true`. Three distinct model calls with complementary slices and reciprocal shared traces are compared to a serial worker followed by an independent full-source reviewer. The deterministic acceptance oracle is tied to the checked-in code and test assertions.
 
-**If three seats are unavailable, the runner exits with `BLOCKED_NO_LIVE_SEATS` (code 2) and produces no fake model measurements.** CI tests that fail-closed path without running billable inference. Live results, when available, are kept outside the repository unless explicitly reviewed. This experiment does not measure token costs or establish a speed/cost advantage by itself.
+**If three seats are unavailable, the runner exits with `BLOCKED_NO_LIVE_SEATS` (code 2) and produces no fake model measurements.** CI tests that fail-closed path without running billable inference. A one-shot GitHub Actions probe on November 13 found **0/4** configured key+model seat pairs; the branch workflow is now manual-only. Live results, when available, are kept outside the repository unless explicitly reviewed. This experiment does not measure token costs or establish a speed/cost advantage by itself.
 
 The review experiment is read-only: its TELOS adapter has no authorized plan or escalation receiver, so state-change proposals and attempted escalations fail closed. The production TELOS authorization path is unchanged and has not been substituted with peer consensus.
 
 ## TELOS adapter contract
 
-`trace-mesh/telos-gate.mjs` delegates authorization to the existing `merkle-dag/orchestrate.mjs#checkLifecycleAuthorization` and `merkle-dag/merkle.mjs#readPlan`. It will only admit a `state_change.action: "propose_node_delta"` whose declared node, file, plan hash, and `invariant_link` match the authorized current plan, after the **real** signed proposal decision and lifecycle state are reverified.
+`trace-mesh/telos-gate.mjs` delegates authorization to the existing `merkle-dag/orchestrate.mjs#checkLifecycleAuthorization` and `merkle-dag/merkle.mjs#readPlan`. It will only admit a `state_change.action: "propose_node_delta"` whose exact `node:<node_id>` scope, declared node, file, plan hash, and `invariant_link` match the authorized current plan, after the **real** signed proposal decision and lifecycle state are reverified.
 
 An admitted proposal is **not** an executed mutation. The trace store never writes source artifacts, modifies world state, or settles ledger entries; TELOS's existing Rule-3 verifier and controller remain the only authorized execution path. No external escalation acknowledgment is fabricated: `onEscalation` must be explicitly provided by a legitimate external receiver.
 
@@ -48,3 +48,5 @@ The adapter tests include a negative unsigned plan, an accepted test authorizati
 **Evaluation boundary:** This is a deterministic agent-callback harness on a real repository review question, not a live LLM swarm. The local standalone run used source-verified excerpts; running inside this GitHub branch reads the full repository files. It does not establish improvement versus a large-context reviewer, nor does the JSONL implementation claim cross-process transactional safety.
 
 Not yet proven or deployed: a genuine model-backed A/B benchmark (requires provider credentials), an operational external escalation receiver, integration into the production builder's task dispatch, cross-process transactional concurrency/recovery, and a distributed context mesh.
+
+Verification evidence (signed TELOS decision, Node 22/24 test results, and live-seat blocker): [docs/runs/trace-mesh-first-slice/VERIFICATION.md](../../docs/runs/trace-mesh-first-slice/VERIFICATION.md).
