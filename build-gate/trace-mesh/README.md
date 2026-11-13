@@ -21,6 +21,16 @@ node scripts/trace-mesh-real-task.mjs ./run-data
 
 The experiment compares `teams.mjs` to `scripts/test-teams.mjs` for whether unknown-workstream fallback is intentional. S1 raises a provisional concern, S2 challenges it with existing tests, S3 confirms the source, and S1 corrects locally.
 
+## Model-backed comparison (opt-in)
+
+Run `cd build-gate && npm run test:trace-mesh:live` only in an environment with **three** configured provider model seats (API key **and** model identifier), from `ANTHROPIC_*`, `OPENAI_*`, `GEMINI_*`, and/or `XAI_*`. It uses TELOS's existing `ai-peer-mcp` transport with `include_provenance:true` and rejects any model reply missing its provider response ID. No API keys are ever recorded in trace files.
+
+The task is the existing larger-context verification-stage contract in `build-gate/build-orchestrator.mjs` and `build-gate/scripts/test-verify-stage.mjs`: missing/malformed verification is advisory by default but blocks when `requireVerify:true`. Three distinct model calls with complementary slices and reciprocal shared traces are compared to a serial worker followed by an independent full-source reviewer. The deterministic acceptance oracle is tied to the checked-in code and test assertions.
+
+**If three seats are unavailable, the runner exits with `BLOCKED_NO_LIVE_SEATS` (code 2) and produces no fake model measurements.** CI tests that fail-closed path without running billable inference. Live results, when available, are kept outside the repository unless explicitly reviewed. This experiment does not measure token costs or establish a speed/cost advantage by itself.
+
+The review experiment is read-only: state-changing writes are denied by its external adapter. The production TELOS authorization path is unchanged and has not been substituted with peer consensus.
+
 ## Three metrics only
 
 1. `contradiction_first_peer_reaction_ms` — monotonic delay from committed contradiction trace to first different peer replying to that trace.
