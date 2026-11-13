@@ -7,6 +7,7 @@ import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnMcpClient } from '../../breakout/mcp_client.mjs';
 import { ScopedTraceStore } from '../trace-mesh/trace-store.mjs';
+import { makeTELOSInvariantGate } from '../trace-mesh/telos-gate.mjs';
 import { deployMutualMesh } from '../trace-mesh/mutual-mesh.mjs';
 
 const here=dirname(fileURLToPath(import.meta.url)), root=resolve(here,'../..');
@@ -43,12 +44,20 @@ const parse=raw=>{
  return {finding:answer.finding,reason:answer.reason,provenance:{model:env.provenance.model,response_id:env.provenance.response_id}};
 };
 const outDir=process.argv[2]||mkdtempSync(join(tmpdir(),'telos-live-mesh-'));
-const gate={validateProposedStateChange:()=>({ok:false,reason:'read-only review cannot mutate authoritative state'}),escalate:()=>({accepted:true,id:'external-review-request'})};
+// No fake TELOS approval in live experiments: without an actual authorized
+// plan and external escalation receiver, the real TELOS adapter fails closed.
+const gate=makeTELOSInvariantGate({telosDir:join(outDir,'.telos')});
 const store=new ScopedTraceStore({dir:outDir,gate});
 const {client,close}=spawnMcpClient({serverPath:resolve(root,'connectors/ai-peer-mcp/server.mjs')});
+async function boundedCall(promise,timeoutMs=60000) {
+ let handle;
+ try { return await Promise.race([promise,new Promise((_,reject)=>{
+   handle=setTimeout(()=>reject(new Error('MODEL_CALL_TIMEOUT')),timeoutMs);
+ })]); } finally { clearTimeout(handle); }
+}
 const ask=async(seat,system,context)=>{
  const prompt=[task,context,'Return JSON only: {"finding":"strict-blocks-advisory-passes|always-blocks|strict-also-passes|uncertain","reason":"short cited explanation"}'].join('\n\n');
- return parse(await client.callTool(seat.tool,{system,prompt,model:seat.modelName,include_provenance:true,max_tokens:700,effort:'medium'}));
+ return parse(await boundedCall(client.callTool(seat.tool,{system,prompt,model:seat.modelName,include_provenance:true,max_tokens:700,effort:'medium'})));
 };
 const agents=[
  {id:'S1',run:async a=>{
