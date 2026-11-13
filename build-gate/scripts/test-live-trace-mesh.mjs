@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 const runner=fileURLToPath(new URL('./live-trace-mesh-compare.mjs',import.meta.url));
-const env={...process.env};
-for(const k of ['ANTHROPIC_API_KEY','OPENAI_API_KEY','GEMINI_API_KEY','XAI_API_KEY','ANTHROPIC_MODEL','OPENAI_MODEL','GEMINI_MODEL','XAI_MODEL'])delete env[k];
+// Deliberately do not inherit environment or credentials into this child.
+const env={};
 const r=spawnSync(process.execPath,[runner],{env,encoding:'utf8',timeout:5000});
 assert.equal(r.status,2,'Unconfigured model run MUST fail closed with exit 2');
 const output=JSON.parse(r.stderr.trim());
