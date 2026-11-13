@@ -7,7 +7,7 @@ export async function deployMutualMesh({store,parentId,parentScope=null,scope,ag
   if (!criterion || typeof criterion.id!=='string' || typeof criterion.check!=='function') fail('INVALID_CRITERION','Host-owned deterministic criterion required');
   if (!Array.isArray(agents)||agents.length!==3||new Set(agents.map(x=>x.id)).size!==3||agents.some(x=>typeof x.run!=='function')) fail('INVALID_TEAM','Three distinct agent callbacks required');
   const expiresAtMs=Date.now()+lifetimeMs;
-  if (!Number.isInteger(lifetimeMs)||lifetimeMs<10||lifetimeMs>60000) fail('INVALID_BOUNDS','Bounded team lifetime must be 10ms..60s');
+  if (!Number.isInteger(lifetimeMs)||lifetimeMs<10||lifetimeMs>300000) fail('INVALID_BOUNDS','Bounded team lifetime must be 10ms..300s');
   // If parent belongs to a parent mesh, document deployment in that mesh so
   // the parent's own peers can challenge the cost/scope afterward.
   if(parentScope){
